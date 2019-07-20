@@ -41,6 +41,7 @@
   "files": [
     "cjs",
     "src",
+    "cli.js",
     "!src/tsconfig.json"
   ],
   "license": "UNLICENSED",
