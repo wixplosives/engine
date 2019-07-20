@@ -1,0 +1,9 @@
+{
+  "name": "@wixc3/example-playground",
+  "version": "2.0.0",
+  "scripts": {
+    "start": "engine start"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

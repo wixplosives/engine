@@ -7,12 +7,11 @@ import {
 } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
 import isCI from 'is-ci';
-import { join } from 'path';
 import puppeteer from 'puppeteer';
 import { createDisposables } from './disposables';
 
 const [execDriverLetter] = process.argv0;
-const cliEntry = join(__dirname, '../cli.js');
+const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
 export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {}
 

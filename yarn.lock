@@ -90,6 +90,15 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
+"@file-services/directory@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-2.0.0.tgz#d62262b46c7a1f47b56b074e99b88155725a948a"
+  integrity sha512-FEzE9RBp0PkNFUvZ2dOoTAy2HqGSFSU2Q7EGKL2ni4PYjZlE6A7Um06+qRvuwnSN5VDy350gmhYBAsRLg0MYVQ==
+  dependencies:
+    "@file-services/posix-path" "^1.0.3"
+    "@file-services/types" "^2.0.0"
+    "@file-services/utils" "^2.0.0"
+
 "@file-services/memory@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-2.0.0.tgz#ab0d4f88d633f5b8f1ec59a918d6dc0b440869d1"
