@@ -11,7 +11,7 @@ export class RuntimeEngine {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
     }
 
-    public get<T extends SomeFeature>(feature: T): RuntimeFeature<T['id'], T['dependencies'], T['api']> {
+    public get<T extends SomeFeature>(feature: T): RuntimeFeature<T, T['dependencies'], T['api']> {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
             return runningFeature;
