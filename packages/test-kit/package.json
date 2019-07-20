@@ -1,0 +1,30 @@
+{
+  "name": "@wixc3/engine-test-kit",
+  "version": "1.0.7",
+  "main": "cjs/index.js",
+  "types": "cjs/index.d.ts",
+  "scripts": {
+    "clean": "rimraf ./cjs",
+    "prebuild": "yarn clean",
+    "build": "ts-build src --cjs",
+    "prepack": "yarn build"
+  },
+  "peerDependencies": {
+    "typescript": ">=3.0.0"
+  },
+  "dependencies": {
+    "@wixc3/engine-scripts": "^1.0.7",
+    "is-ci": "^2.0.0",
+    "puppeteer": "^1.18.1",
+    "sinon": "^7.3.2"
+  },
+  "files": [
+    "cjs",
+    "src",
+    "!src/tsconfig.json"
+  ],
+  "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "restricted"
+  }
+}
