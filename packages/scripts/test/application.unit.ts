@@ -1,17 +1,16 @@
-import { nodeFs } from '@file-services/node';
+import fs from '@file-services/node';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { join } from 'path';
 import { Application } from '../src/application';
-const { directoryExists } = nodeFs.promises;
+const { directoryExists } = fs.promises;
 
-describe('Application', function() {
-    this.timeout(10_000);
-
+describe('Application', () => {
     const closables: Array<() => unknown> = [];
     const browserProvider = createBrowserProvider();
 
-    afterEach(async () => {
+    afterEach(async function() {
+        this.timeout(10_000);
         await Promise.all(closables.map(c => c()));
         closables.length = 0;
     });
@@ -30,7 +29,7 @@ describe('Application', function() {
     it.skip(`supports building features with multiple fixtures`, async () => {
         const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
         const app = new Application(fixtureBase);
-        await app.build();
+        await app.build('app');
 
         expect(await directoryExists(app.outputPath), 'has dist folder').to.equal(true);
     });
@@ -78,7 +77,7 @@ describe('Application', function() {
         const { close, port } = await app.start();
         closables.push(() => close());
 
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html?feature=variant`);
+        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html?feature=test/variant`);
         closables.push(() => page.close());
 
         const { myConfig, mySlot } = await page.evaluate(() => {
@@ -89,7 +88,7 @@ describe('Application', function() {
         });
 
         expect(myConfig).to.eql({
-            tags: ['variant', '1']
+            tags: ['fixture1']
         });
         expect(mySlot).to.eql(['testing 1 2 3']);
     });
@@ -101,7 +100,7 @@ describe('Application', function() {
         closables.push(() => close());
 
         const page = await browserProvider.loadPage(
-            `http://localhost:${port}/main.html?feature=variant&config=variant2`
+            `http://localhost:${port}/main.html?feature=test/variant&config=test/variant2`
         );
         closables.push(() => page.close());
 
