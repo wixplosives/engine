@@ -264,7 +264,10 @@ function getWebWebpackConfig(
                 {
                     test: /\.tsx?$/,
                     exclude: /\.d\.ts$/,
-                    loader: '@ts-tools/webpack-loader'
+                    loader: '@ts-tools/webpack-loader',
+                    options: {
+                        typeCheck: false
+                    }
                 },
                 {
                     test: /\.css$/,
@@ -328,7 +331,10 @@ function getNodeWebpackConfig(
                 {
                     test: /\.tsx?$/,
                     exclude: /\.d\.ts$/,
-                    loader: '@ts-tools/webpack-loader'
+                    loader: '@ts-tools/webpack-loader',
+                    options: {
+                        typeCheck: false
+                    }
                 }
             ]
         },
