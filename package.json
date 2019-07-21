@@ -1,6 +1,7 @@
 {
   "name": "engine",
   "workspaces": [
+    "examples/*",
     "packages/*"
   ],
   "scripts": {
