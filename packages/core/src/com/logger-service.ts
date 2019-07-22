@@ -1,8 +1,8 @@
 // tslint:disable: no-console
 
-import { LoggerTransport, LogLevel } from '../../src';
 import { LogMessage, LogMetadata } from '../common-types';
 import { EventEmitter } from '../event-emitter';
+import { LoggerTransport, LogLevel } from '../types';
 
 export interface LogValueData {
     value: string;
