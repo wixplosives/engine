@@ -6,7 +6,7 @@ export class RemoteNodeEnvironment {
     private worker: Worker | undefined;
 
     public async start() {
-        this.worker = new Worker(join(__dirname, 'run-node-server'));
+        this.worker = new Worker(join(__dirname, 'run-node-server.js'));
         return this.getWorkerPort();
     }
 
