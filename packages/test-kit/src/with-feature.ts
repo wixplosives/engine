@@ -15,6 +15,10 @@ const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
 export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {}
 
+export interface IGetLoadedFeatureOptions extends IFeatureTarget {
+    allowErrors?: boolean;
+}
+
 let browser: puppeteer.Browser | null = null;
 
 after('close puppeteer browser, if open', async () => {
@@ -40,6 +44,8 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
     let featureUrl: string;
     let engineStartProcess: ChildProcess;
+    let allowErrors = false;
+    const capturedErrors: Error[] = [];
 
     before('start application', async function() {
         this.timeout(60_000 * 4); // 4 minutes
@@ -81,6 +87,15 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
     const pages = new Set<puppeteer.Page>();
     afterEach('close pages', () => Promise.all(Array.from(pages).map(page => page.close())).then(() => pages.clear()));
+    afterEach('verify no page errors', () => {
+        if (capturedErrors.length) {
+            if (!allowErrors) {
+                throw new Error(`there were uncaught page errors during the test:\n${capturedErrors.join('\n')}`);
+            }
+            capturedErrors.length = 0;
+        }
+        allowErrors = false;
+    });
 
     after(async function() {
         this.timeout(60_000);
@@ -91,8 +106,9 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
         async getLoadedFeature(
             {
                 featureName: targetFeatureName = featureName,
-                configName: targetConfigName = configName
-            }: IFeatureTarget = {},
+                configName: targetConfigName = configName,
+                allowErrors: targetAllowErrors = false
+            }: IGetLoadedFeatureOptions = {},
             options?: puppeteer.DirectNavigationOptions
         ) {
             if (!browser) {
@@ -101,6 +117,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             if (!engineStartProcess) {
                 throw new Error('Engine HTTP server is closed!');
             }
+            allowErrors = targetAllowErrors;
             engineStartProcess.send({
                 id: 'run-feature',
                 payload: { configName, featureName, projectPath }
@@ -120,9 +137,13 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             });
             const page = await browser.newPage();
             pages.add(page);
-            // tslint:disable-next-line: no-console
-            page.on('pageerror', e => console.error(e));
+            page.on('pageerror', e => {
+                capturedErrors.push(e);
+                // tslint:disable-next-line: no-console
+                console.error(e);
+            });
             const response = await page.goto(featureUrl + search, options);
+
             return { page, response };
         }
     };
