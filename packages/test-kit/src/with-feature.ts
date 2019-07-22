@@ -89,10 +89,12 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     afterEach('close pages', () => Promise.all(Array.from(pages).map(page => page.close())).then(() => pages.clear()));
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
-            if (!allowErrors) {
-                throw new Error(`there were uncaught page errors during the test:\n${capturedErrors.join('\n')}`);
-            }
+            const errorsText = capturedErrors.join('\n');
             capturedErrors.length = 0;
+            if (!allowErrors) {
+                allowErrors = false;
+                throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
+            }
         }
         allowErrors = false;
     });
