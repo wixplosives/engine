@@ -115,8 +115,10 @@ export interface ServerEnvironmentOptions {
     projectPath: string;
 }
 
+export type IEnvironmentMessageID = 'start' | 'close' | 'port';
+
 export interface ICommunicationMessage {
-    id: 'start' | 'close' | 'port';
+    id: IEnvironmentMessageID;
 }
 
 export interface IEnvironmentPortMessage extends ICommunicationMessage {

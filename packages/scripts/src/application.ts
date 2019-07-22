@@ -12,13 +12,11 @@ import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-import { Worker } from 'worker_threads';
 
-import { join } from 'path';
 import { engineDevMiddleware } from './engine-dev-middleware';
 import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
 import { FeatureLocator } from './engine-utils/feature-locator';
-import { ICommunicationMessage, IEnvironmentMessage, isPortMessage } from './types';
+import { RemoteNodeEnvironment } from './remote-node-environment';
 import { EngineEnvironmentEntry, FeatureMapping, LinkInfo } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { rimraf } from './utils/rimraf';
@@ -67,8 +65,8 @@ export class Application {
         const { environments, featureMapping, features } = this.prepare();
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const worker = new Worker(join(__dirname, 'run-node-server.js'));
-        const environmentPort: number = await this.getEnvironmentPort(worker);
+        const remoteNodeEnvironment = new RemoteNodeEnvironment();
+        const environmentPort: number = await remoteNodeEnvironment.start();
         const compiler = webpack(this.createConfig(environments, environmentPort));
 
         app.use('/favicon.ico', (_req, res) => {
@@ -113,8 +111,7 @@ export class Application {
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
             const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
-
-            worker.postMessage({
+            remoteNodeEnvironment.postMessage({
                 id: 'start',
                 data: {
                     environments,
@@ -126,16 +123,10 @@ export class Application {
             });
 
             return {
-                close: () => {
-                    return new Promise<void>(resolve => {
-                        worker.postMessage({ id: 'close' });
-                        worker.on('message', (message: IEnvironmentMessage) => {
-                            if (message.id === 'close') {
-                                worker.terminate();
-                                resolve();
-                            }
-                        });
-                    });
+                close: async () => {
+                    remoteNodeEnvironment.postMessage({ id: 'close' });
+                    await remoteNodeEnvironment.waitForMessage('close');
+                    remoteNodeEnvironment.dispose();
                 }
             };
         };
@@ -148,16 +139,6 @@ export class Application {
                 await new Promise(res => httpServer.close(res));
             }
         };
-    }
-
-    private async getEnvironmentPort(worker: Worker): Promise<number> {
-        return await new Promise(resolve => {
-            worker.on('message', (message: ICommunicationMessage) => {
-                if (isPortMessage(message)) {
-                    resolve(message.port);
-                }
-            });
-        });
     }
 
     private prepare(buildSingleFeature: boolean = false, featureName?: string, configName?: string) {
