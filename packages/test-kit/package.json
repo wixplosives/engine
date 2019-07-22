@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "scripts": {
