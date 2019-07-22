@@ -10,14 +10,15 @@ import '@ts-tools/node/fast';
 import fs from '@file-services/node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
-import io from 'socket.io';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
+import { Worker } from 'worker_threads';
 
+import { join } from 'path';
 import { engineDevMiddleware } from './engine-dev-middleware';
 import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
 import { FeatureLocator } from './engine-utils/feature-locator';
-import { initEnvironmentServer } from './environment-socket-server';
+import { ICommunicationMessage, IEnvironmentMessage, isPortMessage } from './types';
 import { EngineEnvironmentEntry, FeatureMapping, LinkInfo } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { rimraf } from './utils/rimraf';
@@ -66,7 +67,9 @@ export class Application {
         const { environments, featureMapping, features } = this.prepare();
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const compiler = webpack(this.createConfig(environments, port));
+        const worker = new Worker(join(__dirname, 'run-node-server.js'));
+        const environmentPort: number = await this.getEnvironmentPort(worker);
+        const compiler = webpack(this.createConfig(environments, environmentPort));
 
         app.use('/favicon.ico', (_req, res) => {
             res.status(204); // No Content
@@ -107,23 +110,32 @@ export class Application {
         console.log(`Listening:`);
         console.log(`http://localhost:${port}/`);
         configLinks.forEach(({ url }) => console.log(url));
-        const socketServer = io(httpServer);
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
             const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
 
-            const environmentServer = initEnvironmentServer(
-                socketServer,
-                environments,
-                featureMapping,
-                featureName,
-                configName,
-                projectDirectoryPath
-            );
+            worker.postMessage({
+                id: 'start',
+                data: {
+                    environments,
+                    featureMapping,
+                    featureName,
+                    configName,
+                    projectPath: projectDirectoryPath
+                }
+            });
 
             return {
-                close: async () => {
-                    await environmentServer.dispose();
+                close: () => {
+                    return new Promise<void>(resolve => {
+                        worker.postMessage({ id: 'close' });
+                        worker.on('message', (message: IEnvironmentMessage) => {
+                            if (message.id === 'close') {
+                                worker.terminate();
+                                resolve();
+                            }
+                        });
+                    });
                 }
             };
         };
@@ -133,10 +145,19 @@ export class Application {
             runFeature,
             async close() {
                 await new Promise(res => dev.close(res));
-                await new Promise(res => socketServer.close(res));
                 await new Promise(res => httpServer.close(res));
             }
         };
+    }
+
+    private async getEnvironmentPort(worker: Worker): Promise<number> {
+        return await new Promise(resolve => {
+            worker.on('message', (message: ICommunicationMessage) => {
+                if (isPortMessage(message)) {
+                    resolve(message.port);
+                }
+            });
+        });
     }
 
     private prepare(buildSingleFeature: boolean = false, featureName?: string, configName?: string) {

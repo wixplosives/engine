@@ -106,3 +106,35 @@ export interface IFeatureMessage {
 export interface IPortMessage {
     port: number;
 }
+
+export interface ServerEnvironmentOptions {
+    environments: EngineEnvironmentEntry[];
+    featureMapping: FeatureMapping;
+    featureName: string | undefined;
+    configName: string | undefined;
+    projectPath: string;
+}
+
+export interface ICommunicationMessage {
+    id: 'start' | 'close' | 'port';
+}
+
+export interface IEnvironmentPortMessage extends ICommunicationMessage {
+    id: 'port';
+    port: number;
+}
+
+export interface IEnvironmentMessage extends ICommunicationMessage {
+    envName: string;
+}
+
+export interface IEnvironmaneStartMessage extends ICommunicationMessage {
+    id: 'start';
+    data: ServerEnvironmentOptions;
+}
+
+export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
+    message.id === 'start';
+
+export const isPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
+    message.id === 'port';
