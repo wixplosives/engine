@@ -25,7 +25,6 @@ export class EnvironmentEntryBuilder {
         /* Load config */
         const currentFeature = require(mainFeature.featureFilePath).default;
         const currentConfig = require(mainFeature.configurations[configToLoad]).default;
-
         /* Run the engine */
         return {
             engine: run([currentFeature], [...currentConfig, ...overrideConfig]),

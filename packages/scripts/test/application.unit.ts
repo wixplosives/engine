@@ -2,6 +2,7 @@ import { nodeFs } from '@file-services/node';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { join } from 'path';
+import { waitFor } from 'promise-assist';
 import { Application } from '../src/application';
 const { directoryExists } = nodeFs.promises;
 
@@ -116,5 +117,22 @@ describe('Application', function() {
             tags: ['variant', '2']
         });
         expect(mySlot).to.eql(['testing 1 2 3']);
+    });
+
+    it(`run feature and serves node environments`, async () => {
+        const fixtureBase = join(__dirname, './fixtures/engine-local-feature');
+        const app = new Application(fixtureBase);
+        const { close, port, runFeature } = await app.start();
+        closables.push(() => close());
+        const { close: closeFeature } = await runFeature({
+            featureName: 'x',
+            configName: 'dev'
+        });
+        closables.push(closeFeature);
+        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html?feature=x&config=dev`);
+        closables.push(() => page.close());
+        await waitFor(async () => {
+            expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
+        });
     });
 });

@@ -111,22 +111,33 @@ export class Application {
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
             const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
-            remoteNodeEnvironment.postMessage({
-                id: 'start',
-                data: {
-                    environments,
-                    featureMapping,
-                    featureName,
-                    configName,
-                    projectPath: projectDirectoryPath
-                }
-            });
+            const nodeEnvironments = environments.filter(({ target }) => target === 'node');
+            const closeEnvironmentsHandlers: Array<() => Promise<void>> = [];
+            for (const environment of nodeEnvironments) {
+                const envName = environment.name;
+                remoteNodeEnvironment.postMessage({
+                    id: 'start',
+                    envName,
+                    data: {
+                        environment,
+                        featureMapping,
+                        featureName,
+                        configName,
+                        projectPath: projectDirectoryPath
+                    }
+                });
+                await remoteNodeEnvironment.waitForMessage('start');
+                closeEnvironmentsHandlers.push(async () => {
+                    remoteNodeEnvironment.postMessage({ id: 'close', envName });
+                    await remoteNodeEnvironment.waitForMessage('close');
+                });
+            }
 
             return {
                 close: async () => {
-                    remoteNodeEnvironment.postMessage({ id: 'close' });
-                    await remoteNodeEnvironment.waitForMessage('close');
-                    remoteNodeEnvironment.dispose();
+                    for (const handler of closeEnvironmentsHandlers) {
+                        await handler();
+                    }
                 }
             };
         };
@@ -136,6 +147,7 @@ export class Application {
             runFeature,
             async close() {
                 await new Promise(res => dev.close(res));
+                remoteNodeEnvironment.dispose();
                 await new Promise(res => httpServer.close(res));
             }
         };

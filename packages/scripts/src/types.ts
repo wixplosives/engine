@@ -108,7 +108,7 @@ export interface IPortMessage {
 }
 
 export interface ServerEnvironmentOptions {
-    environments: EngineEnvironmentEntry[];
+    environment: EngineEnvironmentEntry;
     featureMapping: FeatureMapping;
     featureName: string | undefined;
     configName: string | undefined;

@@ -22,6 +22,7 @@ async function createWorkerProtocol() {
     parentPort!.on('message', async (message: IEnvironmentMessage) => {
         if (isEnvironmentStartMessage(message)) {
             environments[message.envName] = initEnvironmentServer(socketServer, message.data);
+            parentPort!.postMessage({ id: 'start' });
         } else {
             if (environments[message.envName]) {
                 await environments[message.envName].dispose();
@@ -36,41 +37,38 @@ async function createWorkerProtocol() {
  */
 export function initEnvironmentServer(
     socketServer: Server,
-    { environments, featureMapping, featureName, configName, projectPath }: ServerEnvironmentOptions
+    { environment, featureMapping, featureName, configName, projectPath }: ServerEnvironmentOptions
 ) {
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
-    const nodeEnvironments = environments.filter(({ target }) => target === 'node');
-    for (const { name, envFiles, contextFiles } of nodeEnvironments) {
-        const featureMap = featureName || Object.keys(featureMapping.mapping)[0];
-        const configMap = configName || Object.keys(featureMapping.mapping[featureMap].configurations)[0];
-        const contextMappings = featureMapping.mapping[featureMap].context;
-        const { engine, runningFeature } = new EnvironmentEntryBuilder().runEntry(
-            featureMap,
-            configMap,
-            { envFiles, featureMapping, contextFiles },
+    const { name, envFiles, contextFiles } = environment;
+    const featureMap = featureName || Object.keys(featureMapping.mapping)[0];
+    const configMap = configName || Object.keys(featureMapping.mapping[featureMap].configurations)[0];
+    const contextMappings = featureMapping.mapping[featureMap].context;
+    const { engine, runningFeature } = new EnvironmentEntryBuilder().runEntry(
+        featureMap,
+        configMap,
+        { envFiles, featureMapping, contextFiles },
+        [
+            COM.use({
+                config: {
+                    host: localDevHost,
+                    id: name,
+                    contextMappings
+                }
+            }),
             [
-                COM.use({
-                    config: {
-                        host: localDevHost,
-                        id: name,
-                        contextMappings
+                'project',
+                {
+                    fsProjectDirectory: {
+                        projectPath
                     }
-                }),
-                [
-                    'project',
-                    {
-                        fsProjectDirectory: {
-                            projectPath
-                        }
-                    }
-                ]
+                }
             ]
-        );
-        disposeHandlers.add(() => engine.dispose(runningFeature));
-    }
-
+        ]
+    );
+    disposeHandlers.add(() => engine.dispose(runningFeature));
     disposeHandlers.add(localDevHost.dispose.bind(localDevHost));
 
     return {
