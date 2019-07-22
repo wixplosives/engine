@@ -114,23 +114,15 @@ export class Application {
             const nodeEnvironments = environments.filter(({ target }) => target === 'node');
             const closeEnvironmentsHandlers: Array<() => Promise<void>> = [];
             for (const environment of nodeEnvironments) {
-                const envName = environment.name;
-                remoteNodeEnvironment.postMessage({
-                    id: 'start',
-                    envName,
-                    data: {
-                        environment,
-                        featureMapping,
-                        featureName,
-                        configName,
-                        projectPath: projectDirectoryPath
-                    }
-                });
-                await remoteNodeEnvironment.waitForMessage('start');
-                closeEnvironmentsHandlers.push(async () => {
-                    remoteNodeEnvironment.postMessage({ id: 'close', envName });
-                    await remoteNodeEnvironment.waitForMessage('close');
-                });
+                await this.startNodeEnvironment(
+                    environment,
+                    remoteNodeEnvironment,
+                    featureMapping,
+                    featureName,
+                    configName,
+                    projectDirectoryPath,
+                    closeEnvironmentsHandlers
+                );
             }
 
             return {
@@ -225,6 +217,33 @@ export class Application {
             outputPath: this.outputPath,
             currentConfigName,
             currentFeatureName
+        });
+    }
+    private async startNodeEnvironment(
+        environment: EngineEnvironmentEntry,
+        remoteNodeEnvironment: RemoteNodeEnvironment,
+        featureMapping: FeatureMapping,
+        featureName: string | undefined,
+        configName: string | undefined,
+        projectDirectoryPath: string,
+        closeEnvironmentsHandlers: Array<() => Promise<void>>
+    ) {
+        const envName = environment.name;
+        remoteNodeEnvironment.postMessage({
+            id: 'start',
+            envName,
+            data: {
+                environment,
+                featureMapping,
+                featureName,
+                configName,
+                projectPath: projectDirectoryPath
+            }
+        });
+        await remoteNodeEnvironment.waitForMessage('start');
+        closeEnvironmentsHandlers.push(async () => {
+            remoteNodeEnvironment.postMessage({ id: 'close', envName });
+            await remoteNodeEnvironment.waitForMessage('close');
         });
     }
 }
