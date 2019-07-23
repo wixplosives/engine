@@ -112,23 +112,24 @@ export class Application {
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
             const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
             const nodeEnvironments = environments.filter(({ target }) => target === 'node');
-            const closeEnvironmentsHandlers: Array<() => Promise<void>> = [];
+            const closeEnvironmentsHandlers: Array<{ close: () => Promise<void> }> = [];
             for (const environment of nodeEnvironments) {
-                await this.startNodeEnvironment(
-                    environment,
-                    remoteNodeEnvironment,
-                    featureMapping,
-                    featureName,
-                    configName,
-                    projectDirectoryPath,
-                    closeEnvironmentsHandlers
+                closeEnvironmentsHandlers.push(
+                    await this.startNodeEnvironment(
+                        environment,
+                        remoteNodeEnvironment,
+                        featureMapping,
+                        featureName,
+                        configName,
+                        projectDirectoryPath
+                    )
                 );
             }
 
             return {
                 close: async () => {
                     for (const handler of closeEnvironmentsHandlers) {
-                        await handler();
+                        await handler.close();
                     }
                 }
             };
@@ -225,8 +226,7 @@ export class Application {
         featureMapping: FeatureMapping,
         featureName: string | undefined,
         configName: string | undefined,
-        projectDirectoryPath: string,
-        closeEnvironmentsHandlers: Array<() => Promise<void>>
+        projectDirectoryPath: string
     ) {
         const envName = environment.name;
         remoteNodeEnvironment.postMessage({
@@ -241,9 +241,11 @@ export class Application {
             }
         });
         await remoteNodeEnvironment.waitForMessage('start');
-        closeEnvironmentsHandlers.push(async () => {
-            remoteNodeEnvironment.postMessage({ id: 'close', envName });
-            await remoteNodeEnvironment.waitForMessage('close');
-        });
+        return {
+            close: async () => {
+                remoteNodeEnvironment.postMessage({ id: 'close', envName });
+                await remoteNodeEnvironment.waitForMessage('close');
+            }
+        };
     }
 }
