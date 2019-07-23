@@ -123,12 +123,12 @@ describe('Application', function() {
         const fixtureBase = join(__dirname, './fixtures/engine-local-feature');
         const app = new Application(fixtureBase);
         const { close, port, runFeature } = await app.start();
-        closables.push(() => close());
         const { close: closeFeature } = await runFeature({
             featureName: 'x',
             configName: 'dev'
         });
         closables.push(closeFeature);
+        closables.push(() => close());
         const page = await browserProvider.loadPage(`http://localhost:${port}/main.html?feature=x&config=dev`);
         closables.push(() => page.close());
         await waitFor(async () => {
