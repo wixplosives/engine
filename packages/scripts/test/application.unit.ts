@@ -7,7 +7,7 @@ import { Application } from '../src/application';
 const { directoryExists } = nodeFs.promises;
 
 describe('Application', function() {
-    this.timeout(10_000);
+    this.timeout(20_000);
 
     const closables: Array<() => unknown> = [];
     const browserProvider = createBrowserProvider();
