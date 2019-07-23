@@ -37,6 +37,7 @@
     "@types/webpack": "^4.32.0",
     "@types/webpack-dev-middleware": "^2.0.3",
     "@types/webpack-sources": "^0.1.5",
+    "@types/webpack-virtual-modules": "^0.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "deindent": "^0.1.0",
