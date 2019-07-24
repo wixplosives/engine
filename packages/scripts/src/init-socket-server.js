@@ -6,5 +6,5 @@ if (__dirname.includes(normalize('/packages/scripts'))) {
     require('@ts-tools/node/r');
 }
 
-require(join(__dirname, './init-socket-server'));
+require(join(__dirname, './run-socket-server'));
 
