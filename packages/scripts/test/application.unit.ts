@@ -119,7 +119,8 @@ describe('Application', function() {
         expect(mySlot).to.eql(['testing 1 2 3']);
     });
 
-    it(`run feature and serves node environments`, async () => {
+    it(`run feature and serves node environments`, async function() {
+        this.timeout(30_000);
         const fixtureBase = join(__dirname, './fixtures/engine-local-feature');
         const app = new Application(fixtureBase);
         const { close, port, runFeature } = await app.start();
