@@ -4,4 +4,4 @@ export * from './application';
 export * from './build-constants';
 export * from './types';
 export * from './remote-node-environment';
-export * from './environment-socket-server';
+export * from './run-socket-server';

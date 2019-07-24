@@ -66,7 +66,7 @@ export class Application {
         const { environments, featureMapping, features } = this.prepare();
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const remoteNodeEnvironment = new RemoteNodeEnvironment(join(__dirname, 'environment-socket-server.js'));
+        const remoteNodeEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
         const environmentPort = await remoteNodeEnvironment.start();
         const compiler = webpack(this.createConfig(environments, environmentPort));
 

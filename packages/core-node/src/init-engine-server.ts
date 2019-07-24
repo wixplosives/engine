@@ -4,14 +4,18 @@ import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import { join } from 'path';
 
+export interface EnvironmentDescription {
+    env: EnvironmentLiveServer<string>;
+    entryPath: string;
+}
+
 export async function initEngineServer(
     preferredPort: number,
     clientEntry: string,
     pathToEditorDist: string,
-    serverEntries?: string[],
     clientConfig: unknown[] = [],
     serverConfig: unknown[] = [],
-    serverEnvironment?: EnvironmentLiveServer<string>
+    serverEnvironments?: EnvironmentDescription[]
 ) {
     const app = express();
     app.use(express.static(pathToEditorDist));
@@ -31,19 +35,26 @@ export async function initEngineServer(
         response.status(200).end();
     });
 
-    if (serverEnvironment && serverEntries) {
-        const remoteEnvironment = new RemoteNodeEnvironment(join(__dirname, 'run-environment-server.js'));
-        const environmentPort = await remoteEnvironment.start();
-        remoteEnvironment.postMessage({
-            id: 'start-static',
-            envName: serverEnvironment.env,
-            entityPaths: serverEntries,
-            serverConfig
-        });
+    if (serverEnvironments) {
+        let topology: Record<string, string> = {};
+        for (const {
+            entryPath,
+            env: { env: name, getLocalTopology }
+        } of serverEnvironments) {
+            const remoteEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-environment-server.js'));
+            const environmentPort = await remoteEnvironment.start();
+            topology = { ...getLocalTopology(environmentPort), ...topology };
+            remoteEnvironment.postMessage({
+                id: 'start-static',
+                envName: name,
+                entityPath: entryPath,
+                serverConfig
+            });
+        }
         clientConfig.push(
             COM.use({
                 config: {
-                    topology: serverEnvironment.getLocalTopology(environmentPort)
+                    topology
                 }
             })
         );
