@@ -81,6 +81,15 @@ export interface EntityMap {
     [key: string]: AnyEntity;
 }
 
+export interface ISchemaReflectionOptions {
+    baseDir?: string;
+}
+
+export interface EngineBuildFlags {
+    SchemaReflection?: ISchemaReflectionOptions;
+    MdReflection?: {};
+}
+
 export type EnvironmentFilter = string | { env: string };
 export type NormalizeEnvironmentFilter<T extends EnvironmentFilter> = T extends { env: infer U1 } ? U1 : T;
 
@@ -143,6 +152,7 @@ export interface FeatureDef<
     dependencies?: Deps;
     api: API;
     context?: EnvironmentContext;
+    flags?: EngineBuildFlags;
 }
 
 export type UnknownFeatureDef = FeatureDef<string, SomeFeature[], EntityMap, Record<string, Context<any>>>;

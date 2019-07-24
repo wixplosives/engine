@@ -3,6 +3,7 @@ import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN } from '../symbols';
 import {
     DisposableContext,
     DisposeFunction,
+    EngineBuildFlags,
     EntityMap,
     EnvironmentFilter,
     FeatureDef,
@@ -66,6 +67,7 @@ export class Feature<
     public dependencies: Deps;
     public api: API;
     public context: EnvironmentContext;
+    public flags: EngineBuildFlags;
     private environmentIml = new Set<string>();
     private setupHandlers = new Set<SetupHandler<AllEnvironments, ID, Deps, API, EnvironmentContext>>();
     private contextHandlers = new Map<string | number | symbol, () => unknown>();
@@ -74,6 +76,7 @@ export class Feature<
         this.dependencies = def.dependencies || (([] as IDTagArray) as Deps);
         this.api = def.api || (({} as EntityMap) as API);
         this.context = def.context || ({} as EnvironmentContext);
+        this.flags = def.flags || ({} as EngineBuildFlags);
     }
     public setup<EnvFilter extends EnvironmentFilter>(
         env: EnvFilter,
