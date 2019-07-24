@@ -235,7 +235,7 @@ function createStaticEntries({
 
 function getWebWebpackConfig(
     mode: 'production' | 'development',
-    basePath: string,
+    contextPath: string,
     outputPath: string,
     virtualEntries: Record<string, string>,
     virtualSources: Record<string, string>,
@@ -247,7 +247,7 @@ function getWebWebpackConfig(
         mode,
         target: 'web',
         devtool: 'source-map',
-        context: basePath,
+        context: contextPath,
         entry: virtualEntries,
         output: {
             path: outputPath,

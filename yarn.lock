@@ -1107,6 +1107,11 @@
   dependencies:
     "@types/ci-info" "*"
 
+"@types/json-schema@^7.0.3":
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.3.tgz#bdfd69d61e464dcc81b25159c270d75a73c1a636"
+  integrity sha512-Il2DtDVRGDcqjDtE+rF8iqg1CArehSK84HZJCT7AMITlyXRBpuPhqGLDQMowraqqu1coEaimg4ZOqggt6L6L+A==
+
 "@types/memory-fs@*":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@types/memory-fs/-/memory-fs-0.3.2.tgz#5d4753f9b390cb077c8c8af97bc96463399ceccd"
@@ -1416,6 +1421,36 @@
     "@webassemblyjs/ast" "1.8.5"
     "@webassemblyjs/wast-parser" "1.8.5"
     "@xtuc/long" "4.2.2"
+
+"@wixc3/schema-extract-loader@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@wixc3/schema-extract-loader/-/schema-extract-loader-2.0.3.tgz#4942b5a84aa805ab3e2f3cd1492945cc50b54d08"
+  integrity sha512-QQ8Mq5gfSYYpWN7L3wNIu4vSpzYvQpEkqEYH2jXE8NQ3/uItHbsI43UnGBPD10LhIYqMm8DtfYcAiT/Lerg+AA==
+  dependencies:
+    "@ts-tools/service" "^2.0.4"
+    "@wixc3/typescript-schema-extract" "^4.1.1"
+    loader-utils "^1.2.3"
+
+"@wixc3/schema-registry@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@wixc3/schema-registry/-/schema-registry-2.0.3.tgz#5ea1f8d74c8cf45830eef0f9244a728b1ac1ce68"
+  integrity sha512-vQw5LqdLtnLwY32diINKVLLMx5Lq4TgW5mh2tk9/3bLG9xYHIKqpeWBF6VU1v0MdRS8af80eTwZTRnp9m9HKuQ==
+  dependencies:
+    "@wixc3/typescript-schema-extract" "^4.1.1"
+
+"@wixc3/typescript-schema-core@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/typescript-schema-core/-/typescript-schema-core-1.0.1.tgz#295ed25cd32d0c044aa67febd1cebe3939e42d24"
+  integrity sha512-CHzM8jcKJLeg6KqQ52XFnW06x66kPuWvv1QOfDceX7rQpta6ugX1hLvJupEzXo4rZx/LWKGtPtYdoI/kGyqV2Q==
+  dependencies:
+    "@types/json-schema" "^7.0.3"
+
+"@wixc3/typescript-schema-extract@^4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/typescript-schema-extract/-/typescript-schema-extract-4.1.1.tgz#d5ad73af45dbbc7a7db6f9a147d8e025169a351e"
+  integrity sha512-UbUKdlMPR/Xvagm+NRvlwI6iajqCWhFFXRMgC9eJOtoNzRwRHgisLH4/tcyysxd0RLRJmeQ+LUNWLqrMalq7Kg==
+  dependencies:
+    "@wixc3/typescript-schema-core" "^1.0.1"
 
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
@@ -7440,7 +7475,7 @@ typescript-type-utils@^0.0.3:
   resolved "https://registry.yarnpkg.com/typescript-type-utils/-/typescript-type-utils-0.0.3.tgz#b4020c332046c60a6c9e2b9b4d1c6e27694c6d82"
   integrity sha512-nb0M2jqm95IT9nLKbIf3Lu7ib0fY2mR4/D31YrS+neqtV2yC7iCGrc6A0VfTgiyD9pj0KGlEwg/EHGYEigGpTQ==
 
-typescript@~3.5.3:
+typescript@^3.5.3, typescript@~3.5.3:
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.5.3.tgz#c830f657f93f1ea846819e929092f5fe5983e977"
   integrity sha512-ACzBtm/PhXBDId6a6sDJfroT2pOWt/oOnk4/dElG5G33ZL776N3Y6/6bKZJBFpd+b05F3Ct9qDjMeJmRWtE2/g==

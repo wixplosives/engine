@@ -1,8 +1,10 @@
-import { run, TopLevelConfig } from '@wixc3/engine-core';
+import { EngineBuildFlags, run, TopLevelConfig } from '@wixc3/engine-core';
 import deindent from 'deindent';
+import { join } from 'path';
 import { CONFIG_QUERY_PARAM, CORE_PACKAGE, FEATURE_QUERY_PARAM } from '../build-constants';
 import { EngineEnvironmentDef, FeatureMapping, JSRuntime } from '../types';
 
+type BuildFlagsImportFunctions = (featureName: string, featureFilePath: string) => string;
 /**
  * Builder to generate engine entry files
  */
@@ -61,7 +63,7 @@ export class EnvironmentEntryBuilder {
         
         async function runEngine(options = new Map(), overrideConfig = []){
             /* Available features */
-            ${this.createFeaturesObject(featureMapping)}
+            ${this.createFeaturesObject(featureMapping, name)}
             /* Available configurations */
             const loadEmpty = () => Promise.resolve({default: []});
             ${this.createConfigObject(featureMapping)}
@@ -110,11 +112,15 @@ export class EnvironmentEntryBuilder {
         envFiles.forEach(filePath => imports.push(esmImport({ from: filePath })));
 
         imports.push(esmImport({ from: CORE_PACKAGE, names: ['run', 'COM'] }));
-
+        const loadersImportFunctions = this.getLoadersForFlags(featureMapping.mapping[currentFeatureName].flags);
         const entryCode = `
 
         /* Environment: "${name}" | Target: "${target}" */
         ${imports.join('\n')}
+
+        ${loadersImportFunctions.map(loaderImport =>
+            loaderImport(currentFeatureName, featureMapping.mapping[currentFeatureName].featureFilePath)
+        )}
 
         async function runEngine(overrideConfig = []){
             const ${currentFeatureSymbol} = await import(/* webpackChunkName: "${currentFeatureName}" */ ${JSON.stringify(
@@ -144,20 +150,62 @@ export class EnvironmentEntryBuilder {
         return deindent(entryCode);
     }
 
-    private createFeaturesObject(featureMapping: FeatureMapping) {
+    private createFeaturesObject(featureMapping: FeatureMapping, envName: string) {
         const props: Array<{ key: string; value: string }> = [];
         for (const [featureName, singleFeature] of Object.entries(featureMapping.mapping)) {
             props.push({
                 key: featureName,
                 value: `{
-                    load: () => import(/* webpackChunkName: "${featureName}" */ ${JSON.stringify(
+                    load: async () => {
+                        ${
+                            envName === 'main'
+                                ? this.getLoadersForFlags(singleFeature.flags).map(importFunc =>
+                                      importFunc(featureName, singleFeature.featureFilePath)
+                                  )
+                                : ''
+                        }
+                        return import(/* webpackChunkName: "${featureName}" */ ${JSON.stringify(
                     singleFeature.featureFilePath
-                )}),
+                )});
+                    },
                     defaultConfig: "${Object.keys(singleFeature.configurations)[0]}"
                 }`
             });
         }
         return declareObject('features', props);
+    }
+
+    private getLoadersForFlags(buildFlags: EngineBuildFlags): BuildFlagsImportFunctions[] {
+        const loaderImportFunctions = [];
+        for (const [flagName, loaderParams = {}] of Object.entries(buildFlags)) {
+            if (flagName === 'SchemaReflection') {
+                loaderImportFunctions.push((_featureName: string, featureFilePath: string) => {
+                    const loaderQueryParams = new URLSearchParams({
+                        ...loaderParams,
+                        ...{ baseDir: join(__dirname, '..', '..', '..', '..') }
+                    }).toString();
+
+                    return `
+                        await import('!@wixc3/schema-extract-loader?${loaderQueryParams}!${JSON.stringify(
+                        featureFilePath
+                    ).slice(1, -1)}');`;
+                });
+            } else {
+                loaderImportFunctions.push((_featureName: string, _featureFilePath: string) => {
+                    const stringifiedLoaderParams = JSON.stringify(loaderParams);
+                    // tslint:disable-next-line:no-console
+                    console.error(
+                        `loader for ${flagName} ${
+                            stringifiedLoaderParams === JSON.stringify({})
+                                ? ''
+                                : `with paramerers: ${stringifiedLoaderParams}`
+                        } is not supported`
+                    );
+                    return ``;
+                });
+            }
+        }
+        return loaderImportFunctions;
     }
 
     private createConfigObject(featureMapping: FeatureMapping) {

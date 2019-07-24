@@ -23,7 +23,8 @@ describe('environment-entry-builder (web target)', () => {
                             },
                             context: {
                                 envA: 'b'
-                            }
+                            },
+                            flags: {}
                         }
                     },
                     bootstrapFeatures: []
@@ -68,7 +69,8 @@ describe('environment-entry-builder (web target)', () => {
                             },
                             context: {
                                 envA: 'b'
-                            }
+                            },
+                            flags: {}
                         }
                     },
                     bootstrapFeatures: []

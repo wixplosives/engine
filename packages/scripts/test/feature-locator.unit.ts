@@ -87,7 +87,8 @@ describe('FeatureLocator', () => {
                     'fixture-y': '/fixtures/fixture-y.config.ts'
                 },
                 featureFilePath: '/fixtures/fixture.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             }
         });
     });
@@ -119,7 +120,8 @@ describe('FeatureLocator', () => {
                     'fixture-y': '/fixtures/fixture-y.config.ts'
                 },
                 featureFilePath: '/fixtures/fixture.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             },
             fixture2: {
                 configurations: {
@@ -127,7 +129,8 @@ describe('FeatureLocator', () => {
                     'fixture-y': '/fixtures/fixture-y.config.ts'
                 },
                 featureFilePath: '/fixtures/fixture2.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             }
         });
     });
@@ -161,7 +164,8 @@ describe('FeatureLocator', () => {
                     'fixture-y': '/fixtures/fixture-y.config.ts'
                 },
                 featureFilePath: '/fixtures/fixture.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             },
             fixture2: {
                 configurations: {
@@ -169,7 +173,8 @@ describe('FeatureLocator', () => {
                     'inner-fixture2-y': '/fixtures/inner/inner-fixture2-y.config.ts'
                 },
                 featureFilePath: '/fixtures/inner/fixture2.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             }
         });
     });
@@ -194,7 +199,8 @@ describe('FeatureLocator', () => {
                     'fixture-y': '/fixtures/fixture-y.config.ts'
                 },
                 featureFilePath: '/src/test-feature.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             }
         });
     });
@@ -225,21 +231,24 @@ describe('FeatureLocator', () => {
                     'feature1-config': '/fixtures/feature1/feature1-config.config.ts'
                 },
                 featureFilePath: '/fixtures/feature1/feature1.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             },
             'my-thing': {
                 configurations: {
                     'my-config': '/fixtures/my-config.config.ts'
                 },
                 featureFilePath: '/fixtures/my-thing.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             },
             package: {
                 configurations: {
                     'feature2-config': '/fixtures/feature2/feature2-config.config.ts'
                 },
                 featureFilePath: '/src/package.feature.ts',
-                context: {}
+                context: {},
+                flags: {}
             }
         });
     });

@@ -26,6 +26,8 @@
     "@ts-tools/webpack-loader": "^0.8.12",
     "@wixc3/engine-core": "^2.0.2",
     "@wixc3/engine-core-node": "^2.0.2",
+    "@wixc3/schema-extract-loader": "^2.0.3",
+    "@wixc3/schema-registry": "^2.0.3",
     "commander": "^2.20.0",
     "create-listening-server": "^0.1.2",
     "deindent": "^0.1.0",
@@ -34,6 +36,7 @@
     "html-webpack-plugin": "^4.0.0-beta.8",
     "rimraf": "^2.6.3",
     "socket.io": "^2.2.0",
+    "typescript": "^3.5.3",
     "webpack": "^4.37.0",
     "webpack-dev-middleware": "^3.7.0",
     "webpack-virtual-modules": "^0.1.10"

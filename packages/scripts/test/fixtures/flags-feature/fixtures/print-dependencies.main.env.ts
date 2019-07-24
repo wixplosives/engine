@@ -1,6 +1,6 @@
-import sampleFeature from './print-dependencies.feature';
-import { mainEnv } from '../feature/x.feature';
 import { GlobalSchemaRegistry } from '@wixc3/schema-registry';
+import { mainEnv } from '../feature/x.feature';
+import sampleFeature from './print-dependencies.feature';
 
 sampleFeature.setup(mainEnv, ({ run }) => {
     run(() => {

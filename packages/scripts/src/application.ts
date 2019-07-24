@@ -14,6 +14,7 @@ import io from 'socket.io';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
+import { join } from 'path';
 import { engineDevMiddleware } from './engine-dev-middleware';
 import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
 import { FeatureLocator } from './engine-utils/feature-locator';
@@ -152,7 +153,7 @@ export class Application {
         const featureLocator = new FeatureLocator(directoryPath, fs);
         const featureMapping = featureLocator.createFeatureMapping(buildSingleFeature, featureName, configName);
         const features = featureLocator.locateFeatureEntities(featureMapping.bootstrapFeatures);
-        featureLocator.addContextsToFeatureMapping(features, featureMapping);
+        featureLocator.updateFeatureMappingFromFeatureDependencies(features, featureMapping);
         const environments = featureLocator.createEnvironmentsEntries(features, featureMapping);
         console.timeEnd('Analyzing Features.');
         return { environments, features, featureMapping };
@@ -195,7 +196,7 @@ export class Application {
         return createEnvWebpackConfig({
             port,
             environments,
-            basePath: this.basePath,
+            basePath: join(__dirname, '..', '..', '..'),
             outputPath: this.outputPath
         });
     }

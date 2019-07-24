@@ -1,4 +1,4 @@
-import { AsyncEnvironment, EnvironmentContext, SomeFeature } from '@wixc3/engine-core';
+import { AsyncEnvironment, EngineBuildFlags, EnvironmentContext, SomeFeature } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -45,12 +45,14 @@ export interface WebpackEnvOptions {
     contextFiles?: Set<string>;
     basePath: string;
     outputPath: string;
+    featureBuildFlags?: EngineBuildFlags;
 }
 
 export interface SingleFeatureWithConfig {
     featureFilePath: string;
     configurations: { [configName: string]: string };
     context: { [contextName: string]: string };
+    flags: EngineBuildFlags;
 }
 
 export type SymbolList<T> = Array<{ name: string; value: T }>;

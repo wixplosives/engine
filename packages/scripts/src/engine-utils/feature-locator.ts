@@ -1,6 +1,7 @@
 import { IFileSystem } from '@file-services/types';
 import {
     AsyncEnvironment,
+    EngineBuildFlags,
     Environment,
     EnvironmentContext,
     EnvironmentTypes,
@@ -166,7 +167,8 @@ export class FeatureLocator {
                         acc[featureName] = {
                             featureFilePath,
                             configurations,
-                            context: {}
+                            context: {},
+                            flags: {}
                         };
                     }
                 }
@@ -250,7 +252,10 @@ export class FeatureLocator {
         return [...features];
     }
 
-    public addContextsToFeatureMapping(evaluatedFeatures: EvaluatedFeature[], featureMapping: FeatureMapping) {
+    public updateFeatureMappingFromFeatureDependencies(
+        evaluatedFeatures: EvaluatedFeature[],
+        featureMapping: FeatureMapping
+    ) {
         for (const featureMapKey of Object.keys(featureMapping.mapping)) {
             const featureFilePath = featureMapping.mapping[featureMapKey].featureFilePath;
             const feature = evaluatedFeatures.find(({ filePath }) => filePath === featureFilePath)!;
@@ -259,29 +264,32 @@ export class FeatureLocator {
                 feature.features[0].value,
                 ...feature.features[0].value.dependencies
             ];
-
+            let flags: EngineBuildFlags = {};
             const visitedDeps: Record<string, SomeFeature> = {};
 
             while (featureDependencies.length > 0) {
-                let currDep = featureDependencies.shift();
-                while (currDep && visitedDeps[currDep.id]) {
-                    currDep = featureDependencies.shift();
-                }
-                if (!currDep) {
-                    break;
+                const currDep = featureDependencies.shift()!;
+                if (visitedDeps[currDep.id]) {
+                    continue;
                 }
                 visitedDeps[currDep.id] = currDep;
-                const evaluatedFeature = evaluatedFeatures.find(({ id }) => id === currDep!.id);
-                if (evaluatedFeature && evaluatedFeature.contexts) {
+                const evaluatedFeature = evaluatedFeatures.find(({ id }) => id === currDep.id);
+                if (evaluatedFeature) {
                     for (const context of evaluatedFeature.contexts) {
                         if (!contexts[context.value.env]) {
                             contexts[context.value.env] = context.value.activeEnvironmentName;
                         }
                     }
+                    const currentFeature = evaluatedFeature.features.find(({ value: { id } }) => id === currDep.id);
+                    if (currentFeature) {
+                        flags = { ...currentFeature.value.flags, ...flags };
+                    }
+
                     featureDependencies.push(...evaluatedFeature.features[0].value.dependencies);
                 }
             }
             featureMapping.mapping[featureMapKey].context = contexts;
+            featureMapping.mapping[featureMapKey].flags = flags;
         }
     }
     /**
