@@ -241,7 +241,11 @@ export class Application {
             id: 'start',
             envName,
             data: {
-                environment,
+                environment: {
+                    ...environment,
+                    envFiles: Array.from(environment.envFiles),
+                    contextFiles: environment.contextFiles ? Array.from(environment.envFiles) : []
+                },
                 featureMapping,
                 featureName,
                 configName,
