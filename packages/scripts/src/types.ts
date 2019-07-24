@@ -1,4 +1,4 @@
-import { AsyncEnvironment, EnvironmentContext, SomeFeature } from '@wixc3/engine-core';
+import { AsyncEnvironment, EnvironmentContext, IComConfig, SomeFeature } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -115,7 +115,7 @@ export interface ServerEnvironmentOptions {
     projectPath: string;
 }
 
-export type IEnvironmentMessageID = 'start' | 'close' | 'port';
+export type IEnvironmentMessageID = 'start' | 'close' | 'port' | 'start-static';
 
 export interface ICommunicationMessage {
     id: IEnvironmentMessageID;
@@ -127,16 +127,37 @@ export interface IEnvironmentPortMessage extends ICommunicationMessage {
 }
 
 export interface IEnvironmentMessage extends ICommunicationMessage {
+    id: 'start' | 'start-static';
     envName: string;
 }
 
-export interface IEnvironmaneStartMessage extends ICommunicationMessage {
+export interface IEnvironmaneStartMessage extends IEnvironmentMessage {
     id: 'start';
     data: ServerEnvironmentOptions;
+}
+
+export interface IEnvironmentStartStaticMessage extends IEnvironmentMessage {
+    id: 'start-static';
+    envName: string;
+    entityPaths: string[];
+    serverConfig: Array<Partial<IComConfig>>;
+}
+
+export interface RemoteProcess {
+    on: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
+    postMessage: (message: ICommunicationMessage) => unknown;
+    terminate?: () => void;
 }
 
 export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
     message.id === 'start';
 
+export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
+    message.id === 'close';
+
 export const isPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
     message.id === 'port';
+
+export const isEnvironmentStartStaticMessage = (
+    message: ICommunicationMessage
+): message is IEnvironmentStartStaticMessage => message.id === 'start-static';

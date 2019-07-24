@@ -13,11 +13,12 @@ import express from 'express';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
+import { join } from 'path';
 import { engineDevMiddleware } from './engine-dev-middleware';
 import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
 import { FeatureLocator } from './engine-utils/feature-locator';
 import { RemoteNodeEnvironment } from './remote-node-environment';
-import { EngineEnvironmentEntry, FeatureMapping, LinkInfo } from './types';
+import { EngineEnvironmentEntry, FeatureMapping, isEnvironmentStartMessage, LinkInfo } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { rimraf } from './utils/rimraf';
 
@@ -65,8 +66,8 @@ export class Application {
         const { environments, featureMapping, features } = this.prepare();
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const remoteNodeEnvironment = new RemoteNodeEnvironment();
-        const environmentPort: number = await remoteNodeEnvironment.start();
+        const remoteNodeEnvironment = new RemoteNodeEnvironment(join(__dirname, 'environment-socket-server.js'));
+        const environmentPort = await remoteNodeEnvironment.start();
         const compiler = webpack(this.createConfig(environments, environmentPort));
 
         app.use('/favicon.ico', (_req, res) => {
@@ -229,6 +230,13 @@ export class Application {
         projectDirectoryPath: string
     ) {
         const envName = environment.name;
+        const startMessage = new Promise(resolve => {
+            remoteNodeEnvironment.subscribe(message => {
+                if (isEnvironmentStartMessage(message)) {
+                    resolve();
+                }
+            });
+        });
         remoteNodeEnvironment.postMessage({
             id: 'start',
             envName,
@@ -240,11 +248,17 @@ export class Application {
                 projectPath: projectDirectoryPath
             }
         });
-        await remoteNodeEnvironment.waitForMessage('start');
+        await startMessage;
         return {
-            close: async () => {
-                remoteNodeEnvironment.postMessage({ id: 'close', envName });
-                await remoteNodeEnvironment.waitForMessage('close');
+            close: () => {
+                return new Promise<void>(resolve => {
+                    remoteNodeEnvironment.subscribe(message => {
+                        if (message.id === 'close') {
+                            resolve();
+                        }
+                    });
+                    remoteNodeEnvironment.postMessage({ id: 'close', envName });
+                });
             }
         };
     }

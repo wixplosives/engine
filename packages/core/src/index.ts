@@ -7,6 +7,7 @@ export * from './run';
 export * from './runtime-engine';
 export * from './symbols';
 export * from './types';
+export * from './communication.feature';
 
 import COM from './communication.feature';
 export { COM };

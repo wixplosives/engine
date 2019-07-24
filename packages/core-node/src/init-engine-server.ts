@@ -1,9 +1,8 @@
 import { COM, EnvironmentLiveServer } from '@wixc3/engine-core';
+import { RemoteNodeEnvironment } from '@wixc3/engine-scripts';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
-import { Server } from 'http';
-import io from 'socket.io';
-import { WsServerHost } from './ws-node-host';
+import { join } from 'path';
 
 export async function initEngineServer(
     preferredPort: number,
@@ -21,7 +20,7 @@ export async function initEngineServer(
         response.sendFile(clientEntry);
     });
 
-    const { httpServer, port } = await safeListeningHttpServer(preferredPort, app);
+    const { port } = await safeListeningHttpServer(preferredPort, app);
 
     app.use('/favicon.ico', (_req, res) => {
         res.status(204); // No Content
@@ -33,11 +32,18 @@ export async function initEngineServer(
     });
 
     if (serverEnvironment && serverEntries) {
-        runNodeEnvironment(serverEntries, httpServer, serverEnvironment, serverConfig);
+        const remoteEnvironment = new RemoteNodeEnvironment(join(__dirname, 'run-environment-server.js'));
+        const environmentPort = await remoteEnvironment.start();
+        remoteEnvironment.postMessage({
+            id: 'start-static',
+            envName: serverEnvironment.env,
+            entityPaths: serverEntries,
+            serverConfig
+        });
         clientConfig.push(
             COM.use({
                 config: {
-                    topology: serverEnvironment.getLocalTopology(port)
+                    topology: serverEnvironment.getLocalTopology(environmentPort)
                 }
             })
         );
@@ -53,24 +59,4 @@ export async function initEngineServer(
     }
 
     return port;
-}
-
-function runNodeEnvironment(
-    nodeEntityPaths: string[],
-    server: Server,
-    serverEnvironment: EnvironmentLiveServer<string>,
-    serverConfig: unknown[]
-) {
-    const socketServer = io(server).of('/_ws');
-    for (const nodeEntityPath of nodeEntityPaths) {
-        require(nodeEntityPath).default([
-            COM.use({
-                config: {
-                    host: new WsServerHost(socketServer),
-                    id: serverEnvironment.env
-                }
-            }),
-            ...serverConfig
-        ]);
-    }
 }

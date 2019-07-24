@@ -4,31 +4,41 @@ import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import io from 'socket.io';
 import { Server } from 'socket.io';
-import { parentPort } from 'worker_threads';
 import { EnvironmentEntryBuilder } from './engine-utils/environment-entry-builder';
-import { IEnvironmentMessage, isEnvironmentStartMessage, ServerEnvironmentOptions } from './types';
+import { ForkedProcess } from './forked-process';
+import {
+    ICommunicationMessage,
+    IEnvironmentPortMessage,
+    isEnvironmentCloseMessage,
+    isEnvironmentStartMessage,
+    isPortMessage,
+    RemoteProcess,
+    ServerEnvironmentOptions
+} from './types';
 
-if (parentPort) {
-    createWorkerProtocol();
-}
+getParentProcess().then(parentProcess => {
+    if (parentProcess) {
+        createWorkerProtocol(parentProcess);
+    }
+});
 
-async function createWorkerProtocol() {
+async function createWorkerProtocol(parentProcess: RemoteProcess) {
     const app = express();
     const environments: Record<string, { dispose: () => Promise<void> }> = {};
     const { httpServer, port } = await safeListeningHttpServer(3000, app);
-    parentPort!.postMessage({ id: 'port', port });
     const socketServer = io(httpServer);
 
-    parentPort!.on('message', async (message: IEnvironmentMessage) => {
-        if (isEnvironmentStartMessage(message)) {
+    parentProcess!.on('message', async (message: ICommunicationMessage) => {
+        if (isPortMessage(message)) {
+            parentProcess!.postMessage({ id: 'port', port } as IEnvironmentPortMessage);
+        } else if (isEnvironmentStartMessage(message)) {
             environments[message.envName] = initEnvironmentServer(socketServer, message.data);
-            parentPort!.postMessage({ id: 'start' });
-        } else {
-            if (environments[message.envName]) {
-                await environments[message.envName].dispose();
-                parentPort!.postMessage({ id: 'close' });
-            }
+            parentProcess!.postMessage({ id: 'start' });
+        } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
+            await environments[message.envName].dispose();
+            parentProcess!.postMessage({ id: 'close' });
         }
+        return null;
     });
 }
 
@@ -78,4 +88,16 @@ export function initEnvironmentServer(
             }
         }
     };
+}
+
+export async function getParentProcess(): Promise<RemoteProcess | null> {
+    try {
+        const WorkerThreads = await import('worker_threads');
+        return WorkerThreads.parentPort;
+    } catch {
+        if (process.send) {
+            return new ForkedProcess(process);
+        }
+        return null;
+    }
 }
