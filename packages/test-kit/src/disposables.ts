@@ -1,4 +1,10 @@
-export function createDisposables() {
+export interface IDisposables {
+    dispose(): Promise<void>;
+    add(toDispose: () => unknown): void;
+    add(message: string, toDispose: () => unknown): void;
+}
+
+export function createDisposables(): IDisposables {
     const disposables: Array<() => unknown> = [];
     return {
         async dispose() {
@@ -7,8 +13,14 @@ export function createDisposables() {
             }
             disposables.length = 0;
         },
-        push(...toDispose: Array<() => unknown>) {
-            disposables.push(...toDispose);
+        add(message: string | (() => unknown), toDispose?: () => unknown) {
+            if (typeof message === 'string') {
+                // tslint:disable-next-line: no-console
+                console.log(message);
+                disposables.push(toDispose!);
+            } else {
+                disposables.push(message);
+            }
         }
     };
 }

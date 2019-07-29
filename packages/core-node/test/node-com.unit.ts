@@ -13,7 +13,7 @@ interface ICommunicationTestApi {
 describe('Node communication', () => {
     let clientHost: WsClientHost;
     let serverHost: WsHost;
-    let socketClient: io.Server;
+    let socketServer: io.Server;
     let port: number;
 
     const disposables = createDisposables();
@@ -21,27 +21,24 @@ describe('Node communication', () => {
     beforeEach(async () => {
         const getSocketAfterConnected = () =>
             new Promise<io.Socket>(resolve => {
-                socketClient.on('connection', socket => {
-                    disposables.push(() => socket.disconnect(true));
+                socketServer.on('connection', socket => {
+                    disposables.add(() => socket.disconnect(true));
                     resolve(socket);
                 });
             });
 
         const { httpServer: server, port: servingPort } = await safeListeningHttpServer(3050);
         port = servingPort;
-        socketClient = io(server);
-        server.on('connection', connection => {
-            disposables.push(() => connection.destroy());
-        });
+        server.on('connection', connection => disposables.add(() => connection.destroy()));
+        socketServer = io(server);
+        disposables.add(() => new Promise(res => socketServer.close(res)));
 
-        disposables.push(() => {
-            server.close();
-            socketClient.close();
-        });
         clientHost = new WsClientHost(`http://localhost:${port}`);
         serverHost = new WsHost(await getSocketAfterConnected());
         await clientHost.connected;
     });
+
+    afterEach(disposables.dispose);
 
     it('Should activate a function from the client communication on the server communication and receive response', async () => {
         const COMMUNICATION_ID = 'node-com';
@@ -153,9 +150,5 @@ describe('Node communication', () => {
 
         expect(await Server1Methods.sayHelloWithDataAndParams('test')).to.eq('hello test');
         expect(await Server2Methods.sayHelloWithDataAndParams('test')).to.eq('hello test');
-    });
-
-    afterEach(async () => {
-        await disposables.dispose();
     });
 });
