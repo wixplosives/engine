@@ -109,6 +109,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             {
                 featureName: targetFeatureName = featureName,
                 configName: targetConfigName = configName,
+                projectPath: currentProjectPath = projectPath,
                 allowErrors: targetAllowErrors = false
             }: IGetLoadedFeatureOptions = {},
             options?: puppeteer.DirectNavigationOptions
@@ -122,7 +123,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             allowErrors = targetAllowErrors;
             engineStartProcess.send({
                 id: 'run-feature',
-                payload: { configName, featureName, projectPath }
+                payload: { configName, featureName, projectPath: currentProjectPath }
             });
 
             const { id } = (await waitForProcessMessage(engineStartProcess, 'feature-initialized')) as IFeatureMessage;

@@ -29,11 +29,8 @@ describe('Node communication', () => {
 
         const { httpServer: server, port: servingPort } = await safeListeningHttpServer(3050);
         port = servingPort;
+        server.on('connection', connection => disposables.add(() => connection.destroy()));
         socketServer = io(server);
-        server.on('connection', connection => {
-            disposables.add(() => connection.destroy());
-        });
-
         disposables.add(() => new Promise(res => socketServer.close(res)));
 
         clientHost = new WsClientHost(`http://localhost:${port}`);
