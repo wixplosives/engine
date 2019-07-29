@@ -14,7 +14,7 @@ describe('Application', function() {
 
     afterEach(async function() {
         this.timeout(60_000);
-        disposables.dispose();
+        return disposables.dispose();
     });
 
     after(() => browserProvider.dispose());
