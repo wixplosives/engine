@@ -17,7 +17,6 @@ export class EnvironmentEntryBuilder {
         }: Pick<EngineEnvironmentDef, 'envFiles' | 'featureMapping' | 'contextFiles'>,
         overrideConfig: TopLevelConfig = []
     ) {
-        console.error('overrideConfig', overrideConfig);
         contextFiles.forEach(contextFile => require(contextFile));
         envFiles.forEach(filePath => require(filePath));
 

@@ -16,16 +16,13 @@ import {
     ServerEnvironmentOptions
 } from './types';
 
-console.log('!!!!!');
-
 getParentProcess().then(parentProcess => {
     if (parentProcess) {
-        console.log('parentProcess');
         createWorkerProtocol(parentProcess);
     }
 });
 
-async function createWorkerProtocol(parentProcess: RemoteProcess) {
+export async function createWorkerProtocol(parentProcess: RemoteProcess) {
     const app = express();
     const environments: Record<string, { dispose: () => Promise<void> }> = {};
     const { httpServer, port } = await safeListeningHttpServer(3000, app);
@@ -52,7 +49,6 @@ export function initEnvironmentServer(
     socketServer: Server,
     { environment, featureMapping, featureName, configName, projectPath, topology }: ServerEnvironmentOptions
 ) {
-    console.log('initEnvironmentServer');
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);

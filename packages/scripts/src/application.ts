@@ -4,16 +4,12 @@
  * We use Node's native module system to directly load configuration file.
  * This configuration can (and should) be written as a `.ts` file.
  */
-import '@stylable/node/register';
-import '@ts-tools/node/fast';
-
 import fs from '@file-services/node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
-import { createDisposables } from '@wixc3/engine-test-kit';
 import { join } from 'path';
 import { engineDevMiddleware } from './engine-dev-middleware';
 import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
@@ -73,8 +69,9 @@ export class Application {
         const { environments, featureMapping, features } = this.prepare();
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const compiler = webpack(this.createConfig(environments));
+
         const serverEnvironmentEntryPoints: Record<string, string> = {};
+        const compiler = webpack(this.createConfig(environments));
 
         app.use('/favicon.ico', (_req, res) => {
             res.status(204); // No Content
@@ -133,14 +130,14 @@ export class Application {
             const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
             const nodeEnvironments = environments.filter(({ target }) => target === 'node');
             const closeEnvironmentsHandlers: Array<{ close: () => Promise<void> }> = [];
-            const disposables = createDisposables();
+            const disposables: Array<() => unknown> = [];
             for (const environment of nodeEnvironments) {
-                const remoteNodeEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
-                // disposables.add(() => remoteNodeEnvironment.dispose());
-                const environmentPort = await remoteNodeEnvironment.start();
+                const remoteNodeEnvironmentHost = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
+                const environmentPort = await remoteNodeEnvironmentHost.start();
                 serverEnvironmentEntryPoints[environment.name] = `http://localhost:${environmentPort}/_ws`;
+                disposables.push(() => remoteNodeEnvironmentHost.dispose());
                 closeEnvironmentsHandlers.push(
-                    await this.startNodeEnvironment(remoteNodeEnvironment, {
+                    await this.startNodeEnvironment(remoteNodeEnvironmentHost, {
                         environment,
                         featureMapping,
                         featureName,
@@ -157,7 +154,10 @@ export class Application {
                         await handler.close();
                     }
                     closeEnvironmentsHandlers.length = 0;
-                    await disposables.dispose();
+                    for (const handler of disposables) {
+                        await handler();
+                    }
+                    disposables.length = 0;
                 }
             };
         };

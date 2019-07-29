@@ -1,5 +1,6 @@
 import { COM } from '@wixc3/engine-core';
-import { getParentProcess, IEnvironmentPortMessage, isEnvironmentStartStaticMessage } from '@wixc3/engine-scripts';
+import { IEnvironmentPortMessage, isEnvironmentStartStaticMessage } from '@wixc3/engine-scripts';
+import { getParentProcess } from '@wixc3/engine-scripts/src/parent-process';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import io from 'socket.io';
