@@ -134,7 +134,6 @@ export class Application {
                 const remoteNodeEnvironmentHost = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
                 const environmentPort = await remoteNodeEnvironmentHost.start();
                 serverEnvironmentEndPoints[environment.name] = `http://localhost:${environmentPort}/_ws`;
-                disposables.push(() => remoteNodeEnvironmentHost.dispose());
                 const { close } = await this.startNodeEnvironment(remoteNodeEnvironmentHost, {
                     environment,
                     featureMapping,
@@ -144,6 +143,7 @@ export class Application {
                     serverPort: port
                 });
                 disposables.push(async () => await close());
+                disposables.push(() => remoteNodeEnvironmentHost.dispose());
             }
 
             return {

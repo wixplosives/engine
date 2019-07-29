@@ -29,7 +29,6 @@ export async function createWorkerProtocol(parentProcess: RemoteProcess) {
     const socketServer = io(httpServer);
 
     parentProcess!.on('message', async (message: ICommunicationMessage) => {
-        console.log(message, environments);
         if (isPortMessage(message)) {
             parentProcess!.postMessage({ id: 'port', port } as IEnvironmentPortMessage);
         } else if (isEnvironmentStartMessage(message)) {
