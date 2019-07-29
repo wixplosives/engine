@@ -60,7 +60,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
         const { port } = (await waitForProcessMessage(engineStartProcess, 'port')) as IPortMessage;
 
-        disposeAfterAll.push(async () => {
+        disposeAfterAll.add(async () => {
             engineStartProcess.send({ id: 'server-disconnect' });
             await waitForProcessMessage(engineStartProcess, 'server-disconnected');
             await new Promise((resolve, reject) => {
@@ -127,7 +127,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
             const { id } = (await waitForProcessMessage(engineStartProcess, 'feature-initialized')) as IFeatureMessage;
 
-            disposeAfterEach.push(async () => {
+            disposeAfterEach.add(async () => {
                 engineStartProcess.send({ id: 'close-feature', payload: { id } });
                 await waitForProcessMessage(engineStartProcess, 'feature-closed');
             });

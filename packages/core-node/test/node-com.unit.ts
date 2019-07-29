@@ -22,7 +22,7 @@ describe('Node communication', () => {
         const getSocketAfterConnected = () =>
             new Promise<io.Socket>(resolve => {
                 socketClient.on('connection', socket => {
-                    disposables.push(() => socket.disconnect(true));
+                    disposables.add(() => socket.disconnect(true));
                     resolve(socket);
                 });
             });
@@ -31,13 +31,12 @@ describe('Node communication', () => {
         port = servingPort;
         socketClient = io(server);
         server.on('connection', connection => {
-            disposables.push(() => connection.destroy());
+            disposables.add(() => connection.destroy());
         });
 
-        disposables.push(() => {
-            server.close();
-            socketClient.close();
-        });
+        disposables.add(() => new Promise((res, rej) => server.close(error => (error ? rej(error) : res()))));
+        disposables.add(() => new Promise(res => socketClient.close(res)));
+
         clientHost = new WsClientHost(`http://localhost:${port}`);
         serverHost = new WsHost(await getSocketAfterConnected());
         await clientHost.connected;

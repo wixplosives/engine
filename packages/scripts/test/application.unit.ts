@@ -1,5 +1,5 @@
 import { nodeFs } from '@file-services/node';
-import { createBrowserProvider } from '@wixc3/engine-test-kit';
+import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { join } from 'path';
 import { waitFor } from 'promise-assist';
@@ -7,14 +7,14 @@ import { Application } from '../src/application';
 const { directoryExists } = nodeFs.promises;
 
 describe('Application', function() {
-    this.timeout(20_000);
+    this.timeout(30_000);
 
-    const closables: Array<() => unknown> = [];
+    const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
-    afterEach(async () => {
-        await Promise.all(closables.map(c => c()));
-        closables.length = 0;
+    afterEach(async function() {
+        this.timeout(60_000);
+        disposables.dispose();
     });
 
     after(() => browserProvider.dispose());
@@ -42,9 +42,9 @@ describe('Application', function() {
         const app = new Application(fixtureBase);
 
         const { close, port } = await app.start();
-        closables.push(() => close());
+        disposables.add(() => close());
         const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        closables.push(() => page.close());
+        disposables.add(() => page.close());
 
         const text = await page.evaluate(() => document.body.textContent!.trim());
 
@@ -55,10 +55,10 @@ describe('Application', function() {
         const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
         const app = new Application(fixtureBase);
         const { close, port } = await app.start();
-        closables.push(() => close());
+        disposables.add(() => close());
 
         const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        closables.push(() => page.close());
+        disposables.add(() => page.close());
 
         const { myConfig, mySlot } = await page.evaluate(() => {
             return {
@@ -77,10 +77,10 @@ describe('Application', function() {
         const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
         const app = new Application(fixtureBase);
         const { close, port } = await app.start();
-        closables.push(() => close());
+        disposables.add(() => close());
 
         const page = await browserProvider.loadPage(`http://localhost:${port}/main.html?feature=variant`);
-        closables.push(() => page.close());
+        disposables.add(() => page.close());
 
         const { myConfig, mySlot } = await page.evaluate(() => {
             return {
@@ -99,12 +99,12 @@ describe('Application', function() {
         const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
         const app = new Application(fixtureBase);
         const { close, port } = await app.start();
-        closables.push(() => close());
+        disposables.add(() => close());
 
         const page = await browserProvider.loadPage(
             `http://localhost:${port}/main.html?feature=variant&config=variant2`
         );
-        closables.push(() => page.close());
+        disposables.add(() => page.close());
 
         const { myConfig, mySlot } = await page.evaluate(() => {
             return {
@@ -119,19 +119,22 @@ describe('Application', function() {
         expect(mySlot).to.eql(['testing 1 2 3']);
     });
 
-    it(`run feature and serves node environments`, async function() {
-        this.timeout(30_000);
+    it(`run feature and serves node environments`, async () => {
         const fixtureBase = join(__dirname, './fixtures/engine-local-feature');
         const app = new Application(fixtureBase);
-        const { close, port, runFeature } = await app.start();
-        const { close: closeFeature } = await runFeature({
+        const runningApp = await app.start();
+        disposables.add('closing app', () => runningApp.close());
+
+        const runningFeature = await runningApp.runFeature({
             featureName: 'x',
             configName: 'dev'
         });
-        closables.push(closeFeature);
-        closables.push(() => close());
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html?feature=x&config=dev`);
-        closables.push(() => page.close());
+        disposables.add('closing feature', runningFeature.close);
+
+        const page = await browserProvider.loadPage(
+            `http://localhost:${runningApp.port}/main.html?feature=x&config=dev`
+        );
+        disposables.add('closing page', () => page.close());
         await waitFor(async () => {
             expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
         });
