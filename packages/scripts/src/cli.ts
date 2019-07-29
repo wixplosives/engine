@@ -53,8 +53,8 @@ program.command('start-engine-server [path]').action(async path => {
                     if (closeEngineFunction) {
                         await closeEngineFunction();
                         closeEngineFunctions.delete(closeFunctionId);
-                        process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
                     }
+                    process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
                 }
                 if (id === 'server-disconnect') {
                     await closeServer();
