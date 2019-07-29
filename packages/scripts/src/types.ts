@@ -113,6 +113,7 @@ export interface ServerEnvironmentOptions {
     featureName: string | undefined;
     configName: string | undefined;
     projectPath: string;
+    topology: Record<string, string>;
 }
 
 export type IEnvironmentMessageID = 'start' | 'close' | 'port' | 'start-static';

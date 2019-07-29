@@ -16,8 +16,11 @@ import {
     ServerEnvironmentOptions
 } from './types';
 
+console.log('!!!!!');
+
 getParentProcess().then(parentProcess => {
     if (parentProcess) {
+        console.log('parentProcess');
         createWorkerProtocol(parentProcess);
     }
 });
@@ -47,8 +50,9 @@ async function createWorkerProtocol(parentProcess: RemoteProcess) {
  */
 export function initEnvironmentServer(
     socketServer: Server,
-    { environment, featureMapping, featureName, configName, projectPath }: ServerEnvironmentOptions
+    { environment, featureMapping, featureName, configName, projectPath, topology }: ServerEnvironmentOptions
 ) {
+    console.log('initEnvironmentServer');
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
@@ -65,7 +69,8 @@ export function initEnvironmentServer(
                 config: {
                     host: localDevHost,
                     id: name,
-                    contextMappings
+                    contextMappings,
+                    topology
                 }
             }),
             [

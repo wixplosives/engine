@@ -17,6 +17,7 @@ export class EnvironmentEntryBuilder {
         }: Pick<EngineEnvironmentDef, 'envFiles' | 'featureMapping' | 'contextFiles'>,
         overrideConfig: TopLevelConfig = []
     ) {
+        console.error('overrideConfig', overrideConfig);
         contextFiles.forEach(contextFile => require(contextFile));
         envFiles.forEach(filePath => require(filePath));
 
@@ -31,16 +32,13 @@ export class EnvironmentEntryBuilder {
             runningFeature: currentFeature
         };
     }
-    public buildDynamic(
-        {
-            name,
-            target,
-            featureMapping,
-            envFiles = new Set(),
-            contextFiles = new Set()
-        }: Pick<EngineEnvironmentDef, 'name' | 'target' | 'featureMapping' | 'envFiles' | 'contextFiles'>,
-        topology: Record<string, string> = {}
-    ) {
+    public buildDynamic({
+        name,
+        target,
+        featureMapping,
+        envFiles = new Set(),
+        contextFiles = new Set()
+    }: Pick<EngineEnvironmentDef, 'name' | 'target' | 'featureMapping' | 'envFiles' | 'contextFiles'>) {
         const rootFeatureName = featureMapping.rootFeatureName;
         const currentConfigSymbol = 'currentConfig';
         const currentFeatureSymbol = 'currentFeature';
@@ -75,8 +73,11 @@ export class EnvironmentEntryBuilder {
             ]);
             
             const contextMappings = contexts[featureToUse];
-            const topology = ${JSON.stringify(topology)}; 
-            overrideConfig.push(COM.use({config: {topology, contextMappings}}))
+            const load = ${this.getLoadFunctionByTarget(target)};
+            overrideConfig.push(COM.use({config: { contextMappings }}))
+
+            const serverConfig = await load('server-config.js');
+            overrideConfig.push(...serverConfig);
 
             
 

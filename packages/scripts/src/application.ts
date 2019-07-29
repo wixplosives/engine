@@ -13,12 +13,19 @@ import express from 'express';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
+import { createDisposables } from '@wixc3/engine-test-kit';
 import { join } from 'path';
 import { engineDevMiddleware } from './engine-dev-middleware';
 import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
 import { FeatureLocator } from './engine-utils/feature-locator';
 import { RemoteNodeEnvironment } from './remote-node-environment';
-import { EngineEnvironmentEntry, FeatureMapping, isEnvironmentStartMessage, LinkInfo } from './types';
+import {
+    EngineEnvironmentEntry,
+    FeatureMapping,
+    isEnvironmentStartMessage,
+    LinkInfo,
+    ServerEnvironmentOptions
+} from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { rimraf } from './utils/rimraf';
 
@@ -66,13 +73,25 @@ export class Application {
         const { environments, featureMapping, features } = this.prepare();
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const remoteNodeEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
-        const environmentPort = await remoteNodeEnvironment.start();
-        const compiler = webpack(this.createConfig(environments, environmentPort));
+        const compiler = webpack(this.createConfig(environments));
+        const serverEnvironmentEntryPoints: Record<string, string> = {};
 
         app.use('/favicon.ico', (_req, res) => {
             res.status(204); // No Content
             res.end();
+        });
+
+        app.get('/server-config.js', (_req, res) => {
+            res.json([
+                [
+                    'COM',
+                    {
+                        config: {
+                            topology: serverEnvironmentEntryPoints
+                        }
+                    }
+                ]
+            ]);
         });
 
         compiler.hooks.watchRun.tap('engine-scripts', () => {
@@ -114,16 +133,21 @@ export class Application {
             const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
             const nodeEnvironments = environments.filter(({ target }) => target === 'node');
             const closeEnvironmentsHandlers: Array<{ close: () => Promise<void> }> = [];
+            const disposables = createDisposables();
             for (const environment of nodeEnvironments) {
+                const remoteNodeEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
+                // disposables.add(() => remoteNodeEnvironment.dispose());
+                const environmentPort = await remoteNodeEnvironment.start();
+                serverEnvironmentEntryPoints[environment.name] = `http://localhost:${environmentPort}/_ws`;
                 closeEnvironmentsHandlers.push(
-                    await this.startNodeEnvironment(
+                    await this.startNodeEnvironment(remoteNodeEnvironment, {
                         environment,
-                        remoteNodeEnvironment,
                         featureMapping,
                         featureName,
                         configName,
-                        projectDirectoryPath
-                    )
+                        projectPath: projectDirectoryPath,
+                        topology: serverEnvironmentEntryPoints
+                    })
                 );
             }
 
@@ -133,6 +157,7 @@ export class Application {
                         await handler.close();
                     }
                     closeEnvironmentsHandlers.length = 0;
+                    await disposables.dispose();
                 }
             };
         };
@@ -142,7 +167,6 @@ export class Application {
             runFeature,
             async close() {
                 await new Promise(res => dev.close(res));
-                remoteNodeEnvironment.dispose();
                 await new Promise(res => httpServer.close(res));
             }
         };
@@ -200,9 +224,8 @@ export class Application {
         };
     }
 
-    private createConfig(environments: EngineEnvironmentEntry[], port?: number): webpack.Configuration {
+    private createConfig(environments: EngineEnvironmentEntry[]): webpack.Configuration {
         return createEnvWebpackConfig({
-            port,
             environments,
             basePath: this.basePath,
             outputPath: this.outputPath
@@ -223,12 +246,8 @@ export class Application {
         });
     }
     private async startNodeEnvironment(
-        environment: EngineEnvironmentEntry,
         remoteNodeEnvironment: RemoteNodeEnvironment,
-        featureMapping: FeatureMapping,
-        featureName: string | undefined,
-        configName: string | undefined,
-        projectDirectoryPath: string
+        { configName, featureMapping, featureName, environment, projectPath, topology }: ServerEnvironmentOptions
     ) {
         const envName = environment.name;
         const startMessage = new Promise(resolve => {
@@ -250,7 +269,8 @@ export class Application {
                 featureMapping,
                 featureName,
                 configName,
-                projectPath: projectDirectoryPath
+                projectPath,
+                topology
             }
         });
         await startMessage;

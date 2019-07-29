@@ -18,13 +18,12 @@ const resolveOptions: webpack.Resolve = inOwnRepo
  * we should be more creative in the future and not create entry for each file
  */
 export function createEnvWebpackConfig({
-    port,
     environments,
     basePath,
     outputPath
 }: WebpackEnvOptions): webpack.Configuration {
     const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
-    const { virtualEntries, virtualSources, workerPlugins, htmlPlugins } = createWebEntries(environments, port);
+    const { virtualEntries, virtualSources, workerPlugins, htmlPlugins } = createWebEntries(environments);
     return getWebWebpackConfig(mode, basePath, outputPath, virtualEntries, virtualSources, htmlPlugins, workerPlugins);
 }
 
@@ -74,34 +73,24 @@ export function createStaticWebpackConfigs({
     return [webpackWebConfig, webpackNodeConfig];
 }
 
-function createWebEntries(environments: EngineEnvironmentEntry[], port?: number) {
+function createWebEntries(environments: EngineEnvironmentEntry[]) {
     const virtualSources: Record<string, string> = {};
     const virtualEntries: Record<string, string> = {};
     const htmlPlugins: webpack.Plugin[] = [];
     const workerPlugins: WorkerEntryPointPlugin[] = [];
-    const topology = environments
-        .filter(({ target }) => target === 'node')
-        .map(({ name }) => name)
-        .reduce<Record<string, string>>((topologyReucer, name) => {
-            topologyReucer[name] = `http://localhost:${port}/_ws`;
-            return topologyReucer;
-        }, {});
 
     const contextEntities = groupContextEntitiesByEnvNameAndTarget(environments);
 
     for (const { isRoot, envFiles, featureMapping, target, name, entryFilename } of environments) {
         // console.log(name, target, contextEntities[name][target]);
         const virtualEntry = {
-            source: new EnvironmentEntryBuilder().buildDynamic(
-                {
-                    envFiles,
-                    featureMapping,
-                    name,
-                    target,
-                    contextFiles: contextEntities[name] ? contextEntities[name][target] : undefined
-                },
-                topology
-            ),
+            source: new EnvironmentEntryBuilder().buildDynamic({
+                envFiles,
+                featureMapping,
+                name,
+                target,
+                contextFiles: contextEntities[name] ? contextEntities[name][target] : undefined
+            }),
             filename: entryFilename
         };
         const id = `${name}-${target}`;

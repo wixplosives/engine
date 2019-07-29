@@ -119,17 +119,18 @@ describe('Application', function() {
         expect(mySlot).to.eql(['testing 1 2 3']);
     });
 
-    it(`run feature and serves node environments`, async () => {
+    it.only(`run feature and serves node environments`, async () => {
         const fixtureBase = join(__dirname, './fixtures/engine-local-feature');
         const app = new Application(fixtureBase);
         const runningApp = await app.start();
-        disposables.add('closing app', () => runningApp.close());
 
         const runningFeature = await runningApp.runFeature({
             featureName: 'x',
             configName: 'dev'
         });
-        disposables.add('closing feature', runningFeature.close);
+        disposables.add('closing feature', () => runningFeature.close());
+
+        disposables.add('closing app', () => runningApp.close());
 
         const page = await browserProvider.loadPage(
             `http://localhost:${runningApp.port}/main.html?feature=x&config=dev`
