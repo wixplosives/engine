@@ -110,7 +110,7 @@ export class Application {
         const socketServer = io(httpServer);
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
-            const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
+            const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : this.basePath;
 
             const environmentServer = initEnvironmentServer(
                 socketServer,

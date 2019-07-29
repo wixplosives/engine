@@ -1,19 +1,15 @@
-import {
-    IFeatureMessage,
-    IFeatureTarget,
-    IPortMessage,
-    isProcessMessage,
-    ProcessMessageId
-} from '@wixc3/engine-scripts';
-import { ChildProcess, fork } from 'child_process';
+import { IFeatureTarget } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { createDisposables } from './disposables';
+import { IExecutableApplication, LocalApp, ProcessApp } from './executable-app';
 
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
-export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {}
+export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {
+    debugNode?: boolean;
+}
 
 export interface IGetLoadedFeatureOptions extends IFeatureTarget {
     allowErrors?: boolean;
@@ -34,7 +30,15 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     }
     const disposeAfterAll = createDisposables();
     const disposeAfterEach = createDisposables();
-    const { headless, devtools, slowMo, configName, featureName, projectPath, queryParams } = withFeatureOptions;
+    const {
+        headless,
+        devtools,
+        slowMo,
+        configName,
+        featureName,
+        projectPath = basePath,
+        queryParams
+    } = withFeatureOptions;
 
     if (isCI && (headless === false || devtools === true || slowMo !== undefined)) {
         throw new Error(
@@ -43,35 +47,17 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     }
 
     let featureUrl: string;
-    let engineStartProcess: ChildProcess;
     let allowErrors = false;
     const capturedErrors: Error[] = [];
+    let executableApp: IExecutableApplication;
 
     before('start application', async function() {
         this.timeout(60_000 * 4); // 4 minutes
-        engineStartProcess = fork(cliEntry, ['start-engine-server'], {
-            stdio: 'inherit',
-            cwd: basePath,
-            execArgv: [
-                // '--inspect-brk',
-                // '--trace-warnings'
-            ]
-        });
+        executableApp = withFeatureOptions.debugNode ? new LocalApp(basePath) : new ProcessApp(cliEntry, basePath);
 
-        const { port } = (await waitForProcessMessage(engineStartProcess, 'port')) as IPortMessage;
+        const port = await executableApp.startServer();
 
-        disposeAfterAll.add(async () => {
-            engineStartProcess.send({ id: 'server-disconnect' });
-            await waitForProcessMessage(engineStartProcess, 'server-disconnected');
-            await new Promise((resolve, reject) => {
-                engineStartProcess.kill();
-                engineStartProcess.once('exit', () => {
-                    engineStartProcess.off('error', reject);
-                    resolve();
-                });
-                engineStartProcess.once('error', reject);
-            });
-        });
+        disposeAfterAll.add(async () => executableApp.closeServer());
 
         featureUrl = `http://localhost:${port}/main.html`;
     });
@@ -117,21 +103,13 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             if (!browser) {
                 throw new Error('Browser is not open!');
             }
-            if (!engineStartProcess) {
+            if (!executableApp) {
                 throw new Error('Engine HTTP server is closed!');
             }
             allowErrors = targetAllowErrors;
-            engineStartProcess.send({
-                id: 'run-feature',
-                payload: { configName, featureName, projectPath: currentProjectPath }
-            });
+            executableApp.runFeature({ configName, featureName, projectPath: currentProjectPath });
 
-            const { id } = (await waitForProcessMessage(engineStartProcess, 'feature-initialized')) as IFeatureMessage;
-
-            disposeAfterEach.add(async () => {
-                engineStartProcess.send({ id: 'close-feature', payload: { id } });
-                await waitForProcessMessage(engineStartProcess, 'feature-closed');
-            });
+            disposeAfterEach.add(async () => executableApp.closeFeature());
 
             const search = toSearchQuery({
                 featureName: targetFeatureName,
@@ -150,22 +128,6 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             return { page, response };
         }
     };
-}
-
-async function waitForProcessMessage(childProcess: ChildProcess, messageId: ProcessMessageId): Promise<unknown> {
-    return new Promise<unknown>((resolve, reject) => {
-        function onMessage(message: unknown) {
-            if (isProcessMessage(message) && message.id === messageId) {
-                childProcess.off('message', onMessage);
-                childProcess.off('error', reject);
-                childProcess.off('exit', reject);
-                resolve(message.payload);
-            }
-        }
-        childProcess.on('message', onMessage);
-        childProcess.once('error', reject);
-        childProcess.once('exit', reject);
-    });
 }
 
 function toSearchQuery({ featureName, configName, queryParams }: IFeatureTarget): string {
