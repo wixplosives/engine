@@ -132,6 +132,7 @@ export class Application {
                     for (const handler of closeEnvironmentsHandlers) {
                         await handler.close();
                     }
+                    closeEnvironmentsHandlers.length = 0;
                 }
             };
         };
