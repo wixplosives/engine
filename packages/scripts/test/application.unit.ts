@@ -115,7 +115,7 @@ describe('Application', function() {
         expect(mySlot).to.eql(['testing 1 2 3']);
     });
 
-    it.only(`run feature and serves node environments`, async () => {
+    it(`run feature and serves node environments`, async () => {
         const fixtureBase = join(__dirname, './fixtures/engine-local-feature');
         const app = new Application(fixtureBase);
         const runningApp = await app.start();
