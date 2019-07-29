@@ -1,20 +1,15 @@
 import fs from '@file-services/node';
-import { createBrowserProvider } from '@wixc3/engine-test-kit';
+import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { join } from 'path';
 import { Application } from '../src/application';
 const { directoryExists } = fs.promises;
 
 describe('Application', () => {
-    const closables: Array<() => unknown> = [];
+    const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
-    afterEach(async function() {
-        this.timeout(10_000);
-        await Promise.all(closables.map(c => c()));
-        closables.length = 0;
-    });
-
+    afterEach(disposables.dispose);
     after(() => browserProvider.dispose());
 
     it(`supports building features with a single fixture`, async () => {
@@ -40,9 +35,9 @@ describe('Application', () => {
         const app = new Application(fixtureBase);
 
         const { close, port } = await app.start();
-        closables.push(() => close());
+        disposables.add(() => close());
         const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        closables.push(() => page.close());
+        disposables.add(() => page.close());
 
         const text = await page.evaluate(() => document.body.textContent!.trim());
 
@@ -53,10 +48,10 @@ describe('Application', () => {
         const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
         const app = new Application(fixtureBase);
         const { close, port } = await app.start();
-        closables.push(() => close());
+        disposables.add(() => close());
 
         const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        closables.push(() => page.close());
+        disposables.add(() => page.close());
 
         const { myConfig, mySlot } = await page.evaluate(() => {
             return {
@@ -75,10 +70,10 @@ describe('Application', () => {
         const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
         const app = new Application(fixtureBase);
         const { close, port } = await app.start();
-        closables.push(() => close());
+        disposables.add(() => close());
 
         const page = await browserProvider.loadPage(`http://localhost:${port}/main.html?feature=test/variant`);
-        closables.push(() => page.close());
+        disposables.add(() => page.close());
 
         const { myConfig, mySlot } = await page.evaluate(() => {
             return {
@@ -97,12 +92,12 @@ describe('Application', () => {
         const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
         const app = new Application(fixtureBase);
         const { close, port } = await app.start();
-        closables.push(() => close());
+        disposables.add(() => close());
 
         const page = await browserProvider.loadPage(
             `http://localhost:${port}/main.html?feature=test/variant&config=test/variant2`
         );
-        closables.push(() => page.close());
+        disposables.add(() => page.close());
 
         const { myConfig, mySlot } = await page.evaluate(() => {
             return {

@@ -15,6 +15,10 @@ const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
 export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {}
 
+export interface IGetLoadedFeatureOptions extends IFeatureTarget {
+    allowErrors?: boolean;
+}
+
 let browser: puppeteer.Browser | null = null;
 
 after('close puppeteer browser, if open', async () => {
@@ -40,6 +44,8 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
     let featureUrl: string;
     let engineStartProcess: ChildProcess;
+    let allowErrors = false;
+    const capturedErrors: Error[] = [];
 
     before('start application', async function() {
         this.timeout(60_000 * 4); // 4 minutes
@@ -54,7 +60,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
         const { port } = (await waitForProcessMessage(engineStartProcess, 'port')) as IPortMessage;
 
-        disposeAfterAll.push(async () => {
+        disposeAfterAll.add(async () => {
             engineStartProcess.send({ id: 'server-disconnect' });
             await waitForProcessMessage(engineStartProcess, 'server-disconnected');
             await new Promise((resolve, reject) => {
@@ -81,6 +87,17 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
     const pages = new Set<puppeteer.Page>();
     afterEach('close pages', () => Promise.all(Array.from(pages).map(page => page.close())).then(() => pages.clear()));
+    afterEach('verify no page errors', () => {
+        if (capturedErrors.length) {
+            const errorsText = capturedErrors.join('\n');
+            capturedErrors.length = 0;
+            if (!allowErrors) {
+                allowErrors = false;
+                throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
+            }
+        }
+        allowErrors = false;
+    });
 
     after(async function() {
         this.timeout(60_000);
@@ -91,8 +108,10 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
         async getLoadedFeature(
             {
                 featureName: targetFeatureName = featureName,
-                configName: targetConfigName = configName
-            }: IFeatureTarget = {},
+                configName: targetConfigName = configName,
+                projectPath: currentProjectPath = projectPath,
+                allowErrors: targetAllowErrors = false
+            }: IGetLoadedFeatureOptions = {},
             options?: puppeteer.DirectNavigationOptions
         ) {
             if (!browser) {
@@ -101,14 +120,15 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             if (!engineStartProcess) {
                 throw new Error('Engine HTTP server is closed!');
             }
+            allowErrors = targetAllowErrors;
             engineStartProcess.send({
                 id: 'run-feature',
-                payload: { configName, featureName, projectPath }
+                payload: { configName, featureName, projectPath: currentProjectPath }
             });
 
             const { id } = (await waitForProcessMessage(engineStartProcess, 'feature-initialized')) as IFeatureMessage;
 
-            disposeAfterEach.push(async () => {
+            disposeAfterEach.add(async () => {
                 engineStartProcess.send({ id: 'close-feature', payload: { id } });
                 await waitForProcessMessage(engineStartProcess, 'feature-closed');
             });
@@ -120,9 +140,13 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             });
             const page = await browser.newPage();
             pages.add(page);
-            // tslint:disable-next-line: no-console
-            page.on('pageerror', e => console.error(e));
+            page.on('pageerror', e => {
+                capturedErrors.push(e);
+                // tslint:disable-next-line: no-console
+                console.error(e);
+            });
             const response = await page.goto(featureUrl + search, options);
+
             return { page, response };
         }
     };
