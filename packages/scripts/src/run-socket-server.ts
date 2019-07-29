@@ -4,7 +4,7 @@ import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import io from 'socket.io';
 import { Server } from 'socket.io';
-import { EnvironmentEntryBuilder } from './engine-utils/environment-entry-builder';
+import { runEntry } from './engine-utils/run-entry';
 import { ForkedProcess } from './forked-process';
 import {
     ICommunicationMessage,
@@ -29,10 +29,11 @@ export async function createWorkerProtocol(parentProcess: RemoteProcess) {
     const socketServer = io(httpServer);
 
     parentProcess!.on('message', async (message: ICommunicationMessage) => {
+        console.log(message, environments);
         if (isPortMessage(message)) {
             parentProcess!.postMessage({ id: 'port', port } as IEnvironmentPortMessage);
         } else if (isEnvironmentStartMessage(message)) {
-            environments[message.envName] = initEnvironmentServer(socketServer, message.data);
+            environments[message.envName] = await initEnvironmentServer(socketServer, message.data);
             parentProcess!.postMessage({ id: 'start' });
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
             await environments[message.envName].dispose();
@@ -45,9 +46,9 @@ export async function createWorkerProtocol(parentProcess: RemoteProcess) {
 /**
  * Use to init socket server that share the environment state between all connections
  */
-export function initEnvironmentServer(
+export async function initEnvironmentServer(
     socketServer: Server,
-    { environment, featureMapping, featureName, configName, projectPath, topology }: ServerEnvironmentOptions
+    { environment, featureMapping, featureName, configName, projectPath, serverPort }: ServerEnvironmentOptions
 ) {
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
@@ -56,17 +57,17 @@ export function initEnvironmentServer(
     const featureMap = featureName || Object.keys(featureMapping.mapping)[0];
     const configMap = configName || Object.keys(featureMapping.mapping[featureMap].configurations)[0];
     const contextMappings = featureMapping.mapping[featureMap].context;
-    const { engine, runningFeature } = new EnvironmentEntryBuilder().runEntry(
+    const { engine, runningFeature } = await runEntry(
         featureMap,
         configMap,
         { envFiles, featureMapping, contextFiles },
+        serverPort,
         [
             COM.use({
                 config: {
                     host: localDevHost,
                     id: name,
-                    contextMappings,
-                    topology
+                    contextMappings
                 }
             }),
             [

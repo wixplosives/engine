@@ -83,7 +83,9 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
         }
     });
 
-    afterEach(disposeAfterEach.dispose);
+    afterEach(async () => {
+        await disposeAfterEach.dispose();
+    });
 
     const pages = new Set<puppeteer.Page>();
     afterEach('close pages', () => Promise.all(Array.from(pages).map(page => page.close())).then(() => pages.clear()));
@@ -128,7 +130,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
             const { id } = (await waitForProcessMessage(engineStartProcess, 'feature-initialized')) as IFeatureMessage;
 
-            disposeAfterEach.add(async () => {
+            disposeAfterEach.add('closing feature withFeature', async () => {
                 engineStartProcess.send({ id: 'close-feature', payload: { id } });
                 await waitForProcessMessage(engineStartProcess, 'feature-closed');
             });

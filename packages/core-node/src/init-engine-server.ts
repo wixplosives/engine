@@ -15,7 +15,7 @@ export async function initEngineServer(
     pathToEditorDist: string,
     clientConfig: unknown[] = [],
     serverConfig: unknown[] = [],
-    serverEnvironments?: EnvironmentDescription[]
+    serverEnvironments: EnvironmentDescription[] = []
 ) {
     const app = express();
     app.use(express.static(pathToEditorDist));
@@ -35,30 +35,28 @@ export async function initEngineServer(
         response.status(200).end();
     });
 
-    if (serverEnvironments) {
-        let topology: Record<string, string> = {};
-        for (const {
-            entryPath,
-            env: { env: name, getLocalTopology }
-        } of serverEnvironments) {
-            const remoteEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-environment-server.js'));
-            const environmentPort = await remoteEnvironment.start();
-            topology = { ...getLocalTopology(environmentPort), ...topology };
-            remoteEnvironment.postMessage({
-                id: 'start-static',
-                envName: name,
-                entityPath: entryPath,
-                serverConfig
-            });
-        }
-        clientConfig.push(
-            COM.use({
-                config: {
-                    topology
-                }
-            })
-        );
+    const topology: Record<string, string> = {};
+    for (const {
+        entryPath,
+        env: { env: name, getLocalTopology }
+    } of serverEnvironments) {
+        const remoteEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-environment-server'));
+        const environmentPort = await remoteEnvironment.start();
+        Object.assign(topology, getLocalTopology(environmentPort));
+        remoteEnvironment.postMessage({
+            id: 'start-static',
+            envName: name,
+            entityPath: entryPath,
+            serverConfig
+        });
     }
+    clientConfig.push(
+        COM.use({
+            config: {
+                topology
+            }
+        })
+    );
 
     app.get('/server-config.js', (_req, res) => {
         res.json(clientConfig);

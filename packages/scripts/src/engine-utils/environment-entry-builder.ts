@@ -1,4 +1,3 @@
-import { run, TopLevelConfig } from '@wixc3/engine-core';
 import deindent from 'deindent';
 import { CONFIG_QUERY_PARAM, CORE_PACKAGE, FEATURE_QUERY_PARAM } from '../build-constants';
 import { EngineEnvironmentDef, FeatureMapping, JSRuntime } from '../types';
@@ -7,30 +6,6 @@ import { EngineEnvironmentDef, FeatureMapping, JSRuntime } from '../types';
  * Builder to generate engine entry files
  */
 export class EnvironmentEntryBuilder {
-    public runEntry(
-        featureToUse: string,
-        configToLoad: string,
-        {
-            featureMapping,
-            envFiles,
-            contextFiles = new Set<string>()
-        }: Pick<EngineEnvironmentDef, 'envFiles' | 'featureMapping' | 'contextFiles'>,
-        overrideConfig: TopLevelConfig = []
-    ) {
-        contextFiles.forEach(contextFile => require(contextFile));
-        envFiles.forEach(filePath => require(filePath));
-
-        const mainFeature = featureMapping.mapping[featureToUse];
-
-        /* Load config */
-        const currentFeature = require(mainFeature.featureFilePath).default;
-        const currentConfig = require(mainFeature.configurations[configToLoad]).default;
-        /* Run the engine */
-        return {
-            engine: run([currentFeature], [...currentConfig, ...overrideConfig]),
-            runningFeature: currentFeature
-        };
-    }
     public buildDynamic({
         name,
         target,

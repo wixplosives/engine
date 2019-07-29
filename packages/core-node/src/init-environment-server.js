@@ -6,5 +6,5 @@ if (__dirname.includes(normalize('/packages/scripts'))) {
     require('@ts-tools/node/r');
 } 
 
-require(join(__dirname,'./run-environment-server'));
+require(join(__dirname,'run-environment-server'));
 

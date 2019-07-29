@@ -12,7 +12,7 @@ describe('Application', function() {
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
-    afterEach(disposables.dispose);
+    afterEach(async () => await disposables.dispose());
     after(() => browserProvider.dispose());
 
     it(`supports building features with a single fixture`, async () => {

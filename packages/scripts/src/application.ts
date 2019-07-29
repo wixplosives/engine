@@ -70,7 +70,7 @@ export class Application {
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
 
-        const serverEnvironmentEntryPoints: Record<string, string> = {};
+        const serverEnvironmentEndPoints: Record<string, string> = {};
         const compiler = webpack(this.createConfig(environments));
 
         app.use('/favicon.ico', (_req, res) => {
@@ -84,7 +84,7 @@ export class Application {
                     'COM',
                     {
                         config: {
-                            topology: serverEnvironmentEntryPoints
+                            topology: serverEnvironmentEndPoints
                         }
                     }
                 ]
@@ -129,33 +129,27 @@ export class Application {
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
             const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
             const nodeEnvironments = environments.filter(({ target }) => target === 'node');
-            const closeEnvironmentsHandlers: Array<{ close: () => Promise<void> }> = [];
             const disposables: Array<() => unknown> = [];
             for (const environment of nodeEnvironments) {
                 const remoteNodeEnvironmentHost = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
                 const environmentPort = await remoteNodeEnvironmentHost.start();
-                serverEnvironmentEntryPoints[environment.name] = `http://localhost:${environmentPort}/_ws`;
+                serverEnvironmentEndPoints[environment.name] = `http://localhost:${environmentPort}/_ws`;
                 disposables.push(() => remoteNodeEnvironmentHost.dispose());
-                closeEnvironmentsHandlers.push(
-                    await this.startNodeEnvironment(remoteNodeEnvironmentHost, {
-                        environment,
-                        featureMapping,
-                        featureName,
-                        configName,
-                        projectPath: projectDirectoryPath,
-                        topology: serverEnvironmentEntryPoints
-                    })
-                );
+                const { close } = await this.startNodeEnvironment(remoteNodeEnvironmentHost, {
+                    environment,
+                    featureMapping,
+                    featureName,
+                    configName,
+                    projectPath: projectDirectoryPath,
+                    serverPort: port
+                });
+                disposables.push(async () => await close());
             }
 
             return {
                 close: async () => {
-                    for (const handler of closeEnvironmentsHandlers) {
-                        await handler.close();
-                    }
-                    closeEnvironmentsHandlers.length = 0;
-                    for (const handler of disposables) {
-                        await handler();
+                    for (const dispose of disposables) {
+                        await dispose();
                     }
                     disposables.length = 0;
                 }
@@ -247,7 +241,7 @@ export class Application {
     }
     private async startNodeEnvironment(
         remoteNodeEnvironment: RemoteNodeEnvironment,
-        { configName, featureMapping, featureName, environment, projectPath, topology }: ServerEnvironmentOptions
+        { configName, featureMapping, featureName, environment, projectPath, serverPort }: ServerEnvironmentOptions
     ) {
         const envName = environment.name;
         const startMessage = new Promise(resolve => {
@@ -270,7 +264,7 @@ export class Application {
                 featureName,
                 configName,
                 projectPath,
-                topology
+                serverPort
             }
         });
         await startMessage;
