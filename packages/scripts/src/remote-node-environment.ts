@@ -56,10 +56,9 @@ export class RemoteNodeEnvironment {
             const WorkerThreadsModule = await import('worker_threads');
             return new WorkerThreadsModule.Worker(entryPath);
         } catch {
-            const proc = fork(require.resolve(entryPath));
-            proc.on('error', err => {
-                throw err;
-            });
+            const proc = fork(require.resolve(entryPath), [], { execArgv: [] });
+            // tslint:disable-next-line: no-console
+            proc.on('error', console.error);
             return new ForkedProcess(proc);
         }
     }
