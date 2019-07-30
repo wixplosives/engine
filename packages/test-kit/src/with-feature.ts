@@ -1,8 +1,9 @@
 import { IFeatureTarget } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
+import { DetachedApp } from './detached-app';
 import { createDisposables } from './disposables';
-import { IExecutableApplication, LocalApp, ProcessApp } from './executable-app';
+import { IExecutableApplication } from './types';
 
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
@@ -49,11 +50,10 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     let featureUrl: string;
     let allowErrors = false;
     const capturedErrors: Error[] = [];
-    let executableApp: IExecutableApplication;
+    const executableApp: IExecutableApplication = new DetachedApp(cliEntry, basePath, withFeatureOptions.debugNode);
 
     before('start application', async function() {
         this.timeout(60_000 * 4); // 4 minutes
-        executableApp = withFeatureOptions.debugNode ? new LocalApp(basePath) : new ProcessApp(cliEntry, basePath);
 
         const port = await executableApp.startServer();
 

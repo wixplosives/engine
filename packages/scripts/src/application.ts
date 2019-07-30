@@ -110,7 +110,7 @@ export class Application {
         const socketServer = io(httpServer);
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
-            const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : this.basePath;
+            projectPath = fs.resolve(projectPath || '');
 
             const environmentServer = initEnvironmentServer(
                 socketServer,
@@ -118,7 +118,7 @@ export class Application {
                 featureMapping,
                 featureName,
                 configName,
-                projectDirectoryPath
+                projectPath
             );
 
             return {
