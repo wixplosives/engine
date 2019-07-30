@@ -32,7 +32,7 @@ export class DetachedApp implements IExecutableApplication {
         this.port = await new Promise<number>((resolve, reject) => {
             engineStartProcess.once('message', message => {
                 if (isPortMessage(message)) {
-                    resolve(message.port);
+                    resolve(message.payload.port);
                 } else {
                     reject(new Error('Invalid message was received for start server command'));
                 }
