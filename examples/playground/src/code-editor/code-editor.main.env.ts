@@ -8,7 +8,6 @@ document.body.classList.add(classes.root);
 CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM }) => {
     const codeService = new CodeService();
     const errorService = new ErrorService();
-    COM.spawn(PROCESSING); // returns processingID
 
     sidebarSlot.register({
         button: {
@@ -26,7 +25,8 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM }) => {
         }
     });
 
-    run(() => {
+    run(async () => {
+        await COM.spawn(PROCESSING); // returns processingID
         const { codeInput, sidebar } = render();
 
         codeInput.value = codeService.getContent();
