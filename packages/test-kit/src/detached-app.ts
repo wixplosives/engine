@@ -1,85 +1,93 @@
 import {
     IFeatureMessage,
     IFeatureTarget,
-    IPortMessage,
+    isPortMessage,
     isProcessMessage,
     ProcessMessageId
-} from '@wixc3/engine-scripts/src';
+} from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
 import { IExecutableApplication } from './types';
 
 export class DetachedApp implements IExecutableApplication {
-    private engineStartProcess: ChildProcess;
+    private engineStartProcess: ChildProcess | undefined;
     private port: number | undefined;
     private featureId: number | undefined;
 
-    constructor(private cliEntry: string, basePath: string) {
-        const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
-
-        this.engineStartProcess = fork(this.cliEntry, ['start-engine-server'], {
-            stdio: 'inherit',
-            cwd: basePath,
-            execArgv
-        });
-    }
+    constructor(private cliEntry: string, private basePath: string) {}
 
     public async startServer() {
         if (this.port) {
             throw new Error('The server is already running.');
         }
-        const { port } = (await this.waitForProcessMessage('port')) as IPortMessage;
+        const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
 
-        this.port = port;
+        const engineStartProcess = fork(this.cliEntry, ['start-engine-server'], {
+            stdio: 'inherit',
+            cwd: this.basePath,
+            execArgv
+        });
+
+        this.engineStartProcess = engineStartProcess;
+
+        this.port = await new Promise<number>((resolve, reject) => {
+            engineStartProcess.once('message', message => {
+                if (isPortMessage(message)) {
+                    resolve(message.port);
+                } else {
+                    reject(new Error('Invalid message was received for start server command'));
+                }
+            });
+        });
 
         return this.port;
     }
 
     public async closeServer() {
-        this.engineStartProcess.send({ id: 'server-disconnect' });
-        await this.waitForProcessMessage('server-disconnected');
-        await new Promise((resolve, reject) => {
-            this.engineStartProcess.kill();
-            this.engineStartProcess.once('exit', () => {
-                this.engineStartProcess.off('error', reject);
-                resolve();
-            });
-            this.engineStartProcess.once('error', reject);
+        await this.waitForProcessMessage('feature-closed', p => {
+            p.send({ id: 'server-disconnect' });
         });
     }
 
     public async runFeature({ configName, featureName, projectPath }: IFeatureTarget) {
-        if (!this.port) {
-            throw new Error(
-                `server is not initialized yet, cant process runFeature for feature '${featureName} 'with '${configName}' config`
-            );
-        }
-        this.engineStartProcess.send({
-            id: 'run-feature',
-            payload: { configName, featureName, projectPath }
-        });
+        const { id } = (await this.waitForProcessMessage('feature-initialized', p => {
+            p.send({
+                id: 'run-feature',
+                payload: { configName, featureName, projectPath }
+            });
+        })) as IFeatureMessage;
 
-        const { id } = (await this.waitForProcessMessage('feature-initialized')) as IFeatureMessage;
         this.featureId = id;
     }
 
     public async closeFeature() {
-        this.engineStartProcess.send({ id: 'close-feature', payload: { id: this.featureId } });
-        await this.waitForProcessMessage('feature-closed');
+        await this.waitForProcessMessage('feature-closed', p => {
+            p.send({ id: 'close-feature', payload: { id: this.featureId } });
+        });
     }
 
-    private async waitForProcessMessage(messageId: ProcessMessageId): Promise<unknown> {
+    private async waitForProcessMessage(
+        messageId: ProcessMessageId,
+        action?: (appProcess: ChildProcess) => void
+    ): Promise<unknown> {
+        const { engineStartProcess } = this;
+        if (!engineStartProcess) {
+            throw new Error('Engine is not started yet');
+        }
         return new Promise<unknown>((resolve, reject) => {
             const onMessage = (message: unknown) => {
                 if (isProcessMessage(message) && message.id === messageId) {
-                    this.engineStartProcess.off('message', onMessage);
-                    this.engineStartProcess.off('error', reject);
-                    this.engineStartProcess.off('exit', reject);
+                    engineStartProcess.off('message', onMessage);
+                    engineStartProcess.off('exit', reject);
+                    engineStartProcess.off('error', reject);
                     resolve(message.payload);
                 }
             };
-            this.engineStartProcess.on('message', onMessage);
-            this.engineStartProcess.once('error', reject);
-            this.engineStartProcess.once('exit', reject);
+            engineStartProcess.on('message', onMessage);
+            engineStartProcess.once('error', reject);
+            engineStartProcess.once('exit', reject);
+            if (action) {
+                action(engineStartProcess);
+            }
         });
     }
 }
