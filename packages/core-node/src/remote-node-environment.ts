@@ -38,7 +38,7 @@ export class RemoteNodeEnvironment {
         }
     }
 
-    public postMessage<T extends ICommunicationMessage>(message: T) {
+    public postMessage(message: ICommunicationMessage) {
         if (!this.worker) {
             throw new Error('worker is not started');
         }
