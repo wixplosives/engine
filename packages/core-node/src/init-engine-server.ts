@@ -1,8 +1,8 @@
 import { COM, EnvironmentLiveServer } from '@wixc3/engine-core';
-import { RemoteNodeEnvironment } from '@wixc3/engine-scripts';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import { join } from 'path';
+import { RemoteNodeEnvironment } from './remote-node-environment';
 
 export interface EnvironmentDescription {
     env: EnvironmentLiveServer<string>;
