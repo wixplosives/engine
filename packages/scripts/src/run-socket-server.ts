@@ -10,8 +10,8 @@ import {
     ICommunicationMessage,
     IEnvironmentPortMessage,
     isEnvironmentCloseMessage,
+    isEnvironmentPortMessage,
     isEnvironmentStartMessage,
-    isPortMessage,
     RemoteProcess,
     ServerEnvironmentOptions
 } from './types';
@@ -29,7 +29,7 @@ export async function createWorkerProtocol(parentProcess: RemoteProcess) {
     const socketServer = io(httpServer);
 
     parentProcess!.on('message', async (message: ICommunicationMessage) => {
-        if (isPortMessage(message)) {
+        if (isEnvironmentPortMessage(message)) {
             parentProcess!.postMessage({ id: 'port', port } as IEnvironmentPortMessage);
         } else if (isEnvironmentStartMessage(message)) {
             environments[message.envName] = await initEnvironmentServer(socketServer, message.data);

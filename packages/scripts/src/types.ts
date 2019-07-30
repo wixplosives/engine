@@ -163,7 +163,7 @@ export const isEnvironmentStartMessage = (message: ICommunicationMessage): messa
 export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
     message.id === 'close';
 
-export const isPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
+export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
     message.id === 'port';
 
 export const isEnvironmentStartStaticMessage = (

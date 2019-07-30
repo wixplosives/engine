@@ -1,7 +1,7 @@
 import {
     IFeatureMessage,
     IFeatureTarget,
-    isPortMessage,
+    IPortMessage,
     isProcessMessage,
     ProcessMessageId
 } from '@wixc3/engine-scripts';
@@ -29,15 +29,9 @@ export class DetachedApp implements IExecutableApplication {
 
         this.engineStartProcess = engineStartProcess;
 
-        this.port = await new Promise<number>((resolve, reject) => {
-            engineStartProcess.once('message', message => {
-                if (isPortMessage(message)) {
-                    resolve(message.port);
-                } else {
-                    reject(new Error('Invalid message was received for start server command'));
-                }
-            });
-        });
+        const { port } = (await this.waitForProcessMessage('port')) as IPortMessage;
+
+        this.port = port;
 
         return this.port;
     }
