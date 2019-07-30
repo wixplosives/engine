@@ -71,10 +71,7 @@ export class Application {
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
         const compiler = webpack(this.createConfig(environments, port));
 
-        app.use('/favicon.ico', (_req, res) => {
-            res.status(204); // No Content
-            res.end();
-        });
+        app.use('/favicon.ico', noContentHandler);
 
         compiler.hooks.watchRun.tap('engine-scripts', () => {
             console.log('Bundling using webpack...');
@@ -217,3 +214,8 @@ export class Application {
         });
     }
 }
+
+const noContentHandler: express.RequestHandler = (_req, res) => {
+    res.status(204); // No Content
+    res.end();
+};
