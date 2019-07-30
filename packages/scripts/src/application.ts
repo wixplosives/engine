@@ -19,8 +19,8 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 
 import { IEnvironment, loadFeaturesFromPackages } from './analyze-feature';
-import { createBundleConfig, envTypeToBundleTarget } from './create-bundle-config';
 import { createEntrypoints } from './create-entrypoints';
+import { createBundleConfig, envTypeToBundleTarget } from './create-webpack-config';
 import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
 

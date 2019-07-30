@@ -1,13 +1,8 @@
 import { StylableWebpackPlugin } from '@stylable/webpack-plugin';
 import { EnvironmentTypes } from '@wixc3/engine-core';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
 import { inOwnRepo } from './own-repo-hook';
-
-// until the following two are fixed:
-// https://github.com/jantimon/html-webpack-plugin/issues/1243
-// https://github.com/jantimon/html-webpack-plugin/issues/1244
-// tslint:disable-next-line: no-var-requires
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 export interface ICreateBundleConfigOptions {
     context: string;
