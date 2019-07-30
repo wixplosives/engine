@@ -112,7 +112,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(
             packageJsonPath
         ) as IPackageJson;
-        directoryToPackageName.set(featureDirectoryPath, getPackageName(name));
+        directoryToPackageName.set(featureDirectoryPath, simplifyPackageName(name));
     }
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
@@ -196,7 +196,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 
 const featurePackagePostfix = '-feature';
 
-function getPackageName(name: string) {
+/**
+ * Removes package scope (e.g `@wix`) and posfix `-feature`.
+ */
+function simplifyPackageName(name: string) {
     const indexOfSlash = name.indexOf('/');
     if (name.startsWith('@') && indexOfSlash !== -1) {
         name = name.slice(indexOfSlash + 1);
