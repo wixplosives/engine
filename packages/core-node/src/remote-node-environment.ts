@@ -1,6 +1,6 @@
+import { ForkedProcess } from '@wixc3/engine-scripts/src/forked-process';
+import { ICommunicationMessage, isPortMessage, RemoteProcess } from '@wixc3/engine-scripts/src/types';
 import { fork } from 'child_process';
-import { ForkedProcess } from './forked-process';
-import { ICommunicationMessage, isPortMessage, RemoteProcess } from './types';
 
 export class RemoteNodeEnvironment {
     private worker: RemoteProcess | undefined;

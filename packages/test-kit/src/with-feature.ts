@@ -130,7 +130,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
             const { id } = (await waitForProcessMessage(engineStartProcess, 'feature-initialized')) as IFeatureMessage;
 
-            disposeAfterEach.add('closing feature withFeature', async () => {
+            disposeAfterEach.add(async () => {
                 engineStartProcess.send({ id: 'close-feature', payload: { id } });
                 await waitForProcessMessage(engineStartProcess, 'feature-closed');
             });

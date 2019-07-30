@@ -4,17 +4,19 @@
  * We use Node's native module system to directly load configuration file.
  * This configuration can (and should) be written as a `.ts` file.
  */
+import '@stylable/node/register';
+import '@ts-tools/node/fast';
+
 import fs from '@file-services/node';
+import { RemoteNodeEnvironment } from '@wixc3/engine-core-node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
+import { join } from 'path';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
-import { join } from 'path';
 import { engineDevMiddleware } from './engine-dev-middleware';
-import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
-import { FeatureLocator } from './engine-utils/feature-locator';
-import { RemoteNodeEnvironment } from './remote-node-environment';
+import { createEnvWebpackConfig, createStaticWebpackConfigs, FeatureLocator } from './engine-utils';
 import {
     EngineEnvironmentEntry,
     FeatureMapping,
@@ -22,8 +24,7 @@ import {
     LinkInfo,
     ServerEnvironmentOptions
 } from './types';
-import { resolvePackages } from './utils/resolve-packages';
-import { rimraf } from './utils/rimraf';
+import { resolvePackages, rimraf } from './utils';
 
 export interface IFeatureTarget {
     featureName?: string;
@@ -70,7 +71,7 @@ export class Application {
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
 
-        const serverEnvironmentEndPoints: Record<string, string> = {};
+        const serverEnvironmentEndpoints: Record<string, string> = {};
         const compiler = webpack(this.createConfig(environments));
 
         app.use('/favicon.ico', (_req, res) => {
@@ -84,7 +85,7 @@ export class Application {
                     'COM',
                     {
                         config: {
-                            topology: serverEnvironmentEndPoints
+                            topology: serverEnvironmentEndpoints
                         }
                     }
                 ]
@@ -133,7 +134,7 @@ export class Application {
             for (const environment of nodeEnvironments) {
                 const remoteNodeEnvironmentHost = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
                 const environmentPort = await remoteNodeEnvironmentHost.start();
-                serverEnvironmentEndPoints[environment.name] = `http://localhost:${environmentPort}/_ws`;
+                serverEnvironmentEndpoints[environment.name] = `http://localhost:${environmentPort}/_ws`;
                 const { close } = await this.startNodeEnvironment(remoteNodeEnvironmentHost, {
                     environment,
                     featureMapping,
