@@ -10,7 +10,7 @@ export class RemoteNodeEnvironment {
 
     public async start(): Promise<number> {
         return new Promise(async resolve => {
-            this.worker = await this.startRemoteEnvironment(this.entityFilePath);
+            this.worker = await this.startRemoteEnvironment();
             this.subscribe((message: ICommunicationMessage): void => {
                 if (isPortMessage(message)) {
                     resolve(message.port);
@@ -51,12 +51,14 @@ export class RemoteNodeEnvironment {
         }
     }
 
-    private async startRemoteEnvironment(entryPath: string): Promise<RemoteProcess> {
+    private async startRemoteEnvironment(): Promise<RemoteProcess> {
         try {
+            throw new Error();
             const WorkerThreadsModule = await import('worker_threads');
-            return new WorkerThreadsModule.Worker(entryPath);
+            return new WorkerThreadsModule.Worker(this.entityFilePath, {});
         } catch {
-            const proc = fork(require.resolve(entryPath), [], { execArgv: [] });
+            const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
+            const proc = fork(require.resolve(this.entityFilePath), [], { execArgv });
             // tslint:disable-next-line: no-console
             proc.on('error', console.error);
             return new ForkedProcess(proc);

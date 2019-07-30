@@ -10,21 +10,19 @@ getParentProcess().then(parentProcess => {
     if (parentProcess) {
         parentProcess.on('message', async message => {
             if (isEnvironmentStartStaticMessage(message)) {
-                const { envName, entityPaths, serverConfig } = message;
+                const { envName, entityPath, serverConfig } = message;
                 const app = express();
                 const { httpServer, port } = await safeListeningHttpServer(3000, app);
                 const socketServer = io(httpServer).of('/_ws');
-                for (const entityPath of entityPaths) {
-                    require(entityPath).default([
-                        COM.use({
-                            config: {
-                                host: new WsServerHost(socketServer),
-                                id: envName
-                            }
-                        }),
-                        ...serverConfig
-                    ]);
-                }
+                require(entityPath).default([
+                    COM.use({
+                        config: {
+                            host: new WsServerHost(socketServer),
+                            id: envName
+                        }
+                    }),
+                    ...serverConfig
+                ]);
                 const portMessage: IEnvironmentPortMessage = {
                     id: 'port',
                     port

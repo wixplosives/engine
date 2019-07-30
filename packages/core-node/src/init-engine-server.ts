@@ -1,4 +1,5 @@
-import { COM, EnvironmentLiveServer } from '@wixc3/engine-core';
+import { COM, EnvironmentLiveServer, IComConfig } from '@wixc3/engine-core';
+import { IEnvironmentStartStaticMessage } from '@wixc3/engine-scripts/src';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import { join } from 'path';
@@ -14,7 +15,7 @@ export async function initEngineServer(
     clientEntry: string,
     pathToEditorDist: string,
     clientConfig: unknown[] = [],
-    serverConfig: unknown[] = [],
+    serverConfig: Array<Partial<IComConfig>> = [],
     serverEnvironments: EnvironmentDescription[] = []
 ) {
     const app = express();
@@ -43,12 +44,13 @@ export async function initEngineServer(
         const remoteEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-environment-server'));
         const environmentPort = await remoteEnvironment.start();
         Object.assign(topology, getLocalTopology(environmentPort));
-        remoteEnvironment.postMessage({
+        const startStaticServerMessage: IEnvironmentStartStaticMessage = {
             id: 'start-static',
             envName: name,
             entityPath: entryPath,
             serverConfig
-        });
+        };
+        remoteEnvironment.postMessage(startStaticServerMessage);
     }
     clientConfig.push(
         COM.use({

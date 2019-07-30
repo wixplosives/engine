@@ -140,7 +140,7 @@ export interface IEnvironmaneStartMessage extends IEnvironmentMessage {
 export interface IEnvironmentStartStaticMessage extends IEnvironmentMessage {
     id: 'start-static';
     envName: string;
-    entityPaths: string[];
+    entityPath: string;
     serverConfig: Array<Partial<IComConfig>>;
 }
 
