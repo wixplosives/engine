@@ -16,9 +16,9 @@ import {
     SingleEndPointAsyncEnvironment,
     SingleEndpointContextualEnvironment,
     Slot,
-    type_check,
     Universal
 } from '../../src';
+import { type_check } from '../type-check';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

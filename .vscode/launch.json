@@ -10,12 +10,13 @@
             "name": "Mocha Current",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
+                "--inspect",
                 "--timeout",
                 "999999",
                 "${file}"
             ],
             "outputCapture": "std",
-            "internalConsoleOptions": "openOnSessionStart"
+            "autoAttachChildProcesses": true
         },
         {
             "type": "node",
@@ -34,6 +35,22 @@
             "request": "attach",
             "name": "Attach",
             "port": 9229
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Engine start",
+            "program": "${workspaceFolder}/node_modules/@wixc3/engine-scripts/cli.js",
+            "args": [
+                "start",
+                "${fileDirname}"
+            ],
+            "runtimeArgs": [
+                "--inspect"
+            ],
+            "outputCapture": "std",
+            "autoAttachChildProcesses": true
+        },
+        
     ]
 }

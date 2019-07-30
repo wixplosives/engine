@@ -218,7 +218,7 @@ export class Communication {
             return;
         }
         if (env.id !== this.rootEnvId) {
-            this.forwardMessage(message, env);
+            await this.forwardMessage(message, env);
             return;
         }
         try {

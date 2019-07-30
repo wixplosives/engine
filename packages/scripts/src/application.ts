@@ -40,6 +40,7 @@ export interface IStartOptions {
 interface IQueryParams {
     [param: string]: string;
 }
+
 export class Application {
     /**
      *
@@ -123,7 +124,7 @@ export class Application {
         const socketServer = io(httpServer);
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
-            projectPath = projectPath ? fs.resolve(projectPath) : process.cwd();
+            projectPath = fs.resolve(projectPath || '');
 
             const environmentServer = await runNodeEnvironments({
                 socketServer,
@@ -150,7 +151,6 @@ export class Application {
                     await new Promise(res => devMiddleware.close(res));
                 }
                 await new Promise(res => socketServer.close(res));
-                await new Promise(res => httpServer.close(res));
             }
         };
     }

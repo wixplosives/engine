@@ -1,16 +1,10 @@
-import { EQUAL, TuppleToUnion as TupleToUnion } from 'typescript-type-utils';
+import { TupleToUnion } from 'typescript-type-utils';
 import { LogMessage } from './common-types';
 import { Config } from './entities/config';
 import { AllEnvironments, Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from './symbols';
-
-/*************** TEST KIT  ***************/
-
-export function type_check<U extends true, T extends (...args: U[]) => U>(_fn: T) {
-    /* */
-}
 
 /*************** HELPER TYPES  ***************/
 
@@ -64,13 +58,10 @@ type OnlyLocalUniversalOutput = Entity<any, any, typeof Universal, any, 'output'
 
 type AnyRemote = Entity<any, any, any, any, any, true>;
 type AnyInput = Entity<any, any, any, any, 'input', false>;
-// TODO: fix me
-// type AnyNonRemoteOutput = Entity<any, never, any, any, 'output'>
 
 export type GetInputs<T extends EntityMap> = JustFilter<T, AnyInput>;
 export type GetOutputs<T extends EntityMap> = JustFilter<T, AnyOutput>;
 
-// export type GetRemoteOutputs<T extends EntityMap> = JustFilterReverse<GetOutputs<T>, AnyNonRemoteOutput>
 export type GetRemoteOutputs<T extends EntityMap> = JustFilter<T, AnyRemote>;
 export type GetOnlyLocalUniversalOutputs<T extends EntityMap> = JustFilter<T, OnlyLocalUniversalOutput>;
 
@@ -103,21 +94,13 @@ type FilterEnv<T extends EntityMap, EnvFilter extends string, Key extends 'visib
     FilterENVKeys<T, EnvFilter, Key>
 >;
 
-// type HideEnv<T extends EntityMap, EnvFilter extends string, Key extends 'visibleAt' | 'providedFrom'> = Pick<
-//     T,
-//     Exclude<keyof T, FilterENVKeys<T, EnvFilter, Key>>
-// >
-
-// prettier-ignore
-type MapType<X extends EntityMap> = ({ [k in keyof X]: X[k]['type'] });
+type MapType<X extends EntityMap> = { [k in keyof X]: X[k]['type'] };
 type MapRecordType<X extends Record<string, { type: any }>> = { [k in keyof X]: X[k]['type'] };
 
-// prettier-ignore
-export type MapToProxyType<T extends EntityMap> = ({
-    [K in keyof T]: T[K]['proxyType']
-});
-// prettier-ignore
-export type MapToPartialType<T extends { [k: string]: any }> = ({ [K in keyof T]: Partial<T[K]['type']> });
+export type MapToProxyType<T extends EntityMap> = {
+    [K in keyof T]: T[K]['proxyType'];
+};
+export type MapToPartialType<T extends { [k: string]: any }> = { [K in keyof T]: Partial<T[K]['type']> };
 
 type MapProxyTypesForEnv<
     T extends EntityMap,
@@ -152,23 +135,20 @@ export type Running<T extends UnknownFeatureDef, ENV extends string> = MapProxyT
     'visibleAt'
 >;
 
-// prettier-ignore
 export type RunningFeatures<
     T extends SomeFeature[],
     ENV extends string,
     FeatureMap extends MapBy<T, 'id'> = MapBy<T, 'id'>
-    > = ({ [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> });
+> = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
 
-// prettier-ignore
-type SettingUpFeature<ID extends string, API extends EntityMap, ENV extends string> = ({
-    id: ID
-    run: (fn: () => unknown) => void
-    onDispose: (fn: DisposeFunction) => void
+type SettingUpFeature<ID extends string, API extends EntityMap, ENV extends string> = {
+    id: ID;
+    run: (fn: () => unknown) => void;
+    onDispose: (fn: DisposeFunction) => void;
 } & MapVisibleInputs<API, ENV> &
     MapToProxyType<GetRemoteOutputs<API>> &
-    MapToProxyType<GetOnlyLocalUniversalOutputs<API>>);
+    MapToProxyType<GetOnlyLocalUniversalOutputs<API>>;
 
-// prettier-ignore
 export type RegisteringFeature<
     API extends EntityMap,
     ENV extends string,
@@ -221,25 +201,6 @@ export type SetupHandler<
 export type PartialFeatureConfig<API> = Partial<MapToPartialType<JustFilter<API, Config<any>>>>;
 
 export type TopLevelConfig = Array<[string, object]>;
-
-// tslint:disable-next-line:no-namespace
-export declare namespace Tests {
-    export type FromString = EQUAL<EnvType<'main'>, 'main'>;
-    export type FromEnvArray = EQUAL<EnvType<[{ env: 'main' }]>, 'main'>;
-    export type FromEnv = EQUAL<EnvType<{ env: 'main' }>, 'main'>;
-    export type FromEnvArrayMultiple = EQUAL<EnvType<[{ env: 'main' }, { env: 'main1' }]>, 'main' | 'main1'>;
-    export type FromEnvEmptyArray = EQUAL<EnvType<[]>, any>;
-
-    export type RunningEmpty = EQUAL<Running<{ id: ''; api: {} }, 'main'>, {}>;
-    export type RunningProvidesApiInputTypes = EQUAL<
-        Running<{ id: ''; api: { x: Entity<string, string, 'main', 'main', 'input', false> } }, 'main'>,
-        { x: string }
-    >;
-    export type RunningProvidesApiOutputTypes = EQUAL<
-        Running<{ id: ''; api: { x: Entity<string, string, 'main', 'main', 'output', false> } }, 'main'>,
-        { x: string }
-    >;
-}
 
 export interface LoggerTransport {
     name: string;

@@ -99,6 +99,13 @@ export interface IProcessMessage<T> {
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
 
+export const isPortMessage = (value: unknown): value is IProcessMessage<IPortMessage> => {
+    return isProcessMessage(value) && value.id === 'port';
+};
+
+export const isFeatureMessage = (value: unknown): value is IProcessMessage<IFeatureMessage> => {
+    return isProcessMessage(value) && value.id === 'feature-initialized';
+};
 export interface IFeatureMessage {
     id: number;
 }
