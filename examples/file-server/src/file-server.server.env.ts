@@ -6,23 +6,27 @@ import { IDirectoryContents } from './types';
  * implementation of the FileSystemAPI interface
  */
 class RemoteFilesAPI implements FileSystemAPI {
+    private fileActions: FileActions;
+    constructor(basePath: string) {
+        this.fileActions = new FileActions(basePath);
+    }
     public async readDir(directoryPath: string): Promise<IDirectoryContents> {
-        return FileActions.getDirectoryTree(directoryPath);
+        return this.fileActions.getDirectoryTree(directoryPath);
     }
 
     public async readFile(filePath: string): Promise<string | null> {
-        return FileActions.getFileContents(filePath);
+        return this.fileActions.getFileContents(filePath);
     }
 }
 
 /**
  * setting up the server environment
  */
-FileServer.setup(server, ({}, {}) => {
+FileServer.setup(server, ({ fileServerConfig }, {}) => {
     /**
      * exposing the remoteFiles implementation of thje server side
      */
     return {
-        remoteFiles: new RemoteFilesAPI()
+        remoteFiles: new RemoteFilesAPI(fileServerConfig.defaultDirName)
     };
 });

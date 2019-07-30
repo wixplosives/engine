@@ -128,7 +128,7 @@ export interface IEnvironmentPortMessage extends ICommunicationMessage {
 }
 
 export interface IEnvironmentMessage extends ICommunicationMessage {
-    id: 'start' | 'start-static';
+    id: 'start' | 'start-static' | 'close';
     envName: string;
 }
 

@@ -12,19 +12,23 @@ import { RemoteNodeEnvironment } from '@wixc3/engine-core-node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import { join } from 'path';
+import rimrafCb from 'rimraf';
+import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-
 import { engineDevMiddleware } from './engine-dev-middleware';
-import { createEnvWebpackConfig, createStaticWebpackConfigs, FeatureLocator } from './engine-utils';
+import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
+import { FeatureLocator } from './engine-utils/feature-locator';
 import {
     EngineEnvironmentEntry,
     FeatureMapping,
+    IEnvironmaneStartMessage,
+    IEnvironmentMessage,
     isEnvironmentStartMessage,
     LinkInfo,
     ServerEnvironmentOptions
 } from './types';
-import { resolvePackages, rimraf } from './utils';
+import { resolvePackages } from './utils/resolve-packages';
 
 export interface IFeatureTarget {
     featureName?: string;
@@ -40,6 +44,9 @@ export interface IStartOptions {
 interface IQueryParams {
     [param: string]: string;
 }
+
+const rimraf = promisify(rimrafCb);
+
 export class Application {
     /**
      *
@@ -74,10 +81,7 @@ export class Application {
         const serverEnvironmentEndpoints: Record<string, string> = {};
         const compiler = webpack(this.createConfig(environments));
 
-        app.use('/favicon.ico', (_req, res) => {
-            res.status(204); // No Content
-            res.end();
-        });
+        app.use('/favicon.ico', noContentHandler);
 
         app.get('/server-config.js', (_req, res) => {
             res.json([
@@ -128,7 +132,7 @@ export class Application {
         configLinks.forEach(({ url }) => console.log(url));
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
-            const projectDirectoryPath = projectPath ? fs.resolve(projectPath) : process.cwd();
+            projectPath = fs.resolve(projectPath || '');
             const nodeEnvironments = environments.filter(({ target }) => target === 'node');
             const disposables: Array<() => unknown> = [];
             for (const environment of nodeEnvironments) {
@@ -140,7 +144,7 @@ export class Application {
                     featureMapping,
                     featureName,
                     configName,
-                    projectPath: projectDirectoryPath,
+                    projectPath,
                     serverPort: port
                 });
                 disposables.push(async () => await close());
@@ -252,22 +256,19 @@ export class Application {
                 }
             });
         });
-        remoteNodeEnvironment.postMessage({
+        const startFeature: IEnvironmaneStartMessage = {
             id: 'start',
             envName,
             data: {
-                environment: {
-                    ...environment,
-                    envFiles: Array.from(environment.envFiles),
-                    contextFiles: environment.contextFiles ? Array.from(environment.envFiles) : []
-                },
+                environment,
                 featureMapping,
                 featureName,
                 configName,
                 projectPath,
                 serverPort
             }
-        });
+        };
+        remoteNodeEnvironment.postMessage(startFeature);
         await startMessage;
         return {
             close: () => {
@@ -277,9 +278,15 @@ export class Application {
                             resolve();
                         }
                     });
-                    remoteNodeEnvironment.postMessage({ id: 'close', envName });
+                    const enviroenentCloseServer: IEnvironmentMessage = { id: 'close', envName };
+                    remoteNodeEnvironment.postMessage(enviroenentCloseServer);
                 });
             }
         };
     }
 }
+
+const noContentHandler: express.RequestHandler = (_req, res) => {
+    res.status(204); // No Content
+    res.end();
+};

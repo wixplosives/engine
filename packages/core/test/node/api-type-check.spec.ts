@@ -1,16 +1,7 @@
 import { EQUAL, ExpectTrue } from 'typescript-type-utils';
 import { DisposeFunction, Environment, Universal } from '../../src';
-import {
-    Config,
-    Feature,
-    Registry,
-    Running,
-    RunningFeatures,
-    RuntimeEngine,
-    Service,
-    Slot,
-    type_check
-} from '../../src';
+import { Config, Feature, Registry, Running, RunningFeatures, RuntimeEngine, Service, Slot } from '../../src';
+import { type_check } from '../type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/
 
