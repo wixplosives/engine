@@ -10,17 +10,17 @@ import '@ts-tools/node/fast';
 import fs from '@file-services/node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
+import rimrafCb from 'rimraf';
 import io from 'socket.io';
+import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-
 import { engineDevMiddleware } from './engine-dev-middleware';
 import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
 import { FeatureLocator } from './engine-utils/feature-locator';
 import { initEnvironmentServer } from './environment-socket-server';
 import { EngineEnvironmentEntry, FeatureMapping, LinkInfo } from './types';
 import { resolvePackages } from './utils/resolve-packages';
-import { rimraf } from './utils/rimraf';
 
 export interface IFeatureTarget {
     featureName?: string;
@@ -36,6 +36,9 @@ export interface IStartOptions {
 interface IQueryParams {
     [param: string]: string;
 }
+
+const rimraf = promisify(rimrafCb);
+
 export class Application {
     /**
      *
