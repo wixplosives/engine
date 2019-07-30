@@ -1,5 +1,5 @@
 import { ForkedProcess } from '@wixc3/engine-scripts/src/forked-process';
-import { ICommunicationMessage, isPortMessage, RemoteProcess } from '@wixc3/engine-scripts/src/types';
+import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '@wixc3/engine-scripts/src/types';
 import { fork } from 'child_process';
 
 export class RemoteNodeEnvironment {
@@ -12,7 +12,7 @@ export class RemoteNodeEnvironment {
         return new Promise(async resolve => {
             this.worker = await this.startRemoteEnvironment();
             this.subscribe((message: ICommunicationMessage): void => {
-                if (isPortMessage(message)) {
+                if (isEnvironmentPortMessage(message)) {
                     resolve(message.port);
                 }
             });
