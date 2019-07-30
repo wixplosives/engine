@@ -134,7 +134,6 @@ export class Application {
             async close() {
                 await new Promise(res => dev.close(res));
                 await new Promise(res => socketServer.close(res));
-                await new Promise(res => httpServer.close(res));
             }
         };
     }
