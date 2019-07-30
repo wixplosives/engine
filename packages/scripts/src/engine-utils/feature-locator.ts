@@ -27,7 +27,7 @@ import {
     SingleFeatureWithConfig,
     SymbolList
 } from '../types';
-import { evalFeatureSet } from '../utils/eval-feature-set';
+import { evaluateModule } from '../utils/evaluate-module';
 import { instanceOf } from '../utils/instance-of';
 import { findEngineFiles, IFeatureEntityFiles } from './find-engine-files';
 import { walkChildrenTreeByDepth } from './walk-children-tree';
@@ -237,7 +237,7 @@ export class FeatureLocator {
         cache: Map<string, EvaluatedFeature> = new Map()
     ): EvaluatedFeature[] {
         const { basename } = this.fs;
-        const locatorModule = evalFeatureSet(modulesPaths, this.basePath);
+        const locatorModule = evaluateModule(modulesPaths);
         const features = walkChildrenTreeByDepth(
             locatorModule,
             ({ filename }) => isFeatureFile(basename(filename)),
