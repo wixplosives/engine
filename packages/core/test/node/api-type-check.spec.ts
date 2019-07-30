@@ -1,16 +1,8 @@
 import { EQUAL, ExpectTrue } from 'typescript-type-utils';
 import { DisposeFunction, Environment, Universal } from '../../src';
-import {
-    Config,
-    Feature,
-    Registry,
-    Running,
-    RunningFeatures,
-    RuntimeEngine,
-    Service,
-    Slot,
-    type_check
-} from '../../src';
+import { Config, Feature, Registry, Running, RunningFeatures, RuntimeEngine, Service, Slot } from '../../src';
+
+declare function type_check<U extends true, T extends (...args: U[]) => U>(_fn: T): void;
 
 /*************** EXAMPLE FEATURE FILES ***************/
 

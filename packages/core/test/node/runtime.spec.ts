@@ -16,7 +16,6 @@ import {
     SingleEndPointAsyncEnvironment,
     SingleEndpointContextualEnvironment,
     Slot,
-    type_check,
     Universal
 } from '../../src';
 
@@ -503,6 +502,8 @@ describe('feature disposal', () => {
         expect(disposeSecond).to.have.have.callCount(1);
     });
 });
+
+declare function type_check<U extends true, T extends (...args: U[]) => U>(_fn: T): void;
 
 describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
