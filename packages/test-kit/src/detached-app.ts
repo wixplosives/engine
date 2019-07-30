@@ -13,11 +13,9 @@ export class DetachedApp implements IExecutableApplication {
     private port: number | undefined;
     private featureId: number | undefined;
 
-    constructor(private cliEntry: string, basePath: string, debugNode?: boolean) {
-        const execArgv: string[] = [];
-        if (debugNode) {
-            execArgv.push('--inspect');
-        }
+    constructor(private cliEntry: string, basePath: string) {
+        const execArgv = process.argv.some(arg => arg.includes('inspect')) ? ['--inspect'] : [];
+
         this.engineStartProcess = fork(this.cliEntry, ['start-engine-server'], {
             stdio: 'inherit',
             cwd: basePath,
@@ -26,10 +24,13 @@ export class DetachedApp implements IExecutableApplication {
     }
 
     public async startServer() {
-        if (!this.port) {
-            const { port } = (await this.waitForProcessMessage('port')) as IPortMessage;
-            this.port = port;
+        if (this.port) {
+            throw new Error('The server is already running.');
         }
+        const { port } = (await this.waitForProcessMessage('port')) as IPortMessage;
+
+        this.port = port;
+
         return this.port;
     }
 
@@ -48,7 +49,9 @@ export class DetachedApp implements IExecutableApplication {
 
     public async runFeature({ configName, featureName, projectPath }: IFeatureTarget) {
         if (!this.port) {
-            throw new Error('server is not initialized yet');
+            throw new Error(
+                `server is not initialized yet, cant process runFeature for feature '${featureName} 'with '${configName}' config`
+            );
         }
         this.engineStartProcess.send({
             id: 'run-feature',

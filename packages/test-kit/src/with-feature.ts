@@ -8,9 +8,7 @@ import { IExecutableApplication } from './types';
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
-export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {
-    debugNode?: boolean;
-}
+export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {}
 
 export interface IGetLoadedFeatureOptions extends IFeatureTarget {
     allowErrors?: boolean;
@@ -50,7 +48,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     let featureUrl: string;
     let allowErrors = false;
     const capturedErrors: Error[] = [];
-    const executableApp: IExecutableApplication = new DetachedApp(cliEntry, basePath, withFeatureOptions.debugNode);
+    const executableApp: IExecutableApplication = new DetachedApp(cliEntry, basePath);
 
     before('start application', async function() {
         this.timeout(60_000 * 4); // 4 minutes
@@ -107,7 +105,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
                 throw new Error('Engine HTTP server is closed!');
             }
             allowErrors = targetAllowErrors;
-            executableApp.runFeature({ configName, featureName, projectPath: currentProjectPath });
+            await executableApp.runFeature({ configName, featureName, projectPath: currentProjectPath });
 
             disposeAfterEach.add(async () => executableApp.closeFeature());
 
