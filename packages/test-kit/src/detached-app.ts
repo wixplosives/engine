@@ -43,9 +43,19 @@ export class DetachedApp implements IExecutableApplication {
     }
 
     public async closeServer() {
-        await this.waitForProcessMessage('feature-closed', p => {
+        const { engineStartProcess } = this;
+        if (!engineStartProcess) {
+            throw new Error('Engine is not started yet');
+        }
+        await this.waitForProcessMessage('server-disconnected', p => {
             p.send({ id: 'server-disconnect' });
         });
+        await new Promise((res, rej) => {
+            engineStartProcess.once('error', rej);
+            engineStartProcess.once('exit', res);
+            engineStartProcess.kill();
+        });
+        this.engineStartProcess = undefined;
     }
 
     public async runFeature({ configName, featureName, projectPath }: IFeatureTarget) {

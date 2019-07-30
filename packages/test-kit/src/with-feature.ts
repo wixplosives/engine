@@ -3,7 +3,6 @@ import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { DetachedApp } from './detached-app';
 import { createDisposables } from './disposables';
-import { IExecutableApplication } from './types';
 
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
@@ -48,7 +47,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     let featureUrl: string;
     let allowErrors = false;
     const capturedErrors: Error[] = [];
-    const executableApp: IExecutableApplication = new DetachedApp(cliEntry, basePath);
+    const executableApp = new DetachedApp(cliEntry, basePath);
 
     before('start application', async function() {
         this.timeout(60_000 * 4); // 4 minutes
@@ -85,7 +84,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
     after(async function() {
         this.timeout(60_000);
-        disposeAfterAll.dispose();
+        await disposeAfterAll.dispose();
     });
 
     return {
