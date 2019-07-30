@@ -16,8 +16,7 @@
                 "${file}"
             ],
             "outputCapture": "std",
-            "autoAttachChildProcesses": true,
-            "internalConsoleOptions": "openOnSessionStart"
+            "autoAttachChildProcesses": true
         },
         {
             "type": "node",
@@ -50,8 +49,7 @@
                 "--inspect"
             ],
             "outputCapture": "std",
-            "autoAttachChildProcesses": true,
-            "internalConsoleOptions": "openOnSessionStart"
+            "autoAttachChildProcesses": true
         },
         
     ]
