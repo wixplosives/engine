@@ -65,6 +65,7 @@ export class Application {
         const packages = resolvePackages(basePath);
         const { features, configurations } = loadFeaturesFromPackages(packages, fs);
         console.timeEnd('Analyzing Features.');
+        const configNames = Object.keys(configurations).join(', ');
 
         const allExportedEnvs: IEnvironment[] = [];
         for (const { exportedEnvs } of features.values()) {
@@ -76,15 +77,14 @@ export class Application {
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
         app.use('/favicon.ico', noContentHandler);
-        app.use('/config', async (req, res, next) => {
+        app.use('/config', async (req, res) => {
             const configName = req.path.slice(1);
             const configFilePath = configurations.get(configName);
             if (!configFilePath) {
-                next();
-            } else {
-                const { default: configValue } = await import(configFilePath);
-                res.send(configValue);
+                throw new Error(`cannot find config named "${configName}". available configs: ${configNames}`);
             }
+            const { default: configValue } = await import(configFilePath);
+            res.send(configValue);
         });
 
         const webpackConfigs = nonNodeEnvs.map(({ name: envName, type }) =>
@@ -101,7 +101,7 @@ export class Application {
             })
         );
         const multiCompiler = webpack(webpackConfigs);
-        hookMultiCompilerStats(multiCompiler);
+        hookCompilerToConsole(multiCompiler);
 
         const devMiddlewares: webpackDevMiddleware.WebpackDevMiddleware[] = [];
         for (const compiler of multiCompiler.compilers) {
@@ -161,7 +161,7 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
     res.end();
 };
 
-function hookMultiCompilerStats(compiler: webpack.MultiCompiler): void {
+function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.watchRun.tap('engine-scripts', () => {
         console.log('Bundling using webpack...');
     });
