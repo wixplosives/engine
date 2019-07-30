@@ -18,6 +18,7 @@ import {
     Slot,
     Universal
 } from '../../src';
+import { type_check } from '../type-check';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -502,8 +503,6 @@ describe('feature disposal', () => {
         expect(disposeSecond).to.have.have.callCount(1);
     });
 });
-
-declare function type_check<U extends true, T extends (...args: U[]) => U>(_fn: T): void;
 
 describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
