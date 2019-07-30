@@ -589,10 +589,9 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
         });
 
         testFeature.setup(main, ({ run }, { echoFeature: { echoService } }) => {
-            run(() => {
-                echoService.echo('echo2').then(val => {
-                    checks.push(val);
-                });
+            run(async () => {
+                const val = await echoService.echo('echo2');
+                checks.push(val);
             });
             return null;
         });
