@@ -67,17 +67,20 @@ export class Application {
 
     public async start({  }: IStartOptions = {}) {
         const { features, configurations } = this.analyzeFeatures();
-        const configNames = Object.keys(configurations).join(', ');
 
         const { multiCompiler, nodeEnvs } = this.createBundler(features, configurations);
 
         const app = express();
+
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
+        const socketServer = io(httpServer);
+
         app.use('/favicon.ico', noContentHandler);
         app.use('/config', async (req, res) => {
             const configName = req.path.slice(1);
             const configFilePath = configurations.get(configName);
             if (!configFilePath) {
+                const configNames = Object.keys(configurations).join(', ');
                 throw new Error(`cannot find config named "${configName}". available configs: ${configNames}`);
             }
             const { default: configValue } = await import(configFilePath);
@@ -102,7 +105,6 @@ export class Application {
 
         console.log(`Listening:`);
         console.log(`http://localhost:${port}/`);
-        const socketServer = io(httpServer);
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
             projectPath = fs.resolve(projectPath || '');
@@ -182,6 +184,7 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
 
 function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     const bundleStartMessage = () => console.log('Bundling using webpack...');
+
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
     compiler.hooks.watchRun.tap('engine-scripts', bundleStartMessage);
 
