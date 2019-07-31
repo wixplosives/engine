@@ -5,7 +5,8 @@ import { join } from 'path';
 import { Application } from '../src/application';
 const { directoryExists } = fs.promises;
 
-describe('Application', () => {
+describe('Application', function() {
+    this.timeout(10_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 

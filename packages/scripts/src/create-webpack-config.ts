@@ -6,6 +6,7 @@ import { inOwnRepo } from './own-repo-hook';
 
 export interface ICreateBundleConfigOptions {
     context: string;
+    outputPath: string;
     entryName: string;
     entryPath: string;
     target: 'web' | 'webworker';
@@ -14,7 +15,15 @@ export interface ICreateBundleConfigOptions {
 }
 
 export function createBundleConfig(options: ICreateBundleConfigOptions): webpack.Configuration {
-    const { mode = 'development', context, entryPath, target, entryName, plugins: optionsPlugins = [] } = options;
+    const {
+        mode = 'development',
+        context,
+        entryPath,
+        target,
+        entryName,
+        outputPath,
+        plugins: optionsPlugins = []
+    } = options;
     const plugins = [...optionsPlugins, new StylableWebpackPlugin()];
 
     if (target === 'web') {
@@ -32,6 +41,7 @@ export function createBundleConfig(options: ICreateBundleConfigOptions): webpack
         devtool: mode === 'development' ? 'source-map' : false,
         context,
         output: {
+            path: outputPath,
             filename: `[name]-${target}.js`,
             chunkFilename: `${entryName}-[name]-${target}.js`
         },
