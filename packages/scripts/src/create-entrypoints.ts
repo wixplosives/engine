@@ -47,7 +47,7 @@ ${Array.from(features.values())
         return `    '${scopedName}': {
         async load() {
 ${envSetupFilePaths.map(setupFilePath => `            await import(${JSON.stringify(setupFilePath)});`).join('\n')}
-            return (await import('${filePath}')).default;
+            return (await import('${JSON.stringify(filePath)}')).default;
         },
         depFeatures: ${JSON.stringify(dependencies)},
         resolvedContexts: ${JSON.stringify(resolvedContexts)},
