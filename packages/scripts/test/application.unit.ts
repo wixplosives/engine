@@ -10,7 +10,10 @@ describe('Application', function() {
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
-    afterEach(disposables.dispose);
+    afterEach(function() {
+        this.timeout(30_000);
+        return disposables.dispose();
+    });
     after(() => browserProvider.dispose());
 
     it(`supports building features with a single fixture`, async () => {
