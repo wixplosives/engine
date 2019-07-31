@@ -6,29 +6,29 @@ import express from 'express';
 import io from 'socket.io';
 import { WsServerHost } from './ws-node-host';
 
-getParentProcess().then(parentProcess => {
-    if (parentProcess) {
-        parentProcess.on('message', async message => {
-            if (isEnvironmentStartStaticMessage(message)) {
-                const { envName, entityPath, serverConfig } = message;
-                const app = express();
-                const { httpServer, port } = await safeListeningHttpServer(3000, app);
-                const socketServer = io(httpServer).of('/_ws');
-                require(entityPath).default([
-                    COM.use({
-                        config: {
-                            host: new WsServerHost(socketServer),
-                            id: envName
-                        }
-                    }),
-                    ...serverConfig
-                ]);
-                const portMessage: IEnvironmentPortMessage = {
-                    id: 'port',
-                    port
-                };
-                parentProcess!.postMessage(portMessage);
-            }
-        });
-    }
-});
+const parentProcess = getParentProcess();
+
+if (parentProcess) {
+    parentProcess.on('message', async message => {
+        if (isEnvironmentStartStaticMessage(message)) {
+            const { envName, entityPath, serverConfig } = message;
+            const app = express();
+            const { httpServer, port } = await safeListeningHttpServer(3000, app);
+            const socketServer = io(httpServer).of('/_ws');
+            require(entityPath).default([
+                COM.use({
+                    config: {
+                        host: new WsServerHost(socketServer),
+                        id: envName
+                    }
+                }),
+                ...serverConfig
+            ]);
+            const portMessage: IEnvironmentPortMessage = {
+                id: 'port',
+                port
+            };
+            parentProcess!.postMessage(portMessage);
+        }
+    });
+}

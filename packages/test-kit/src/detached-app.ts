@@ -19,9 +19,9 @@ export class DetachedApp implements IExecutableApplication {
         if (this.port) {
             throw new Error('The server is already running.');
         }
-        // const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
+        const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
 
-        const engineStartProcess = fork(this.cliEntry, ['start-engine-server'], {
+        const engineStartProcess = fork(this.cliEntry, ['start-engine-server', ...execArgv], {
             stdio: 'inherit',
             cwd: this.basePath,
             execArgv: []

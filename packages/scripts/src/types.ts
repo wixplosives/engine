@@ -39,6 +39,16 @@ export interface EngineEnvironmentEntry {
     contextFiles?: Set<string>;
 }
 
+export interface EngineEnvironmentSerializableEntry {
+    name: string;
+    target: JSRuntime;
+    isRoot: boolean;
+    envFiles: string[];
+    featureMapping: FeatureMapping;
+    entryFilename: string;
+    contextFiles?: string[];
+}
+
 export interface WebpackEnvOptions {
     port?: number;
     environments: EngineEnvironmentEntry[];
@@ -115,7 +125,7 @@ export interface IPortMessage {
 }
 
 export interface ServerEnvironmentOptions {
-    environment: EngineEnvironmentEntry;
+    environment: EngineEnvironmentSerializableEntry;
     featureMapping: FeatureMapping;
     featureName: string | undefined;
     configName: string | undefined;

@@ -39,6 +39,7 @@ export interface IFeatureTarget {
 
 export interface IStartOptions {
     singleRun?: boolean;
+    inspect?: boolean;
 }
 
 interface IQueryParams {
@@ -73,7 +74,10 @@ export class Application {
         });
     }
 
-    public async start({ singleRun = false }: IStartOptions = {}) {
+    public async start({ singleRun = false, inspect = false }: IStartOptions = {}) {
+        if (process.argv.some(arg => arg.startsWith('--inspect'))) {
+            inspect = true;
+        }
         const { environments, featureMapping, features } = this.prepare();
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
@@ -137,10 +141,14 @@ export class Application {
             const disposables: Array<() => unknown> = [];
             for (const environment of nodeEnvironments) {
                 const remoteNodeEnvironmentHost = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
-                const environmentPort = await remoteNodeEnvironmentHost.start();
+                const environmentPort = await remoteNodeEnvironmentHost.start(inspect);
                 serverEnvironmentEndpoints[environment.name] = `http://localhost:${environmentPort}/_ws`;
                 const { close } = await this.startNodeEnvironment(remoteNodeEnvironmentHost, {
-                    environment,
+                    environment: {
+                        ...environment,
+                        envFiles: Array.from(environment.envFiles),
+                        contextFiles: environment.contextFiles ? Array.from(environment.contextFiles) : []
+                    },
                     featureMapping,
                     featureName,
                     configName,

@@ -8,9 +8,9 @@ export class RemoteNodeEnvironment {
 
     constructor(private entityFilePath: string) {}
 
-    public async start(): Promise<number> {
+    public async start(inspect: boolean = false): Promise<number> {
         return new Promise(async resolve => {
-            this.worker = await this.startRemoteEnvironment();
+            this.worker = this.startRemoteEnvironment(inspect);
             this.subscribe((message: ICommunicationMessage): void => {
                 if (isEnvironmentPortMessage(message)) {
                     resolve(message.port);
@@ -51,17 +51,19 @@ export class RemoteNodeEnvironment {
         }
     }
 
-    private async startRemoteEnvironment(): Promise<RemoteProcess> {
-        try {
-            throw new Error();
-            const WorkerThreadsModule = await import('worker_threads');
-            return new WorkerThreadsModule.Worker(this.entityFilePath, {});
-        } catch {
-            const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
-            const proc = fork(require.resolve(this.entityFilePath), [], { execArgv });
-            // tslint:disable-next-line: no-console
-            proc.on('error', console.error);
-            return new ForkedProcess(proc);
-        }
+    private startRemoteEnvironment(inspect: boolean): RemoteProcess {
+        // Roman: add this lines after worker threads will be debuggable
+        // the current behavior should be a fallback
+
+        // try {
+        // const WorkerThreadsModule = await import('worker_threads');
+        // return new WorkerThreadsModule.Worker(this.entityFilePath, {});
+        // } catch {
+        const execArgv = inspect ? ['--inspect'] : [];
+        const proc = fork(require.resolve(this.entityFilePath), [], { execArgv });
+        // tslint:disable-next-line: no-console
+        proc.on('error', console.error);
+        return new ForkedProcess(proc);
+        // }
     }
 }
