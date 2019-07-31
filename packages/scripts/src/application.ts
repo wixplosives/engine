@@ -116,7 +116,6 @@ export class Application {
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
             projectPath = fs.resolve(projectPath || '');
-
             const environmentServer = await runNodeEnvironments({
                 socketServer,
                 features,
@@ -137,10 +136,17 @@ export class Application {
         const engineDev = engineDevMiddleware({
             runningFeaturesAndConfigs,
             mainUrl,
-            runFeature
         });
         app.use(engineDev);
-
+        app.get('/start-server-env', async (req, res) => {
+            const { featureName, configName, projectPath = this.basePath }: IFeatureTarget = req.query;
+            await runFeature({
+                featureName,
+                configName,
+                projectPath
+            })
+            res.send();
+        }) 
         return {
             port,
             httpServer,

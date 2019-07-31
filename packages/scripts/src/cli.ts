@@ -20,7 +20,9 @@ program
         try {
             const app = new Application(path || process.cwd());
             const { runFeature } = await app.start();
-            await runFeature({ featureName: feature, configName: config, projectPath: project });
+            if (feature && config) {
+                await runFeature({ featureName: feature, configName: config, projectPath: project });
+            }
         } catch (e) {
             printErrorAndExit(e);
         }

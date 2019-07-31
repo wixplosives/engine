@@ -1,7 +1,7 @@
 
 import { Router } from 'express';
-import { getMainPage } from './main-table';
-import { IFeatureTableProps } from './table';
+import { getMainPage } from './main-page';
+import { IFeatureTableProps } from './features-table';
 export function engineDevMiddleware(runningEntities: IFeatureTableProps) {
     const router = Router();
 
