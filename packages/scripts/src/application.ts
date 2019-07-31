@@ -128,11 +128,11 @@ export class Application {
             httpServer,
             runFeature,
             async close() {
+                await new Promise(res => socketServer.close(res));
                 for (const devMiddleware of devMiddlewares) {
                     await new Promise(res => devMiddleware.close(res));
                 }
                 devMiddlewares.length = 0;
-                await new Promise(res => socketServer.close(res));
             }
         };
     }
