@@ -48,7 +48,7 @@ describe('Application', function() {
         expect(text).to.equal('App is running.');
     });
 
-    it(`run feature and serve default feature with default config`, async () => {
+    it.only(`run feature and serve default feature with default config`, async () => {
         const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
         const app = new Application(fixtureBase);
         const { close, port } = await app.start();

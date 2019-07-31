@@ -66,7 +66,7 @@ export class Application {
     }
 
     public async start({  }: IStartOptions = {}) {
-        const { features, configurations } = this.analyzeFeatures();
+        const { features, configurations, packages } = this.analyzeFeatures();
 
         const { multiCompiler, nodeEnvs } = this.createBundler(features, configurations);
 
@@ -98,13 +98,23 @@ export class Application {
             multiCompiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
-        // print links to features
-        // const configLinks = this.getRootURLS(environments, featureMapping, port);
+        const mainUrl = `http://localhost:${port}`;
+        console.log(`Listening:`);
+        console.log(mainUrl);
+
+        const runningFeaturesAndConfigs = this.getConfigNamesForRunningFeatures(features, configurations);
+
+        if (packages.length === 1) {
+            // print links to features
+            for (const [featureName, configNames] of runningFeaturesAndConfigs) {
+                for (const configName of configNames) {
+                    console.log(`${mainUrl}/main.html?feature=${featureName}&config=${configName}`);
+                }
+            }
+        }
+
         // const engineDev = engineDevMiddleware(features, environments, configLinks);
         // app.use(engineDev);
-
-        console.log(`Listening:`);
-        console.log(`http://localhost:${port}/`);
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
             projectPath = fs.resolve(projectPath || '');
@@ -173,7 +183,21 @@ export class Application {
         const packages = resolvePackages(basePath);
         const featuresAndConfigs = loadFeaturesFromPackages(packages, fs);
         console.timeEnd('Analyzing Features.');
-        return featuresAndConfigs;
+        return { ...featuresAndConfigs, packages };
+    }
+
+    private getConfigNamesForRunningFeatures(
+        features: Map<string, IFeatureDefinition>,
+        configurations: Map<string, string>
+    ) {
+        const packageToConfigurationMapping = new Map<string, string[]>();
+        const configNames = Object.keys(configurations);
+        for (const [, { scopedName: featureName, isRoot }] of features) {
+            if (isRoot) {
+                packageToConfigurationMapping.set(featureName, configNames);
+            }
+        }
+        return packageToConfigurationMapping;
     }
 }
 
