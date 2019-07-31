@@ -8,14 +8,11 @@ export interface ITestServiceData {
 export class TestService {
     private listeners: Array<(x: ITestServiceData) => void> = [];
     public testApi(a: number, b: number, c: number): ITestServiceData {
-        const args = [a, b, c];
-        return this.listeners.reduce(
-            (res, fn) => {
-                fn(res);
-                return res;
-            },
-            { echo: args }
-        );
+        const data: ITestServiceData = { echo: [a, b, c] };
+        for (const listener of this.listeners) {
+            listener(data);
+        }
+        return data;
     }
     public listen(fn: (x: ITestServiceData) => void) {
         this.listeners.push(fn);

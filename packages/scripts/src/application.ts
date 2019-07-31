@@ -173,8 +173,8 @@ export class Application {
             httpServer,
             runFeature,
             async close() {
-                await new Promise(res => dev.close(res));
                 await new Promise(res => httpServer.close(res));
+                await new Promise(res => dev.close(res));
             }
         };
     }

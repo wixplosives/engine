@@ -30,19 +30,13 @@ describe('Communication API', function() {
         const env = await tk.createTestIframe(com, syncIframe);
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
-        const expectedCalls = [{ echo: [1, 2, 3] }, { echo: [3, 2, 1] }];
+        const capturedCalls: ITestServiceData[] = [];
+        await api.listen(data => capturedCalls.push(data));
 
-        return new Promise(res => {
-            api.listen(data => {
-                expect(data).to.eql(expectedCalls.shift());
-                if (expectedCalls.length === 0) {
-                    res();
-                }
-            });
+        await api.testApi(1, 2, 3);
+        await api.testApi(3, 2, 1);
 
-            api.testApi(1, 2, 3);
-            api.testApi(3, 2, 1);
-        });
+        expect(capturedCalls).to.eql([{ echo: [1, 2, 3] }, { echo: [3, 2, 1] }]);
     });
 
     it('handles a multi tenant function in api services', async () => {
@@ -83,14 +77,14 @@ describe('Communication API', function() {
 
         const capturedCallsApi1: ITestServiceData[] = [];
         const capturedCallsApi2: ITestServiceData[] = [];
-        api1.listen(data => capturedCallsApi1.push(data));
-        api2.listen(data => capturedCallsApi2.push(data));
+        await api1.listen(data => capturedCallsApi1.push(data));
+        await api2.listen(data => capturedCallsApi2.push(data));
 
-        api1.testApi(1, 2, 3);
-        api1.testApi(3, 2, 1);
+        await api1.testApi(1, 2, 3);
+        await api1.testApi(3, 2, 1);
 
-        api2.testApi(7, 8, 9);
-        api2.testApi(9, 8, 7);
+        await api2.testApi(7, 8, 9);
+        await api2.testApi(9, 8, 7);
 
         await waitFor(() => {
             expect(capturedCallsApi1, 'capturedCallsApi1').to.eql([{ echo: [1, 2, 3] }, { echo: [3, 2, 1] }]);
