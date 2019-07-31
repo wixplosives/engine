@@ -50,8 +50,6 @@ export interface IEnvironment {
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync) {
-    // tslint:disable-next-line: no-console
-    console.time('Feature probing');
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
 
@@ -189,8 +187,6 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         dependencies.push(...Array.from(deps).map(feature => featureToScopedName.get(feature)!));
     }
 
-    // tslint:disable-next-line: no-console
-    console.timeEnd('Feature probing');
     return { features: foundFeatures, configurations: foundConfigs };
 }
 
