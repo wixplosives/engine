@@ -18,6 +18,7 @@ import {
 
 const parentProcess = getParentProcess();
 if (parentProcess) {
+    // tslint:disable-next-line: no-floating-promises
     createWorkerProtocol(parentProcess);
 }
 
