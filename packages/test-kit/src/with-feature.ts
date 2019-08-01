@@ -54,7 +54,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
 
         const port = await executableApp.startServer();
 
-        disposeAfterAll.add('closing server', async () => executableApp.closeServer());
+        disposeAfterAll.add(async () => executableApp.closeServer());
 
         featureUrl = `http://localhost:${port}/main.html`;
     });
@@ -106,7 +106,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             allowErrors = targetAllowErrors;
             await executableApp.runFeature({ configName, featureName, projectPath: currentProjectPath });
 
-            disposeAfterEach.add('closing feature', async () => executableApp.closeFeature());
+            disposeAfterEach.add(async () => executableApp.closeFeature());
 
             const search = toSearchQuery({
                 featureName: targetFeatureName,

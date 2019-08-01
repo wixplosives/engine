@@ -50,11 +50,6 @@ export class DetachedApp implements IExecutableApplication {
         await this.waitForProcessMessage('server-disconnected', p => {
             p.send({ id: 'server-disconnect' });
         });
-        await new Promise((res, rej) => {
-            engineStartProcess.once('error', rej);
-            engineStartProcess.once('exit', res);
-            engineStartProcess.kill();
-        });
         this.engineStartProcess = undefined;
     }
 
