@@ -16,9 +16,10 @@ program
     .option('-c ,--config <config>')
     .option('-p ,--project <project>')
     .action(async (path, cmd: Record<string, string | undefined>) => {
-        const { feature, config, project } = cmd;
+        const { feature: featureName, config: configName, project: projectPath } = cmd;
         try {
             const app = new Application(path || process.cwd());
+<<<<<<< HEAD
             const { runFeature } = await app.start();
             if (feature && config) {
                 await runFeature({ featureName: feature, configName: config, projectPath: project });
@@ -39,48 +40,58 @@ program.command('start-engine-server [path]').action(async path => {
         }
 
         const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
+=======
+            const { close: closeServer, port, runFeature } = await app.start({ featureName, configName, projectPath });
+            const closeEngineFunctions: Map<number, () => Promise<void>> = new Map();
+            let runningFeatureUuid = 0;
+>>>>>>> avi/multi-feature-build
             if (process.send) {
-                if (id === 'run-feature') {
-                    const { close: closeEngine } = await runFeature(payload as IFeatureTarget);
-                    closeEngineFunctions.set(++runningFeatureUuid, closeEngine);
+                process.send({ id: 'port', payload: { port } } as IProcessMessage<IPortMessage>);
+            }
 
-                    process.send({
-                        id: 'feature-initialized',
-                        payload: { id: runningFeatureUuid }
-                    } as IProcessMessage<IFeatureMessage>);
-                }
-                if (id === 'close-feature') {
-                    const { id: closeFunctionId } = payload as IFeatureMessage;
-                    const closeEngineFunction = closeEngineFunctions.get(closeFunctionId);
-                    if (closeEngineFunction) {
-                        await closeEngineFunction();
-                        closeEngineFunctions.delete(closeFunctionId);
-                        process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
+            const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
+                if (process.send) {
+                    if (id === 'run-feature') {
+                        const { close: closeEngine } = await runFeature(payload as Required<IFeatureTarget>);
+                        closeEngineFunctions.set(++runningFeatureUuid, closeEngine);
+
+                        process.send({
+                            id: 'feature-initialized',
+                            payload: { id: runningFeatureUuid }
+                        } as IProcessMessage<IFeatureMessage>);
+                    }
+                    if (id === 'close-feature') {
+                        const { id: closeFunctionId } = payload as IFeatureMessage;
+                        const closeEngineFunction = closeEngineFunctions.get(closeFunctionId);
+                        if (closeEngineFunction) {
+                            await closeEngineFunction();
+                            closeEngineFunctions.delete(closeFunctionId);
+                            process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
+                        }
+                    }
+                    if (id === 'server-disconnect') {
+                        await closeServer();
+                        process.send({ id: 'server-disconnected' } as IProcessMessage<unknown>);
                     }
                 }
-                if (id === 'server-disconnect') {
-                    await closeServer();
-                    process.send({ id: 'server-disconnected' } as IProcessMessage<unknown>);
-                }
-            }
-        };
+            };
 
-        process.on('message', processListener);
-    } catch (e) {
-        printErrorAndExit(e);
-    }
-});
+            process.on('message', processListener);
+        } catch (e) {
+            printErrorAndExit(e);
+        }
+    });
 
 program
     .command('build [path]')
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
     .option('--out-dir <outDir>')
-    .action(async (path = process.cwd(), cmd) => {
-        const { feature, config, outDir = 'dist' } = cmd;
+    .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
+        const { feature: featureName, config: configName, outDir = 'dist' } = cmd;
         try {
             const app = new Application(path, join(path, outDir));
-            const stats = await app.build(feature, config);
+            const stats = await app.build({ featureName, configName });
             console.log(stats.toString({ colors: true }));
         } catch (e) {
             printErrorAndExit(e);

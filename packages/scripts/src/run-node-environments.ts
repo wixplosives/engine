@@ -1,4 +1,4 @@
-import { COM, ConfigLoader, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
+import { COM, flattenTree, IFeatureLoader, runEngineApp, TopLevelConfig } from '@wixc3/engine-core';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { Server } from 'socket.io';
 import { IEnvironment, IFeatureDefinition } from './analyze-feature';
@@ -6,31 +6,35 @@ import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 export interface IRunNodeEnvironmentsOptions {
     socketServer: Server;
     features: Map<string, IFeatureDefinition>;
-    configurations: Map<string, string>;
-    environments: IEnvironment[];
-    featureName?: string;
-    configName?: string;
-    projectPath: string;
+    featureName: string;
+    config?: TopLevelConfig;
 }
 
 export async function runNodeEnvironments({
+    featureName,
     socketServer,
     features,
-    configurations,
-    environments,
-    featureName,
-    configName,
-    projectPath
+    config = []
 }: IRunNodeEnvironmentsOptions) {
-    const configLoaders: Record<string, ConfigLoader> = {};
-    for (const [configLoaderName, configFilePath] of configurations) {
-        configLoaders[configLoaderName] = async () => (await import(configFilePath)).default;
+    const featureDefinition = features.get(featureName);
+    if (!featureDefinition) {
+        const featureNames = Array.from(features.keys());
+        throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
+    }
+    const nodeEnvs = new Set<IEnvironment>();
+    const deepDefsForFeature = flattenTree(featureDefinition, f => f.dependencies.map(fName => features.get(fName)!));
+    for (const { exportedEnvs } of deepDefsForFeature) {
+        for (const exportedEnv of exportedEnvs) {
+            if (exportedEnv.type === 'node') {
+                nodeEnvs.add(exportedEnv);
+            }
+        }
     }
 
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
-    for (const { name, childEnvName } of environments) {
+    for (const { name, childEnvName } of nodeEnvs) {
         const featureLoaders: Record<string, IFeatureLoader> = {};
         for (const {
             scopedName,
@@ -59,25 +63,16 @@ export async function runNodeEnvironments({
             };
         }
         const { engine, runningFeature } = await runEngineApp({
-            configName,
             featureName,
             featureLoaders,
-            configLoaders,
-            overrideConfig: [
+            config: [
+                ...config,
                 COM.use({
                     config: {
                         host: localDevHost,
                         id: name
                     }
-                }),
-                [
-                    'project',
-                    {
-                        fsProjectDirectory: {
-                            projectPath
-                        }
-                    }
-                ]
+                })
             ]
         });
 
@@ -87,6 +82,7 @@ export async function runNodeEnvironments({
     disposeHandlers.add(localDevHost.dispose.bind(localDevHost));
 
     return {
+        environments: nodeEnvs,
         dispose: async () => {
             for (const disposeHandler of disposeHandlers) {
                 await disposeHandler();

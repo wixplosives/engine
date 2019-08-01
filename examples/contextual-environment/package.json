@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-example-contextual-environment",
-  "version": "3.1.0",
+  "version": "3.1.5",
   "scripts": {
     "start": "engine start"
   },

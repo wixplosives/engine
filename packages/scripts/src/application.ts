@@ -16,12 +16,11 @@ import io from 'socket.io';
 import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-import VirtualModulesPlugin from 'webpack-virtual-modules';
 
+import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
-import { createEntrypoints } from './create-entrypoints';
-import { createBundleConfig, envTypeToBundleTarget } from './create-webpack-config';
 import { engineDevMiddleware } from './engine-start-app/engine-dev-middlewere';
+import { createBundleConfig } from './create-webpack-config';
 import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
 
@@ -34,7 +33,7 @@ export interface IFeatureTarget {
     queryParams?: IQueryParams;
 }
 
-export interface IStartOptions {
+export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
 }
 
@@ -56,47 +55,45 @@ export class Application {
         await rimraf(fs.join(this.basePath, 'npm'));
     }
 
-    public async build(_featureName: string, _configName?: string): Promise<webpack.Stats> {
-        const { features, configurations } = this.analyzeFeatures();
-
-        const { multiCompiler } = this.createBundler(features, configurations);
+    public async build({ featureName, configName }: IRunOptions = {}): Promise<webpack.Stats> {
+        const { features } = this.analyzeFeatures();
+        const compiler = this.createCompiler(features, featureName, configName);
 
         return new Promise<webpack.Stats>((resolve, reject) =>
-            multiCompiler.run((e, s) => (e || s.hasErrors() ? reject(e || new Error(s.toString())) : resolve(s)))
+            compiler.run((e, s) => (e || s.hasErrors() ? reject(e || new Error(s.toString())) : resolve(s)))
         );
     }
 
-    public async start({  }: IStartOptions = {}) {
+    public async start({ featureName, configName }: IRunOptions = {}) {
+        const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
-
-        const { multiCompiler, nodeEnvs } = this.createBundler(features, configurations);
+        const compiler = this.createCompiler(features, featureName, configName);
 
         const app = express();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
         const socketServer = io(httpServer);
+        disposables.push(() => new Promise(res => socketServer.close(res)));
+        const topology: Record<string, string> = {};
 
         app.use('/favicon.ico', noContentHandler);
         app.use('/config', async (req, res) => {
-            const configName = req.path.slice(1);
-            const configFilePath = configurations.get(configName);
-            if (!configFilePath) {
-                const configNames = Object.keys(configurations).join(', ');
-                throw new Error(`cannot find config named "${configName}". available configs: ${configNames}`);
+            const requestedConfig = req.path.slice(1);
+            const configFilePath = configurations.get(requestedConfig);
+            const config: TopLevelConfig = [COM.use({ config: { topology } })];
+            if (configFilePath) {
+                const { default: configValue } = await import(configFilePath);
+                config.push(...configValue);
             }
-            const { default: configValue } = await import(configFilePath);
-            res.send(configValue);
+            res.send(config);
         });
 
-        const devMiddlewares: webpackDevMiddleware.WebpackDevMiddleware[] = [];
-        for (const compiler of multiCompiler.compilers) {
-            const devMiddleware = webpackDevMiddleware(compiler, { publicPath: '/', logLevel: 'silent' });
-            devMiddlewares.push(devMiddleware);
-            app.use(devMiddleware);
-        }
+        const devMiddleware = webpackDevMiddleware(compiler, { publicPath: '/', logLevel: 'silent' });
+        disposables.push(() => new Promise(res => devMiddleware.close(res)));
+        app.use(devMiddleware);
 
         await new Promise(resolve => {
-            multiCompiler.hooks.done.tap('engine-scripts init', resolve);
+            compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
         const mainUrl = `http://localhost:${port}`;
@@ -114,21 +111,51 @@ export class Application {
             }
         }
 
-        const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
-            projectPath = fs.resolve(projectPath || '');
-            const environmentServer = await runNodeEnvironments({
+        const runFeature = async (targetFeature: {
+            featureName: string;
+            configName?: string;
+            projectPath?: string;
+        }) => {
+            const config: TopLevelConfig = [
+                [
+                    'project',
+                    {
+                        fsProjectDirectory: {
+                            projectPath: fs.resolve(targetFeature.projectPath || '')
+                        }
+                    }
+                ]
+            ];
+
+            if (targetFeature.configName) {
+                const configFilePath = configurations.get(targetFeature.configName);
+                if (!configFilePath) {
+                    const configNames = Array.from(configurations.keys());
+                    throw new Error(
+                        `cannot find config ${featureName}. available configurations: ${configNames.join(', ')}`
+                    );
+                }
+                const { default: topLevelConfig } = await import(configFilePath);
+                config.push(...topLevelConfig);
+            }
+
+            const runningEnvs = await runNodeEnvironments({
+                featureName: targetFeature.featureName,
+                config,
                 socketServer,
-                features,
-                configurations,
-                environments: nodeEnvs,
-                featureName,
-                configName,
-                projectPath
+                features
             });
+
+            for (const { name } of runningEnvs.environments) {
+                topology[name] = `http://localhost:${port}/_ws`;
+            }
 
             return {
                 close: async () => {
-                    await environmentServer.dispose();
+                    await runningEnvs.dispose();
+                    for (const { name } of runningEnvs.environments) {
+                        delete topology[name];
+                    }
                 }
             };
         };
@@ -138,55 +165,46 @@ export class Application {
             mainUrl,
         });
         app.use(engineDev);
-        app.get('/start-server-env', async (req, res) => {
-            const { featureName, configName, projectPath = this.basePath }: IFeatureTarget = req.query;
-            await runFeature({
-                featureName,
-                configName,
-                projectPath
-            })
-            res.send();
-        }) 
+        
+        if (featureName) {
+            const { close: closeFeature } = await runFeature({ featureName, configName });
+            disposables.push(() => closeFeature());
+        }
         return {
             port,
             httpServer,
             runFeature,
             async close() {
-                await new Promise(res => socketServer.close(res));
-                for (const devMiddleware of devMiddlewares) {
-                    await new Promise(res => devMiddleware.close(res));
+                for (const dispose of disposables) {
+                    await dispose();
                 }
-                devMiddlewares.length = 0;
+                disposables.length = 0;
             }
         };
     }
 
-    private createBundler(features: Map<string, IFeatureDefinition>, configurations: Map<string, string>) {
+    private createCompiler(features: Map<string, IFeatureDefinition>, featureName?: string, configName?: string) {
         const { basePath, outputPath } = this;
-        const allExportedEnvs: IEnvironment[] = [];
+        const enviroments = new Set<IEnvironment>();
         for (const { exportedEnvs } of features.values()) {
-            allExportedEnvs.push(...exportedEnvs);
+            for (const exportedEnv of exportedEnvs) {
+                if (exportedEnv.type !== 'node') {
+                    enviroments.add(exportedEnv);
+                }
+            }
         }
-        const nodeEnvs = allExportedEnvs.filter(({ type }) => type === 'node');
-        const nonNodeEnvs = allExportedEnvs.filter(({ type }) => type !== 'node');
 
-        const webpackConfigs = nonNodeEnvs.map(({ name: envName, type }) =>
-            createBundleConfig({
-                context: basePath,
-                outputPath,
-                entryName: envName,
-                entryPath: fs.join(basePath, `${envName}-${type}-entry.js`),
-                target: envTypeToBundleTarget(type),
-                plugins: [
-                    new VirtualModulesPlugin(
-                        createEntrypoints({ environments: nonNodeEnvs, basePath, features, configs: configurations })
-                    )
-                ]
-            })
-        );
-        const multiCompiler = webpack(webpackConfigs);
-        hookCompilerToConsole(multiCompiler);
-        return { multiCompiler, nodeEnvs };
+        const webpackConfig = createBundleConfig({
+            context: basePath,
+            outputPath,
+            enviroments: Array.from(enviroments),
+            features,
+            featureName,
+            configName
+        });
+        const compiler = webpack(webpackConfig);
+        hookCompilerToConsole(compiler);
+        return compiler;
     }
 
     private analyzeFeatures() {
@@ -220,16 +238,15 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
     res.end();
 };
 
-function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
-    const bundleStartMessage = () => console.log('Bundling using webpack...');
+const bundleStartMessage = () => console.log('Bundling using webpack...');
 
+function hookCompilerToConsole(compiler: webpack.Compiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
     compiler.hooks.watchRun.tap('engine-scripts', bundleStartMessage);
 
-    compiler.hooks.done.tap('engine-scripts stats printing', ({ stats }) => {
-        const statsWithMessages = stats.filter(s => s.hasErrors() || s.hasWarnings());
-        if (statsWithMessages.length) {
-            console.log(statsWithMessages.map(s => s.toString()).join('\n'));
+    compiler.hooks.done.tap('engine-scripts stats printing', stats => {
+        if (stats.hasErrors() || stats.hasWarnings()) {
+            console.log(stats.toString());
         }
         console.log('Done bundling.');
     });
