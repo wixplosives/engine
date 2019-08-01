@@ -1,8 +1,8 @@
 import {
     COM,
     Environment,
-    EnvironmentLiveServer,
     Feature,
+    NodeEnvironment,
     Service,
     SingleEndPointAsyncEnvironment,
     SingleEndpointContextualEnvironment
@@ -10,14 +10,14 @@ import {
 
 export const mainEnv = new Environment('main');
 const workerEnv = new SingleEndPointAsyncEnvironment('worker', 'worker', mainEnv);
-const liveServerEnv = new EnvironmentLiveServer('live-server');
+const liveServerEnv = new NodeEnvironment('live-server');
 export const processingEnv = new SingleEndpointContextualEnvironment('processing', [workerEnv, liveServerEnv]);
 
 export interface IEchoService {
     echo: (s: string) => string;
 }
 
-interface INameProvider {
+export interface INameProvider {
     name: () => string;
 }
 
