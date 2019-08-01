@@ -29,13 +29,12 @@ const startServerFeature = ({ featureName, configName, serverUrl }: TableRowPara
         const request = get(`${serverUrl}/start-server-env?${urlParams.toString()}`, res => {
             let dataChunks = '';
             res.on('error', reject);
-            res.on('data', chunk => dataChunks += chunk);
+            res.on('data', chunk => (dataChunks += chunk));
             res.once('end', () => resolve(dataChunks));
         });
         request.on('error', reject);
     });
 };
-
 
 const defaultStyling = {
     row: {
@@ -55,39 +54,43 @@ const defaultStyling = {
         display: 'flex',
         flexDirection: 'column' as const
     }
-
-
 };
 
-const TableRow: React.FunctionComponent<TableRowParams> = ({featureName, configName, serverUrl}) => {
-    return <div style={defaultStyling.row} key={join(featureName, configName)}> 
+const TableRow: React.FunctionComponent<TableRowParams> = ({ featureName, configName, serverUrl }) => {
+    const engineFeature = () => startServerFeature({ featureName, configName, serverUrl });
+
+    return (
+        <div style={defaultStyling.row} key={join(featureName, configName)}>
             <span style={defaultStyling.column}>{featureName}</span>
             <span style={defaultStyling.column}>{configName}</span>
-            <div style={defaultStyling.column}><button onClick={() => { startServerFeature({ featureName, configName, serverUrl }                    ); }}>start remote server</button></div>
-            <a style={defaultStyling.column} href={`${serverUrl}/main.html?feature=${featureName}&config=${configName}`}>go to page</a>
-        </div>;
+            <div style={defaultStyling.column}>
+                <button onClick={engineFeature}>start remote server</button>
+            </div>
+            <a
+                style={defaultStyling.column}
+                href={`${serverUrl}/main.html?feature=${featureName}&config=${configName}`}
+            >
+                go to page
+            </a>
+        </div>
+    );
 };
 
-export const FeaturesTable: React.FunctionComponent<IFeatureTableProps> = ({
-    runningFeaturesAndConfigs,
-    mainUrl
-}) => {
+export const FeaturesTable: React.FunctionComponent<IFeatureTableProps> = ({ runningFeaturesAndConfigs, mainUrl }) => {
     const data: ITableRow[] = [];
 
     for (const featureName of runningFeaturesAndConfigs.features) {
         for (const configName of runningFeaturesAndConfigs.configs) {
             data.push({
                 featureName,
-                configName,
+                configName
             });
         }
     }
 
-    const rows = data.map(tableRow => <TableRow key={`${tableRow.featureName}/${tableRow.configName}`} serverUrl={mainUrl} {...tableRow} />);
+    const rows = data.map(tableRow => (
+        <TableRow key={`${tableRow.featureName}/${tableRow.configName}`} serverUrl={mainUrl} {...tableRow} />
+    ));
 
-    return (
-        <div style={defaultStyling.container}>
-            {rows}
-        </div>
-    );
+    return <div style={defaultStyling.container}>{rows}</div>;
 };
