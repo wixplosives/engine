@@ -18,7 +18,7 @@ export class Environment<ID extends string, EType extends EndpointType = 'single
     ) {}
 }
 
-export class EnvironmentLiveServer<ID extends string> extends Environment<ID, 'single'> {
+export class NodeEnvironment<ID extends string> extends Environment<ID, 'single'> {
     constructor(env: ID) {
         super(env, 'single', 'node');
     }
