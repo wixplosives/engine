@@ -103,19 +103,16 @@ describe('Application', function() {
         });
     });
 
-    it(`runs node environments`, async () => {
+    it.only(`runs node environments`, async () => {
         const featurePath = join(__dirname, './fixtures/node-env');
         const app = new Application(featurePath);
-        const runningApp = await app.start();
-
-        const runningFeature = await runningApp.runFeature({
-            featureName: 'x',
-            configName: 'dev'
+        const runningApp = await app.start({
+            featureName: 'engine-local/x',
+            configName: 'engine-local/dev'
         });
-        disposables.add('closing feature', () => runningFeature.close());
         disposables.add('closing app', () => runningApp.close());
 
-        const page = await loadPage(`http://localhost:${runningApp.port}/main.html?feature=x&config=dev`);
+        const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
         await waitFor(async () => {
             expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
