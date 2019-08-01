@@ -64,6 +64,7 @@ export class Application {
     }
 
     public async start({ featureName, configName }: IRunOptions = {}) {
+        const disposables: Array<() => unknown> = [];
         const { features, configurations } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
 
@@ -71,6 +72,7 @@ export class Application {
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
         const socketServer = io(httpServer);
+        disposables.push(() => new Promise(res => socketServer.close(res)));
         const topology: Record<string, string> = {};
 
         app.use('/favicon.ico', noContentHandler);
@@ -86,6 +88,7 @@ export class Application {
         });
 
         const devMiddleware = webpackDevMiddleware(compiler, { publicPath: '/', logLevel: 'silent' });
+        disposables.push(() => new Promise(res => devMiddleware.close(res)));
         app.use(devMiddleware);
 
         await new Promise(resolve => {
@@ -150,15 +153,18 @@ export class Application {
         };
 
         if (featureName) {
-            await runFeature({ featureName, configName });
+            const { close: closeFeature } = await runFeature({ featureName, configName });
+            disposables.push(() => closeFeature());
         }
         return {
             port,
             httpServer,
             runFeature,
             async close() {
-                await new Promise(res => devMiddleware.close(res));
-                await new Promise(res => socketServer.close(res));
+                for (const dispose of disposables) {
+                    await dispose();
+                }
+                disposables.length = 0;
             }
         };
     }
