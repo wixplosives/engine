@@ -140,8 +140,12 @@ export class Application {
             httpServer,
             runFeature,
             async close() {
+                console.time('closing dev server');
                 await new Promise(res => dev.close(res));
+                console.timeEnd('closing dev server');
+                console.time('closing socket server');
                 await new Promise(res => socketServer.close(res));
+                console.timeEnd('closing socket server');
             }
         };
     }
