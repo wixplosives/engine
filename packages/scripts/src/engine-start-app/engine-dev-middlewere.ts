@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { getMainPage } from './main-page';
 import { IFeatureTableProps } from './features-table';
