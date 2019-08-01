@@ -3,7 +3,7 @@
   "version": "3.1.6",
   "scripts": {
     "start": "engine start",
-    "test:ix": "mocha \"test/**/*.ix.ts?(x)\""
+    "test": "mocha \"test/**/*.ix.ts?(x)\""
   },
   "dependencies": {
     "@file-services/directory": "^2.0.0",
