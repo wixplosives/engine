@@ -8,7 +8,7 @@
     "clean": "lerna run clean --stream --parallel",
     "build": "lerna run build --stream --parallel",
     "lint": "tslint -p tsconfig.base.json",
-    "pretest": "yarn lint",
+    "pretest": "run-p lint typecheck",
     "test": "lerna run test --stream --concurrency=1",
     "typecheck": "tsc -p ./tsconfig.base.json --noEmit",
     "prettify": "yarn prettier \"packages/**/*.{js,ts,tsx}\" --write"
