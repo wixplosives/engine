@@ -67,10 +67,11 @@ export class Application {
 
     public async start({ singleRun = false }: IStartOptions = {}) {
         const { environments, featureMapping, features } = this.prepare();
+        const nodeEnvs = environments.filter(({ target }) => target === 'node');
+
         const app = express();
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
         const compiler = webpack(this.createConfig(environments, port));
-
         app.use('/favicon.ico', noContentHandler);
 
         compiler.hooks.watchRun.tap('engine-scripts', () => {
@@ -110,20 +111,27 @@ export class Application {
         const socketServer = io(httpServer);
 
         const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
-            projectPath = fs.resolve(projectPath || '');
+            const closables: Array<() => unknown> = [];
 
-            const environmentServer = initEnvironmentServer(
-                socketServer,
-                environments,
-                featureMapping,
-                featureName,
-                configName,
-                projectPath
-            );
+            if (nodeEnvs.length) {
+                projectPath = fs.resolve(projectPath || '');
+
+                const environmentServer = initEnvironmentServer(
+                    socketServer,
+                    nodeEnvs,
+                    featureMapping,
+                    featureName,
+                    configName,
+                    projectPath
+                );
+                closables.push(() => environmentServer.dispose());
+            }
 
             return {
                 close: async () => {
-                    await environmentServer.dispose();
+                    for (const closable of closables) {
+                        await closable();
+                    }
                 }
             };
         };
@@ -132,8 +140,8 @@ export class Application {
             httpServer,
             runFeature,
             async close() {
-                await new Promise(res => socketServer.close(res));
                 await new Promise(res => dev.close(res));
+                await new Promise(res => socketServer.close(res));
             }
         };
     }

@@ -18,8 +18,7 @@ export function initEnvironmentServer(
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
-    const nodeEnvironments = environments.filter(({ target }) => target === 'node');
-    for (const { name, envFiles, contextFiles } of nodeEnvironments) {
+    for (const { name, envFiles, contextFiles } of environments) {
         const featureMap = featureName || Object.keys(featureMapping.mapping)[0];
         const configMap = configName || Object.keys(featureMapping.mapping[featureMap].configurations)[0];
         const contextMappings = featureMapping.mapping[featureMap].context;
@@ -48,7 +47,7 @@ export function initEnvironmentServer(
         disposeHandlers.add(() => engine.dispose(runningFeature));
     }
 
-    disposeHandlers.add(localDevHost.dispose.bind(localDevHost));
+    disposeHandlers.add(() => localDevHost.dispose());
 
     return {
         dispose: async () => {
