@@ -19,32 +19,9 @@ program
         const { feature: featureName, config: configName, project: projectPath } = cmd;
         try {
             const app = new Application(path || process.cwd());
-<<<<<<< HEAD
-            const { runFeature } = await app.start();
-            if (feature && config) {
-                await runFeature({ featureName: feature, configName: config, projectPath: project });
-            }
-        } catch (e) {
-            printErrorAndExit(e);
-        }
-    });
-
-program.command('start-engine-server [path]').action(async path => {
-    try {
-        const app = new Application(path || process.cwd());
-        const { close: closeServer, port, runFeature } = await app.start({ singleRun: true });
-        const closeEngineFunctions: Map<number, () => Promise<void>> = new Map();
-        let runningFeatureUuid = 0;
-        if (process.send) {
-            process.send({ id: 'port', payload: { port } } as IProcessMessage<IPortMessage>);
-        }
-
-        const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
-=======
             const { close: closeServer, port, runFeature } = await app.start({ featureName, configName, projectPath });
             const closeEngineFunctions: Map<number, () => Promise<void>> = new Map();
             let runningFeatureUuid = 0;
->>>>>>> avi/multi-feature-build
             if (process.send) {
                 process.send({ id: 'port', payload: { port } } as IProcessMessage<IPortMessage>);
             }
