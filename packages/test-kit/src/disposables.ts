@@ -1,3 +1,4 @@
+// tslint:disable: no-console
 export interface IDisposables {
     dispose(): Promise<void>;
     add(toDispose: () => unknown): void;
@@ -15,9 +16,11 @@ export function createDisposables(): IDisposables {
         },
         add(message: string | (() => unknown), toDispose?: () => unknown) {
             if (typeof message === 'string') {
-                // tslint:disable-next-line: no-console
-                console.log(message);
-                disposables.push(toDispose!);
+                disposables.push(async () => {
+                    console.time(message);
+                    await toDispose!();
+                    console.timeEnd(message);
+                });
             } else {
                 disposables.push(message);
             }

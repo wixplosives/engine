@@ -2,6 +2,7 @@ import fs from '@file-services/node';
 import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { join } from 'path';
+import { waitFor } from 'promise-assist';
 import { Page } from 'puppeteer';
 import { Application } from '../src/application';
 const { directoryExists } = fs.promises;
@@ -99,6 +100,25 @@ describe('Application', function() {
                 tags: ['variant', '2']
             });
             expect(mySlot).to.eql(['testing 1 2 3']);
+        });
+    });
+
+    it(`runs node environments`, async () => {
+        const featurePath = join(__dirname, './fixtures/node-env');
+        const app = new Application(featurePath);
+        const runningApp = await app.start();
+
+        const runningFeature = await runningApp.runFeature({
+            featureName: 'x',
+            configName: 'dev'
+        });
+        disposables.add('closing feature', () => runningFeature.close());
+        disposables.add('closing app', () => runningApp.close());
+
+        const page = await loadPage(`http://localhost:${runningApp.port}/main.html?feature=x&config=dev`);
+
+        await waitFor(async () => {
+            expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
         });
     });
 });
