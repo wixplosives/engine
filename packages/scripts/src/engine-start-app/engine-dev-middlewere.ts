@@ -1,11 +1,21 @@
-
 import { Router } from 'express';
-import { getMainPage } from './main-page';
+import { IFeatureTarget } from '../application';
 import { IFeatureTableProps } from './features-table';
-export function engineDevMiddleware(runningEntities: IFeatureTableProps) {
+import { getMainPage } from './main-page';
+export function engineDevMiddleware(
+    runningEntities: IFeatureTableProps,
+    runFeature: ({
+        featureName,
+        configName,
+        projectPath
+    }: IFeatureTarget) => Promise<{
+        close: () => Promise<void>;
+    }>,
+    projectPath: string = process.cwd()
+) {
     const router = Router();
 
-    router.get('/', (_req, res) => {
+    router.get('/', async (_req, res) => {
         res.setHeader('Content-Type', 'text/html');
         res.end(getMainPage(runningEntities));
     });

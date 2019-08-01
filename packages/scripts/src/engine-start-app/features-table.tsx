@@ -1,8 +1,6 @@
-import 'react-table/react-table.css';
-
+import { get } from 'http';
 import { join } from 'path';
 import React from 'react';
-import { get } from 'http';
 
 export interface IFeatureTableProps {
     runningFeaturesAndConfigs: {
@@ -16,11 +14,11 @@ interface ITableRow {
     configName: string;
 }
 
-type TableRowParams = {
+interface TableRowParams {
     featureName: string;
     configName: string;
     serverUrl: string;
-};
+}
 
 const startServerFeature = ({ featureName, configName, serverUrl }: TableRowParams) => {
     return new Promise((resolve, reject) => {
@@ -31,7 +29,7 @@ const startServerFeature = ({ featureName, configName, serverUrl }: TableRowPara
         const request = get(`${serverUrl}/start-server-env?${urlParams.toString()}`, res => {
             let dataChunks = '';
             res.on('error', reject);
-            res.on('data', chunk => dataChunks += chunk)
+            res.on('data', chunk => dataChunks += chunk);
             res.once('end', () => resolve(dataChunks));
         });
         request.on('error', reject);
@@ -59,16 +57,16 @@ const defaultStyling = {
     }
 
 
-}
+};
 
 const TableRow: React.FunctionComponent<TableRowParams> = ({featureName, configName, serverUrl}) => {
     return <div style={defaultStyling.row} key={join(featureName, configName)}> 
             <span style={defaultStyling.column}>{featureName}</span>
             <span style={defaultStyling.column}>{configName}</span>
-            <div style={defaultStyling.column}><button onClick={() => { startServerFeature({ featureName, configName, serverUrl }                    ) }}>start remote server</button></div>
+            <div style={defaultStyling.column}><button onClick={() => { startServerFeature({ featureName, configName, serverUrl }                    ); }}>start remote server</button></div>
             <a style={defaultStyling.column} href={`${serverUrl}/main.html?feature=${featureName}&config=${configName}`}>go to page</a>
-        </div>
-}
+        </div>;
+};
 
 export const FeaturesTable: React.FunctionComponent<IFeatureTableProps> = ({
     runningFeaturesAndConfigs,

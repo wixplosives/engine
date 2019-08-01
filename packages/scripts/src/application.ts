@@ -133,20 +133,15 @@ export class Application {
             };
         };
 
-        const engineDev = engineDevMiddleware({
-            runningFeaturesAndConfigs,
-            mainUrl,
-        });
+        const engineDev = engineDevMiddleware(
+            {
+                runningFeaturesAndConfigs,
+                mainUrl
+            },
+            runFeature
+        );
+
         app.use(engineDev);
-        app.get('/start-server-env', async (req, res) => {
-            const { featureName, configName, projectPath = this.basePath }: IFeatureTarget = req.query;
-            await runFeature({
-                featureName,
-                configName,
-                projectPath
-            })
-            res.send();
-        }) 
         return {
             port,
             httpServer,
