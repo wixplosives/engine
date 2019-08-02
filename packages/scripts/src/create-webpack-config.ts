@@ -96,7 +96,7 @@ export function createBundleConfig(options: ICreateBundleConfigOptions): webpack
     };
 }
 
-export const typescriptLoader: webpack.RuleSetRule = {
+const typescriptLoader: webpack.RuleSetRule = {
     test: /\.tsx?$/,
     exclude: /\.d\.ts$/,
     loader: '@ts-tools/webpack-loader',
@@ -105,7 +105,7 @@ export const typescriptLoader: webpack.RuleSetRule = {
     }
 };
 
-export const cssLoader: webpack.RuleSetRule = {
+const cssLoader: webpack.RuleSetRule = {
     test: /\.css$/,
     exclude: /\.st\.css$/,
     use: ['style-loader', 'css-loader']

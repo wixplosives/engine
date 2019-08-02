@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import ReactTable, { Column, DefaultFilterFunction } from 'react-table';
 import 'react-table/react-table.css';
-import { isListNodeEnvironmtnrsResponse, isSuccessResponse, ServerResponse } from '../../server-types';
+import {
+    isListNodeEnvironmtnrsResponse,
+    isPossibleFeaturesAndConfigs,
+    isSuccessResponse,
+    PossibleFeaturesAndConfigs,
+    ServerResponse
+} from '../../server-types';
 import { ServerEnvironmentButton } from './button';
 
 const fetchAllPossibleFeatures = async () => (await fetch('possible-entities')).json();
 const fetchRunningNodeEnvironments = async () => (await fetch('node-env')).json();
-
-const isPossibleFeaturesAndConfigs = (value: unknown): value is PossibleFeaturesAndConfigs =>
-    value && typeof value === 'object' && (value as Record<string, any>).features;
-
-export interface PossibleFeaturesAndConfigs {
-    features: string[];
-    configs: string[];
-}
 
 export const FeaturesList: React.FunctionComponent = () => {
     const [featuresConfigsList, setFeaturesConfigsList] = useState<PossibleFeaturesAndConfigs>({

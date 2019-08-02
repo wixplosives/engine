@@ -33,3 +33,11 @@ export const isListNodeEnvironmtnrsResponse = (message: unknown): message is Lis
 
 export const isErrorResponse = (message: unknown): message is ErrorResponse =>
     isServerResponseMessage(message) && message.result === 'error';
+
+export const isPossibleFeaturesAndConfigs = (value: unknown): value is PossibleFeaturesAndConfigs =>
+    value && typeof value === 'object' && (value as Record<string, any>).features;
+
+export interface PossibleFeaturesAndConfigs {
+    features: string[];
+    configs: string[];
+}
