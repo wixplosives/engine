@@ -32,7 +32,7 @@ export class WebpackWorkerPlugin {
                     new WebWorkerTemplatePlugin(),
                     new LoaderTargetPlugin('webworker')
                 ]);
-                new SingleEntryPlugin(compiler.options.context, entry, 'index').apply(childCompiler);
+                new SingleEntryPlugin(compiler.options.context, entry, 'main').apply(childCompiler);
                 plugins.forEach(plugin => plugin.apply(childCompiler));
 
                 childCompiler.runAsChild(callback);
