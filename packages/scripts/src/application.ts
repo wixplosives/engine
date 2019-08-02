@@ -29,15 +29,10 @@ export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
     projectPath?: string;
-    queryParams?: IQueryParams;
 }
 
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
-}
-
-interface IQueryParams {
-    [param: string]: string;
 }
 
 export class Application {
