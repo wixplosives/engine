@@ -28,5 +28,8 @@ export const isServerResponseMessage = (message: unknown): message is ServerResp
 export const isSuccessResponse = (message: unknown): message is SuccessResponse =>
     isServerResponseMessage(message) && message.result === 'success';
 
+export const isListNodeEnvironmtnrsResponse = (message: unknown): message is ListNodeEnvironmentsResponse =>
+    isSuccessResponse(message) && !!(message as ListNodeEnvironmentsResponse).data;
+
 export const isErrorResponse = (message: unknown): message is ErrorResponse =>
     isServerResponseMessage(message) && message.result === 'error';

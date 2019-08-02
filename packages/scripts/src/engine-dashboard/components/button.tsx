@@ -2,10 +2,10 @@ import React from 'react';
 import { isServerResponseMessage, ServerResponse } from '../../server-types';
 
 export interface ButtonProps {
-    featureName: boolean;
-    configName: boolean;
+    featureName: string;
+    configName: string;
     isServerActive: boolean;
-    onClick: (response: ServerResponse) => void;
+    onClick: (response: ServerResponse, featureName: string, configName: string) => void;
 }
 
 export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
@@ -22,7 +22,7 @@ export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
     const onButtonClick = async () => {
         const response = await changeServerState();
         if (isServerResponseMessage(response)) {
-            onClick(response);
+            onClick(response, featureName, configName);
         } else {
             throw new Error(`Unexpected response from server: ${response}`);
         }

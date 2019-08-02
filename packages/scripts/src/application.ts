@@ -4,11 +4,10 @@
  * We use Node's native module system to directly load configuration file.
  * This configuration can (and should) be written as a `.ts` file.
  */
+import fs from '@file-services/node';
 import '@stylable/node/register';
 import '@ts-tools/node/fast';
-import './own-repo-hook';
-
-import fs from '@file-services/node';
+import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import rimrafCb from 'rimraf';
@@ -16,13 +15,12 @@ import io from 'socket.io';
 import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-
-import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
 import { createBundleConfig } from './create-webpack-config';
+import { NodeEnvironmentsManager } from './node-environments-magager';
+
 import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
-import { NodeEnvironmentsManager } from './node-environments-magager';
 
 const rimraf = promisify(rimrafCb);
 
@@ -103,9 +101,9 @@ export class Application {
 
         if (packages.length === 1) {
             // print links to features
-            for (const featureName of runningFeaturesAndConfigs.features) {
-                for (const configName of runningFeaturesAndConfigs.configs) {
-                    console.log(`${mainUrl}/main.html?feature=${featureName}&config=${configName}`);
+            for (const runningFeatureName of runningFeaturesAndConfigs.features) {
+                for (const runningConfigName of runningFeaturesAndConfigs.configs) {
+                    console.log(`${mainUrl}/main.html?feature=${runningFeatureName}&config=${runningConfigName}`);
                 }
             }
         }
@@ -163,61 +161,12 @@ export class Application {
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(runFeature);
 
-        app.put('/node-env', async (req, res) => {
-            const { configName, featureName }: IRunOptions = req.query;
-            try {
-                await nodeEnvironmentManager.runFeature({ configName, featureName });
-                res.json({
-                    result: 'success'
-                });
-            } catch (error) {
-                res.status(404).json({
-                    result: 'error',
-                    error: error.message
-                });
-            }
-        });
-
-        app.delete('/node-env', async (req, res) => {
-            const { featureName, configName }: IRunOptions = req.query;
-            try {
-                await nodeEnvironmentManager.closeFeature({ configName, featureName });
-                res.json({
-                    result: 'success'
-                });
-            } catch (error) {
-                res.status(404).json({
-                    result: 'error',
-                    error: error.message
-                });
-            }
-        });
-
-        app.get('/node-env', (req, res) => {
-            const { featureName, configName }: IRunOptions = req.query;
-            try {
-                const data = nodeEnvironmentManager.getRunningFeatures({ configName, featureName });
-                res.json({
-                    result: 'success',
-                    data
-                });
-            } catch (error) {
-                res.status(404).json({
-                    result: 'error',
-                    error: error.message
-                });
-            }
-        });
+        app.use(nodeEnvironmentManager.middlewere());
+        disposables.push(() => nodeEnvironmentManager.closeAll());
 
         app.get('/possible-entities', (_req, res) => {
             res.json({ ...runningFeaturesAndConfigs });
         });
-
-        // const engineDev = engineDevMiddleware({
-        //     runningFeaturesAndConfigs,
-        //     mainUrl
-        // });
-        // app.use(engineDev);
 
         if (featureName) {
             const { close: closeFeature } = await runFeature({ featureName, configName });
@@ -226,7 +175,7 @@ export class Application {
         return {
             port,
             httpServer,
-            runFeature,
+            nodeEnvironmentManager,
             async close() {
                 for (const dispose of disposables) {
                     await dispose();

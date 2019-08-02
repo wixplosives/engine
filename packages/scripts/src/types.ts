@@ -107,7 +107,8 @@ export const isFeatureMessage = (value: unknown): value is IProcessMessage<IFeat
     return isProcessMessage(value) && value.id === 'feature-initialized';
 };
 export interface IFeatureMessage {
-    id: number;
+    configName: string;
+    featureName: string;
 }
 
 export interface IPortMessage {

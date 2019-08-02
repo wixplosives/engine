@@ -1,21 +1,26 @@
+import { Router } from 'express';
 import { IRunOptions } from './application';
 
-export type RunEngineFunction = {
+export interface RunEngineFunction {
     close: () => Promise<void>;
-};
+}
 
 export class NodeEnvironmentsManager {
     private runningEnvironmetns = new Map<string, Map<string, RunEngineFunction>>();
+    private isClearingAll = false;
 
     constructor(
-        private runEngine: (target: {
+        private runNodeEnvironmentFunction: (target: {
             featureName: string;
             configName?: string | undefined;
             projectPath?: string | undefined;
         }) => Promise<RunEngineFunction>
     ) {}
 
-    async runFeature({ featureName, configName }: IRunOptions) {
+    public async runFeature({ featureName, configName }: IRunOptions) {
+        if (this.isClearingAll) {
+            throw new Error(`cannot launch new environments, environemnts are being cleand up`);
+        }
         if (this.isParametersValid({ featureName, configName })) {
             if (!this.runningEnvironmetns.has(featureName!)) {
                 this.runningEnvironmetns.set(featureName!, new Map());
@@ -23,14 +28,14 @@ export class NodeEnvironmentsManager {
             if (!this.runningEnvironmetns.get(featureName!)!.has(configName!)) {
                 this.runningEnvironmetns
                     .get(featureName!)!
-                    .set(configName!, await this.runEngine({ featureName: featureName!, configName }));
+                    .set(configName!, await this.runNodeEnvironmentFunction({ featureName: featureName!, configName }));
             } else {
                 throw new Error(`node environment for ${featureName} with ${configName} is already running`);
             }
         }
     }
 
-    async closeFeature({ featureName, configName }: IRunOptions) {
+    public async closeFeature({ featureName, configName }: IRunOptions) {
         if (this.isParametersValid({ featureName, configName })) {
             if (!this.runningEnvironmetns.has(featureName!)) {
                 throw new Error(`there are no node environments running for ${featureName}`);
@@ -44,11 +49,11 @@ export class NodeEnvironmentsManager {
         }
     }
 
-    getRunningFeatures({ featureName, configName }: IRunOptions = {}) {
+    public getRunningFeatures({ featureName, configName }: IRunOptions = {}) {
         if (!featureName) {
             return Array.from(this.runningEnvironmetns.keys()).reduce(
-                (prev, runningFeature) => {
-                    prev[runningFeature] = Array.from(this.runningEnvironmetns.get(runningFeature)!.keys());
+                (prev, runningFeatureName) => {
+                    prev[runningFeatureName] = Array.from(this.runningEnvironmetns.get(runningFeatureName)!.keys());
                     return prev;
                 },
                 {} as Record<string, string[]>
@@ -66,6 +71,69 @@ export class NodeEnvironmentsManager {
             }
         }
         return;
+    }
+
+    public async closeAll() {
+        this.isClearingAll = true;
+        for (const [, runningEnvironments] of this.runningEnvironmetns) {
+            for (const [, runningEnvironment] of runningEnvironments) {
+                await runningEnvironment.close();
+            }
+        }
+        this.runningEnvironmetns.clear();
+        this.isClearingAll = false;
+    }
+
+    public middlewere() {
+        const router = Router();
+
+        router.put('/node-env', async (req, res) => {
+            const { configName, featureName }: IRunOptions = req.query;
+            try {
+                await this.runFeature({ configName, featureName });
+                res.json({
+                    result: 'success'
+                });
+            } catch (error) {
+                res.status(404).json({
+                    result: 'error',
+                    error: error.message
+                });
+            }
+        });
+
+        router.delete('/node-env', async (req, res) => {
+            const { featureName, configName }: IRunOptions = req.query;
+            try {
+                await this.closeFeature({ configName, featureName });
+                res.json({
+                    result: 'success'
+                });
+            } catch (error) {
+                res.status(404).json({
+                    result: 'error',
+                    error: error.message
+                });
+            }
+        });
+
+        router.get('/node-env', (req, res) => {
+            const { featureName, configName }: IRunOptions = req.query;
+            try {
+                const data = this.getRunningFeatures({ configName, featureName });
+                res.json({
+                    result: 'success',
+                    data
+                });
+            } catch (error) {
+                res.status(404).json({
+                    result: 'error',
+                    error: error.message
+                });
+            }
+        });
+
+        return router;
     }
 
     private isParametersValid({ featureName, configName }: IRunOptions) {

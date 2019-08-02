@@ -1,13 +1,13 @@
 import fs from '@file-services/node';
 import { StylableWebpackPlugin } from '@stylable/webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { join } from 'path';
 import webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 import { createEntrypoint } from './create-entrypoint';
 import { inOwnRepo } from './own-repo-hook';
 import { WebpackWorkerPlugin } from './webpack-worker-plugin';
-import { join } from 'path';
 
 export interface ICreateBundleConfigOptions {
     featureName?: string;

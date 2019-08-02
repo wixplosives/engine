@@ -110,7 +110,12 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
                 projectPath: targetProjectPath
             });
 
-            disposeAfterEach.add(async () => executableApp.closeFeature());
+            disposeAfterEach.add(async () =>
+                executableApp.closeFeature({
+                    featureName: targetFeatureName,
+                    configName: targetConfigName
+                })
+            );
 
             const search = toSearchQuery({
                 featureName: targetFeatureName,
