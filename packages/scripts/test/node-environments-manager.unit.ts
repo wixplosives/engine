@@ -1,9 +1,13 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import { createDisposables } from '@wixc3/engine-test-kit';
 import { Application, NodeEnvironmentsManager } from '../src';
+import chaiAsPromised from 'chai-as-promised';
 import { join } from 'path';
 
+chai.use(chaiAsPromised);
+
 const nodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'node-env');
+const runFeatureOptions = { featureName: 'engine-local/x', configName: 'engine-local/dev' };
 
 describe('Node environments manager', () => {
     const disposables = createDisposables();
@@ -14,8 +18,6 @@ describe('Node environments manager', () => {
         const app = new Application(nodeEnvironmentFixturePath);
         const { close, runFeature } = await app.start();
         const nodeEnvManager = new NodeEnvironmentsManager(runFeature);
-
-        const runFeatureOptions = { featureName: 'engine-local/x', configName: 'engine-local/dev' };
 
         await nodeEnvManager.runFeature(runFeatureOptions);
 
@@ -55,6 +57,30 @@ describe('Node environments manager', () => {
         );
 
         disposables.add(() => nodeEnvManager.closeFeature(runFeatureOptions));
+        disposables.add(() => close());
+    });
+
+    it('fails to launch if wrong config name or feature name are provided', async () => {
+        const app = new Application(nodeEnvironmentFixturePath);
+        const { close, runFeature } = await app.start();
+        const nodeEnvManager = new NodeEnvironmentsManager(runFeature);
+        expect(nodeEnvManager.runFeature({})).to.eventually.throw('feature name was not provided');
+        expect(nodeEnvManager.runFeature({ featureName: 'test' })).to.eventually.throw('config name was not provided');
+        expect(nodeEnvManager.runFeature({ featureName: 'test', configName: 'test' })).to.eventually.throw();
+        disposables.add(() => close());
+    });
+
+    it('closes open environments', async () => {
+        const app = new Application(nodeEnvironmentFixturePath);
+        const { close, runFeature } = await app.start();
+        const nodeEnvManager = new NodeEnvironmentsManager(runFeature);
+        await nodeEnvManager.runFeature(runFeatureOptions);
+        disposables.add(() => close());
+        disposables.add(() => close());
+        expect(nodeEnvManager.closeFeature({ featureName: 'test', configName: 'test' })).to.eventually.throw(
+            'Error: there are no node environments running for test'
+        );
+        await nodeEnvManager.closeFeature(runFeatureOptions);
         disposables.add(() => close());
     });
 });
