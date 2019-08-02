@@ -22,22 +22,17 @@ import { initEnvironmentServer } from './environment-socket-server';
 import { EngineEnvironmentEntry, FeatureMapping, LinkInfo } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 
+const rimraf = promisify(rimrafCb);
+
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
     projectPath?: string;
-    queryParams?: IQueryParams;
 }
 
 export interface IStartOptions {
     singleRun?: boolean;
 }
-
-interface IQueryParams {
-    [param: string]: string;
-}
-
-const rimraf = promisify(rimrafCb);
 
 export class Application {
     /**

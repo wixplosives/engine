@@ -1,10 +1,9 @@
 import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
-import { join } from 'path';
 import { FileServerDriver } from './file-server-driver';
 
 describe('File Server Feature', () => {
-    const { getLoadedFeature } = withFeature(join(__dirname, '..'), {
+    const { getLoadedFeature } = withFeature({
         featureName: 'example',
         configName: 'run'
     });
