@@ -7,6 +7,7 @@ import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 import { createEntrypoint } from './create-entrypoint';
 import { inOwnRepo } from './own-repo-hook';
 import { WebpackWorkerPlugin } from './webpack-worker-plugin';
+import { join } from 'path';
 
 export interface ICreateBundleConfigOptions {
     featureName?: string;
@@ -64,6 +65,7 @@ export function createBundleConfig(options: ICreateBundleConfigOptions): webpack
             throw new Error(`environment "${envName}" has unknown type to bundle: ${type}`);
         }
     }
+
     return {
         entry,
         mode,
@@ -85,6 +87,12 @@ export function createBundleConfig(options: ICreateBundleConfigOptions): webpack
         },
         plugins
     };
+}
+
+export const engineDashboardCongig = (): webpack.Configuration => {
+    return {
+        entry: join(__dirname, 'engine-start-app', 'main-page')
+    }
 }
 
 const typescriptLoader: webpack.RuleSetRule = {

@@ -5,6 +5,7 @@ import { join } from 'path';
 import { waitFor } from 'promise-assist';
 import { Page } from 'puppeteer';
 import { Application } from '../src/application';
+// import { request } from 'http';
 const { directoryExists } = fs.promises;
 
 describe('Application', function() {
@@ -101,21 +102,50 @@ describe('Application', function() {
             });
             expect(mySlot).to.eql(['testing 1 2 3']);
         });
-    });
 
-    it.only(`runs node environments`, async () => {
-        const featurePath = join(__dirname, './fixtures/node-env');
-        const app = new Application(featurePath);
-        const runningApp = await app.start({
-            featureName: 'engine-local/x',
-            configName: 'engine-local/dev'
+        it(`runs node environments`, async () => {
+            const featurePath = join(__dirname, './fixtures/node-env');
+            const app = new Application(featurePath);
+            const runningApp = await app.start({
+                featureName: 'engine-local/x',
+                configName: 'engine-local/dev'
+            });
+            disposables.add('closing app', () => runningApp.close());
+
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
+            });
         });
-        disposables.add('closing app', () => runningApp.close());
 
-        const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+        // it.only('launches a node environment using http server by demand and closes it', async () => {
+        //     const featurePath = join(__dirname, './fixtures/node-env');
+        //     const app = new Application(featurePath);
 
-        await waitFor(async () => {
-            expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
-        });
+        //     const runningApp = await app.start();
+        //     disposables.add('closing app', () => runningApp.close());
+        //     const startNodeEnvironmentResponse: any = await new Promise((resolve, reject) => {
+        //         request(
+        //         `http://localhost:${runningApp.port}/node-env?featureName=engine-local/x&configName=engine-local/dev`,
+        //         {
+        //             method: 'PUT'
+        //         } , (res) => {
+        //             let data = ''
+        //             res.on('error', reject)
+        //             res.on('data', chunk => data += chunk);
+        //             res.on('end', () => {
+        //                 const response = JSON.stringify(data)
+        //                 if(res.statusCode === 404) {
+        //                     reject(response)
+        //                 } else {
+        //                     resolve(response)
+        //                 }
+        //             });
+        //         })
+
+        //     expect(startNodeEnvironmentResponse).to.have.key('result')
+        //     expect(startNodeEnvironmentResponse.result).to.equal('success');
+        // });
     });
 });

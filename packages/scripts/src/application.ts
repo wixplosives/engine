@@ -68,7 +68,15 @@ export class Application {
         const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
-
+        const runningNodeEnvironments = new Map<
+            string,
+            Map<
+                string,
+                {
+                    close: () => Promise<void>;
+                }
+            >
+        >();
         const app = express();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
@@ -132,7 +140,9 @@ export class Application {
                 if (!configFilePath) {
                     const configNames = Array.from(configurations.keys());
                     throw new Error(
-                        `cannot find config ${featureName}. available configurations: ${configNames.join(', ')}`
+                        `cannot find config ${targetFeature.featureName}. available configurations: ${configNames.join(
+                            ', '
+                        )}`
                     );
                 }
                 const { default: topLevelConfig } = await import(configFilePath);
@@ -160,12 +170,123 @@ export class Application {
             };
         };
 
+        app.put('/node-env', async (req, res) => {
+            const { configName, featureName, projectPath }: IRunOptions = req.query;
+            if (!featureName) {
+                res.status(404).json({
+                    result: 'error',
+                    error: 'featureName should be privoded'
+                });
+            } else if (!configName) {
+                res.status(404).json({
+                    result: 'error',
+                    error: 'configName should be privoded'
+                });
+            } else {
+                const runningNodeEnv = await runFeature({
+                    featureName,
+                    configName,
+                    projectPath
+                });
+
+                if (!runningNodeEnvironments.has(featureName)) {
+                    runningNodeEnvironments.set(featureName, new Map());
+                }
+                runningNodeEnvironments.get(featureName)!.set(configName, runningNodeEnv);
+
+                res.json({
+                    result: 'success'
+                });
+            }
+        });
+
+        app.delete('/node-env', async (req, res) => {
+            const { configName, featureName }: IRunOptions = req.query;
+            if (!featureName) {
+                res.status(404).json({
+                    result: 'error',
+                    error: 'featureName should be provided'
+                });
+            } else if (!configName) {
+                res.status(404).json({
+                    result: 'error',
+                    error: 'configName should be provided'
+                });
+            } else if (!runningNodeEnvironments.has(featureName)) {
+                res.status(404).json({
+                    result: 'error',
+                    error: `${featureName} does not have a running node environment`
+                });
+            } else if (!runningNodeEnvironments.get(featureName)!.has(configName)) {
+                res.status(404).json({
+                    result: 'error',
+                    error: `${featureName} does not have a running node environment for config ${configName}
+                    possible configs are ${runningNodeEnvironments.get(featureName)!}
+                    `
+                });
+            } else {
+                await runningNodeEnvironments
+                    .get(featureName)!
+                    .get(configName)!
+                    .close();
+                res.json({
+                    result: 'success'
+                });
+            }
+        });
+
+        app.get('/node-env', (req, res) => {
+            const { featureName, configName }: IRunOptions = req.query;
+            if (featureName) {
+                const feature = runningNodeEnvironments.get(featureName);
+                if (!feature) {
+                    res.status(404).json({
+                        result: 'error',
+                        error: `no features are running for ${featureName}`
+                    });
+                } else {
+                    if (configName) {
+                        if (!feature.has(configName)) {
+                            res.status(404).json({
+                                result: 'error',
+                                error: `no features are running for ${featureName}`,
+                                possibleConfigs: Array.from(feature.keys())
+                            });
+                        } else {
+                            res.json({
+                                result: 'success'
+                            });
+                        }
+                    } else {
+                        res.json({
+                            result: 'success',
+                            possibleConfigs: Array.from(feature.keys())
+                        });
+                    }
+                }
+            } else {
+                const runningFeatureNames = Array.from(runningNodeEnvironments.keys());
+                const possibleConfigs: Record<string, string[]> = runningFeatureNames.reduce(
+                    (prev, featureName) => {
+                        prev[featureName!] = Array.from(runningNodeEnvironments.get(featureName)!.keys());
+                        return prev;
+                    },
+                    {} as Record<string, string[]>
+                );
+
+                res.json({
+                    result: 'success',
+                    possibleConfigs
+                });
+            }
+        });
+
         const engineDev = engineDevMiddleware({
             runningFeaturesAndConfigs,
-            mainUrl,
+            mainUrl
         });
         app.use(engineDev);
-        
+
         if (featureName) {
             const { close: closeFeature } = await runFeature({ featureName, configName });
             disposables.push(() => closeFeature());
