@@ -44,7 +44,7 @@ export class NodeEnvironmentsManager {
         }
     }
 
-    async getRunningFeatures({ featureName, configName }: IRunOptions = {}) {
+    getRunningFeatures({ featureName, configName }: IRunOptions = {}) {
         if (!featureName) {
             return Array.from(this.runningEnvironmetns.keys()).reduce(
                 (prev, runningFeature) => {

@@ -35,12 +35,19 @@ export function createBundleConfig(options: ICreateBundleConfigOptions): webpack
     const virtualModules: Record<string, string> = {};
     const plugins: webpack.Plugin[] = [
         new HtmlWebpackPlugin({
-            filename: `main.html`
+            filename: `main.html`,
+            excludeChunks: ['index']
+        }),
+        new HtmlWebpackPlugin({
+            filename: `index.html`,
+            chunks: ['index']
         }),
         new StylableWebpackPlugin(),
         new VirtualModulesPlugin(virtualModules)
     ];
-    const entry: webpack.Entry = {};
+    const entry: webpack.Entry = {
+        index: join(__dirname, 'engine-dashboard', 'index.tsx')
+    };
     for (const { type, name: envName, childEnvName } of enviroments) {
         const entryPath = fs.join(context, `${envName}-${type}-entry.js`);
         virtualModules[entryPath] = createEntrypoint({
@@ -89,13 +96,7 @@ export function createBundleConfig(options: ICreateBundleConfigOptions): webpack
     };
 }
 
-export const engineDashboardCongig = (): webpack.Configuration => {
-    return {
-        entry: join(__dirname, 'engine-start-app', 'main-page')
-    }
-}
-
-const typescriptLoader: webpack.RuleSetRule = {
+export const typescriptLoader: webpack.RuleSetRule = {
     test: /\.tsx?$/,
     exclude: /\.d\.ts$/,
     loader: '@ts-tools/webpack-loader',
@@ -104,7 +105,7 @@ const typescriptLoader: webpack.RuleSetRule = {
     }
 };
 
-const cssLoader: webpack.RuleSetRule = {
+export const cssLoader: webpack.RuleSetRule = {
     test: /\.css$/,
     exclude: /\.st\.css$/,
     use: ['style-loader', 'css-loader']

@@ -19,10 +19,10 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
-import { engineDevMiddleware } from './engine-start-app/engine-dev-middlewere';
 import { createBundleConfig } from './create-webpack-config';
 import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
+import { NodeEnvironmentsManager } from './node-environments-magager';
 
 const rimraf = promisify(rimrafCb);
 
@@ -68,15 +68,6 @@ export class Application {
         const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
-        const runningNodeEnvironments = new Map<
-            string,
-            Map<
-                string,
-                {
-                    close: () => Promise<void>;
-                }
-            >
-        >();
         const app = express();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
@@ -170,122 +161,63 @@ export class Application {
             };
         };
 
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(runFeature);
+
         app.put('/node-env', async (req, res) => {
-            const { configName, featureName, projectPath }: IRunOptions = req.query;
-            if (!featureName) {
-                res.status(404).json({
-                    result: 'error',
-                    error: 'featureName should be privoded'
-                });
-            } else if (!configName) {
-                res.status(404).json({
-                    result: 'error',
-                    error: 'configName should be privoded'
-                });
-            } else {
-                const runningNodeEnv = await runFeature({
-                    featureName,
-                    configName,
-                    projectPath
-                });
-
-                if (!runningNodeEnvironments.has(featureName)) {
-                    runningNodeEnvironments.set(featureName, new Map());
-                }
-                runningNodeEnvironments.get(featureName)!.set(configName, runningNodeEnv);
-
+            const { configName, featureName }: IRunOptions = req.query;
+            try {
+                await nodeEnvironmentManager.runFeature({ configName, featureName });
                 res.json({
                     result: 'success'
+                });
+            } catch (error) {
+                res.status(404).json({
+                    result: 'error',
+                    error: error.message
                 });
             }
         });
 
         app.delete('/node-env', async (req, res) => {
-            const { configName, featureName }: IRunOptions = req.query;
-            if (!featureName) {
-                res.status(404).json({
-                    result: 'error',
-                    error: 'featureName should be provided'
-                });
-            } else if (!configName) {
-                res.status(404).json({
-                    result: 'error',
-                    error: 'configName should be provided'
-                });
-            } else if (!runningNodeEnvironments.has(featureName)) {
-                res.status(404).json({
-                    result: 'error',
-                    error: `${featureName} does not have a running node environment`
-                });
-            } else if (!runningNodeEnvironments.get(featureName)!.has(configName)) {
-                res.status(404).json({
-                    result: 'error',
-                    error: `${featureName} does not have a running node environment for config ${configName}
-                    possible configs are ${runningNodeEnvironments.get(featureName)!}
-                    `
-                });
-            } else {
-                await runningNodeEnvironments
-                    .get(featureName)!
-                    .get(configName)!
-                    .close();
+            const { featureName, configName }: IRunOptions = req.query;
+            try {
+                await nodeEnvironmentManager.closeFeature({ configName, featureName });
                 res.json({
                     result: 'success'
+                });
+            } catch (error) {
+                res.status(404).json({
+                    result: 'error',
+                    error: error.message
                 });
             }
         });
 
         app.get('/node-env', (req, res) => {
             const { featureName, configName }: IRunOptions = req.query;
-            if (featureName) {
-                const feature = runningNodeEnvironments.get(featureName);
-                if (!feature) {
-                    res.status(404).json({
-                        result: 'error',
-                        error: `no features are running for ${featureName}`
-                    });
-                } else {
-                    if (configName) {
-                        if (!feature.has(configName)) {
-                            res.status(404).json({
-                                result: 'error',
-                                error: `no features are running for ${featureName}`,
-                                possibleConfigs: Array.from(feature.keys())
-                            });
-                        } else {
-                            res.json({
-                                result: 'success'
-                            });
-                        }
-                    } else {
-                        res.json({
-                            result: 'success',
-                            possibleConfigs: Array.from(feature.keys())
-                        });
-                    }
-                }
-            } else {
-                const runningFeatureNames = Array.from(runningNodeEnvironments.keys());
-                const possibleConfigs: Record<string, string[]> = runningFeatureNames.reduce(
-                    (prev, featureName) => {
-                        prev[featureName!] = Array.from(runningNodeEnvironments.get(featureName)!.keys());
-                        return prev;
-                    },
-                    {} as Record<string, string[]>
-                );
-
+            try {
+                const data = nodeEnvironmentManager.getRunningFeatures({ configName, featureName });
                 res.json({
                     result: 'success',
-                    possibleConfigs
+                    data
+                });
+            } catch (error) {
+                res.status(404).json({
+                    result: 'error',
+                    error: error.message
                 });
             }
         });
 
-        const engineDev = engineDevMiddleware({
-            runningFeaturesAndConfigs,
-            mainUrl
+        app.get('/possible-entities', (_req, res) => {
+            res.json({ ...runningFeaturesAndConfigs });
         });
-        app.use(engineDev);
+
+        // const engineDev = engineDevMiddleware({
+        //     runningFeaturesAndConfigs,
+        //     mainUrl
+        // });
+        // app.use(engineDev);
 
         if (featureName) {
             const { close: closeFeature } = await runFeature({ featureName, configName });
