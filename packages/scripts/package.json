@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "3.1.5",
+  "version": "3.1.8",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
@@ -25,8 +25,8 @@
     "@ts-tools/node": "^0.9.8",
     "@ts-tools/webpack-loader": "^0.8.12",
     "@types/react-table": "^6.8.5",
-    "@wixc3/engine-core": "^3.1.5",
-    "@wixc3/engine-core-node": "^3.1.5",
+    "@wixc3/engine-core": "^3.1.6",
+    "@wixc3/engine-core-node": "^3.1.6",
     "commander": "^2.20.0",
     "create-listening-server": "^0.1.2",
     "deindent": "^0.1.0",
@@ -39,7 +39,7 @@
     "react-table": "^6.10.0",
     "rimraf": "^2.6.3",
     "socket.io": "^2.2.0",
-    "webpack": "^4.38.0",
+    "webpack": "^4.39.0",
     "webpack-dev-middleware": "^3.7.0",
     "webpack-virtual-modules": "^0.1.10"
   },
