@@ -101,21 +101,21 @@ describe('Application', function() {
             });
             expect(mySlot).to.eql(['testing 1 2 3']);
         });
-    });
 
-    it.only(`runs node environments`, async () => {
-        const featurePath = join(__dirname, './fixtures/node-env');
-        const app = new Application(featurePath);
-        const runningApp = await app.start({
-            featureName: 'engine-local/x',
-            configName: 'engine-local/dev'
-        });
-        disposables.add('closing app', () => runningApp.close());
+        it(`runs node environments`, async () => {
+            const featurePath = join(__dirname, './fixtures/node-env');
+            const app = new Application(featurePath);
+            const runningApp = await app.start({
+                featureName: 'engine-local/x',
+                configName: 'engine-local/dev'
+            });
+            disposables.add('closing app', () => runningApp.close());
 
-        const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
-        await waitFor(async () => {
-            expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
+            });
         });
     });
 });
