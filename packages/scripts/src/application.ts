@@ -205,7 +205,8 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
     res.end();
 };
 
-const bundleStartMessage = () => console.log('Bundling using webpack...');
+const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
+    console.log(`Bundling ${target} using webpack...`);
 
 function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
@@ -214,7 +215,7 @@ function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.done.tap('engine-scripts stats printing', ({ stats }) => {
         for (const childStats of stats) {
             if (childStats.hasErrors() || childStats.hasWarnings()) {
-                console.log(stats.toString());
+                console.log(childStats.toString('errors-warnings'));
             }
         }
         console.log('Done bundling.');
