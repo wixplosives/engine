@@ -7,7 +7,7 @@ import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 import { createEntrypoint } from './create-entrypoint';
 import { inOwnRepo } from './own-repo-hook';
 
-export interface ICreateBundleConfigOptions {
+export interface ICreateWebpackConfigsOptions {
     featureName?: string;
     configName?: string;
     features: Map<string, IFeatureDefinition>;
@@ -18,7 +18,7 @@ export interface ICreateBundleConfigOptions {
     publicPath?: string;
 }
 
-export function createWebpackConfigs(options: ICreateBundleConfigOptions): webpack.Configuration[] {
+export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
     const { enviroments } = options;
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
