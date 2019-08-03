@@ -6,7 +6,6 @@ import VirtualModulesPlugin from 'webpack-virtual-modules';
 import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 import { createEntrypoint } from './create-entrypoint';
 import { inOwnRepo } from './own-repo-hook';
-import { WebpackWorkerPlugin } from './webpack-worker-plugin';
 
 export interface ICreateBundleConfigOptions {
     featureName?: string;
@@ -19,29 +18,69 @@ export interface ICreateBundleConfigOptions {
     publicPath?: string;
 }
 
-export function createBundleConfig(options: ICreateBundleConfigOptions): webpack.Configuration {
-    const {
-        enviroments,
-        mode = 'development',
-        context,
-        outputPath,
-        publicPath,
-        features,
-        featureName,
-        configName
-    } = options;
-
+export function createWebpackConfigs(options: ICreateBundleConfigOptions): webpack.Configuration[] {
+    const { enviroments } = options;
+    const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
-    const plugins: webpack.Plugin[] = [
-        new HtmlWebpackPlugin({
-            filename: `main.html`
-        }),
-        new StylableWebpackPlugin(),
-        new VirtualModulesPlugin(virtualModules)
-    ];
+
+    const webEnvs = enviroments.filter(({ type }) => type === 'window' || type === 'iframe');
+    const workerEnvs = enviroments.filter(({ type }) => type === 'worker');
+    if (webEnvs.length) {
+        configurations.push(
+            createWebpackConfig({
+                ...options,
+                enviroments: webEnvs,
+                target: 'web',
+                virtualModules,
+                plugins: [new StylableWebpackPlugin(), new VirtualModulesPlugin(virtualModules)]
+            })
+        );
+    }
+    if (workerEnvs.length) {
+        configurations.push(
+            createWebpackConfig({
+                ...options,
+                enviroments: workerEnvs,
+                target: 'webworker',
+                virtualModules,
+                plugins: [new VirtualModulesPlugin(virtualModules)]
+            })
+        );
+    }
+    return configurations;
+}
+
+interface ICreateWebpackConfigOptions {
+    featureName?: string;
+    configName?: string;
+    features: Map<string, IFeatureDefinition>;
+    context: string;
+    mode?: 'production' | 'development';
+    outputPath: string;
+    enviroments: IEnvironment[];
+    publicPath?: string;
+    target: 'web' | 'webworker';
+    virtualModules: Record<string, string>;
+    plugins?: webpack.Plugin[];
+}
+
+function createWebpackConfig({
+    target,
+    enviroments,
+    virtualModules,
+    featureName,
+    configName,
+    features,
+    context,
+    mode = 'development',
+    outputPath,
+    publicPath,
+    plugins = []
+}: ICreateWebpackConfigOptions): webpack.Configuration {
     const entry: webpack.Entry = {};
-    for (const { type, name: envName, childEnvName } of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${type}-entry.js`);
+    for (const { type: envType, name: envName, childEnvName } of enviroments) {
+        const entryPath = fs.join(context, `${envName}-${envType}-entry.js`);
+        entry[envName] = entryPath;
         virtualModules[entryPath] = createEntrypoint({
             features,
             childEnvName,
@@ -49,29 +88,26 @@ export function createBundleConfig(options: ICreateBundleConfigOptions): webpack
             featureName,
             configName
         });
-        if (type === 'iframe' || type === 'window') {
-            entry[envName] = entryPath;
-        } else if (type === 'worker') {
+        if (target === 'web') {
             plugins.push(
-                new WebpackWorkerPlugin({
-                    id: envName,
-                    entry: entryPath,
-                    filename: `${envName}-webworker.js`,
-                    chunkFilename: '[name]-webworker.js'
+                new HtmlWebpackPlugin({
+                    filename: `${envName}.html`,
+                    chunks: [envName]
                 })
             );
-        } else {
-            throw new Error(`environment "${envName}" has unknown type to bundle: ${type}`);
         }
     }
+
     return {
+        target,
         entry,
         mode,
         devtool: mode === 'development' ? 'source-map' : false,
         context,
         output: {
             path: outputPath,
-            chunkFilename: `[name].web.js`,
+            filename: `[name].${target}.js`,
+            chunkFilename: `[name].${target}.js`,
             publicPath
         },
         resolve: {
