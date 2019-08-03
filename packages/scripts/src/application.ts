@@ -19,7 +19,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
-import { createWebpackConfigs } from './create-webpack-config';
+import { createWebpackConfigs } from './create-webpack-configs';
 import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
 
