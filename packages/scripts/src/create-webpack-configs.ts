@@ -32,7 +32,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: webEnvs,
                 target: 'web',
                 virtualModules,
-                plugins: [new StylableWebpackPlugin(), new VirtualModulesPlugin(virtualModules)]
+                plugins: [new VirtualModulesPlugin(virtualModules), new StylableWebpackPlugin()]
             })
         );
     }
@@ -47,6 +47,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             })
         );
     }
+
     return configurations;
 }
 
