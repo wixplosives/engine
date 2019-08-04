@@ -124,8 +124,12 @@ export class Application {
                         `cannot find config ${featureName}. available configurations: ${configNames.join(', ')}`
                     );
                 }
-                const { default: topLevelConfig } = await import(configFilePath);
-                config.push(...topLevelConfig);
+                try {
+                    const { default: topLevelConfig } = await import(configFilePath);
+                    config.push(...topLevelConfig);
+                } catch (e) {
+                    console.error(e);
+                }
             }
 
             const runningEnvs = await runNodeEnvironments({
