@@ -66,8 +66,9 @@ export class Application {
         const app = express();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
+        disposables.push(() => new Promise(res => httpServer.close(res)));
         const socketServer = io(httpServer);
-        disposables.push(() => new Promise(res => socketServer.close(res)));
+        disposables.push(() => socketServer.close());
         const topology: Map<string, Record<string, string>> = new Map();
 
         app.use('/favicon.ico', noContentHandler);
