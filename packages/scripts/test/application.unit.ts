@@ -115,5 +115,64 @@ describe('Application', function() {
                 expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
             });
         });
+
+        it('launches a feature with contextual environment with worker context', async () => {
+            const featurePath = fs.join(__dirname, './fixtures/contextual');
+            const app = new Application(featurePath);
+            const runningApp = await app.start({
+                configName: 'engine-contextual/contextual-with-worker-default'
+            });
+            disposables.add('closing app', () => runningApp.close());
+
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from worker');
+            });
+        });
+
+        it('launches a feature with contextual environment with server context', async () => {
+            const featurePath = fs.join(__dirname, './fixtures/contextual');
+            const app = new Application(featurePath);
+            const runningApp = await app.start({
+                featureName: 'engine-contextual/server-env-contextual'
+            });
+            disposables.add('closing app', () => runningApp.close());
+
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from server');
+            });
+        });
     });
+
+    // it.only('launches a node environment using http server by demand and closes it', async () => {
+    //     const featurePath = join(__dirname, './fixtures/node-env');
+    //     const app = new Application(featurePath);
+
+    //     const runningApp = await app.start();
+    //     disposables.add('closing app', () => runningApp.close());
+    //     const startNodeEnvironmentResponse: any = await new Promise((resolve, reject) => {
+    //         request(
+    //         `http://localhost:${runningApp.port}/node-env?featureName=engine-local/x&configName=engine-local/dev`,
+    //         {
+    //             method: 'PUT'
+    //         } , (res) => {
+    //             let data = ''
+    //             res.on('error', reject)
+    //             res.on('data', chunk => data += chunk);
+    //             res.on('end', () => {
+    //                 const response = JSON.stringify(data)
+    //                 if(res.statusCode === 404) {
+    //                     reject(response)
+    //                 } else {
+    //                     resolve(response)
+    //                 }
+    //             });
+    //         })
+
+    //     expect(startNodeEnvironmentResponse).to.have.key('result')
+    //     expect(startNodeEnvironmentResponse.result).to.equal('success');
+    // });
 });
