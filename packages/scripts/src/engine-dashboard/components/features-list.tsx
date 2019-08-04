@@ -19,26 +19,19 @@ export const FeaturesList: React.FunctionComponent = () => {
         configs: []
     });
 
-    const [runningNodeEnvironments, setRunningNodeEnvironments] = useState<Record<string, string[]>>({});
+    const [runningNodeEnvironments, setRunningNodeEnvironments] = useState<string[]>([]);
 
     const onServerEnvironmentStatusChange = (
         serverResponse: ServerResponse,
         featureName: string,
-        configName: string
     ) => {
         if (isSuccessResponse(serverResponse)) {
-            if (!runningNodeEnvironments[featureName]) {
-                runningNodeEnvironments[featureName] = [];
-            }
-            if (runningNodeEnvironments[featureName].includes(configName)) {
-                runningNodeEnvironments[featureName].splice(
-                    runningNodeEnvironments[featureName].indexOf(configName),
-                    1
-                );
+            if (!runningNodeEnvironments.includes(featureName)) {
+                runningNodeEnvironments.push(featureName);
             } else {
-                runningNodeEnvironments[featureName] = [...runningNodeEnvironments[featureName], configName];
+                runningNodeEnvironments.splice(runningNodeEnvironments.indexOf(featureName), 1);
             }
-            setRunningNodeEnvironments({ ...runningNodeEnvironments });
+            setRunningNodeEnvironments([ ...runningNodeEnvironments ]);
         } else {
             // tslint:disable-next-line no-console
             console.error(serverResponse);
@@ -53,7 +46,7 @@ export const FeaturesList: React.FunctionComponent = () => {
                 setFeaturesConfigsList(currentReadyFeaturesAndConfigs);
             }
             if (isListNodeEnvironmtnrsResponse(currentRunningNodeEnvironments)) {
-                if (currentRunningNodeEnvironments.data && !Array.isArray(currentRunningNodeEnvironments.data)) {
+                if (currentRunningNodeEnvironments.data && Array.isArray(currentRunningNodeEnvironments.data)) {
                     setRunningNodeEnvironments(currentRunningNodeEnvironments.data);
                 }
             }
@@ -73,9 +66,7 @@ export const FeaturesList: React.FunctionComponent = () => {
                 configName,
                 featureName,
                 url: `${location.href}main.html?feature=${featureName}&config=${configName}`,
-                runningNodeEnvironment: runningNodeEnvironments[featureName]
-                    ? runningNodeEnvironments[featureName].includes(configName)
-                    : false
+                runningNodeEnvironment: runningNodeEnvironments.includes(featureName)
             });
         }
     }

@@ -12,7 +12,7 @@ export interface SuccessResponse extends ServerResponse {
 }
 
 export interface ListNodeEnvironmentsResponse extends SuccessResponse {
-    data?: string[] | Record<string, string[]>;
+    data?: string[];
 }
 
 export const isServerResponseMessage = (message: unknown): message is ServerResponse => {

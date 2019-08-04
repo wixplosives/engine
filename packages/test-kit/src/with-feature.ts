@@ -117,8 +117,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
 
             disposeAfterEach.add(async () =>
                 executableApp.closeFeature({
-                    featureName: targetFeatureName,
-                    configName: targetConfigName
+                    featureName,
+                    configName
                 })
             );
 
