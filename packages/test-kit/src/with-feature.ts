@@ -129,7 +129,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
                 // tslint:disable-next-line: no-console
                 console.error(e);
             });
-            const response = await page.goto(featureUrl + search, options);
+            const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...options });
 
             return { page, response };
         }
