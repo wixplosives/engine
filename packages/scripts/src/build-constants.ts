@@ -15,10 +15,14 @@ export const FEATURE_QUERY_PARAM = 'feature';
 export const ENTRY_PREFIX_FILENAME = 'env-entry-';
 
 // File naming helpers
-export const isConfigFile = (fileName: string) => fileName.indexOf(CONFIG_FILENAME_HINT) >= 1;
-export const isEnvFile = (fileName: string) => fileName.indexOf(ENV_FILENAME_HINT) >= 1;
-export const isFeatureFile = (fileName: string) => fileName.indexOf(FEATURE_FILENAME_HINT) >= 1;
-export const isContextFile = (fileName: string) => fileName.indexOf(CONTEXT_FILENAME_HINT) >= 1;
+export const isCodeModule = (fileName: string) =>
+    (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) || fileName.endsWith('.tsx') || fileName.endsWith('.js');
+export const isConfigFile = (fileName: string) => fileName.indexOf(CONFIG_FILENAME_HINT) >= 1 && isCodeModule(fileName);
+export const isEnvFile = (fileName: string) => fileName.indexOf(ENV_FILENAME_HINT) >= 1 && isCodeModule(fileName);
+export const isFeatureFile = (fileName: string) =>
+    fileName.indexOf(FEATURE_FILENAME_HINT) >= 1 && isCodeModule(fileName);
+export const isContextFile = (fileName: string) =>
+    fileName.indexOf(CONTEXT_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 
 export function parseFeatureFileName(fileName: string): string {
     return fileName.split(FEATURE_FILENAME_HINT).shift()!;

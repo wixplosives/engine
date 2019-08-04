@@ -92,7 +92,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             {
                 featureName: targetFeatureName = featureName,
                 configName: targetConfigName = configName,
-                projectPath: currentProjectPath = projectPath,
+                projectPath: targetProjectPath = projectPath,
                 allowErrors: targetAllowErrors = false
             }: IGetLoadedFeatureOptions = {},
             options?: puppeteer.DirectNavigationOptions
@@ -104,9 +104,18 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
                 throw new Error('Engine HTTP server is closed!');
             }
             allowErrors = targetAllowErrors;
-            await executableApp.runFeature({ configName, featureName, projectPath: currentProjectPath });
+            await executableApp.runFeature({
+                featureName: targetFeatureName,
+                configName: targetConfigName,
+                projectPath: targetProjectPath
+            });
 
-            disposeAfterEach.add(async () => executableApp.closeFeature());
+            disposeAfterEach.add(async () =>
+                executableApp.closeFeature({
+                    featureName: targetFeatureName,
+                    configName: targetConfigName
+                })
+            );
 
             const search = toSearchQuery({
                 featureName: targetFeatureName,
