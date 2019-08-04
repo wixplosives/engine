@@ -20,7 +20,7 @@ export function createEntrypoint({
     
 const featureLoaders = {
 ${Array.from(features.values())
-    .map(({ scopedName, filePath, envFilePaths, contextFilePaths, dependencies, resolvedContexts }) => {
+    .map(({ scopedName, name, filePath, envFilePaths, contextFilePaths, dependencies, resolvedContexts }) => {
         const envSetupFilePaths: string[] = [];
         if (childEnvName !== undefined) {
             const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
@@ -35,8 +35,13 @@ ${Array.from(features.values())
 
         return `    '${scopedName}': {
             async load() {
-${envSetupFilePaths.map(setupFilePath => `                await import(${JSON.stringify(setupFilePath)});`).join('\n')}
-                return (await import(${JSON.stringify(filePath)})).default;
+${envSetupFilePaths
+    .map(
+        setupFilePath =>
+            `                await import(/* webpackChunkName: "${name}" */ ${JSON.stringify(setupFilePath)});`
+    )
+    .join('\n')}
+                return (await import(/* webpackChunkName: "${name}" */ ${JSON.stringify(filePath)})).default;
             },
             depFeatures: ${JSON.stringify(dependencies)},
             resolvedContexts: ${JSON.stringify(resolvedContexts)},

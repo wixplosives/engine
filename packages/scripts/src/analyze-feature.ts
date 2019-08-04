@@ -197,7 +197,7 @@ const featurePackagePostfix = '-feature';
 /**
  * Removes package scope (e.g `@wix`) and posfix `-feature`.
  */
-function simplifyPackageName(name: string) {
+export function simplifyPackageName(name: string) {
     const indexOfSlash = name.indexOf('/');
     if (name.startsWith('@') && indexOfSlash !== -1) {
         name = name.slice(indexOfSlash + 1);

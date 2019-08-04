@@ -973,42 +973,42 @@
     find-config "^1.0.0"
     webpack-sources "^1.3.0"
 
-"@ts-tools/build@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@ts-tools/build/-/build-0.1.14.tgz#760a6c18695934898ecf35d1b6fdc6e49b8a857e"
-  integrity sha512-O/uNfVwwFA/j9fMRSeWTYoSN9Vr1DYfODqyuzDlJXaSGZFwzGLcugzgAlZxkRvtcmG+7oCRp6IaYtTdXDvAbiw==
+"@ts-tools/build@^0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@ts-tools/build/-/build-0.1.15.tgz#371d270e1b99764697cc6b6ec2d7d42a2f60bada"
+  integrity sha512-vE+tCq/cbqhwHA9ef0ytCqzSTZ3OetOQj1BACPxtl2kc+LG12iUK44Nge06YhWJU5lNF2yx13jkNPImx+rP9TQ==
   dependencies:
     "@ts-tools/service" "^2.0.4"
     chalk "^2.4.2"
     commander "^2.20.0"
     proper-fs "^1.1.2"
 
-"@ts-tools/node@^0.9.8":
-  version "0.9.8"
-  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-0.9.8.tgz#f13d2c8dfa3b1c2c88305d778c317956377fab12"
-  integrity sha512-vUklgBpgJxnoxGG5hwFHM+fhtLKUZblwbjIwyZQW3n8bxemE1evV3RGE/d0U0amZeE4dmEGTne8HwPFuEIBDTg==
+"@ts-tools/node@^0.9.9":
+  version "0.9.9"
+  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-0.9.9.tgz#c4b03417a417c60edd9261962dd14950dec5d687"
+  integrity sha512-3DMVmtO3e+8g6HEXe5qp3H0PqbJEcEZbHGkhSWcl8nJ60qEW8zQEVvCZoeOL9KrJ3wOQKlCfjMlO0zUEjy9LmA==
   dependencies:
-    "@ts-tools/robotrix" "^0.7.5"
+    "@ts-tools/robotrix" "^0.7.6"
     "@ts-tools/service" "^2.0.4"
     is-ci "^2.0.0"
-    source-map-support "^0.5.12"
+    source-map-support "^0.5.13"
 
-"@ts-tools/robotrix@^0.7.5":
-  version "0.7.5"
-  resolved "https://registry.yarnpkg.com/@ts-tools/robotrix/-/robotrix-0.7.5.tgz#b7410643805b0f149b8106dba40472e2ea0d505e"
-  integrity sha512-x8JpibobUkOYbUYEOOLK01WRa7rzQwlrb2F/qNX26GSY+CWUgVEb5TJrC9nRJnqgaDeSutIMyvUqCN3WIdu7JA==
+"@ts-tools/robotrix@^0.7.6":
+  version "0.7.6"
+  resolved "https://registry.yarnpkg.com/@ts-tools/robotrix/-/robotrix-0.7.6.tgz#b3ca0f3b2aa3a7f52f8efba438193a1de5d25989"
+  integrity sha512-p46pQPeOg+Fu/Lz71TjhE/twlmpF6CERlM2MrLp/+pChI6qBJQzRSsJr5RCVriVu4UiOGefhejdK6BjPK22nHQ==
 
 "@ts-tools/service@^2.0.4":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@ts-tools/service/-/service-2.0.4.tgz#124e50935ee6a9ee117670c325725a7e3357ad43"
   integrity sha512-bUre2eYH8yBo8lQVzndYcYzi65n1JOkjyUpJknwIXn7H4vkTqiREFBdceLOt03w8yY9FAMcXN3f1XKDhe4mA9Q==
 
-"@ts-tools/webpack-loader@^0.8.12":
-  version "0.8.12"
-  resolved "https://registry.yarnpkg.com/@ts-tools/webpack-loader/-/webpack-loader-0.8.12.tgz#d614a25526fbedbbc703104a9617f0170c359e0a"
-  integrity sha512-CrrK8JqlGKeyI/snlq7Pf2cbN17byigTq+b5jKouUO0ccwq8Nl/ExNcehvQb1NQKA/uMatIkh37WsY9uavEUaA==
+"@ts-tools/webpack-loader@^0.8.13":
+  version "0.8.13"
+  resolved "https://registry.yarnpkg.com/@ts-tools/webpack-loader/-/webpack-loader-0.8.13.tgz#6126ef84bfa6c16cf79fdc173a8b14966dae6ad1"
+  integrity sha512-QgYaxYtD2SQEqmzN4HpMsJ2/JJBz+uR5XADIbSVbN+8VyKfHruL8za8fGYLh5MYgk9DBvLSDFOwrL21TxHwEhA==
   dependencies:
-    "@ts-tools/robotrix" "^0.7.5"
+    "@ts-tools/robotrix" "^0.7.6"
     "@ts-tools/service" "^2.0.4"
     loader-utils "^1.2.3"
 
@@ -1723,9 +1723,9 @@ async-each@^1.0.1:
   integrity sha512-z/WhQ5FPySLdvREByI2vZiTWwCnF0moMJ1hK9YQwDTHKh6I7/uSckMetoRGb5UBZPC1z0jlw+n/XCgjeH7y1AQ==
 
 async-limiter@~1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/async-limiter/-/async-limiter-1.0.0.tgz#78faed8c3d074ab81f22b4e985d79e8738f720f8"
-  integrity sha512-jp/uFnooOiO+L211eZOoSyzpOITMXx1rBITauYykG3BRYPu8h0UcxsPNB04RR5vo4Tyz3+ay17tR6JVf9qzYWg==
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/async-limiter/-/async-limiter-1.0.1.tgz#dd379e94f0db8310b08291f9d64c3209766617fd"
+  integrity sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ==
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -2893,22 +2893,27 @@ dom-converter@^0.2:
     utila "~0.4"
 
 dom-serializer@0:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-0.1.1.tgz#1ec4059e284babed36eec2941d4a970a189ce7c0"
-  integrity sha512-l0IU0pPzLWSHBcieZbpOKgkIn3ts3vAh7ZuFyXNwJxJXk/c4Gwj9xaTJwIDVQCXawWD0qb3IzMGH5rglQaO0XA==
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-0.2.1.tgz#13650c850daffea35d8b626a4cfc4d3a17643fdb"
+  integrity sha512-sK3ujri04WyjwQXVoK4PU3y8ula1stq10GJZpqHIUgoGZdsGzAGu65BnU3d08aTVSvO7mGPZUc0wTEDL+qGE0Q==
   dependencies:
-    domelementtype "^1.3.0"
-    entities "^1.1.1"
+    domelementtype "^2.0.1"
+    entities "^2.0.0"
 
 domain-browser@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/domain-browser/-/domain-browser-1.2.0.tgz#3d31f50191a6749dd1375a7f522e823d42e54eda"
   integrity sha512-jnjyiM6eRyZl2H+W8Q/zLMA481hzi0eszAaBUzIVnmYVDBbnLxVNnfu1HgEBvCbL+71FrxMl3E6lpKH7Ge3OXA==
 
-domelementtype@1, domelementtype@^1.3.0, domelementtype@^1.3.1:
+domelementtype@1, domelementtype@^1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/domelementtype/-/domelementtype-1.3.1.tgz#d048c44b37b0d10a7f2a3d5fee3f4333d790481f"
   integrity sha512-BSKB+TSpMpFI/HOxCNr1O8aMOTZ8hT3pM3GQ0w/mWRmkhEDSFJkkyzz4XQsBV44BChwGkrDfMyjVD0eA2aFV3w==
+
+domelementtype@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/domelementtype/-/domelementtype-2.0.1.tgz#1f8bdfe91f5a78063274e803b4bdcedf6e94f94d"
+  integrity sha512-5HOHUDsYZWV8FGWN0Njbr/Rn7f/eWSQi1v7+HsUVwXgn8nWWlL64zKDkS0n8ZmQ3mlWOMuXOnR+7Nx/5tMO5AQ==
 
 domhandler@^2.3.0:
   version "2.4.2"
@@ -3070,6 +3075,11 @@ entities@^1.1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/entities/-/entities-1.1.2.tgz#bdfa735299664dfafd34529ed4f8522a275fea56"
   integrity sha512-f2LZMYl1Fzu7YSBKg+RoROelpOaNrcGmE9AZubeDfrCEia483oW4MI4VyFd5VNHIgQ/7qm1I0wUHK1eJnn2y2w==
+
+entities@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/entities/-/entities-2.0.0.tgz#68d6084cab1b079767540d80e56a39b423e4abf4"
+  integrity sha512-D9f7V0JSRwIxlRI2mjMqufDrRDnx8p+eEOz7aUM9SuvF8gsBzra0/6tbjl1m8eQHrZlYj6PxqE00hZ1SAIKPLw==
 
 env-paths@^1.0.0:
   version "1.0.0"
@@ -6027,7 +6037,7 @@ promzard@^0.3.0:
   dependencies:
     read "1"
 
-prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.6.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -6885,7 +6895,7 @@ source-map-resolve@^0.5.0:
     source-map-url "^0.4.0"
     urix "^0.1.0"
 
-source-map-support@^0.5.12, source-map-support@~0.5.12:
+source-map-support@^0.5.13, source-map-support@~0.5.12:
   version "0.5.13"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.13.tgz#31b24a9c2e73c2de85066c0feb7d44767ed52932"
   integrity sha512-SHSKFHadjVA5oR4PPqhtAVdcBWwRYVd6g6cAXnIbRiIwc2EhPrTuKUBdSLvlEKyIP3GCf89fltvcZiP9MMFA1w==
@@ -7220,9 +7230,9 @@ terser-webpack-plugin@^1.4.1:
     worker-farm "^1.7.0"
 
 terser@^4.1.2:
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-4.1.2.tgz#b2656c8a506f7ce805a3f300a2ff48db022fa391"
-  integrity sha512-jvNoEQSPXJdssFwqPSgWjsOrb+ELoE+ILpHPKXC83tIxOlh2U75F1KuB2luLD/3a6/7K3Vw5pDn+hvu0C4AzSw==
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-4.1.3.tgz#6074fbcf3517561c3272ea885f422c7a8c32d689"
+  integrity sha512-on13d+cnpn5bMouZu+J8tPYQecsdRJCJuxFJ+FVoPBoLJgk5bCBkp+Uen2hWyi0KIUm6eDarnlAlH+KgIx/PuQ==
   dependencies:
     commander "^2.20.0"
     source-map "~0.6.1"
@@ -7725,10 +7735,10 @@ webpack-virtual-modules@^0.1.10:
   dependencies:
     debug "^3.0.0"
 
-webpack@^4.39.0:
-  version "4.39.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.39.0.tgz#1d511308c3dd8f9fe3152c9447ce30f1814a620c"
-  integrity sha512-nrxFNSEKm4T1C/EsgOgN50skt//Pl4X7kgJC1MrlE47M292LSCVmMOC47iTGL0CGxbdwhKGgeThrJcw0bstEfA==
+webpack@^4.39.1:
+  version "4.39.1"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.39.1.tgz#60ed9fb2b72cd60f26ea526c404d2a4cc97a1bd8"
+  integrity sha512-/LAb2TJ2z+eVwisldp3dqTEoNhzp/TLCZlmZm3GGGAlnfIWDgOEE758j/9atklNLfRyhKbZTCOIoPqLJXeBLbQ==
   dependencies:
     "@webassemblyjs/ast" "1.8.5"
     "@webassemblyjs/helper-module-context" "1.8.5"

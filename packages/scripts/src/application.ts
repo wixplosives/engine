@@ -16,9 +16,8 @@ import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
-import { createBundleConfig } from './create-webpack-config';
+import { createWebpackConfigs } from './create-webpack-configs';
 import { NodeEnvironmentsManager } from './node-environments-magager';
-
 import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
 
@@ -28,15 +27,10 @@ export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
     projectPath?: string;
-    queryParams?: IQueryParams;
 }
 
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
-}
-
-interface IQueryParams {
-    [param: string]: string;
 }
 
 export class Application {
@@ -85,9 +79,11 @@ export class Application {
             res.send(config);
         });
 
-        const devMiddleware = webpackDevMiddleware(compiler, { publicPath: '/', logLevel: 'silent' });
-        disposables.push(() => new Promise(res => devMiddleware.close(res)));
-        app.use(devMiddleware);
+        for (const childCompiler of compiler.compilers) {
+            const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
+            disposables.push(() => new Promise(res => devMiddleware.close(res)));
+            app.use(devMiddleware);
+        }
 
         await new Promise(resolve => {
             compiler.hooks.done.tap('engine-scripts init', resolve);
@@ -196,7 +192,7 @@ export class Application {
             }
         }
 
-        const webpackConfig = createBundleConfig({
+        const webpackConfigs = createWebpackConfigs({
             context: basePath,
             outputPath,
             enviroments: Array.from(enviroments),
@@ -204,7 +200,7 @@ export class Application {
             featureName,
             configName
         });
-        const compiler = webpack(webpackConfig);
+        const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
         return compiler;
     }
@@ -240,15 +236,18 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
     res.end();
 };
 
-const bundleStartMessage = () => console.log('Bundling using webpack...');
+const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
+    console.log(`Bundling ${target} using webpack...`);
 
-function hookCompilerToConsole(compiler: webpack.Compiler): void {
+function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
     compiler.hooks.watchRun.tap('engine-scripts', bundleStartMessage);
 
-    compiler.hooks.done.tap('engine-scripts stats printing', stats => {
-        if (stats.hasErrors() || stats.hasWarnings()) {
-            console.log(stats.toString());
+    compiler.hooks.done.tap('engine-scripts stats printing', ({ stats }) => {
+        for (const childStats of stats) {
+            if (childStats.hasErrors() || childStats.hasWarnings()) {
+                console.log(childStats.toString('errors-warnings'));
+            }
         }
         console.log('Done bundling.');
     });

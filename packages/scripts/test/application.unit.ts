@@ -1,12 +1,9 @@
 import fs from '@file-services/node';
 import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
-import { join } from 'path';
 import { waitFor } from 'promise-assist';
 import { Page } from 'puppeteer';
 import { Application } from '../src/application';
-// import { request } from 'http';
-const { directoryExists } = fs.promises;
 
 describe('Application', function() {
     this.timeout(10_000);
@@ -25,15 +22,15 @@ describe('Application', function() {
         return page;
     };
 
-    const engineFeatureFixturePath = join(__dirname, './fixtures/engine-feature');
-    const multiFeatureFixturePath = join(__dirname, './fixtures/engine-multi-feature');
+    const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
+    const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
 
     describe('build', () => {
         it(`supports building features with a single fixture`, async () => {
             const app = new Application(engineFeatureFixturePath);
             await app.build({ featureName: 'x', configName: 'dev' });
 
-            expect(await directoryExists(app.outputPath), 'has dist folder').to.equal(true);
+            expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
         });
     });
 
@@ -104,7 +101,7 @@ describe('Application', function() {
         });
 
         it(`runs node environments`, async () => {
-            const featurePath = join(__dirname, './fixtures/node-env');
+            const featurePath = fs.join(__dirname, './fixtures/node-env');
             const app = new Application(featurePath);
             const runningApp = await app.start({
                 featureName: 'engine-local/x',

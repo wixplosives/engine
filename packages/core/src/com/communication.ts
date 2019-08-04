@@ -515,11 +515,11 @@ export class Communication {
  * We only use the default factories so as a solution to pass the config name we append the location.search
  */
 const defaultWorkerFactory = (envName: string, instanceId: string, publicPath: string = '/') => {
-    return new Worker(`${publicPath}${envName}-webworker.js${location.search}`, { name: instanceId });
+    return new Worker(`${publicPath}${envName}.webworker.js${location.search}`, { name: instanceId });
 };
 
 const defaultSourceFactory = (envName: string, _instanceId: string, publicPath: string = '/') => {
-    return `${publicPath}${envName}-web.js${location.search}`;
+    return `${publicPath}${envName}.web.js${location.search}`;
 };
 
 const removeMessageArgs = (message: Message): Message => {

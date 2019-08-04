@@ -1,4 +1,3 @@
-import { IFeatureTarget } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { DetachedApp } from './detached-app';
@@ -7,9 +6,12 @@ import { createDisposables } from './disposables';
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
-export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {}
-
-export interface IGetLoadedFeatureOptions extends IFeatureTarget {
+export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
+    basePath?: string;
+    featureName?: string;
+    configName?: string;
+    projectPath?: string;
+    queryParams?: Record<string, string>;
     allowErrors?: boolean;
 }
 
@@ -22,19 +24,22 @@ after('close puppeteer browser, if open', async () => {
     }
 });
 
-export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOptions = {}) {
+export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
+    let { basePath = process.cwd() } = withFeatureOptions;
     if (process.platform === 'win32') {
         basePath = correctWin32DriveLetter(basePath);
     }
+
     const disposeAfterAll = createDisposables();
     const disposeAfterEach = createDisposables();
     const {
         headless,
         devtools,
         slowMo,
-        configName,
-        featureName,
-        projectPath = basePath,
+        featureName: suiteFeatureName,
+        configName: suiteConfigName,
+        projectPath: suiteProjectPath = basePath,
+        allowErrors: suiteAllowErrors = false,
         queryParams
     } = withFeatureOptions;
 
@@ -45,7 +50,7 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     }
 
     let featureUrl: string;
-    let allowErrors = false;
+    let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
     const executableApp = new DetachedApp(cliEntry, basePath);
 
@@ -75,11 +80,11 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             const errorsText = capturedErrors.join('\n');
             capturedErrors.length = 0;
             if (!allowErrors) {
-                allowErrors = false;
+                allowErrors = suiteAllowErrors;
                 throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
             }
         }
-        allowErrors = false;
+        allowErrors = suiteAllowErrors;
     });
 
     after(async function() {
@@ -90,11 +95,11 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     return {
         async getLoadedFeature(
             {
-                featureName: targetFeatureName = featureName,
-                configName: targetConfigName = configName,
-                projectPath: targetProjectPath = projectPath,
+                featureName = suiteFeatureName,
+                configName = suiteConfigName,
+                projectPath = suiteProjectPath,
                 allowErrors: targetAllowErrors = false
-            }: IGetLoadedFeatureOptions = {},
+            }: IFeatureTestOptions = {},
             options?: puppeteer.DirectNavigationOptions
         ) {
             if (!browser) {
@@ -105,9 +110,9 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             }
             allowErrors = targetAllowErrors;
             await executableApp.runFeature({
-                featureName: targetFeatureName,
-                configName: targetConfigName,
-                projectPath: targetProjectPath
+                featureName,
+                configName,
+                projectPath
             });
 
             disposeAfterEach.add(async () =>
@@ -118,8 +123,8 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             );
 
             const search = toSearchQuery({
-                featureName: targetFeatureName,
-                configName: targetConfigName,
+                featureName,
+                configName,
                 queryParams
             });
             const page = await browser.newPage();
@@ -129,14 +134,14 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
                 // tslint:disable-next-line: no-console
                 console.error(e);
             });
-            const response = await page.goto(featureUrl + search, options);
+            const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...options });
 
             return { page, response };
         }
     };
 }
 
-function toSearchQuery({ featureName, configName, queryParams }: IFeatureTarget): string {
+function toSearchQuery({ featureName, configName, queryParams }: IFeatureTestOptions): string {
     const queryStr = `?feature=${encodeURIComponent(featureName || '')}&config=${encodeURIComponent(configName || '')}`;
     if (queryParams) {
         return Object.entries(queryParams).reduce((currQuery, [key, value]) => {
