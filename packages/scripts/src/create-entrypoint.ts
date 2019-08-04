@@ -57,7 +57,7 @@ async function main() {
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${JSON.stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${JSON.stringify(configName)};
     const config = []
-    config.push(...await (await fetch('/config/' + configName)).json());
+    config.push(...await (await fetch('/config/' + configName + '?feature=' + featureName)).json());
 
     const runtimeEngine = await runEngineApp(
         { featureName, configName, featureLoaders, config }

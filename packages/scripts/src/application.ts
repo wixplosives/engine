@@ -68,13 +68,14 @@ export class Application {
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
         const socketServer = io(httpServer);
         disposables.push(() => new Promise(res => socketServer.close(res)));
-        const topology: Record<string, string> = {};
+        const topology: Map<string, Record<string, string>> = new Map();
 
         app.use('/favicon.ico', noContentHandler);
         app.use('/config', async (req, res) => {
+            const { feature: currentFeatureName } = req.query;
             const requestedConfig = req.path.slice(1);
             const configFilePath = configurations.get(requestedConfig);
-            const config: TopLevelConfig = [COM.use({ config: { topology } })];
+            const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(currentFeatureName) } })];
             if (configFilePath) {
                 const { default: configValue } = await import(configFilePath);
                 config.push(...configValue);
@@ -135,15 +136,20 @@ export class Application {
                 features
             });
 
+            const topologyForFeature: Record<string, string> = {};
             for (const { name } of runningEnvs.environments) {
-                topology[name] = `http://localhost:${port}/_ws`;
+                topologyForFeature[name] = `http://localhost:${port}/_ws`;
             }
+            topology.set(targetFeature.featureName, topologyForFeature);
 
             return {
                 close: async () => {
                     await runningEnvs.dispose();
-                    for (const { name } of runningEnvs.environments) {
-                        delete topology[name];
+                    if (topology.has(targetFeature.featureName)) {
+                        for (const { name } of runningEnvs.environments) {
+                            delete topology.get(targetFeature.featureName)![name];
+                        }
+                        topology.delete(targetFeature.featureName);
                     }
                 }
             };
