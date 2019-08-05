@@ -21,11 +21,15 @@ export async function runNodeEnvironments({
         const featureNames = Array.from(features.keys());
         throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
     }
+    const { resolvedContexts: resolvedFeatureContexts } = featureDefinition;
     const nodeEnvs = new Set<IEnvironment>();
     const deepDefsForFeature = flattenTree(featureDefinition, f => f.dependencies.map(fName => features.get(fName)!));
     for (const { exportedEnvs } of deepDefsForFeature) {
         for (const exportedEnv of exportedEnvs) {
-            if (exportedEnv.type === 'node') {
+            if (
+                exportedEnv.type === 'node' &&
+                (!exportedEnv.childEnvName || resolvedFeatureContexts[exportedEnv.name] === exportedEnv.childEnvName)
+            ) {
                 nodeEnvs.add(exportedEnv);
             }
         }
