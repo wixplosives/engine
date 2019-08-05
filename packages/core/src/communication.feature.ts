@@ -4,7 +4,7 @@ import { LoggerService } from './com/logger-service';
 import { Target, WindowHost } from './com/types';
 import { AsyncEnvironment, AsyncSingleEndpointEnvironment } from './entities/async-env';
 import { Config } from './entities/config';
-import { AllEnvironments, EnvironmentLiveServer, SingleEndpointContextualEnvironment, Universal } from './entities/env';
+import { AllEnvironments, NodeEnvironment, SingleEndpointContextualEnvironment, Universal } from './entities/env';
 import { Feature } from './entities/feature';
 import { Service } from './entities/service';
 import { Slot } from './entities/slot';
@@ -49,7 +49,7 @@ export default new Feature({
         spawn: Service.withType<
             (endPoint: AsyncEnvironment, host?: WindowHost) => Promise<{ id: string }>
         >().defineEntity(AllEnvironments),
-        connect: Service.withType<(endPoint: EnvironmentLiveServer<string>) => Promise<{ id: string }>>().defineEntity(
+        connect: Service.withType<(endPoint: NodeEnvironment<string>) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
         spawnOrConnect: Service.withType<

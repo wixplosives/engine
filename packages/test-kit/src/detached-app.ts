@@ -21,7 +21,7 @@ export class DetachedApp implements IExecutableApplication {
         }
         const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
 
-        const engineStartProcess = fork(this.cliEntry, ['start-engine-server', ...execArgv], {
+        const engineStartProcess = fork(this.cliEntry, ['start', ...execArgv], {
             stdio: 'inherit',
             cwd: this.basePath,
             execArgv: []
@@ -41,9 +41,10 @@ export class DetachedApp implements IExecutableApplication {
         if (!engineStartProcess) {
             throw new Error('Engine is not started yet');
         }
-        await this.waitForProcessMessage('server-disconnected', p => {
-            p.send({ id: 'server-disconnect' });
-        });
+        // socket server hangs on close on CIs for some reason
+        // await this.waitForProcessMessage('server-disconnected', p => {
+        //     p.send({ id: 'server-disconnect' });
+        // });
         await new Promise((res, rej) => {
             engineStartProcess.once('error', rej);
             engineStartProcess.once('exit', res);

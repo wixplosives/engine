@@ -1,139 +1,178 @@
-import { nodeFs } from '@file-services/node';
+import fs from '@file-services/node';
 import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
-import { join } from 'path';
 import { waitFor } from 'promise-assist';
+import { Page } from 'puppeteer';
 import { Application } from '../src/application';
-const { directoryExists } = nodeFs.promises;
 
 describe('Application', function() {
-    this.timeout(30_000);
-
+    this.timeout(10_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
-    afterEach(async () => await disposables.dispose());
+    afterEach(function() {
+        this.timeout(30_000);
+        return disposables.dispose();
+    });
     after(() => browserProvider.dispose());
 
-    it(`supports building features with a single fixture`, async () => {
-        const fixtureBase = join(__dirname, './fixtures/engine-feature');
-        const app = new Application(fixtureBase);
-        await app.build('x', 'dev');
-
-        expect(await directoryExists(app.outputPath), 'has dist folder').to.equal(true);
-    });
-
-    // we don't support multiple fixtures build
-    it.skip(`supports building features with multiple fixtures`, async () => {
-        const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
-        const app = new Application(fixtureBase);
-        await app.build();
-
-        expect(await directoryExists(app.outputPath), 'has dist folder').to.equal(true);
-    });
-
-    it(`start a development server and serve the feature default config`, async () => {
-        const fixtureBase = join(__dirname, './fixtures/engine-feature');
-
-        const app = new Application(fixtureBase);
-
-        const { close, port } = await app.start();
-        disposables.add(() => close());
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
+    const loadPage = async (url: string) => {
+        const page = await browserProvider.loadPage(url);
         disposables.add(() => page.close());
+        return page;
+    };
 
-        const text = await page.evaluate(() => document.body.textContent!.trim());
+    const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
+    const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
 
-        expect(text).to.equal('App is running.');
-    });
+    describe('build', () => {
+        it(`supports building features with a single fixture`, async () => {
+            const app = new Application(engineFeatureFixturePath);
+            await app.build({ featureName: 'x', configName: 'dev' });
 
-    it(`run feature and serve default feature with default config`, async () => {
-        const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
-        const app = new Application(fixtureBase);
-        const { close, port } = await app.start();
-        disposables.add(() => close());
-
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        disposables.add(() => page.close());
-
-        const { myConfig, mySlot } = await page.evaluate(() => {
-            return {
-                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!),
-                mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!)
-            };
-        });
-
-        expect(myConfig).to.eql({
-            tags: ['fixture1']
-        });
-        expect(mySlot).to.eql([]);
-    });
-
-    it(`run feature and serve with feature from url and it's default config`, async () => {
-        const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
-        const app = new Application(fixtureBase);
-        const { close, port } = await app.start();
-        disposables.add(() => close());
-
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html?feature=variant`);
-        disposables.add(() => page.close());
-
-        const { myConfig, mySlot } = await page.evaluate(() => {
-            return {
-                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!),
-                mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!)
-            };
-        });
-
-        expect(myConfig).to.eql({
-            tags: ['variant', '1']
-        });
-        expect(mySlot).to.eql(['testing 1 2 3']);
-    });
-
-    it(`run feature and serve with feature from url and config from url`, async () => {
-        const fixtureBase = join(__dirname, './fixtures/engine-multi-feature');
-        const app = new Application(fixtureBase);
-        const { close, port } = await app.start();
-        disposables.add(() => close());
-
-        const page = await browserProvider.loadPage(
-            `http://localhost:${port}/main.html?feature=variant&config=variant2`
-        );
-        disposables.add(() => page.close());
-
-        const { myConfig, mySlot } = await page.evaluate(() => {
-            return {
-                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!),
-                mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!)
-            };
-        });
-
-        expect(myConfig).to.eql({
-            tags: ['variant', '2']
-        });
-        expect(mySlot).to.eql(['testing 1 2 3']);
-    });
-
-    it.only(`run feature and serves node environments`, async () => {
-        const fixtureBase = join(__dirname, './fixtures/engine-local-feature');
-        const app = new Application(fixtureBase);
-        const runningApp = await app.start();
-
-        const runningFeature = await runningApp.runFeature({
-            featureName: 'x',
-            configName: 'dev'
-        });
-        disposables.add('closing feature', () => runningFeature.close());
-
-        disposables.add('closing app', () => runningApp.close());
-
-        const page = await browserProvider.loadPage(
-            `http://localhost:${runningApp.port}/main.html?feature=x&config=dev`
-        );
-        disposables.add('closing page', () => page.close());
-        await waitFor(async () => {
-            expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
+            expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
         });
     });
+
+    describe('start', () => {
+        it(`serves and allows running a feature`, async () => {
+            const app = new Application(engineFeatureFixturePath);
+            const { close, port } = await app.start();
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            const text = await page.evaluate(() => document.body.textContent!.trim());
+
+            expect(text).to.equal('App is running.');
+        });
+
+        const getMultiFeatureValues = (page: Page) =>
+            page.evaluate(() => {
+                return {
+                    mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
+                    myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!)
+                };
+            });
+
+        it(`uses first found feature as default`, async () => {
+            const app = new Application(multiFeatureFixturePath);
+            const { close, port } = await app.start();
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            const { myConfig, mySlot } = await getMultiFeatureValues(page);
+
+            expect(myConfig).to.eql({
+                tags: []
+            });
+            expect(mySlot).to.eql([]);
+        });
+
+        it(`serves a fixture feature`, async () => {
+            const app = new Application(multiFeatureFixturePath);
+            const { close, port } = await app.start();
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html?feature=test/variant`);
+
+            const { myConfig, mySlot } = await getMultiFeatureValues(page);
+
+            expect(myConfig).to.eql({
+                tags: []
+            });
+            expect(mySlot).to.eql(['testing 1 2 3']);
+        });
+
+        it(`allows specfiying a config`, async () => {
+            const app = new Application(multiFeatureFixturePath);
+            const { close, port } = await app.start();
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html?feature=test/variant&config=test/variant2`);
+
+            const { myConfig, mySlot } = await getMultiFeatureValues(page);
+
+            expect(myConfig).to.eql({
+                tags: ['variant', '2']
+            });
+            expect(mySlot).to.eql(['testing 1 2 3']);
+        });
+
+        it(`runs node environments`, async () => {
+            const featurePath = fs.join(__dirname, './fixtures/node-env');
+            const app = new Application(featurePath);
+            const runningApp = await app.start({
+                featureName: 'engine-local/x',
+                configName: 'engine-local/dev'
+            });
+            disposables.add('closing app', () => runningApp.close());
+
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
+            });
+        });
+
+        it('launches a feature with contextual environment with worker context', async () => {
+            const featurePath = fs.join(__dirname, './fixtures/contextual');
+            const app = new Application(featurePath);
+            const runningApp = await app.start({
+                configName: 'engine-contextual/contextual-with-worker-default'
+            });
+            disposables.add('closing app', () => runningApp.close());
+
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from worker');
+            });
+        });
+
+        it('launches a feature with contextual environment with server context', async () => {
+            const featurePath = fs.join(__dirname, './fixtures/contextual');
+            const app = new Application(featurePath);
+            const runningApp = await app.start({
+                featureName: 'engine-contextual/server-env-contextual'
+            });
+            disposables.add('closing app', () => runningApp.close());
+
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from server');
+            });
+        });
+    });
+
+    // it.only('launches a node environment using http server by demand and closes it', async () => {
+    //     const featurePath = join(__dirname, './fixtures/node-env');
+    //     const app = new Application(featurePath);
+
+    //     const runningApp = await app.start();
+    //     disposables.add('closing app', () => runningApp.close());
+    //     const startNodeEnvironmentResponse: any = await new Promise((resolve, reject) => {
+    //         request(
+    //         `http://localhost:${runningApp.port}/node-env?featureName=engine-local/x&configName=engine-local/dev`,
+    //         {
+    //             method: 'PUT'
+    //         } , (res) => {
+    //             let data = ''
+    //             res.on('error', reject)
+    //             res.on('data', chunk => data += chunk);
+    //             res.on('end', () => {
+    //                 const response = JSON.stringify(data)
+    //                 if(res.statusCode === 404) {
+    //                     reject(response)
+    //                 } else {
+    //                     resolve(response)
+    //                 }
+    //             });
+    //         })
+
+    //     expect(startNodeEnvironmentResponse).to.have.key('result')
+    //     expect(startNodeEnvironmentResponse.result).to.equal('success');
+    // });
 });

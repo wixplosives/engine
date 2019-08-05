@@ -1,4 +1,4 @@
-import { COM, EnvironmentLiveServer, IComConfig } from '@wixc3/engine-core';
+import { COM, IComConfig, NodeEnvironment } from '@wixc3/engine-core';
 import { IEnvironmentStartStaticMessage } from '@wixc3/engine-scripts/src';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
@@ -6,7 +6,7 @@ import { join } from 'path';
 import { RemoteNodeEnvironment } from './remote-node-environment';
 
 export interface EnvironmentDescription {
-    env: EnvironmentLiveServer<string>;
+    env: NodeEnvironment<string>;
     entryPath: string;
 }
 

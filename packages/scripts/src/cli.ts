@@ -17,26 +17,10 @@ program
     .option('-p ,--project <project>')
     .option('--inspect')
     .action(async (path, cmd: Record<string, string | undefined>) => {
-        const { feature, config, project, inspect = false } = cmd;
+        const { feature: featureName, config: configName, project: projectPath } = cmd;
         try {
             const app = new Application(path || process.cwd());
-            const { runFeature } = await app.start({
-                inspect: inspect ? true : false
-            });
-            await runFeature({ featureName: feature, configName: config, projectPath: project });
-        } catch (e) {
-            printErrorAndExit(e);
-        }
-    });
-
-program
-    .command('start-engine-server [path]')
-    .option('--inspect')
-    .action(async (path, cmd) => {
-        try {
-            const app = new Application(path || process.cwd());
-            const { inspect } = cmd;
-            const { close: closeServer, port, runFeature } = await app.start({ singleRun: true, inspect });
+            const { close: closeServer, port, runFeature } = await app.start({ featureName, configName, projectPath });
             const closeEngineFunctions: Map<number, () => Promise<void>> = new Map();
             let runningFeatureUuid = 0;
             if (process.send) {
@@ -46,7 +30,7 @@ program
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
                 if (process.send) {
                     if (id === 'run-feature') {
-                        const { close: closeEngine } = await runFeature(payload as IFeatureTarget);
+                        const { close: closeEngine } = await runFeature(payload as Required<IFeatureTarget>);
                         closeEngineFunctions.set(++runningFeatureUuid, closeEngine);
 
                         process.send({
@@ -81,11 +65,11 @@ program
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
     .option('--out-dir <outDir>')
-    .action(async (path = process.cwd(), cmd) => {
-        const { feature, config, outDir = 'dist' } = cmd;
+    .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
+        const { feature: featureName, config: configName, outDir = 'dist' } = cmd;
         try {
             const app = new Application(path, join(path, outDir));
-            const stats = await app.build(feature, config);
+            const stats = await app.build({ featureName, configName });
             console.log(stats.toString({ colors: true }));
         } catch (e) {
             printErrorAndExit(e);

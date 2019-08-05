@@ -1,4 +1,3 @@
-import { IFeatureTarget } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { DetachedApp } from './detached-app';
@@ -7,13 +6,18 @@ import { createDisposables } from './disposables';
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
-export interface IWithFeatureOptions extends IFeatureTarget, puppeteer.LaunchOptions {}
-
-export interface IGetLoadedFeatureOptions extends IFeatureTarget {
+export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
+    basePath?: string;
+    featureName?: string;
+    configName?: string;
+    projectPath?: string;
+    queryParams?: Record<string, string>;
     allowErrors?: boolean;
 }
 
 let browser: puppeteer.Browser | null = null;
+let featureUrl: string = '';
+const executableApp = new DetachedApp(cliEntry, process.cwd());
 
 after('close puppeteer browser, if open', async () => {
     if (browser) {
@@ -21,20 +25,30 @@ after('close puppeteer browser, if open', async () => {
         browser = null;
     }
 });
+after('close engine server, if open', async function() {
+    this.timeout(60_000);
+    if (featureUrl) {
+        await executableApp.closeServer();
+        featureUrl = '';
+    }
+});
 
-export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOptions = {}) {
+export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
+    let { basePath = process.cwd() } = withFeatureOptions;
     if (process.platform === 'win32') {
         basePath = correctWin32DriveLetter(basePath);
     }
+
     const disposeAfterAll = createDisposables();
     const disposeAfterEach = createDisposables();
     const {
         headless,
         devtools,
         slowMo,
-        configName,
-        featureName,
-        projectPath = basePath,
+        featureName: suiteFeatureName,
+        configName: suiteConfigName,
+        projectPath: suiteProjectPath = basePath,
+        allowErrors: suiteAllowErrors = false,
         queryParams
     } = withFeatureOptions;
 
@@ -44,20 +58,8 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
         );
     }
 
-    let featureUrl: string;
-    let allowErrors = false;
+    let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
-    const executableApp = new DetachedApp(cliEntry, basePath);
-
-    before('start application', async function() {
-        this.timeout(60_000 * 4); // 4 minutes
-
-        const port = await executableApp.startServer();
-
-        disposeAfterAll.add(async () => executableApp.closeServer());
-
-        featureUrl = `http://localhost:${port}/main.html`;
-    });
 
     before('launch puppeteer', async function() {
         if (!browser) {
@@ -66,9 +68,15 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
         }
     });
 
-    afterEach(async () => {
-        await disposeAfterEach.dispose();
+    before('engine start', async function() {
+        if (!featureUrl) {
+            this.timeout(60_000 * 4); // 4 minutes
+            const port = await executableApp.startServer();
+            featureUrl = `http://localhost:${port}/main.html`;
+        }
     });
+
+    afterEach(disposeAfterEach.dispose);
 
     const pages = new Set<puppeteer.Page>();
     afterEach('close pages', () => Promise.all(Array.from(pages).map(page => page.close())).then(() => pages.clear()));
@@ -77,11 +85,11 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
             const errorsText = capturedErrors.join('\n');
             capturedErrors.length = 0;
             if (!allowErrors) {
-                allowErrors = false;
+                allowErrors = suiteAllowErrors;
                 throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
             }
         }
-        allowErrors = false;
+        allowErrors = suiteAllowErrors;
     });
 
     after(async function() {
@@ -92,11 +100,11 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
     return {
         async getLoadedFeature(
             {
-                featureName: targetFeatureName = featureName,
-                configName: targetConfigName = configName,
-                projectPath: currentProjectPath = projectPath,
+                featureName = suiteFeatureName,
+                configName = suiteConfigName,
+                projectPath = suiteProjectPath,
                 allowErrors: targetAllowErrors = false
-            }: IGetLoadedFeatureOptions = {},
+            }: IFeatureTestOptions = {},
             options?: puppeteer.DirectNavigationOptions
         ) {
             if (!browser) {
@@ -106,13 +114,17 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
                 throw new Error('Engine HTTP server is closed!');
             }
             allowErrors = targetAllowErrors;
-            await executableApp.runFeature({ configName, featureName, projectPath: currentProjectPath });
+            await executableApp.runFeature({
+                featureName,
+                configName,
+                projectPath
+            });
 
             disposeAfterEach.add(async () => executableApp.closeFeature());
 
             const search = toSearchQuery({
-                featureName: targetFeatureName,
-                configName: targetConfigName,
+                featureName,
+                configName,
                 queryParams
             });
             const page = await browser.newPage();
@@ -122,14 +134,14 @@ export function withFeature(basePath: string, withFeatureOptions: IWithFeatureOp
                 // tslint:disable-next-line: no-console
                 console.error(e);
             });
-            const response = await page.goto(featureUrl + search, options);
+            const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...options });
 
             return { page, response };
         }
     };
 }
 
-function toSearchQuery({ featureName, configName, queryParams }: IFeatureTarget): string {
+function toSearchQuery({ featureName, configName, queryParams }: IFeatureTestOptions): string {
     const queryStr = `?feature=${encodeURIComponent(featureName || '')}&config=${encodeURIComponent(configName || '')}`;
     if (queryParams) {
         return Object.entries(queryParams).reduce((currQuery, [key, value]) => {

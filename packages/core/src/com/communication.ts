@@ -27,7 +27,7 @@ import { SERVICE_CONFIG } from '../symbols';
 
 import { SetMultiMap } from '@file-services/utils';
 import { AsyncEnvironment, AsyncSingleEndpointEnvironment } from '../entities/async-env';
-import { EnvironmentLiveServer, SingleEndpointContextualEnvironment } from '../entities/env';
+import { NodeEnvironment, SingleEndpointContextualEnvironment } from '../entities/env';
 import { IDTag } from '../types';
 import { BaseHost } from './base-host';
 import { WsClientHost } from './ws-client-host';
@@ -96,7 +96,7 @@ export class Communication {
         activeEnvironment.env = endPoint.env;
 
         return activeEnvironment!.envType === 'node'
-            ? this.connect(activeEnvironment as EnvironmentLiveServer<string>)
+            ? this.connect(activeEnvironment as NodeEnvironment<string>)
             : this.spawn(activeEnvironment as AsyncEnvironment);
     }
 
@@ -121,9 +121,9 @@ export class Communication {
         };
     }
     /**
-     * Connects to a remote EnvironmentLiveServer
+     * Connects to a remote NodeEnvironment
      */
-    public async connect(endPoint: EnvironmentLiveServer<string>) {
+    public async connect(endPoint: NodeEnvironment<string>) {
         const { env, envType } = endPoint;
 
         const url = this.topology[env];
@@ -515,11 +515,11 @@ export class Communication {
  * We only use the default factories so as a solution to pass the config name we append the location.search
  */
 const defaultWorkerFactory = (envName: string, instanceId: string, publicPath: string = '/') => {
-    return new Worker(`${publicPath}${envName}-webworker.js${location.search}`, { name: instanceId });
+    return new Worker(`${publicPath}${envName}.webworker.js${location.search}`, { name: instanceId });
 };
 
 const defaultSourceFactory = (envName: string, _instanceId: string, publicPath: string = '/') => {
-    return `${publicPath}${envName}-web.js${location.search}`;
+    return `${publicPath}${envName}.web.js${location.search}`;
 };
 
 const removeMessageArgs = (message: Message): Message => {

@@ -6,7 +6,7 @@ module.exports = {
         'delayed-iframe': './delayed-iframe.ts'
     },
     output: {
-        filename: '[name]-web.js'
+        filename: '[name].web.js'
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js']

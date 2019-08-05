@@ -1,9 +1,9 @@
 {
   "name": "@wixc3/engine-example-file-server",
-  "version": "3.1.5",
+  "version": "4.0.0",
   "scripts": {
     "start": "engine start",
-    "test:ix": "mocha \"test/**/*.ix.ts?(x)\""
+    "test": "mocha \"test/**/*.ix.ts?(x)\""
   },
   "dependencies": {
     "@file-services/directory": "^2.0.0",
