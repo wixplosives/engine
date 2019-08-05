@@ -20,10 +20,11 @@
   "files": [
     "cjs",
     "src",
-    "!src/tsconfig.json"
+    "!src/tsconfig.json",
+    "LICENSE"
   ],
-  "license": "UNLICENSED",
+  "license": "MIT",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   }
 }
