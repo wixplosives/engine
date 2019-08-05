@@ -1,4 +1,6 @@
-import { AsyncEnvironment, EnvironmentContext, IComConfig, SomeFeature } from '@wixc3/engine-core';
+import { AsyncEnvironment, EnvironmentContext, IComConfig, SomeFeature, TopLevelConfig } from '@wixc3/engine-core';
+import { IEnvironment, IFeatureDefinition } from './analyze-feature';
+import { IRunNodeEnvironmentsOptions } from './run-socket-server';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -117,7 +119,8 @@ export const isFeatureMessage = (value: unknown): value is IProcessMessage<IFeat
     return isProcessMessage(value) && value.id === 'feature-initialized';
 };
 export interface IFeatureMessage {
-    id: number;
+    featureName: string;
+    configName?: string;
 }
 
 export interface IPortMessage {
@@ -125,12 +128,12 @@ export interface IPortMessage {
 }
 
 export interface ServerEnvironmentOptions {
-    environment: EngineEnvironmentSerializableEntry;
-    featureMapping: FeatureMapping;
-    featureName: string | undefined;
-    configName: string | undefined;
+    environment: IEnvironment;
+    features: Map<string, IFeatureDefinition>;
+    featureName: string;
+    config: TopLevelConfig;
     projectPath: string;
-    serverPort: number;
+    httpServerPath: string;
 }
 
 export type IEnvironmentMessageID = 'start' | 'close' | 'port' | 'start-static';
@@ -151,7 +154,7 @@ export interface IEnvironmentMessage extends ICommunicationMessage {
 
 export interface IEnvironmaneStartMessage extends IEnvironmentMessage {
     id: 'start';
-    data: ServerEnvironmentOptions;
+    data: IRunNodeEnvironmentsOptions;
 }
 
 export interface IEnvironmentStartStaticMessage extends IEnvironmentMessage {

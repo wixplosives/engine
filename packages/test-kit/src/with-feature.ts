@@ -120,7 +120,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
                 projectPath
             });
 
-            disposeAfterEach.add(async () => executableApp.closeFeature());
+            disposeAfterEach.add(async () => executableApp.closeFeature({ featureName }));
 
             const search = toSearchQuery({
                 featureName,

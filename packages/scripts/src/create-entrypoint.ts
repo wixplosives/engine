@@ -60,7 +60,7 @@ async function main() {
     config.push(...await (await fetch('/config/' + configName + '?feature=' + featureName)).json());
 
     const runtimeEngine = await runEngineApp(
-        { featureName, configName, featureLoaders, config }
+        { featureName, configName, featureLoaders, config, httpServerPath: location.origin }
     );
 
     return runtimeEngine;

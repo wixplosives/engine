@@ -1,10 +1,10 @@
-import { COM } from '@wixc3/engine-core';
+import { COM, IFeatureLoader, runEngineApp, TopLevelConfig } from '@wixc3/engine-core';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import io from 'socket.io';
 import { Server } from 'socket.io';
-import { runEntry } from './engine-utils/run-entry';
+import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 import { getParentProcess } from './parent-process';
 import {
     ICommunicationMessage,
@@ -12,8 +12,7 @@ import {
     isEnvironmentCloseMessage,
     isEnvironmentPortMessage,
     isEnvironmentStartMessage,
-    RemoteProcess,
-    ServerEnvironmentOptions
+    RemoteProcess
 } from './types';
 
 const parentProcess = getParentProcess();
@@ -32,7 +31,7 @@ export async function createWorkerProtocol(remoteAccess: RemoteProcess) {
         if (isEnvironmentPortMessage(message)) {
             remoteAccess!.postMessage({ id: 'port', port } as IEnvironmentPortMessage);
         } else if (isEnvironmentStartMessage(message)) {
-            environments[message.envName] = await initEnvironmentServer(socketServer, message.data);
+            environments[message.envName] = await runNodeEnvironment(socketServer, message.data);
             remoteAccess!.postMessage({ id: 'start' });
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
             await environments[message.envName].dispose();
@@ -45,28 +44,68 @@ export async function createWorkerProtocol(remoteAccess: RemoteProcess) {
 /**
  * Use to init socket server that share the environment state between all connections
  */
-export async function initEnvironmentServer(
+
+export type IRunNodeEnvironmentsOptions = IEnvironment & {
+    featureName: string;
+    config?: TopLevelConfig;
+    features: Record<string, IFeatureDefinition>;
+    httpServerPath: string;
+    projectPath?: string;
+};
+
+export async function runNodeEnvironment(
     socketServer: Server,
-    { environment, featureMapping, featureName, configName, projectPath, serverPort }: ServerEnvironmentOptions
+    {
+        featureName,
+        childEnvName,
+        features,
+        config = [],
+        name,
+        httpServerPath,
+        projectPath = process.cwd()
+    }: IRunNodeEnvironmentsOptions
 ) {
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
-    const { name, envFiles, contextFiles } = environment;
-    const featureMap = featureName || Object.keys(featureMapping.mapping)[0];
-    const configMap = configName || Object.keys(featureMapping.mapping[featureMap].configurations)[0];
-    const contextMappings = featureMapping.mapping[featureMap].context;
-    const { engine, runningFeature } = await runEntry(
-        featureMap,
-        configMap,
-        { envFiles: new Set(envFiles), featureMapping, contextFiles: new Set(contextFiles) },
-        serverPort,
-        [
+
+    const featureLoaders: Record<string, IFeatureLoader> = {};
+    for (const {
+        scopedName,
+        filePath,
+        dependencies,
+        envFilePaths,
+        contextFilePaths,
+        resolvedContexts
+    } of Object.values(features)) {
+        featureLoaders[scopedName] = {
+            load: async () => {
+                if (childEnvName) {
+                    const contextFilePath = contextFilePaths[`${name}/${childEnvName}`];
+                    if (contextFilePath) {
+                        await import(contextFilePath);
+                    }
+                }
+                const envFilePath = envFilePaths[name];
+                if (envFilePath) {
+                    await import(envFilePath);
+                }
+                return (await import(filePath)).default;
+            },
+            depFeatures: dependencies,
+            resolvedContexts
+        };
+    }
+
+    const { engine, runningFeature } = await runEngineApp({
+        featureName,
+        featureLoaders,
+        config: [
+            ...config,
             COM.use({
                 config: {
                     host: localDevHost,
-                    id: name,
-                    contextMappings
+                    id: name
                 }
             }),
             [
@@ -77,10 +116,11 @@ export async function initEnvironmentServer(
                     }
                 }
             ]
-        ]
-    );
+        ],
+        httpServerPath
+    });
+
     disposeHandlers.add(() => engine.dispose(runningFeature));
-    disposeHandlers.add(localDevHost.dispose.bind(localDevHost));
 
     return {
         dispose: async () => {

@@ -18,17 +18,16 @@ import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
-import { COM, TopLevelConfig, flattenTree } from '@wixc3/engine-core';
+import { COM, flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
 import { createWebpackConfigs } from './create-webpack-configs';
-import { runNodeEnvironments } from './run-node-environments';
-import { resolvePackages } from './utils/resolve-packages';
 import {
-    IEnvironmentMessage,
-    ServerEnvironmentOptions,
     IEnvironmaneStartMessage,
-    isEnvironmentStartMessage
+    IEnvironmentMessage,
+    isEnvironmentStartMessage,
+    ServerEnvironmentOptions
 } from './types';
+import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
 
@@ -77,8 +76,6 @@ export class Application {
         const app = express();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const socketServer = io(httpServer);
-        disposables.push(() => socketServer.close());
         disposables.push(() => new Promise(res => httpServer.close(res)));
         const topology: Map<string, Record<string, string>> = new Map();
 
@@ -118,6 +115,7 @@ export class Application {
             configName?: string;
             projectPath?: string;
         }) => {
+            const featureDisposables: Array<() => unknown> = [];
             const config: TopLevelConfig = [
                 [
                     'project',
@@ -149,28 +147,28 @@ export class Application {
             const topologyForFeature: Record<string, string> = {};
             for (const environment of nodeEnvs) {
                 const remoteEnv = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
-                const envPort = await remoteEnv.start();
+                const envPort = await remoteEnv.start(inspect);
                 const { close } = await this.startNodeEnvironment(remoteEnv, {
                     config,
                     environment,
                     featureName: targetFeature.featureName,
                     features,
                     projectPath: targetFeature.projectPath || this.basePath,
-                    serverPort: port
+                    httpServerPath: `http://localhost:${port}`
                 });
                 topologyForFeature[environment.name] = `http://localhost:${envPort}/_ws`;
-                disposables.push(async () => await close());
-                disposables.push(() => remoteEnv.dispose());
+                featureDisposables.push(async () => await close());
+                featureDisposables.push(() => remoteEnv.dispose());
             }
 
             topology.set(targetFeature.featureName, topologyForFeature);
 
             return {
                 close: async () => {
-                    for (const dispose of disposables) {
+                    for (const dispose of featureDisposables) {
                         await dispose();
                     }
-                    disposables.length = 0;
+                    featureDisposables.length = 0;
                     if (topology.has(targetFeature.featureName)) {
                         topology.delete(targetFeature.featureName);
                     }
@@ -229,7 +227,7 @@ export class Application {
     }
     private async startNodeEnvironment(
         remoteNodeEnvironment: RemoteNodeEnvironment,
-        { config, features, featureName, environment, serverPort }: ServerEnvironmentOptions
+        { config, features, featureName, environment, httpServerPath, projectPath }: ServerEnvironmentOptions
     ) {
         const envName = environment.name;
         const startMessage = new Promise(resolve => {
@@ -246,8 +244,9 @@ export class Application {
                 ...environment,
                 config,
                 featureName,
-                features,
-                serverPort
+                features: mapToRecord(features),
+                httpServerPath,
+                projectPath
             }
         };
         remoteNodeEnvironment.postMessage(startFeature);
@@ -267,6 +266,14 @@ export class Application {
             }
         };
     }
+}
+
+function mapToRecord<K extends string, V>(map: Map<K, V>): Record<K, V> {
+    const record: Record<K, V> = {} as Record<K, V>;
+    for (const [key, value] of map) {
+        record[key] = value;
+    }
+    return record;
 }
 
 function getNodeEnvironments(featureName: string, features: Map<string, IFeatureDefinition>) {
