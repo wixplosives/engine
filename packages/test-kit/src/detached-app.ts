@@ -1,17 +1,10 @@
-import {
-    IFeatureMessage,
-    IFeatureTarget,
-    isPortMessage,
-    isProcessMessage,
-    ProcessMessageId
-} from '@wixc3/engine-scripts';
+import { IFeatureTarget, isPortMessage, isProcessMessage, ProcessMessageId } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
 import { IExecutableApplication } from './types';
 
 export class DetachedApp implements IExecutableApplication {
     private engineStartProcess: ChildProcess | undefined;
     private port: number | undefined;
-    private featureId: number | undefined;
 
     constructor(private cliEntry: string, private basePath: string) {}
 
@@ -60,19 +53,17 @@ export class DetachedApp implements IExecutableApplication {
     }
 
     public async runFeature({ configName, featureName, projectPath }: IFeatureTarget) {
-        const { id } = (await this.waitForProcessMessage('feature-initialized', p => {
+        await this.waitForProcessMessage('feature-initialized', p => {
             p.send({
                 id: 'run-feature',
                 payload: { configName, featureName, projectPath }
             });
-        })) as IFeatureMessage;
-
-        this.featureId = id;
+        });
     }
 
-    public async closeFeature() {
+    public async closeFeature({ configName, featureName }: IFeatureTarget) {
         await this.waitForProcessMessage('feature-closed', p => {
-            p.send({ id: 'close-feature', payload: { id: this.featureId } });
+            p.send({ id: 'close-feature', payload: { configName, featureName } });
         });
     }
 

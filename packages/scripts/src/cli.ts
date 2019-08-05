@@ -19,9 +19,12 @@ program
         const { feature: featureName, config: configName, project: projectPath } = cmd;
         try {
             const app = new Application(path || process.cwd());
-            const { close: closeServer, port, runFeature } = await app.start({ featureName, configName, projectPath });
-            const closeEngineFunctions: Map<number, () => Promise<void>> = new Map();
-            let runningFeatureUuid = 0;
+            const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
+                featureName,
+                configName,
+                projectPath
+            });
+
             if (process.send) {
                 process.send({ id: 'port', payload: { port } } as IProcessMessage<IPortMessage>);
             }
@@ -29,22 +32,12 @@ program
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
                 if (process.send) {
                     if (id === 'run-feature') {
-                        const { close: closeEngine } = await runFeature(payload as Required<IFeatureTarget>);
-                        closeEngineFunctions.set(++runningFeatureUuid, closeEngine);
-
-                        process.send({
-                            id: 'feature-initialized',
-                            payload: { id: runningFeatureUuid }
-                        } as IProcessMessage<IFeatureMessage>);
+                        await nodeEnvironmentManager.runEnvironment(payload as Required<IFeatureTarget>);
+                        process.send({ id: 'feature-initialized' });
                     }
                     if (id === 'close-feature') {
-                        const { id: closeFunctionId } = payload as IFeatureMessage;
-                        const closeEngineFunction = closeEngineFunctions.get(closeFunctionId);
-                        if (closeEngineFunction) {
-                            await closeEngineFunction();
-                            closeEngineFunctions.delete(closeFunctionId);
-                            process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
-                        }
+                        await nodeEnvironmentManager.closeEnvironment(payload as IFeatureMessage);
+                        process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
                     }
                     if (id === 'server-disconnect') {
                         await closeServer();

@@ -10,13 +10,11 @@
             "name": "Mocha Current",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
-                "--inspect",
                 "--timeout",
                 "999999",
                 "${file}"
             ],
             "outputCapture": "std",
-            "autoAttachChildProcesses": true
         },
         {
             "type": "node",
