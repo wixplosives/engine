@@ -35,14 +35,11 @@ program
                         process.send({ id: 'feature-initialized' });
                     }
                     if (id === 'close-feature') {
-                        console.log('received message');
                         const { featureName: currentFeatureName } = payload as IFeatureMessage;
                         const closeEngineFunction = closeEngineFunctions.get(currentFeatureName);
                         if (closeEngineFunction) {
-                            console.log('closing');
                             await closeEngineFunction();
                             closeEngineFunctions.delete(currentFeatureName);
-                            console.log('closed');
                             process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
                         }
                     }
