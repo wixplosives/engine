@@ -133,7 +133,7 @@ describe('Application', function() {
             });
         });
 
-        it('launches a feature with contextual environment with server context', async () => {
+        it('launches a feature with contextual environment with server context', async function() {
             this.timeout(20_000);
             const featurePath = fs.join(__dirname, './fixtures/contextual');
             const app = new Application(featurePath);
