@@ -100,7 +100,7 @@ describe('Application', function() {
             expect(mySlot).to.eql(['testing 1 2 3']);
         });
 
-        it(`runs node environments`, async () => {
+        it(`runs node environments`, async function() {
             this.timeout(20_000);
 
             const featurePath = fs.join(__dirname, './fixtures/node-env');
