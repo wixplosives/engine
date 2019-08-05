@@ -2,6 +2,9 @@ dist
 cjs
 esm
 
+# OSX indexing
+.DS_Store
+
 # Logs
 logs
 *.log
@@ -90,6 +93,3 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
-
-# OSX indexing
-.DS_Store
