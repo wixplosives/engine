@@ -42,8 +42,7 @@
     "cjs",
     "src",
     "cli.js",
-    "!src/tsconfig.json",
-    "LICENSE"
+    "!src/tsconfig.json"
   ],
   "license": "MIT",
   "publishConfig": {

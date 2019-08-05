@@ -59,5 +59,6 @@
     "typescript": "~3.5.3",
     "webpack": "^4.39.1"
   },
+  "license": "MIT",
   "private": true
 }

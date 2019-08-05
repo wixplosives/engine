@@ -21,8 +21,7 @@
   "files": [
     "cjs",
     "src",
-    "!src/tsconfig.json",
-    "LICENSE"
+    "!src/tsconfig.json"
   ],
   "license": "MIT",
   "publishConfig": {
