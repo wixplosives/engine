@@ -2,7 +2,8 @@ import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { FileServerDriver } from './file-server-driver';
 
-describe('File Server Feature', () => {
+describe('File Server Feature', function() {
+    this.timeout(20_000);
     const { getLoadedFeature } = withFeature({
         featureName: 'engine-example-file-server/example',
         configName: 'engine-example-file-server/run'
