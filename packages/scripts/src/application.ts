@@ -245,7 +245,7 @@ export class Application {
             configs: Array.from(configurations.keys()),
             features: []
         };
-        for (const [, { scopedName, isRoot }] of features) {
+        for (const { scopedName, isRoot } of features.values()) {
             if (isRoot) {
                 packageToConfigurationMapping.features.push(scopedName);
             }
