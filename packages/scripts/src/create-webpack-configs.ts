@@ -32,10 +32,14 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: webEnvs,
                 target: 'web',
                 virtualModules,
-                plugins: [ new HtmlWebpackPlugin({
-                    filename: `index.html`,
-                    chunks: ['index']
-                }), new VirtualModulesPlugin(virtualModules), new StylableWebpackPlugin()],
+                plugins: [
+                    new HtmlWebpackPlugin({
+                        filename: `index.html`,
+                        chunks: ['index']
+                    }),
+                    new VirtualModulesPlugin(virtualModules),
+                    new StylableWebpackPlugin()
+                ],
                 entry: {
                     index: fs.join(__dirname, 'engine-dashboard', 'index.tsx')
                 }
@@ -100,7 +104,10 @@ function createWebpackConfig({
             plugins.push(
                 new HtmlWebpackPlugin({
                     filename: `${envName}.html`,
-                    chunks: [envName]
+                    chunks: [envName],
+                    // line below must be removed. it causes chrome to load the page
+                    // with css quirks mode
+                    templateContent: ``
                 })
             );
         }

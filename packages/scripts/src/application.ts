@@ -7,6 +7,8 @@
 import fs from '@file-services/node';
 import '@stylable/node/register';
 import '@ts-tools/node/fast';
+import './own-repo-hook';
+
 import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
@@ -15,6 +17,7 @@ import io from 'socket.io';
 import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
+
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { NodeEnvironmentsManager } from './node-environments-magager';
@@ -64,7 +67,8 @@ export class Application {
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
         const socketServer = io(httpServer);
-        disposables.push(() => new Promise(res => socketServer.close(res)));
+        disposables.push(() => socketServer.close());
+        disposables.push(() => new Promise(res => httpServer.close(res)));
         const topology: Map<string, Record<string, string>> = new Map();
 
         app.use('/favicon.ico', noContentHandler);

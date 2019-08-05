@@ -16,11 +16,20 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
 }
 
 let browser: puppeteer.Browser | null = null;
+let featureUrl: string = '';
+const executableApp = new DetachedApp(cliEntry, process.cwd());
 
 after('close puppeteer browser, if open', async () => {
     if (browser) {
         await browser.close();
         browser = null;
+    }
+});
+after('close engine server, if open', async function() {
+    this.timeout(60_000);
+    if (featureUrl) {
+        await executableApp.closeServer();
+        featureUrl = '';
     }
 });
 
@@ -49,25 +58,21 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         );
     }
 
-    let featureUrl: string;
     let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
-    const executableApp = new DetachedApp(cliEntry, basePath);
-
-    before('start application', async function() {
-        this.timeout(60_000 * 4); // 4 minutes
-
-        const port = await executableApp.startServer();
-
-        disposeAfterAll.add(async () => executableApp.closeServer());
-
-        featureUrl = `http://localhost:${port}/main.html`;
-    });
 
     before('launch puppeteer', async function() {
         if (!browser) {
             this.timeout(60_000); // 1 minute
             browser = await puppeteer.launch(withFeatureOptions);
+        }
+    });
+
+    before('engine start', async function() {
+        if (!featureUrl) {
+            this.timeout(60_000 * 4); // 4 minutes
+            const port = await executableApp.startServer();
+            featureUrl = `http://localhost:${port}/main.html`;
         }
     });
 
