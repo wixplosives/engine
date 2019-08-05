@@ -19,12 +19,12 @@ describe('Node environments manager', function() {
         const app = new Application(nodeEnvironmentFixturePath);
         const { close, nodeEnvironmentManager } = await app.start();
 
-        await nodeEnvironmentManager.runFeature(runFeatureOptions);
+        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
 
-        disposables.add(() => nodeEnvironmentManager.closeFeature(runFeatureOptions));
+        disposables.add(() => nodeEnvironmentManager.closeEnvironment(runFeatureOptions));
         disposables.add(() => close());
 
-        const allOpenEnvironments = await nodeEnvironmentManager.getRunningFeatures();
+        const allOpenEnvironments = await nodeEnvironmentManager.getRunningEnvironments();
         expect(allOpenEnvironments).to.be.not.an('undefined');
         expect(allOpenEnvironments).to.be.an('Array');
         expect(allOpenEnvironments).to.contain(runFeatureOptions.featureName);
@@ -34,37 +34,35 @@ describe('Node environments manager', function() {
         const app = new Application(nodeEnvironmentFixturePath);
         const { close, nodeEnvironmentManager } = await app.start();
 
-        const allOpenEnvironments = await nodeEnvironmentManager.getRunningFeatures();
+        const allOpenEnvironments = await nodeEnvironmentManager.getRunningEnvironments();
 
         expect(allOpenEnvironments).to.be.an('Array');
-        expect((allOpenEnvironments as string[]).length).to.equal(0);
+        expect(allOpenEnvironments.length).to.equal(0);
 
-        await nodeEnvironmentManager.runFeature(runFeatureOptions);
-
-        expect(await nodeEnvironmentManager.getRunningFeatures()).to.contain(runFeatureOptions.featureName);
-
-        disposables.add(() => nodeEnvironmentManager.closeFeature(runFeatureOptions));
+        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
+        disposables.add(() => nodeEnvironmentManager.closeEnvironment(runFeatureOptions));
         disposables.add(() => close());
+
+        expect(await nodeEnvironmentManager.getRunningEnvironments()).to.contain(runFeatureOptions.featureName);
     });
 
     it('fails to launch if wrong config name or feature name are provided', async () => {
         const app = new Application(nodeEnvironmentFixturePath);
         const { close, nodeEnvironmentManager } = await app.start();
-        expect(nodeEnvironmentManager.runFeature({})).to.eventually.throw('feature name was not provided');
-        expect(nodeEnvironmentManager.runFeature({ featureName: 'test' })).to.eventually.throw(
-            'config name was not provided'
-        );
-        expect(nodeEnvironmentManager.runFeature({ featureName: 'test' })).to.eventually.throw();
         disposables.add(() => close());
+        await expect(nodeEnvironmentManager.runEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
+            'cannot find feature test. available features: engine-local/x, engine-core/communication'
+        );
     });
 
     it('closes open environments', async () => {
         const app = new Application(nodeEnvironmentFixturePath);
         const { close, nodeEnvironmentManager } = await app.start();
-        await nodeEnvironmentManager.runFeature(runFeatureOptions);
         disposables.add(() => close());
-        expect(nodeEnvironmentManager.closeFeature({ featureName: 'test' })).to.eventually.throw(
-            'Error: there are no node environments running for test'
+
+        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
+        await expect(nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
+            'there are no node environments running for test'
         );
     });
 });

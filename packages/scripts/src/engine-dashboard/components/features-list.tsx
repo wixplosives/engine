@@ -1,37 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import ReactTable, { Column, DefaultFilterFunction } from 'react-table';
 import 'react-table/react-table.css';
-import {
-    isListNodeEnvironmtnrsResponse,
-    isPossibleFeaturesAndConfigs,
-    isSuccessResponse,
-    PossibleFeaturesAndConfigs,
-    ServerResponse
-} from '../../server-types';
+import { isServerResponseMessage, ServerResponse, ServerState } from '../../server-types';
 import { ServerEnvironmentButton } from './button';
 
-const fetchAllPossibleFeatures = async () => (await fetch('possible-entities')).json();
-const fetchRunningNodeEnvironments = async () => (await fetch('node-env')).json();
+const fetchServerState = async () => (await fetch('/server-state')).json();
 
 export const FeaturesList: React.FunctionComponent = () => {
-    const [featuresConfigsList, setFeaturesConfigsList] = useState<PossibleFeaturesAndConfigs>({
+    const [serverState, setServerState] = useState<ServerState>({
+        runningNodeEnvironments: [],
         features: [],
         configs: []
     });
 
-    const [runningNodeEnvironments, setRunningNodeEnvironments] = useState<string[]>([]);
-
-    const onServerEnvironmentStatusChange = (
-        serverResponse: ServerResponse,
-        featureName: string,
-    ) => {
-        if (isSuccessResponse(serverResponse)) {
-            if (!runningNodeEnvironments.includes(featureName)) {
-                runningNodeEnvironments.push(featureName);
-            } else {
-                runningNodeEnvironments.splice(runningNodeEnvironments.indexOf(featureName), 1);
-            }
-            setRunningNodeEnvironments([ ...runningNodeEnvironments ]);
+    const onServerEnvironmentStatusChange = async (serverResponse: ServerResponse) => {
+        if (isServerResponseMessage(serverResponse)) {
+            const serverStateResponse = await fetchServerState();
+            setServerState(serverStateResponse.data);
         } else {
             // tslint:disable-next-line no-console
             console.error(serverResponse);
@@ -40,16 +25,8 @@ export const FeaturesList: React.FunctionComponent = () => {
 
     useEffect(() => {
         const possibleFeaturesRequest = async () => {
-            const currentReadyFeaturesAndConfigs = await fetchAllPossibleFeatures();
-            const currentRunningNodeEnvironments = await fetchRunningNodeEnvironments();
-            if (isPossibleFeaturesAndConfigs(currentReadyFeaturesAndConfigs)) {
-                setFeaturesConfigsList(currentReadyFeaturesAndConfigs);
-            }
-            if (isListNodeEnvironmtnrsResponse(currentRunningNodeEnvironments)) {
-                if (currentRunningNodeEnvironments.data && Array.isArray(currentRunningNodeEnvironments.data)) {
-                    setRunningNodeEnvironments(currentRunningNodeEnvironments.data);
-                }
-            }
+            const serverResponse = await fetchServerState();
+            setServerState(serverResponse.data);
         };
 
         possibleFeaturesRequest().catch(error => {
@@ -59,14 +36,13 @@ export const FeaturesList: React.FunctionComponent = () => {
     }, []);
 
     const data: Array<{ featureName: string; configName: string; url: string; runningNodeEnvironment: boolean }> = [];
-
-    for (const featureName of featuresConfigsList.features) {
-        for (const configName of featuresConfigsList.configs) {
+    for (const featureName of serverState.features) {
+        for (const configName of serverState.configs) {
             data.push({
                 configName,
                 featureName,
                 url: `${location.href}main.html?feature=${featureName}&config=${configName}`,
-                runningNodeEnvironment: runningNodeEnvironments.includes(featureName)
+                runningNodeEnvironment: serverState.runningNodeEnvironments.includes(featureName)
             });
         }
     }
@@ -94,7 +70,7 @@ export const FeaturesList: React.FunctionComponent = () => {
             id: 'server-env',
             Cell: props => (
                 <ServerEnvironmentButton
-                    isServerActive={props.value.runningNodeEnvironment}
+                    isNodeEnvActive={props.value.runningNodeEnvironment}
                     configName={props.value.configName}
                     featureName={props.value.featureName}
                     onClick={onServerEnvironmentStatusChange}

@@ -32,11 +32,11 @@ program
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
                 if (process.send) {
                     if (id === 'run-feature') {
-                        await nodeEnvironmentManager.runFeature(payload as Required<IFeatureTarget>);
+                        await nodeEnvironmentManager.runEnvironment(payload as Required<IFeatureTarget>);
                         process.send({ id: 'feature-initialized' });
                     }
                     if (id === 'close-feature') {
-                        await nodeEnvironmentManager.closeFeature(payload as IFeatureMessage);
+                        await nodeEnvironmentManager.closeEnvironment(payload as IFeatureMessage);
                         process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
                     }
                     if (id === 'server-disconnect') {

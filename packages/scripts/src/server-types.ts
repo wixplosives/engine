@@ -15,6 +15,16 @@ export interface ListNodeEnvironmentsResponse extends SuccessResponse {
     data?: string[];
 }
 
+export interface ServerState {
+    features: string[];
+    configs: string[];
+    runningNodeEnvironments: string[];
+}
+
+export interface ServerStateResponse extends SuccessResponse {
+    data: ServerState;
+}
+
 export const isServerResponseMessage = (message: unknown): message is ServerResponse => {
     if (message && typeof message === 'object') {
         const result = (message as Record<string, unknown>).result;
@@ -30,6 +40,11 @@ export const isSuccessResponse = (message: unknown): message is SuccessResponse 
 
 export const isListNodeEnvironmtnrsResponse = (message: unknown): message is ListNodeEnvironmentsResponse =>
     isSuccessResponse(message) && !!(message as ListNodeEnvironmentsResponse).data;
+
+export const isServerStateResponse = (message: unknown): message is ServerStateResponse =>
+    isSuccessResponse(message) &&
+    !!(message as ServerStateResponse).data &&
+    !!(message as ServerStateResponse).data.features;
 
 export const isErrorResponse = (message: unknown): message is ErrorResponse =>
     isServerResponseMessage(message) && message.result === 'error';

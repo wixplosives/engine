@@ -4,11 +4,11 @@
  * We use Node's native module system to directly load configuration file.
  * This configuration can (and should) be written as a `.ts` file.
  */
-import fs from '@file-services/node';
 import '@stylable/node/register';
 import '@ts-tools/node/fast';
 import './own-repo-hook';
 
+import fs from '@file-services/node';
 import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
@@ -20,7 +20,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
 import { createWebpackConfigs } from './create-webpack-configs';
-import { NodeEnvironmentsManager } from './node-environments-magager';
+import { NodeEnvironmentsManager } from './node-environments-manager';
 import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
 
@@ -135,8 +135,12 @@ export class Application {
                         )}`
                     );
                 }
-                const { default: topLevelConfig } = await import(configFilePath);
-                config.push(...topLevelConfig);
+                try {
+                    const { default: topLevelConfig } = await import(configFilePath);
+                    config.push(...topLevelConfig);
+                } catch (e) {
+                    console.error(e);
+                }
             }
 
             const runningEnvs = await runNodeEnvironments({
@@ -167,11 +171,20 @@ export class Application {
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(runFeature);
 
-        app.use(nodeEnvironmentManager.middlewere());
+        app.use(nodeEnvironmentManager.middleware());
         disposables.push(() => nodeEnvironmentManager.closeAll());
 
-        app.get('/possible-entities', (_req, res) => {
-            res.json({ ...runningFeaturesAndConfigs });
+        app.get('/server-state', (_req, res) => {
+            res.json({
+                result: 'success',
+                data: {
+                    configs: Array.from(configurations.keys()),
+                    features: Array.from(features.values())
+                        .filter(({ isRoot }) => isRoot)
+                        .map(({ scopedName }) => scopedName),
+                    runningNodeEnvironments: nodeEnvironmentManager.getRunningEnvironments()
+                }
+            });
         });
 
         if (featureName) {

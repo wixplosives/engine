@@ -4,30 +4,30 @@ import { isServerResponseMessage, ServerResponse } from '../../server-types';
 export interface ButtonProps {
     featureName: string;
     configName: string;
-    isServerActive: boolean;
-    onClick: (response: ServerResponse, featureName: string, configName: string) => void;
+    isNodeEnvActive: boolean;
+    onClick: (response: ServerResponse) => void;
 }
 
 export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
-    isServerActive,
+    isNodeEnvActive,
     featureName,
     configName,
     onClick
 }) => {
-    const changeServerState = async () =>
+    const changeNodeEnvitonmrtState = async () =>
         await (await fetch(`node-env?featureName=${featureName}&configName=${configName}`, {
-            method: isServerActive ? 'DELETE' : 'PUT'
+            method: isNodeEnvActive ? 'DELETE' : 'PUT'
         })).json();
 
     const onButtonClick = async () => {
-        const response = await changeServerState();
+        const response = await changeNodeEnvitonmrtState();
         if (isServerResponseMessage(response)) {
-            onClick(response, featureName, configName);
+            onClick(response);
         } else {
             throw new Error(`Unexpected response from server: ${response}`);
         }
     };
 
-    const buttonText = `${!isServerActive ? 'Start' : 'Close'} server environment(s)`;
-    return <button onClick={onButtonClick}>{buttonText}</button>;
+    const action = isNodeEnvActive ? 'Close': 'Start';
+    return <button onClick={onButtonClick}>{action} server environment(s)</button>;
 };

@@ -41,7 +41,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                     new StylableWebpackPlugin()
                 ],
                 entry: {
-                    index: fs.join(__dirname, 'engine-dashboard', 'index.tsx')
+                    index: require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'))
                 }
             })
         );
