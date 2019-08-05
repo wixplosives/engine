@@ -57,11 +57,9 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-react": "^4.0.0",
     "typescript": "~3.5.3",
+    "@types/react-table": "^6.8.5",
     "webpack": "^4.39.1"
   },
-  "license": "UNLICENSED",
-  "private": true,
-  "dependencies": {
-    "@types/react-table": "^6.8.5"
-  }
+  "license": "MIT",
+  "private": true
 }

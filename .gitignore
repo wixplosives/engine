@@ -2,6 +2,9 @@ dist
 cjs
 esm
 
+# OSX indexing
+.DS_Store
+
 # Logs
 logs
 *.log
