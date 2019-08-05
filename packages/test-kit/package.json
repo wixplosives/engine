@@ -23,8 +23,8 @@
     "src",
     "!src/tsconfig.json"
   ],
-  "license": "UNLICENSED",
+  "license": "MIT",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   }
 }
