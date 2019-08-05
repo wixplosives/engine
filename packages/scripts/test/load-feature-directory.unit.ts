@@ -1,8 +1,8 @@
 import { createMemoryFs } from '@file-services/memory';
 import { expect } from 'chai';
-import { findEngineFiles } from '../src/engine-utils/find-engine-files';
+import { loadFeatureDirectory } from '../src/load-feature-directory';
 
-describe('findEngineFiles', () => {
+describe('loadFeatureDirectory', () => {
     it('locates engine entity files for a given directory', () => {
         const fs = createMemoryFs({
             src: {
@@ -14,9 +14,11 @@ describe('findEngineFiles', () => {
             }
         });
 
-        const results = findEngineFiles({ fs, directoryPath: '/src' });
+        const directoryPath = '/src';
+        const results = loadFeatureDirectory({ fs, directoryPath });
 
         expect(results).to.eql({
+            directoryPath,
             features: ['/src/my-thing.feature.ts'],
             configurations: ['/src/my-config.config.ts', '/src/my-config2.config.ts'],
             envs: ['/src/my-thing.main.env.ts'],
@@ -36,7 +38,8 @@ describe('findEngineFiles', () => {
             }
         });
 
-        const { configurations } = findEngineFiles({ fs, directoryPath: '/src' });
+        const directoryPath = '/src';
+        const { configurations } = loadFeatureDirectory({ fs, directoryPath });
         expect(configurations).to.not.include('/src/sub/my-config3.config.ts');
     });
 
@@ -48,9 +51,11 @@ describe('findEngineFiles', () => {
             'my-config2.config.ts': ``
         });
 
-        const results = findEngineFiles({ fs, directoryPath: '/' });
+        const directoryPath = '/';
+        const results = loadFeatureDirectory({ fs, directoryPath });
 
         expect(results).to.eql({
+            directoryPath,
             features: ['/my-thing.feature.ts', '/my-thing2.feature.ts'],
             configurations: ['/my-config.config.ts', '/my-config2.config.ts'],
             envs: [],

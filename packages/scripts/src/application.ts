@@ -6,6 +6,7 @@
  */
 import '@stylable/node/register';
 import '@ts-tools/node/fast';
+import './own-repo-hook';
 
 import fs from '@file-services/node';
 import { safeListeningHttpServer } from 'create-listening-server';
@@ -15,11 +16,11 @@ import io from 'socket.io';
 import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-import { engineDevMiddleware } from './engine-dev-middleware';
-import { createEnvWebpackConfig, createStaticWebpackConfigs } from './engine-utils/create-webpack-config';
-import { FeatureLocator } from './engine-utils/feature-locator';
-import { initEnvironmentServer } from './environment-socket-server';
-import { EngineEnvironmentEntry, FeatureMapping, LinkInfo } from './types';
+
+import { COM, TopLevelConfig } from '@wixc3/engine-core';
+import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
+import { createWebpackConfigs } from './create-webpack-configs';
+import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
@@ -30,7 +31,7 @@ export interface IFeatureTarget {
     projectPath?: string;
 }
 
-export interface IStartOptions {
+export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
 }
 
@@ -48,173 +49,165 @@ export class Application {
         await rimraf(fs.join(this.basePath, 'npm'));
     }
 
-    public async build(featureName?: string, configName?: string): Promise<webpack.Stats> {
-        const {
-            environments,
-            featureMapping: { rootFeatureName }
-        } = this.prepare(true, featureName, configName);
-        console.log('Bundling using webpack...');
-        const webpackConfig = this.createStaticConfig(environments, rootFeatureName, configName!);
-        return new Promise((res, rej) => {
-            webpack(webpackConfig, (err, stats) => (err ? rej(err) : res(stats)));
-        });
+    public async build({ featureName, configName }: IRunOptions = {}): Promise<webpack.Stats> {
+        const { features } = this.analyzeFeatures();
+        const compiler = this.createCompiler(features, featureName, configName);
+
+        return new Promise<webpack.Stats>((resolve, reject) =>
+            compiler.run((e, s) => (e || s.hasErrors() ? reject(e || new Error(s.toString())) : resolve(s)))
+        );
     }
 
-    public async start({ singleRun = false }: IStartOptions = {}) {
-        const { environments, featureMapping, features } = this.prepare();
-        const nodeEnvs = environments.filter(({ target }) => target === 'node');
+    public async start({ featureName, configName }: IRunOptions = {}) {
+        const disposables: Array<() => unknown> = [];
+        const { features, configurations } = this.analyzeFeatures();
+        const compiler = this.createCompiler(features, featureName, configName);
 
         const app = express();
+
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const compiler = webpack(this.createConfig(environments, port));
+        const socketServer = io(httpServer);
+        disposables.push(() => socketServer.close());
+        disposables.push(() => new Promise(res => httpServer.close(res)));
+        const topology: Map<string, Record<string, string>> = new Map();
+
         app.use('/favicon.ico', noContentHandler);
-
-        compiler.hooks.watchRun.tap('engine-scripts', () => {
-            console.log('Bundling using webpack...');
-        });
-
-        compiler.hooks.done.tap('engine-scripts stats printing', stats => {
-            if (stats.hasErrors() || stats.hasWarnings()) {
-                console.log(stats.toString());
+        app.use('/config', async (req, res) => {
+            const { feature: currentFeatureName } = req.query;
+            const requestedConfig = req.path.slice(1);
+            const configFilePath = configurations.get(requestedConfig);
+            const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(currentFeatureName) } })];
+            if (configFilePath) {
+                const { default: configValue } = await import(configFilePath);
+                config.push(...configValue);
             }
-            console.log('Done bundling.');
+            res.send(config);
         });
 
-        // webpack watcher sometimes throws a uv_close error when it is being closed.
-        // this is causing flaky tests and is happenning because of there is a bug in the
-        // watch service webpack is using. this is a workaround for us that when in 'test'
-        // mode we will not watch the bundled files, but only run them.
-
-        if (singleRun) {
-            compiler.watch = (_watchOptions, handler) => compiler.run(handler) as any;
+        for (const childCompiler of compiler.compilers) {
+            const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
+            disposables.push(() => new Promise(res => devMiddleware.close(res)));
+            app.use(devMiddleware);
         }
 
-        const dev = webpackDevMiddleware(compiler, { publicPath: '/', logLevel: 'silent' });
-        app.use(dev);
-
-        await new Promise<webpack.Stats>(resolve => {
+        await new Promise(resolve => {
             compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
-        const configLinks = this.getRootURLS(environments, featureMapping, port);
-        const engineDev = engineDevMiddleware(features, environments, configLinks);
-        app.use(engineDev);
+        // print links to features
+        // const configLinks = this.getRootURLS(environments, featureMapping, port);
+        // const engineDev = engineDevMiddleware(features, environments, configLinks);
+        // app.use(engineDev);
 
         console.log(`Listening:`);
         console.log(`http://localhost:${port}/`);
-        configLinks.forEach(({ url }) => console.log(url));
-        const socketServer = io(httpServer);
 
-        const runFeature = async ({ featureName, configName, projectPath }: IFeatureTarget) => {
-            const closables: Array<() => unknown> = [];
+        const runFeature = async (targetFeature: {
+            featureName: string;
+            configName?: string;
+            projectPath?: string;
+        }) => {
+            const config: TopLevelConfig = [
+                [
+                    'project',
+                    {
+                        fsProjectDirectory: {
+                            projectPath: fs.resolve(targetFeature.projectPath || '')
+                        }
+                    }
+                ]
+            ];
 
-            if (nodeEnvs.length) {
-                projectPath = fs.resolve(projectPath || '');
-
-                const environmentServer = initEnvironmentServer(
-                    socketServer,
-                    nodeEnvs,
-                    featureMapping,
-                    featureName,
-                    configName,
-                    projectPath
-                );
-                closables.push(() => environmentServer.dispose());
+            if (targetFeature.configName) {
+                const configFilePath = configurations.get(targetFeature.configName);
+                if (!configFilePath) {
+                    const configNames = Array.from(configurations.keys());
+                    throw new Error(
+                        `cannot find config ${featureName}. available configurations: ${configNames.join(', ')}`
+                    );
+                }
+                try {
+                    const { default: topLevelConfig } = await import(configFilePath);
+                    config.push(...topLevelConfig);
+                } catch (e) {
+                    console.error(e);
+                }
             }
+
+            const runningEnvs = await runNodeEnvironments({
+                featureName: targetFeature.featureName,
+                config,
+                socketServer,
+                features
+            });
+
+            const topologyForFeature: Record<string, string> = {};
+            for (const { name } of runningEnvs.environments) {
+                topologyForFeature[name] = `http://localhost:${port}/_ws`;
+            }
+            topology.set(targetFeature.featureName, topologyForFeature);
 
             return {
                 close: async () => {
-                    for (const closable of closables) {
-                        await closable();
+                    await runningEnvs.dispose();
+                    if (topology.has(targetFeature.featureName)) {
+                        for (const { name } of runningEnvs.environments) {
+                            delete topology.get(targetFeature.featureName)![name];
+                        }
+                        topology.delete(targetFeature.featureName);
                     }
                 }
             };
         };
+
+        if (featureName) {
+            const { close: closeFeature } = await runFeature({ featureName, configName });
+            disposables.push(() => closeFeature());
+        }
         return {
             port,
             httpServer,
             runFeature,
             async close() {
-                await new Promise(res => dev.close(res));
-                socketServer.close();
-                await new Promise(res => httpServer.close(res));
+                for (const dispose of disposables) {
+                    await dispose();
+                }
+                disposables.length = 0;
             }
         };
     }
 
-    private prepare(buildSingleFeature: boolean = false, featureName?: string, configName?: string) {
+    private createCompiler(features: Map<string, IFeatureDefinition>, featureName?: string, configName?: string) {
+        const { basePath, outputPath } = this;
+        const enviroments = new Set<IEnvironment>();
+        for (const { exportedEnvs } of features.values()) {
+            for (const exportedEnv of exportedEnvs) {
+                if (exportedEnv.type !== 'node') {
+                    enviroments.add(exportedEnv);
+                }
+            }
+        }
+
+        const webpackConfigs = createWebpackConfigs({
+            context: basePath,
+            outputPath,
+            enviroments: Array.from(enviroments),
+            features,
+            featureName,
+            configName
+        });
+        const compiler = webpack(webpackConfigs);
+        hookCompilerToConsole(compiler);
+        return compiler;
+    }
+
+    private analyzeFeatures() {
         const { basePath } = this;
         console.time(`Analyzing Features.`);
-        const [firstPackage] = resolvePackages(basePath);
-
-        if (!firstPackage) {
-            throw new Error(`cannot find feature package in ${basePath}`);
-        }
-
-        const { directoryPath } = firstPackage;
-        const featureLocator = new FeatureLocator(directoryPath, fs);
-        const featureMapping = featureLocator.createFeatureMapping(buildSingleFeature, featureName, configName);
-        const features = featureLocator.locateFeatureEntities(featureMapping.bootstrapFeatures);
-        featureLocator.addContextsToFeatureMapping(features, featureMapping);
-        const environments = featureLocator.createEnvironmentsEntries(features, featureMapping);
+        const packages = resolvePackages(basePath);
+        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs);
         console.timeEnd('Analyzing Features.');
-        return { environments, features, featureMapping };
-    }
-
-    private getRootURLS(environments: EngineEnvironmentEntry[], featureMapping: FeatureMapping, port: number) {
-        const urls: LinkInfo[] = [];
-        environments
-            .filter(({ target, isRoot }) => target === 'web' && isRoot)
-            .forEach(envEntry => {
-                Object.keys(featureMapping.mapping).forEach(feature => {
-                    const featureWithConfig = featureMapping.mapping[feature];
-                    const configurations = Object.keys(featureWithConfig.configurations);
-                    if (configurations.length) {
-                        configurations.forEach(config =>
-                            urls.push(this.buildUrl(port, envEntry.name, feature, config))
-                        );
-                    } else {
-                        urls.push(this.buildUrl(port, envEntry.name, feature));
-                    }
-                });
-            });
-
-        return urls;
-    }
-
-    private buildUrl(port: number, entry: string, feature: string, config?: string) {
-        let url = `http://localhost:${port}/${entry}.html?feature=${feature}`;
-        if (config) {
-            url += `&config=${config}`;
-        }
-        return {
-            url,
-            feature,
-            config
-        };
-    }
-
-    private createConfig(environments: EngineEnvironmentEntry[], port?: number): webpack.Configuration {
-        return createEnvWebpackConfig({
-            port,
-            environments,
-            basePath: this.basePath,
-            outputPath: this.outputPath
-        });
-    }
-
-    private createStaticConfig(
-        environments: EngineEnvironmentEntry[],
-        currentFeatureName: string,
-        currentConfigName: string
-    ): webpack.Configuration[] {
-        return createStaticWebpackConfigs({
-            environments,
-            basePath: this.basePath,
-            outputPath: this.outputPath,
-            currentConfigName,
-            currentFeatureName
-        });
+        return featuresAndConfigs;
     }
 }
 
@@ -222,3 +215,20 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
     res.status(204); // No Content
     res.end();
 };
+
+const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
+    console.log(`Bundling ${target} using webpack...`);
+
+function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
+    compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
+    compiler.hooks.watchRun.tap('engine-scripts', bundleStartMessage);
+
+    compiler.hooks.done.tap('engine-scripts stats printing', ({ stats }) => {
+        for (const childStats of stats) {
+            if (childStats.hasErrors() || childStats.hasWarnings()) {
+                console.log(childStats.toString('errors-warnings'));
+            }
+        }
+        console.log('Done bundling.');
+    });
+}

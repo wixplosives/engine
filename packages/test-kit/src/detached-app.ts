@@ -21,7 +21,7 @@ export class DetachedApp implements IExecutableApplication {
         }
         const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
 
-        const engineStartProcess = fork(this.cliEntry, ['start-engine-server'], {
+        const engineStartProcess = fork(this.cliEntry, ['start'], {
             stdio: 'inherit',
             cwd: this.basePath,
             execArgv

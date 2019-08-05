@@ -4,8 +4,8 @@ import { FileServerDriver } from './file-server-driver';
 
 describe('File Server Feature', () => {
     const { getLoadedFeature } = withFeature({
-        featureName: 'example',
-        configName: 'run'
+        featureName: 'engine-example-file-server/example',
+        configName: 'engine-example-file-server/run'
     });
 
     it('lists working directory contents in DOM', async () => {

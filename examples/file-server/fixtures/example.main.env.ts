@@ -5,12 +5,12 @@ import TestFeature from './example.feature';
 /**
  * setting up the local main environment file
  */
-TestFeature.setup(main, ({ run }, { fileServerExample: { remoteFiles, fileServerConfig } }) => {
+TestFeature.setup(main, ({ run }, { fileServerExample: { remoteFiles } }) => {
     run(async () => {
         /**
          * using the remoteFiles API from the fileServer feature, to retrieve files from the local fs
          */
-        const dir = await remoteFiles.readDir(fileServerConfig.defaultDirName);
+        const dir = await remoteFiles.readDir('/');
 
         /**
          * printing all file names of a folder to the console
