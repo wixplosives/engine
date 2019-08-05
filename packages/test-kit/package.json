@@ -15,8 +15,7 @@
   "dependencies": {
     "@wixc3/engine-scripts": "^3.2.0",
     "is-ci": "^2.0.0",
-    "puppeteer": "^1.19.0",
-    "sinon": "^7.4.0"
+    "puppeteer": "^1.19.0"
   },
   "files": [
     "cjs",
