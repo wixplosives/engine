@@ -10,3 +10,7 @@
 - **[@wixc3/engine-scripts](https://github.com/wixplosives/engine/tree/master/packages/scripts)** - `engine` CLI.
 
 - **[@wixc3/engine-test-kit](https://github.com/wixplosives/engine/tree/master/packages/test-kit)** - `withFeature` and other test mechanisms.
+
+### License
+
+MIT
