@@ -32,7 +32,17 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: webEnvs,
                 target: 'web',
                 virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules), new StylableWebpackPlugin()]
+                plugins: [
+                    new HtmlWebpackPlugin({
+                        filename: `index.html`,
+                        chunks: ['index']
+                    }),
+                    new VirtualModulesPlugin(virtualModules),
+                    new StylableWebpackPlugin()
+                ],
+                entry: {
+                    index: require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'))
+                }
             })
         );
     }
@@ -63,6 +73,7 @@ interface ICreateWebpackConfigOptions {
     target: 'web' | 'webworker';
     virtualModules: Record<string, string>;
     plugins?: webpack.Plugin[];
+    entry?: webpack.Entry;
 }
 
 function createWebpackConfig({
@@ -76,9 +87,9 @@ function createWebpackConfig({
     mode = 'development',
     outputPath,
     publicPath,
-    plugins = []
+    plugins = [],
+    entry = {}
 }: ICreateWebpackConfigOptions): webpack.Configuration {
-    const entry: webpack.Entry = {};
     for (const { type: envType, name: envName, childEnvName } of enviroments) {
         const entryPath = fs.join(context, `${envName}-${envType}-entry.js`);
         entry[envName] = entryPath;

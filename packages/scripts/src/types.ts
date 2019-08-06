@@ -1,4 +1,5 @@
-import { AsyncEnvironment, EnvironmentContext, IComConfig, SomeFeature, TopLevelConfig } from '@wixc3/engine-core';
+import { AsyncEnvironment, EnvironmentContext, SomeFeature, TopLevelConfig } from '@wixc3/engine-core';
+import { IComConfig } from '@wixc3/engine-core/src/communication.feature';
 import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 import { IRunNodeEnvironmentsOptions } from './run-socket-server';
 

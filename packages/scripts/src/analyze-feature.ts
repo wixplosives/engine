@@ -31,6 +31,7 @@ export interface IFeatureDefinition extends IFeatureModule {
     dependencies: string[];
     scopedName: string;
     resolvedContexts: Record<string, string>;
+    isRoot: boolean;
 }
 
 export interface IFeatureModule {
@@ -142,7 +143,8 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
                 dependencies: [],
                 envFilePaths: {},
                 contextFilePaths: {},
-                resolvedContexts: {}
+                resolvedContexts: {},
+                isRoot: ownFeatureFilePaths.has(featureFilePath)
             });
             featureToScopedName.set(featureModule.exportedFeature, scopedName);
         }

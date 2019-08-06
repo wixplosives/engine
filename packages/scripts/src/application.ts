@@ -18,9 +18,10 @@ import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
-import { COM, flattenTree, TopLevelConfig } from '@wixc3/engine-core';
+import { COM, flattenTree, TopLevelConfig } from '@wixc3/engine-core/src';
 import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
 import { createWebpackConfigs } from './create-webpack-configs';
+import { NodeEnvironmentsManager } from './node-environments-manager';
 import {
     IEnvironmaneStartMessage,
     IEnvironmentMessage,
@@ -70,9 +71,8 @@ export class Application {
             inspect = true;
         }
         const disposables: Array<() => unknown> = [];
-        const { features, configurations } = this.analyzeFeatures();
+        const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
-
         const app = express();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
@@ -102,13 +102,20 @@ export class Application {
             compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
-        // print links to features
-        // const configLinks = this.getRootURLS(environments, featureMapping, port);
-        // const engineDev = engineDevMiddleware(features, environments, configLinks);
-        // app.use(engineDev);
-
+        const mainUrl = `http://localhost:${port}`;
         console.log(`Listening:`);
-        console.log(`http://localhost:${port}/`);
+        console.log(mainUrl);
+
+        const runningFeaturesAndConfigs = this.getConfigNamesForRunningFeatures(features, configurations);
+
+        if (packages.length === 1) {
+            // print links to features
+            for (const runningFeatureName of runningFeaturesAndConfigs.features) {
+                for (const runningConfigName of runningFeaturesAndConfigs.configs) {
+                    console.log(`${mainUrl}/main.html?feature=${runningFeatureName}&config=${runningConfigName}`);
+                }
+            }
+        }
 
         const runFeature = async (targetFeature: {
             featureName: string;
@@ -132,7 +139,9 @@ export class Application {
                 if (!configFilePath) {
                     const configNames = Array.from(configurations.keys());
                     throw new Error(
-                        `cannot find config ${featureName}. available configurations: ${configNames.join(', ')}`
+                        `cannot find config ${targetFeature.featureName}. available configurations: ${configNames.join(
+                            ', '
+                        )}`
                     );
                 }
                 try {
@@ -176,14 +185,31 @@ export class Application {
             };
         };
 
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(runFeature);
+
+        app.use(nodeEnvironmentManager.middleware());
+        disposables.push(() => nodeEnvironmentManager.closeAll());
+
+        app.get('/server-state', (_req, res) => {
+            res.json({
+                result: 'success',
+                data: {
+                    configs: Array.from(configurations.keys()),
+                    features: Array.from(features.values())
+                        .filter(({ isRoot }) => isRoot)
+                        .map(({ scopedName }) => scopedName),
+                    runningNodeEnvironments: nodeEnvironmentManager.getRunningEnvironments()
+                }
+            });
+        });
+
         if (featureName) {
-            const { close: closeFeature } = await runFeature({ featureName, configName });
-            disposables.push(() => closeFeature());
+            await nodeEnvironmentManager.runEnvironment({ featureName, configName });
         }
         return {
             port,
             httpServer,
-            runFeature,
+            nodeEnvironmentManager,
             async close() {
                 for (const dispose of disposables) {
                     await dispose();
@@ -223,7 +249,23 @@ export class Application {
         const packages = resolvePackages(basePath);
         const featuresAndConfigs = loadFeaturesFromPackages(packages, fs);
         console.timeEnd('Analyzing Features.');
-        return featuresAndConfigs;
+        return { ...featuresAndConfigs, packages };
+    }
+
+    private getConfigNamesForRunningFeatures(
+        features: Map<string, IFeatureDefinition>,
+        configurations: Map<string, string>
+    ) {
+        const packageToConfigurationMapping: { features: string[]; configs: string[] } = {
+            configs: Array.from(configurations.keys()),
+            features: []
+        };
+        for (const { scopedName, isRoot } of features.values()) {
+            if (isRoot) {
+                packageToConfigurationMapping.features.push(scopedName);
+            }
+        }
+        return packageToConfigurationMapping;
     }
     private async startNodeEnvironment(
         remoteNodeEnvironment: RemoteNodeEnvironment,

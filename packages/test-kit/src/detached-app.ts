@@ -55,9 +55,9 @@ export class DetachedApp implements IExecutableApplication {
         });
     }
 
-    public async closeFeature(target: IFeatureTarget) {
+    public async closeFeature({ configName, featureName }: IFeatureTarget) {
         await this.waitForProcessMessage('feature-closed', p => {
-            p.send({ id: 'close-feature', payload: target });
+            p.send({ id: 'close-feature', payload: { configName, featureName } });
         });
     }
 
