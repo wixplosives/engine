@@ -16,7 +16,7 @@ export interface FileSystemAPI {
 }
 
 /**
- * defining a default config for the ffeature
+ * defining a default config for the feature
  */
 export const fileServerConfig = new Config<Record<string, string>>({
     defaultDirName: process.cwd()
