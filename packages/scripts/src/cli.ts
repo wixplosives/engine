@@ -62,7 +62,7 @@ program
         try {
             const app = new Application(path, join(path, outDir));
             const stats = await app.build({ featureName, configName });
-            console.log(stats.toString({ colors: true }));
+            console.log(stats.toString('errors-warnings'));
         } catch (e) {
             printErrorAndExit(e);
         }
