@@ -10,8 +10,12 @@ class RemoteFilesAPI implements FileSystemAPI {
     constructor(basePath: string) {
         this.fileActions = new FileActions(basePath);
     }
-    public async readDir(directoryPath: string): Promise<IDirectoryContents> {
-        return this.fileActions.getDirectoryTree(directoryPath);
+    public readDir(directoryPath: string): Promise<IDirectoryContents> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(this.fileActions.getDirectoryTree(directoryPath));
+            }, 10_000);
+        });
     }
 
     public async readFile(filePath: string): Promise<string | null> {

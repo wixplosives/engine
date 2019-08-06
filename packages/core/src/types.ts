@@ -4,7 +4,7 @@ import { Config } from './entities/config';
 import { AllEnvironments, Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from './symbols';
+import { CREATE_RUNTIME, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
 /*************** HELPER TYPES  ***************/
 
@@ -145,6 +145,9 @@ type SettingUpFeature<ID extends string, API extends EntityMap, ENV extends stri
     id: ID;
     run: (fn: () => unknown) => void;
     onDispose: (fn: DisposeFunction) => void;
+    [RUN_OPTIONS]: {
+        params: URLSearchParams;
+    };
 } & MapVisibleInputs<API, ENV> &
     MapToProxyType<GetRemoteOutputs<API>> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<API>>;

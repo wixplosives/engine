@@ -8,6 +8,7 @@ import { AllEnvironments, NodeEnvironment, SingleEndpointContextualEnvironment, 
 import { Feature } from './entities/feature';
 import { Service } from './entities/service';
 import { Slot } from './entities/slot';
+import { RUN_OPTIONS } from './symbols';
 import { LoggerTransport, LogLevel } from './types';
 
 export interface IComConfig {
@@ -63,21 +64,43 @@ export default new Feature({
     Universal,
     ({
         config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, contextMappings },
-        loggerTransports
+        loggerTransports,
+        [RUN_OPTIONS]: runOptinos
     }) => {
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.
         // main frame might not have that configured, so we use 'main' fallback for it.
         let communication: Communication;
+        const debugWarnings = runOptinos.params.has('debugWarnings');
         // TODO: find better way to detect node runtime
         if (typeof process !== 'undefined' && process.title !== 'browser') {
             if (host) {
-                communication = new Communication(host, id || host.name || 'main', topology, contextMappings, true);
+                communication = new Communication(
+                    host,
+                    id || host.name || 'main',
+                    topology,
+                    contextMappings,
+                    debugWarnings,
+                    true
+                );
             } else {
-                communication = new Communication(new BaseHost(), id || 'main', topology, contextMappings, true);
+                communication = new Communication(
+                    new BaseHost(),
+                    id || 'main',
+                    topology,
+                    contextMappings,
+                    debugWarnings,
+                    true
+                );
             }
         } else {
-            communication = new Communication(self, id || self.name || 'main', topology, contextMappings);
+            communication = new Communication(
+                self,
+                id || self.name || 'main',
+                topology,
+                contextMappings,
+                debugWarnings
+            );
         }
 
         const loggerService = new LoggerService(

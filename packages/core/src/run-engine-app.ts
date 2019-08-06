@@ -3,8 +3,12 @@ import { flattenTree } from './flatten-tree';
 import { RuntimeEngine } from './runtime-engine';
 import { SomeFeature, TopLevelConfig } from './types';
 
-export function run(entryFeature: SomeFeature | SomeFeature[], topLevelConfig: TopLevelConfig = []): RuntimeEngine {
-    return new RuntimeEngine(topLevelConfig).run(entryFeature);
+export function run(
+    entryFeature: SomeFeature | SomeFeature[],
+    topLevelConfig: TopLevelConfig = [],
+    runOptions: URLSearchParams = new URLSearchParams()
+): RuntimeEngine {
+    return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature);
 }
 
 export const getFeaturesDeep = (feature: SomeFeature) => flattenTree(feature, f => f.dependencies);
@@ -19,9 +23,10 @@ export interface IRunEngineAppOptions {
     featureName?: string | null;
     featureLoaders: Record<string, IFeatureLoader>;
     config?: TopLevelConfig;
+    options?: URLSearchParams;
 }
 
-export async function runEngineApp({ featureName, featureLoaders, config = [] }: IRunEngineAppOptions) {
+export async function runEngineApp({ featureName, featureLoaders, config = [], options }: IRunEngineAppOptions) {
     const featureNames = Object.keys(featureLoaders);
     featureName = featureName || featureNames[0];
 
@@ -35,10 +40,10 @@ export async function runEngineApp({ featureName, featureLoaders, config = [] }:
         ...rootFeatureDef.depFeatures.map(depName => featureLoaders[depName].load())
     ]);
 
-    const engine = new RuntimeEngine([
-        COM.use({ config: { contextMappings: rootFeatureDef.resolvedContexts } }),
-        ...config
-    ]).run(runningFeature);
+    const engine = new RuntimeEngine(
+        [COM.use({ config: { contextMappings: rootFeatureDef.resolvedContexts } }), ...config],
+        options
+    ).run(runningFeature);
 
     return {
         engine,

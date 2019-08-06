@@ -39,7 +39,8 @@ export class Communication {
     private rootEnvId: string;
     private rootEnvName: string;
     private idsCounter = new MultiCounter();
-    private readonly callbackTimeout = 5000; // 5 seconds
+    private readonly callbackTimeout = 60_000 * 2; // 2 minutes
+    private readonly warnTimeout = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private pendingEnvs: Map<string, UnknownFunction> = new Map();
@@ -53,6 +54,7 @@ export class Communication {
         id: string,
         private topology: Record<string, string> = {},
         private contextMappings: Record<string, string> = {},
+        private debugWarnings: boolean = false,
         public isServer: boolean = false
     ) {
         this.rootEnvId = id;
@@ -488,6 +490,15 @@ export class Communication {
             delete this.callbacks[callbackId];
             rej(error);
         };
+        if (this.debugWarnings) {
+            setTimeout(() => {
+                if (this.callbacks[callbackId]) {
+                    // tslint:disable-next-line: no-console
+                    console.error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message)));
+                }
+            }, this.warnTimeout);
+        }
+
         const timerId = setTimeout(() => {
             reject(new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message))));
         }, this.callbackTimeout);
@@ -496,7 +507,6 @@ export class Communication {
             resolve,
             reject
         };
-        // return callbackId
     }
     private injectScript(win: Window, rootComId: string, scriptUrl: string) {
         return new Promise<Window>((res, rej) => {

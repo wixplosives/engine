@@ -1,5 +1,5 @@
 import { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN } from '../symbols';
+import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import {
     DisposableContext,
     DisposeFunction,
@@ -142,6 +142,9 @@ export class Feature<
             },
             onDispose(fn: DisposeFunction) {
                 feature.addOnDisposeHandler(fn);
+            },
+            [RUN_OPTIONS]: {
+                params: context.runOptions
             }
         };
 
