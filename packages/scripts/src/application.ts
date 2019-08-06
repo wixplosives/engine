@@ -67,7 +67,7 @@ export class Application {
         );
     }
 
-    public async start({ featureName, configName }: IRunOptions = {}) {
+    public async start({ featureName, configName, projectPath }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
@@ -195,7 +195,7 @@ export class Application {
         });
 
         if (featureName) {
-            const { close: closeFeature } = await runFeature({ featureName, configName });
+            const { close: closeFeature } = await runFeature({ featureName, configName, projectPath });
             disposables.push(() => closeFeature());
         }
         return {
