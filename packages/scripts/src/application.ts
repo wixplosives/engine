@@ -74,7 +74,7 @@ export class Application {
         );
     }
 
-    public async start({ featureName, configName, inspect = false }: IRunOptions = {}) {
+    public async start({ featureName, configName, projectPath, inspect = false }: IRunOptions = {}) {
         if (process.argv.some(arg => arg.startsWith('--inspect'))) {
             inspect = true;
         }
@@ -212,7 +212,7 @@ export class Application {
         });
 
         if (featureName) {
-            await nodeEnvironmentManager.runEnvironment({ featureName, configName });
+            await nodeEnvironmentManager.runEnvironment({ featureName, configName, projectPath });
         }
         return {
             port,

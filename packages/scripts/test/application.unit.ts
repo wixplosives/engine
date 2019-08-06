@@ -6,7 +6,7 @@ import { Page } from 'puppeteer';
 import { Application } from '../src/application';
 
 describe('Application', function() {
-    this.timeout(10_000);
+    this.timeout(20_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
