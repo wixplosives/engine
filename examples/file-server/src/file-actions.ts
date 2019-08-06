@@ -28,7 +28,7 @@ export class FileActions {
      * @param filePath path to the file in the local file system
      */
     public async getFileContents(filePath: string): Promise<string | null> {
-        return await this.fs.promises.readFile(filePath, 'utf8');
+        return this.fs.promises.readFile(filePath, 'utf8');
     }
     /**
      * @description function returns directory from a path

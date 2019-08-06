@@ -59,10 +59,18 @@ export class Application {
 
     public async build({ featureName, configName }: IRunOptions = {}): Promise<webpack.Stats> {
         const { features } = this.analyzeFeatures();
-        const compiler = this.createCompiler(features, featureName, configName);
+        const compiler = this.createCompiler(features, featureName, configName, 'production');
 
         return new Promise<webpack.Stats>((resolve, reject) =>
-            compiler.run((e, s) => (e || s.hasErrors() ? reject(e || new Error(s.toString())) : resolve(s)))
+            compiler.run((e, s) => {
+                if (e) {
+                    reject(e);
+                } else if (s.hasErrors()) {
+                    reject(new Error(s.toString('errors-warnings')));
+                } else {
+                    resolve(s);
+                }
+            })
         );
     }
 
@@ -219,7 +227,12 @@ export class Application {
         };
     }
 
-    private createCompiler(features: Map<string, IFeatureDefinition>, featureName?: string, configName?: string) {
+    private createCompiler(
+        features: Map<string, IFeatureDefinition>,
+        featureName?: string,
+        configName?: string,
+        mode?: 'production' | 'development'
+    ) {
         const { basePath, outputPath } = this;
         const enviroments = new Set<IEnvironment>();
         for (const { exportedEnvs } of features.values()) {
@@ -232,6 +245,7 @@ export class Application {
 
         const webpackConfigs = createWebpackConfigs({
             context: basePath,
+            mode,
             outputPath,
             enviroments: Array.from(enviroments),
             features,
