@@ -12,6 +12,7 @@ import {
     Feature,
     MapSlot,
     run as runEngine,
+    RUN_OPTIONS,
     Service,
     SingleEndPointAsyncEnvironment,
     SingleEndpointContextualEnvironment,
@@ -527,6 +528,9 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                             typeof x,
                             {
                                 id: 'echoFeature';
+                                [RUN_OPTIONS]: {
+                                    params: URLSearchParams;
+                                };
                                 run(fn: () => unknown): unknown;
                                 onDispose(fn: DisposeFunction): unknown;
                             }

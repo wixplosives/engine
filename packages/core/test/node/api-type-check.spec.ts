@@ -1,5 +1,5 @@
 import { EQUAL, ExpectTrue } from 'typescript-type-utils';
-import { DisposeFunction, Environment, Universal } from '../../src';
+import { DisposeFunction, Environment, RUN_OPTIONS, Universal } from '../../src';
 import { Config, Feature, Registry, Running, RunningFeatures, RuntimeEngine, Service, Slot } from '../../src';
 import { type_check } from '../type-check';
 
@@ -123,9 +123,12 @@ export function dontRun() {
                             id: 'addPanel';
                             run: (fn: () => unknown) => void;
                             onDispose: (fn: DisposeFunction) => void;
+                            [RUN_OPTIONS]: {
+                                params: URLSearchParams;
+                            };
                             componentDescription: Registry<ComponentDescription>;
+                            // service2: DataService;
                             service3: DataService;
-                            // service2: DataService
                         }
                     >
                 >
