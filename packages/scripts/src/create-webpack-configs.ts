@@ -104,7 +104,8 @@ function createWebpackConfig({
             plugins.push(
                 new HtmlWebpackPlugin({
                     filename: `${envName}.html`,
-                    chunks: [envName]
+                    chunks: [envName],
+                    title: 'Wix Component Studio'
                 })
             );
         }
