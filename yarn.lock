@@ -90,48 +90,48 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@file-services/directory@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-2.0.0.tgz#d62262b46c7a1f47b56b074e99b88155725a948a"
-  integrity sha512-FEzE9RBp0PkNFUvZ2dOoTAy2HqGSFSU2Q7EGKL2ni4PYjZlE6A7Um06+qRvuwnSN5VDy350gmhYBAsRLg0MYVQ==
+"@file-services/directory@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-2.0.1.tgz#9ca76293d1b64dc5efed03dd3add38a08e031fac"
+  integrity sha512-JuTpn5Uk5whCU5AxFWdgTtkY0pzMjPZpQbsHP3NnjuirvBSjZX/AK40SnUMu+IFTPe3yxVpypscJS9mRjkfqoQ==
   dependencies:
     "@file-services/posix-path" "^1.0.3"
-    "@file-services/types" "^2.0.0"
-    "@file-services/utils" "^2.0.0"
+    "@file-services/types" "^2.0.1"
+    "@file-services/utils" "^2.0.1"
 
-"@file-services/memory@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-2.0.0.tgz#ab0d4f88d633f5b8f1ec59a918d6dc0b440869d1"
-  integrity sha512-GtTd1/8UMKI7W2bsJGz3gN5C3bvzEKCJFSD1EM9yAiwKYZ4dCGGYu3/A0r6nsYqy+gHkpeM0rUrs4LCtv8o+xQ==
+"@file-services/memory@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-2.0.1.tgz#639143d8743af86c6e47860f7d3cd82d1886e29e"
+  integrity sha512-SRXl/sfBV5TggE+7IwMqogHVazdNsWLQV8URbuohVWWVP16HOUCL4Nd8NDuN4e/uAQ3ECCrDiUHlVRbpuVtleg==
   dependencies:
     "@file-services/posix-path" "^1.0.3"
-    "@file-services/types" "^2.0.0"
-    "@file-services/utils" "^2.0.0"
+    "@file-services/types" "^2.0.1"
+    "@file-services/utils" "^2.0.1"
 
-"@file-services/node@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-2.0.0.tgz#310110963f1fcf1fcfd3b67d42722c62593cf05b"
-  integrity sha512-5DqpmJDDkJD44TPH2PDiezNHIz9eoSIMlBFJEz1pEyQKu+JQkbwULgq6kQmetu/t3ErbKAs/UeEOomMZZOYooQ==
+"@file-services/node@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-2.0.1.tgz#8076e2bc9c7ff78cdf71cdaf5ae053213e627629"
+  integrity sha512-T28IVnHyV8Ni9BZQiaIK3JZole6Yz36yJOSKqcbvTA7/0fgTjZ9Fjd2gl2bVmGZ2pIdMcaWHjqDkdSClNuIQuw==
   dependencies:
-    "@file-services/types" "^2.0.0"
-    "@file-services/utils" "^2.0.0"
+    "@file-services/types" "^2.0.1"
+    "@file-services/utils" "^2.0.1"
 
 "@file-services/posix-path@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@file-services/posix-path/-/posix-path-1.0.3.tgz#d176afbbb6fe284f055217f06fd51d5a0475bbb8"
   integrity sha512-m6WuGAyIku8jVXr2DP0TTZnaBXCjAobk1YS+EciVRUQvbjxswPqpV7L3yqmYFfYuExHLNcoA+puKYL556nbW0Q==
 
-"@file-services/types@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-2.0.0.tgz#396f375f209de5fc800b45ab12998f964471d2aa"
-  integrity sha512-FFGRaV7T2fDKCVVCa3yGOnJK2g9/PT0gvLTQvJkipoXpR41qNvlMaT4BiAKY/fy+iH6A0BQ5tzfvcUPmO+Pazw==
+"@file-services/types@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-2.0.1.tgz#32d7054d3fa3fc018c5b3a32ed0bbd4c2a75f42a"
+  integrity sha512-vppaOGzmM2OEkO9qAWLqMH4f02c+fmnYeLr7oS/8cgXH0wg8WeJ54vgwUw7lC7rPhaH9Z4hNhgCoJmUgXrCmWw==
 
-"@file-services/utils@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-2.0.0.tgz#cad3570e272108b1f49da6fc9578295816bda2a9"
-  integrity sha512-7DJ+bWs4mAFQoqy1K19qOvOQs5kX6G64oRWqjQgLY9XJgFTKqZCISzgAxPLLT24e+oIv4h504WiSgexLfAA5dw==
+"@file-services/utils@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-2.0.1.tgz#66d3f3acbd552c280ba77c1609b9775bd5ae7155"
+  integrity sha512-KsAPiGVfjyGJsR+2+SSxvYCnZIKtfwsiFfVemXuiZQIOvJC9YQ0F/B9X4ly1Wo/LWAe0aegGemfhQ6GbDxSl/g==
   dependencies:
-    "@file-services/types" "^2.0.0"
+    "@file-services/types" "^2.0.1"
 
 "@lerna/add@3.16.2":
   version "3.16.2"
@@ -7236,9 +7236,9 @@ terser-webpack-plugin@^1.4.1:
     worker-farm "^1.7.0"
 
 terser@^4.1.2:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-4.1.3.tgz#6074fbcf3517561c3272ea885f422c7a8c32d689"
-  integrity sha512-on13d+cnpn5bMouZu+J8tPYQecsdRJCJuxFJ+FVoPBoLJgk5bCBkp+Uen2hWyi0KIUm6eDarnlAlH+KgIx/PuQ==
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-4.1.4.tgz#4478b6a08bb096a61e793fea1a4434408bab936c"
+  integrity sha512-+ZwXJvdSwbd60jG0Illav0F06GDJF0R4ydZ21Q3wGAFKoBGyJGo34F63vzJHgvYxc1ukOtIjvwEvl9MkjzM6Pg==
   dependencies:
     commander "^2.20.0"
     source-map "~0.6.1"
@@ -7284,9 +7284,9 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6:
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
 timers-browserify@^2.0.4:
-  version "2.0.10"
-  resolved "https://registry.yarnpkg.com/timers-browserify/-/timers-browserify-2.0.10.tgz#1d28e3d2aadf1d5a5996c4e9f95601cd053480ae"
-  integrity sha512-YvC1SV1XdOUaL6gx5CoGroT3Gu49pK9+TZ38ErPldOWW4j49GI1HKs9DV+KGq/w6y+LZ72W1c8cKz2vzY+qpzg==
+  version "2.0.11"
+  resolved "https://registry.yarnpkg.com/timers-browserify/-/timers-browserify-2.0.11.tgz#800b1f3eee272e5bc53ee465a04d0e804c31211f"
+  integrity sha512-60aV6sgJ5YEbzUdn9c8kYGIqOubPoUdqQCul3SBAsRCZ40s6Y5cMcrW4dt3/k/EsbLVJNl9n6Vz3fTc+k2GeKQ==
   dependencies:
     setimmediate "^1.0.4"
 
