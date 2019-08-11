@@ -9,7 +9,7 @@ import '@ts-tools/node/fast';
 import './own-repo-hook';
 
 import fs from '@file-services/node';
-import { COM, TopLevelConfig } from '@wixc3/engine-core';
+import { TopLevelConfig } from '@wixc3/engine-core';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import rimrafCb from 'rimraf';
@@ -18,7 +18,9 @@ import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
-import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
+import { SetMultiMap } from '@file-services/utils';
+import { IConfigDefinition, IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
+import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { NodeEnvironmentsManager } from './node-environments-manager';
 import { runNodeEnvironments } from './run-node-environments';
@@ -79,17 +81,7 @@ export class Application {
         const topology: Map<string, Record<string, string>> = new Map();
 
         app.use('/favicon.ico', noContentHandler);
-        app.use('/config', async (req, res) => {
-            const { feature: currentFeatureName } = req.query;
-            const requestedConfig = req.path.slice(1);
-            const configFilePath = configurations.get(requestedConfig);
-            const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(currentFeatureName) } })];
-            if (configFilePath) {
-                const { default: configValue } = await import(configFilePath);
-                config.push(...configValue);
-            }
-            res.send(config);
-        });
+        app.use('/config', createConfigMiddleware(configurations, topology));
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
@@ -133,20 +125,22 @@ export class Application {
             ];
 
             if (targetFeature.configName) {
-                const configFilePath = configurations.get(targetFeature.configName);
-                if (!configFilePath) {
+                const configDefinition = configurations.get(targetFeature.configName);
+                if (!configDefinition) {
                     const configNames = Array.from(configurations.keys());
                     throw new Error(
-                        `cannot find config ${targetFeature.featureName}. available configurations: ${configNames.join(
-                            ', '
-                        )}`
+                        `cannot find config "${
+                            targetFeature.featureName
+                        }". available configurations: ${configNames.join(', ')}`
                     );
                 }
-                try {
-                    const { default: topLevelConfig } = await import(configFilePath);
-                    config.push(...topLevelConfig);
-                } catch (e) {
-                    console.error(e);
+                for (const { filePath } of configDefinition) {
+                    try {
+                        const { default: topLevelConfig } = await import(filePath);
+                        config.push(...topLevelConfig);
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
             }
 
@@ -252,7 +246,7 @@ export class Application {
 
     private getConfigNamesForRunningFeatures(
         features: Map<string, IFeatureDefinition>,
-        configurations: Map<string, string>
+        configurations: SetMultiMap<string, IConfigDefinition>
     ) {
         const packageToConfigurationMapping: { features: string[]; configs: string[] } = {
             configs: Array.from(configurations.keys()),

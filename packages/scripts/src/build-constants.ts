@@ -1,3 +1,5 @@
+import path from 'path';
+
 // Conventional filenames
 export const FEATURE_FILENAME_HINT = '.feature.';
 export const CONFIG_FILENAME_HINT = '.config.';
@@ -28,8 +30,15 @@ export function parseFeatureFileName(fileName: string): string {
     return fileName.split(FEATURE_FILENAME_HINT).shift()!;
 }
 
-export function parseConfigFileName(fileName: string): string {
-    return fileName.split(CONFIG_FILENAME_HINT).shift()!;
+export function parseConfigFileName(fileName: string) {
+    const fullConfigName = fileName.split(CONFIG_FILENAME_HINT).shift()!;
+    const envName = path.extname(fullConfigName);
+    const configName = path.basename(fullConfigName, envName);
+    return {
+        fullConfigName,
+        configName,
+        envName: envName.slice(1)
+    };
 }
 
 export function parseEnvFileName(fileName: string) {

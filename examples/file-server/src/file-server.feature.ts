@@ -16,13 +16,6 @@ export interface FileSystemAPI {
 }
 
 /**
- * defining a default config for the feature
- */
-export const fileServerConfig = new Config<Record<string, string>>({
-    defaultDirName: process.cwd()
-});
-
-/**
  * exporting new feature that exposes 2 api records
  * 1. remoteFiles - a service that will be implemented in the server environment file and will implement the FileSystemAPI interface, and defining it as 'allow remote access' so that other environments could acces this service
  * 2. fileServerConfig - configuration for this feature
@@ -34,6 +27,12 @@ export default new Feature({
         remoteFiles: Service.withType<FileSystemAPI>()
             .defineEntity(server)
             .allowRemoteAccess(),
-        fileServerConfig
+        fileServerConfig: Config.withType<Record<string, string>>().defineEntity(
+            {
+                defaultDirName: process.cwd()
+            },
+            undefined,
+            server
+        )
     }
 });

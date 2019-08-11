@@ -12,6 +12,7 @@ import {
 } from '@wixc3/engine-core';
 import { basename } from 'path';
 
+import { SetMultiMap } from '@file-services/utils';
 import { flattenTree } from '@wixc3/engine-core';
 import {
     isFeatureFile,
@@ -24,6 +25,12 @@ import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-director
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
 import { INpmPackage, IPackageJson } from './utils/resolve-packages';
+
+export interface IConfigDefinition {
+    name: string;
+    filePath: string;
+    envName?: string;
+}
 
 export interface IFeatureDefinition extends IFeatureModule {
     contextFilePaths: Record<string, string>;
@@ -115,7 +122,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
     }
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
-    const foundConfigs = new Map<string, string>();
+    const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
     const featureToScopedName = new Map<SomeFeature, string>();
 
     for (const { directoryPath, features, configurations, envs, contexts } of featureDirectories) {
@@ -125,9 +132,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         }
 
         // pick up configs
-        for (const configFilePath of configurations) {
-            const configName = parseConfigFileName(fs.basename(configFilePath));
-            foundConfigs.set(`${packageName}/${configName}`, configFilePath);
+        for (const filePath of configurations) {
+            const { configName, envName } = parseConfigFileName(fs.basename(filePath));
+            const scopedConfigName = `${packageName}/${configName}`;
+            foundConfigs.add(scopedConfigName, { filePath, envName, name: configName });
         }
 
         // pick up features

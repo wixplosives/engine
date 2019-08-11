@@ -4,8 +4,8 @@ import { DisposableContext, EnvVisibility, MapBy } from '../types';
 import { AsyncSingleEndpointEnvironment } from './async-env';
 
 export interface AllEnvironments {
-    env: any;
-    endpointType: 'multi';
+    env: string;
+    endpointType: EndpointType;
 }
 
 export type EndpointType = 'single' | 'multi';

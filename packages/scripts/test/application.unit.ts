@@ -104,8 +104,7 @@ describe('Application', function() {
             const featurePath = fs.join(__dirname, './fixtures/node-env');
             const app = new Application(featurePath);
             const runningApp = await app.start({
-                featureName: 'engine-local/x',
-                configName: 'engine-local/dev'
+                featureName: 'engine-local/x'
             });
             disposables.add('closing app', () => runningApp.close());
 

@@ -198,7 +198,7 @@ export type SetupHandler<
     context: MapRecordType<EnvironmentContext>
 ) => RegisteringFeature<API, Filter>;
 
-export type PartialFeatureConfig<API> = Partial<MapToPartialType<JustFilter<API, Config<any>>>>;
+export type PartialFeatureConfig<API> = Partial<MapToPartialType<JustFilter<API, Config<any, any>>>>;
 
 export type TopLevelConfig = Array<[string, object]>;
 
