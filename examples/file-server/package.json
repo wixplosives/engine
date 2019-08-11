@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-example-file-server",
-  "version": "4.0.2",
+  "version": "4.0.4",
   "scripts": {
     "start": "engine start",
     "test": "mocha \"test/**/*.ix.ts?(x)\""
