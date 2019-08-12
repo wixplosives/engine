@@ -42,10 +42,31 @@ export interface IFeatureDefinition extends IFeatureModule {
 }
 
 export interface IFeatureModule {
+    /**
+     * Feature name.
+     * @example "gui" for "gui.feature.ts"
+     */
     name: string;
+
+    /**
+     * Absolute path pointing to the feature file.
+     */
     filePath: string;
+
+    /**
+     * Actual evaluated Feature instance exported from the file.
+     */
     exportedFeature: SomeFeature;
+
+    /**
+     * Exported environments from module.
+     */
     exportedEnvs: IEnvironment[];
+
+    /**
+     * If module exports any `processingEnv.use('worker')`,
+     * it will be set as `'processing': 'worker'`
+     */
     usedContexts: Record<string, string>;
 }
 
