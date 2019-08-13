@@ -8,7 +8,7 @@
     "clean": "lerna run clean --stream --parallel",
     "build": "lerna run build --stream --parallel",
     "lint": "tslint -p tsconfig.base.json",
-    "pretest": "run-p lint typecheck",
+    "pretest": "yarn typecheck && yarn lint",
     "test": "lerna run test --stream --concurrency=1",
     "typecheck": "tsc -p ./tsconfig.base.json --noEmit",
     "prettify": "yarn prettier \"packages/**/*.{js,ts,tsx}\" --write"
@@ -44,7 +44,6 @@
     "lerna": "^3.16.4",
     "mocha": "^6.2.0",
     "mocha-pup": "^0.1.18",
-    "npm-run-all": "^4.1.5",
     "prettier": "^1.18.2",
     "promise-assist": "^1.2.6",
     "puppeteer": "^1.19.0",

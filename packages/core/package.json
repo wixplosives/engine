@@ -7,7 +7,7 @@
     "clean": "rimraf cjs",
     "prebuild": "yarn clean",
     "build": "ts-build src --cjs",
-    "test": "run-s test:node test:browser",
+    "test": "yarn test:node && yarn test:browser",
     "test:node": "mocha \"test/node/**/*.spec.ts?(x)\"",
     "test:browser": "mocha-pup \"test/**/*.spec.ts?(x)\" -c ./test/webpack.config.js",
     "prepack": "yarn build"
