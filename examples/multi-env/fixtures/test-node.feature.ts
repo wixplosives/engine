@@ -7,4 +7,4 @@ export default new Feature({
     api: {}
 });
 
-export const Context = processingEnv.useContext('live-server');
+export const Context = processingEnv.useContext('node');

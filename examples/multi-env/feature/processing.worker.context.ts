@@ -1,7 +1,7 @@
 import MultiEnvFeature from './multi-env.feature';
 
 MultiEnvFeature.setupContext('processingContext', () => {
-    let testName = 'test2';
+    let testName = 'worker env';
 
     return {
         name: () => testName,

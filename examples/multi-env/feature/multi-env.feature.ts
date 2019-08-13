@@ -10,8 +10,8 @@ import {
 
 export const mainEnv = new Environment('main');
 const workerEnv = new SingleEndPointAsyncEnvironment('worker', 'worker', mainEnv);
-const liveServerEnv = new NodeEnvironment('live-server');
-export const processingEnv = new SingleEndpointContextualEnvironment('processing', [workerEnv, liveServerEnv]);
+const nodeEnv = new NodeEnvironment('node');
+export const processingEnv = new SingleEndpointContextualEnvironment('processing', [workerEnv, nodeEnv]);
 
 export interface IEchoService {
     echo: (s: string) => string;
