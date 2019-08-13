@@ -1,5 +1,5 @@
 {
-  "name": "@wixc3/engine-example-playground",
+  "name": "@example/playground",
   "version": "4.0.0",
   "scripts": {
     "start": "engine start"

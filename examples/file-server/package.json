@@ -1,5 +1,5 @@
 {
-  "name": "@wixc3/engine-example-file-server",
+  "name": "@example/file-server",
   "version": "4.0.4",
   "scripts": {
     "start": "engine start",
