@@ -1,6 +1,6 @@
-import ContextualFeature from './contextual.feature';
+import MultiEnvFeature from './multi-env.feature';
 
-ContextualFeature.setupContext('processingContext', () => {
+MultiEnvFeature.setupContext('processingContext', () => {
     let testName = 'test';
 
     return {

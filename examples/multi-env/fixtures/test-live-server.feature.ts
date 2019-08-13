@@ -1,9 +1,9 @@
 import { Feature } from '@wixc3/engine-core';
-import ContextualFeature, { processingEnv } from '../feature/contextual.feature';
+import MultiEnvFeature, { processingEnv } from '../feature/multi-env.feature';
 
 export default new Feature({
     id: 'use-local-server-example',
-    dependencies: [ContextualFeature],
+    dependencies: [MultiEnvFeature],
     api: {}
 });
 

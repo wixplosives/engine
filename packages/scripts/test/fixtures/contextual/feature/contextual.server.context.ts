@@ -1,6 +1,6 @@
-import ContextualFeature from './contextual-with-worker-default.feature';
+import MultiEnvFeature from './contextual-with-worker-default.feature';
 
-ContextualFeature.setupContext('echoContext', () => {
+MultiEnvFeature.setupContext('echoContext', () => {
     return {
         echoWord: () => 'from server'
     };

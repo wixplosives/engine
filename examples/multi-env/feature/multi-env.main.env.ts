@@ -1,6 +1,6 @@
-import ContextualFeature, { mainEnv, processingEnv } from './contextual.feature';
+import MultiEnvFeature, { mainEnv, processingEnv } from './multi-env.feature';
 
-ContextualFeature.setup(mainEnv, ({ echoService, run }, { COM: { spawnOrConnect } }) => {
+MultiEnvFeature.setup(mainEnv, ({ echoService, run }, { COM: { spawnOrConnect } }) => {
     run(async () => {
         await spawnOrConnect(processingEnv);
         const echoFromProcessing = await echoService.echo('roman');

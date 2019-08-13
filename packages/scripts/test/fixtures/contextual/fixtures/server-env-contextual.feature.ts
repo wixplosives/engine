@@ -1,10 +1,10 @@
 import { Feature } from '@wixc3/engine-core';
-import ContextualFeature, { contextualEnv } from '../feature/contextual-with-worker-default.feature';
+import MultiEnvFeature, { contextualEnv } from '../feature/contextual-with-worker-default.feature';
 
 export default new Feature({
-    id: 'serverContextualFeature',
+    id: 'serverMultiEnvFeature',
     api: {},
-    dependencies: [ContextualFeature]
+    dependencies: [MultiEnvFeature]
 });
 
 export const Context = contextualEnv.useContext('server');
