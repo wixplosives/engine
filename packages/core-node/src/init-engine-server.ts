@@ -60,7 +60,7 @@ export async function initEngineServer(
         })
     );
 
-    app.get('/server-config.js', (_req, res) => {
+    app.get('/config', (_req, res) => {
         res.json(clientConfig);
         res.end();
     });
