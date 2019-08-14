@@ -14,7 +14,7 @@ export interface IComConfig {
     id?: string;
     host?: Target;
     topology: Record<string, string>;
-    contextMappings: Record<string, string>;
+    resolvedContexts: Record<string, string>;
     loggerSeverity: LogLevel;
     logToConsole?: boolean;
     maxLogMessages: number;
@@ -29,7 +29,7 @@ export default new Feature({
                 loggerSeverity: LogLevel.DEBUG,
                 maxLogMessages: 100,
                 topology: {},
-                contextMappings: {}
+                resolvedContexts: {}
             },
             (a: IComConfig, b: Partial<IComConfig>) => ({
                 ...a,
@@ -38,9 +38,9 @@ export default new Feature({
                     ...a.topology,
                     ...b.topology
                 },
-                contextMappings: {
-                    ...a.contextMappings,
-                    ...b.contextMappings
+                resolvedContexts: {
+                    ...a.resolvedContexts,
+                    ...b.resolvedContexts
                 }
             })
         ),
@@ -62,7 +62,7 @@ export default new Feature({
 }).setup(
     Universal,
     ({
-        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, contextMappings },
+        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts },
         loggerTransports
     }) => {
         // worker and iframe always get `name` when initialized as Environment.
@@ -72,12 +72,12 @@ export default new Feature({
         // TODO: find better way to detect node runtime
         if (typeof process !== 'undefined' && process.title !== 'browser') {
             if (host) {
-                communication = new Communication(host, id || host.name || 'main', topology, contextMappings, true);
+                communication = new Communication(host, id || host.name || 'main', topology, resolvedContexts, true);
             } else {
-                communication = new Communication(new BaseHost(), id || 'main', topology, contextMappings, true);
+                communication = new Communication(new BaseHost(), id || 'main', topology, resolvedContexts, true);
             }
         } else {
-            communication = new Communication(self, id || self.name || 'main', topology, contextMappings);
+            communication = new Communication(self, id || self.name || 'main', topology, resolvedContexts);
         }
 
         const loggerService = new LoggerService(

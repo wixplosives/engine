@@ -52,7 +52,7 @@ export class Communication {
         host: Target,
         id: string,
         private topology: Record<string, string> = {},
-        private contextMappings: Record<string, string> = {},
+        private resolvedContexts: Record<string, string> = {},
         public isServer: boolean = false
     ) {
         this.rootEnvId = id;
@@ -90,7 +90,7 @@ export class Communication {
     public async spawnOrConnect(
         endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
     ) {
-        const runtimeEnvironmentName = this.contextMappings[endPoint.env];
+        const runtimeEnvironmentName = this.resolvedContexts[endPoint.env];
 
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
         activeEnvironment.env = endPoint.env;
@@ -103,7 +103,7 @@ export class Communication {
     public getEnvironmentContext(
         endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
     ) {
-        return this.contextMappings[endPoint.env];
+        return this.resolvedContexts[endPoint.env];
     }
 
     public async spawn(endPoint: AsyncEnvironment, host?: WindowHost) {

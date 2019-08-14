@@ -26,6 +26,11 @@
             true,
             "allow-leading-underscore",
             "allow-pascal-case"
+        ],
+        "ban": [
+            true,
+            ["describe", "only"],
+            ["it", "only"]
         ]
     },
     "rulesDirectory": []
