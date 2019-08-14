@@ -100,7 +100,7 @@ describe('Application', function() {
             expect(mySlot).to.eql(['testing 1 2 3']);
         });
 
-        it(`runs node environments`, async function() {
+        it(`runs node environments`, async () => {
 
             const featurePath = fs.join(__dirname, './fixtures/node-env');
             const app = new Application(featurePath);
@@ -131,7 +131,7 @@ describe('Application', function() {
             });
         });
 
-        it('launches a feature with contextual environment with server context', async function() {
+        it('launches a feature with contextual environment with server context', async () => {
             const featurePath = fs.join(__dirname, './fixtures/contextual');
             const app = new Application(featurePath);
             const runningApp = await app.start({

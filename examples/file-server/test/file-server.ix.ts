@@ -2,7 +2,7 @@ import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { FileServerDriver } from './file-server-driver';
 
-describe('File Server Feature', function() {
+describe('File Server Feature', () => {
     const { getLoadedFeature } = withFeature({
         featureName: 'file-server/example',
         configName: 'file-server/run'
