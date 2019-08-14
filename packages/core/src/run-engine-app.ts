@@ -36,7 +36,7 @@ export async function runEngineApp({ featureName, featureLoaders, config = [] }:
     ]);
 
     const engine = new RuntimeEngine([
-        COM.use({ config: { contextMappings: rootFeatureDef.resolvedContexts } }),
+        COM.use({ config: { resolvedContexts: rootFeatureDef.resolvedContexts } }),
         ...config
     ]).run(runningFeature);
 
