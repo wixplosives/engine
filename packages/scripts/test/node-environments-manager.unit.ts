@@ -10,7 +10,7 @@ const nodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'node-env');
 const runFeatureOptions = { featureName: 'engine-local/x' };
 
 describe('Node environments manager', function() {
-    this.timeout(10_000);
+    this.timeout(15_000);
     const disposables = createDisposables();
 
     afterEach(disposables.dispose);
