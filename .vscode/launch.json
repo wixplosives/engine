@@ -13,11 +13,10 @@
             "args": [
                 "--timeout",
                 "999999",
-                "${file}",
+                "${file}"
             ],
             "outputCapture": "std",
-            "autoAttachChildProcesses": true,
-            
+            "autoAttachChildProcesses": true
         },
         {
             "type": "node",
