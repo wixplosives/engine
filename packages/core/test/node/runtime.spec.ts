@@ -561,19 +561,6 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
             };
         });
 
-        // echoFeature.setup(main, ({}, { COM }) => {
-        //     let id1: EnvironmentInstanceToken | undefined
-        //     return {
-        //         processing: {
-        //             async requestEnvironment() {
-        //                 if (id1) {
-        //                     return id1
-        //                 }
-        //                 return (id1 = await COM.spawn(processing))
-        //             }
-        //         }
-        //     }
-        // })
         const checks = [];
         const testFeature = new Feature({
             id: 'test',
@@ -623,20 +610,5 @@ describe.skip('Environments Type tests 1', () => {
                 }
             };
         });
-
-        // echoFeature.setup(main, ({}, { COM }) => {
-        //     let id1: EnvironmentInstanceToken | undefined
-
-        //     return {
-        //         processing: {
-        //             async requestEnvironment() {
-        //                 if (id1) {
-        //                     return id1
-        //                 }
-        //                 return (id1 = await COM.spawn(processing))
-        //             }
-        //         }
-        //     }
-        // })
     });
 });

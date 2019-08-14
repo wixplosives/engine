@@ -7,7 +7,7 @@ import { Application } from '../src';
 chai.use(chaiAsPromised);
 
 const nodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'node-env');
-const runFeatureOptions = { featureName: 'engine-local/x', configName: 'engine-local/dev' };
+const runFeatureOptions = { featureName: 'engine-local/x' };
 
 describe('Node environments manager', function() {
     this.timeout(20_000);

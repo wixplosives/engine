@@ -106,8 +106,7 @@ describe('Application', function() {
             const featurePath = fs.join(__dirname, './fixtures/node-env');
             const app = new Application(featurePath);
             const runningApp = await app.start({
-                featureName: 'engine-local/x',
-                configName: 'engine-local/dev'
+                featureName: 'engine-local/x'
             });
             disposables.add('closing app', () => runningApp.close());
 
@@ -122,7 +121,7 @@ describe('Application', function() {
             const featurePath = fs.join(__dirname, './fixtures/contextual');
             const app = new Application(featurePath);
             const runningApp = await app.start({
-                configName: 'engine-contextual/contextual-with-worker-default'
+                configName: 'contextual/some-feature'
             });
             disposables.add('closing app', () => runningApp.close());
 
@@ -138,7 +137,7 @@ describe('Application', function() {
             const featurePath = fs.join(__dirname, './fixtures/contextual');
             const app = new Application(featurePath);
             const runningApp = await app.start({
-                featureName: 'engine-contextual/server-env-contextual'
+                featureName: 'contextual/server-env'
             });
             disposables.add('closing app', () => runningApp.close());
 

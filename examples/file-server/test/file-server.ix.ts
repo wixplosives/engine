@@ -5,8 +5,8 @@ import { FileServerDriver } from './file-server-driver';
 describe('File Server Feature', function() {
     this.timeout(20_000);
     const { getLoadedFeature } = withFeature({
-        featureName: 'engine-example-file-server/example',
-        configName: 'engine-example-file-server/run'
+        featureName: 'file-server/example',
+        configName: 'file-server/run'
     });
 
     it('lists working directory contents in DOM', async () => {

@@ -1,4 +1,4 @@
-import FileServer from '../src/file-server.feature';
+import FileServer from '../feature/file-server.feature';
 
 /**
  * setting default configuration to the file server service

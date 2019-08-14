@@ -18,8 +18,10 @@ import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
-import { COM, flattenTree, TopLevelConfig } from '@wixc3/engine-core/src';
-import { IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
+import { SetMultiMap } from '@file-services/utils';
+import { flattenTree, TopLevelConfig } from '@wixc3/engine-core/src';
+import { IConfigDefinition, IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
+import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { NodeEnvironmentsManager } from './node-environments-manager';
 import {
@@ -88,17 +90,7 @@ export class Application {
         const topology: Map<string, Record<string, string>> = new Map();
 
         app.use('/favicon.ico', noContentHandler);
-        app.use('/config', async (req, res) => {
-            const { feature: currentFeatureName } = req.query;
-            const requestedConfig = req.path.slice(1);
-            const configFilePath = configurations.get(requestedConfig);
-            const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(currentFeatureName) } })];
-            if (configFilePath) {
-                const { default: configValue } = await import(configFilePath);
-                config.push(...configValue);
-            }
-            res.send(config);
-        });
+        app.use('/config', createConfigMiddleware(configurations, topology));
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
@@ -143,20 +135,22 @@ export class Application {
             ];
 
             if (targetFeature.configName) {
-                const configFilePath = configurations.get(targetFeature.configName);
-                if (!configFilePath) {
+                const configDefinition = configurations.get(targetFeature.configName);
+                if (!configDefinition) {
                     const configNames = Array.from(configurations.keys());
                     throw new Error(
-                        `cannot find config ${targetFeature.featureName}. available configurations: ${configNames.join(
-                            ', '
-                        )}`
+                        `cannot find config "${
+                            targetFeature.featureName
+                        }". available configurations: ${configNames.join(', ')}`
                     );
                 }
-                try {
-                    const { default: topLevelConfig } = await import(configFilePath);
-                    config.push(...topLevelConfig);
-                } catch (e) {
-                    console.error(e);
+                for (const { filePath } of configDefinition) {
+                    try {
+                        const { default: topLevelConfig } = await import(filePath);
+                        config.push(...topLevelConfig);
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
             }
 
@@ -268,7 +262,7 @@ export class Application {
 
     private getConfigNamesForRunningFeatures(
         features: Map<string, IFeatureDefinition>,
-        configurations: Map<string, string>
+        configurations: SetMultiMap<string, IConfigDefinition>
     ) {
         const packageToConfigurationMapping: { features: string[]; configs: string[] } = {
             configs: Array.from(configurations.keys()),

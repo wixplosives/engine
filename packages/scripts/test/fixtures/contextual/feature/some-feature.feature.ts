@@ -19,7 +19,7 @@ export interface IEchoContext {
 }
 
 export default new Feature({
-    id: 'contextualFeature',
+    id: 'multiEnv',
     api: {
         serverService: Service.withType<{ echo: () => string }>()
             .defineEntity(contextualEnv)

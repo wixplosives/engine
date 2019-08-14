@@ -1,3 +1,5 @@
+import path from 'path';
+
 // Conventional filenames
 export const FEATURE_FILENAME_HINT = '.feature.';
 export const CONFIG_FILENAME_HINT = '.config.';
@@ -10,9 +12,6 @@ export const CORE_PACKAGE = '@wixc3/engine-core';
 // Used query params
 export const CONFIG_QUERY_PARAM = 'config';
 export const FEATURE_QUERY_PARAM = 'feature';
-
-// Virtual entry prefix
-export const ENTRY_PREFIX_FILENAME = 'env-entry-';
 
 // File naming helpers
 export const isCodeModule = (fileName: string) =>
@@ -28,23 +27,38 @@ export function parseFeatureFileName(fileName: string): string {
     return fileName.split(FEATURE_FILENAME_HINT).shift()!;
 }
 
-export function parseConfigFileName(fileName: string): string {
-    return fileName.split(CONFIG_FILENAME_HINT).shift()!;
+export function parseConfigFileName(fileName: string) {
+    const fullConfigName = fileName.split(CONFIG_FILENAME_HINT).shift()!;
+    const envName = path.extname(fullConfigName);
+    const configName = path.basename(fullConfigName, envName);
+    return {
+        fullConfigName,
+        configName,
+        envName: envName.slice(1)
+    };
 }
 
 export function parseEnvFileName(fileName: string) {
-    const [featureName, envName] = fileName
+    const [featureName, envName, childEnvName] = fileName
         .split(ENV_FILENAME_HINT)
         .shift()!
         .split('.');
-    return { featureName, envName };
+
+    if (!featureName || !envName) {
+        throw new Error(`cannot parse env file: ${fileName}`);
+    }
+
+    return { featureName, envName, childEnvName };
 }
 
 export function parseContextFileName(fileName: string) {
-    const [envName, childEnvName] = fileName
-        .split(ENV_FILENAME_HINT)
+    const [featureName, envName, childEnvName] = fileName
+        .split(CONTEXT_FILENAME_HINT)
         .shift()!
         .split('.');
 
-    return { envName, childEnvName };
+    if (!featureName || !envName || !childEnvName) {
+        throw new Error(`cannot parse context file: ${fileName}`);
+    }
+    return { featureName, envName, childEnvName };
 }

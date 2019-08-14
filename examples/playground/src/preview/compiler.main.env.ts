@@ -1,4 +1,4 @@
-import Preview, { PREVIEW } from './preview.feature';
+import Preview, { PREVIEW } from './compiler.feature';
 
 Preview.setup('main', ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
     sidebarSlot.register({

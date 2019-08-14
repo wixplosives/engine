@@ -1,19 +1,19 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "4.0.1",
+  "version": "4.0.4",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "scripts": {
     "clean": "rimraf cjs",
     "prebuild": "yarn clean",
     "build": "ts-build src --cjs",
-    "test": "run-s test:node test:browser",
+    "test": "yarn test:node && yarn test:browser",
     "test:node": "mocha \"test/node/**/*.spec.ts?(x)\"",
     "test:browser": "mocha-pup \"test/**/*.spec.ts?(x)\" -c ./test/webpack.config.js",
     "prepack": "yarn build"
   },
   "dependencies": {
-    "@file-services/utils": "^2.0.0",
+    "@file-services/utils": "^2.0.1",
     "promise-assist": "^1.2.6",
     "socket.io-client": "^2.2.0",
     "typescript-type-utils": "^0.1.0"
