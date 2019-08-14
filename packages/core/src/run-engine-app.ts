@@ -1,4 +1,3 @@
-import http from 'http';
 import COM from './communication.feature';
 import { flattenTree } from './flatten-tree';
 import { RuntimeEngine } from './runtime-engine';
@@ -20,10 +19,9 @@ export interface IRunEngineAppOptions {
     featureName?: string | null;
     featureLoaders: Record<string, IFeatureLoader>;
     config?: TopLevelConfig;
-    httpServerPath: string;
 }
 
-export async function runEngineApp({ featureName, featureLoaders, config = [], httpServerPath }: IRunEngineAppOptions) {
+export async function runEngineApp({ featureName, featureLoaders, config = [] }: IRunEngineAppOptions) {
     const featureNames = Object.keys(featureLoaders);
     featureName = featureName || featureNames[0];
 
@@ -36,7 +34,6 @@ export async function runEngineApp({ featureName, featureLoaders, config = [], h
         rootFeatureDef.load(),
         ...rootFeatureDef.depFeatures.map(depName => featureLoaders[depName].load())
     ]);
-    config.push(...(await getConfig(featureName, httpServerPath)));
     const engine = new RuntimeEngine([
         COM.use({ config: { contextMappings: rootFeatureDef.resolvedContexts } }),
         ...config
@@ -46,23 +43,6 @@ export async function runEngineApp({ featureName, featureLoaders, config = [], h
         engine,
         runningFeature
     };
-}
-
-export async function getConfig(featureName: string, httpServerPath: string): Promise<Array<[string, object]>> {
-    return new Promise((resolve, reject) => {
-        http.get(`${httpServerPath}/config?feature=${featureName}`, response => {
-            let data = '';
-            response.on('data', chunk => {
-                data += chunk;
-            });
-            response.on('end', () => {
-                resolve(JSON.parse(data));
-            });
-            response.on('error', err => {
-                reject(err);
-            });
-        });
-    });
 }
 
 export function getTopWindow(win: Window): Window {

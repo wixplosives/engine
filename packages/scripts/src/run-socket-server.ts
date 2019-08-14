@@ -2,6 +2,7 @@ import { COM, IFeatureLoader, runEngineApp, TopLevelConfig } from '@wixc3/engine
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
+import http from 'http';
 import io from 'socket.io';
 import { Server } from 'socket.io';
 import { IEnvironment, IFeatureDefinition } from './analyze-feature';
@@ -115,9 +116,9 @@ export async function runNodeEnvironment(
                         projectPath
                     }
                 }
-            ]
-        ],
-        httpServerPath
+            ],
+            ...(await getConfig(featureName, httpServerPath))
+        ]
     });
 
     disposeHandlers.add(() => engine.dispose(runningFeature));
@@ -129,4 +130,21 @@ export async function runNodeEnvironment(
             }
         }
     };
+}
+
+async function getConfig(featureName: string, httpServerPath: string): Promise<Array<[string, object]>> {
+    return new Promise((resolve, reject) => {
+        http.get(`${httpServerPath}/config?feature=${featureName}`, response => {
+            let data = '';
+            response.on('data', chunk => {
+                data += chunk;
+            });
+            response.on('end', () => {
+                resolve(JSON.parse(data));
+            });
+            response.on('error', err => {
+                reject(err);
+            });
+        });
+    });
 }
