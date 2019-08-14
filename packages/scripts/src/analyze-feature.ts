@@ -155,7 +155,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         // pick up configs
         for (const filePath of configurations) {
             const { configName, envName } = parseConfigFileName(fs.basename(filePath));
-            const scopedConfigName = `${packageName}/${configName}`;
+            const scopedConfigName = scopeToPackage(packageName, configName);
             foundConfigs.add(scopedConfigName, { filePath, envName, name: configName });
         }
 
@@ -165,7 +165,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const featureModule = analyzeFeatureModule(evaluatedFeature);
             const featureName = featureModule.name;
 
-            const scopedName = packageName === featureName ? featureName : `${packageName}/${featureName}`;
+            const scopedName = scopeToPackage(packageName, featureName);
             foundFeatures.set(scopedName, {
                 ...featureModule,
                 scopedName,
@@ -180,31 +180,19 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 
         // pick up environments
         for (const envFilePath of envs) {
-            const { featureName, envName } = parseEnvFileName(fs.basename(envFilePath));
-            const scopedName = packageName === featureName ? featureName : `${packageName}/${featureName}`;
-            const existingDefinition = foundFeatures.get(scopedName);
+            const { featureName, envName, childEnvName } = parseEnvFileName(fs.basename(envFilePath));
+            const existingDefinition = foundFeatures.get(scopeToPackage(packageName, featureName));
             if (existingDefinition) {
-                existingDefinition.envFilePaths[envName] = envFilePath;
-            }
-        }
-
-        // fast dictionary for context files lookups
-        // processing/live-server -> featureDef
-        const contextualEnvToFeature = new Map<string, IFeatureDefinition>();
-        for (const featureDefinition of foundFeatures.values()) {
-            for (const { name, childEnvName } of featureDefinition.exportedEnvs) {
-                if (childEnvName === undefined) {
-                    continue;
-                }
-                contextualEnvToFeature.set(`${name}/${childEnvName}`, featureDefinition);
+                const targetEnv = childEnvName ? `${envName}/${childEnvName}` : envName;
+                existingDefinition.envFilePaths[targetEnv] = envFilePath;
             }
         }
 
         // pick up context files and add them to feature definitions
         for (const contextFilePath of contexts) {
-            const { envName, childEnvName } = parseContextFileName(fs.basename(contextFilePath));
+            const { featureName, envName, childEnvName } = parseContextFileName(fs.basename(contextFilePath));
             const contextualName = `${envName}/${childEnvName}`;
-            const existingDefinition = contextualEnvToFeature.get(contextualName);
+            const existingDefinition = foundFeatures.get(scopeToPackage(packageName, featureName));
             if (existingDefinition) {
                 existingDefinition.contextFilePaths[contextualName] = contextFilePath;
             }
@@ -212,7 +200,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
     }
 
     for (const [featureName, { dependencies, exportedFeature, resolvedContexts }] of foundFeatures) {
+        // compute context
         Object.assign(resolvedContexts, computeUsedContext(featureName, foundFeatures));
+
+        // compute dependencies
         const deps = getFeaturesDeep(exportedFeature);
         deps.delete(exportedFeature);
         dependencies.push(...Array.from(deps).map(feature => featureToScopedName.get(feature)!));
@@ -222,6 +213,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 }
 
 const featurePackagePostfix = '-feature';
+
+function scopeToPackage(packageName: string, entityName: string) {
+    return packageName === entityName ? entityName : `${packageName}/${entityName}`;
+}
 
 /**
  * Removes package scope (e.g `@wix`) and posfix `-feature`.

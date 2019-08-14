@@ -1,4 +1,4 @@
-import MultiEnvFeature from './contextual-with-worker-default.feature';
+import MultiEnvFeature from './some-feature.feature';
 
 MultiEnvFeature.setupContext('echoContext', () => {
     return {

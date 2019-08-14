@@ -1,5 +1,5 @@
-import { mainEnv } from '../feature/contextual-with-worker-default.feature';
-import ExampleFeature from './server-env-contextual.feature';
+import { mainEnv } from '../feature/some-feature.feature';
+import ExampleFeature from './server-env.feature';
 
 ExampleFeature.setup(mainEnv, ({ run }, { multiEnv: { serverService } }) => {
     run(async () => {

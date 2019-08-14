@@ -1,5 +1,5 @@
 import { Feature } from '@wixc3/engine-core';
-import MultiEnvFeature, { contextualEnv } from '../feature/contextual-with-worker-default.feature';
+import MultiEnvFeature, { contextualEnv } from '../feature/some-feature.feature';
 
 export default new Feature({
     id: 'serverMultiEnvFeature',
