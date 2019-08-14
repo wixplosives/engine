@@ -2,7 +2,6 @@ import fs from '@file-services/node';
 import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { Page } from 'puppeteer';
 import { Application } from '../src/application';
 
 describe('Application', function() {
@@ -28,7 +27,7 @@ describe('Application', function() {
     describe('build', () => {
         it(`supports building features with a single fixture`, async () => {
             const app = new Application(engineFeatureFixturePath);
-            await app.build({ featureName: 'x', configName: 'dev' });
+            await app.build();
 
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
         });
@@ -37,7 +36,7 @@ describe('Application', function() {
     describe('start', () => {
         it(`serves and allows running a feature`, async () => {
             const app = new Application(engineFeatureFixturePath);
-            const { close, port } = await app.start();
+            const { close, port } = await app.start({ featureName: 'test/x' });
             disposables.add(() => close());
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
@@ -47,29 +46,6 @@ describe('Application', function() {
             expect(text).to.equal('App is running.');
         });
 
-        const getMultiFeatureValues = (page: Page) =>
-            page.evaluate(() => {
-                return {
-                    mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
-                    myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!)
-                };
-            });
-
-        it(`uses first found feature as default`, async () => {
-            const app = new Application(multiFeatureFixturePath);
-            const { close, port } = await app.start();
-            disposables.add(() => close());
-
-            const page = await loadPage(`http://localhost:${port}/main.html`);
-
-            const { myConfig, mySlot } = await getMultiFeatureValues(page);
-
-            expect(myConfig).to.eql({
-                tags: []
-            });
-            expect(mySlot).to.eql([]);
-        });
-
         it(`serves a fixture feature`, async () => {
             const app = new Application(multiFeatureFixturePath);
             const { close, port } = await app.start();
@@ -77,7 +53,10 @@ describe('Application', function() {
 
             const page = await loadPage(`http://localhost:${port}/main.html?feature=test/variant`);
 
-            const { myConfig, mySlot } = await getMultiFeatureValues(page);
+            const { myConfig, mySlot } = await page.evaluate(() => ({
+                mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
+                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!)
+            }));
 
             expect(myConfig).to.eql({
                 tags: []
@@ -92,7 +71,10 @@ describe('Application', function() {
 
             const page = await loadPage(`http://localhost:${port}/main.html?feature=test/variant&config=test/variant2`);
 
-            const { myConfig, mySlot } = await getMultiFeatureValues(page);
+            const { myConfig, mySlot } = await page.evaluate(() => ({
+                mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
+                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!)
+            }));
 
             expect(myConfig).to.eql({
                 tags: ['variant', '2']
@@ -119,7 +101,7 @@ describe('Application', function() {
             const featurePath = fs.join(__dirname, './fixtures/contextual');
             const app = new Application(featurePath);
             const runningApp = await app.start({
-                configName: 'contextual/some-feature'
+                featureName: 'contextual/some-feature'
             });
             disposables.add('closing app', () => runningApp.close());
 
@@ -145,33 +127,4 @@ describe('Application', function() {
             });
         });
     });
-
-    // it.only('launches a node environment using http server by demand and closes it', async () => {
-    //     const featurePath = join(__dirname, './fixtures/node-env');
-    //     const app = new Application(featurePath);
-
-    //     const runningApp = await app.start();
-    //     disposables.add('closing app', () => runningApp.close());
-    //     const startNodeEnvironmentResponse: any = await new Promise((resolve, reject) => {
-    //         request(
-    //         `http://localhost:${runningApp.port}/node-env?featureName=engine-local/x&configName=engine-local/dev`,
-    //         {
-    //             method: 'PUT'
-    //         } , (res) => {
-    //             let data = ''
-    //             res.on('error', reject)
-    //             res.on('data', chunk => data += chunk);
-    //             res.on('end', () => {
-    //                 const response = JSON.stringify(data)
-    //                 if(res.statusCode === 404) {
-    //                     reject(response)
-    //                 } else {
-    //                     resolve(response)
-    //                 }
-    //             });
-    //         })
-
-    //     expect(startNodeEnvironmentResponse).to.have.key('result')
-    //     expect(startNodeEnvironmentResponse.result).to.equal('success');
-    // });
 });

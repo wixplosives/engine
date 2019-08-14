@@ -23,9 +23,8 @@ export interface IRunEngineAppOptions {
 
 export async function runEngineApp({ featureName, featureLoaders, config = [] }: IRunEngineAppOptions) {
     const featureNames = Object.keys(featureLoaders);
-    featureName = featureName || featureNames[0];
 
-    const rootFeatureLoader = featureLoaders[featureName];
+    const rootFeatureLoader = featureName && featureLoaders[featureName];
     if (!rootFeatureLoader) {
         throw new Error(`cannot find feature "${featureName}". available features: ${featureNames.join(', ')}`);
     }
