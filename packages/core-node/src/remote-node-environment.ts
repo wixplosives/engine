@@ -3,14 +3,14 @@ import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '
 import { fork } from 'child_process';
 
 export class RemoteNodeEnvironment {
-    private worker: RemoteProcess | undefined;
+    private childEnv: RemoteProcess | undefined;
     private messageHandlers: Set<(message: ICommunicationMessage) => void> = new Set();
 
     constructor(private entityFilePath: string) {}
 
     public async start(inspect: boolean = false): Promise<number> {
         return new Promise(async resolve => {
-            this.worker = this.startRemoteEnvironment(inspect);
+            this.childEnv = this.startRemoteEnvironment(inspect);
             this.subscribe((message: ICommunicationMessage): void => {
                 if (isEnvironmentPortMessage(message)) {
                     resolve(message.port);
@@ -23,12 +23,12 @@ export class RemoteNodeEnvironment {
     }
 
     public subscribe(handler: (message: ICommunicationMessage) => void) {
-        if (!this.worker) {
+        if (!this.childEnv) {
             throw new Error('worker is not started');
         }
         if (!this.messageHandlers.has(handler)) {
             this.messageHandlers.add(handler);
-            this.worker.on('message', handler);
+            this.childEnv.on('message', handler);
         }
     }
 
@@ -39,15 +39,15 @@ export class RemoteNodeEnvironment {
     }
 
     public postMessage(message: ICommunicationMessage) {
-        if (!this.worker) {
+        if (!this.childEnv) {
             throw new Error('worker is not started');
         }
-        this.worker.postMessage(message);
+        this.childEnv.postMessage(message);
     }
 
     public dispose() {
-        if (this.worker) {
-            this.worker.terminate!();
+        if (this.childEnv) {
+            this.childEnv.terminate!();
         }
     }
 
