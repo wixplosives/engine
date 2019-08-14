@@ -159,7 +159,7 @@ export class Application {
             for (const environment of nodeEnvs) {
                 const remoteEnv = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
                 const envPort = await remoteEnv.start(inspect);
-                const { close } = await this.startNodeEnvironment(remoteEnv, {
+                await this.startNodeEnvironment(remoteEnv, {
                     config,
                     environment,
                     featureName: targetFeature.featureName,
@@ -168,7 +168,6 @@ export class Application {
                     httpServerPath: `http://localhost:${port}`
                 });
                 topologyForFeature[environment.name] = `http://localhost:${envPort}/_ws`;
-                featureDisposables.push(async () => await close());
                 featureDisposables.push(() => remoteEnv.dispose());
             }
 
@@ -206,6 +205,7 @@ export class Application {
         });
 
         if (featureName) {
+            console.log(`auto starting node environment for feature ${featureName} with config ${configName}`);
             await nodeEnvironmentManager.runEnvironment({ featureName, configName, projectPath });
         }
         return {

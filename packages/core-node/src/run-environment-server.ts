@@ -28,7 +28,7 @@ if (parentProcess) {
                 id: 'port',
                 port
             };
-            parentProcess!.postMessage(portMessage);
+            parentProcess.postMessage(portMessage);
         }
     });
 }

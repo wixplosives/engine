@@ -28,15 +28,15 @@ export async function createWorkerProtocol(remoteAccess: RemoteProcess) {
     const { httpServer, port } = await safeListeningHttpServer(3000, app);
     const socketServer = io(httpServer);
 
-    remoteAccess!.on('message', async (message: ICommunicationMessage) => {
+    remoteAccess.on('message', async (message: ICommunicationMessage) => {
         if (isEnvironmentPortMessage(message)) {
-            remoteAccess!.postMessage({ id: 'port', port } as IEnvironmentPortMessage);
+            remoteAccess.postMessage({ id: 'port', port } as IEnvironmentPortMessage);
         } else if (isEnvironmentStartMessage(message)) {
             environments[message.envName] = await runNodeEnvironment(socketServer, message.data);
-            remoteAccess!.postMessage({ id: 'start' });
+            remoteAccess.postMessage({ id: 'start' });
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
             await environments[message.envName].dispose();
-            remoteAccess!.postMessage({ id: 'close' });
+            remoteAccess.postMessage({ id: 'close' });
         }
         return null;
     });
