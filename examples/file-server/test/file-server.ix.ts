@@ -3,7 +3,6 @@ import { expect } from 'chai';
 import { FileServerDriver } from './file-server-driver';
 
 describe('File Server Feature', function() {
-    this.timeout(20_000);
     const { getLoadedFeature } = withFeature({
         featureName: 'file-server/example',
         configName: 'file-server/run'

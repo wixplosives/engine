@@ -101,7 +101,6 @@ describe('Application', function() {
         });
 
         it(`runs node environments`, async function() {
-            this.timeout(20_000);
 
             const featurePath = fs.join(__dirname, './fixtures/node-env');
             const app = new Application(featurePath);
@@ -133,7 +132,6 @@ describe('Application', function() {
         });
 
         it('launches a feature with contextual environment with server context', async function() {
-            this.timeout(20_000);
             const featurePath = fs.join(__dirname, './fixtures/contextual');
             const app = new Application(featurePath);
             const runningApp = await app.start({
