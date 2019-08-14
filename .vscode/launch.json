@@ -15,8 +15,7 @@
                 "999999",
                 "${file}"
             ],
-            "outputCapture": "std",
-            "autoAttachChildProcesses": true
+            "outputCapture": "std"
         },
         {
             "type": "node",

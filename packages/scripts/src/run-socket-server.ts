@@ -98,7 +98,7 @@ export async function runNodeEnvironment(
         };
     }
 
-    const { engine, runningFeature } = await runEngineApp({
+    await runEngineApp({
         featureName,
         featureLoaders,
         config: [
@@ -120,8 +120,6 @@ export async function runNodeEnvironment(
             ...(await getConfig(featureName, httpServerPath))
         ]
     });
-
-    disposeHandlers.add(() => engine.dispose(runningFeature));
 
     return {
         dispose: async () => {

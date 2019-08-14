@@ -46,8 +46,8 @@ export class RemoteNodeEnvironment {
     }
 
     public dispose() {
-        if (this.childEnv) {
-            this.childEnv.terminate!();
+        if (this.childEnv && this.childEnv.terminate) {
+            this.childEnv.terminate();
         }
     }
 
