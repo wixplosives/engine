@@ -1,5 +1,4 @@
 import { main } from '../feature/file-server.feature';
-import { FileData } from '../src/types';
 import TestFeature from './example.feature';
 
 /**
@@ -11,18 +10,6 @@ TestFeature.setup(main, ({ run }, { fileServerExample: { remoteFiles } }) => {
          * using the remoteFiles API from the fileServer feature, to retrieve files from the local fs
          */
         const dir = await remoteFiles.readDir('/');
-
-        /**
-         * printing all file names of a folder to the console
-         */
-        Object.keys(dir).forEach(async key => {
-            if (dir[key].filePath) {
-                const file = dir[key] as FileData;
-                const k = await remoteFiles.readFile(file.filePath);
-                // tslint:disable-next-line: no-console
-                console.log(k);
-            }
-        });
 
         /**
          * printing the directory tree to the browser
