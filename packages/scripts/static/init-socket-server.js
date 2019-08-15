@@ -2,12 +2,12 @@
 
 const { normalize, join } = require('path');
 
-if (__dirname.includes(normalize('/packages/scripts'))) {
+let inOwnRepo = __dirname.includes(normalize('/packages/scripts'));
+let rootDir = inOwnRepo ? 'src' : 'cjs';
+if (inOwnRepo) {
     require('@ts-tools/node/r');
-    require(join(__dirname, '..', 'src/run-socket-server'));
-} else {
-    require(join(__dirname, '..', 'cjs/run-socket-server'));
 }
+require(join(__dirname, '..', rootDir, 'run-socket-server'));
 
 
 
