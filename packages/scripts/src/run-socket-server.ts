@@ -5,11 +5,12 @@ import express from 'express';
 import http from 'http';
 import io from 'socket.io';
 import { Server } from 'socket.io';
-import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 import { getParentProcess } from './parent-process';
 import {
     ICommunicationMessage,
+    IEnvironment,
     IEnvironmentPortMessage,
+    IFeatureDefinition,
     isEnvironmentCloseMessage,
     isEnvironmentPortMessage,
     isEnvironmentStartMessage,

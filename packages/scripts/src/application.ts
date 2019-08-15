@@ -20,13 +20,16 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { SetMultiMap } from '@file-services/utils';
 import { flattenTree, TopLevelConfig } from '@wixc3/engine-core/src';
-import { IConfigDefinition, IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
+import { loadFeaturesFromPackages } from './analyze-feature';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { NodeEnvironmentsManager } from './node-environments-manager';
 import {
+    IConfigDefinition,
     IEnvironmaneStartMessage,
+    IEnvironment,
     IEnvironmentMessage,
+    IFeatureDefinition,
     isEnvironmentStartMessage,
     ServerEnvironmentOptions
 } from './types';
@@ -157,7 +160,7 @@ export class Application {
             const nodeEnvs = getNodeEnvironments(targetFeature.featureName, features);
             const topologyForFeature: Record<string, string> = {};
             for (const environment of nodeEnvs) {
-                const remoteEnv = new RemoteNodeEnvironment(join(__dirname, 'init-socket-server.js'));
+                const remoteEnv = new RemoteNodeEnvironment(join(__dirname, '..', 'static/init-socket-server.js'));
                 const envPort = await remoteEnv.start(inspect);
                 await this.startNodeEnvironment(remoteEnv, {
                     config,
@@ -170,7 +173,6 @@ export class Application {
                 topologyForFeature[environment.name] = `http://localhost:${envPort}/_ws`;
                 featureDisposables.push(() => remoteEnv.dispose());
             }
-
             topology.set(targetFeature.featureName, topologyForFeature);
 
             return {
@@ -185,7 +187,6 @@ export class Application {
                 }
             };
         };
-
         const nodeEnvironmentManager = new NodeEnvironmentsManager(runFeature);
 
         app.use(nodeEnvironmentManager.middleware());
@@ -203,7 +204,6 @@ export class Application {
                 }
             });
         });
-
         if (featureName) {
             console.log(`auto starting node environment for feature ${featureName} with config ${configName}`);
             await nodeEnvironmentManager.runEnvironment({ featureName, configName, projectPath });

@@ -41,7 +41,7 @@ export async function initEngineServer(
         entryPath,
         env: { env: name, getLocalTopology }
     } of serverEnvironments) {
-        const remoteEnvironment = new RemoteNodeEnvironment(join(__dirname, 'init-environment-server'));
+        const remoteEnvironment = new RemoteNodeEnvironment(join(__dirname, '..', 'static/init-environment-server'));
         const environmentPort = await remoteEnvironment.start();
         Object.assign(topology, getLocalTopology(environmentPort));
         const startStaticServerMessage: IEnvironmentStartStaticMessage = {

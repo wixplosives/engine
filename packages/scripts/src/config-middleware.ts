@@ -1,7 +1,7 @@
 import { SetMultiMap } from '@file-services/utils';
 import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import express from 'express';
-import { IConfigDefinition } from './analyze-feature';
+import { IConfigDefinition } from './types';
 
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition>,

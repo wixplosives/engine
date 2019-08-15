@@ -1,5 +1,5 @@
-import { IFeatureDefinition } from './analyze-feature';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
+import { IFeatureDefinition } from './types';
 
 export interface ICreateEntrypointsOptions {
     features: Map<string, IFeatureDefinition>;

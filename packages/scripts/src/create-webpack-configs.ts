@@ -3,9 +3,9 @@ import { StylableWebpackPlugin } from '@stylable/webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 import { createEntrypoint } from './create-entrypoint';
 import { inOwnRepo } from './own-repo-hook';
+import { IEnvironment, IFeatureDefinition } from './types';
 
 export interface ICreateWebpackConfigsOptions {
     featureName?: string;

@@ -1,11 +1,12 @@
 import fs from '@file-services/node';
-import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
+import { createBrowserProvider } from '@wixc3/engine-test-kit/src/create-browser-provider';
+import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import { Application } from '../src/application';
 
 describe('Application', function() {
-    this.timeout(20_000);
+    this.timeout(10_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
@@ -83,7 +84,6 @@ describe('Application', function() {
         });
 
         it(`runs node environments`, async () => {
-
             const featurePath = fs.join(__dirname, './fixtures/node-env');
             const app = new Application(featurePath);
             const runningApp = await app.start({
