@@ -160,7 +160,7 @@ export class Application {
             const nodeEnvs = getNodeEnvironments(targetFeature.featureName, features);
             const topologyForFeature: Record<string, string> = {};
             for (const environment of nodeEnvs) {
-                const remoteEnv = new RemoteNodeEnvironment(join(__dirname, '..', 'static', 'init-socket-server.js'));
+                const remoteEnv = new RemoteNodeEnvironment(join(__dirname, '..', 'static', 'init-socket-server'));
                 const envPort = await remoteEnv.start(inspect);
                 await this.startNodeEnvironment(remoteEnv, {
                     config,

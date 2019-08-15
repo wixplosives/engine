@@ -54,6 +54,7 @@ export async function runNodeEnvironment(
         projectPath = process.cwd()
     }: IRunNodeEnvironmentsOptions
 ) {
+    console.log(httpServerPath);
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
