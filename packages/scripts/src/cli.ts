@@ -14,15 +14,14 @@ program
     .command('start [path]')
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
-    .option('-p ,--project <project>')
+    .allowUnknownOption(true)
     .action(async (path, cmd: Record<string, string | undefined>) => {
-        const { feature: featureName, config: configName, project: projectPath } = cmd;
+        const { feature: featureName, config: configName } = cmd;
         try {
             const app = new Application(path || process.cwd());
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
-                configName,
-                projectPath
+                configName
             });
 
             if (process.send) {
