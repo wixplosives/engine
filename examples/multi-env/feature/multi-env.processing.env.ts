@@ -1,6 +1,6 @@
-import ContextualFeature, { IEchoService, processingEnv } from './contextual.feature';
+import MultiEnvFeature, { IEchoService, processingEnv } from './multi-env.feature';
 
-ContextualFeature.setup(processingEnv, ({ onDispose }, {}, { processingContext: { name, dispose } }) => {
+MultiEnvFeature.setup(processingEnv, ({ onDispose }, {}, { processingContext: { name, dispose } }) => {
     const echoService: IEchoService = {
         echo: (s: string) => {
             return `${name()} says ${s}`;

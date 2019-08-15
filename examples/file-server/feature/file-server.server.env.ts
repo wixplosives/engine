@@ -1,6 +1,6 @@
-import { FileActions } from './file-actions';
+import { FileActions } from '../src/file-actions';
+import { IDirectoryContents } from '../src/types';
 import FileServer, { FileSystemAPI, server } from './file-server.feature';
-import { IDirectoryContents } from './types';
 
 /**
  * implementation of the FileSystemAPI interface

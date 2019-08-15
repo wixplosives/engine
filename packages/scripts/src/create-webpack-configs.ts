@@ -104,10 +104,7 @@ function createWebpackConfig({
             plugins.push(
                 new HtmlWebpackPlugin({
                     filename: `${envName}.html`,
-                    chunks: [envName],
-                    // line below must be removed. it causes chrome to load the page
-                    // with css quirks mode
-                    templateContent: ``
+                    chunks: [envName]
                 })
             );
         }

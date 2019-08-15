@@ -7,6 +7,7 @@ export interface IClosable {
 export interface RunEnvironmentOptions {
     featureName: string;
     configName?: string;
+    projectPath?: string;
 }
 
 export class NodeEnvironmentsManager {
@@ -20,11 +21,14 @@ export class NodeEnvironmentsManager {
         }) => Promise<IClosable>
     ) {}
 
-    public async runEnvironment({ featureName, configName }: RunEnvironmentOptions) {
+    public async runEnvironment({ featureName, configName, projectPath }: RunEnvironmentOptions) {
         if (this.runningEnvironments.has(featureName)) {
             throw new Error(`node environment for ${featureName} already running`);
         }
-        this.runningEnvironments.set(featureName, await this.runNodeEnvironmentFunction({ featureName, configName }));
+        this.runningEnvironments.set(
+            featureName,
+            await this.runNodeEnvironmentFunction({ featureName, configName, projectPath })
+        );
     }
 
     public async closeEnvironment({ featureName }: RunEnvironmentOptions) {
@@ -51,9 +55,9 @@ export class NodeEnvironmentsManager {
         const router = Router();
 
         router.put('/node-env', async (req, res) => {
-            const { configName, featureName }: RunEnvironmentOptions = req.query;
+            const { configName, featureName, projectPath }: RunEnvironmentOptions = req.query;
             try {
-                await this.runEnvironment({ configName, featureName });
+                await this.runEnvironment({ configName, featureName, projectPath });
                 res.json({
                     result: 'success'
                 });

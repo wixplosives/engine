@@ -1,5 +1,5 @@
-import { contextualEnv } from './contextual-with-worker-default.feature';
-import sampleFeature from './contextual-with-worker-default.feature';
+import { contextualEnv } from './some-feature.feature';
+import sampleFeature from './some-feature.feature';
 
 sampleFeature.setup(contextualEnv, ({}, {}, { echoContext: { echoWord } }) => {
     return {

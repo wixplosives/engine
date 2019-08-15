@@ -1,26 +1,16 @@
 import { EnvironmentTypes } from '../com/types';
 import { runtimeType } from '../entity-helpers';
 import { DisposableContext, EnvVisibility, MapBy } from '../types';
-import { AsyncSingleEndpointEnvironment } from './async-env';
-
-export interface AllEnvironments {
-    env: any;
-    endpointType: 'multi';
-}
 
 export type EndpointType = 'single' | 'multi';
 
-export class Environment<ID extends string, EType extends EndpointType = 'single'> {
-    constructor(
-        public env: ID,
-        public endpointType: EType = 'single' as EType,
-        public envType: EnvironmentTypes = 'window'
-    ) {}
+export class Environment<ID extends string = string, EType extends EndpointType = EndpointType> {
+    constructor(public env: ID, public envType: EnvironmentTypes, public endpointType: EType) {}
 }
 
 export class NodeEnvironment<ID extends string> extends Environment<ID, 'single'> {
     constructor(env: ID) {
-        super(env, 'single', 'node');
+        super(env, 'node', 'single');
     }
 
     public getLocalTopology(port: number) {
@@ -36,11 +26,11 @@ export class EnvironmentContext {
 
 export class SingleEndpointContextualEnvironment<
     ID extends string,
-    T extends AsyncSingleEndpointEnvironment[]
+    T extends Array<Environment<string, EndpointType>>
 > extends Environment<ID, 'single'> {
     public envType = 'context' as const;
     constructor(env: ID, public environments: T) {
-        super(env, 'single', 'context');
+        super(env, 'context', 'single');
 
         if (environments.length === 0) {
             throw new Error(`Contextual Environment ${env} initiated without child environments`);
@@ -62,9 +52,9 @@ export class SingleEndpointContextualEnvironment<
     }
 }
 
-export const Universal = new Environment('<Universal>', 'multi');
-export const AllEnvironments: AllEnvironments = new Environment('<All>', 'multi');
-export const NoEnvironments = new Environment('<None>', 'multi');
+export const Universal = new Environment('<Universal>', 'window', 'multi');
+export const AllEnvironments: Environment = new Environment('<All>', 'window', 'multi');
+export const NoEnvironments = new Environment('<None>', 'window', 'multi');
 
 export function normEnvVisibility(envVisibility: EnvVisibility): Set<string> {
     const envSet = new Set<string>();

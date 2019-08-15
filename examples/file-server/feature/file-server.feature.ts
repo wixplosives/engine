@@ -1,10 +1,10 @@
 import { COM, Config, Environment, Feature, NodeEnvironment, Service } from '@wixc3/engine-core';
-import { IDirectoryContents } from './types';
+import { IDirectoryContents } from '../src/types';
 
 /**
  * defining that this feature uses 2 environments - 'main' (browser) and LiveServer environment with the semantic name 'server'
  */
-export const main = new Environment('main');
+export const main = new Environment('main', 'window', 'single');
 export const server = new NodeEnvironment('server');
 
 /**
@@ -14,13 +14,6 @@ export interface FileSystemAPI {
     readDir(filePath: string): Promise<IDirectoryContents>;
     readFile(filePath: string): Promise<string | null>;
 }
-
-/**
- * defining a default config for the ffeature
- */
-export const fileServerConfig = new Config<Record<string, string>>({
-    defaultDirName: process.cwd()
-});
 
 /**
  * exporting new feature that exposes 2 api records
@@ -34,6 +27,12 @@ export default new Feature({
         remoteFiles: Service.withType<FileSystemAPI>()
             .defineEntity(server)
             .allowRemoteAccess(),
-        fileServerConfig
+        fileServerConfig: Config.withType<Record<string, string>>().defineEntity(
+            {
+                defaultDirName: process.cwd()
+            },
+            undefined,
+            server
+        )
     }
 });

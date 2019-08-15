@@ -4,14 +4,13 @@ import {
     Feature,
     NodeEnvironment,
     Service,
-    SingleEndPointAsyncEnvironment,
     SingleEndpointContextualEnvironment
 } from '@wixc3/engine-core';
 
-export const mainEnv = new Environment('main');
-const workerEnv = new SingleEndPointAsyncEnvironment('worker', 'worker', mainEnv);
-const liveServerEnv = new NodeEnvironment('live-server');
-export const processingEnv = new SingleEndpointContextualEnvironment('processing', [workerEnv, liveServerEnv]);
+export const mainEnv = new Environment('main', 'window', 'single');
+const workerEnv = new Environment('worker', 'worker', 'single');
+const nodeEnv = new NodeEnvironment('node');
+export const processingEnv = new SingleEndpointContextualEnvironment('processing', [workerEnv, nodeEnv]);
 
 export interface IEchoService {
     echo: (s: string) => string;

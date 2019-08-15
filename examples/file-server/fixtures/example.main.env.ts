@@ -1,4 +1,4 @@
-import { main } from '../src/file-server.feature';
+import { main } from '../feature/file-server.feature';
 import { FileData } from '../src/types';
 import TestFeature from './example.feature';
 

@@ -14,7 +14,7 @@ export function run(
 export const getFeaturesDeep = (feature: SomeFeature) => flattenTree(feature, f => f.dependencies);
 
 export interface IFeatureLoader {
-    load: () => Promise<SomeFeature>;
+    load: (resolvedContexts: Record<string, string>) => Promise<SomeFeature>;
     depFeatures: string[];
     resolvedContexts: Record<string, string>;
 }
@@ -28,22 +28,22 @@ export interface IRunEngineAppOptions {
 
 export async function runEngineApp({ featureName, featureLoaders, config = [], options }: IRunEngineAppOptions) {
     const featureNames = Object.keys(featureLoaders);
-    featureName = featureName || featureNames[0];
 
-    const rootFeatureDef = featureLoaders[featureName];
-    if (!rootFeatureDef) {
+    const rootFeatureLoader = featureName && featureLoaders[featureName];
+    if (!rootFeatureLoader) {
         throw new Error(`cannot find feature "${featureName}". available features: ${featureNames.join(', ')}`);
     }
 
+    const { resolvedContexts } = rootFeatureLoader;
+
     const [runningFeature] = await Promise.all([
-        rootFeatureDef.load(),
-        ...rootFeatureDef.depFeatures.map(depName => featureLoaders[depName].load())
+        rootFeatureLoader.load(resolvedContexts),
+        ...rootFeatureLoader.depFeatures.map(depName => featureLoaders[depName].load(resolvedContexts))
     ]);
 
-    const engine = new RuntimeEngine(
-        [COM.use({ config: { contextMappings: rootFeatureDef.resolvedContexts } }), ...config],
-        options
-    ).run(runningFeature);
+    const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts } }), ...config], options).run(
+        runningFeature
+    );
 
     return {
         engine,

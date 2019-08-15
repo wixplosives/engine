@@ -2,9 +2,14 @@ import { BaseHost } from './com/base-host';
 import { Communication } from './com/communication';
 import { LoggerService } from './com/logger-service';
 import { Target, WindowHost } from './com/types';
-import { AsyncEnvironment, AsyncSingleEndpointEnvironment } from './entities/async-env';
 import { Config } from './entities/config';
-import { AllEnvironments, NodeEnvironment, SingleEndpointContextualEnvironment, Universal } from './entities/env';
+import {
+    AllEnvironments,
+    Environment,
+    NodeEnvironment,
+    SingleEndpointContextualEnvironment,
+    Universal
+} from './entities/env';
 import { Feature } from './entities/feature';
 import { Service } from './entities/service';
 import { Slot } from './entities/slot';
@@ -15,7 +20,7 @@ export interface IComConfig {
     id?: string;
     host?: Target;
     topology: Record<string, string>;
-    contextMappings: Record<string, string>;
+    resolvedContexts: Record<string, string>;
     loggerSeverity: LogLevel;
     logToConsole?: boolean;
     maxLogMessages: number;
@@ -30,7 +35,7 @@ export default new Feature({
                 loggerSeverity: LogLevel.DEBUG,
                 maxLogMessages: 100,
                 topology: {},
-                contextMappings: {}
+                resolvedContexts: {}
             },
             (a: IComConfig, b: Partial<IComConfig>) => ({
                 ...a,
@@ -39,31 +44,29 @@ export default new Feature({
                     ...a.topology,
                     ...b.topology
                 },
-                contextMappings: {
-                    ...a.contextMappings,
-                    ...b.contextMappings
+                resolvedContexts: {
+                    ...a.resolvedContexts,
+                    ...b.resolvedContexts
                 }
             })
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Service.withType<LoggerService>().defineEntity(Universal),
-        spawn: Service.withType<
-            (endPoint: AsyncEnvironment, host?: WindowHost) => Promise<{ id: string }>
-        >().defineEntity(AllEnvironments),
+        spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
+            AllEnvironments
+        ),
         connect: Service.withType<(endPoint: NodeEnvironment<string>) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
         spawnOrConnect: Service.withType<
-            (
-                endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
-            ) => Promise<{ id: string }>
+            (endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) => Promise<{ id: string }>
         >().defineEntity(AllEnvironments),
         communication: Service.withType<Communication>().defineEntity(AllEnvironments)
     }
 }).setup(
     Universal,
     ({
-        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, contextMappings },
+        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts },
         loggerTransports,
         [RUN_OPTIONS]: runOptinos
     }) => {
@@ -79,7 +82,7 @@ export default new Feature({
                     host,
                     id || host.name || 'main',
                     topology,
-                    contextMappings,
+                    resolvedContexts,
                     debugWarnings,
                     true
                 );
@@ -88,7 +91,7 @@ export default new Feature({
                     new BaseHost(),
                     id || 'main',
                     topology,
-                    contextMappings,
+                    resolvedContexts,
                     debugWarnings,
                     true
                 );
@@ -98,7 +101,7 @@ export default new Feature({
                 self,
                 id || self.name || 'main',
                 topology,
-                contextMappings,
+                resolvedContexts,
                 debugWarnings
             );
         }

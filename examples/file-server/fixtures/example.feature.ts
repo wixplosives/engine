@@ -1,5 +1,5 @@
 import { Feature } from '@wixc3/engine-core';
-import FileServer from '../src/file-server.feature';
+import FileServer from '../feature/file-server.feature';
 
 /**
  * exporting the feature name

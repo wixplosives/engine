@@ -1,10 +1,10 @@
 import { serverEnv } from './x.feature';
 import sampleFeature from './x.feature';
 
-sampleFeature.setup(serverEnv, () => {
+sampleFeature.setup(serverEnv, ({ config }) => {
     return {
-        serverService: {
-            echo: () => 'Hello'
+        echoService: {
+            echo: () => config.value
         }
     };
 });
