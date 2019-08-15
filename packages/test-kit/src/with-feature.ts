@@ -1,10 +1,9 @@
+import { Application, NodeEnvironmentsManager } from '@wixc3/engine-scripts/src';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
-import { DetachedApp } from './detached-app';
 import { createDisposables } from './disposables';
 
 const [execDriverLetter] = process.argv0;
-const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
 export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
     basePath?: string;
@@ -17,7 +16,6 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
 
 let browser: puppeteer.Browser | null = null;
 let featureUrl: string = '';
-const executableApp = new DetachedApp(cliEntry, process.cwd());
 
 after('close puppeteer browser, if open', async () => {
     if (browser) {
@@ -28,7 +26,6 @@ after('close puppeteer browser, if open', async () => {
 after('close engine server, if open', async function() {
     this.timeout(60_000);
     if (featureUrl) {
-        await executableApp.closeServer();
         featureUrl = '';
     }
 });
@@ -60,6 +57,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
 
     let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
+    let runningApplication: Application;
+    let nodeEnvironmentManager: NodeEnvironmentsManager;
 
     before('launch puppeteer', async function() {
         if (!browser) {
@@ -71,8 +70,12 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
     before('engine start', async function() {
         if (!featureUrl) {
             this.timeout(60_000 * 4); // 4 minutes
-            const port = await executableApp.startServer();
+            runningApplication = new Application(basePath);
+            const { port, nodeEnvironmentManager: manager, close } = await runningApplication.start();
             featureUrl = `http://localhost:${port}/main.html`;
+            nodeEnvironmentManager = manager;
+            disposeAfterAll.add(() => nodeEnvironmentManager.closeAll());
+            disposeAfterAll.add(() => close());
         }
     });
 
@@ -107,20 +110,22 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             }: IFeatureTestOptions = {},
             options?: puppeteer.DirectNavigationOptions
         ) {
+            if (!featureName) {
+                throw new Error('featureName is not provided!');
+            }
             if (!browser) {
                 throw new Error('Browser is not open!');
             }
-            if (!executableApp) {
-                throw new Error('Engine HTTP server is closed!');
-            }
+
             allowErrors = targetAllowErrors;
-            await executableApp.runFeature({
+
+            await nodeEnvironmentManager.runEnvironment({
                 featureName,
                 configName,
                 projectPath
             });
 
-            disposeAfterEach.add(async () => executableApp.closeFeature({ featureName }));
+            disposeAfterEach.add(async () => nodeEnvironmentManager.closeEnvironment({ featureName }));
 
             const search = toSearchQuery({
                 featureName,
