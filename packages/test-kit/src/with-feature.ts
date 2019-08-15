@@ -1,4 +1,4 @@
-import { Application, NodeEnvironmentsManager } from '@wixc3/engine-scripts/src';
+import { Application, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { createDisposables } from './disposables';
