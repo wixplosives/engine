@@ -2,7 +2,7 @@ import { createDisposables } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { join } from 'path';
-import { Application } from '../src';
+import { Application } from '../src/application';
 
 chai.use(chaiAsPromised);
 
