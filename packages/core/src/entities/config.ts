@@ -1,14 +1,14 @@
 import { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import { EnvVisibility } from '../types';
-import { AllEnvironments } from './env';
+import { AllEnvironments, Environment } from './env';
 import { FeatureInput } from './input';
 
 type MergeConfigHook<T extends object> = (a: Readonly<T>, b: Readonly<Partial<T>>) => T;
 
-export class Config<T extends object, VisibleAt extends EnvVisibility = AllEnvironments> extends FeatureInput<
+export class Config<T extends object, VisibleAt extends EnvVisibility = Environment> extends FeatureInput<
     Readonly<T>,
-    AllEnvironments,
+    Environment,
     VisibleAt
 > {
     public static withType<T extends object>() {

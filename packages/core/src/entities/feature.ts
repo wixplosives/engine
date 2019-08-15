@@ -13,7 +13,7 @@ import {
     SetupHandler,
     SomeFeature
 } from '../types';
-import { AllEnvironments, testEnvironmentCollision, Universal } from './env';
+import { Environment, testEnvironmentCollision, Universal } from './env';
 
 /*************** FEATURE ***************/
 
@@ -25,7 +25,7 @@ export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], A
     constructor(
         public feature: T,
         public api: MapToProxyType<API>,
-        public dependencies: RunningFeatures<Deps, AllEnvironments['env']>
+        public dependencies: RunningFeatures<Deps, string>
     ) {}
     public addRunHandler(fn: () => void) {
         this.runHandlers.push(fn);
@@ -67,7 +67,7 @@ export class Feature<
     public api: API;
     public context: EnvironmentContext;
     private environmentIml = new Set<string>();
-    private setupHandlers = new Set<SetupHandler<AllEnvironments, ID, Deps, API, EnvironmentContext>>();
+    private setupHandlers = new Set<SetupHandler<Environment, ID, Deps, API, EnvironmentContext>>();
     private contextHandlers = new Map<string | number | symbol, () => unknown>();
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;

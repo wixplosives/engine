@@ -1,7 +1,7 @@
 import { TupleToUnion } from 'typescript-type-utils';
 import { LogMessage } from './common-types';
 import { Config } from './entities/config';
-import { AllEnvironments, Universal } from './entities/env';
+import { Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from './symbols';
@@ -78,7 +78,7 @@ export type NormalizeEnvironmentFilter<T extends EnvironmentFilter> = T extends 
 export type EnvVisibility = string | { env: string; envType?: string } | Array<{ env: string; envType?: string }>;
 
 export type EnvType<T extends EnvVisibility> = T extends []
-    ? AllEnvironments['env']
+    ? string
     : T extends Array<{ env: infer U }>
     ? U
     : T extends { env: infer U1 }

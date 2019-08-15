@@ -1,4 +1,4 @@
-import { AsyncEnvironment, EnvironmentContext, SomeFeature } from '@wixc3/engine-core';
+import { Environment, EnvironmentContext, SomeFeature } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -59,7 +59,7 @@ export interface EvaluatedFeature {
     id: string;
     filePath: string;
     features: SymbolList<SomeFeature>;
-    environments: SymbolList<AsyncEnvironment>;
+    environments: SymbolList<Environment>;
     contexts: SymbolList<EnvironmentContext>;
 }
 

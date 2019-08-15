@@ -2,9 +2,14 @@ import { BaseHost } from './com/base-host';
 import { Communication } from './com/communication';
 import { LoggerService } from './com/logger-service';
 import { Target, WindowHost } from './com/types';
-import { AsyncEnvironment, AsyncSingleEndpointEnvironment } from './entities/async-env';
 import { Config } from './entities/config';
-import { AllEnvironments, NodeEnvironment, SingleEndpointContextualEnvironment, Universal } from './entities/env';
+import {
+    AllEnvironments,
+    Environment,
+    NodeEnvironment,
+    SingleEndpointContextualEnvironment,
+    Universal
+} from './entities/env';
 import { Feature } from './entities/feature';
 import { Service } from './entities/service';
 import { Slot } from './entities/slot';
@@ -46,16 +51,14 @@ export default new Feature({
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Service.withType<LoggerService>().defineEntity(Universal),
-        spawn: Service.withType<
-            (endPoint: AsyncEnvironment, host?: WindowHost) => Promise<{ id: string }>
-        >().defineEntity(AllEnvironments),
+        spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
+            AllEnvironments
+        ),
         connect: Service.withType<(endPoint: NodeEnvironment<string>) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
         spawnOrConnect: Service.withType<
-            (
-                endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
-            ) => Promise<{ id: string }>
+            (endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) => Promise<{ id: string }>
         >().defineEntity(AllEnvironments),
         communication: Service.withType<Communication>().defineEntity(AllEnvironments)
     }

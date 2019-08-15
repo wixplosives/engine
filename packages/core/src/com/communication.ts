@@ -26,8 +26,7 @@ import {
 import { SERVICE_CONFIG } from '../symbols';
 
 import { SetMultiMap } from '@file-services/utils';
-import { AsyncEnvironment, AsyncSingleEndpointEnvironment } from '../entities/async-env';
-import { NodeEnvironment, SingleEndpointContextualEnvironment } from '../entities/env';
+import { EndpointType, Environment, NodeEnvironment, SingleEndpointContextualEnvironment } from '../entities/env';
 import { IDTag } from '../types';
 import { BaseHost } from './base-host';
 import { WsClientHost } from './ws-client-host';
@@ -87,9 +86,7 @@ export class Communication {
         }
     }
 
-    public async spawnOrConnect(
-        endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
-    ) {
+    public async spawnOrConnect(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
         const runtimeEnvironmentName = this.resolvedContexts[endPoint.env];
 
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
@@ -97,16 +94,14 @@ export class Communication {
 
         return activeEnvironment!.envType === 'node'
             ? this.connect(activeEnvironment as NodeEnvironment<string>)
-            : this.spawn(activeEnvironment as AsyncEnvironment);
+            : this.spawn(activeEnvironment);
     }
 
-    public getEnvironmentContext(
-        endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
-    ) {
+    public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
         return this.resolvedContexts[endPoint.env];
     }
 
-    public async spawn(endPoint: AsyncEnvironment, host?: WindowHost) {
+    public async spawn(endPoint: Environment<string, EndpointType>, host?: WindowHost) {
         const { endpointType, env, envType } = endPoint;
 
         const isSingleton = endpointType === 'single';

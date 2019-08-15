@@ -5,8 +5,8 @@ import { type_check } from '../type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/
 
-const MAIN = new Environment('main');
-const MAIN_1 = new Environment('main1');
+const MAIN = new Environment('main', 'window', 'single');
+const MAIN_1 = new Environment('main1', 'window', 'single');
 
 const logger = new Feature({
     id: 'logger',
