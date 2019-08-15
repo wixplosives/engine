@@ -1,4 +1,4 @@
-import { COM, IFeatureLoader, runEngineApp, TopLevelConfig } from '@wixc3/engine-core';
+import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
@@ -8,9 +8,8 @@ import { Server } from 'socket.io';
 import { getParentProcess } from './parent-process';
 import {
     ICommunicationMessage,
-    IEnvironment,
     IEnvironmentPortMessage,
-    IFeatureDefinition,
+    IRunNodeEnvironmentsOptions,
     isEnvironmentCloseMessage,
     isEnvironmentPortMessage,
     isEnvironmentStartMessage,
@@ -42,18 +41,6 @@ export async function createWorkerProtocol(remoteAccess: RemoteProcess) {
         return null;
     });
 }
-
-/**
- * Use to init socket server that share the environment state between all connections
- */
-
-export type IRunNodeEnvironmentsOptions = IEnvironment & {
-    featureName: string;
-    config?: TopLevelConfig;
-    features: Record<string, IFeatureDefinition>;
-    httpServerPath: string;
-    projectPath?: string;
-};
 
 export async function runNodeEnvironment(
     socketServer: Server,

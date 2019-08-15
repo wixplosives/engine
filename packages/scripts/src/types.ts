@@ -6,7 +6,17 @@ import {
     SomeFeature,
     TopLevelConfig
 } from '@wixc3/engine-core';
-import { IRunNodeEnvironmentsOptions } from './run-socket-server';
+
+/**
+ * Use to init socket server that share the environment state between all connections
+ */
+export type IRunNodeEnvironmentsOptions = IEnvironment & {
+    featureName: string;
+    config?: TopLevelConfig;
+    features: Record<string, IFeatureDefinition>;
+    httpServerPath: string;
+    projectPath?: string;
+};
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
