@@ -31,6 +31,10 @@ import { IDTag } from '../types';
 import { BaseHost } from './base-host';
 import { WsClientHost } from './ws-client-host';
 
+export interface ICommunicationOptions {
+    warnOnSlow?: boolean;
+}
+
 /**
  * Main class that manage all api registration and message forwarding in each execution context.
  */
@@ -39,7 +43,7 @@ export class Communication {
     private rootEnvName: string;
     private idsCounter = new MultiCounter();
     private readonly callbackTimeout = 60_000 * 2; // 2 minutes
-    private readonly warnTimeout = 5_000; // 5 seconds
+    private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private pendingEnvs: Map<string, UnknownFunction> = new Map();
@@ -48,14 +52,15 @@ export class Communication {
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
+    private options: Required<ICommunicationOptions>;
     constructor(
         host: Target,
         id: string,
         private topology: Record<string, string> = {},
         private resolvedContexts: Record<string, string> = {},
-        private debugWarnings: boolean = false,
-        public isServer: boolean = false
+        options?: ICommunicationOptions
     ) {
+        this.options = { warnOnSlow: false, ...options };
         this.rootEnvId = id;
         this.rootEnvName = id.split('/')[0];
         this.registerMessageHandler(host);
@@ -485,13 +490,13 @@ export class Communication {
             delete this.callbacks[callbackId];
             rej(error);
         };
-        if (this.debugWarnings) {
+        if (this.options.warnOnSlow) {
             setTimeout(() => {
                 if (this.callbacks[callbackId]) {
                     // tslint:disable-next-line: no-console
                     console.error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message)));
                 }
-            }, this.warnTimeout);
+            }, this.slowThreshold);
         }
 
         const timerId = setTimeout(() => {

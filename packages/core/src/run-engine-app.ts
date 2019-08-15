@@ -1,12 +1,12 @@
 import COM from './communication.feature';
 import { flattenTree } from './flatten-tree';
 import { RuntimeEngine } from './runtime-engine';
-import { SomeFeature, TopLevelConfig } from './types';
+import { IRunOptions, SomeFeature, TopLevelConfig } from './types';
 
 export function run(
     entryFeature: SomeFeature | SomeFeature[],
     topLevelConfig: TopLevelConfig = [],
-    runOptions: URLSearchParams = new URLSearchParams()
+    runOptions?: IRunOptions
 ): RuntimeEngine {
     return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature);
 }
@@ -23,7 +23,7 @@ export interface IRunEngineAppOptions {
     featureName?: string | null;
     featureLoaders: Record<string, IFeatureLoader>;
     config?: TopLevelConfig;
-    options?: URLSearchParams;
+    options?: Map<string, string>;
 }
 
 export async function runEngineApp({ featureName, featureLoaders, config = [], options }: IRunEngineAppOptions) {

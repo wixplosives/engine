@@ -141,13 +141,16 @@ export type RunningFeatures<
     FeatureMap extends MapBy<T, 'id'> = MapBy<T, 'id'>
 > = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
 
+export interface IRunOptions {
+    has(key: string): boolean;
+    get(key: string): string | null | undefined;
+}
+
 type SettingUpFeature<ID extends string, API extends EntityMap, ENV extends string> = {
     id: ID;
     run: (fn: () => unknown) => void;
     onDispose: (fn: DisposeFunction) => void;
-    [RUN_OPTIONS]: {
-        params: URLSearchParams;
-    };
+    [RUN_OPTIONS]: IRunOptions;
 } & MapVisibleInputs<API, ENV> &
     MapToProxyType<GetRemoteOutputs<API>> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<API>>;
