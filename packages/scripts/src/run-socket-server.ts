@@ -1,10 +1,11 @@
-import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
-import { WsServerHost } from '@wixc3/engine-core-node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import http from 'http';
-import io from 'socket.io';
-import { Server } from 'socket.io';
+import io, { Server } from 'socket.io';
+
+import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
+import { WsServerHost } from '@wixc3/engine-core-node';
+
 import { getParentProcess } from './parent-process';
 import {
     ICommunicationMessage,
@@ -54,7 +55,6 @@ export async function runNodeEnvironment(
         projectPath = process.cwd()
     }: IRunNodeEnvironmentsOptions
 ) {
-    console.log(httpServerPath);
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
