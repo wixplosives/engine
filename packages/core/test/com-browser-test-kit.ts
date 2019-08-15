@@ -1,4 +1,4 @@
-import { Communication, MultiEndPointAsyncEnvironment } from '../src';
+import { Communication, Environment } from '../src';
 
 export class ComBrowserTestKit {
     private iframes: HTMLIFrameElement[] = [];
@@ -30,6 +30,6 @@ export class ComBrowserTestKit {
         iframe.style.position = 'fixed';
         this.iframes.push(iframe);
         document.body.appendChild(iframe);
-        return com.spawn(new MultiEndPointAsyncEnvironment(envName, 'iframe', { env: 'main' }), iframe);
+        return com.spawn(new Environment(envName, 'iframe', 'multi'), iframe);
     }
 }

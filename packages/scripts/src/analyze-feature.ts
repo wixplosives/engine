@@ -5,8 +5,6 @@ import {
     EnvironmentTypes,
     Feature,
     getFeaturesDeep,
-    MultiEndPointAsyncEnvironment,
-    SingleEndPointAsyncEnvironment,
     SingleEndpointContextualEnvironment,
     SomeFeature
 } from '@wixc3/engine-core';
@@ -254,11 +252,7 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeModule
     if (typeof exports === 'object' && exports !== null) {
         const { exportedEnvs: envs, usedContexts } = featureFile;
         for (const exportValue of Object.values(exports)) {
-            if (
-                instanceOf(exportValue, Environment) ||
-                instanceOf(exportValue, SingleEndPointAsyncEnvironment) ||
-                instanceOf(exportValue, MultiEndPointAsyncEnvironment)
-            ) {
+            if (instanceOf(exportValue, Environment)) {
                 if (instanceOf(exportValue, SingleEndpointContextualEnvironment)) {
                     envs.push(...parseContextualEnv(exportValue));
                 } else {

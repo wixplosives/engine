@@ -36,7 +36,7 @@ export class Service<
     }
     public allowRemoteAccess() {
         type U = ServiceRuntime<T, ProvidedFrom>;
-        return new Service<T, U, ProvidedFrom, AllEnvironments, true>(this.providedFrom, AllEnvironments, true);
+        return new Service<T, U, ProvidedFrom, Environment, true>(this.providedFrom, AllEnvironments, true);
     }
     // public allowRemoteAccess<U extends ServiceRuntime<T, ProvidedFrom>> = ServiceRuntime<T, ProvidedFrom>>() {
     //     return new Service<T, U, ProvidedFrom, AllEnvironments>(this.providedFrom, AllEnvironments, true)

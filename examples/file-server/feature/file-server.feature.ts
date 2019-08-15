@@ -4,7 +4,7 @@ import { IDirectoryContents } from '../src/types';
 /**
  * defining that this feature uses 2 environments - 'main' (browser) and LiveServer environment with the semantic name 'server'
  */
-export const main = new Environment('main');
+export const main = new Environment('main', 'window', 'single');
 export const server = new NodeEnvironment('server');
 
 /**
