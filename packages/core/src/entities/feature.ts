@@ -1,5 +1,5 @@
 import { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN } from '../symbols';
+import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import {
     DisposableContext,
     DisposeFunction,
@@ -110,7 +110,7 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME](context: RuntimeEngine): RuntimeFeature<this, Deps, API> {
+    public [CREATE_RUNTIME](runningEngine: RuntimeEngine): RuntimeFeature<this, Deps, API> {
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};
@@ -120,15 +120,15 @@ export class Feature<
         const apiEntries = Object.entries(this.api);
         const feature = new RuntimeFeature<this, Deps, API>(this, runningApi, deps);
 
-        context.features.set(this, feature);
+        runningEngine.features.set(this, feature);
 
         for (const dep of this.dependencies) {
-            deps[dep.id] = context.initFeature(dep);
+            deps[dep.id] = runningEngine.initFeature(dep);
             depsApis[dep.id] = deps[dep.id].api;
         }
 
         for (const [key, entity] of apiEntries) {
-            const provided = entity[CREATE_RUNTIME](context, this.id, key);
+            const provided = entity[CREATE_RUNTIME](runningEngine, this.id, key);
             if (provided !== undefined) {
                 inputApi[key] = provided;
             }
@@ -142,7 +142,8 @@ export class Feature<
             },
             onDispose(fn: DisposeFunction) {
                 feature.addOnDisposeHandler(fn);
-            }
+            },
+            [RUN_OPTIONS]: runningEngine.runOptions
         };
 
         const emptyDispose = { dispose: () => undefined };
@@ -162,7 +163,7 @@ export class Feature<
         }
 
         for (const [key, entity] of apiEntries) {
-            const registered = entity[REGISTER_VALUE](context, providedAPI[key], inputApi[key], this.id, key);
+            const registered = entity[REGISTER_VALUE](runningEngine, providedAPI[key], inputApi[key], this.id, key);
             if (registered !== undefined) {
                 runningApi[key] = registered;
             }

@@ -1,13 +1,13 @@
 import COM from './communication.feature';
 import { RuntimeFeature } from './entities/feature';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
-import { SomeFeature, SomeRuntimeFeature, TopLevelConfig } from './types';
+import { IRunOptions, SomeFeature, SomeRuntimeFeature, TopLevelConfig } from './types';
 
 export class RuntimeEngine {
     public features = new Map<SomeFeature, SomeRuntimeFeature>();
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
-    constructor(topLevelConfig: TopLevelConfig = []) {
+    constructor(topLevelConfig: TopLevelConfig = [], public runOptions: IRunOptions = new Map()) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
     }
 

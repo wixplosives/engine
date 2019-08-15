@@ -10,8 +10,10 @@ import {
     DisposeFunction,
     Environment,
     Feature,
+    IRunOptions,
     MapSlot,
     run as runEngine,
+    RUN_OPTIONS,
     Service,
     SingleEndpointContextualEnvironment,
     Slot,
@@ -526,6 +528,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                             typeof x,
                             {
                                 id: 'echoFeature';
+                                [RUN_OPTIONS]: IRunOptions;
                                 run(fn: () => unknown): unknown;
                                 onDispose(fn: DisposeFunction): unknown;
                             }
