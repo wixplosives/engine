@@ -10,9 +10,9 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
     basePath?: string;
     featureName?: string;
     configName?: string;
-    projectPath?: string;
     queryParams?: Record<string, string>;
     allowErrors?: boolean;
+    runOptions?: Map<string, string>;
 }
 
 let browser: puppeteer.Browser | null = null;
@@ -47,7 +47,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         slowMo,
         featureName: suiteFeatureName,
         configName: suiteConfigName,
-        projectPath: suiteProjectPath = basePath,
+        runOptions: suiteOptions = new Map<string, string>(),
         allowErrors: suiteAllowErrors = false,
         queryParams
     } = withFeatureOptions;
@@ -102,7 +102,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             {
                 featureName = suiteFeatureName,
                 configName = suiteConfigName,
-                projectPath = suiteProjectPath,
+                runOptions = suiteOptions,
                 allowErrors: targetAllowErrors = false
             }: IFeatureTestOptions = {},
             options?: puppeteer.DirectNavigationOptions
@@ -113,11 +113,16 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             if (!executableApp) {
                 throw new Error('Engine HTTP server is closed!');
             }
+
+            if (!runOptions.has('projectPath')) {
+                runOptions.set('projectPath', basePath);
+            }
+
             allowErrors = targetAllowErrors;
             await executableApp.runFeature({
                 featureName,
                 configName,
-                projectPath
+                options: runOptions
             });
 
             disposeAfterEach.add(async () =>
