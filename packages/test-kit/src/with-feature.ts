@@ -114,10 +114,6 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            if (!runOptions.has('projectPath')) {
-                runOptions.set('projectPath', basePath);
-            }
-
             allowErrors = targetAllowErrors;
             await executableApp.runFeature({
                 featureName,
