@@ -20,8 +20,10 @@ export function createConfigMiddleware(
                         const { default: configValue } = await import(filePath);
                         config.push(...configValue);
                     } catch (e) {
-                        res.send(e);
-                        return;
+                        // tslint:disable: no-console
+                        console.error(`Failed evaluating config file: ${filePath}`);
+                        console.error(e);
+                        // tslint:enable: no-console
                     }
                 }
             }
