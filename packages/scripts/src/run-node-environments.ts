@@ -15,7 +15,7 @@ export async function runNodeEnvironments({
     featureName,
     socketServer,
     features,
-    options = new Map(),
+    options = new Map<string, string>(),
     config = []
 }: IRunNodeEnvironmentsOptions) {
     const featureDefinition = features.get(featureName);
@@ -68,7 +68,6 @@ export async function runNodeEnvironments({
                 resolvedContexts
             };
         }
-
         options = new Map([...Array.from(getProcessOptions().entries()), ...Array.from(options.entries())]);
 
         const { engine, runningFeature } = await runEngineApp({
