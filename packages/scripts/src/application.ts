@@ -31,7 +31,7 @@ const rimraf = promisify(rimrafCb);
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
-    projectPath?: string;
+    options?: Map<string, string>;
 }
 
 export interface IRunOptions extends IFeatureTarget {
@@ -69,7 +69,7 @@ export class Application {
         );
     }
 
-    public async start({ featureName, configName, projectPath }: IRunOptions = {}) {
+    public async start({ featureName, configName }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
@@ -111,18 +111,9 @@ export class Application {
         const runFeature = async (targetFeature: {
             featureName: string;
             configName?: string;
-            projectPath?: string;
+            options?: Map<string, string>;
         }) => {
-            const config: TopLevelConfig = [
-                [
-                    'project',
-                    {
-                        fsProjectDirectory: {
-                            projectPath: fs.resolve(targetFeature.projectPath || '')
-                        }
-                    }
-                ]
-            ];
+            const config: TopLevelConfig = [];
 
             if (targetFeature.configName) {
                 const configDefinition = configurations.get(targetFeature.configName);
@@ -148,7 +139,8 @@ export class Application {
                 featureName: targetFeature.featureName,
                 config,
                 socketServer,
-                features
+                features,
+                options: targetFeature.options
             });
 
             const topologyForFeature: Record<string, string> = {};
@@ -189,7 +181,7 @@ export class Application {
         });
 
         if (featureName) {
-            const { close: closeFeature } = await runFeature({ featureName, configName, projectPath });
+            const { close: closeFeature } = await runFeature({ featureName, configName });
             disposables.push(() => closeFeature());
         }
         return {

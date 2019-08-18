@@ -7,6 +7,7 @@ export interface IRunNodeEnvironmentsOptions {
     socketServer: Server;
     features: Map<string, IFeatureDefinition>;
     featureName: string;
+    options?: Map<string, string>;
     config?: TopLevelConfig;
 }
 
@@ -14,6 +15,7 @@ export async function runNodeEnvironments({
     featureName,
     socketServer,
     features,
+    options = new Map(),
     config = []
 }: IRunNodeEnvironmentsOptions) {
     const featureDefinition = features.get(featureName);
@@ -66,6 +68,9 @@ export async function runNodeEnvironments({
                 resolvedContexts
             };
         }
+
+        options = new Map([...Array.from(getProcessOptions().entries()), ...Array.from(options.entries())]);
+
         const { engine, runningFeature } = await runEngineApp({
             featureName,
             featureLoaders,
@@ -77,7 +82,8 @@ export async function runNodeEnvironments({
                         id: name
                     }
                 })
-            ]
+            ],
+            options
         });
 
         disposeHandlers.add(() => engine.dispose(runningFeature));
@@ -93,4 +99,27 @@ export async function runNodeEnvironments({
             }
         }
     };
+}
+function getProcessOptions() {
+    const args = process.argv.slice(3);
+    const argumentQueue: string[] = [];
+    const options = new Map<string, string>();
+    while (args.length) {
+        const currentArgument = args.shift()!;
+        if (currentArgument.startsWith('--')) {
+            if (argumentQueue.length) {
+                options.set(argumentQueue.shift()!, argumentQueue.join(' '));
+                argumentQueue.length = 0;
+            }
+            argumentQueue.push(currentArgument.slice(2).replace(/[-]\S/g, match => match.slice(1).toUpperCase()));
+        } else if (argumentQueue.length) {
+            argumentQueue.push(currentArgument);
+        } else if (args.length && !args[0].startsWith('--')) {
+            args.shift();
+        }
+    }
+    if (argumentQueue.length) {
+        options.set(argumentQueue.shift()!, argumentQueue.join(' '));
+    }
+    return options;
 }
