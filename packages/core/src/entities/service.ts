@@ -1,13 +1,13 @@
-import { AsyncApi, EnvironmentInstanceToken } from '../com/types';
+import { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes } from '../com/types';
 import { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import { EnvVisibility } from '../types';
 import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
 import { FeatureOutput } from './output';
 
-export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<string, 'single'>
+export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<string, EnvironmentTypes, 'single'>
     ? AsyncApi<T>
-    : ProvidedFrom extends Environment<string, 'multi'>
+    : ProvidedFrom extends Environment<string, EnvironmentTypes, 'multi'>
     ? {
           get(token: EnvironmentInstanceToken): AsyncApi<T>;
       }

@@ -2,22 +2,26 @@ import { EnvironmentTypes } from '../com/types';
 import { runtimeType } from '../entity-helpers';
 import { DisposableContext, EnvVisibility, MapBy } from '../types';
 
-export type EndpointType = 'single' | 'multi';
+export type EnvironmentMode = 'single' | 'multi';
 
-export class Environment<ID extends string = string, EType extends EndpointType = EndpointType> {
-    constructor(public env: ID, public envType: EnvironmentTypes, public endpointType: EType) {}
+export class Environment<
+    NAME extends string = string,
+    TYPE extends EnvironmentTypes = EnvironmentTypes,
+    MODE extends EnvironmentMode = EnvironmentMode
+> {
+    constructor(public env: NAME, public envType: TYPE, public endpointType: MODE) {}
 }
 
 export class EnvironmentContext {
     constructor(public env: string, public activeEnvironmentName: string, public runtimeEnvType: EnvironmentTypes) {}
 }
 
-export class SingleEndpointContextualEnvironment<ID extends string, T extends Environment[]> extends Environment<
-    ID,
+export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
+    NAME,
+    'context',
     'single'
 > {
-    public envType = 'context' as const;
-    constructor(env: ID, public environments: T) {
+    constructor(env: NAME, public environments: ENVS) {
         super(env, 'context', 'single');
 
         if (environments.length === 0) {
@@ -25,7 +29,7 @@ export class SingleEndpointContextualEnvironment<ID extends string, T extends En
         }
     }
 
-    public useContext(contextEnv: keyof MapBy<T, 'env'>): EnvironmentContext {
+    public useContext(contextEnv: keyof MapBy<ENVS, 'env'>): EnvironmentContext {
         return new EnvironmentContext(
             this.env,
             contextEnv,
