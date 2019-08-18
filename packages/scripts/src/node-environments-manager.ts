@@ -7,7 +7,7 @@ export interface IClosable {
 export interface RunEnvironmentOptions {
     featureName: string;
     configName?: string;
-    options?: Map<string, string>;
+    options?: Record<string, string>;
 }
 
 export class NodeEnvironmentsManager {
@@ -21,13 +21,17 @@ export class NodeEnvironmentsManager {
         }) => Promise<IClosable>
     ) {}
 
-    public async runEnvironment({ featureName, configName, options }: RunEnvironmentOptions) {
+    public async runEnvironment({ featureName, configName, options = {} }: RunEnvironmentOptions) {
         if (this.runningEnvironments.has(featureName)) {
             throw new Error(`node environment for ${featureName} already running`);
         }
         this.runningEnvironments.set(
             featureName,
-            await this.runNodeEnvironmentFunction({ featureName, configName, options })
+            await this.runNodeEnvironmentFunction({
+                featureName,
+                configName,
+                options: new Map(Object.entries(options))
+            })
         );
     }
 

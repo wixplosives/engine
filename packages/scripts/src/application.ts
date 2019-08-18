@@ -31,7 +31,7 @@ const rimraf = promisify(rimrafCb);
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
-    options?: Map<string, string>;
+    options?: Record<string, string>;
 }
 
 export interface IRunOptions extends IFeatureTarget {
@@ -113,6 +113,7 @@ export class Application {
             configName?: string;
             options?: Map<string, string>;
         }) => {
+            console.log(targetFeature.options);
             const config: TopLevelConfig = [];
 
             if (targetFeature.configName) {

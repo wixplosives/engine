@@ -23,11 +23,11 @@ class RemoteFilesAPI implements FileSystemAPI {
 /**
  * setting up the server environment
  */
-FileServer.setup(server, ({ fileServerConfig, [RUN_OPTIONS]: runOptions }, {}) => {
+FileServer.setup(server, ({ [RUN_OPTIONS]: runOptions }, {}) => {
     /**
      * exposing the remoteFiles implementation of thje server side
      */
-    const projectPath = runOptions.get('projectPath') || fileServerConfig.defaultDirName;
+    const projectPath = runOptions.get('projectPath') || process.cwd();
     return {
         remoteFiles: new RemoteFilesAPI(projectPath)
     };
