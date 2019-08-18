@@ -24,10 +24,10 @@ export class EnvironmentContext {
     constructor(public env: string, public activeEnvironmentName: string, public runtimeEnvType: EnvironmentTypes) {}
 }
 
-export class SingleEndpointContextualEnvironment<
-    ID extends string,
-    T extends Array<Environment<string, EndpointType>>
-> extends Environment<ID, 'single'> {
+export class SingleEndpointContextualEnvironment<ID extends string, T extends Environment[]> extends Environment<
+    ID,
+    'single'
+> {
     public envType = 'context' as const;
     constructor(env: ID, public environments: T) {
         super(env, 'context', 'single');
