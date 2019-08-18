@@ -86,6 +86,7 @@ export default new Feature({
                     id || host.name || 'main',
                     topology,
                     resolvedContexts,
+                    true,
                     communicationOptions
                 );
             } else {
@@ -94,6 +95,7 @@ export default new Feature({
                     id || 'main',
                     topology,
                     resolvedContexts,
+                    true,
                     communicationOptions
                 );
             }
@@ -103,6 +105,7 @@ export default new Feature({
                 id || self.name || 'main',
                 topology,
                 resolvedContexts,
+                false,
                 communicationOptions
             );
         }

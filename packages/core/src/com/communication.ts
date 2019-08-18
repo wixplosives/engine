@@ -58,6 +58,7 @@ export class Communication {
         id: string,
         private topology: Record<string, string> = {},
         private resolvedContexts: Record<string, string> = {},
+        public isServer = false,
         options?: ICommunicationOptions
     ) {
         this.options = { warnOnSlow: false, ...options };
