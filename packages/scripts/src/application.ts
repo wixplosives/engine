@@ -113,7 +113,6 @@ export class Application {
             configName?: string;
             options?: Map<string, string>;
         }) => {
-            console.log(targetFeature.options);
             const config: TopLevelConfig = [];
 
             if (targetFeature.configName) {
