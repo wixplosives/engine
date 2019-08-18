@@ -26,7 +26,7 @@ import {
 import { SERVICE_CONFIG } from '../symbols';
 
 import { SetMultiMap } from '@file-services/utils';
-import { Environment, NodeEnvironment, SingleEndpointContextualEnvironment } from '../entities/env';
+import { Environment, SingleEndpointContextualEnvironment } from '../entities/env';
 import { IDTag } from '../types';
 import { BaseHost } from './base-host';
 import { WsClientHost } from './ws-client-host';
@@ -103,9 +103,7 @@ export class Communication {
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
         activeEnvironment.env = endPoint.env;
 
-        return activeEnvironment!.envType === 'node'
-            ? this.connect(activeEnvironment as NodeEnvironment<string>)
-            : this.spawn(activeEnvironment);
+        return activeEnvironment!.envType === 'node' ? this.connect(activeEnvironment) : this.spawn(activeEnvironment);
     }
 
     public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
@@ -128,9 +126,9 @@ export class Communication {
     }
 
     /**
-     * Connects to a remote NodeEnvironment
+     * Connects to a remote node environment
      */
-    public async connect(endPoint: NodeEnvironment<string>) {
+    public async connect(endPoint: Environment) {
         const { env, envType } = endPoint;
 
         const url = this.topology[env];
@@ -144,9 +142,7 @@ export class Communication {
 
         this.registerMessageHandler(host);
         this.registerEnv(instanceId, host);
-        // this.pendingEnvs.set(instanceId, ()=>{})
         await host.connected;
-        // this.pendingEnvs.delete(instanceId)
 
         return {
             id: instanceId

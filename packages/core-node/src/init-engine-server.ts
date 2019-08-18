@@ -1,4 +1,4 @@
-import { COM, NodeEnvironment } from '@wixc3/engine-core';
+import { COM, Environment } from '@wixc3/engine-core';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import { Server } from 'http';
@@ -12,7 +12,7 @@ export async function initEngineServer(
     serverEntries?: string[],
     clientConfig: unknown[] = [],
     serverConfig: unknown[] = [],
-    serverEnvironment?: NodeEnvironment<string>
+    serverEnvironment?: Environment
 ) {
     const app = express();
     app.use(express.static(pathToEditorDist));
@@ -34,13 +34,13 @@ export async function initEngineServer(
 
     if (serverEnvironment && serverEntries) {
         runNodeEnvironment(serverEntries, httpServer, serverEnvironment, serverConfig);
-        clientConfig.push(
-            COM.use({
-                config: {
-                    topology: serverEnvironment.getLocalTopology(port)
-                }
-            })
-        );
+        // clientConfig.push(
+        //     COM.use({
+        //         config: {
+        //             topology: serverEnvironment.getLocalTopology(port)
+        //         }
+        //     })
+        // );
     }
 
     app.get('/server-config.js', (_req, res) => {
@@ -58,7 +58,7 @@ export async function initEngineServer(
 function runNodeEnvironment(
     nodeEntityPaths: string[],
     server: Server,
-    serverEnvironment: NodeEnvironment<string>,
+    serverEnvironment: Environment,
     serverConfig: unknown[]
 ) {
     const socketServer = io(server).of('/_ws');

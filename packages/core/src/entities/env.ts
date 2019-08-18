@@ -8,18 +8,6 @@ export class Environment<ID extends string = string, EType extends EndpointType 
     constructor(public env: ID, public envType: EnvironmentTypes, public endpointType: EType) {}
 }
 
-export class NodeEnvironment<ID extends string> extends Environment<ID, 'single'> {
-    constructor(env: ID) {
-        super(env, 'node', 'single');
-    }
-
-    public getLocalTopology(port: number) {
-        return {
-            [this.env]: `http://localhost:${port}/_ws`
-        };
-    }
-}
-
 export class EnvironmentContext {
     constructor(public env: string, public activeEnvironmentName: string, public runtimeEnvType: EnvironmentTypes) {}
 }

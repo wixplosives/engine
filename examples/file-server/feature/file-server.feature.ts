@@ -1,11 +1,11 @@
-import { COM, Environment, Feature, NodeEnvironment, Service } from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service } from '@wixc3/engine-core';
 import { IDirectoryContents } from '../src/types';
 
 /**
  * defining that this feature uses 2 environments - 'main' (browser) and LiveServer environment with the semantic name 'server'
  */
 export const main = new Environment('main', 'window', 'single');
-export const server = new NodeEnvironment('server');
+export const server = new Environment('server', 'node', 'single');
 
 /**
  * defining the interface of the file system api which the server will implement

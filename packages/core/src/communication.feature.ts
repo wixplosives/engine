@@ -3,13 +3,7 @@ import { Communication, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
 import { Target, WindowHost } from './com/types';
 import { Config } from './entities/config';
-import {
-    AllEnvironments,
-    Environment,
-    NodeEnvironment,
-    SingleEndpointContextualEnvironment,
-    Universal
-} from './entities/env';
+import { AllEnvironments, Environment, SingleEndpointContextualEnvironment, Universal } from './entities/env';
 import { Feature } from './entities/feature';
 import { Service } from './entities/service';
 import { Slot } from './entities/slot';
@@ -55,9 +49,7 @@ export default new Feature({
         spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
-        connect: Service.withType<(endPoint: NodeEnvironment<string>) => Promise<{ id: string }>>().defineEntity(
-            AllEnvironments
-        ),
+        connect: Service.withType<(endPoint: Environment) => Promise<{ id: string }>>().defineEntity(AllEnvironments),
         spawnOrConnect: Service.withType<
             (endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) => Promise<{ id: string }>
         >().defineEntity(AllEnvironments),
