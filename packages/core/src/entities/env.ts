@@ -16,6 +16,10 @@ export class EnvironmentContext {
     constructor(public env: string, public activeEnvironmentName: string, public runtimeEnvType: EnvironmentTypes) {}
 }
 
+export const Universal = new Environment('<Universal>', 'window', 'multi');
+export const AllEnvironments: Environment = new Environment('<All>', 'window', 'multi');
+export const NoEnvironments = new Environment('<None>', 'window', 'multi');
+
 export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
     NAME,
     'context',
@@ -43,10 +47,6 @@ export class SingleEndpointContextualEnvironment<NAME extends string, ENVS exten
         };
     }
 }
-
-export const Universal = new Environment('<Universal>', 'window', 'multi');
-export const AllEnvironments: Environment = new Environment('<All>', 'window', 'multi');
-export const NoEnvironments = new Environment('<None>', 'window', 'multi');
 
 export function normEnvVisibility(envVisibility: EnvVisibility): Set<string> {
     const envSet = new Set<string>();

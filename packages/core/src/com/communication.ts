@@ -103,7 +103,9 @@ export class Communication {
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
         activeEnvironment.env = endPoint.env;
 
-        return activeEnvironment!.envType === 'node' ? this.connect(activeEnvironment) : this.spawn(activeEnvironment);
+        return activeEnvironment.envType === 'node'
+            ? this.connect(activeEnvironment as Environment<string, 'node'>)
+            : this.spawn(activeEnvironment);
     }
 
     public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
@@ -128,7 +130,7 @@ export class Communication {
     /**
      * Connects to a remote node environment
      */
-    public async connect(endPoint: Environment) {
+    public async connect(endPoint: Environment<string, 'node'>) {
         const { env, envType } = endPoint;
 
         const url = this.topology[env];

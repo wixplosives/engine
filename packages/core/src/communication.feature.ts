@@ -49,7 +49,9 @@ export default new Feature({
         spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
-        connect: Service.withType<(endPoint: Environment) => Promise<{ id: string }>>().defineEntity(AllEnvironments),
+        connect: Service.withType<(endPoint: Environment<string, 'node'>) => Promise<{ id: string }>>().defineEntity(
+            AllEnvironments
+        ),
         spawnOrConnect: Service.withType<
             (endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) => Promise<{ id: string }>
         >().defineEntity(AllEnvironments),

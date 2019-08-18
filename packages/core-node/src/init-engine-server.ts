@@ -12,7 +12,7 @@ export async function initEngineServer(
     serverEntries?: string[],
     clientConfig: unknown[] = [],
     serverConfig: unknown[] = [],
-    serverEnvironment?: Environment
+    serverEnvironment?: Environment<string, 'node'>
 ) {
     const app = express();
     app.use(express.static(pathToEditorDist));
