@@ -41,7 +41,7 @@ export class SingleEndpointContextualEnvironment<NAME extends string, ENVS exten
         );
     }
 
-    public withContext<I>(): DisposableContext<I> {
+    public withContext<I extends object>(): DisposableContext<I> {
         return {
             type: runtimeType<I & { dispose(): unknown }>(this.env + ' context')
         };
