@@ -12,16 +12,31 @@ export interface IFeatureDirectory {
 export interface ILoadFeatureDirectoryOptions {
     directoryPath: string;
     fs: IFileSystemSync;
+    directoryToPackage?: Map<string, IPackageStore>;
 }
 
-export function loadFeatureDirectory({ fs, directoryPath }: ILoadFeatureDirectoryOptions): IFeatureDirectory {
+export interface IPackageStore {
+    name: string;
+    path: string;
+    packageName: string;
+}
+
+export function loadFeatureDirectory({
+    fs,
+    directoryPath,
+    directoryToPackage
+}: ILoadFeatureDirectoryOptions): IFeatureDirectory {
     const features: string[] = [];
     const configurations: string[] = [];
     const envs: string[] = [];
     const contexts: string[] = [];
     for (const item of fs.readdirSync(directoryPath, { withFileTypes: true })) {
         const itemName = item.name;
-        const itemPath = fs.join(directoryPath, itemName);
+        let itemPath = fs.join(directoryPath, itemName.slice(0, itemName.indexOf(fs.extname(itemName))));
+        if (directoryToPackage) {
+            const directoryPackage = directoryToPackage.get(directoryPath)!;
+            itemPath = fs.join(directoryPackage.packageName, fs.relative(directoryPackage.path, itemPath));
+        }
         if (item.isFile()) {
             if (isFeatureFile(itemName)) {
                 features.push(itemPath);

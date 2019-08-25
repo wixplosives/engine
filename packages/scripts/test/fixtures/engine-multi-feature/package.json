@@ -1,7 +1,9 @@
 {
-  "name": "test",
-  "version": "^1.0.2",
+  "name": "@fixture/engine-multi-feature",
+  "version": "1.0.0",
+  "main": "index",
   "scripts": {
     "start": "engine start"
-  }
+  },
+  "private": true
 }

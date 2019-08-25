@@ -1,7 +1,9 @@
 {
-  "name": "engine-local-feature",
-  "version": "^1.0.2",
+  "name": "@fixture/engine-node",
+  "version": "1.0.0",
+  "main": "index",
   "scripts": {
     "start": "engine start"
-  }
+  },
+  "private": true
 }

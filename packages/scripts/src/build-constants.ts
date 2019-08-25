@@ -24,11 +24,13 @@ export const isContextFile = (fileName: string) =>
     fileName.indexOf(CONTEXT_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 
 export function parseFeatureFileName(fileName: string): string {
-    return fileName.split(FEATURE_FILENAME_HINT).shift()!;
+    return (fileName.endsWith('feature') ? fileName.split('.feature') : fileName.split(FEATURE_FILENAME_HINT)).shift()!;
 }
 
 export function parseConfigFileName(fileName: string) {
-    const fullConfigName = fileName.split(CONFIG_FILENAME_HINT).shift()!;
+    const fullConfigName = fileName.endsWith('config')
+        ? path.basename(fileName, path.extname(fileName))
+        : fileName.split(CONFIG_FILENAME_HINT).shift()!;
     const envName = path.extname(fullConfigName);
     const configName = path.basename(fullConfigName, envName);
     return {
@@ -39,10 +41,10 @@ export function parseConfigFileName(fileName: string) {
 }
 
 export function parseEnvFileName(fileName: string) {
-    const [featureName, envName, childEnvName] = fileName
-        .split(ENV_FILENAME_HINT)
-        .shift()!
-        .split('.');
+    const [featureName, envName, childEnvName] = (fileName.endsWith('env')
+        ? path.basename(fileName, path.extname(fileName))
+        : fileName.split(ENV_FILENAME_HINT).shift()!
+    ).split('.');
 
     if (!featureName || !envName) {
         throw new Error(`cannot parse env file: ${fileName}`);
@@ -52,10 +54,10 @@ export function parseEnvFileName(fileName: string) {
 }
 
 export function parseContextFileName(fileName: string) {
-    const [featureName, envName, childEnvName] = fileName
-        .split(CONTEXT_FILENAME_HINT)
-        .shift()!
-        .split('.');
+    const [featureName, envName, childEnvName] = (fileName.endsWith('context')
+        ? path.basename(fileName, path.extname(fileName))
+        : fileName.split(CONFIG_FILENAME_HINT).shift()!
+    ).split('.');
 
     if (!featureName || !envName || !childEnvName) {
         throw new Error(`cannot parse context file: ${fileName}`);

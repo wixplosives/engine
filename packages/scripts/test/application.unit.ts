@@ -23,11 +23,14 @@ describe('Application', function() {
 
     const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
     const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
+    const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
+    const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 
     describe('build', () => {
         it(`supports building features with a single fixture`, async () => {
             const app = new Application(engineFeatureFixturePath);
             await app.build();
+            disposables.add(() => app.clean());
 
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
         });
@@ -36,7 +39,7 @@ describe('Application', function() {
     describe('start', () => {
         it(`serves and allows running a feature`, async () => {
             const app = new Application(engineFeatureFixturePath);
-            const { close, port } = await app.start({ featureName: 'test/x' });
+            const { close, port } = await app.start({ featureName: 'engine-single/x' });
             disposables.add(() => close());
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
@@ -51,7 +54,7 @@ describe('Application', function() {
             const { close, port } = await app.start();
             disposables.add(() => close());
 
-            const page = await loadPage(`http://localhost:${port}/main.html?feature=test/variant`);
+            const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-multi/variant`);
 
             const { myConfig, mySlot } = await page.evaluate(() => ({
                 mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
@@ -69,7 +72,9 @@ describe('Application', function() {
             const { close, port } = await app.start();
             disposables.add(() => close());
 
-            const page = await loadPage(`http://localhost:${port}/main.html?feature=test/variant&config=test/variant2`);
+            const page = await loadPage(
+                `http://localhost:${port}/main.html?feature=engine-multi/variant&config=engine-multi/variant2`
+            );
 
             const { myConfig, mySlot } = await page.evaluate(() => ({
                 mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
@@ -83,10 +88,9 @@ describe('Application', function() {
         });
 
         it(`runs node environments`, async () => {
-            const featurePath = fs.join(__dirname, './fixtures/node-env');
-            const app = new Application(featurePath);
+            const app = new Application(nodeFeatureFixturePath);
             const runningApp = await app.start({
-                featureName: 'engine-local/x'
+                featureName: 'engine-node/x'
             });
             disposables.add('closing app', () => runningApp.close());
 
@@ -98,8 +102,7 @@ describe('Application', function() {
         });
 
         it('launches a feature with contextual environment with worker context', async () => {
-            const featurePath = fs.join(__dirname, './fixtures/contextual');
-            const app = new Application(featurePath);
+            const app = new Application(contextualFeatureFixturePath);
             const runningApp = await app.start({
                 featureName: 'contextual/some-feature'
             });
@@ -113,8 +116,7 @@ describe('Application', function() {
         });
 
         it('launches a feature with contextual environment with server context', async () => {
-            const featurePath = fs.join(__dirname, './fixtures/contextual');
-            const app = new Application(featurePath);
+            const app = new Application(contextualFeatureFixturePath);
             const runningApp = await app.start({
                 featureName: 'contextual/server-env'
             });
@@ -125,6 +127,75 @@ describe('Application', function() {
             await waitFor(async () => {
                 expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from server');
             });
+        });
+    });
+
+    describe('run static', () => {
+        it(`launches a published application`, async () => {
+            const app = new Application(engineFeatureFixturePath);
+            await app.clean();
+            await app.build({
+                featureName: 'engine-single/x'
+            });
+            const { close, port } = await app.run();
+            disposables.add(() => close());
+            disposables.add(() => app.clean());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            const text = await page.evaluate(() => document.body.textContent!.trim());
+
+            expect(text).to.equal('App is running.');
+        });
+
+        it(`launches a published application with node environment`, async () => {
+            const app = new Application(nodeFeatureFixturePath);
+            await app.clean();
+            await app.build({
+                featureName: 'engine-node/x'
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run();
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            const text = await page.evaluate(() => document.body.textContent!.trim());
+
+            expect(text).to.equal('Hello');
+        });
+
+        it(`launches a published application with a contextual environment`, async () => {
+            const app = new Application(contextualFeatureFixturePath);
+            await app.clean();
+            await app.build();
+            const { close: closeServer, port: serverAppPort } = await app.run({
+                featureName: 'contextual/some-feature'
+            });
+            disposables.add(() => app.clean());
+            disposables.add(() => closeServer());
+
+            const serverAppPage = await loadPage(
+                `http://localhost:${serverAppPort}/main.html?feature=contextual/some-feature`
+            );
+
+            const serverText = await serverAppPage.evaluate(() => document.body.textContent!.trim());
+
+            expect(serverText).to.contain('worker');
+
+            const { close: closeWorker, port: workerAppPort } = await app.run({
+                featureName: 'contextual/server-env'
+            });
+            disposables.add(() => closeWorker());
+
+            const workerAppPage = await loadPage(
+                `http://localhost:${workerAppPort}/main.html?feature=contextual/server-env`
+            );
+
+            const workerText = await workerAppPage.evaluate(() => document.body.textContent!.trim());
+
+            expect(workerText).to.contain('server');
         });
     });
 });

@@ -9,7 +9,7 @@ import '@ts-tools/node/fast';
 import './own-repo-hook';
 
 import fs from '@file-services/node';
-import { TopLevelConfig } from '@wixc3/engine-core';
+import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import rimrafCb from 'rimraf';
@@ -19,10 +19,11 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { SetMultiMap } from '@file-services/utils';
+import { join } from 'path';
 import { IConfigDefinition, IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
-import { NodeEnvironmentsManager } from './node-environments-manager';
+import { IClosable, NodeEnvironmentsManager } from './node-environments-manager';
 import { runNodeEnvironments } from './run-node-environments';
 import { resolvePackages } from './utils/resolve-packages';
 
@@ -38,6 +39,12 @@ export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
 }
 
+export interface IManifest {
+    features: Array<[string, IFeatureDefinition]>;
+    defaultFeatureName?: string;
+    defaultConfigName?: string;
+}
+
 export class Application {
     /**
      *
@@ -47,16 +54,15 @@ export class Application {
     constructor(public basePath: string = process.cwd(), public outputPath = fs.join(basePath, 'dist')) {}
 
     public async clean() {
-        console.log(`Removing: ${this.outputPath}`);
         await rimraf(this.outputPath);
         await rimraf(fs.join(this.basePath, 'npm'));
     }
 
     public async build({ featureName, configName }: IRunOptions = {}): Promise<webpack.Stats> {
-        const { features } = this.analyzeFeatures();
+        const { features, configurations } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName, 'production');
 
-        return new Promise<webpack.Stats>((resolve, reject) =>
+        const stats = await new Promise<webpack.Stats>((resolve, reject) =>
             compiler.run((e, s) => {
                 if (e) {
                     reject(e);
@@ -67,6 +73,30 @@ export class Application {
                 }
             })
         );
+
+        const manifest: IManifest = {
+            features: Array.from(features.entries()),
+            defaultConfigName: configName,
+            defaultFeatureName: featureName
+        };
+
+        await fs.promises.writeFile(
+            join(this.outputPath, 'manifest.json'),
+            JSON.stringify(manifest, (_name, value) => {
+                if (value instanceof Map) {
+                    return Array.from(value.entries());
+                }
+                return value;
+            })
+        );
+
+        const configsFolderPath = join(this.outputPath, 'configs');
+        await fs.promises.mkdir(configsFolderPath);
+        for (const [currentConfigName, config] of configurations) {
+            await fs.promises.writeFile(join(configsFolderPath, `${currentConfigName}.json`), JSON.stringify(config));
+        }
+
+        return stats;
     }
 
     public async start({ featureName, configName }: IRunOptions = {}) {
@@ -188,6 +218,99 @@ export class Application {
             port,
             httpServer,
             nodeEnvironmentManager,
+            async close() {
+                for (const dispose of disposables) {
+                    await dispose();
+                }
+                disposables.length = 0;
+            }
+        };
+    }
+
+    public async run(runOptions?: IRunOptions) {
+        const { features, defaultConfigName, defaultFeatureName } = (await fs.promises.readJsonFile(
+            join(this.outputPath, 'manifest.json')
+        )) as IManifest;
+
+        const { configName, featureName = defaultFeatureName }: IRunOptions = {
+            ...runOptions
+        };
+
+        const disposables: Array<() => unknown> = [];
+
+        const app = express();
+
+        const { port, httpServer } = await safeListeningHttpServer(3000, app);
+
+        const topology: Record<string, string> = {};
+
+        const baseConfig: TopLevelConfig = [COM.use({ config: { topology } })];
+        let config: TopLevelConfig = [...baseConfig];
+        const providedConfigName = configName || defaultConfigName;
+
+        if (providedConfigName) {
+            // read config file.
+            const configFilePath = fs.join(this.outputPath, 'configs', `${providedConfigName}.ts`);
+            if (fs.existsSync(configFilePath)) {
+                config.push(...(fs.readJsonFileSync(configFilePath) as Array<[string, object]>));
+            }
+        }
+
+        app.use('/favicon.ico', noContentHandler);
+        app.use('/config', (_req, res) => {
+            // serve config
+            res.json(config);
+        });
+        app.use('/', express.static(this.outputPath));
+        const socketServer = io(httpServer);
+        disposables.push(() => new Promise(res => socketServer.close(res)));
+
+        const runNodeEnv = async (targetFeature: {
+            featureName: string;
+            configName?: string;
+            options?: Map<string, string>;
+        }) => {
+            if (configName) {
+                const configFilePath = fs.join(this.outputPath, 'configs', `${configName}.ts`);
+                if (fs.existsSync(configFilePath)) {
+                    config = fs.readJsonFileSync(configFilePath) as Array<[string, object]>;
+                }
+            }
+            const { dispose, environments } = await runNodeEnvironments({
+                featureName: targetFeature.featureName,
+                config,
+                features: new Map(features),
+                socketServer,
+                options: targetFeature.options ? new Map(Object.entries(targetFeature.options)) : undefined
+            });
+
+            for (const { name } of environments) {
+                topology[name] = `http://localhost:${port}/_ws`;
+            }
+
+            return {
+                async close() {
+                    return dispose();
+                }
+            } as IClosable;
+        };
+
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(runNodeEnv);
+
+        if (featureName) {
+            await nodeEnvironmentManager.runEnvironment({
+                featureName,
+                configName
+            });
+            disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
+        }
+
+        const mainUrl = `http://localhost:${port}`;
+        console.log(`Listening:`);
+        console.log(mainUrl);
+
+        return {
+            port,
             async close() {
                 for (const dispose of disposables) {
                     await dispose();

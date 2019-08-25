@@ -19,10 +19,10 @@ describe('loadFeatureDirectory', () => {
 
         expect(results).to.eql({
             directoryPath,
-            features: ['/src/my-thing.feature.ts'],
-            configurations: ['/src/my-config.config.ts', '/src/my-config2.config.ts'],
-            envs: ['/src/my-thing.main.env.ts'],
-            contexts: ['/src/main.test.context.ts']
+            features: ['/src/my-thing.feature'],
+            configurations: ['/src/my-config.config', '/src/my-config2.config'],
+            envs: ['/src/my-thing.main.env'],
+            contexts: ['/src/main.test.context']
         });
     });
 
@@ -40,7 +40,7 @@ describe('loadFeatureDirectory', () => {
 
         const directoryPath = '/src';
         const { configurations } = loadFeatureDirectory({ fs, directoryPath });
-        expect(configurations).to.not.include('/src/sub/my-config3.config.ts');
+        expect(configurations).to.not.include('/src/sub/my-config3.config');
     });
 
     it('supports multiple features getting picked up', () => {
@@ -56,8 +56,8 @@ describe('loadFeatureDirectory', () => {
 
         expect(results).to.eql({
             directoryPath,
-            features: ['/my-thing.feature.ts', '/my-thing2.feature.ts'],
-            configurations: ['/my-config.config.ts', '/my-config2.config.ts'],
+            features: ['/my-thing.feature', '/my-thing2.feature'],
+            configurations: ['/my-config.config', '/my-config2.config'],
             envs: [],
             contexts: []
         });
