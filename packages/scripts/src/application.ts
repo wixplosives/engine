@@ -9,7 +9,7 @@ import '@ts-tools/node/fast';
 import './own-repo-hook';
 
 import fs from '@file-services/node';
-import { COM, TopLevelConfig } from '@wixc3/engine-core';
+import { TopLevelConfig } from '@wixc3/engine-core';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import rimrafCb from 'rimraf';
@@ -19,7 +19,7 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { SetMultiMap } from '@file-services/utils';
-import { join } from 'path';
+import { basename, dirname, extname, join } from 'path';
 import { IConfigDefinition, IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
@@ -74,27 +74,12 @@ export class Application {
             })
         );
 
-        const manifest: IManifest = {
-            features: Array.from(features.entries()),
-            defaultConfigName: configName,
-            defaultFeatureName: featureName
-        };
-
-        await fs.promises.writeFile(
-            join(this.outputPath, 'manifest.json'),
-            JSON.stringify(manifest, (_name, value) => {
-                if (value instanceof Map) {
-                    return Array.from(value.entries());
-                }
-                return value;
-            })
-        );
-
-        const configsFolderPath = join(this.outputPath, 'configs');
-        await fs.promises.mkdir(configsFolderPath);
-        for (const [currentConfigName, config] of configurations) {
-            await fs.promises.writeFile(join(configsFolderPath, `${currentConfigName}.json`), JSON.stringify(config));
-        }
+        await this.writeManifest({
+            features,
+            featureName,
+            configName
+        });
+        await this.writeConfigFiles(configurations);
 
         return stats;
     }
@@ -103,9 +88,11 @@ export class Application {
         const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
-        const topology: Map<string, Record<string, string>> = new Map();
 
-        const { port, app, socketServer, close } = await this.launchHttpServer();
+        const { port, app, close, nodeEnvironmentManager } = await this.launchHttpServer({
+            configurations,
+            features: Object.entries(features)
+        });
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
@@ -132,64 +119,7 @@ export class Application {
             }
         }
 
-        const runFeature = async (targetFeature: {
-            featureName: string;
-            configName?: string;
-            options?: Map<string, string>;
-        }) => {
-            const config: TopLevelConfig = [];
-
-            if (targetFeature.configName) {
-                const configDefinition = configurations.get(targetFeature.configName);
-                if (!configDefinition) {
-                    const configNames = Array.from(configurations.keys());
-                    throw new Error(
-                        `cannot find config "${
-                            targetFeature.featureName
-                        }". available configurations: ${configNames.join(', ')}`
-                    );
-                }
-                for (const { filePath } of configDefinition) {
-                    try {
-                        const { default: topLevelConfig } = await import(filePath);
-                        config.push(...topLevelConfig);
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-            }
-
-            const runningEnvs = await runNodeEnvironments({
-                featureName: targetFeature.featureName,
-                config,
-                socketServer,
-                features,
-                options: targetFeature.options
-            });
-
-            const topologyForFeature: Record<string, string> = {};
-            for (const { name } of runningEnvs.environments) {
-                topologyForFeature[name] = `http://localhost:${port}/_ws`;
-            }
-            topology.set(targetFeature.featureName, topologyForFeature);
-
-            return {
-                close: async () => {
-                    await runningEnvs.dispose();
-                    if (topology.has(targetFeature.featureName)) {
-                        for (const { name } of runningEnvs.environments) {
-                            delete topology.get(targetFeature.featureName)![name];
-                        }
-                        topology.delete(targetFeature.featureName);
-                    }
-                }
-            };
-        };
-
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(runFeature);
-
         app.use(nodeEnvironmentManager.middleware());
-        app.use('/config', createConfigMiddleware(configurations, topology));
 
         disposables.push(() => nodeEnvironmentManager.closeAll());
         disposables.push(() => close());
@@ -208,8 +138,8 @@ export class Application {
         });
 
         if (featureName) {
-            const { close: closeFeature } = await runFeature({ featureName, configName });
-            disposables.push(() => closeFeature());
+            await nodeEnvironmentManager.runEnvironment({ featureName, configName });
+            disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
 
         return {
@@ -229,65 +159,21 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IManifest;
 
-        const { configName, featureName = defaultFeatureName }: IRunOptions = { ...runOptions };
+        const { configName: providedConfigName, featureName = defaultFeatureName }: IRunOptions = { ...runOptions };
         const disposables: Array<() => unknown> = [];
-        const topology: Record<string, string> = {};
 
-        const { port, app, socketServer, close } = await this.launchHttpServer();
+        const configurations = await this.readConfigs();
 
-        disposables.push(() => close());
+        const configName = providedConfigName || defaultConfigName;
 
-        const baseConfig: TopLevelConfig = [COM.use({ config: { topology } })];
-        let config: TopLevelConfig = [...baseConfig];
-        const providedConfigName = configName || defaultConfigName;
-
-        if (providedConfigName) {
-            // read config file.
-            const configFilePath = fs.join(this.outputPath, 'configs', `${providedConfigName}.ts`);
-            if (fs.existsSync(configFilePath)) {
-                config.push(...(fs.readJsonFileSync(configFilePath) as Array<[string, object]>));
-            }
-        }
-
-        app.use('/config', (_req, res) => {
-            // serve config
-            res.json(config);
+        const { port, close, nodeEnvironmentManager } = await this.launchHttpServer({
+            configurations,
+            configName,
+            features
         });
 
-        const runNodeEnv = async (targetFeature: {
-            featureName: string;
-            configName?: string;
-            options?: Map<string, string>;
-        }) => {
-            if (configName) {
-                const configFilePath = fs.join(this.outputPath, 'configs', `${configName}.ts`);
-                if (fs.existsSync(configFilePath)) {
-                    config = { ...(fs.readJsonFileSync(configFilePath) as Array<[string, object]>), ...baseConfig };
-                }
-            }
-            const { dispose, environments } = await runNodeEnvironments({
-                featureName: targetFeature.featureName,
-                config,
-                socketServer,
-                features: new Map(features),
-                options: targetFeature.options ? new Map(Object.entries(targetFeature.options)) : undefined
-            });
-
-            for (const { name } of environments) {
-                topology[name] = `http://localhost:${port}/_ws`;
-            }
-
-            return {
-                async close() {
-                    for (const { name } of environments) {
-                        delete topology[name];
-                    }
-                    return dispose();
-                }
-            } as IClosable;
-        };
-
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(runNodeEnv);
+        disposables.push(() => close());
+        const mainUrl = `http://localhost:${port}`;
 
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
@@ -297,7 +183,6 @@ export class Application {
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
 
-        const mainUrl = `http://localhost:${port}`;
         console.log(`Listening:`);
         console.log(mainUrl);
 
@@ -310,6 +195,69 @@ export class Application {
                 disposables.length = 0;
             }
         };
+    }
+
+    private async readConfigs(): Promise<SetMultiMap<string, IConfigDefinition>> {
+        const configurations = new SetMultiMap<string, IConfigDefinition>();
+        const configsDirectoryPath = join(this.outputPath, 'configs');
+        if (await fs.promises.exists(configsDirectoryPath)) {
+            const folderEntities = await fs.promises.readdir(configsDirectoryPath, { withFileTypes: true });
+            for (const entity of folderEntities) {
+                if (entity.isDirectory()) {
+                    const featureName = entity.name;
+                    const featureConfigsDirectory = join(configsDirectoryPath, featureName);
+                    const featureConfigsEntities = await fs.promises.readdir(featureConfigsDirectory, {
+                        withFileTypes: true
+                    });
+                    for (const possibleConfigFile of featureConfigsEntities) {
+                        const configName = basename(possibleConfigFile.name, extname(possibleConfigFile.name));
+                        if (possibleConfigFile.isFile() && extname(possibleConfigFile.name) === '.json') {
+                            const config = (await fs.promises.readJsonFile(
+                                join(featureConfigsDirectory, possibleConfigFile.name)
+                            )) as IConfigDefinition;
+                            configurations.add(`${featureName}/${configName}`, config);
+                        }
+                    }
+                }
+            }
+        }
+
+        return configurations;
+    }
+
+    private async writeManifest({
+        features,
+        featureName,
+        configName
+    }: {
+        features: Map<string, IFeatureDefinition>;
+        featureName?: string;
+        configName?: string;
+    }) {
+        const manifest: IManifest = {
+            features: Array.from(features.entries()),
+            defaultConfigName: configName,
+            defaultFeatureName: featureName
+        };
+
+        await fs.promises.writeFile(
+            join(this.outputPath, 'manifest.json'),
+            JSON.stringify(manifest, (_name, value) => {
+                if (value instanceof Map) {
+                    return Array.from(value.entries());
+                }
+                return value;
+            })
+        );
+    }
+
+    private async writeConfigFiles(configurations: SetMultiMap<string, IConfigDefinition>) {
+        const configsFolderPath = join(this.outputPath, 'configs');
+        for (const [currentConfigName, config] of configurations) {
+            const configFilePath = join(configsFolderPath, `${currentConfigName}.json`);
+            await fs.promises.ensureDirectory(dirname(configFilePath));
+            await fs.promises.writeFile(configFilePath, JSON.stringify(config));
+        }
     }
 
     private createCompiler(
@@ -367,21 +315,78 @@ export class Application {
         return packageToConfigurationMapping;
     }
 
-    private async launchHttpServer() {
+    private async launchHttpServer({
+        configurations,
+        configName,
+        features
+    }: {
+        configurations: SetMultiMap<string, IConfigDefinition>;
+        configName?: string;
+        features: Array<[string, IFeatureDefinition]>;
+    }) {
         const app = express();
+        const topology = new Map<string, Record<string, string>>();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
 
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
+        app.use('/config', createConfigMiddleware(configurations, topology, configName));
         const socketServer = io(httpServer);
+
+        const runNodeEnv = async (targetFeature: { featureName: string; options?: Map<string, string> }) => {
+            const config: TopLevelConfig = [];
+            if (configName) {
+                const configDefinition = configurations.get(configName);
+                if (!configDefinition) {
+                    const configNames = Array.from(configurations.keys());
+                    throw new Error(
+                        `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
+                    );
+                }
+                for (const { filePath } of configDefinition) {
+                    try {
+                        const { default: topLevelConfig } = await import(filePath);
+                        config.push(...topLevelConfig);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+            const { dispose, environments } = await runNodeEnvironments({
+                featureName: targetFeature.featureName,
+                socketServer,
+                features: new Map(features),
+                options: targetFeature.options ? new Map(Object.entries(targetFeature.options)) : undefined
+            });
+
+            const topologyForFeature: Record<string, string> = {};
+            for (const { name } of environments) {
+                topologyForFeature[name] = `http://localhost:${port}/_ws`;
+            }
+            topology.set(targetFeature.featureName, topologyForFeature);
+
+            return {
+                async close() {
+                    if (topology.has(targetFeature.featureName)) {
+                        for (const { name } of environments) {
+                            delete topology.get(targetFeature.featureName)![name];
+                        }
+                        topology.delete(targetFeature.featureName);
+                    }
+                    return dispose();
+                }
+            } as IClosable;
+        };
+
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(runNodeEnv);
 
         return {
             close: async () => new Promise(res => socketServer.close(res)),
             port,
-            httpServer,
             app,
-            socketServer
+            socketServer,
+            nodeEnvironmentManager
         };
     }
 }
