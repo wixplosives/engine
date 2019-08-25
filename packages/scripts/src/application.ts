@@ -103,15 +103,9 @@ export class Application {
         const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
-        const app = express();
-
-        const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        const socketServer = io(httpServer);
-        disposables.push(() => new Promise(res => socketServer.close(res)));
         const topology: Map<string, Record<string, string>> = new Map();
 
-        app.use('/favicon.ico', noContentHandler);
-        app.use('/config', createConfigMiddleware(configurations, topology));
+        const { port, app, socketServer, close } = await this.launchHttpServer();
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
@@ -195,7 +189,10 @@ export class Application {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(runFeature);
 
         app.use(nodeEnvironmentManager.middleware());
+        app.use('/config', createConfigMiddleware(configurations, topology));
+
         disposables.push(() => nodeEnvironmentManager.closeAll());
+        disposables.push(() => close());
 
         app.get('/server-state', (_req, res) => {
             res.json({
@@ -214,9 +211,9 @@ export class Application {
             const { close: closeFeature } = await runFeature({ featureName, configName });
             disposables.push(() => closeFeature());
         }
+
         return {
             port,
-            httpServer,
             nodeEnvironmentManager,
             async close() {
                 for (const dispose of disposables) {
@@ -232,17 +229,13 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IManifest;
 
-        const { configName, featureName = defaultFeatureName }: IRunOptions = {
-            ...runOptions
-        };
-
+        const { configName, featureName = defaultFeatureName }: IRunOptions = { ...runOptions };
         const disposables: Array<() => unknown> = [];
-
-        const app = express();
-
-        const { port, httpServer } = await safeListeningHttpServer(3000, app);
-
         const topology: Record<string, string> = {};
+
+        const { port, app, socketServer, close } = await this.launchHttpServer();
+
+        disposables.push(() => close());
 
         const baseConfig: TopLevelConfig = [COM.use({ config: { topology } })];
         let config: TopLevelConfig = [...baseConfig];
@@ -256,14 +249,10 @@ export class Application {
             }
         }
 
-        app.use('/favicon.ico', noContentHandler);
         app.use('/config', (_req, res) => {
             // serve config
             res.json(config);
         });
-        app.use('/', express.static(this.outputPath));
-        const socketServer = io(httpServer);
-        disposables.push(() => new Promise(res => socketServer.close(res)));
 
         const runNodeEnv = async (targetFeature: {
             featureName: string;
@@ -273,14 +262,14 @@ export class Application {
             if (configName) {
                 const configFilePath = fs.join(this.outputPath, 'configs', `${configName}.ts`);
                 if (fs.existsSync(configFilePath)) {
-                    config = fs.readJsonFileSync(configFilePath) as Array<[string, object]>;
+                    config = { ...(fs.readJsonFileSync(configFilePath) as Array<[string, object]>), ...baseConfig };
                 }
             }
             const { dispose, environments } = await runNodeEnvironments({
                 featureName: targetFeature.featureName,
                 config,
-                features: new Map(features),
                 socketServer,
+                features: new Map(features),
                 options: targetFeature.options ? new Map(Object.entries(targetFeature.options)) : undefined
             });
 
@@ -290,6 +279,9 @@ export class Application {
 
             return {
                 async close() {
+                    for (const { name } of environments) {
+                        delete topology[name];
+                    }
                     return dispose();
                 }
             } as IClosable;
@@ -373,6 +365,24 @@ export class Application {
             }
         }
         return packageToConfigurationMapping;
+    }
+
+    private async launchHttpServer() {
+        const app = express();
+
+        const { port, httpServer } = await safeListeningHttpServer(3000, app);
+
+        app.use('/favicon.ico', noContentHandler);
+        app.use('/', express.static(this.outputPath));
+        const socketServer = io(httpServer);
+
+        return {
+            close: async () => new Promise(res => socketServer.close(res)),
+            port,
+            httpServer,
+            app,
+            socketServer
+        };
     }
 }
 
