@@ -37,11 +37,10 @@ export class NodeEnvironmentsManager {
 
     public async closeEnvironment({ featureName }: RunEnvironmentOptions) {
         const runningEnvironment = this.runningEnvironments.get(featureName);
-        if (!runningEnvironment) {
-            throw new Error(`there are no node environments running for ${featureName}`);
+        if (runningEnvironment) {
+            this.runningEnvironments.delete(featureName);
+            await runningEnvironment.close();
         }
-        this.runningEnvironments.delete(featureName);
-        await runningEnvironment.close();
     }
 
     public getRunningEnvironments() {

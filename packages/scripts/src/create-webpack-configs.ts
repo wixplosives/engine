@@ -25,10 +25,10 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
 
     const webEnvs = enviroments.filter(({ type }) => type === 'window' || type === 'iframe');
     const workerEnvs = enviroments.filter(({ type }) => type === 'worker');
-    const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
 
     if (webEnvs.length) {
-        plugins.push(new StylableWebpackPlugin());
+        const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules), new StylableWebpackPlugin()];
+        const entry: webpack.Entry = {};
         if (mode === 'development') {
             plugins.push(
                 new HtmlWebpackPlugin({
@@ -36,6 +36,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                     chunks: ['index']
                 })
             );
+            entry.index = require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'));
         }
         configurations.push(
             createWebpackConfig({
@@ -44,12 +45,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'web',
                 virtualModules,
                 plugins,
-                entry:
-                    mode === 'development'
-                        ? {
-                              index: require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'))
-                          }
-                        : undefined
+                entry
             })
         );
     }
@@ -60,7 +56,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: workerEnvs,
                 target: 'webworker',
                 virtualModules,
-                plugins
+                plugins: [new VirtualModulesPlugin(virtualModules)]
             })
         );
     }
