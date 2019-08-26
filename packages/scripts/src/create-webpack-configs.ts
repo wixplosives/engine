@@ -19,30 +19,37 @@ export interface ICreateWebpackConfigsOptions {
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const { enviroments } = options;
+    const { enviroments, mode = 'development' } = options;
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
     const webEnvs = enviroments.filter(({ type }) => type === 'window' || type === 'iframe');
     const workerEnvs = enviroments.filter(({ type }) => type === 'worker');
+    const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
+
     if (webEnvs.length) {
+        plugins.push(new StylableWebpackPlugin());
+        if (mode === 'development') {
+            plugins.push(
+                new HtmlWebpackPlugin({
+                    filename: `index.html`,
+                    chunks: ['index']
+                })
+            );
+        }
         configurations.push(
             createWebpackConfig({
                 ...options,
                 enviroments: webEnvs,
                 target: 'web',
                 virtualModules,
-                plugins: [
-                    new HtmlWebpackPlugin({
-                        filename: `index.html`,
-                        chunks: ['index']
-                    }),
-                    new VirtualModulesPlugin(virtualModules),
-                    new StylableWebpackPlugin()
-                ],
-                entry: {
-                    index: require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'))
-                }
+                plugins,
+                entry:
+                    mode === 'development'
+                        ? {
+                              index: require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'))
+                          }
+                        : undefined
             })
         );
     }
@@ -53,7 +60,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: workerEnvs,
                 target: 'webworker',
                 virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)]
+                plugins
             })
         );
     }

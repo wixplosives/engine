@@ -88,10 +88,9 @@ export class Application {
         const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
-
         const { port, app, close, nodeEnvironmentManager } = await this.launchHttpServer({
             configurations,
-            features: Object.entries(features)
+            features: Array.from(features.entries())
         });
 
         for (const childCompiler of compiler.compilers) {
