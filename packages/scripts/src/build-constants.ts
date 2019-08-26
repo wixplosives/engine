@@ -24,7 +24,9 @@ export const isContextFile = (fileName: string) =>
     fileName.indexOf(CONTEXT_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 
 export function parseFeatureFileName(fileName: string): string {
-    return (fileName.endsWith('feature') ? fileName.split('.feature') : fileName.split(FEATURE_FILENAME_HINT)).shift()!;
+    return fileName.endsWith('feature')
+        ? path.basename(fileName, path.extname(fileName))
+        : fileName.split(FEATURE_FILENAME_HINT).shift()!;
 }
 
 export function parseConfigFileName(fileName: string) {
