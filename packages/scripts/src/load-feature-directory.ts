@@ -32,7 +32,7 @@ export function loadFeatureDirectory({
     const contexts: string[] = [];
     for (const item of fs.readdirSync(directoryPath, { withFileTypes: true })) {
         const itemName = item.name;
-        let itemPath = fs.join(directoryPath, itemName.slice(0, itemName.indexOf(fs.extname(itemName))));
+        let itemPath = fs.join(directoryPath, fs.basename(itemName, fs.extname(itemName)));
         if (directoryToPackage) {
             const directoryPackage = directoryToPackage.get(directoryPath)!;
             itemPath = fs.join(directoryPackage.packageName, fs.relative(directoryPackage.path, itemPath));
