@@ -132,7 +132,7 @@ describe('Application', function() {
 
     describe('run static', function() {
         // bundling may take a few seconds on ci machines
-        this.timeout(10_000);
+        this.timeout(15_000);
         it(`launches a published application`, async () => {
             const app = new Application(engineFeatureFixturePath);
             await app.clean();
