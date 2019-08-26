@@ -77,7 +77,9 @@ program
 
         try {
             const app = new Application(path, join(path, outDir));
-            await app.run({ configName, featureName });
+            const { port } = await app.run({ configName, featureName });
+            console.log(`Listening:`);
+            console.log(`http://localhost:${port}/main.html`);
         } catch (e) {
             printErrorAndExit(e);
         }

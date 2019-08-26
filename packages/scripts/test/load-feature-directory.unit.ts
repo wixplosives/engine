@@ -40,7 +40,7 @@ describe('loadFeatureDirectory', () => {
 
         const directoryPath = '/src';
         const { configurations } = loadFeatureDirectory({ fs, directoryPath });
-        expect(configurations).to.not.include('/src/sub/my-config3.config');
+        expect(configurations).to.not.include('/src/sub/my-config3.config.ts');
     });
 
     it('supports multiple features getting picked up', () => {

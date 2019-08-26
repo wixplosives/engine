@@ -39,7 +39,7 @@ export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
 }
 
-export interface IManifest {
+export interface IBuildManifest {
     features: Array<[string, IFeatureDefinition]>;
     defaultFeatureName?: string;
     defaultConfigName?: string;
@@ -120,7 +120,6 @@ export class Application {
 
         app.use(nodeEnvironmentManager.middleware());
 
-        disposables.push(() => nodeEnvironmentManager.closeAll());
         disposables.push(() => close());
 
         app.get('/server-state', (_req, res) => {
@@ -141,6 +140,8 @@ export class Application {
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
 
+        disposables.push(() => nodeEnvironmentManager.closeAll());
+
         return {
             port,
             nodeEnvironmentManager,
@@ -153,12 +154,12 @@ export class Application {
         };
     }
 
-    public async run(runOptions?: IRunOptions) {
+    public async run(runOptions: IRunOptions = {}) {
         const { features, defaultConfigName, defaultFeatureName } = (await fs.promises.readJsonFile(
             join(this.outputPath, 'manifest.json')
-        )) as IManifest;
+        )) as IBuildManifest;
 
-        const { configName: providedConfigName, featureName = defaultFeatureName }: IRunOptions = { ...runOptions };
+        const { configName: providedConfigName, featureName = defaultFeatureName } = runOptions;
         const disposables: Array<() => unknown> = [];
 
         const configurations = await this.readConfigs();
@@ -172,7 +173,6 @@ export class Application {
         });
 
         disposables.push(() => close());
-        const mainUrl = `http://localhost:${port}`;
 
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
@@ -183,7 +183,7 @@ export class Application {
         }
 
         console.log(`Listening:`);
-        console.log(mainUrl);
+        console.log(`http://localhost:${port}/main.html`);
 
         return {
             port,
@@ -209,11 +209,14 @@ export class Application {
                         withFileTypes: true
                     });
                     for (const possibleConfigFile of featureConfigsEntities) {
-                        const configName = basename(possibleConfigFile.name, extname(possibleConfigFile.name));
-                        if (possibleConfigFile.isFile() && extname(possibleConfigFile.name) === '.json') {
+                        const fileExtention = extname(possibleConfigFile.name);
+                        if (possibleConfigFile.isFile() && fileExtention === '.json') {
+                            const configName = basename(possibleConfigFile.name, fileExtention);
+
                             const config = (await fs.promises.readJsonFile(
                                 join(featureConfigsDirectory, possibleConfigFile.name)
                             )) as IConfigDefinition;
+
                             configurations.add(`${featureName}/${configName}`, config);
                         }
                     }
@@ -233,21 +236,13 @@ export class Application {
         featureName?: string;
         configName?: string;
     }) {
-        const manifest: IManifest = {
+        const manifest: IBuildManifest = {
             features: Array.from(features.entries()),
             defaultConfigName: configName,
             defaultFeatureName: featureName
         };
 
-        await fs.promises.writeFile(
-            join(this.outputPath, 'manifest.json'),
-            JSON.stringify(manifest, (_name, value) => {
-                if (value instanceof Map) {
-                    return Array.from(value.entries());
-                }
-                return value;
-            })
-        );
+        await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
     }
 
     private async writeConfigFiles(configurations: SetMultiMap<string, IConfigDefinition>) {
@@ -255,7 +250,7 @@ export class Application {
         for (const [currentConfigName, config] of configurations) {
             const configFilePath = join(configsFolderPath, `${currentConfigName}.json`);
             await fs.promises.ensureDirectory(dirname(configFilePath));
-            await fs.promises.writeFile(configFilePath, JSON.stringify(config));
+            await fs.promises.writeFile(configFilePath, JSON.stringify(config, null, 2));
         }
     }
 
@@ -330,7 +325,7 @@ export class Application {
 
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
-        app.use('/config', createConfigMiddleware(configurations, topology, configName));
+        app.use('/config', createConfigMiddleware(configurations, topology));
         const socketServer = io(httpServer);
 
         const runNodeEnv = async (targetFeature: { featureName: string; options?: Map<string, string> }) => {

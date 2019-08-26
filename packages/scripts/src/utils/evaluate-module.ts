@@ -9,6 +9,7 @@ export function evaluateModule(filePaths: string | string[]): Module {
     filePaths = typeof filePaths === 'string' ? [filePaths] : filePaths;
     const entryModule = new Module('entry-module');
     entryModule.filename = 'entry-module.js';
+    // we want node to be able to resolve package requests. we use first module to calculate lookup locations
     const resolutionPaths = require.resolve.paths(filePaths[0]);
     if (resolutionPaths) {
         entryModule.paths = resolutionPaths;

@@ -5,14 +5,13 @@ import { IConfigDefinition } from './analyze-feature';
 
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition>,
-    topology: Map<string, Record<string, string>>,
-    defaultConfig: string = 'production'
+    topology: Map<string, Record<string, string>>
 ): express.RequestHandler {
     return async (req, res) => {
         const { feature: reqFeature, env: reqEnv } = req.query;
         const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(reqFeature) } })];
         const requestedConfig = req.path.slice(1);
-        const configDefinitions = configurations.get(requestedConfig === 'undefined' ? defaultConfig : requestedConfig);
+        const configDefinitions = configurations.get(requestedConfig);
 
         if (configDefinitions) {
             for (const { filePath, envName } of configDefinitions) {

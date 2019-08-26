@@ -53,7 +53,7 @@ export function parseEnvFileName(fileName: string) {
 
 export function parseContextFileName(fileName: string) {
     const [featureName, envName, childEnvName] = fileName
-        .split(CONFIG_FILENAME_HINT)
+        .split(CONTEXT_FILENAME_HINT)
         .shift()!
         .split('.');
 

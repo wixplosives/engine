@@ -61,8 +61,8 @@ describe('Node environments manager', function() {
         disposables.add(() => close());
 
         await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
-        await expect(
-            nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })
-        ).to.eventually.not.be.rejectedWith();
+        await expect(nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
+            'there are no node environments running for test'
+        );
     });
 });

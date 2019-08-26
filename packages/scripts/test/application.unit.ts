@@ -2,7 +2,12 @@ import fs from '@file-services/node';
 import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
+import { Page } from 'puppeteer';
 import { Application } from '../src/application';
+
+function getBodyContent(page: Page) {
+    return page.evaluate(() => document.body.textContent!.trim());
+}
 
 describe('Application', function() {
     this.timeout(20_000);
@@ -44,7 +49,7 @@ describe('Application', function() {
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
 
-            const text = await page.evaluate(() => document.body.textContent!.trim());
+            const text = await getBodyContent(page);
 
             expect(text).to.equal('App is running.');
         });
@@ -97,7 +102,7 @@ describe('Application', function() {
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
             await waitFor(async () => {
-                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('Hello');
+                expect(await getBodyContent(page)).to.equal('Hello');
             });
         });
 
@@ -111,7 +116,7 @@ describe('Application', function() {
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
             await waitFor(async () => {
-                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from worker');
+                expect(await getBodyContent(page)).to.equal('from worker');
             });
         });
 
@@ -125,34 +130,33 @@ describe('Application', function() {
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
             await waitFor(async () => {
-                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from server');
+                expect(await getBodyContent(page)).to.equal('from server');
             });
         });
     });
 
-    describe('run static', function() {
+    describe('run', function() {
         // bundling may take a few seconds on ci machines
         this.timeout(15_000);
-        it(`launches a published application`, async () => {
+        it(`launches a built application with web environment`, async () => {
             const app = new Application(engineFeatureFixturePath);
-            await app.clean();
             await app.build({
                 featureName: 'engine-single/x'
             });
+            disposables.add(() => app.clean());
+
             const { close, port } = await app.run();
             disposables.add(() => close());
-            disposables.add(() => app.clean());
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
 
-            const text = await page.evaluate(() => document.body.textContent!.trim());
+            const text = await getBodyContent(page);
 
             expect(text).to.equal('App is running.');
         });
 
-        it(`launches a published application with node environment`, async () => {
+        it(`launches a built application with node environment`, async () => {
             const app = new Application(nodeFeatureFixturePath);
-            await app.clean();
             await app.build({
                 featureName: 'engine-node/x'
             });
@@ -163,41 +167,40 @@ describe('Application', function() {
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
 
-            const text = await page.evaluate(() => document.body.textContent!.trim());
+            const text = await getBodyContent(page);
 
             expect(text).to.equal('Hello');
         });
 
-        it(`launches a published application with a contextual environment`, async () => {
+        it(`launches a built application with a contextual environment`, async () => {
             const app = new Application(contextualFeatureFixturePath);
-            await app.clean();
             await app.build();
-            const { close: closeServer, port: serverAppPort } = await app.run({
+            const { close: webWorkerServer, port: webWorkerAppPort } = await app.run({
                 featureName: 'contextual/some-feature'
             });
             disposables.add(() => app.clean());
+            disposables.add(() => webWorkerServer());
+
+            const webWorkerAppPage = await loadPage(
+                `http://localhost:${webWorkerAppPort}/main.html?feature=contextual/some-feature`
+            );
+
+            const textFromWebWorker = await getBodyContent(webWorkerAppPage);
+
+            expect(textFromWebWorker).to.contain('worker');
+
+            const { close: closeServer, port: serverAppPort } = await app.run({
+                featureName: 'contextual/server-env'
+            });
             disposables.add(() => closeServer());
 
             const serverAppPage = await loadPage(
-                `http://localhost:${serverAppPort}/main.html?feature=contextual/some-feature`
+                `http://localhost:${serverAppPort}/main.html?feature=contextual/server-env`
             );
 
-            const serverText = await serverAppPage.evaluate(() => document.body.textContent!.trim());
+            const textFromServer = await getBodyContent(serverAppPage);
 
-            expect(serverText).to.contain('worker');
-
-            const { close: closeWorker, port: workerAppPort } = await app.run({
-                featureName: 'contextual/server-env'
-            });
-            disposables.add(() => closeWorker());
-
-            const workerAppPage = await loadPage(
-                `http://localhost:${workerAppPort}/main.html?feature=contextual/server-env`
-            );
-
-            const workerText = await workerAppPage.evaluate(() => document.body.textContent!.trim());
-
-            expect(workerText).to.contain('server');
+            expect(textFromServer).to.contain('server');
         });
     });
 });

@@ -37,6 +37,7 @@ export interface IFeatureDefinition extends IFeatureModule {
     scopedName: string;
     resolvedContexts: Record<string, string>;
     isRoot: boolean;
+    toJSON(): unknown;
 }
 
 export interface IFeatureModule {
@@ -74,9 +75,9 @@ export interface IEnvironment {
     childEnvName?: string;
 }
 
-interface IPackageStore {
+interface IPackageDescriptor {
     simplifiedName: string;
-    path: string;
+    directoryPath: string;
     name: string;
 }
 
@@ -122,23 +123,6 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         featureDirectoryPaths.add(fs.dirname(filename));
     }
 
-    // find closest package.json for each feature directory and generate package name
-    const directoryToPackage = new Map<string, IPackageStore>();
-    for (const featureDirectoryPath of featureDirectoryPaths) {
-        const packageJsonPath = fs.findClosestFileSync(featureDirectoryPath, 'package.json');
-        if (!packageJsonPath) {
-            throw new Error(`cannot find package.json ${featureDirectoryPath}`);
-        }
-        const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(
-            packageJsonPath
-        ) as IPackageJson;
-        directoryToPackage.set(featureDirectoryPath, {
-            simplifiedName: simplifyPackageName(name),
-            path: fs.dirname(packageJsonPath),
-            name
-        });
-    }
-
     // this is our actual starting point. we now have a list of directories which contain
     // feature/env/config files, both in our repo and from node_modules.
     const featureDirectories: IFeatureDirectory[] = [];
@@ -153,6 +137,23 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         }
     }
 
+    // find closest package.json for each feature directory and generate package name
+    const directoryToPackage = new Map<string, IPackageDescriptor>();
+    for (const featureDirectoryPath of featureDirectoryPaths) {
+        const packageJsonPath = fs.findClosestFileSync(featureDirectoryPath, 'package.json');
+        if (!packageJsonPath) {
+            throw new Error(`cannot find package.json ${featureDirectoryPath}`);
+        }
+        const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(
+            packageJsonPath
+        ) as IPackageJson;
+        directoryToPackage.set(featureDirectoryPath, {
+            simplifiedName: simplifyPackageName(name),
+            directoryPath: fs.dirname(packageJsonPath),
+            name
+        });
+    }
+
     const foundFeatures = new Map<string, IFeatureDefinition>();
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
     const featureToScopedName = new Map<SomeFeature, string>();
@@ -165,7 +166,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 
         // pick up configs
         for (const filePath of configurations) {
-            const scopedConfigFilePath = fs.join(featurePackage.name, fs.relative(featurePackage.path, filePath));
+            const scopedConfigFilePath = `${featurePackage.name}/${fs.relative(
+                featurePackage.directoryPath,
+                filePath
+            )}`;
             const { configName, envName } = parseConfigFileName(fs.basename(filePath));
             const scopedConfigName = scopeToPackage(featurePackage.simplifiedName, configName);
             foundConfigs.add(scopedConfigName, { filePath: scopedConfigFilePath, envName, name: configName });
@@ -173,10 +177,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 
         // pick up features
         for (const featureFilePath of features) {
-            const scopedFeatureFilePath = fs.join(
-                featurePackage.name,
-                fs.relative(featurePackage.path, featureFilePath)
-            );
+            const scopedFeatureFilePath = `${featurePackage.name}/${fs.relative(
+                featurePackage.directoryPath,
+                featureFilePath
+            )}`;
             const [evaluatedFeature] = evaluateModule(featureFilePath).children;
             const featureModule = analyzeFeatureModule(evaluatedFeature);
             const featureName = featureModule.name;
@@ -190,14 +194,28 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
                 contextFilePaths: {},
                 resolvedContexts: {},
                 isRoot: ownFeatureFilePaths.has(featureFilePath),
-                filePath: scopedFeatureFilePath
+                filePath: scopedFeatureFilePath,
+                toJSON(this: IFeatureDefinition) {
+                    return {
+                        contextFilePaths: this.contextFilePaths,
+                        dependencies: this.dependencies,
+                        filePath: this.filePath,
+                        envFilePaths: this.envFilePaths,
+                        exportedEnvs: this.exportedEnvs,
+                        resolvedContexts: this.resolvedContexts,
+                        scopedName
+                    };
+                }
             });
             featureToScopedName.set(featureModule.exportedFeature, scopedName);
         }
 
         // pick up environments
         for (const envFilePath of envs) {
-            const scopedEnvFilePath = fs.join(featurePackage.name, fs.relative(featurePackage.path, envFilePath));
+            const scopedEnvFilePath = `${featurePackage.name}/${fs.relative(
+                featurePackage.directoryPath,
+                envFilePath
+            )}`;
             const { featureName, envName, childEnvName } = parseEnvFileName(fs.basename(envFilePath));
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
@@ -208,10 +226,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 
         // pick up context files and add them to feature definitions
         for (const contextFilePath of contexts) {
-            const scopedContextFilePath = fs.join(
-                featurePackage.name,
-                fs.relative(featurePackage.path, contextFilePath)
-            );
+            const scopedContextFilePath = `${featurePackage.name}/${fs.relative(
+                featurePackage.directoryPath,
+                contextFilePath
+            )}`;
             const { featureName, envName, childEnvName } = parseContextFileName(fs.basename(contextFilePath));
             const contextualName = `${envName}/${childEnvName}`;
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
