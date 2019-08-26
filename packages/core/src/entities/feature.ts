@@ -1,6 +1,7 @@
 import { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import {
+    ContextHandler,
     DisposableContext,
     DisposeFunction,
     EntityMap,
@@ -68,7 +69,7 @@ export class Feature<
     public context: EnvironmentContext;
     private environmentIml = new Set<string>();
     private setupHandlers = new Set<SetupHandler<Environment, ID, Deps, API, EnvironmentContext>>();
-    private contextHandlers = new Map<string | number | symbol, () => unknown>();
+    private contextHandlers = new Map<string | number | symbol, ContextHandler<object, EnvironmentFilter, Deps>>();
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
         this.dependencies = def.dependencies || (([] as IDTagArray) as Deps);
@@ -93,9 +94,10 @@ export class Feature<
     }
 
     // context = Context<Interface>
-    public setupContext<T extends keyof EnvironmentContext>(
-        environmentContext: T,
-        contextHandler: () => EnvironmentContext[T]['type']
+    public setupContext<K extends keyof EnvironmentContext, Env extends EnvironmentFilter>(
+        _env: Env,
+        environmentContext: K,
+        contextHandler: ContextHandler<EnvironmentContext[K]['type'], Env, Deps>
     ) {
         const registerdContext = this.contextHandlers.get(environmentContext);
         if (registerdContext) {
@@ -148,7 +150,7 @@ export class Feature<
 
         const emptyDispose = { dispose: () => undefined };
         for (const [key, contextHandler] of this.contextHandlers) {
-            const contextValue = contextHandler();
+            const contextValue = contextHandler(depsApis);
             environmentContext[key] = { ...emptyDispose, ...contextValue };
         }
 

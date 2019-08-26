@@ -1,50 +1,46 @@
 import { IFeatureDefinition } from './analyze-feature';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 
+const { stringify } = JSON;
+
 export interface ICreateEntrypointsOptions {
     features: Map<string, IFeatureDefinition>;
     envName: string;
-    childEnvName?: string;
+    childEnvs: string[];
     featureName?: string;
     configName?: string;
 }
 
-export function createEntrypoint({
-    features,
-    envName,
-    childEnvName,
-    featureName,
-    configName
-}: ICreateEntrypointsOptions) {
+export function createEntrypoint({ features, envName, childEnvs, featureName, configName }: ICreateEntrypointsOptions) {
     return `import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
     
 const featureLoaders = {
 ${Array.from(features.values())
     .map(({ scopedName, name, filePath, envFilePaths, contextFilePaths, dependencies, resolvedContexts }) => {
-        const envSetupFilePaths: string[] = [];
-        if (childEnvName !== undefined) {
+        const loadStatements: string[] = [];
+        for (const childEnvName of childEnvs) {
             const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
             if (contextFilePath) {
-                envSetupFilePaths.push(contextFilePath);
+                loadStatements.push(
+                    `                if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
+                   await import(/* webpackChunkName: "${name}" */ ${stringify(contextFilePath)});
+                }`
+                );
             }
         }
         const envFilePath = envFilePaths[envName];
         if (envFilePath) {
-            envSetupFilePaths.push(envFilePath);
+            loadStatements.push(
+                `                await import(/* webpackChunkName: "${name}" */ ${stringify(envFilePath)});`
+            );
         }
 
         return `    '${scopedName}': {
-            async load() {
-${envSetupFilePaths
-    .map(
-        setupFilePath =>
-            `                await import(/* webpackChunkName: "${name}" */ ${JSON.stringify(setupFilePath)});`
-    )
-    .join('\n')}
-                return (await import(/* webpackChunkName: "${name}" */ ${JSON.stringify(filePath)})).default;
+            async load(resolvedContexts) {${loadStatements.length ? '\n' + loadStatements.join('\n') : ''}
+                return (await import(/* webpackChunkName: "${name}" */ ${stringify(filePath)})).default;
             },
-            depFeatures: ${JSON.stringify(dependencies)},
-            resolvedContexts: ${JSON.stringify(resolvedContexts)},
+            depFeatures: ${stringify(dependencies)},
+            resolvedContexts: ${stringify(resolvedContexts)},
         }`;
     })
     .join(',\n')}
@@ -54,8 +50,8 @@ async function main() {
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
 
-    const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${JSON.stringify(featureName)};
-    const configName = options.get('${CONFIG_QUERY_PARAM}') || ${JSON.stringify(configName)};
+    const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
+    const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = []
     config.push(...await (await fetch('/config/' + configName + '?env=${envName}&feature=' + featureName)).json());
 

@@ -23,10 +23,17 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
-    const webEnvs = enviroments.filter(({ type }) => type === 'window' || type === 'iframe');
-    const workerEnvs = enviroments.filter(({ type }) => type === 'worker');
-
-    if (webEnvs.length) {
+    const webEnvs = new Map<string, string[]>();
+    const workerEnvs = new Map<string, string[]>();
+    for (const env of enviroments) {
+        const { type } = env;
+        if (type === 'window' || type === 'iframe') {
+            addEnv(webEnvs, env);
+        } else if (type === 'worker') {
+            addEnv(workerEnvs, env);
+        }
+    }
+    if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules), new StylableWebpackPlugin()];
         const entry: webpack.Entry = {};
         if (mode === 'development') {
@@ -49,7 +56,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             })
         );
     }
-    if (workerEnvs.length) {
+    if (workerEnvs.size) {
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -71,12 +78,20 @@ interface ICreateWebpackConfigOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    enviroments: IEnvironment[];
+    enviroments: Map<string, string[]>;
     publicPath?: string;
     target: 'web' | 'webworker';
     virtualModules: Record<string, string>;
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;
+}
+
+function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
+    const childEnvs = envs.get(name) || [];
+    if (childEnvName) {
+        childEnvs.push(childEnvName);
+    }
+    envs.set(name, childEnvs);
 }
 
 function createWebpackConfig({
@@ -93,12 +108,12 @@ function createWebpackConfig({
     plugins = [],
     entry = {}
 }: ICreateWebpackConfigOptions): webpack.Configuration {
-    for (const { type: envType, name: envName, childEnvName } of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${envType}-entry.js`);
+    for (const [envName, childEnvs] of enviroments) {
+        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
         virtualModules[entryPath] = createEntrypoint({
             features,
-            childEnvName,
+            childEnvs,
             envName,
             featureName,
             configName

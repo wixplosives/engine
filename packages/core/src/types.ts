@@ -204,6 +204,13 @@ export type SetupHandler<
     context: MapRecordType<EnvironmentContext>
 ) => RegisteringFeature<API, Filter>;
 
+export type ContextHandler<
+    C,
+    EnvFilter extends EnvironmentFilter,
+    Deps extends SomeFeature[],
+    Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>
+> = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
+
 export type PartialFeatureConfig<API> = Partial<MapToPartialType<JustFilter<API, Config<any, any>>>>;
 
 export type TopLevelConfig = Array<[string, object]>;

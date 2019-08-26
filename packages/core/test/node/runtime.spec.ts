@@ -410,13 +410,13 @@ describe('Contextual environments', () => {
             }
         });
 
-        echoFeature.setupContext('processingContext', () => {
+        echoFeature.setupContext(processing, 'processingContext', () => {
             return {
                 name: 'test'
             };
         });
 
-        echoFeature.setupContext('processingContext2', () => {
+        echoFeature.setupContext(processing, 'processingContext2', () => {
             return {
                 age: 1
             };

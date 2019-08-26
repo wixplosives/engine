@@ -1,6 +1,6 @@
-import MultiEnvFeature from './some-feature.feature';
+import MultiEnvFeature, { contextualEnv } from './some-feature.feature';
 
-MultiEnvFeature.setupContext('echoContext', () => {
+MultiEnvFeature.setupContext(contextualEnv, 'echoContext', () => {
     return {
         echoWord: () => 'from worker'
     };
