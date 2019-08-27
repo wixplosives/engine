@@ -165,7 +165,7 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
 
-        const { configName: providedConfigName, featureName = defaultFeatureName } = runOptions;
+        const { configName: providedConfigName, featureName = defaultFeatureName, options } = runOptions;
         const disposables: Array<() => unknown> = [];
 
         const configurations = await this.readConfigs();
@@ -183,7 +183,8 @@ export class Application {
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
-                configName
+                configName,
+                options
             });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
