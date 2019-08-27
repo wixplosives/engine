@@ -1,10 +1,11 @@
-import _3rdParty from '3rd-party/3rd-party.feature';
-import { Feature, Slot } from '@wixc3/engine-core';
+import { Environment, Feature, Slot } from '@wixc3/engine-core';
+
+export const MAIN = new Environment('main', 'window', 'single');
 
 export default new Feature({
     id: 'XTestFeature',
     api: {
         mySlot: Slot.withType<{}>().defineEntity('main')
     },
-    dependencies: [_3rdParty]
+    dependencies: []
 });

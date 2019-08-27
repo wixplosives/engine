@@ -1,4 +1,4 @@
-import { MAIN } from '3rd-party/3rd-party.feature';
+import { MAIN } from '@fixture/3rd-party/3rd-party.feature';
 import MyFeature from './app.feature';
 
 MyFeature.setup(MAIN, ({ run, myConfig, mySlot }) => {

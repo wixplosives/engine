@@ -7,7 +7,7 @@ import { Application } from '../src';
 chai.use(chaiAsPromised);
 
 const nodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'node-env');
-const runFeatureOptions = { featureName: 'engine-local/x' };
+const runFeatureOptions = { featureName: 'engine-node/x' };
 
 describe('Node environments manager', function() {
     this.timeout(10_000);
@@ -51,7 +51,7 @@ describe('Node environments manager', function() {
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
         await expect(nodeEnvironmentManager.runEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
-            'cannot find feature test. available features: engine-local/x, engine-core/communication'
+            'cannot find feature test. available features: engine-node/x, engine-core/communication'
         );
     });
 
