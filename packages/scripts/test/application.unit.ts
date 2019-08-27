@@ -4,7 +4,6 @@ import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import { Page } from 'puppeteer';
 import { Application } from '../src/application';
-import { originalConfigValue } from './fixtures/using-config/feature/example.config';
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -138,7 +137,22 @@ describe('Application', function() {
 
         it('hot reloads config files', async () => {
             const modifiedConfigValue = 'modified config';
+            const originalConfigValue = 'original config';
             const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
+            await createConfigFile(
+                configFilePathInRepo,
+                `
+            import UseConfigs from './use-configs.feature';
+            
+            export default [
+                UseConfigs.use({
+                    config: {
+                        echoText: '${originalConfigValue}'
+                    }
+                })
+            ];
+            `
+            );
             const app = new Application(useConfigsFeaturePath);
             const runningApp = await app.start({
                 featureName: 'configs/use-configs',
@@ -157,12 +171,8 @@ describe('Application', function() {
                 configFilePathInRepo,
                 configFile.replace(originalConfigValue, modifiedConfigValue)
             );
-            disposables.add('closing app', () =>
-                fs.promises.writeFile(
-                    configFilePathInRepo,
-                    configFile.replace(modifiedConfigValue, originalConfigValue)
-                )
-            );
+
+            disposables.add(() => fs.promises.unlink(configFilePathInRepo));
 
             await page.reload({
                 waitUntil: 'networkidle2'
@@ -248,3 +258,8 @@ describe('Application', function() {
         });
     });
 });
+
+async function createConfigFile(filePath: string, content: string) {
+    await fs.ensureDirectorySync(fs.dirname(filePath));
+    return fs.promises.writeFile(filePath, content);
+}
