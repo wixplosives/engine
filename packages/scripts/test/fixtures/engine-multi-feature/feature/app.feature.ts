@@ -1,4 +1,4 @@
-import _3rdParty, { MAIN } from '3rd-party/3rd-party.feature';
+import _3rdParty, { MAIN } from '@fixture/3rd-party/3rd-party.feature';
 import { Config, Feature, Slot } from '@wixc3/engine-core';
 
 export default new Feature({

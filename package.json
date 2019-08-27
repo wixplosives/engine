@@ -2,7 +2,8 @@
   "name": "engine",
   "workspaces": [
     "examples/*",
-    "packages/*"
+    "packages/*",
+    "packages/scripts/test/fixtures/*"
   ],
   "scripts": {
     "clean": "lerna run clean --stream --parallel",
