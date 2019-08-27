@@ -160,7 +160,7 @@ export default [
 ];
 `
             );
-            const app = new Application(useConfigsFeaturePath);
+            const app = new Application({ basePath: useConfigsFeaturePath });
             const runningApp = await app.start({
                 featureName: 'configs/use-configs',
                 configName: 'configs/example'
