@@ -83,6 +83,10 @@ interface IPackageDescriptor {
 
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
+function getFilePathInPackage(fs: IFileSystemSync, featurePackage: IPackageDescriptor, filePath: string) {
+    return fs.join(featurePackage.name, fs.relative(featurePackage.directoryPath, filePath)).replace(/\\/g, '/');
+}
+
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync) {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
@@ -166,21 +170,17 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 
         // pick up configs
         for (const filePath of configurations) {
-            const scopedConfigFilePath = `${featurePackage.name}/${fs.relative(
-                featurePackage.directoryPath,
-                filePath
-            )}`.replace(/\\/g, '/');
             const { configName, envName } = parseConfigFileName(fs.basename(filePath));
             const scopedConfigName = scopeToPackage(featurePackage.simplifiedName, configName);
-            foundConfigs.add(scopedConfigName, { filePath: scopedConfigFilePath, envName, name: configName });
+            foundConfigs.add(scopedConfigName, {
+                filePath: getFilePathInPackage(fs, featurePackage, filePath),
+                envName,
+                name: configName
+            });
         }
 
         // pick up features
         for (const featureFilePath of features) {
-            const scopedFeatureFilePath = `${featurePackage.name}/${fs.relative(
-                featurePackage.directoryPath,
-                featureFilePath
-            )}`.replace(/\\/g, '/');
             const [evaluatedFeature] = evaluateModule(featureFilePath).children;
             const featureModule = analyzeFeatureModule(evaluatedFeature);
             const featureName = featureModule.name;
@@ -194,7 +194,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
                 contextFilePaths: {},
                 resolvedContexts: {},
                 isRoot: ownFeatureFilePaths.has(featureFilePath),
-                filePath: scopedFeatureFilePath,
+                filePath: getFilePathInPackage(fs, featurePackage, featureFilePath),
                 toJSON(this: IFeatureDefinition) {
                     return {
                         contextFilePaths: this.contextFilePaths,
@@ -212,29 +212,25 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 
         // pick up environments
         for (const envFilePath of envs) {
-            const scopedEnvFilePath = `${featurePackage.name}/${fs.relative(
-                featurePackage.directoryPath,
-                envFilePath
-            )}`.replace(/\\/g, '/');
             const { featureName, envName, childEnvName } = parseEnvFileName(fs.basename(envFilePath));
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
                 const targetEnv = childEnvName ? `${envName}/${childEnvName}` : envName;
-                existingDefinition.envFilePaths[targetEnv] = scopedEnvFilePath;
+                existingDefinition.envFilePaths[targetEnv] = getFilePathInPackage(fs, featurePackage, envFilePath);
             }
         }
 
         // pick up context files and add them to feature definitions
         for (const contextFilePath of contexts) {
-            const scopedContextFilePath = `${featurePackage.name}/${fs.relative(
-                featurePackage.directoryPath,
-                contextFilePath
-            )}`.replace(/\\/g, '/');
             const { featureName, envName, childEnvName } = parseContextFileName(fs.basename(contextFilePath));
             const contextualName = `${envName}/${childEnvName}`;
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
-                existingDefinition.contextFilePaths[contextualName] = scopedContextFilePath;
+                existingDefinition.contextFilePaths[contextualName] = getFilePathInPackage(
+                    fs,
+                    featurePackage,
+                    contextFilePath
+                );
             }
         }
     }
