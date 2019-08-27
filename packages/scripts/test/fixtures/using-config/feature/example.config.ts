@@ -5,7 +5,7 @@ export const originalConfigValue = 'from config';
 export default [
     UseConfigs.use({
         config: {
-            echoText: 'modified config'
+            echoText: originalConfigValue
         }
     })
 ];

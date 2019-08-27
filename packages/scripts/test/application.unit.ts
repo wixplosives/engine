@@ -136,7 +136,7 @@ describe('Application', function() {
             });
         });
 
-        it.only('hot reloads config files', async () => {
+        it('hot reloads config files', async () => {
             const modifiedConfigValue = 'modified config';
             const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
             const app = new Application(useConfigsFeaturePath);
@@ -157,14 +157,25 @@ describe('Application', function() {
                 configFilePathInRepo,
                 configFile.replace(originalConfigValue, modifiedConfigValue)
             );
+            disposables.add('closing app', () =>
+                fs.promises.writeFile(
+                    configFilePathInRepo,
+                    configFile.replace(modifiedConfigValue, originalConfigValue)
+                )
+            );
 
             await page.reload({
                 waitUntil: 'networkidle2'
             });
 
-            await waitFor(async () => {
-                expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
-            });
+            await waitFor(
+                async () => {
+                    expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
+                },
+                {
+                    timeout: 2000
+                }
+            );
         });
     });
 
