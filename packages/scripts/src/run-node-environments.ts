@@ -1,6 +1,8 @@
+import { Server } from 'socket.io';
+
 import { COM, flattenTree, IFeatureLoader, runEngineApp, TopLevelConfig } from '@wixc3/engine-core';
 import { WsServerHost } from '@wixc3/engine-core-node';
-import { Server } from 'socket.io';
+
 import { IEnvironment, IFeatureDefinition } from './analyze-feature';
 
 export interface IRunNodeEnvironmentsOptions {
@@ -69,7 +71,6 @@ export async function runNodeEnvironments({
             };
         }
         options = new Map([...Array.from(getProcessOptions().entries()), ...Array.from(options.entries())]);
-
         const { engine, runningFeature } = await runEngineApp({
             featureName,
             featureLoaders,

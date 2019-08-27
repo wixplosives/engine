@@ -18,7 +18,7 @@ program
     .action(async (path, cmd: Record<string, string | undefined>) => {
         const { feature: featureName, config: configName } = cmd;
         try {
-            const app = new Application(path || process.cwd());
+            const app = new Application({ basePath: path || process.cwd() });
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
                 configName
@@ -59,7 +59,7 @@ program
     .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
         const { feature: featureName, config: configName, outDir = 'dist' } = cmd;
         try {
-            const app = new Application(path, join(path, outDir));
+            const app = new Application({ basePath: path, outputPath: join(path, outDir) });
             const stats = await app.build({ featureName, configName });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
@@ -68,23 +68,32 @@ program
     });
 
 program
-    .command('clean [path]')
-    .option('--dist')
-    .option('--npm')
-    .action(async (path, cmd) => {
+    .command('run [path]')
+    .option('-c ,--config <config>')
+    .option('-f ,--feature <feature>')
+    .option('--out-dir <outDir>')
+    .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
+        const { config: configName, outDir = 'dist', feature: featureName } = cmd;
+
         try {
-            if (cmd.dist || (!cmd.dist && cmd.npm)) {
-                const app = new Application(path || process.cwd());
-                await app.clean();
-            }
-            if (cmd.npm) {
-                const app = new Application(path || process.cwd(), join(path || process.cwd(), 'npm'));
-                await app.clean();
-            }
+            const app = new Application({ basePath: path, outputPath: join(path, outDir) });
+            const { port } = await app.run({ configName, featureName });
+            console.log(`Listening:`);
+            console.log(`http://localhost:${port}/main.html`);
         } catch (e) {
             printErrorAndExit(e);
         }
     });
+
+program.command('clean [path]').action(async path => {
+    const app = new Application({ basePath: path || process.cwd() });
+    try {
+        console.log(`Removing: ${app.outputPath}`);
+        await app.clean();
+    } catch (e) {
+        printErrorAndExit(e);
+    }
+});
 
 program.parse(process.argv);
 

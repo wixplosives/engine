@@ -19,7 +19,7 @@ export interface ICreateWebpackConfigsOptions {
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const { enviroments } = options;
+    const { enviroments, mode = 'development' } = options;
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
@@ -34,23 +34,25 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         }
     }
     if (webEnvs.size) {
+        const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules), new StylableWebpackPlugin()];
+        const entry: webpack.Entry = {};
+        if (mode === 'development') {
+            plugins.push(
+                new HtmlWebpackPlugin({
+                    filename: `index.html`,
+                    chunks: ['index']
+                })
+            );
+            entry.index = require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'));
+        }
         configurations.push(
             createWebpackConfig({
                 ...options,
                 enviroments: webEnvs,
                 target: 'web',
                 virtualModules,
-                plugins: [
-                    new HtmlWebpackPlugin({
-                        filename: `index.html`,
-                        chunks: ['index']
-                    }),
-                    new VirtualModulesPlugin(virtualModules),
-                    new StylableWebpackPlugin()
-                ],
-                entry: {
-                    index: require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'))
-                }
+                plugins,
+                entry
             })
         );
     }

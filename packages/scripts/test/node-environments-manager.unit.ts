@@ -7,7 +7,7 @@ import { Application } from '../src';
 chai.use(chaiAsPromised);
 
 const nodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'node-env');
-const runFeatureOptions = { featureName: 'engine-local/x' };
+const runFeatureOptions = { featureName: 'engine-node/x' };
 
 describe('Node environments manager', function() {
     this.timeout(10_000);
@@ -16,7 +16,7 @@ describe('Node environments manager', function() {
     afterEach(disposables.dispose);
 
     it('launches a new node environment', async () => {
-        const app = new Application(nodeEnvironmentFixturePath);
+        const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
 
         await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
@@ -31,7 +31,7 @@ describe('Node environments manager', function() {
     });
 
     it('lists only open environments', async () => {
-        const app = new Application(nodeEnvironmentFixturePath);
+        const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
 
         const allOpenEnvironments = await nodeEnvironmentManager.getRunningEnvironments();
@@ -47,16 +47,16 @@ describe('Node environments manager', function() {
     });
 
     it('fails to launch if wrong config name or feature name are provided', async () => {
-        const app = new Application(nodeEnvironmentFixturePath);
+        const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
         await expect(nodeEnvironmentManager.runEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
-            'cannot find feature test. available features: engine-local/x, engine-core/communication'
+            'cannot find feature test. available features: engine-node/x, engine-core/communication'
         );
     });
 
     it('closes open environments', async () => {
-        const app = new Application(nodeEnvironmentFixturePath);
+        const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
 

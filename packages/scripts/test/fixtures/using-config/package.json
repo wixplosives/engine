@@ -1,5 +1,5 @@
 {
-  "name": "@fixture/contextual-feature",
+  "name": "@fixture/configs",
   "version": "6.2.1",
   "scripts": {
     "start": "engine start"
