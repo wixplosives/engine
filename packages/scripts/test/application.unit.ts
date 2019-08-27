@@ -9,6 +9,18 @@ function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
 }
 
+const getConfigFileContent = (textText: string) => `
+import UseConfigs from './use-configs.feature';
+
+export default [
+    UseConfigs.use({
+        config: {
+            echoText: '${textText}'
+        }
+    })
+];
+`;
+
 describe('Application', function() {
     this.timeout(20_000);
     const disposables = createDisposables();
@@ -30,6 +42,7 @@ describe('Application', function() {
     const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
     const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
     const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
+    const useConfigsFeaturePath = fs.join(__dirname, './fixtures/using-config');
 
     describe('build', () => {
         it(`supports building features with a single fixture`, async () => {
@@ -131,6 +144,44 @@ describe('Application', function() {
 
             await waitFor(async () => {
                 expect(await getBodyContent(page)).to.equal('from server');
+            });
+        });
+
+        it('hot reloads config files', async () => {
+            const modifiedConfigValue = 'modified config';
+            const originalConfigValue = 'original config';
+            const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
+
+            // creating config file
+
+            await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(originalConfigValue));
+
+            // after the test, delete the file
+            disposables.add(() => fs.promises.unlink(configFilePathInRepo));
+            const app = new Application({ basePath: useConfigsFeaturePath });
+            const runningApp = await app.start({
+                featureName: 'configs/use-configs',
+                configName: 'configs/example'
+            });
+            disposables.add(() => runningApp.close());
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            // validate original config file is used
+            await waitFor(async () => {
+                expect(await getBodyContent(page)).to.equal(originalConfigValue);
+            });
+
+            // modifying the config file
+            await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(modifiedConfigValue));
+
+            // reload the page (to see if the config file was changed, without re-running the application)
+            await page.reload({
+                waitUntil: 'networkidle2'
+            });
+
+            // checking if config content is changed
+            await waitFor(async () => {
+                expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
             });
         });
     });
