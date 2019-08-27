@@ -1,6 +1,6 @@
 {
   "name": "@fixture/configs",
-  "version": "1.0.0",
+  "version": "6.2.1",
   "scripts": {
     "start": "engine start"
   },

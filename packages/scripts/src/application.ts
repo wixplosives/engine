@@ -358,7 +358,7 @@ export class Application {
                 featureName: targetFeature.featureName,
                 socketServer,
                 features: new Map(features),
-                options: targetFeature.options ? new Map(Object.entries(targetFeature.options)) : undefined
+                options: targetFeature.options
             });
 
             const topologyForFeature: Record<string, string> = {};
