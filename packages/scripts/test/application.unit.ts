@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import { Page } from 'puppeteer';
 import { Application } from '../src/application';
+import { originalConfigValue } from './fixtures/using-config/feature/example.config';
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -30,6 +31,7 @@ describe('Application', function() {
     const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
     const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
     const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
+    const useConfigsFeaturePath = fs.join(__dirname, './fixtures/using-config');
 
     describe('build', () => {
         it(`supports building features with a single fixture`, async () => {
@@ -133,6 +135,37 @@ describe('Application', function() {
                 expect(await getBodyContent(page)).to.equal('from server');
             });
         });
+
+        it.only('hot reloads config files', async () => {
+            const modifiedConfigValue = 'modified config';
+            const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
+            const app = new Application(useConfigsFeaturePath);
+            const runningApp = await app.start({
+                featureName: 'configs/use-configs',
+                configName: 'configs/example'
+            });
+            disposables.add('closing app', () => runningApp.close());
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await getBodyContent(page)).to.equal(originalConfigValue);
+            });
+
+            const configFile = await fs.promises.readFile(configFilePathInRepo, 'utf8');
+
+            await fs.promises.writeFile(
+                configFilePathInRepo,
+                configFile.replace(originalConfigValue, modifiedConfigValue)
+            );
+
+            await page.reload({
+                waitUntil: 'networkidle2'
+            });
+
+            await waitFor(async () => {
+                expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
+            });
+        });
     });
 
     describe('run', function() {
@@ -201,34 +234,6 @@ describe('Application', function() {
             const textFromServer = await getBodyContent(serverAppPage);
 
             expect(textFromServer).to.contain('server');
-        });
-
-        it('hot reloads config files', async () => {
-            const featurePath = fs.join(__dirname, './fixtures/using-config');
-            const app = new Application(featurePath);
-            const runningApp = await app.start({
-                featureName: 'configs/use-configs',
-                configName: 'configs/example'
-            });
-            disposables.add('closing app', () => runningApp.close());
-            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
-
-            await waitFor(async () => {
-                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from config');
-            });
-
-            const configFile = await fs.promises.readFile(fs.join(featurePath, 'feature', 'example.config.ts'), 'utf8');
-            await fs.promises.writeFile(
-                fs.join(featurePath, 'feature', 'example.config.ts'),
-                configFile.replace('from config', 'modified config')
-            );
-
-            await page.reload({
-                waitUntil: 'networkidle2'
-            });
-            await waitFor(async () => {
-                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('modified config');
-            });
         });
     });
 });
