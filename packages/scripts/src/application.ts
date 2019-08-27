@@ -45,13 +45,19 @@ export interface IBuildManifest {
     defaultConfigName?: string;
 }
 
+export interface IApplicationOptions {
+    basePath?: string;
+    outputPath?: string;
+}
+
 export class Application {
-    /**
-     *
-     * @param basePath absolute path to feature base folder, where .feature.ts file exists
-     * @param outputPath absolute path to output directory
-     */
-    constructor(public basePath: string = process.cwd(), public outputPath = fs.join(basePath, 'dist')) {}
+    public outputPath: string;
+    private basePath: string;
+
+    constructor({ basePath = process.cwd(), outputPath = fs.join(basePath, 'dist') }: IApplicationOptions) {
+        this.basePath = basePath;
+        this.outputPath = outputPath;
+    }
 
     public async clean() {
         await rimraf(this.outputPath);

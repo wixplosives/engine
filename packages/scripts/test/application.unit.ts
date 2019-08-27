@@ -33,7 +33,7 @@ describe('Application', function() {
 
     describe('build', () => {
         it(`supports building features with a single fixture`, async () => {
-            const app = new Application(engineFeatureFixturePath);
+            const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build();
             disposables.add(() => app.clean());
 
@@ -43,7 +43,7 @@ describe('Application', function() {
 
     describe('start', () => {
         it(`serves and allows running a feature`, async () => {
-            const app = new Application(engineFeatureFixturePath);
+            const app = new Application({ basePath: engineFeatureFixturePath });
             const { close, port } = await app.start({ featureName: 'engine-single/x' });
             disposables.add(() => close());
 
@@ -55,7 +55,7 @@ describe('Application', function() {
         });
 
         it(`serves a fixture feature`, async () => {
-            const app = new Application(multiFeatureFixturePath);
+            const app = new Application({ basePath: multiFeatureFixturePath });
             const { close, port } = await app.start();
             disposables.add(() => close());
 
@@ -73,7 +73,7 @@ describe('Application', function() {
         });
 
         it(`allows specfiying a config`, async () => {
-            const app = new Application(multiFeatureFixturePath);
+            const app = new Application({ basePath: multiFeatureFixturePath });
             const { close, port } = await app.start();
             disposables.add(() => close());
 
@@ -93,7 +93,7 @@ describe('Application', function() {
         });
 
         it(`runs node environments`, async () => {
-            const app = new Application(nodeFeatureFixturePath);
+            const app = new Application({ basePath: nodeFeatureFixturePath });
             const runningApp = await app.start({
                 featureName: 'engine-node/x'
             });
@@ -107,7 +107,7 @@ describe('Application', function() {
         });
 
         it('launches a feature with contextual environment with worker context', async () => {
-            const app = new Application(contextualFeatureFixturePath);
+            const app = new Application({ basePath: contextualFeatureFixturePath });
             const runningApp = await app.start({
                 featureName: 'contextual/some-feature'
             });
@@ -121,7 +121,7 @@ describe('Application', function() {
         });
 
         it('launches a feature with contextual environment with server context', async () => {
-            const app = new Application(contextualFeatureFixturePath);
+            const app = new Application({ basePath: contextualFeatureFixturePath });
             const runningApp = await app.start({
                 featureName: 'contextual/server-env'
             });
@@ -139,7 +139,7 @@ describe('Application', function() {
         // bundling may take a few seconds on ci machines
         this.timeout(15_000);
         it(`launches a built application with web environment`, async () => {
-            const app = new Application(engineFeatureFixturePath);
+            const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build({
                 featureName: 'engine-single/x'
             });
@@ -156,7 +156,7 @@ describe('Application', function() {
         });
 
         it(`launches a built application with node environment`, async () => {
-            const app = new Application(nodeFeatureFixturePath);
+            const app = new Application({ basePath: nodeFeatureFixturePath });
             await app.build({
                 featureName: 'engine-node/x'
             });
@@ -173,7 +173,7 @@ describe('Application', function() {
         });
 
         it(`launches a built application with a contextual environment`, async () => {
-            const app = new Application(contextualFeatureFixturePath);
+            const app = new Application({ basePath: contextualFeatureFixturePath });
             await app.build();
             const { close: webWorkerServer, port: webWorkerAppPort } = await app.run({
                 featureName: 'contextual/some-feature'
