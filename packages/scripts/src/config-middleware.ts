@@ -4,10 +4,6 @@ import express from 'express';
 import importFresh from 'import-fresh';
 import { IConfigDefinition } from './analyze-feature';
 
-interface ConfigModule {
-    default: TopLevelConfig;
-}
-
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition>,
     topology: Map<string, Record<string, string>>
@@ -22,7 +18,9 @@ export function createConfigMiddleware(
             for (const { filePath, envName } of configDefinitions) {
                 if (envName === reqEnv || !envName) {
                     try {
-                        const { default: configValue } = (await importFresh(filePath)) as ConfigModule;
+                        const { default: configValue } = (await importFresh(filePath)) as {
+                            default: TopLevelConfig;
+                        };
                         config.push(...configValue);
                     } catch (e) {
                         // tslint:disable: no-console

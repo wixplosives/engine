@@ -9,10 +9,17 @@ function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
 }
 
-async function createConfigFile(configFilePath: string, content: string) {
-    await fs.ensureDirectorySync(fs.dirname(configFilePath));
-    return fs.promises.writeFile(configFilePath, content);
-}
+const getConfigFileContent = (textText: string) => `
+import UseConfigs from './use-configs.feature';
+
+export default [
+    UseConfigs.use({
+        config: {
+            echoText: '${textText}'
+        }
+    })
+];
+`;
 
 describe('Application', function() {
     this.timeout(20_000);
@@ -146,20 +153,11 @@ describe('Application', function() {
             const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
 
             // creating config file
-            await createConfigFile(
-                configFilePathInRepo,
-                `
-import UseConfigs from './use-configs.feature';
 
-export default [
-    UseConfigs.use({
-        config: {
-            echoText: '${originalConfigValue}'
-        }
-    })
-];
-`
-            );
+            await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(originalConfigValue));
+
+            // after the test, delete the file
+            disposables.add(() => fs.promises.unlink(configFilePathInRepo));
             const app = new Application({ basePath: useConfigsFeaturePath });
             const runningApp = await app.start({
                 featureName: 'configs/use-configs',
@@ -174,14 +172,7 @@ export default [
             });
 
             // modifying the config file
-            const configFile = await fs.promises.readFile(configFilePathInRepo, 'utf8');
-            await fs.promises.writeFile(
-                configFilePathInRepo,
-                configFile.replace(originalConfigValue, modifiedConfigValue)
-            );
-
-            // after the dest, delete the file
-            disposables.add(() => fs.promises.unlink(configFilePathInRepo));
+            await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(modifiedConfigValue));
 
             // reload the page (to see if the config file was changed, without re-running the application)
             await page.reload({
