@@ -126,5 +126,33 @@ describe('Application', function() {
                 expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from server');
             });
         });
+
+        it('hot reloads config files', async () => {
+            const featurePath = fs.join(__dirname, './fixtures/using-config');
+            const app = new Application(featurePath);
+            const runningApp = await app.start({
+                featureName: 'configs/use-configs',
+                configName: 'configs/example'
+            });
+            disposables.add('closing app', () => runningApp.close());
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('from config');
+            });
+
+            const configFile = await fs.promises.readFile(fs.join(featurePath, 'feature', 'example.config.ts'), 'utf8');
+            await fs.promises.writeFile(
+                fs.join(featurePath, 'feature', 'example.config.ts'),
+                configFile.replace('from config', 'modified config')
+            );
+
+            await page.reload({
+                waitUntil: 'networkidle2'
+            });
+            await waitFor(async () => {
+                expect(await page.evaluate(() => document.body.textContent!.trim())).to.equal('modified config');
+            });
+        });
     });
 });
