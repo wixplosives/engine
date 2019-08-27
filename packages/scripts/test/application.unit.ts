@@ -9,6 +9,11 @@ function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
 }
 
+async function createConfigFile(configFilePath: string, content: string) {
+    await fs.ensureDirectorySync(fs.dirname(configFilePath));
+    return fs.promises.writeFile(configFilePath, content);
+}
+
 describe('Application', function() {
     this.timeout(20_000);
     const disposables = createDisposables();
@@ -139,45 +144,51 @@ describe('Application', function() {
             const modifiedConfigValue = 'modified config';
             const originalConfigValue = 'original config';
             const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
+
+            // creating config file
             await createConfigFile(
                 configFilePathInRepo,
                 `
-            import UseConfigs from './use-configs.feature';
-            
-            export default [
-                UseConfigs.use({
-                    config: {
-                        echoText: '${originalConfigValue}'
-                    }
-                })
-            ];
-            `
+import UseConfigs from './use-configs.feature';
+
+export default [
+    UseConfigs.use({
+        config: {
+            echoText: '${originalConfigValue}'
+        }
+    })
+];
+`
             );
             const app = new Application(useConfigsFeaturePath);
             const runningApp = await app.start({
                 featureName: 'configs/use-configs',
                 configName: 'configs/example'
             });
-            disposables.add('closing app', () => runningApp.close());
+            disposables.add(() => runningApp.close());
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
+            // validate original config file is used
             await waitFor(async () => {
                 expect(await getBodyContent(page)).to.equal(originalConfigValue);
             });
 
+            // modifying the config file
             const configFile = await fs.promises.readFile(configFilePathInRepo, 'utf8');
-
             await fs.promises.writeFile(
                 configFilePathInRepo,
                 configFile.replace(originalConfigValue, modifiedConfigValue)
             );
 
+            // after the dest, delete the file
             disposables.add(() => fs.promises.unlink(configFilePathInRepo));
 
+            // reload the page (to see if the config file was changed, without re-running the application)
             await page.reload({
                 waitUntil: 'networkidle2'
             });
 
+            // checking if config content is changed
             await waitFor(async () => {
                 expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
             });
@@ -253,8 +264,3 @@ describe('Application', function() {
         });
     });
 });
-
-async function createConfigFile(filePath: string, content: string) {
-    await fs.ensureDirectorySync(fs.dirname(filePath));
-    return fs.promises.writeFile(filePath, content);
-}
