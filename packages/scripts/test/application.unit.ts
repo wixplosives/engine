@@ -178,14 +178,9 @@ describe('Application', function() {
                 waitUntil: 'networkidle2'
             });
 
-            await waitFor(
-                async () => {
-                    expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
-                },
-                {
-                    timeout: 2000
-                }
-            );
+            await waitFor(async () => {
+                expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
+            });
         });
     });
 
