@@ -169,7 +169,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const scopedConfigFilePath = `${featurePackage.name}/${fs.relative(
                 featurePackage.directoryPath,
                 filePath
-            )}`;
+            )}`.replace(/\\/g, '/');
             const { configName, envName } = parseConfigFileName(fs.basename(filePath));
             const scopedConfigName = scopeToPackage(featurePackage.simplifiedName, configName);
             foundConfigs.add(scopedConfigName, { filePath: scopedConfigFilePath, envName, name: configName });
@@ -180,7 +180,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const scopedFeatureFilePath = `${featurePackage.name}/${fs.relative(
                 featurePackage.directoryPath,
                 featureFilePath
-            )}`;
+            )}`.replace(/\\/g, '/');
             const [evaluatedFeature] = evaluateModule(featureFilePath).children;
             const featureModule = analyzeFeatureModule(evaluatedFeature);
             const featureName = featureModule.name;
@@ -215,7 +215,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const scopedEnvFilePath = `${featurePackage.name}/${fs.relative(
                 featurePackage.directoryPath,
                 envFilePath
-            )}`;
+            )}`.replace(/\\/g, '/');
             const { featureName, envName, childEnvName } = parseEnvFileName(fs.basename(envFilePath));
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
@@ -229,7 +229,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const scopedContextFilePath = `${featurePackage.name}/${fs.relative(
                 featurePackage.directoryPath,
                 contextFilePath
-            )}`;
+            )}`.replace(/\\/g, '/');
             const { featureName, envName, childEnvName } = parseContextFileName(fs.basename(contextFilePath));
             const contextualName = `${envName}/${childEnvName}`;
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
