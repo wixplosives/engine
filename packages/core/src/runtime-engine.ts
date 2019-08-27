@@ -66,7 +66,7 @@ export class RuntimeEngine {
     }
 
     public entityID(featureId: string, entityKey: string) {
-        return `${featureId}.${entityKey}`;
+        return entityID(featureId, entityKey);
     }
 
     public getCOM() {
@@ -85,3 +85,8 @@ export class RuntimeEngine {
         return configMap;
     }
 }
+
+
+export const entityID = (featureId: string, entityKey: string) => {
+    return `${featureId}.${entityKey}`;
+};

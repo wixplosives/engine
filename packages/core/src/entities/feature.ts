@@ -1,5 +1,5 @@
 import { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
+import { CREATE_RUNTIME, DISPOSE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import {
     ContextHandler,
     DisposableContext,
@@ -27,7 +27,7 @@ export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], A
         public feature: T,
         public api: MapToProxyType<API>,
         public dependencies: RunningFeatures<Deps, string>
-    ) {}
+    ) { }
     public addRunHandler(fn: () => void) {
         this.runHandlers.push(fn);
     }
@@ -62,7 +62,7 @@ export class Feature<
     Deps extends SomeFeature[],
     API extends EntityMap,
     EnvironmentContext extends Record<string, DisposableContext<any>>
-> {
+    > {
     public id: ID;
     public dependencies: Deps;
     public api: API;
@@ -75,6 +75,7 @@ export class Feature<
         this.dependencies = def.dependencies || (([] as IDTagArray) as Deps);
         this.api = def.api || (({} as EntityMap) as API);
         this.context = def.context || ({} as EnvironmentContext);
+        this.identifyApis();
     }
     public setup<EnvFilter extends EnvironmentFilter>(
         env: EnvFilter,
@@ -103,7 +104,7 @@ export class Feature<
         if (registerdContext) {
             throw new Error(
                 `Feature can only have single setupContext for each context id. ${
-                    this.id
+                this.id
                 } Feature already implements: ${environmentContext}\n${registerdContext.toString()}`
             );
         }
@@ -172,5 +173,13 @@ export class Feature<
         }
 
         return feature;
+    }
+
+    private identifyApis() {
+        for (const [key, api] of Object.entries(this.api)) {
+            if (api[IDENTIFY_API]) {
+                api[IDENTIFY_API]!(this.id, key);
+            }
+        }
     }
 }

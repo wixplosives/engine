@@ -4,7 +4,7 @@ import { Config } from './entities/config';
 import { Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
+import { CREATE_RUNTIME, REGISTER_VALUE, RUN_OPTIONS, IDENTIFY_API } from './symbols';
 
 /*************** HELPER TYPES  ***************/
 
@@ -42,6 +42,10 @@ export interface Entity<
     visibleAt: VisibleAt;
     mode: Mode;
     remoteAccess: RemoteAccess;
+    [IDENTIFY_API]?: (
+        featureID: string,
+        entityKey: string
+    ) => PROXY_TYPE;
     [REGISTER_VALUE]: (
         context: RuntimeEngine,
         providedValue: TYPE | undefined,
