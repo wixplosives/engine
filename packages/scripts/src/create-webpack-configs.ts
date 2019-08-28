@@ -145,11 +145,14 @@ function createWebpackConfig({
             alias: { '@wixc3/engine-core': inOwnRepo ? '@wixc3/engine-core/src' : '@wixc3/engine-core' }
         },
         module: {
-            rules: [typescriptLoader, cssLoader, assetLoader],
-            // the simplest way to bundle typescript without warnings, as it uses dynamic require calls
-            noParse: [/typescript[\\/]lib[\\/]typescript\.js$/]
+            rules: [typescriptLoader, cssLoader, assetLoader]
         },
-        plugins
+        plugins,
+        externals: {
+            // allows typescript to be bundled and run in web browsers
+            'source-map-support': 'commonjs source-map-support',
+            '@microsoft/typescript-etw': 'commonjs @microsoft/typescript-etw'
+        }
     };
 }
 
