@@ -1,3 +1,4 @@
+import importFresh from 'import-fresh';
 import { Server } from 'socket.io';
 
 import { COM, flattenTree, IFeatureLoader, runEngineApp, TopLevelConfig } from '@wixc3/engine-core';
@@ -57,14 +58,14 @@ export async function runNodeEnvironments({
                     if (childEnvName) {
                         const contextFilePath = contextFilePaths[`${name}/${childEnvName}`];
                         if (contextFilePath) {
-                            await import(contextFilePath);
+                            await importFresh(contextFilePath);
                         }
                     }
                     const envFilePath = envFilePaths[name];
                     if (envFilePath) {
-                        await import(envFilePath);
+                        await importFresh(envFilePath);
                     }
-                    return (await import(filePath)).default;
+                    return ((await importFresh(filePath)) as { default: any }).default;
                 },
                 depFeatures: dependencies,
                 resolvedContexts
