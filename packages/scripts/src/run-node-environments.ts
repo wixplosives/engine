@@ -20,24 +20,7 @@ export async function runNodeEnvironments({
     options = new Map<string, string>(),
     config = []
 }: IRunNodeEnvironmentsOptions) {
-    const featureDefinition = features.get(featureName);
-    if (!featureDefinition) {
-        const featureNames = Array.from(features.keys());
-        throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
-    }
-    const { resolvedContexts: resolvedFeatureContexts } = featureDefinition;
-    const nodeEnvs = new Set<IEnvironment>();
-    const deepDefsForFeature = flattenTree(featureDefinition, f => f.dependencies.map(fName => features.get(fName)!));
-    for (const { exportedEnvs } of deepDefsForFeature) {
-        for (const exportedEnv of exportedEnvs) {
-            if (
-                exportedEnv.type === 'node' &&
-                (!exportedEnv.childEnvName || resolvedFeatureContexts[exportedEnv.name] === exportedEnv.childEnvName)
-            ) {
-                nodeEnvs.add(exportedEnv);
-            }
-        }
-    }
+    const nodeEnvs = nodeEnvsForFeature(features, featureName);
 
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
@@ -100,6 +83,30 @@ export async function runNodeEnvironments({
         }
     };
 }
+
+function nodeEnvsForFeature(features: Map<string, IFeatureDefinition>, featureName: string) {
+    const featureDefinition = features.get(featureName);
+    if (!featureDefinition) {
+        const featureNames = Array.from(features.keys());
+        throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
+    }
+    const { resolvedContexts } = featureDefinition;
+
+    const nodeEnvs = new Set<IEnvironment>();
+    const deepDefsForFeature = flattenTree(featureDefinition, f => f.dependencies.map(fName => features.get(fName)!));
+    for (const { exportedEnvs } of deepDefsForFeature) {
+        for (const exportedEnv of exportedEnvs) {
+            if (
+                exportedEnv.type === 'node' &&
+                (!exportedEnv.childEnvName || resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
+            ) {
+                nodeEnvs.add(exportedEnv);
+            }
+        }
+    }
+    return nodeEnvs;
+}
+
 function getProcessOptions() {
     const args = process.argv.slice(3);
     const argumentQueue: string[] = [];
