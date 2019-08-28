@@ -64,45 +64,26 @@ export default new Feature({
         loggerTransports,
         [RUN_OPTIONS]: runOptions
     }) => {
+        // TODO: find better way to detect node runtime
+        const isNode = typeof process !== 'undefined' && process.title !== 'browser';
+
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.
         // main frame might not have that configured, so we use 'main' fallback for it.
-        let communication: Communication;
-        const warnOnSlow = runOptions.has('warnOnSlow');
-        // TODO: find better way to detect node runtime
-        const communicationOptions: ICommunicationOptions = {
-            warnOnSlow
+        const comId = id || (host && host.name) || (typeof self !== 'undefined' && self.name) || 'main';
+
+        const comOptions: ICommunicationOptions = {
+            warnOnSlow: runOptions.has('warnOnSlow')
         };
-        if (typeof process !== 'undefined' && process.title !== 'browser') {
-            if (host) {
-                communication = new Communication(
-                    host,
-                    id || host.name || 'main',
-                    topology,
-                    resolvedContexts,
-                    true,
-                    communicationOptions
-                );
-            } else {
-                communication = new Communication(
-                    new BaseHost(),
-                    id || 'main',
-                    topology,
-                    resolvedContexts,
-                    true,
-                    communicationOptions
-                );
-            }
-        } else {
-            communication = new Communication(
-                self,
-                id || self.name || 'main',
-                topology,
-                resolvedContexts,
-                false,
-                communicationOptions
-            );
-        }
+
+        const communication = new Communication(
+            isNode ? host || new BaseHost() : self,
+            comId,
+            topology,
+            resolvedContexts,
+            isNode,
+            comOptions
+        );
 
         const loggerService = new LoggerService(
             loggerTransports,
