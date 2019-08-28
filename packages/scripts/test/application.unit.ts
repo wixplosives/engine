@@ -254,4 +254,9 @@ describe('Application', function() {
             expect(textFromServer).to.contain('server');
         });
     });
+
+    describe('watch + attach', () => {
+        it('launches webpack dev server and serves the files', () => {});
+        it('launches launches node environment and attaches to it');
+    });
 });
