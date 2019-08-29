@@ -49,7 +49,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         configName: suiteConfigName,
         runOptions: suiteOptions = {},
         allowErrors: suiteAllowErrors = false,
-        queryParams
+        queryParams: suiteQueryParams
     } = withFeatureOptions;
 
     if (isCI && (headless === false || devtools === true || slowMo !== undefined)) {
@@ -103,6 +103,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
                 featureName = suiteFeatureName,
                 configName = suiteConfigName,
                 runOptions = suiteOptions,
+                queryParams = suiteQueryParams,
                 allowErrors: targetAllowErrors = false
             }: IFeatureTestOptions = {},
             options?: puppeteer.DirectNavigationOptions
