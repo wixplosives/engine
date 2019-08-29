@@ -84,7 +84,14 @@ interface IPackageDescriptor {
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
 function getFilePathInPackage(fs: IFileSystemSync, featurePackage: IPackageDescriptor, filePath: string) {
-    return fs.join(featurePackage.name, fs.relative(featurePackage.directoryPath, filePath)).replace(/\\/g, '/');
+    const relativeFilePath = fs.relative(featurePackage.directoryPath, filePath);
+    return fs
+        .join(
+            featurePackage.name,
+            fs.dirname(relativeFilePath),
+            fs.basename(relativeFilePath, fs.extname(relativeFilePath))
+        )
+        .replace(/\\/g, '/');
 }
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync) {
