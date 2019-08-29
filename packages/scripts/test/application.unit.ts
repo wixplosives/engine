@@ -184,6 +184,23 @@ describe('Application', function() {
                 expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
             });
         });
+
+        it('runs node environments with inspect mode', async () => {
+            const app = new Application({ basePath: nodeFeatureFixturePath });
+            const runningApp = await app.start({
+                featureName: 'engine-node/x',
+                options: {
+                    inspect: ''
+                }
+            });
+            disposables.add('closing app', () => runningApp.close());
+
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await getBodyContent(page)).to.equal('Hello');
+            });
+        });
     });
 
     describe('run', function() {
