@@ -27,6 +27,7 @@
     "@ts-tools/webpack-loader": "^0.8.14",
     "@wixc3/engine-core": "^7.0.0",
     "@wixc3/engine-core-node": "^7.0.0",
+    "body-parser": "^1.19.0",
     "commander": "^3.0.0",
     "create-listening-server": "^0.1.2",
     "deindent": "^0.1.0",

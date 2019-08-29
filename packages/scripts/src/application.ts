@@ -36,7 +36,6 @@ export interface IFeatureTarget {
 
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
-    inspect?: boolean;
 }
 
 export interface IBuildManifest {

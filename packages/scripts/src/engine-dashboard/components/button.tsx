@@ -15,8 +15,15 @@ export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
     onClick
 }) => {
     const changeNodeEnvitonmrtState = async () =>
-        await (await fetch(`node-env?featureName=${featureName}&configName=${configName}`, {
-            method: isNodeEnvActive ? 'DELETE' : 'PUT'
+        await (await fetch(`node-env`, {
+            method: isNodeEnvActive ? 'DELETE' : 'PUT',
+            body: JSON.stringify({
+                featureName,
+                configName,
+            }),
+            headers: {
+                'Content-type': 'application/json'
+            }
         })).json();
 
     const onButtonClick = async () => {

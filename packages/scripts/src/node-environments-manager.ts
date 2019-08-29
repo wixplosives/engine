@@ -1,9 +1,10 @@
+import bodyParser from 'body-parser';
 import { Router } from 'express';
 import { join } from 'path';
 import io from 'socket.io';
 
 import { SetMultiMap } from '@file-services/utils';
-import { flattenTree, TopLevelConfig } from '@wixc3/engine-core/src';
+import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 
 import { RemoteNodeEnvironment } from './remote-node-environment';
 import { runNodeEnvironment } from './run-node-environment';
@@ -135,11 +136,11 @@ export class NodeEnvironmentsManager {
 
     public middleware() {
         const router = Router();
-
+        router.use(bodyParser.json());
         router.put('/node-env', async (req, res) => {
-            const { configName, featureName }: RunEnvironmentOptions = req.query;
+            const { configName, featureName, options }: RunEnvironmentOptions = req.body;
             try {
-                await this.runEnvironment({ configName, featureName });
+                await this.runEnvironment({ configName, featureName, options });
                 res.json({
                     result: 'success'
                 });
@@ -152,7 +153,7 @@ export class NodeEnvironmentsManager {
         });
 
         router.delete('/node-env', async (req, res) => {
-            const { featureName }: RunEnvironmentOptions = req.query;
+            const { featureName }: RunEnvironmentOptions = req.body;
             try {
                 await this.closeEnvironment({ featureName });
                 res.json({

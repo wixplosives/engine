@@ -10,8 +10,10 @@ Error.stackTraceLimit = 100;
 
 program.version(version);
 
-function getProcessOptions() {
-    const args = process.argv.slice(3);
+const kebabCaseToCamelCase = (currentArgument: string): string =>
+    currentArgument.slice(2).replace(/[-]\S/g, match => match.slice(1).toUpperCase());
+
+function getProcessOptions(args: string[]) {
     const argumentQueue: string[] = [];
     const options: Record<string, string> = {};
     while (args.length) {
@@ -21,7 +23,7 @@ function getProcessOptions() {
                 options[argumentQueue.shift()!] = argumentQueue.join(' ');
                 argumentQueue.length = 0;
             }
-            argumentQueue.push(currentArgument.slice(2).replace(/[-]\S/g, match => match.slice(1).toUpperCase()));
+            argumentQueue.push(kebabCaseToCamelCase(currentArgument));
         } else if (argumentQueue.length) {
             argumentQueue.push(currentArgument);
         } else if (args.length && !args[0].startsWith('--')) {
@@ -38,7 +40,6 @@ program
     .command('start [path]')
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
-    .option('--inspect')
     .allowUnknownOption(true)
     .action(async (path, cmd: Record<string, string | undefined>) => {
         const { feature: featureName, config: configName } = cmd;
@@ -47,7 +48,7 @@ program
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
                 configName,
-                options: getProcessOptions()
+                options: getProcessOptions(process.argv.slice(3))
             });
 
             if (process.send) {
@@ -103,7 +104,11 @@ program
 
         try {
             const app = new Application({ basePath: path, outputPath: join(path, outDir) });
-            const { port } = await app.run({ configName, featureName, options: getProcessOptions() });
+            const { port } = await app.run({
+                configName,
+                featureName,
+                options: getProcessOptions(process.argv.slice(3))
+            });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);
         } catch (e) {

@@ -1,8 +1,10 @@
-import { createDisposables } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { join } from 'path';
-import { Application } from '../src/application';
+
+import { createDisposables } from '@wixc3/engine-test-kit';
+
+import { Application } from '../src/';
 
 chai.use(chaiAsPromised);
 
@@ -10,7 +12,7 @@ const nodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'node-env');
 const runFeatureOptions = { featureName: 'engine-node/x' };
 
 describe('Node environments manager', function() {
-    this.timeout(30_000);
+    this.timeout(10_000);
     const disposables = createDisposables();
 
     afterEach(disposables.dispose);
