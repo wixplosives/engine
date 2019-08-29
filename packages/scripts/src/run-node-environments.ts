@@ -25,17 +25,17 @@ export async function runNodeEnvironments({
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
-    for (const { name, childEnvName } of nodeEnvs) {
+    for (const env of nodeEnvs) {
         options = new Map([...Array.from(getProcessOptions().entries()), ...Array.from(options.entries())]);
         const { engine, runningFeature } = await runEngineApp({
             featureName,
-            featureLoaders: createFeatureLoaders(features, name, childEnvName),
+            featureLoaders: createFeatureLoaders(features, env),
             config: [
                 ...config,
                 COM.use({
                     config: {
                         host: localDevHost,
-                        id: name
+                        id: env.name
                     }
                 })
             ],
@@ -57,7 +57,10 @@ export async function runNodeEnvironments({
     };
 }
 
-function createFeatureLoaders(features: Map<string, IFeatureDefinition>, envName: string, childEnvName?: string) {
+function createFeatureLoaders(
+    features: Map<string, IFeatureDefinition>,
+    { name: envName, childEnvName }: IEnvironment
+) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {
         scopedName,
@@ -68,8 +71,8 @@ function createFeatureLoaders(features: Map<string, IFeatureDefinition>, envName
         resolvedContexts
     } of features.values()) {
         featureLoaders[scopedName] = {
-            load: async () => {
-                if (childEnvName) {
+            load: async currentContext => {
+                if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
                     if (contextFilePath) {
                         await import(contextFilePath);
