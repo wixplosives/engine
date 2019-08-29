@@ -68,9 +68,9 @@ export class NodeEnvironmentsManager {
         const disposables = [] as Array<() => Promise<void>>;
         const httpServerPath = `http://localhost:${this.httpServerPort}/`;
         for (const nodeEnv of this.getNodeEnvironments(featureName)) {
-            if (options.inspect) {
+            if (Object.keys(options).includes('inspect')) {
                 const remoteEnv = new RemoteNodeEnvironment(
-                    join(__dirname, '..', 'static', 'init-remote-environment`.js')
+                    join(__dirname, '..', 'static', 'init-remote-environment.js')
                 );
                 const environmentPort = await remoteEnv.start(true);
                 const { close } = await this.startRemoteNodeEnvironment(remoteEnv, {
@@ -134,13 +134,13 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    public middleware() {
+    public middleware(initialOptions?: Record<string, string>) {
         const router = Router();
         router.use(bodyParser.json());
         router.put('/node-env', async (req, res) => {
             const { configName, featureName, options }: RunEnvironmentOptions = req.body;
             try {
-                await this.runEnvironment({ configName, featureName, options });
+                await this.runEnvironment({ configName, featureName, options: { ...options, ...initialOptions } });
                 res.json({
                     result: 'success'
                 });

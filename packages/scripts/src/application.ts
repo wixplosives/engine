@@ -89,7 +89,7 @@ export class Application {
         return stats;
     }
 
-    public async start({ featureName, configName }: IRunOptions = {}) {
+    public async start({ featureName, configName, options }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
         const { port, app, close, socketServer } = await this.launchHttpServer();
 
@@ -126,7 +126,7 @@ export class Application {
             }
         }
 
-        app.use(nodeEnvironmentManager.middleware());
+        app.use(nodeEnvironmentManager.middleware(options));
 
         disposables.push(() => close());
 
@@ -143,7 +143,7 @@ export class Application {
             });
         });
         if (featureName) {
-            await nodeEnvironmentManager.runEnvironment({ featureName, configName });
+            await nodeEnvironmentManager.runEnvironment({ featureName, configName, options });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
 
@@ -166,7 +166,7 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
 
-        const { configName: providedConfigName, featureName = defaultFeatureName } = runOptions;
+        const { configName: providedConfigName, featureName = defaultFeatureName, options } = runOptions;
         const disposables: Array<() => unknown> = [];
 
         const configurations = await this.readConfigs();
@@ -189,7 +189,8 @@ export class Application {
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
-                configName
+                configName,
+                options
             });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
