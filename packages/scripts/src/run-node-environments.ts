@@ -25,9 +25,11 @@ export async function runNodeEnvironments({
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
+    disposeHandlers.add(() => localDevHost.dispose());
+
     for (const env of nodeEnvs) {
         options = new Map([...Array.from(getProcessOptions().entries()), ...Array.from(options.entries())]);
-        const { engine, runningFeature } = await runEngineApp({
+        const { dispose } = await runEngineApp({
             featureName,
             featureLoaders: createFeatureLoaders(features, env),
             config: [
@@ -42,10 +44,8 @@ export async function runNodeEnvironments({
             options
         });
 
-        disposeHandlers.add(() => engine.dispose(runningFeature));
+        disposeHandlers.add(() => dispose());
     }
-
-    disposeHandlers.add(localDevHost.dispose.bind(localDevHost));
 
     return {
         environments: nodeEnvs,

@@ -36,18 +36,22 @@ export async function runEngineApp({ featureName, featureLoaders, config = [], o
 
     const { resolvedContexts } = rootFeatureLoader;
 
-    const [runningFeature] = await Promise.all([
+    const allFeatures = await Promise.all([
         rootFeatureLoader.load(resolvedContexts),
         ...rootFeatureLoader.depFeatures.map(depName => featureLoaders[depName].load(resolvedContexts))
     ]);
+    const [runningFeature] = allFeatures;
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts } }), ...config], options).run(
         runningFeature
     );
 
     return {
-        engine,
-        runningFeature
+        async dispose() {
+            for (const feature of allFeatures) {
+                await engine.dispose(feature);
+            }
+        }
     };
 }
 
