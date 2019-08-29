@@ -1,7 +1,0 @@
-{
-  "name": "engine-local-feature",
-  "version": "^1.0.2",
-  "scripts": {
-    "start": "engine start"
-  }
-}

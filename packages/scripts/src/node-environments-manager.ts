@@ -1,7 +1,25 @@
 import { Router } from 'express';
+import { join } from 'path';
+import io from 'socket.io';
 
-export interface IClosable {
+import { SetMultiMap } from '@file-services/utils';
+import { flattenTree, TopLevelConfig } from '@wixc3/engine-core/src';
+
+import { RemoteNodeEnvironment } from './remote-node-environment';
+import { runNodeEnvironment } from './run-node-environment';
+import {
+    IConfigDefinition,
+    IEnvironmaneStartMessage,
+    IEnvironment,
+    IEnvironmentMessage,
+    IFeatureDefinition,
+    isEnvironmentStartMessage,
+    ServerEnvironmentOptions
+} from './types';
+
+export interface IRuntimeEnvironment {
     close: () => Promise<void>;
+    topology: Record<string, string>;
 }
 
 export interface RunEnvironmentOptions {
@@ -11,28 +29,88 @@ export interface RunEnvironmentOptions {
 }
 
 export class NodeEnvironmentsManager {
-    private runningEnvironments = new Map<string, IClosable>();
+    public topology = new Map<string, Record<string, string>>();
+    private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
     constructor(
-        private runNodeEnvironmentFunction: (target: {
-            featureName: string;
-            configName?: string | undefined;
-            options?: Map<string, string>;
-        }) => Promise<IClosable>
+        private features: Map<string, IFeatureDefinition>,
+        private configurations: SetMultiMap<string, IConfigDefinition>,
+        private httpServerPort: number,
+        private socketServer: io.Server
     ) {}
-
     public async runEnvironment({ featureName, configName, options = {} }: RunEnvironmentOptions) {
         if (this.runningEnvironments.has(featureName)) {
             throw new Error(`node environment for ${featureName} already running`);
         }
-        this.runningEnvironments.set(
-            featureName,
-            await this.runNodeEnvironmentFunction({
-                featureName,
-                configName,
-                options: new Map(Object.entries(options))
-            })
-        );
+
+        const config: TopLevelConfig = [];
+        if (configName) {
+            const configDefinition = this.configurations.get(configName);
+            if (!configDefinition) {
+                const configNames = Array.from(this.configurations.keys());
+                throw new Error(
+                    `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
+                );
+            }
+            for (const { filePath } of configDefinition) {
+                try {
+                    const { default: topLevelConfig } = await import(filePath);
+                    config.push(...topLevelConfig);
+                } catch (e) {
+                    // tslint:disable-next-line: no-console
+                    console.error(e);
+                }
+            }
+        }
+
+        const topology: Record<string, string> = {};
+        const disposables = [] as Array<() => Promise<void>>;
+        const httpServerPath = `http://localhost:${this.httpServerPort}/`;
+        for (const nodeEnv of this.getNodeEnvironments(featureName)) {
+            if (options.inspect) {
+                const remoteEnv = new RemoteNodeEnvironment(
+                    join(__dirname, '..', 'static', 'init-remote-environment`.js')
+                );
+                const environmentPort = await remoteEnv.start(true);
+                const { close } = await this.startRemoteNodeEnvironment(remoteEnv, {
+                    ...nodeEnv,
+                    config,
+                    featureName,
+                    features: Array.from(this.features.entries()),
+                    httpServerPath,
+                    options: Object.entries(options)
+                });
+                disposables.push(() => close());
+                disposables.push(async () => remoteEnv.dispose());
+
+                topology[nodeEnv.name] = `http://localhost:${environmentPort}/_ws`;
+            } else {
+                const { dispose } = await runNodeEnvironment(this.socketServer, {
+                    ...nodeEnv,
+                    config,
+                    featureName,
+                    features: Array.from(this.features.entries()),
+                    httpServerPath,
+                    options: Object.entries(options)
+                });
+                disposables.push(() => dispose());
+                topology[nodeEnv.name] = `http://localhost:${this.httpServerPort}/_ws`;
+            }
+        }
+
+        const runningEnvironment = {
+            async close() {
+                for (const dispose of disposables) {
+                    await dispose();
+                }
+                disposables.length = 0;
+            },
+            topology
+        } as IRuntimeEnvironment;
+
+        this.topology.set(featureName, runningEnvironment.topology);
+
+        this.runningEnvironments.set(featureName, runningEnvironment);
     }
 
     public async closeEnvironment({ featureName }: RunEnvironmentOptions) {
@@ -44,7 +122,7 @@ export class NodeEnvironmentsManager {
         await runningEnvironment.close();
     }
 
-    public getRunningEnvironments() {
+    public getFeaturesWithRunningEnvironments() {
         return Array.from(this.runningEnvironments.keys());
     }
 
@@ -59,9 +137,9 @@ export class NodeEnvironmentsManager {
         const router = Router();
 
         router.put('/node-env', async (req, res) => {
-            const { configName, featureName, options }: RunEnvironmentOptions = req.query;
+            const { configName, featureName }: RunEnvironmentOptions = req.query;
             try {
-                await this.runEnvironment({ configName, featureName, options });
+                await this.runEnvironment({ configName, featureName });
                 res.json({
                     result: 'success'
                 });
@@ -90,7 +168,7 @@ export class NodeEnvironmentsManager {
 
         router.get('/node-env', (_req, res) => {
             try {
-                const data = this.getRunningEnvironments();
+                const data = this.getFeaturesWithRunningEnvironments();
                 res.json({
                     result: 'success',
                     data
@@ -104,5 +182,62 @@ export class NodeEnvironmentsManager {
         });
 
         return router;
+    }
+
+    private async startRemoteNodeEnvironment(
+        remoteNodeEnvironment: RemoteNodeEnvironment,
+        options: ServerEnvironmentOptions
+    ) {
+        const startMessage = new Promise(resolve => {
+            remoteNodeEnvironment.subscribe(message => {
+                if (isEnvironmentStartMessage(message)) {
+                    resolve();
+                }
+            });
+        });
+        const startFeature: IEnvironmaneStartMessage = { id: 'start', envName: options.name, data: options };
+        remoteNodeEnvironment.postMessage(startFeature);
+
+        await startMessage;
+        return {
+            close: () => {
+                return new Promise<void>(resolve => {
+                    remoteNodeEnvironment.subscribe(message => {
+                        if (message.id === 'close') {
+                            resolve();
+                        }
+                    });
+                    const enviroenentCloseServer: IEnvironmentMessage = { id: 'close', envName: options.name };
+                    remoteNodeEnvironment.postMessage(enviroenentCloseServer);
+                });
+            }
+        };
+    }
+
+    private getNodeEnvironments(featureName: string) {
+        const nodeEnvs = new Set<IEnvironment>();
+
+        const featureDefinition = this.features.get(featureName);
+        if (!featureDefinition) {
+            const featureNames = Array.from(this.features.keys());
+            throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
+        }
+        const { resolvedContexts: resolvedFeatureContexts } = featureDefinition;
+        const deepDefsForFeature = flattenTree(featureDefinition, f =>
+            f.dependencies.map(fName => this.features.get(fName)!)
+        );
+        for (const { exportedEnvs } of deepDefsForFeature) {
+            for (const exportedEnv of exportedEnvs) {
+                if (
+                    exportedEnv.type === 'node' &&
+                    (!exportedEnv.childEnvName ||
+                        resolvedFeatureContexts[exportedEnv.name] === exportedEnv.childEnvName)
+                ) {
+                    nodeEnvs.add(exportedEnv);
+                }
+            }
+        }
+
+        return nodeEnvs;
     }
 }

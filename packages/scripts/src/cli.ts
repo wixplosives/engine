@@ -10,6 +10,30 @@ Error.stackTraceLimit = 100;
 
 program.version(version);
 
+function getProcessOptions() {
+    const args = process.argv.slice(3);
+    const argumentQueue: string[] = [];
+    const options: Record<string, string> = {};
+    while (args.length) {
+        const currentArgument = args.shift()!;
+        if (currentArgument.startsWith('--')) {
+            if (argumentQueue.length) {
+                options[argumentQueue.shift()!] = argumentQueue.join(' ');
+                argumentQueue.length = 0;
+            }
+            argumentQueue.push(currentArgument.slice(2).replace(/[-]\S/g, match => match.slice(1).toUpperCase()));
+        } else if (argumentQueue.length) {
+            argumentQueue.push(currentArgument);
+        } else if (args.length && !args[0].startsWith('--')) {
+            args.shift();
+        }
+    }
+    if (argumentQueue.length) {
+        options[argumentQueue.shift()!] = argumentQueue.join(' ');
+    }
+    return options;
+}
+
 program
     .command('start [path]')
     .option('-f ,--feature <feature>')
@@ -22,7 +46,8 @@ program
             const app = new Application({ basePath: path || process.cwd() });
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
-                configName
+                configName,
+                options: getProcessOptions()
             });
 
             if (process.send) {
@@ -78,7 +103,7 @@ program
 
         try {
             const app = new Application({ basePath: path, outputPath: join(path, outDir) });
-            const { port } = await app.run({ configName, featureName });
+            const { port } = await app.run({ configName, featureName, options: getProcessOptions() });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);
         } catch (e) {

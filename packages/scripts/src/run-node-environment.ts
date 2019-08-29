@@ -9,12 +9,14 @@ import { WsServerHost } from '@wixc3/engine-core-node';
 import { getParentProcess } from './parent-process';
 import {
     ICommunicationMessage,
+    IEnvironment,
     IEnvironmentPortMessage,
-    IRunNodeEnvironmentsOptions,
+    IFeatureDefinition,
     isEnvironmentCloseMessage,
     isEnvironmentPortMessage,
     isEnvironmentStartMessage,
-    RemoteProcess
+    RemoteProcess,
+    ServerEnvironmentOptions
 } from './types';
 
 const parentProcess = getParentProcess();
@@ -45,51 +47,19 @@ export async function createWorkerProtocol(remoteAccess: RemoteProcess) {
 
 export async function runNodeEnvironment(
     socketServer: Server,
-    {
-        featureName,
-        childEnvName,
-        features,
-        config = [],
-        name,
-        httpServerPath,
-        projectPath = process.cwd()
-    }: IRunNodeEnvironmentsOptions
+    { featureName, childEnvName, features, config = [], name, httpServerPath, type, options }: ServerEnvironmentOptions
 ) {
     const disposeHandlers: Set<() => unknown> = new Set();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
 
-    const featureLoaders: Record<string, IFeatureLoader> = {};
-    for (const {
-        scopedName,
-        filePath,
-        dependencies,
-        envFilePaths,
-        contextFilePaths,
-        resolvedContexts
-    } of Object.values(features)) {
-        featureLoaders[scopedName] = {
-            load: async () => {
-                if (childEnvName) {
-                    const contextFilePath = contextFilePaths[`${name}/${childEnvName}`];
-                    if (contextFilePath) {
-                        await import(contextFilePath);
-                    }
-                }
-                const envFilePath = envFilePaths[name];
-                if (envFilePath) {
-                    await import(envFilePath);
-                }
-                return (await import(filePath)).default;
-            },
-            depFeatures: dependencies,
-            resolvedContexts
-        };
-    }
-
     await runEngineApp({
         featureName,
-        featureLoaders,
+        featureLoaders: createFeatureLoaders(new Map(features), {
+            name,
+            childEnvName,
+            type
+        }),
         config: [
             ...config,
             COM.use({
@@ -98,16 +68,9 @@ export async function runNodeEnvironment(
                     id: name
                 }
             }),
-            [
-                'project',
-                {
-                    fsProjectDirectory: {
-                        projectPath
-                    }
-                }
-            ],
             ...(await getConfig(featureName, httpServerPath))
-        ]
+        ],
+        options: new Map(options)
     });
 
     return {
@@ -121,7 +84,7 @@ export async function runNodeEnvironment(
 
 async function getConfig(featureName: string, httpServerPath: string): Promise<Array<[string, object]>> {
     return new Promise((resolve, reject) => {
-        http.get(`${httpServerPath}/config?feature=${featureName}`, response => {
+        http.get(`${httpServerPath}config?feature=${featureName}`, response => {
             let data = '';
             response.on('data', chunk => {
                 data += chunk;
@@ -134,4 +97,38 @@ async function getConfig(featureName: string, httpServerPath: string): Promise<A
             });
         });
     });
+}
+
+function createFeatureLoaders(
+    features: Map<string, IFeatureDefinition>,
+    { name: envName, childEnvName }: IEnvironment
+) {
+    const featureLoaders: Record<string, IFeatureLoader> = {};
+    for (const {
+        scopedName,
+        filePath,
+        dependencies,
+        envFilePaths,
+        contextFilePaths,
+        resolvedContexts
+    } of features.values()) {
+        featureLoaders[scopedName] = {
+            load: async currentContext => {
+                if (childEnvName && currentContext[envName] === childEnvName) {
+                    const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
+                    if (contextFilePath) {
+                        await import(contextFilePath);
+                    }
+                }
+                const envFilePath = envFilePaths[envName];
+                if (envFilePath) {
+                    await import(envFilePath);
+                }
+                return (await import(filePath)).default;
+            },
+            depFeatures: dependencies,
+            resolvedContexts
+        };
+    }
+    return featureLoaders;
 }

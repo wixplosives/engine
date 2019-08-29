@@ -9,11 +9,12 @@ import {
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
-export type IRunNodeEnvironmentsOptions = IEnvironment & {
+export type ServerEnvironmentOptions = IEnvironment & {
     featureName: string;
     config?: TopLevelConfig;
-    features: Record<string, IFeatureDefinition>;
+    features: Array<[string, IFeatureDefinition]>;
     httpServerPath: string;
+    options?: Array<[string, string]>;
 };
 export interface VirtualEntry {
     source: string;
@@ -138,14 +139,6 @@ export interface IPortMessage {
     port: number;
 }
 
-export interface ServerEnvironmentOptions {
-    environment: IEnvironment;
-    features: Map<string, IFeatureDefinition>;
-    featureName: string;
-    config: TopLevelConfig;
-    httpServerPath: string;
-}
-
 export type IEnvironmentMessageID = 'start' | 'close' | 'port' | 'start-static';
 
 export interface ICommunicationMessage {
@@ -164,7 +157,7 @@ export interface IEnvironmentMessage extends ICommunicationMessage {
 
 export interface IEnvironmaneStartMessage extends IEnvironmentMessage {
     id: 'start';
-    data: IRunNodeEnvironmentsOptions;
+    data: ServerEnvironmentOptions;
 }
 
 export interface IEnvironmentStartStaticMessage extends IEnvironmentMessage {
@@ -215,6 +208,19 @@ export interface IEnvironment {
     childEnvName?: string;
 }
 
+export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
+    message.id === 'start';
+
+export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
+    message.id === 'close';
+
+export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
+    message.id === 'port';
+
+export const isEnvironmentStartStaticMessage = (
+    message: ICommunicationMessage
+): message is IEnvironmentStartStaticMessage => message.id === 'start-static';
+
 export interface IConfigDefinition {
     name: string;
     filePath: string;
@@ -231,15 +237,37 @@ export interface IFeatureDefinition extends IFeatureModule {
     toJSON(): unknown;
 }
 
-export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
-    message.id === 'start';
+export interface IFeatureModule {
+    /**
+     * Feature name.
+     * @example "gui" for "gui.feature.ts"
+     */
+    name: string;
 
-export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
-    message.id === 'close';
+    /**
+     * Absolute path pointing to the feature file.
+     */
+    filePath: string;
 
-export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
-    message.id === 'port';
+    /**
+     * Actual evaluated Feature instance exported from the file.
+     */
+    exportedFeature: SomeFeature;
 
-export const isEnvironmentStartStaticMessage = (
-    message: ICommunicationMessage
-): message is IEnvironmentStartStaticMessage => message.id === 'start-static';
+    /**
+     * Exported environments from module.
+     */
+    exportedEnvs: IEnvironment[];
+
+    /**
+     * If module exports any `processingEnv.use('worker')`,
+     * it will be set as `'processing': 'worker'`
+     */
+    usedContexts: Record<string, string>;
+}
+
+export interface IEnvironment {
+    type: EnvironmentTypes;
+    name: string;
+    childEnvName?: string;
+}

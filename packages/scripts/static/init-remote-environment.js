@@ -7,7 +7,7 @@ let rootDir = inOwnRepo ? 'src' : 'cjs';
 if (inOwnRepo) {
     require('@ts-tools/node/r');
 }
-require(join(__dirname, '..', rootDir, 'run-socket-server'));
+require(join(__dirname, '..', rootDir, 'run-node-environment'));
 
 
 

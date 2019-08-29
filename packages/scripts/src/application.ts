@@ -9,7 +9,6 @@ import '@ts-tools/node/fast';
 import './own-repo-hook';
 
 import fs from '@file-services/node';
-import { RemoteNodeEnvironment } from '@wixc3/engine-core-node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import { basename, dirname, extname, join } from 'path';
@@ -20,21 +19,11 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { SetMultiMap } from '@file-services/utils';
-import { flattenTree, TopLevelConfig } from '@wixc3/engine-core/src';
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
-import { IClosable, NodeEnvironmentsManager } from './node-environments-manager';
-import { runNodeEnvironment } from './run-socket-server';
-import {
-    IConfigDefinition,
-    IEnvironmaneStartMessage,
-    IEnvironment,
-    IEnvironmentMessage,
-    IFeatureDefinition,
-    isEnvironmentStartMessage,
-    ServerEnvironmentOptions
-} from './types';
+import { NodeEnvironmentsManager } from './node-environments-manager';
+import { IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
@@ -101,18 +90,17 @@ export class Application {
         return stats;
     }
 
-    public async start({ featureName, configName, inspect = false }: IRunOptions = {}) {
-        if (process.argv.some(arg => arg.startsWith('--inspect'))) {
-            inspect = true;
-        }
+    public async start({ featureName, configName }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
+        const { port, app, close, socketServer } = await this.launchHttpServer();
+
         const { features, configurations, packages } = this.analyzeFeatures();
+
         const compiler = this.createCompiler(features, featureName, configName);
-        const { port, app, close, nodeEnvironmentManager } = await this.launchHttpServer({
-            configurations,
-            features: Array.from(features.entries()),
-            inspect
-        });
+
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(features, configurations, port, socketServer);
+
+        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
@@ -151,7 +139,7 @@ export class Application {
                     features: Array.from(features.values())
                         .filter(({ isRoot }) => isRoot)
                         .map(({ scopedName }) => scopedName),
-                    runningNodeEnvironments: nodeEnvironmentManager.getRunningEnvironments()
+                    runningNodeEnvironments: nodeEnvironmentManager.getFeaturesWithRunningEnvironments()
                 }
             });
         });
@@ -179,26 +167,30 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
 
-        const { configName: providedConfigName, featureName = defaultFeatureName, options } = runOptions;
+        const { configName: providedConfigName, featureName = defaultFeatureName } = runOptions;
         const disposables: Array<() => unknown> = [];
 
         const configurations = await this.readConfigs();
 
         const configName = providedConfigName || defaultConfigName;
 
-        const { port, close, nodeEnvironmentManager } = await this.launchHttpServer({
+        const { port, close, socketServer, app } = await this.launchHttpServer();
+
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(
+            new Map(features),
             configurations,
-            configName,
-            features
-        });
+            port,
+            socketServer
+        );
+
+        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
 
         disposables.push(() => close());
 
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
-                configName,
-                options
+                configName
             });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
@@ -329,138 +321,21 @@ export class Application {
         }
         return packageToConfigurationMapping;
     }
-    private async startNodeEnvironment(
-        remoteNodeEnvironment: RemoteNodeEnvironment,
-        { config, features, featureName, environment, httpServerPath }: ServerEnvironmentOptions
-    ) {
-        const envName = environment.name;
-        const startMessage = new Promise(resolve => {
-            remoteNodeEnvironment.subscribe(message => {
-                if (isEnvironmentStartMessage(message)) {
-                    resolve();
-                }
-            });
-        });
-        const startFeature: IEnvironmaneStartMessage = {
-            id: 'start',
-            envName,
-            data: {
-                ...environment,
-                config,
-                featureName,
-                features: mapToRecord(features),
-                httpServerPath
-            }
-        };
-        remoteNodeEnvironment.postMessage(startFeature);
 
-        await startMessage;
-        return {
-            close: () => {
-                return new Promise<void>(resolve => {
-                    remoteNodeEnvironment.subscribe(message => {
-                        if (message.id === 'close') {
-                            resolve();
-                        }
-                    });
-                    const enviroenentCloseServer: IEnvironmentMessage = { id: 'close', envName };
-                    remoteNodeEnvironment.postMessage(enviroenentCloseServer);
-                });
-            }
-        };
-    }
-
-    private async launchHttpServer({
-        configurations,
-        configName,
-        features,
-        inspect
-    }: {
-        configurations: SetMultiMap<string, IConfigDefinition>;
-        configName?: string;
-        features: Array<[string, IFeatureDefinition]>;
-        inspect?: boolean;
-    }) {
+    private async launchHttpServer() {
         const app = express();
-        const topology = new Map<string, Record<string, string>>();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
 
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
-        app.use('/config', createConfigMiddleware(configurations, topology));
         const socketServer = io(httpServer);
-
-        const runNodeEnv = async (targetFeature: { featureName: string; options?: Map<string, string> }) => {
-            const config: TopLevelConfig = [];
-            if (configName) {
-                const configDefinition = configurations.get(configName);
-                if (!configDefinition) {
-                    const configNames = Array.from(configurations.keys());
-                    throw new Error(
-                        `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
-                    );
-                }
-                for (const { filePath } of configDefinition) {
-                    try {
-                        const { default: topLevelConfig } = await import(filePath);
-                        config.push(...topLevelConfig);
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-            }
-
-            const nodeEnvironments = getNodeEnvironments(targetFeature.featureName, new Map(features));
-
-            const topologyForFeature: Record<string, string> = {};
-            const disposables = [] as Array<() => Promise<void>>;
-            for (const nodeEnv of nodeEnvironments) {
-                if (inspect) {
-                    const remoteEnv = new RemoteNodeEnvironment(join(__dirname, '..', 'static'));
-                    const { close } = await this.startNodeEnvironment(remoteEnv, {
-                        environment: nodeEnv,
-                        config,
-                        featureName: targetFeature.featureName,
-                        features: new Map(features),
-                        httpServerPath: `http://localhost:${port}/`
-                    });
-                    topologyForFeature[name] = `http://localhost:${port}/_ws`;
-                    disposables.push(() => close());
-                } else {
-                    const { dispose } = await runNodeEnvironment(socketServer, {
-                        ...nodeEnv,
-                        config,
-                        featureName: targetFeature.featureName,
-                        features: mapToRecord(new Map(features)),
-                        httpServerPath: `http://localhost:${port}/`
-                    });
-                    disposables.push(() => dispose());
-                    topologyForFeature[name] = `http://localhost:${port}/_ws`;
-                }
-            }
-            topology.set(targetFeature.featureName, topologyForFeature);
-            return {
-                async close() {
-                    if (topology.has(targetFeature.featureName)) {
-                        topology.delete(targetFeature.featureName);
-                    }
-                    for (const dispose of disposables) {
-                        await dispose();
-                    }
-                    disposables.length = 0;
-                }
-            } as IClosable;
-        };
-
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(runNodeEnv);
 
         return {
             close: async () => new Promise(res => socketServer.close(res)),
             port,
             app,
-            socketServer,
-            nodeEnvironmentManager
+            socketServer
         };
     }
 }
@@ -485,36 +360,4 @@ function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
         }
         console.log('Done bundling.');
     });
-}
-
-function mapToRecord<K extends string, V>(map: Map<K, V>): Record<K, V> {
-    const record: Record<K, V> = {} as Record<K, V>;
-    for (const [key, value] of map) {
-        record[key] = value;
-    }
-    return record;
-}
-
-function getNodeEnvironments(featureName: string, features: Map<string, IFeatureDefinition>) {
-    const nodeEnvs = new Set<IEnvironment>();
-
-    const featureDefinition = features.get(featureName);
-    if (!featureDefinition) {
-        const featureNames = Array.from(features.keys());
-        throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
-    }
-    const { resolvedContexts: resolvedFeatureContexts } = featureDefinition;
-    const deepDefsForFeature = flattenTree(featureDefinition, f => f.dependencies.map(fName => features.get(fName)!));
-    for (const { exportedEnvs } of deepDefsForFeature) {
-        for (const exportedEnv of exportedEnvs) {
-            if (
-                exportedEnv.type === 'node' &&
-                (!exportedEnv.childEnvName || resolvedFeatureContexts[exportedEnv.name] === exportedEnv.childEnvName)
-            ) {
-                nodeEnvs.add(exportedEnv);
-            }
-        }
-    }
-
-    return nodeEnvs;
 }
