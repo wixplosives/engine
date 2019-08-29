@@ -26,37 +26,10 @@ export async function runNodeEnvironments({
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
     for (const { name, childEnvName } of nodeEnvs) {
-        const featureLoaders: Record<string, IFeatureLoader> = {};
-        for (const {
-            scopedName,
-            filePath,
-            dependencies,
-            envFilePaths,
-            contextFilePaths,
-            resolvedContexts
-        } of features.values()) {
-            featureLoaders[scopedName] = {
-                load: async () => {
-                    if (childEnvName) {
-                        const contextFilePath = contextFilePaths[`${name}/${childEnvName}`];
-                        if (contextFilePath) {
-                            await import(contextFilePath);
-                        }
-                    }
-                    const envFilePath = envFilePaths[name];
-                    if (envFilePath) {
-                        await import(envFilePath);
-                    }
-                    return (await import(filePath)).default;
-                },
-                depFeatures: dependencies,
-                resolvedContexts
-            };
-        }
         options = new Map([...Array.from(getProcessOptions().entries()), ...Array.from(options.entries())]);
         const { engine, runningFeature } = await runEngineApp({
             featureName,
-            featureLoaders,
+            featureLoaders: createFeatureLoaders(features, name, childEnvName),
             config: [
                 ...config,
                 COM.use({
@@ -82,6 +55,37 @@ export async function runNodeEnvironments({
             }
         }
     };
+}
+
+function createFeatureLoaders(features: Map<string, IFeatureDefinition>, envName: string, childEnvName?: string) {
+    const featureLoaders: Record<string, IFeatureLoader> = {};
+    for (const {
+        scopedName,
+        filePath,
+        dependencies,
+        envFilePaths,
+        contextFilePaths,
+        resolvedContexts
+    } of features.values()) {
+        featureLoaders[scopedName] = {
+            load: async () => {
+                if (childEnvName) {
+                    const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
+                    if (contextFilePath) {
+                        await import(contextFilePath);
+                    }
+                }
+                const envFilePath = envFilePaths[envName];
+                if (envFilePath) {
+                    await import(envFilePath);
+                }
+                return (await import(filePath)).default;
+            },
+            depFeatures: dependencies,
+            resolvedContexts
+        };
+    }
+    return featureLoaders;
 }
 
 function nodeEnvsForFeature(features: Map<string, IFeatureDefinition>, featureName: string) {
