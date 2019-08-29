@@ -216,14 +216,14 @@ export class NodeEnvironmentsManager {
     }
 
     private getNodeEnvironments(featureName: string) {
-        const nodeEnvs = new Set<IEnvironment>();
-
         const featureDefinition = this.features.get(featureName);
         if (!featureDefinition) {
             const featureNames = Array.from(this.features.keys());
             throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
         }
-        const { resolvedContexts: resolvedFeatureContexts } = featureDefinition;
+        const { resolvedContexts } = featureDefinition;
+
+        const nodeEnvs = new Set<IEnvironment>();
         const deepDefsForFeature = flattenTree(featureDefinition, f =>
             f.dependencies.map(fName => this.features.get(fName)!)
         );
@@ -231,14 +231,12 @@ export class NodeEnvironmentsManager {
             for (const exportedEnv of exportedEnvs) {
                 if (
                     exportedEnv.type === 'node' &&
-                    (!exportedEnv.childEnvName ||
-                        resolvedFeatureContexts[exportedEnv.name] === exportedEnv.childEnvName)
+                    (!exportedEnv.childEnvName || resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
                 ) {
                     nodeEnvs.add(exportedEnv);
                 }
             }
         }
-
         return nodeEnvs;
     }
 }
