@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "4.0.4",
+  "version": "7.0.0",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "scripts": {

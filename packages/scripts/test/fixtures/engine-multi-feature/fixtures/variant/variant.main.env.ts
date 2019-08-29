@@ -1,4 +1,4 @@
-import { MAIN } from '3rd-party/3rd-party.feature';
+import { MAIN } from '@fixture/3rd-party/3rd-party.feature';
 import Variant from './variant.feature';
 
 Variant.setup(MAIN, ({}, { MultiFeature: { mySlot } }) => {

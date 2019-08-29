@@ -9,9 +9,9 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
     basePath?: string;
     featureName?: string;
     configName?: string;
-    projectPath?: string;
     queryParams?: Record<string, string>;
     allowErrors?: boolean;
+    runOptions?: Record<string, string>;
 }
 
 let browser: puppeteer.Browser | null = null;
@@ -44,7 +44,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         slowMo,
         featureName: suiteFeatureName,
         configName: suiteConfigName,
-        projectPath: suiteProjectPath = basePath,
+        runOptions: suiteOptions = {},
         allowErrors: suiteAllowErrors = false,
         queryParams
     } = withFeatureOptions;
@@ -70,7 +70,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
     before('engine start', async function() {
         if (!featureUrl) {
             this.timeout(60_000 * 4); // 4 minutes
-            runningApplication = new Application(basePath);
+            runningApplication = new Application({ basePath });
             const { port, nodeEnvironmentManager: manager, close } = await runningApplication.start();
             featureUrl = `http://localhost:${port}/main.html`;
             nodeEnvironmentManager = manager;
@@ -105,7 +105,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             {
                 featureName = suiteFeatureName,
                 configName = suiteConfigName,
-                projectPath = suiteProjectPath,
+                runOptions = suiteOptions,
                 allowErrors: targetAllowErrors = false
             }: IFeatureTestOptions = {},
             options?: puppeteer.DirectNavigationOptions
@@ -122,7 +122,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
                 configName,
-                projectPath
+                options: runOptions
             });
 
             disposeAfterEach.add(async () => nodeEnvironmentManager.closeEnvironment({ featureName }));

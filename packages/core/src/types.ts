@@ -1,10 +1,10 @@
 import { TupleToUnion } from 'typescript-type-utils';
 import { LogMessage } from './common-types';
 import { Config } from './entities/config';
-import { AllEnvironments, Universal } from './entities/env';
+import { Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from './symbols';
+import { CREATE_RUNTIME, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
 /*************** HELPER TYPES  ***************/
 
@@ -78,7 +78,7 @@ export type NormalizeEnvironmentFilter<T extends EnvironmentFilter> = T extends 
 export type EnvVisibility = string | { env: string; envType?: string } | Array<{ env: string; envType?: string }>;
 
 export type EnvType<T extends EnvVisibility> = T extends []
-    ? AllEnvironments['env']
+    ? string
     : T extends Array<{ env: infer U }>
     ? U
     : T extends { env: infer U1 }
@@ -141,10 +141,16 @@ export type RunningFeatures<
     FeatureMap extends MapBy<T, 'id'> = MapBy<T, 'id'>
 > = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
 
+export interface IRunOptions {
+    has(key: string): boolean;
+    get(key: string): string | null | undefined;
+}
+
 type SettingUpFeature<ID extends string, API extends EntityMap, ENV extends string> = {
     id: ID;
     run: (fn: () => unknown) => void;
     onDispose: (fn: DisposeFunction) => void;
+    [RUN_OPTIONS]: IRunOptions;
 } & MapVisibleInputs<API, ENV> &
     MapToProxyType<GetRemoteOutputs<API>> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<API>>;
@@ -197,6 +203,13 @@ export type SetupHandler<
     runningFeatures: RunningFeatures<Deps, Filter>,
     context: MapRecordType<EnvironmentContext>
 ) => RegisteringFeature<API, Filter>;
+
+export type ContextHandler<
+    C,
+    EnvFilter extends EnvironmentFilter,
+    Deps extends SomeFeature[],
+    Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>
+> = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
 
 export type PartialFeatureConfig<API> = Partial<MapToPartialType<JustFilter<API, Config<any, any>>>>;
 

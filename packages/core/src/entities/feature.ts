@@ -1,6 +1,7 @@
 import { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN } from '../symbols';
+import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import {
+    ContextHandler,
     DisposableContext,
     DisposeFunction,
     EntityMap,
@@ -13,7 +14,7 @@ import {
     SetupHandler,
     SomeFeature
 } from '../types';
-import { AllEnvironments, testEnvironmentCollision, Universal } from './env';
+import { Environment, testEnvironmentCollision, Universal } from './env';
 
 /*************** FEATURE ***************/
 
@@ -25,7 +26,7 @@ export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], A
     constructor(
         public feature: T,
         public api: MapToProxyType<API>,
-        public dependencies: RunningFeatures<Deps, AllEnvironments['env']>
+        public dependencies: RunningFeatures<Deps, string>
     ) {}
     public addRunHandler(fn: () => void) {
         this.runHandlers.push(fn);
@@ -67,8 +68,8 @@ export class Feature<
     public api: API;
     public context: EnvironmentContext;
     private environmentIml = new Set<string>();
-    private setupHandlers = new Set<SetupHandler<AllEnvironments, ID, Deps, API, EnvironmentContext>>();
-    private contextHandlers = new Map<string | number | symbol, () => unknown>();
+    private setupHandlers = new Set<SetupHandler<Environment, ID, Deps, API, EnvironmentContext>>();
+    private contextHandlers = new Map<string | number | symbol, ContextHandler<object, EnvironmentFilter, Deps>>();
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
         this.dependencies = def.dependencies || (([] as IDTagArray) as Deps);
@@ -93,9 +94,10 @@ export class Feature<
     }
 
     // context = Context<Interface>
-    public setupContext<T extends keyof EnvironmentContext>(
-        environmentContext: T,
-        contextHandler: () => EnvironmentContext[T]['type']
+    public setupContext<K extends keyof EnvironmentContext, Env extends EnvironmentFilter>(
+        _env: Env,
+        environmentContext: K,
+        contextHandler: ContextHandler<EnvironmentContext[K]['type'], Env, Deps>
     ) {
         const registerdContext = this.contextHandlers.get(environmentContext);
         if (registerdContext) {
@@ -110,7 +112,7 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME](context: RuntimeEngine): RuntimeFeature<this, Deps, API> {
+    public [CREATE_RUNTIME](runningEngine: RuntimeEngine): RuntimeFeature<this, Deps, API> {
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};
@@ -120,15 +122,15 @@ export class Feature<
         const apiEntries = Object.entries(this.api);
         const feature = new RuntimeFeature<this, Deps, API>(this, runningApi, deps);
 
-        context.features.set(this, feature);
+        runningEngine.features.set(this, feature);
 
         for (const dep of this.dependencies) {
-            deps[dep.id] = context.initFeature(dep);
+            deps[dep.id] = runningEngine.initFeature(dep);
             depsApis[dep.id] = deps[dep.id].api;
         }
 
         for (const [key, entity] of apiEntries) {
-            const provided = entity[CREATE_RUNTIME](context, this.id, key);
+            const provided = entity[CREATE_RUNTIME](runningEngine, this.id, key);
             if (provided !== undefined) {
                 inputApi[key] = provided;
             }
@@ -142,12 +144,13 @@ export class Feature<
             },
             onDispose(fn: DisposeFunction) {
                 feature.addOnDisposeHandler(fn);
-            }
+            },
+            [RUN_OPTIONS]: runningEngine.runOptions
         };
 
         const emptyDispose = { dispose: () => undefined };
         for (const [key, contextHandler] of this.contextHandlers) {
-            const contextValue = contextHandler();
+            const contextValue = contextHandler(depsApis);
             environmentContext[key] = { ...emptyDispose, ...contextValue };
         }
 
@@ -162,7 +165,7 @@ export class Feature<
         }
 
         for (const [key, entity] of apiEntries) {
-            const registered = entity[REGISTER_VALUE](context, providedAPI[key], inputApi[key], this.id, key);
+            const registered = entity[REGISTER_VALUE](runningEngine, providedAPI[key], inputApi[key], this.id, key);
             if (registered !== undefined) {
                 runningApi[key] = registered;
             }

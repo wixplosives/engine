@@ -1,53 +1,39 @@
 import { EnvironmentTypes } from '../com/types';
 import { runtimeType } from '../entity-helpers';
 import { DisposableContext, EnvVisibility, MapBy } from '../types';
-import { AsyncSingleEndpointEnvironment } from './async-env';
 
-export interface AllEnvironments {
-    env: string;
-    endpointType: EndpointType;
-}
+export type EnvironmentMode = 'single' | 'multi';
 
-export type EndpointType = 'single' | 'multi';
-
-export class Environment<ID extends string, EType extends EndpointType = 'single'> {
-    constructor(
-        public env: ID,
-        public endpointType: EType = 'single' as EType,
-        public envType: EnvironmentTypes = 'window'
-    ) {}
-}
-
-export class NodeEnvironment<ID extends string> extends Environment<ID, 'single'> {
-    constructor(env: ID) {
-        super(env, 'single', 'node');
-    }
-
-    public getLocalTopology(port: number) {
-        return {
-            [this.env]: `http://localhost:${port}/_ws`
-        };
-    }
+export class Environment<
+    NAME extends string = string,
+    TYPE extends EnvironmentTypes = EnvironmentTypes,
+    MODE extends EnvironmentMode = EnvironmentMode
+> {
+    constructor(public env: NAME, public envType: TYPE, public endpointType: MODE) {}
 }
 
 export class EnvironmentContext {
     constructor(public env: string, public activeEnvironmentName: string, public runtimeEnvType: EnvironmentTypes) {}
 }
 
-export class SingleEndpointContextualEnvironment<
-    ID extends string,
-    T extends AsyncSingleEndpointEnvironment[]
-> extends Environment<ID, 'single'> {
-    public envType = 'context' as const;
-    constructor(env: ID, public environments: T) {
-        super(env, 'single', 'context');
+export const Universal = new Environment('<Universal>', 'window', 'multi');
+export const AllEnvironments: Environment = new Environment('<All>', 'window', 'multi');
+export const NoEnvironments = new Environment('<None>', 'window', 'multi');
+
+export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
+    NAME,
+    'context',
+    'single'
+> {
+    constructor(env: NAME, public environments: ENVS) {
+        super(env, 'context', 'single');
 
         if (environments.length === 0) {
             throw new Error(`Contextual Environment ${env} initiated without child environments`);
         }
     }
 
-    public useContext(contextEnv: keyof MapBy<T, 'env'>): EnvironmentContext {
+    public useContext(contextEnv: keyof MapBy<ENVS, 'env'>): EnvironmentContext {
         return new EnvironmentContext(
             this.env,
             contextEnv,
@@ -55,16 +41,12 @@ export class SingleEndpointContextualEnvironment<
         );
     }
 
-    public withContext<I>(): DisposableContext<I> {
+    public withContext<I extends object>(): DisposableContext<I> {
         return {
             type: runtimeType<I & { dispose(): unknown }>(this.env + ' context')
         };
     }
 }
-
-export const Universal = new Environment('<Universal>', 'multi');
-export const AllEnvironments: AllEnvironments = new Environment('<All>', 'multi');
-export const NoEnvironments = new Environment('<None>', 'multi');
 
 export function normEnvVisibility(envVisibility: EnvVisibility): Set<string> {
     const envSet = new Set<string>();

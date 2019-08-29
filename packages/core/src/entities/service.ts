@@ -1,17 +1,17 @@
-import { AsyncApi, EnvironmentInstanceToken } from '../com/types';
+import { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes } from '../com/types';
 import { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import { EnvVisibility } from '../types';
 import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
 import { FeatureOutput } from './output';
 
-type ServiceRuntime<Type, ProvidedFrom> = ProvidedFrom extends Environment<string, 'single'>
-    ? AsyncApi<Type>
-    : ProvidedFrom extends Environment<string, 'multi'>
+export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<string, EnvironmentTypes, 'single'>
+    ? AsyncApi<T>
+    : ProvidedFrom extends Environment<string, EnvironmentTypes, 'multi'>
     ? {
-          get(token: EnvironmentInstanceToken): AsyncApi<Type>;
+          get(token: EnvironmentInstanceToken): AsyncApi<T>;
       }
-    : AsyncApi<Type>;
+    : AsyncApi<T>;
 
 export class Service<
     T,
@@ -35,12 +35,13 @@ export class Service<
         super(providedFrom, visibleAt, remoteAccess);
     }
     public allowRemoteAccess() {
-        type U = ServiceRuntime<T, ProvidedFrom>;
-        return new Service<T, U, ProvidedFrom, AllEnvironments, true>(this.providedFrom, AllEnvironments, true);
+        return new Service<T, ServiceRuntime<T, ProvidedFrom>, ProvidedFrom, Environment, true>(
+            this.providedFrom,
+            AllEnvironments,
+            true
+        );
     }
-    // public allowRemoteAccess<U extends ServiceRuntime<T, ProvidedFrom>> = ServiceRuntime<T, ProvidedFrom>>() {
-    //     return new Service<T, U, ProvidedFrom, AllEnvironments>(this.providedFrom, AllEnvironments, true)
-    // }
+
     public [REGISTER_VALUE](
         runtimeEngine: RuntimeEngine,
         providedValue: T | undefined,
@@ -64,12 +65,13 @@ export class Service<
         }
         return providedValue;
     }
+
     public [CREATE_RUNTIME](context: RuntimeEngine, featureID: string, entityKey: string) {
         if (this.remoteAccess) {
             return this.getApiProxy(context, context.entityID(featureID, entityKey));
         }
     }
-    // TODO: here!
+
     public getApiProxy(context: RuntimeEngine, serviceKey: string): any {
         const { communication } = context.getCOM().api;
         const instanceId = getSingleInstanceId(this.providedFrom);
@@ -84,6 +86,7 @@ export class Service<
         }
     }
 }
+
 function getSingleInstanceId(providedFrom: any): string | void {
     if (isSingleInstance(providedFrom)) {
         return providedFrom.env;

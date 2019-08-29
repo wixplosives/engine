@@ -1,10 +1,10 @@
-import { COM, Environment, Feature, Service, SingleEndPointAsyncEnvironment, Slot } from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service, Slot } from '@wixc3/engine-core';
 
 import { CodeService } from './code-service';
 import { ErrorService } from './error-service';
 
-export const MAIN = new Environment('main');
-export const PROCESSING = new SingleEndPointAsyncEnvironment('processing', 'worker', MAIN);
+export const MAIN = new Environment('main', 'window', 'single');
+export const PROCESSING = new Environment('processing', 'worker', 'single');
 
 const sidebarSlot = Slot.withType<{
     button: {

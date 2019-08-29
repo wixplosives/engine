@@ -1,12 +1,12 @@
 import { EQUAL, ExpectTrue } from 'typescript-type-utils';
-import { DisposeFunction, Environment, Universal } from '../../src';
+import { DisposeFunction, Environment, IRunOptions, RUN_OPTIONS, Universal } from '../../src';
 import { Config, Feature, Registry, Running, RunningFeatures, RuntimeEngine, Service, Slot } from '../../src';
 import { type_check } from '../type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/
 
-const MAIN = new Environment('main');
-const MAIN_1 = new Environment('main1');
+const MAIN = new Environment('main', 'window', 'single');
+const MAIN_1 = new Environment('main1', 'window', 'single');
 
 const logger = new Feature({
     id: 'logger',
@@ -123,9 +123,10 @@ export function dontRun() {
                             id: 'addPanel';
                             run: (fn: () => unknown) => void;
                             onDispose: (fn: DisposeFunction) => void;
+                            [RUN_OPTIONS]: IRunOptions;
                             componentDescription: Registry<ComponentDescription>;
+                            // service2: DataService;
                             service3: DataService;
-                            // service2: DataService
                         }
                     >
                 >

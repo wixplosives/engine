@@ -12,8 +12,9 @@ import fs from '@file-services/node';
 import { RemoteNodeEnvironment } from '@wixc3/engine-core-node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
-import { join } from 'path';
+import { basename, dirname, extname, join } from 'path';
 import rimrafCb from 'rimraf';
+import io from 'socket.io';
 import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
@@ -23,7 +24,8 @@ import { flattenTree, TopLevelConfig } from '@wixc3/engine-core/src';
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
-import { NodeEnvironmentsManager } from './node-environments-manager';
+import { IClosable, NodeEnvironmentsManager } from './node-environments-manager';
+import { runNodeEnvironment } from './run-socket-server';
 import {
     IConfigDefinition,
     IEnvironmaneStartMessage,
@@ -40,7 +42,7 @@ const rimraf = promisify(rimrafCb);
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
-    projectPath?: string;
+    options?: Record<string, string>;
 }
 
 export interface IRunOptions extends IFeatureTarget {
@@ -48,25 +50,36 @@ export interface IRunOptions extends IFeatureTarget {
     inspect?: boolean;
 }
 
+export interface IBuildManifest {
+    features: Array<[string, IFeatureDefinition]>;
+    defaultFeatureName?: string;
+    defaultConfigName?: string;
+}
+
+export interface IApplicationOptions {
+    basePath?: string;
+    outputPath?: string;
+}
+
 export class Application {
-    /**
-     *
-     * @param basePath absolute path to feature base folder, where .feature.ts file exists
-     * @param outputPath absolute path to output directory
-     */
-    constructor(public basePath: string = process.cwd(), public outputPath = fs.join(basePath, 'dist')) {}
+    public outputPath: string;
+    private basePath: string;
+
+    constructor({ basePath = process.cwd(), outputPath = fs.join(basePath, 'dist') }: IApplicationOptions) {
+        this.basePath = basePath;
+        this.outputPath = outputPath;
+    }
 
     public async clean() {
-        console.log(`Removing: ${this.outputPath}`);
         await rimraf(this.outputPath);
         await rimraf(fs.join(this.basePath, 'npm'));
     }
 
     public async build({ featureName, configName }: IRunOptions = {}): Promise<webpack.Stats> {
-        const { features } = this.analyzeFeatures();
+        const { features, configurations } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName, 'production');
 
-        return new Promise<webpack.Stats>((resolve, reject) =>
+        const stats = await new Promise<webpack.Stats>((resolve, reject) =>
             compiler.run((e, s) => {
                 if (e) {
                     reject(e);
@@ -77,23 +90,29 @@ export class Application {
                 }
             })
         );
+
+        await this.writeManifest({
+            features,
+            featureName,
+            configName
+        });
+        await this.writeConfigFiles(configurations);
+
+        return stats;
     }
 
-    public async start({ featureName, configName, projectPath, inspect = false }: IRunOptions = {}) {
+    public async start({ featureName, configName, inspect = false }: IRunOptions = {}) {
         if (process.argv.some(arg => arg.startsWith('--inspect'))) {
             inspect = true;
         }
         const disposables: Array<() => unknown> = [];
         const { features, configurations, packages } = this.analyzeFeatures();
         const compiler = this.createCompiler(features, featureName, configName);
-        const app = express();
-
-        const { port, httpServer } = await safeListeningHttpServer(3000, app);
-        disposables.push(() => new Promise(res => httpServer.close(res)));
-        const topology: Map<string, Record<string, string>> = new Map();
-
-        app.use('/favicon.ico', noContentHandler);
-        app.use('/config', createConfigMiddleware(configurations, topology));
+        const { port, app, close, nodeEnvironmentManager } = await this.launchHttpServer({
+            configurations,
+            features: Array.from(features.entries()),
+            inspect
+        });
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
@@ -120,77 +139,9 @@ export class Application {
             }
         }
 
-        const runFeature = async (targetFeature: {
-            featureName: string;
-            configName?: string;
-            projectPath?: string;
-        }) => {
-            const featureDisposables: Array<() => unknown> = [];
-            const config: TopLevelConfig = [
-                [
-                    'project',
-                    {
-                        fsProjectDirectory: {
-                            projectPath: fs.resolve(targetFeature.projectPath || '')
-                        }
-                    }
-                ]
-            ];
-
-            if (targetFeature.configName) {
-                const configDefinition = configurations.get(targetFeature.configName);
-                if (!configDefinition) {
-                    const configNames = Array.from(configurations.keys());
-                    throw new Error(
-                        `cannot find config "${
-                            targetFeature.featureName
-                        }". available configurations: ${configNames.join(', ')}`
-                    );
-                }
-                for (const { filePath } of configDefinition) {
-                    try {
-                        const { default: topLevelConfig } = await import(filePath);
-                        config.push(...topLevelConfig);
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-            }
-
-            const nodeEnvs = getNodeEnvironments(targetFeature.featureName, features);
-            const topologyForFeature: Record<string, string> = {};
-            for (const environment of nodeEnvs) {
-                const remoteEnv = new RemoteNodeEnvironment(join(__dirname, '..', 'static', 'init-socket-server'));
-                const envPort = await remoteEnv.start(inspect);
-                await this.startNodeEnvironment(remoteEnv, {
-                    config,
-                    environment,
-                    featureName: targetFeature.featureName,
-                    features,
-                    projectPath: targetFeature.projectPath || this.basePath,
-                    httpServerPath: `http://localhost:${port}`
-                });
-                topologyForFeature[environment.name] = `http://localhost:${envPort}/_ws`;
-                featureDisposables.push(() => remoteEnv.dispose());
-            }
-            topology.set(targetFeature.featureName, topologyForFeature);
-
-            return {
-                close: async () => {
-                    for (const dispose of featureDisposables) {
-                        await dispose();
-                    }
-                    featureDisposables.length = 0;
-                    if (topology.has(targetFeature.featureName)) {
-                        topology.delete(targetFeature.featureName);
-                    }
-                }
-            };
-        };
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(runFeature);
-
         app.use(nodeEnvironmentManager.middleware());
-        disposables.push(() => nodeEnvironmentManager.closeAll());
+
+        disposables.push(() => close());
 
         app.get('/server-state', (_req, res) => {
             res.json({
@@ -205,12 +156,14 @@ export class Application {
             });
         });
         if (featureName) {
-            console.log(`auto starting node environment for feature ${featureName} with config ${configName}`);
-            await nodeEnvironmentManager.runEnvironment({ featureName, configName, projectPath });
+            await nodeEnvironmentManager.runEnvironment({ featureName, configName });
+            disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
+
+        disposables.push(() => nodeEnvironmentManager.closeAll());
+
         return {
             port,
-            httpServer,
             nodeEnvironmentManager,
             async close() {
                 for (const dispose of disposables) {
@@ -219,6 +172,107 @@ export class Application {
                 disposables.length = 0;
             }
         };
+    }
+
+    public async run(runOptions: IRunOptions = {}) {
+        const { features, defaultConfigName, defaultFeatureName } = (await fs.promises.readJsonFile(
+            join(this.outputPath, 'manifest.json')
+        )) as IBuildManifest;
+
+        const { configName: providedConfigName, featureName = defaultFeatureName, options } = runOptions;
+        const disposables: Array<() => unknown> = [];
+
+        const configurations = await this.readConfigs();
+
+        const configName = providedConfigName || defaultConfigName;
+
+        const { port, close, nodeEnvironmentManager } = await this.launchHttpServer({
+            configurations,
+            configName,
+            features
+        });
+
+        disposables.push(() => close());
+
+        if (featureName) {
+            await nodeEnvironmentManager.runEnvironment({
+                featureName,
+                configName,
+                options
+            });
+            disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
+        }
+
+        console.log(`Listening:`);
+        console.log(`http://localhost:${port}/main.html`);
+
+        return {
+            port,
+            async close() {
+                for (const dispose of disposables) {
+                    await dispose();
+                }
+                disposables.length = 0;
+            }
+        };
+    }
+
+    private async readConfigs(): Promise<SetMultiMap<string, IConfigDefinition>> {
+        const configurations = new SetMultiMap<string, IConfigDefinition>();
+        const configsDirectoryPath = join(this.outputPath, 'configs');
+        if (await fs.promises.exists(configsDirectoryPath)) {
+            const folderEntities = await fs.promises.readdir(configsDirectoryPath, { withFileTypes: true });
+            for (const entity of folderEntities) {
+                if (entity.isDirectory()) {
+                    const featureName = entity.name;
+                    const featureConfigsDirectory = join(configsDirectoryPath, featureName);
+                    const featureConfigsEntities = await fs.promises.readdir(featureConfigsDirectory, {
+                        withFileTypes: true
+                    });
+                    for (const possibleConfigFile of featureConfigsEntities) {
+                        const fileExtention = extname(possibleConfigFile.name);
+                        if (possibleConfigFile.isFile() && fileExtention === '.json') {
+                            const configName = basename(possibleConfigFile.name, fileExtention);
+
+                            const config = (await fs.promises.readJsonFile(
+                                join(featureConfigsDirectory, possibleConfigFile.name)
+                            )) as IConfigDefinition;
+
+                            configurations.add(`${featureName}/${configName}`, config);
+                        }
+                    }
+                }
+            }
+        }
+
+        return configurations;
+    }
+
+    private async writeManifest({
+        features,
+        featureName,
+        configName
+    }: {
+        features: Map<string, IFeatureDefinition>;
+        featureName?: string;
+        configName?: string;
+    }) {
+        const manifest: IBuildManifest = {
+            features: Array.from(features.entries()),
+            defaultConfigName: configName,
+            defaultFeatureName: featureName
+        };
+
+        await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
+    }
+
+    private async writeConfigFiles(configurations: SetMultiMap<string, IConfigDefinition>) {
+        const configsFolderPath = join(this.outputPath, 'configs');
+        for (const [currentConfigName, config] of configurations) {
+            const configFilePath = join(configsFolderPath, `${currentConfigName}.json`);
+            await fs.promises.ensureDirectory(dirname(configFilePath));
+            await fs.promises.writeFile(configFilePath, JSON.stringify(config, null, 2));
+        }
     }
 
     private createCompiler(
@@ -277,7 +331,7 @@ export class Application {
     }
     private async startNodeEnvironment(
         remoteNodeEnvironment: RemoteNodeEnvironment,
-        { config, features, featureName, environment, httpServerPath, projectPath }: ServerEnvironmentOptions
+        { config, features, featureName, environment, httpServerPath }: ServerEnvironmentOptions
     ) {
         const envName = environment.name;
         const startMessage = new Promise(resolve => {
@@ -295,8 +349,7 @@ export class Application {
                 config,
                 featureName,
                 features: mapToRecord(features),
-                httpServerPath,
-                projectPath
+                httpServerPath
             }
         };
         remoteNodeEnvironment.postMessage(startFeature);
@@ -316,6 +369,122 @@ export class Application {
             }
         };
     }
+
+    private async launchHttpServer({
+        configurations,
+        configName,
+        features,
+        inspect
+    }: {
+        configurations: SetMultiMap<string, IConfigDefinition>;
+        configName?: string;
+        features: Array<[string, IFeatureDefinition]>;
+        inspect?: boolean;
+    }) {
+        const app = express();
+        const topology = new Map<string, Record<string, string>>();
+
+        const { port, httpServer } = await safeListeningHttpServer(3000, app);
+
+        app.use('/favicon.ico', noContentHandler);
+        app.use('/', express.static(this.outputPath));
+        app.use('/config', createConfigMiddleware(configurations, topology));
+        const socketServer = io(httpServer);
+
+        const runNodeEnv = async (targetFeature: { featureName: string; options?: Map<string, string> }) => {
+            const config: TopLevelConfig = [];
+            if (configName) {
+                const configDefinition = configurations.get(configName);
+                if (!configDefinition) {
+                    const configNames = Array.from(configurations.keys());
+                    throw new Error(
+                        `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
+                    );
+                }
+                for (const { filePath } of configDefinition) {
+                    try {
+                        const { default: topLevelConfig } = await import(filePath);
+                        config.push(...topLevelConfig);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+
+            const nodeEnvironments = getNodeEnvironments(targetFeature.featureName, new Map(features));
+
+            const topologyForFeature: Record<string, string> = {};
+            const disposables = [] as Array<() => Promise<void>>;
+            for (const nodeEnv of nodeEnvironments) {
+                if (inspect) {
+                    const remoteEnv = new RemoteNodeEnvironment(join(__dirname, '..', 'static'));
+                    const { close } = await this.startNodeEnvironment(remoteEnv, {
+                        environment: nodeEnv,
+                        config,
+                        featureName: targetFeature.featureName,
+                        features: new Map(features),
+                        httpServerPath: `http://localhost:${port}/`
+                    });
+                    topologyForFeature[name] = `http://localhost:${port}/_ws`;
+                    disposables.push(() => close());
+                } else {
+                    const { dispose } = await runNodeEnvironment(socketServer, {
+                        ...nodeEnv,
+                        config,
+                        featureName: targetFeature.featureName,
+                        features: mapToRecord(new Map(features)),
+                        httpServerPath: `http://localhost:${port}/`
+                    });
+                    disposables.push(() => dispose());
+                    topologyForFeature[name] = `http://localhost:${port}/_ws`;
+                }
+            }
+            topology.set(targetFeature.featureName, topologyForFeature);
+            return {
+                async close() {
+                    if (topology.has(targetFeature.featureName)) {
+                        topology.delete(targetFeature.featureName);
+                    }
+                    for (const dispose of disposables) {
+                        await dispose();
+                    }
+                    disposables.length = 0;
+                }
+            } as IClosable;
+        };
+
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(runNodeEnv);
+
+        return {
+            close: async () => new Promise(res => socketServer.close(res)),
+            port,
+            app,
+            socketServer,
+            nodeEnvironmentManager
+        };
+    }
+}
+
+const noContentHandler: express.RequestHandler = (_req, res) => {
+    res.status(204); // No Content
+    res.end();
+};
+
+const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
+    console.log(`Bundling ${target} using webpack...`);
+
+function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
+    compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
+    compiler.hooks.watchRun.tap('engine-scripts', bundleStartMessage);
+
+    compiler.hooks.done.tap('engine-scripts stats printing', ({ stats }) => {
+        for (const childStats of stats) {
+            if (childStats.hasErrors() || childStats.hasWarnings()) {
+                console.log(childStats.toString('errors-warnings'));
+            }
+        }
+        console.log('Done bundling.');
+    });
 }
 
 function mapToRecord<K extends string, V>(map: Map<K, V>): Record<K, V> {
@@ -348,26 +517,4 @@ function getNodeEnvironments(featureName: string, features: Map<string, IFeature
     }
 
     return nodeEnvs;
-}
-
-const noContentHandler: express.RequestHandler = (_req, res) => {
-    res.status(204); // No Content
-    res.end();
-};
-
-const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
-    console.log(`Bundling ${target} using webpack...`);
-
-function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
-    compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
-    compiler.hooks.watchRun.tap('engine-scripts', bundleStartMessage);
-
-    compiler.hooks.done.tap('engine-scripts stats printing', ({ stats }) => {
-        for (const childStats of stats) {
-            if (childStats.hasErrors() || childStats.hasWarnings()) {
-                console.log(childStats.toString('errors-warnings'));
-            }
-        }
-        console.log('Done bundling.');
-    });
 }

@@ -1,7 +1,8 @@
 import { SetMultiMap } from '@file-services/utils';
 import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import express from 'express';
-import { IConfigDefinition } from './types';
+import importFresh from 'import-fresh';
+import { IConfigDefinition } from './analyze-feature';
 
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition>,
@@ -17,11 +18,15 @@ export function createConfigMiddleware(
             for (const { filePath, envName } of configDefinitions) {
                 if (envName === reqEnv || !envName) {
                     try {
-                        const { default: configValue } = await import(filePath);
+                        const { default: configValue } = (await importFresh(filePath)) as {
+                            default: TopLevelConfig;
+                        };
                         config.push(...configValue);
                     } catch (e) {
-                        res.send(e);
-                        return;
+                        // tslint:disable: no-console
+                        console.error(`Failed evaluating config file: ${filePath}`);
+                        console.error(e);
+                        // tslint:enable: no-console
                     }
                 }
             }

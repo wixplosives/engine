@@ -1,5 +1,5 @@
 import {
-    AsyncEnvironment,
+    Environment,
     EnvironmentContext,
     EnvironmentTypes,
     IComConfig,
@@ -7,19 +7,14 @@ import {
     TopLevelConfig
 } from '@wixc3/engine-core';
 
-/**
- * Use to init socket server that share the environment state between all connections
- */
+export type JSRuntime = 'web' | 'webworker' | 'node';
+
 export type IRunNodeEnvironmentsOptions = IEnvironment & {
     featureName: string;
     config?: TopLevelConfig;
     features: Record<string, IFeatureDefinition>;
     httpServerPath: string;
-    projectPath?: string;
 };
-
-export type JSRuntime = 'web' | 'webworker' | 'node';
-
 export interface VirtualEntry {
     source: string;
     filename: string;
@@ -87,7 +82,7 @@ export interface EvaluatedFeature {
     id: string;
     filePath: string;
     features: SymbolList<SomeFeature>;
-    environments: SymbolList<AsyncEnvironment>;
+    environments: SymbolList<Environment>;
     contexts: SymbolList<EnvironmentContext>;
 }
 
@@ -148,7 +143,6 @@ export interface ServerEnvironmentOptions {
     features: Map<string, IFeatureDefinition>;
     featureName: string;
     config: TopLevelConfig;
-    projectPath: string;
     httpServerPath: string;
 }
 
@@ -234,6 +228,7 @@ export interface IFeatureDefinition extends IFeatureModule {
     scopedName: string;
     resolvedContexts: Record<string, string>;
     isRoot: boolean;
+    toJSON(): unknown;
 }
 
 export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>

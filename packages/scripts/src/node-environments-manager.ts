@@ -7,7 +7,7 @@ export interface IClosable {
 export interface RunEnvironmentOptions {
     featureName: string;
     configName?: string;
-    projectPath?: string;
+    options?: Record<string, string>;
 }
 
 export class NodeEnvironmentsManager {
@@ -17,17 +17,21 @@ export class NodeEnvironmentsManager {
         private runNodeEnvironmentFunction: (target: {
             featureName: string;
             configName?: string | undefined;
-            projectPath?: string | undefined;
+            options?: Map<string, string>;
         }) => Promise<IClosable>
     ) {}
 
-    public async runEnvironment({ featureName, configName, projectPath }: RunEnvironmentOptions) {
+    public async runEnvironment({ featureName, configName, options = {} }: RunEnvironmentOptions) {
         if (this.runningEnvironments.has(featureName)) {
             throw new Error(`node environment for ${featureName} already running`);
         }
         this.runningEnvironments.set(
             featureName,
-            await this.runNodeEnvironmentFunction({ featureName, configName, projectPath })
+            await this.runNodeEnvironmentFunction({
+                featureName,
+                configName,
+                options: new Map(Object.entries(options))
+            })
         );
     }
 
@@ -55,9 +59,9 @@ export class NodeEnvironmentsManager {
         const router = Router();
 
         router.put('/node-env', async (req, res) => {
-            const { configName, featureName, projectPath }: RunEnvironmentOptions = req.query;
+            const { configName, featureName, options }: RunEnvironmentOptions = req.query;
             try {
-                await this.runEnvironment({ configName, featureName, projectPath });
+                await this.runEnvironment({ configName, featureName, options });
                 res.json({
                     result: 'success'
                 });

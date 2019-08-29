@@ -1,12 +1,16 @@
 import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
+import { join } from 'path';
 import { FileServerDriver } from './file-server-driver';
 
 describe('File Server Feature', function() {
     this.timeout(20_000);
     const { getLoadedFeature } = withFeature({
         featureName: 'file-server/example',
-        configName: 'file-server/run'
+        configName: 'file-server/run',
+        runOptions: {
+            projectPath: join(__dirname, '..')
+        }
     });
 
     it('lists working directory contents in DOM', async () => {

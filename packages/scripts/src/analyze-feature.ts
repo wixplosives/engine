@@ -2,10 +2,9 @@ import { IFileSystemSync } from '@file-services/types';
 import {
     Environment,
     EnvironmentContext,
+    EnvironmentTypes,
     Feature,
     getFeaturesDeep,
-    MultiEndPointAsyncEnvironment,
-    SingleEndPointAsyncEnvironment,
     SingleEndpointContextualEnvironment,
     SomeFeature
 } from '@wixc3/engine-core';
@@ -26,7 +25,75 @@ import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
 import { INpmPackage, IPackageJson } from './utils/resolve-packages';
 
+export interface IConfigDefinition {
+    name: string;
+    filePath: string;
+    envName?: string;
+}
+
+export interface IFeatureDefinition extends IFeatureModule {
+    contextFilePaths: Record<string, string>;
+    envFilePaths: Record<string, string>;
+    dependencies: string[];
+    scopedName: string;
+    resolvedContexts: Record<string, string>;
+    isRoot: boolean;
+    toJSON(): unknown;
+}
+
+export interface IFeatureModule {
+    /**
+     * Feature name.
+     * @example "gui" for "gui.feature.ts"
+     */
+    name: string;
+
+    /**
+     * Absolute path pointing to the feature file.
+     */
+    filePath: string;
+
+    /**
+     * Actual evaluated Feature instance exported from the file.
+     */
+    exportedFeature: SomeFeature;
+
+    /**
+     * Exported environments from module.
+     */
+    exportedEnvs: IEnvironment[];
+
+    /**
+     * If module exports any `processingEnv.use('worker')`,
+     * it will be set as `'processing': 'worker'`
+     */
+    usedContexts: Record<string, string>;
+}
+
+export interface IEnvironment {
+    type: EnvironmentTypes;
+    name: string;
+    childEnvName?: string;
+}
+
+interface IPackageDescriptor {
+    simplifiedName: string;
+    directoryPath: string;
+    name: string;
+}
+
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
+
+function getFilePathInPackage(fs: IFileSystemSync, featurePackage: IPackageDescriptor, filePath: string) {
+    const relativeFilePath = fs.relative(featurePackage.directoryPath, filePath);
+    return fs
+        .join(
+            featurePackage.name,
+            fs.dirname(relativeFilePath),
+            fs.basename(relativeFilePath, fs.extname(relativeFilePath))
+        )
+        .replace(/\\/g, '/');
+}
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync) {
     const ownFeatureFilePaths = new Set<string>();
@@ -75,12 +142,15 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         if (ownFeatureDirectoryPaths.has(directoryPath)) {
             featureDirectories.push(loadFeatureDirectory({ directoryPath, fs }));
         } else {
-            featureDirectories.push({ ...loadFeatureDirectory({ directoryPath, fs }), configurations: [] });
+            featureDirectories.push({
+                ...loadFeatureDirectory({ directoryPath, fs }),
+                configurations: []
+            });
         }
     }
 
     // find closest package.json for each feature directory and generate package name
-    const directoryToPackageName = new Map<string, string>();
+    const directoryToPackage = new Map<string, IPackageDescriptor>();
     for (const featureDirectoryPath of featureDirectoryPaths) {
         const packageJsonPath = fs.findClosestFileSync(featureDirectoryPath, 'package.json');
         if (!packageJsonPath) {
@@ -89,7 +159,11 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(
             packageJsonPath
         ) as IPackageJson;
-        directoryToPackageName.set(featureDirectoryPath, simplifyPackageName(name));
+        directoryToPackage.set(featureDirectoryPath, {
+            simplifiedName: simplifyPackageName(name),
+            directoryPath: fs.dirname(packageJsonPath),
+            name
+        });
     }
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
@@ -97,16 +171,20 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
     const featureToScopedName = new Map<SomeFeature, string>();
 
     for (const { directoryPath, features, configurations, envs, contexts } of featureDirectories) {
-        const packageName = directoryToPackageName.get(directoryPath);
-        if (!packageName) {
+        const featurePackage = directoryToPackage.get(directoryPath);
+        if (!featurePackage) {
             throw new Error(`cannot find package name for ${directoryPath}`);
         }
 
         // pick up configs
         for (const filePath of configurations) {
             const { configName, envName } = parseConfigFileName(fs.basename(filePath));
-            const scopedConfigName = scopeToPackage(packageName, configName);
-            foundConfigs.add(scopedConfigName, { filePath, envName, name: configName });
+            const scopedConfigName = scopeToPackage(featurePackage.simplifiedName, configName);
+            foundConfigs.add(scopedConfigName, {
+                filePath: getFilePathInPackage(fs, featurePackage, filePath),
+                envName,
+                name: configName
+            });
         }
 
         // pick up features
@@ -115,7 +193,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const featureModule = analyzeFeatureModule(evaluatedFeature);
             const featureName = featureModule.name;
 
-            const scopedName = scopeToPackage(packageName, featureName);
+            const scopedName = scopeToPackage(featurePackage.simplifiedName, featureName);
             foundFeatures.set(scopedName, {
                 ...featureModule,
                 scopedName,
@@ -123,7 +201,19 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
                 envFilePaths: {},
                 contextFilePaths: {},
                 resolvedContexts: {},
-                isRoot: ownFeatureFilePaths.has(featureFilePath)
+                isRoot: ownFeatureFilePaths.has(featureFilePath),
+                filePath: getFilePathInPackage(fs, featurePackage, featureFilePath),
+                toJSON(this: IFeatureDefinition) {
+                    return {
+                        contextFilePaths: this.contextFilePaths,
+                        dependencies: this.dependencies,
+                        filePath: this.filePath,
+                        envFilePaths: this.envFilePaths,
+                        exportedEnvs: this.exportedEnvs,
+                        resolvedContexts: this.resolvedContexts,
+                        scopedName
+                    };
+                }
             });
             featureToScopedName.set(featureModule.exportedFeature, scopedName);
         }
@@ -131,10 +221,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         // pick up environments
         for (const envFilePath of envs) {
             const { featureName, envName, childEnvName } = parseEnvFileName(fs.basename(envFilePath));
-            const existingDefinition = foundFeatures.get(scopeToPackage(packageName, featureName));
+            const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
                 const targetEnv = childEnvName ? `${envName}/${childEnvName}` : envName;
-                existingDefinition.envFilePaths[targetEnv] = envFilePath;
+                existingDefinition.envFilePaths[targetEnv] = getFilePathInPackage(fs, featurePackage, envFilePath);
             }
         }
 
@@ -142,9 +232,13 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         for (const contextFilePath of contexts) {
             const { featureName, envName, childEnvName } = parseContextFileName(fs.basename(contextFilePath));
             const contextualName = `${envName}/${childEnvName}`;
-            const existingDefinition = foundFeatures.get(scopeToPackage(packageName, featureName));
+            const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
-                existingDefinition.contextFilePaths[contextualName] = contextFilePath;
+                existingDefinition.contextFilePaths[contextualName] = getFilePathInPackage(
+                    fs,
+                    featurePackage,
+                    contextFilePath
+                );
             }
         }
     }
@@ -204,11 +298,7 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeModule
     if (typeof exports === 'object' && exports !== null) {
         const { exportedEnvs: envs, usedContexts } = featureFile;
         for (const exportValue of Object.values(exports)) {
-            if (
-                instanceOf(exportValue, Environment) ||
-                instanceOf(exportValue, SingleEndPointAsyncEnvironment) ||
-                instanceOf(exportValue, MultiEndPointAsyncEnvironment)
-            ) {
+            if (instanceOf(exportValue, Environment)) {
                 if (instanceOf(exportValue, SingleEndpointContextualEnvironment)) {
                     envs.push(...parseContextualEnv(exportValue));
                 } else {

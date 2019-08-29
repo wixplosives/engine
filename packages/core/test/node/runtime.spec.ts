@@ -10,10 +10,11 @@ import {
     DisposeFunction,
     Environment,
     Feature,
+    IRunOptions,
     MapSlot,
     run as runEngine,
+    RUN_OPTIONS,
     Service,
-    SingleEndPointAsyncEnvironment,
     SingleEndpointContextualEnvironment,
     Slot,
     Universal
@@ -107,7 +108,7 @@ describe('Feature', () => {
     });
 
     it('feature should provide requirements (outputs) of each environment', () => {
-        const MAIN1 = new Environment('main1');
+        const MAIN1 = new Environment('main1', 'window', 'single');
 
         const f0 = new Feature({
             id: 'test',
@@ -390,7 +391,7 @@ describe('feature interaction', () => {
 
 describe('Contextual environments', () => {
     it('Feature should define contextual environment, set up the environment context and use it in the environment setup', async () => {
-        const workerEnv = new Environment('worker');
+        const workerEnv = new Environment('worker', 'worker', 'single');
         const processing = new SingleEndpointContextualEnvironment('processing', [workerEnv]);
 
         interface IProcessingContext {
@@ -409,13 +410,13 @@ describe('Contextual environments', () => {
             }
         });
 
-        echoFeature.setupContext('processingContext', () => {
+        echoFeature.setupContext(processing, 'processingContext', () => {
             return {
                 name: 'test'
             };
         });
 
-        echoFeature.setupContext('processingContext2', () => {
+        echoFeature.setupContext(processing, 'processingContext2', () => {
             return {
                 age: 1
             };
@@ -439,7 +440,7 @@ describe('Contextual environments', () => {
 
 describe('feature disposal', () => {
     it('disposes a feature on engine dispose call', async () => {
-        const mainEnv = new Environment('main');
+        const mainEnv = new Environment('main', 'window', 'single');
         const disposableFeature = new Feature({
             id: 'test',
             api: {}
@@ -458,7 +459,7 @@ describe('feature disposal', () => {
     });
 
     it('allows feature to register to onDispose several times', async () => {
-        const mainEnv = new Environment('main');
+        const mainEnv = new Environment('main', 'window', 'single');
         const disposableFeature = new Feature({
             id: 'test',
             api: {}
@@ -480,7 +481,7 @@ describe('feature disposal', () => {
     });
 
     it('throws an error if on of the onDispose functiones was rejected', async () => {
-        const mainEnv = new Environment('main');
+        const mainEnv = new Environment('main', 'window', 'single');
         const disposableFeature = new Feature({
             id: 'test',
             api: {}
@@ -506,8 +507,8 @@ describe('feature disposal', () => {
 
 describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
-        const main = new Environment('main');
-        const processing = new SingleEndPointAsyncEnvironment('processing', 'worker', main);
+        const main = new Environment('main', 'window', 'single');
+        const processing = new Environment('processing', 'worker', 'single');
 
         new Feature({
             id: 'echoFeature',
@@ -527,6 +528,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                             typeof x,
                             {
                                 id: 'echoFeature';
+                                [RUN_OPTIONS]: IRunOptions;
                                 run(fn: () => unknown): unknown;
                                 onDispose(fn: DisposeFunction): unknown;
                             }
@@ -538,8 +540,8 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     });
 
     it('allow spawn of new environments and use remote services', () => {
-        const main = new Environment('main');
-        const processing = new SingleEndPointAsyncEnvironment('processing', 'worker', main);
+        const main = new Environment('main', 'window', 'single');
+        const processing = new Environment('processing', 'worker', 'single');
 
         const echoFeature = new Feature({
             id: 'echoFeature',
@@ -587,8 +589,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
 describe.skip('Environments Type tests 1', () => {
     it('feature remote api should be available inside same feature setup', () => {
-        const main = new Environment('main');
-        const processing = new SingleEndPointAsyncEnvironment('processing', 'worker', main);
+        const processing = new Environment('processing', 'worker', 'single');
 
         const echoFeature = new Feature({
             id: 'echoFeature',

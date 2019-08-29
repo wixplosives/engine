@@ -1,17 +1,9 @@
-import {
-    COM,
-    Environment,
-    Feature,
-    NodeEnvironment,
-    Service,
-    SingleEndPointAsyncEnvironment,
-    SingleEndpointContextualEnvironment
-} from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment } from '@wixc3/engine-core';
 
-export const mainEnv = new Environment('main');
+export const mainEnv = new Environment('main', 'window', 'single');
 
-const serverEnv = new NodeEnvironment('server');
-const workerEnv = new SingleEndPointAsyncEnvironment('worker', 'worker', mainEnv);
+const serverEnv = new Environment('server', 'node', 'single');
+const workerEnv = new Environment('worker', 'worker', 'single');
 export const contextualEnv = new SingleEndpointContextualEnvironment('contextual', [workerEnv, serverEnv]);
 
 export interface IEchoContext {

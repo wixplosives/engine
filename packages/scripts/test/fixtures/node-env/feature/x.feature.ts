@@ -1,7 +1,6 @@
-import { COM, Config, Environment, Feature, NodeEnvironment, Service } from '@wixc3/engine-core';
-
-export const mainEnv = new Environment('main');
-export const serverEnv = new NodeEnvironment('server');
+import { COM, Config, Environment, Feature, Service } from '@wixc3/engine-core';
+export const mainEnv = new Environment('main', 'window', 'single');
+export const serverEnv = new Environment('server', 'node', 'single');
 
 export default new Feature({
     id: 'XTestFeature',

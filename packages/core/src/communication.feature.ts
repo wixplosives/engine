@@ -1,13 +1,13 @@
 import { BaseHost } from './com/base-host';
-import { Communication } from './com/communication';
+import { Communication, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
 import { Target, WindowHost } from './com/types';
-import { AsyncEnvironment, AsyncSingleEndpointEnvironment } from './entities/async-env';
 import { Config } from './entities/config';
-import { AllEnvironments, NodeEnvironment, SingleEndpointContextualEnvironment, Universal } from './entities/env';
+import { AllEnvironments, Environment, SingleEndpointContextualEnvironment, Universal } from './entities/env';
 import { Feature } from './entities/feature';
 import { Service } from './entities/service';
 import { Slot } from './entities/slot';
+import { RUN_OPTIONS } from './symbols';
 import { LoggerTransport, LogLevel } from './types';
 
 export interface IComConfig {
@@ -46,16 +46,14 @@ export default new Feature({
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Service.withType<LoggerService>().defineEntity(Universal),
-        spawn: Service.withType<
-            (endPoint: AsyncEnvironment, host?: WindowHost) => Promise<{ id: string }>
-        >().defineEntity(AllEnvironments),
-        connect: Service.withType<(endPoint: NodeEnvironment<string>) => Promise<{ id: string }>>().defineEntity(
+        spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
+            AllEnvironments
+        ),
+        connect: Service.withType<(endPoint: Environment<string, 'node'>) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
         spawnOrConnect: Service.withType<
-            (
-                endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
-            ) => Promise<{ id: string }>
+            (endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) => Promise<{ id: string }>
         >().defineEntity(AllEnvironments),
         communication: Service.withType<Communication>().defineEntity(AllEnvironments)
     }
@@ -63,22 +61,29 @@ export default new Feature({
     Universal,
     ({
         config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts },
-        loggerTransports
+        loggerTransports,
+        [RUN_OPTIONS]: runOptions
     }) => {
+        // TODO: find better way to detect node runtime
+        const isNode = typeof process !== 'undefined' && process.title !== 'browser';
+
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.
         // main frame might not have that configured, so we use 'main' fallback for it.
-        let communication: Communication;
-        // TODO: find better way to detect node runtime
-        if (typeof process !== 'undefined' && process.title !== 'browser') {
-            if (host) {
-                communication = new Communication(host, id || host.name || 'main', topology, resolvedContexts, true);
-            } else {
-                communication = new Communication(new BaseHost(), id || 'main', topology, resolvedContexts, true);
-            }
-        } else {
-            communication = new Communication(self, id || self.name || 'main', topology, resolvedContexts);
-        }
+        const comId = id || (host && host.name) || (typeof self !== 'undefined' && self.name) || 'main';
+
+        const comOptions: ICommunicationOptions = {
+            warnOnSlow: runOptions.has('warnOnSlow')
+        };
+
+        const communication = new Communication(
+            isNode ? host || new BaseHost() : self,
+            comId,
+            topology,
+            resolvedContexts,
+            isNode,
+            comOptions
+        );
 
         const loggerService = new LoggerService(
             loggerTransports,

@@ -1,3 +1,4 @@
+import { RUN_OPTIONS } from '@wixc3/engine-core/src';
 import { FileActions } from '../src/file-actions';
 import { IDirectoryContents } from '../src/types';
 import FileServer, { FileSystemAPI, server } from './file-server.feature';
@@ -22,11 +23,12 @@ class RemoteFilesAPI implements FileSystemAPI {
 /**
  * setting up the server environment
  */
-FileServer.setup(server, ({ fileServerConfig }, {}) => {
+FileServer.setup(server, ({ [RUN_OPTIONS]: runOptions }, {}) => {
     /**
      * exposing the remoteFiles implementation of thje server side
      */
+    const projectPath = runOptions.get('projectPath') || process.cwd();
     return {
-        remoteFiles: new RemoteFilesAPI(fileServerConfig.defaultDirName)
+        remoteFiles: new RemoteFilesAPI(projectPath)
     };
 });

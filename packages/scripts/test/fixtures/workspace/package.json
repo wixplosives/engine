@@ -1,5 +1,8 @@
 {
+    "name": "@fixture/workspace",
+    "version": "7.0.0",
     "workspaces": [
         "packages/*"
-    ]
+    ],
+    "private": true
 }

@@ -26,20 +26,25 @@ import {
 import { SERVICE_CONFIG } from '../symbols';
 
 import { SetMultiMap } from '@file-services/utils';
-import { AsyncEnvironment, AsyncSingleEndpointEnvironment } from '../entities/async-env';
-import { NodeEnvironment, SingleEndpointContextualEnvironment } from '../entities/env';
+import { Environment, SingleEndpointContextualEnvironment } from '../entities/env';
 import { IDTag } from '../types';
 import { BaseHost } from './base-host';
 import { WsClientHost } from './ws-client-host';
 
+export interface ICommunicationOptions {
+    warnOnSlow?: boolean;
+}
+
 /**
- * Main class that manage all api registration and message forwarding in each execution context.
+ * Manages all API registrations and message forwarding
+ * in each execution context.
  */
 export class Communication {
     private rootEnvId: string;
     private rootEnvName: string;
     private idsCounter = new MultiCounter();
-    private readonly callbackTimeout = 5000; // 5 seconds
+    private readonly callbackTimeout = 60_000 * 2; // 2 minutes
+    private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private pendingEnvs: Map<string, UnknownFunction> = new Map();
@@ -48,13 +53,17 @@ export class Communication {
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
+    private options: Required<ICommunicationOptions>;
+
     constructor(
         host: Target,
         id: string,
         private topology: Record<string, string> = {},
         private resolvedContexts: Record<string, string> = {},
-        public isServer: boolean = false
+        public isServer = false,
+        options?: ICommunicationOptions
     ) {
+        this.options = { warnOnSlow: false, ...options };
         this.rootEnvId = id;
         this.rootEnvName = id.split('/')[0];
         this.registerMessageHandler(host);
@@ -74,6 +83,7 @@ export class Communication {
             throw new Error(DUPLICATE_REGISTER(id, 'Environment'));
         }
     }
+
     /**
      * Registers local api implementation of the remote service.
      */
@@ -87,26 +97,22 @@ export class Communication {
         }
     }
 
-    public async spawnOrConnect(
-        endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
-    ) {
+    public async spawnOrConnect(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
         const runtimeEnvironmentName = this.resolvedContexts[endPoint.env];
 
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
         activeEnvironment.env = endPoint.env;
 
-        return activeEnvironment!.envType === 'node'
-            ? this.connect(activeEnvironment as NodeEnvironment<string>)
-            : this.spawn(activeEnvironment as AsyncEnvironment);
+        return activeEnvironment.envType === 'node'
+            ? this.connect(activeEnvironment as Environment<string, 'node'>)
+            : this.spawn(activeEnvironment);
     }
 
-    public getEnvironmentContext(
-        endPoint: SingleEndpointContextualEnvironment<string, AsyncSingleEndpointEnvironment[]>
-    ) {
+    public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
         return this.resolvedContexts[endPoint.env];
     }
 
-    public async spawn(endPoint: AsyncEnvironment, host?: WindowHost) {
+    public async spawn(endPoint: Environment, host?: WindowHost) {
         const { endpointType, env, envType } = endPoint;
 
         const isSingleton = endpointType === 'single';
@@ -120,10 +126,11 @@ export class Communication {
             id: instanceId
         };
     }
+
     /**
-     * Connects to a remote NodeEnvironment
+     * Connects to a remote node environment
      */
-    public async connect(endPoint: NodeEnvironment<string>) {
+    public async connect(endPoint: Environment<string, 'node'>) {
         const { env, envType } = endPoint;
 
         const url = this.topology[env];
@@ -137,14 +144,13 @@ export class Communication {
 
         this.registerMessageHandler(host);
         this.registerEnv(instanceId, host);
-        // this.pendingEnvs.set(instanceId, ()=>{})
         await host.connected;
-        // this.pendingEnvs.delete(instanceId)
 
         return {
             id: instanceId
         };
     }
+
     /**
      * Creates a Proxy for a remote service api.
      */
@@ -173,6 +179,7 @@ export class Communication {
     public registerMessageHandler(target: Target): void {
         target.addEventListener('message', this.handleEvent, true);
     }
+
     /**
      * Generate client id for newly spawned environment.
      */
@@ -208,6 +215,7 @@ export class Communication {
             }
         });
     }
+
     /**
      * handles Communication incoming message.
      */
@@ -308,6 +316,7 @@ export class Communication {
             throw new Error(MISSING_FORWARD_FOR_MESSAGE(message));
         }
     }
+
     private apiCall(from: string, api: string, method: string, args: unknown[]): unknown {
         if (this.apisOverrides[api] && this.apisOverrides[api][method]) {
             return (this.apisOverrides[api][method] as any)(...[from, ...args]);
@@ -340,6 +349,7 @@ export class Communication {
             target.postMessage(message, '*');
         }
     }
+
     private resolveMessageTarget(envId: string): Target {
         // TODO: make this more logical
         let env = this.environments[envId];
@@ -410,6 +420,7 @@ export class Communication {
             });
         }
     }
+
     private async handleCall(message: CallMessage): Promise<void> {
         try {
             this.sendTo(message.from, {
@@ -429,6 +440,7 @@ export class Communication {
             });
         }
     }
+
     private handleCallback(message: CallbackMessage): void {
         const rec = message.callbackId ? this.callbacks[message.callbackId] : null;
         if (rec) {
@@ -438,6 +450,7 @@ export class Communication {
             throw new Error(UNKNOWN_CALLBACK_ID(removeMessageArgs(message)));
         }
     }
+
     private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
         const id = message.data.handlerId;
         return (this.eventDispatchers[id] = (...args: SerializableArguments) => {
@@ -450,6 +463,7 @@ export class Communication {
             });
         });
     }
+
     private isListenCall(args: unknown[]): boolean {
         return typeof args[0] === 'function' && args.length === 1;
     }
@@ -458,6 +472,7 @@ export class Communication {
     private handleEvent = ({ data }: any | MessageEvent): void => {
         this.handleMessage(data).catch(reportError);
     };
+
     private createHandlerRecord(
         envId: string,
         api: string,
@@ -488,6 +503,15 @@ export class Communication {
             delete this.callbacks[callbackId];
             rej(error);
         };
+        if (this.options.warnOnSlow) {
+            setTimeout(() => {
+                if (this.callbacks[callbackId]) {
+                    // tslint:disable-next-line: no-console
+                    console.error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message)));
+                }
+            }, this.slowThreshold);
+        }
+
         const timerId = setTimeout(() => {
             reject(new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message))));
         }, this.callbackTimeout);
@@ -496,8 +520,8 @@ export class Communication {
             resolve,
             reject
         };
-        // return callbackId
     }
+
     private injectScript(win: Window, rootComId: string, scriptUrl: string) {
         return new Promise<Window>((res, rej) => {
             // This is the contract of the communication to get the root communication id

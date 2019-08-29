@@ -19,34 +19,44 @@ export interface ICreateWebpackConfigsOptions {
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const { enviroments } = options;
+    const { enviroments, mode = 'development' } = options;
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
-    const webEnvs = enviroments.filter(({ type }) => type === 'window' || type === 'iframe');
-    const workerEnvs = enviroments.filter(({ type }) => type === 'worker');
-    if (webEnvs.length) {
+    const webEnvs = new Map<string, string[]>();
+    const workerEnvs = new Map<string, string[]>();
+    for (const env of enviroments) {
+        const { type } = env;
+        if (type === 'window' || type === 'iframe') {
+            addEnv(webEnvs, env);
+        } else if (type === 'worker') {
+            addEnv(workerEnvs, env);
+        }
+    }
+    if (webEnvs.size) {
+        const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules), new StylableWebpackPlugin()];
+        const entry: webpack.Entry = {};
+        if (mode === 'development') {
+            plugins.push(
+                new HtmlWebpackPlugin({
+                    filename: `index.html`,
+                    chunks: ['index']
+                })
+            );
+            entry.index = require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'));
+        }
         configurations.push(
             createWebpackConfig({
                 ...options,
                 enviroments: webEnvs,
                 target: 'web',
                 virtualModules,
-                plugins: [
-                    new HtmlWebpackPlugin({
-                        filename: `index.html`,
-                        chunks: ['index']
-                    }),
-                    new VirtualModulesPlugin(virtualModules),
-                    new StylableWebpackPlugin()
-                ],
-                entry: {
-                    index: require.resolve(fs.join(__dirname, 'engine-dashboard', 'index'))
-                }
+                plugins,
+                entry
             })
         );
     }
-    if (workerEnvs.length) {
+    if (workerEnvs.size) {
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -68,12 +78,20 @@ interface ICreateWebpackConfigOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    enviroments: IEnvironment[];
+    enviroments: Map<string, string[]>;
     publicPath?: string;
     target: 'web' | 'webworker';
     virtualModules: Record<string, string>;
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;
+}
+
+function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
+    const childEnvs = envs.get(name) || [];
+    if (childEnvName) {
+        childEnvs.push(childEnvName);
+    }
+    envs.set(name, childEnvs);
 }
 
 function createWebpackConfig({
@@ -90,12 +108,12 @@ function createWebpackConfig({
     plugins = [],
     entry = {}
 }: ICreateWebpackConfigOptions): webpack.Configuration {
-    for (const { type: envType, name: envName, childEnvName } of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${envType}-entry.js`);
+    for (const [envName, childEnvs] of enviroments) {
+        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
         virtualModules[entryPath] = createEntrypoint({
             features,
-            childEnvName,
+            childEnvs,
             envName,
             featureName,
             configName
@@ -127,11 +145,14 @@ function createWebpackConfig({
             alias: { '@wixc3/engine-core': inOwnRepo ? '@wixc3/engine-core/src' : '@wixc3/engine-core' }
         },
         module: {
-            rules: [typescriptLoader, cssLoader, assetLoader],
-            // the simplest way to bundle typescript without warnings, as it uses dynamic require calls
-            noParse: [/typescript[\\/]lib[\\/]typescript\.js$/]
+            rules: [typescriptLoader, cssLoader, assetLoader]
         },
-        plugins
+        plugins,
+        externals: {
+            // allows typescript to be bundled and run in web browsers
+            'source-map-support': 'commonjs source-map-support',
+            '@microsoft/typescript-etw': 'commonjs @microsoft/typescript-etw'
+        }
     };
 }
 
