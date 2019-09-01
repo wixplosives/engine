@@ -101,7 +101,7 @@ export class Application {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
             features,
-            baseRunOptions: options,
+            runOptions: options,
             port,
             inspect
         });
@@ -190,7 +190,7 @@ export class Application {
             configurations,
             features: new Map(features),
             port,
-            baseRunOptions: options,
+            runOptions: options,
             inspect
         });
 

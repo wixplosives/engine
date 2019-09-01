@@ -33,7 +33,7 @@ const remoteEnvironmentEntryFile = require.resolve(join(__dirname, '..', 'static
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
     configurations: SetMultiMap<string, IConfigDefinition>;
-    baseRunOptions?: Record<string, string | boolean>;
+    runOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
 }
@@ -48,7 +48,7 @@ export class NodeEnvironmentsManager {
         }
         const topology: Record<string, string> = {};
         const disposables: Array<() => unknown> = [];
-        const { baseRunOptions } = this.options;
+        const { runOptions } = this.options;
         for (const nodeEnv of this.getNodeEnvironments(featureName)) {
             const { close, port } = await this.launchEnvironment(
                 nodeEnv,
@@ -57,7 +57,7 @@ export class NodeEnvironmentsManager {
                     COM.use({ config: { topology: this.topology.get(featureName) } }),
                     ...(await this.getConfig(configName))
                 ],
-                { ...baseRunOptions, ...options }
+                { ...runOptions, ...options }
             );
             topology[nodeEnv.name] = `http://localhost:${port}/_ws`;
             disposables.push(() => close());
