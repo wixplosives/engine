@@ -22,7 +22,7 @@ export default [
 `;
 
 describe('Application', function() {
-    this.timeout(20_000);
+    this.timeout(15_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
@@ -182,6 +182,23 @@ describe('Application', function() {
             // checking if config content is changed
             await waitFor(async () => {
                 expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
+            });
+        });
+
+        it('runs node environments with inspect mode', async function() {
+            // these tests takes longer in CI
+            this.timeout(20_000);
+            const app = new Application({ basePath: nodeFeatureFixturePath });
+            const runningApp = await app.start({
+                featureName: 'engine-node/x',
+                inspect: true
+            });
+            disposables.add('closing app', () => runningApp.close());
+
+            const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
+
+            await waitFor(async () => {
+                expect(await getBodyContent(page)).to.equal('Hello');
             });
         });
     });

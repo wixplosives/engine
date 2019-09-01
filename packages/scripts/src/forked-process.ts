@@ -1,0 +1,25 @@
+import { ChildProcess } from 'child_process';
+import { ICommunicationMessage, RemoteProcess } from './types';
+
+export class ForkedProcess implements RemoteProcess {
+    constructor(private proc: NodeJS.Process | ChildProcess) {}
+
+    public on(event: 'message', handler: (message: ICommunicationMessage) => unknown) {
+        this.proc.on(event, handler);
+    }
+
+    public off(event: 'message', handler: (message: ICommunicationMessage) => unknown) {
+        this.proc.off(event, handler);
+    }
+
+    public postMessage(message: ICommunicationMessage) {
+        if (this.proc.send) {
+            this.proc.send(message);
+        }
+    }
+
+    public terminate() {
+        this.proc.removeAllListeners();
+        (this.proc as ChildProcess).kill();
+    }
+}

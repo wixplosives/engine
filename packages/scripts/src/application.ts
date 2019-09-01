@@ -9,7 +9,6 @@ import '@ts-tools/node/fast';
 import './own-repo-hook';
 
 import fs from '@file-services/node';
-import { TopLevelConfig } from '@wixc3/engine-core';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import rimrafCb from 'rimraf';
@@ -19,24 +18,25 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { SetMultiMap } from '@file-services/utils';
-import { basename, dirname, extname, join } from 'path';
-import { IConfigDefinition, IEnvironment, IFeatureDefinition, loadFeaturesFromPackages } from './analyze-feature';
+import { loadFeaturesFromPackages } from './analyze-feature';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
-import { IClosable, NodeEnvironmentsManager } from './node-environments-manager';
-import { runNodeEnvironments } from './run-node-environments';
+import { NodeEnvironmentsManager } from './node-environments-manager';
+import { IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
+const { basename, dirname, extname, join } = fs;
 
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
-    options?: Record<string, string>;
+    defaultRuntimeOptions?: Record<string, string | boolean>;
 }
 
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
+    inspect?: boolean;
 }
 
 export interface IBuildManifest {
@@ -90,14 +90,23 @@ export class Application {
         return stats;
     }
 
-    public async start({ featureName, configName }: IRunOptions = {}) {
+    public async start({ featureName, configName, defaultRuntimeOptions = {}, inspect = false }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
+        const { port, app, close, socketServer } = await this.launchHttpServer();
+
         const { features, configurations, packages } = this.analyzeFeatures();
+
         const compiler = this.createCompiler(features, featureName, configName);
-        const { port, app, close, nodeEnvironmentManager } = await this.launchHttpServer({
+
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
-            features: Array.from(features.entries())
+            features,
+            defaultRuntimeOptions,
+            port,
+            inspect
         });
+
+        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
@@ -136,13 +145,15 @@ export class Application {
                     features: Array.from(features.values())
                         .filter(({ isRoot }) => isRoot)
                         .map(({ scopedName }) => scopedName),
-                    runningNodeEnvironments: nodeEnvironmentManager.getRunningEnvironments()
+                    runningNodeEnvironments: nodeEnvironmentManager.getFeaturesWithRunningEnvironments()
                 }
             });
         });
-
         if (featureName) {
-            await nodeEnvironmentManager.runEnvironment({ featureName, configName });
+            await nodeEnvironmentManager.runEnvironment({
+                featureName,
+                configName
+            });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
 
@@ -165,32 +176,42 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
 
-        const { configName: providedConfigName, featureName = defaultFeatureName, options } = runOptions;
+        const {
+            configName: providedConfigName,
+            featureName = defaultFeatureName,
+            defaultRuntimeOptions,
+            inspect
+        } = runOptions;
         const disposables: Array<() => unknown> = [];
 
         const configurations = await this.readConfigs();
 
         const configName = providedConfigName || defaultConfigName;
 
-        const { port, close, nodeEnvironmentManager } = await this.launchHttpServer({
+        const { port, close, socketServer, app } = await this.launchHttpServer();
+
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
-            configName,
-            features
+            features: new Map(features),
+            port,
+            defaultRuntimeOptions,
+            inspect
         });
+
+        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
 
         disposables.push(() => close());
 
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
-                configName,
-                options
+                configName
             });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
-        }
 
-        console.log(`Listening:`);
-        console.log(`http://localhost:${port}/main.html`);
+            console.log(`Listening:`);
+            console.log(`http://localhost:${port}/main.html`);
+        }
 
         return {
             port,
@@ -316,78 +337,20 @@ export class Application {
         return packageToConfigurationMapping;
     }
 
-    private async launchHttpServer({
-        configurations,
-        configName,
-        features
-    }: {
-        configurations: SetMultiMap<string, IConfigDefinition>;
-        configName?: string;
-        features: Array<[string, IFeatureDefinition]>;
-    }) {
+    private async launchHttpServer() {
         const app = express();
-        const topology = new Map<string, Record<string, string>>();
 
         const { port, httpServer } = await safeListeningHttpServer(3000, app);
 
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
-        app.use('/config', createConfigMiddleware(configurations, topology));
         const socketServer = io(httpServer);
-
-        const runNodeEnv = async (targetFeature: { featureName: string; options?: Map<string, string> }) => {
-            const config: TopLevelConfig = [];
-            if (configName) {
-                const configDefinition = configurations.get(configName);
-                if (!configDefinition) {
-                    const configNames = Array.from(configurations.keys());
-                    throw new Error(
-                        `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
-                    );
-                }
-                for (const { filePath } of configDefinition) {
-                    try {
-                        const { default: topLevelConfig } = await import(filePath);
-                        config.push(...topLevelConfig);
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-            }
-            const { dispose, environments } = await runNodeEnvironments({
-                featureName: targetFeature.featureName,
-                socketServer,
-                features: new Map(features),
-                options: targetFeature.options
-            });
-
-            const topologyForFeature: Record<string, string> = {};
-            for (const { name } of environments) {
-                topologyForFeature[name] = `http://localhost:${port}/_ws`;
-            }
-            topology.set(targetFeature.featureName, topologyForFeature);
-
-            return {
-                async close() {
-                    if (topology.has(targetFeature.featureName)) {
-                        for (const { name } of environments) {
-                            delete topology.get(targetFeature.featureName)![name];
-                        }
-                        topology.delete(targetFeature.featureName);
-                    }
-                    return dispose();
-                }
-            } as IClosable;
-        };
-
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(runNodeEnv);
 
         return {
             close: async () => new Promise(res => socketServer.close(res)),
             port,
             app,
-            socketServer,
-            nodeEnvironmentManager
+            socketServer
         };
     }
 }

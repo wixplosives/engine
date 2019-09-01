@@ -1,7 +1,9 @@
-import { createDisposables } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { join } from 'path';
+
+import { createDisposables } from '@wixc3/engine-test-kit';
+
 import { Application } from '../src';
 
 chai.use(chaiAsPromised);
@@ -24,7 +26,7 @@ describe('Node environments manager', function() {
         disposables.add(() => nodeEnvironmentManager.closeEnvironment(runFeatureOptions));
         disposables.add(() => close());
 
-        const allOpenEnvironments = await nodeEnvironmentManager.getRunningEnvironments();
+        const allOpenEnvironments = await nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
         expect(allOpenEnvironments).to.be.not.an('undefined');
         expect(allOpenEnvironments).to.be.an('Array');
         expect(allOpenEnvironments).to.contain(runFeatureOptions.featureName);
@@ -34,7 +36,7 @@ describe('Node environments manager', function() {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
 
-        const allOpenEnvironments = await nodeEnvironmentManager.getRunningEnvironments();
+        const allOpenEnvironments = await nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
 
         expect(allOpenEnvironments).to.be.an('Array');
         expect(allOpenEnvironments.length).to.equal(0);
@@ -43,7 +45,9 @@ describe('Node environments manager', function() {
         disposables.add(() => nodeEnvironmentManager.closeEnvironment(runFeatureOptions));
         disposables.add(() => close());
 
-        expect(await nodeEnvironmentManager.getRunningEnvironments()).to.contain(runFeatureOptions.featureName);
+        expect(await nodeEnvironmentManager.getFeaturesWithRunningEnvironments()).to.contain(
+            runFeatureOptions.featureName
+        );
     });
 
     it('fails to launch if wrong config name or feature name are provided', async () => {

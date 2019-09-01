@@ -1,7 +1,13 @@
-import { Environment, EnvironmentContext, SomeFeature } from '@wixc3/engine-core';
+import { Environment, EnvironmentContext, EnvironmentTypes, SomeFeature, TopLevelConfig } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
+export interface ServerEnvironmentOptions extends IEnvironment {
+    featureName: string;
+    config?: TopLevelConfig;
+    features: Array<[string, IFeatureDefinition]>;
+    options?: Array<[string, string | boolean]>;
+}
 export interface VirtualEntry {
     source: string;
     filename: string;
@@ -89,7 +95,7 @@ export type ProcessMessageId =
     | 'feature-closed'
     | 'server-disconnect'
     | 'server-disconnected'
-    | 'port';
+    | 'port-request';
 
 export interface IProcessMessage<T> {
     id: ProcessMessageId;
@@ -100,17 +106,105 @@ export const isProcessMessage = (value: unknown): value is IProcessMessage<unkno
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
 
 export const isPortMessage = (value: unknown): value is IProcessMessage<IPortMessage> => {
-    return isProcessMessage(value) && value.id === 'port';
+    return isProcessMessage(value) && value.id === 'port-request';
 };
 
 export const isFeatureMessage = (value: unknown): value is IProcessMessage<IFeatureMessage> => {
     return isProcessMessage(value) && value.id === 'feature-initialized';
 };
 export interface IFeatureMessage {
-    configName: string;
     featureName: string;
+    configName?: string;
 }
 
 export interface IPortMessage {
     port: number;
+}
+
+export type IEnvironmentMessageID = 'start' | 'close' | 'port-request';
+
+export interface ICommunicationMessage {
+    id: IEnvironmentMessageID;
+}
+
+export interface IEnvironmentPortMessage extends ICommunicationMessage {
+    id: 'port-request';
+    port: number;
+}
+
+export interface IEnvironmentMessage extends ICommunicationMessage {
+    id: 'start' | 'close';
+    envName: string;
+}
+
+export interface IEnvironmentStartMessage extends IEnvironmentMessage {
+    id: 'start';
+    data: ServerEnvironmentOptions;
+}
+
+export interface RemoteProcess {
+    on: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
+    postMessage: (message: ICommunicationMessage) => unknown;
+    terminate?: () => void;
+    off: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
+}
+
+export interface IFeatureModule {
+    /**
+     * Feature name.
+     * @example "gui" for "gui.feature.ts"
+     */
+    name: string;
+
+    /**
+     * Absolute path pointing to the feature file.
+     */
+    filePath: string;
+
+    /**
+     * Actual evaluated Feature instance exported from the file.
+     */
+    exportedFeature: SomeFeature;
+
+    /**
+     * Exported environments from module.
+     */
+    exportedEnvs: IEnvironment[];
+
+    /**
+     * If module exports any `processingEnv.use('worker')`,
+     * it will be set as `'processing': 'worker'`
+     */
+    usedContexts: Record<string, string>;
+}
+
+export interface IEnvironment {
+    type: EnvironmentTypes;
+    name: string;
+    childEnvName?: string;
+}
+
+export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
+    message.id === 'start';
+
+export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
+    message.id === 'close';
+
+export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
+    message.id === 'port-request';
+
+export interface IConfigDefinition {
+    name: string;
+    filePath: string;
+    envName?: string;
+}
+
+export interface IFeatureDefinition extends IFeatureModule {
+    contextFilePaths: Record<string, string>;
+    envFilePaths: Record<string, string>;
+    dependencies: string[];
+    scopedName: string;
+    resolvedContexts: Record<string, string>;
+    isRoot: boolean;
+    toJSON(): unknown;
 }

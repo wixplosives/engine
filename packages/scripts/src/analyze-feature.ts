@@ -2,7 +2,6 @@ import { IFileSystemSync } from '@file-services/types';
 import {
     Environment,
     EnvironmentContext,
-    EnvironmentTypes,
     Feature,
     getFeaturesDeep,
     SingleEndpointContextualEnvironment,
@@ -20,60 +19,10 @@ import {
     parseFeatureFileName
 } from './build-constants';
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
+import { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
 import { INpmPackage, IPackageJson } from './utils/resolve-packages';
-
-export interface IConfigDefinition {
-    name: string;
-    filePath: string;
-    envName?: string;
-}
-
-export interface IFeatureDefinition extends IFeatureModule {
-    contextFilePaths: Record<string, string>;
-    envFilePaths: Record<string, string>;
-    dependencies: string[];
-    scopedName: string;
-    resolvedContexts: Record<string, string>;
-    isRoot: boolean;
-    toJSON(): unknown;
-}
-
-export interface IFeatureModule {
-    /**
-     * Feature name.
-     * @example "gui" for "gui.feature.ts"
-     */
-    name: string;
-
-    /**
-     * Absolute path pointing to the feature file.
-     */
-    filePath: string;
-
-    /**
-     * Actual evaluated Feature instance exported from the file.
-     */
-    exportedFeature: SomeFeature;
-
-    /**
-     * Exported environments from module.
-     */
-    exportedEnvs: IEnvironment[];
-
-    /**
-     * If module exports any `processingEnv.use('worker')`,
-     * it will be set as `'processing': 'worker'`
-     */
-    usedContexts: Record<string, string>;
-}
-
-export interface IEnvironment {
-    type: EnvironmentTypes;
-    name: string;
-    childEnvName?: string;
-}
 
 interface IPackageDescriptor {
     simplifiedName: string;

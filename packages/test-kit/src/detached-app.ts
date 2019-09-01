@@ -1,4 +1,4 @@
-import { IFeatureTarget, isPortMessage, isProcessMessage, ProcessMessageId } from '@wixc3/engine-scripts';
+import { IFeatureTarget, IPortMessage, isProcessMessage, ProcessMessageId } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
 import { IExecutableApplication } from './types';
 
@@ -22,15 +22,9 @@ export class DetachedApp implements IExecutableApplication {
 
         this.engineStartProcess = engineStartProcess;
 
-        this.port = await new Promise<number>((resolve, reject) => {
-            engineStartProcess.once('message', message => {
-                if (isPortMessage(message)) {
-                    resolve(message.payload.port);
-                } else {
-                    reject(new Error('Invalid message was received for start server command'));
-                }
-            });
-        });
+        const { port } = (await this.waitForProcessMessage('port-request')) as IPortMessage;
+
+        this.port = port;
 
         return this.port;
     }
@@ -52,7 +46,7 @@ export class DetachedApp implements IExecutableApplication {
         this.engineStartProcess = undefined;
     }
 
-    public async runFeature({ configName, featureName, options }: IFeatureTarget) {
+    public async runFeature({ configName, featureName, defaultRuntimeOptions: options }: IFeatureTarget) {
         await this.waitForProcessMessage('feature-initialized', p => {
             p.send({
                 id: 'run-feature',
