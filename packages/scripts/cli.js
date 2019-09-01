@@ -8,4 +8,3 @@ if (__dirname.includes(normalize('/packages/scripts'))) {
 } else {
     require('./cjs/cli');
 }
-

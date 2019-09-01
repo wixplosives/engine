@@ -1,11 +1,4 @@
-import {
-    Environment,
-    EnvironmentContext,
-    EnvironmentTypes,
-    IComConfig,
-    SomeFeature,
-    TopLevelConfig
-} from '@wixc3/engine-core';
+import { Environment, EnvironmentContext, EnvironmentTypes, SomeFeature, TopLevelConfig } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -51,16 +44,6 @@ export interface EngineEnvironmentEntry {
     featureMapping: FeatureMapping;
     entryFilename: string;
     contextFiles?: Set<string>;
-}
-
-export interface EngineEnvironmentSerializableEntry {
-    name: string;
-    target: JSRuntime;
-    isRoot: boolean;
-    envFiles: string[];
-    featureMapping: FeatureMapping;
-    entryFilename: string;
-    contextFiles?: string[];
 }
 
 export interface WebpackEnvOptions {
@@ -139,7 +122,7 @@ export interface IPortMessage {
     port: number;
 }
 
-export type IEnvironmentMessageID = 'start' | 'close' | 'port' | 'start-static';
+export type IEnvironmentMessageID = 'start' | 'close' | 'port';
 
 export interface ICommunicationMessage {
     id: IEnvironmentMessageID;
@@ -151,20 +134,13 @@ export interface IEnvironmentPortMessage extends ICommunicationMessage {
 }
 
 export interface IEnvironmentMessage extends ICommunicationMessage {
-    id: 'start' | 'start-static' | 'close';
+    id: 'start' | 'close';
     envName: string;
 }
 
 export interface IEnvironmaneStartMessage extends IEnvironmentMessage {
     id: 'start';
     data: ServerEnvironmentOptions;
-}
-
-export interface IEnvironmentStartStaticMessage extends IEnvironmentMessage {
-    id: 'start-static';
-    envName: string;
-    entityPath: string;
-    serverConfig: Array<Partial<IComConfig>>;
 }
 
 export interface RemoteProcess {
@@ -216,10 +192,6 @@ export const isEnvironmentCloseMessage = (message: ICommunicationMessage): messa
 
 export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
     message.id === 'port';
-
-export const isEnvironmentStartStaticMessage = (
-    message: ICommunicationMessage
-): message is IEnvironmentStartStaticMessage => message.id === 'start-static';
 
 export interface IConfigDefinition {
     name: string;

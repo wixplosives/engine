@@ -158,7 +158,7 @@ export class NodeEnvironmentsManager {
             options: Object.entries(options)
         };
 
-        let environmentPort: number = this.httpServerPort;
+        let environmentPort = this.httpServerPort;
         let dispose: () => Promise<void>;
         if (Object.keys(options).includes('inspect')) {
             const { close, port } = await this.startRemoteNodeEnvironment(serverEnvironmentOptions);
