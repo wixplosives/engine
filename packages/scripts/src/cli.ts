@@ -40,16 +40,18 @@ program
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
     .option('--inspect')
+    .option('-p ,--port <port>')
     .allowUnknownOption(true)
     .action(async (path, cmd: Record<string, string | undefined>) => {
-        const { feature: featureName, config: configName } = cmd;
+        const { feature: featureName, config: configName, port: httpServerPort } = cmd;
         try {
             const app = new Application({ basePath: path || process.cwd() });
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
                 configName,
                 defaultRuntimeOptions: parseCliArguments(process.argv.slice(3)),
-                inspect: cmd.inspect ? true : false
+                inspect: cmd.inspect ? true : false,
+                port: httpServerPort ? Number(httpServerPort) : undefined
             });
 
             if (process.send) {
@@ -100,15 +102,17 @@ program
     .option('-c ,--config <config>')
     .option('-f ,--feature <feature>')
     .option('--out-dir <outDir>')
+    .option('-p ,--port <port>')
     .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
-        const { config: configName, outDir = 'dist', feature: featureName } = cmd;
+        const { config: configName, outDir = 'dist', feature: featureName, port: httpServerPort } = cmd;
 
         try {
             const app = new Application({ basePath: path, outputPath: join(path, outDir) });
             const { port } = await app.run({
                 configName,
                 featureName,
-                defaultRuntimeOptions: parseCliArguments(process.argv.slice(3))
+                defaultRuntimeOptions: parseCliArguments(process.argv.slice(3)),
+                port: httpServerPort ? Number(httpServerPort) : undefined
             });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);
