@@ -90,7 +90,7 @@ export class Application {
         return stats;
     }
 
-    public async start({ featureName, configName, options, inspect = false }: IRunOptions = {}) {
+    public async start({ featureName, configName, options = {}, inspect = false }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
         const { port, app, close, socketServer } = await this.launchHttpServer();
 
@@ -101,6 +101,7 @@ export class Application {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
             features,
+            baseRunOptions: options,
             port,
             inspect
         });
@@ -132,11 +133,7 @@ export class Application {
             }
         }
 
-        app.use(
-            nodeEnvironmentManager.middleware({
-                inspect
-            })
-        );
+        app.use(nodeEnvironmentManager.middleware());
 
         disposables.push(() => close());
 
@@ -156,7 +153,7 @@ export class Application {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
                 configName,
-                options: { ...options, inspect }
+                options
             });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
@@ -193,6 +190,7 @@ export class Application {
             configurations,
             features: new Map(features),
             port,
+            baseRunOptions: options,
             inspect
         });
 

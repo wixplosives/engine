@@ -33,6 +33,7 @@ const remoteEnvironmentEntryFile = require.resolve(join(__dirname, '..', 'static
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
     configurations: SetMultiMap<string, IConfigDefinition>;
+    baseRunOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
 }
@@ -47,13 +48,13 @@ export class NodeEnvironmentsManager {
         }
         const topology: Record<string, string> = {};
         const disposables: Array<() => unknown> = [];
-
+        const { baseRunOptions } = this.options;
         for (const nodeEnv of this.getNodeEnvironments(featureName)) {
             const { close, port } = await this.launchEnvironment(
                 nodeEnv,
                 featureName,
                 [...this.getBaseConfig(featureName), ...(await this.getConfig(configName))],
-                options
+                { ...baseRunOptions, ...options }
             );
             topology[nodeEnv.name] = `http://localhost:${port}/_ws`;
             disposables.push(() => close());
@@ -98,13 +99,18 @@ export class NodeEnvironmentsManager {
         return [COM.use({ config: { topology: this.topology.get(featureName) } })] as TopLevelConfig;
     }
 
-    public middleware(baseOptions?: Record<string, string | boolean>) {
+    public middleware() {
         const router = Router();
         router.use(bodyParser.json());
         router.put('/node-env', async (req, res) => {
             const { configName, featureName, options }: RunEnvironmentOptions = req.body;
+            const { inspect = false } = this.options;
             try {
-                await this.runEnvironment({ configName, featureName, options: { ...baseOptions, ...options } });
+                await this.runEnvironment({
+                    configName,
+                    featureName,
+                    options: { ...options, inspect }
+                });
                 res.json({
                     result: 'success'
                 });
@@ -201,7 +207,7 @@ export class NodeEnvironmentsManager {
 
     private async startRemoteNodeEnvironment(options: ServerEnvironmentOptions) {
         const remoteNodeEnvironment = new RemoteNodeEnvironment(remoteEnvironmentEntryFile, {
-            inspect: true
+            inspect: this.options.inspect
         });
         const port = await remoteNodeEnvironment.getRemotePort();
         const startMessage = new Promise(resolve => {
