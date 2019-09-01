@@ -29,6 +29,7 @@ export interface RunEnvironmentOptions {
     options?: Record<string, string>;
 }
 
+const remoteEnvironmentEntryFile = join(__dirname, '..', 'static', 'init-remote-environment.js');
 export class NodeEnvironmentsManager {
     public topology = new Map<string, Record<string, string>>();
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
@@ -43,60 +44,15 @@ export class NodeEnvironmentsManager {
         if (this.runningEnvironments.has(featureName)) {
             throw new Error(`node environment for ${featureName} already running`);
         }
-
-        const config: TopLevelConfig = [];
-        if (configName) {
-            const configDefinition = this.configurations.get(configName);
-            if (!configDefinition) {
-                const configNames = Array.from(this.configurations.keys());
-                throw new Error(
-                    `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
-                );
-            }
-            for (const { filePath } of configDefinition) {
-                try {
-                    const { default: topLevelConfig } = await import(filePath);
-                    config.push(...topLevelConfig);
-                } catch (e) {
-                    // tslint:disable-next-line: no-console
-                    console.error(e);
-                }
-            }
-        }
-
         const topology: Record<string, string> = {};
         const disposables = [] as Array<() => Promise<void>>;
-        const httpServerPath = `http://localhost:${this.httpServerPort}/`;
-        for (const nodeEnv of this.getNodeEnvironments(featureName)) {
-            if (Object.keys(options).includes('inspect')) {
-                const remoteEnv = new RemoteNodeEnvironment(
-                    join(__dirname, '..', 'static', 'init-remote-environment.js')
-                );
-                const environmentPort = await remoteEnv.start(true);
-                const { close } = await this.startRemoteNodeEnvironment(remoteEnv, {
-                    ...nodeEnv,
-                    config,
-                    featureName,
-                    features: Array.from(this.features.entries()),
-                    httpServerPath,
-                    options: Object.entries(options)
-                });
-                disposables.push(() => close());
-                disposables.push(async () => remoteEnv.dispose());
 
-                topology[nodeEnv.name] = `http://localhost:${environmentPort}/_ws`;
-            } else {
-                const { dispose } = await runNodeEnvironment(this.socketServer, {
-                    ...nodeEnv,
-                    config,
-                    featureName,
-                    features: Array.from(this.features.entries()),
-                    httpServerPath,
-                    options: Object.entries(options)
-                });
-                disposables.push(() => dispose());
-                topology[nodeEnv.name] = `http://localhost:${this.httpServerPort}/_ws`;
-            }
+        const config: TopLevelConfig = await this.getConfig(configName);
+
+        for (const nodeEnv of this.getNodeEnvironments(featureName)) {
+            const { close, topologyUrl } = await this.launchEnvironment(options, nodeEnv, config, featureName);
+            topology[nodeEnv.name] = topologyUrl;
+            disposables.push(() => close());
         }
 
         const runningEnvironment = {
@@ -119,6 +75,7 @@ export class NodeEnvironmentsManager {
         if (!runningEnvironment) {
             throw new Error(`there are no node environments running for ${featureName}`);
         }
+        this.topology.delete(featureName);
         this.runningEnvironments.delete(featureName);
         await runningEnvironment.close();
     }
@@ -185,10 +142,64 @@ export class NodeEnvironmentsManager {
         return router;
     }
 
-    private async startRemoteNodeEnvironment(
-        remoteNodeEnvironment: RemoteNodeEnvironment,
-        options: ServerEnvironmentOptions
+    private async launchEnvironment(
+        options: Record<string, string>,
+        nodeEnv: IEnvironment,
+        config: Array<[string, object]>,
+        featureName: string
     ) {
+        const httpServerPath = `http://localhost:${this.httpServerPort}/`;
+        const serverEnvironmentOptions: ServerEnvironmentOptions = {
+            ...nodeEnv,
+            config,
+            featureName,
+            features: Array.from(this.features.entries()),
+            httpServerPath,
+            options: Object.entries(options)
+        };
+
+        let environmentPort: number = this.httpServerPort;
+        let dispose: () => Promise<void>;
+        if (Object.keys(options).includes('inspect')) {
+            const { close, port } = await this.startRemoteNodeEnvironment(serverEnvironmentOptions);
+            environmentPort = port;
+            dispose = close;
+        } else {
+            const { close } = await runNodeEnvironment(this.socketServer, serverEnvironmentOptions);
+            dispose = close;
+        }
+        return {
+            topologyUrl: `http://localhost:${environmentPort}/_ws`,
+            close: () => dispose()
+        };
+    }
+
+    private async getConfig(configName: string | undefined) {
+        const config: TopLevelConfig = [];
+        if (configName) {
+            const configDefinition = this.configurations.get(configName);
+            if (!configDefinition) {
+                const configNames = Array.from(this.configurations.keys());
+                throw new Error(
+                    `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
+                );
+            }
+            for (const { filePath } of configDefinition) {
+                try {
+                    const { default: topLevelConfig } = await import(filePath);
+                    config.push(...topLevelConfig);
+                } catch (e) {
+                    // tslint:disable-next-line: no-console
+                    console.error(e);
+                }
+            }
+        }
+        return config;
+    }
+
+    private async startRemoteNodeEnvironment(options: ServerEnvironmentOptions) {
+        const remoteNodeEnvironment = new RemoteNodeEnvironment(remoteEnvironmentEntryFile);
+        const port = await remoteNodeEnvironment.start(true);
         const startMessage = new Promise(resolve => {
             remoteNodeEnvironment.subscribe(message => {
                 if (isEnvironmentStartMessage(message)) {
@@ -201,8 +212,8 @@ export class NodeEnvironmentsManager {
 
         await startMessage;
         return {
-            close: () => {
-                return new Promise<void>(resolve => {
+            close: async () => {
+                await new Promise<void>(resolve => {
                     remoteNodeEnvironment.subscribe(message => {
                         if (message.id === 'close') {
                             resolve();
@@ -211,7 +222,9 @@ export class NodeEnvironmentsManager {
                     const enviroenentCloseServer: IEnvironmentMessage = { id: 'close', envName: options.name };
                     remoteNodeEnvironment.postMessage(enviroenentCloseServer);
                 });
-            }
+                return remoteNodeEnvironment.dispose();
+            },
+            port
         };
     }
 

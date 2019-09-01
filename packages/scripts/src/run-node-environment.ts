@@ -27,7 +27,7 @@ if (parentProcess) {
 
 export async function createWorkerProtocol(remoteAccess: RemoteProcess) {
     const app = express();
-    const environments: Record<string, { dispose: () => Promise<void> }> = {};
+    const environments: Record<string, { close: () => Promise<void> }> = {};
     const { httpServer, port } = await safeListeningHttpServer(3000, app);
     const socketServer = io(httpServer);
 
@@ -38,7 +38,7 @@ export async function createWorkerProtocol(remoteAccess: RemoteProcess) {
             environments[message.envName] = await runNodeEnvironment(socketServer, message.data);
             remoteAccess.postMessage({ id: 'start' });
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
-            await environments[message.envName].dispose();
+            await environments[message.envName].close();
             remoteAccess.postMessage({ id: 'close' });
         }
         return null;
@@ -74,7 +74,7 @@ export async function runNodeEnvironment(
     });
 
     return {
-        dispose: async () => {
+        close: async () => {
             for (const disposeHandler of disposeHandlers) {
                 await disposeHandler();
             }
