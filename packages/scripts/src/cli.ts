@@ -48,7 +48,7 @@ program
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
                 configName,
-                options: parseCliArguments(process.argv.slice(3)),
+                defaultRuntimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect: cmd.inspect ? true : false
             });
 
@@ -108,7 +108,7 @@ program
             const { port } = await app.run({
                 configName,
                 featureName,
-                options: parseCliArguments(process.argv.slice(3))
+                defaultRuntimeOptions: parseCliArguments(process.argv.slice(3))
             });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);

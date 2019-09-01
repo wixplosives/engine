@@ -1,6 +1,5 @@
 import bodyParser from 'body-parser';
 import { Router } from 'express';
-import { join } from 'path';
 import io from 'socket.io';
 
 import { SetMultiMap } from '@file-services/utils';
@@ -25,15 +24,15 @@ export interface IRuntimeEnvironment {
 export interface RunEnvironmentOptions {
     featureName: string;
     configName?: string;
-    options?: Record<string, string | boolean>;
+    runtimeOptions?: Record<string, string | boolean>;
 }
 
-const remoteEnvironmentEntryFile = require.resolve(join(__dirname, '..', 'static', 'init-remote-environment.js'));
+const remoteEnvironmentEntryFile = require.resolve('../static/init-remote-environment.js');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
     configurations: SetMultiMap<string, IConfigDefinition>;
-    runOptions?: Record<string, string | boolean>;
+    defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
 }
@@ -42,13 +41,13 @@ export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
     constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
-    public async runEnvironment({ featureName, configName, options = {} }: RunEnvironmentOptions) {
+    public async runEnvironment({ featureName, configName, runtimeOptions = {} }: RunEnvironmentOptions) {
         if (this.runningEnvironments.has(featureName)) {
             throw new Error(`node environment for ${featureName} already running`);
         }
         const topology: Record<string, string> = {};
         const disposables: Array<() => unknown> = [];
-        const { runOptions } = this.options;
+        const { defaultRuntimeOptions } = this.options;
         for (const nodeEnv of this.getNodeEnvironments(featureName)) {
             const { close, port } = await this.launchEnvironment(
                 nodeEnv,
@@ -57,10 +56,11 @@ export class NodeEnvironmentsManager {
                     COM.use({ config: { topology: this.topology.get(featureName) } }),
                     ...(await this.getConfig(configName))
                 ],
-                { ...runOptions, ...options }
+                { ...defaultRuntimeOptions, ...runtimeOptions }
             );
-            topology[nodeEnv.name] = `http://localhost:${port}/_ws`;
             disposables.push(() => close());
+
+            topology[nodeEnv.name] = `http://localhost:${port}/_ws`;
         }
 
         const runningEnvironment: IRuntimeEnvironment = {
@@ -102,13 +102,12 @@ export class NodeEnvironmentsManager {
         const router = Router();
         router.use(bodyParser.json());
         router.put('/node-env', async (req, res) => {
-            const { configName, featureName, options }: RunEnvironmentOptions = req.body;
-            const { inspect = false } = this.options;
+            const { configName, featureName, runtimeOptions: options }: RunEnvironmentOptions = req.body;
             try {
                 await this.runEnvironment({
                     configName,
                     featureName,
-                    options: { ...options, inspect }
+                    runtimeOptions: options
                 });
                 res.json({
                     result: 'success'

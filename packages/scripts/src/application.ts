@@ -31,7 +31,7 @@ const { basename, dirname, extname, join } = fs;
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
-    options?: Record<string, string | boolean>;
+    defaultRuntimeOptions?: Record<string, string | boolean>;
 }
 
 export interface IRunOptions extends IFeatureTarget {
@@ -90,7 +90,7 @@ export class Application {
         return stats;
     }
 
-    public async start({ featureName, configName, options = {}, inspect = false }: IRunOptions = {}) {
+    public async start({ featureName, configName, defaultRuntimeOptions = {}, inspect = false }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
         const { port, app, close, socketServer } = await this.launchHttpServer();
 
@@ -101,7 +101,7 @@ export class Application {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
             features,
-            runOptions: options,
+            defaultRuntimeOptions,
             port,
             inspect
         });
@@ -152,8 +152,7 @@ export class Application {
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
-                configName,
-                options
+                configName
             });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
@@ -177,7 +176,12 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
 
-        const { configName: providedConfigName, featureName = defaultFeatureName, options, inspect } = runOptions;
+        const {
+            configName: providedConfigName,
+            featureName = defaultFeatureName,
+            defaultRuntimeOptions,
+            inspect
+        } = runOptions;
         const disposables: Array<() => unknown> = [];
 
         const configurations = await this.readConfigs();
@@ -190,7 +194,7 @@ export class Application {
             configurations,
             features: new Map(features),
             port,
-            runOptions: options,
+            defaultRuntimeOptions,
             inspect
         });
 
@@ -201,14 +205,13 @@ export class Application {
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
-                configName,
-                options
+                configName
             });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
-        }
 
-        console.log(`Listening:`);
-        console.log(`http://localhost:${port}/main.html`);
+            console.log(`Listening:`);
+            console.log(`http://localhost:${port}/main.html`);
+        }
 
         return {
             port,

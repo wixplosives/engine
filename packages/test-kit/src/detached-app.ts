@@ -46,7 +46,7 @@ export class DetachedApp implements IExecutableApplication {
         this.engineStartProcess = undefined;
     }
 
-    public async runFeature({ configName, featureName, options }: IFeatureTarget) {
+    public async runFeature({ configName, featureName, defaultRuntimeOptions: options }: IFeatureTarget) {
         await this.waitForProcessMessage('feature-initialized', p => {
             p.send({
                 id: 'run-feature',
