@@ -11,7 +11,6 @@ import './own-repo-hook';
 import fs from '@file-services/node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
-import { basename, dirname, extname, join } from 'path';
 import rimrafCb from 'rimraf';
 import io from 'socket.io';
 import { promisify } from 'util';
@@ -27,6 +26,7 @@ import { IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
+const { basename, dirname, extname, join } = fs;
 
 export interface IFeatureTarget {
     featureName?: string;
