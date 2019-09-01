@@ -1,55 +1,15 @@
-import { safeListeningHttpServer } from 'create-listening-server';
-import express from 'express';
-import http from 'http';
-import io, { Server } from 'socket.io';
+import { Server } from 'socket.io';
 
 import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
 import { WsServerHost } from '@wixc3/engine-core-node';
 
-import { getParentProcess } from './parent-process';
-import {
-    ICommunicationMessage,
-    IEnvironment,
-    IEnvironmentPortMessage,
-    IFeatureDefinition,
-    isEnvironmentCloseMessage,
-    isEnvironmentPortMessage,
-    isEnvironmentStartMessage,
-    RemoteProcess,
-    ServerEnvironmentOptions
-} from './types';
-
-const parentProcess = getParentProcess();
-if (parentProcess) {
-    // tslint:disable-next-line: no-floating-promises
-    createWorkerProtocol(parentProcess);
-}
-
-export async function createWorkerProtocol(remoteAccess: RemoteProcess) {
-    const app = express();
-    const environments: Record<string, { close: () => Promise<void> }> = {};
-    const { httpServer, port } = await safeListeningHttpServer(3000, app);
-    const socketServer = io(httpServer);
-
-    remoteAccess.on('message', async (message: ICommunicationMessage) => {
-        if (isEnvironmentPortMessage(message)) {
-            remoteAccess.postMessage({ id: 'port', port } as IEnvironmentPortMessage);
-        } else if (isEnvironmentStartMessage(message)) {
-            environments[message.envName] = await runNodeEnvironment(socketServer, message.data);
-            remoteAccess.postMessage({ id: 'start' });
-        } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
-            await environments[message.envName].close();
-            remoteAccess.postMessage({ id: 'close' });
-        }
-        return null;
-    });
-}
+import { IEnvironment, IFeatureDefinition, ServerEnvironmentOptions } from './types';
 
 export async function runNodeEnvironment(
     socketServer: Server,
-    { featureName, childEnvName, features, config = [], name, httpServerPath, type, options }: ServerEnvironmentOptions
+    { featureName, childEnvName, features, config = [], name, type, options }: ServerEnvironmentOptions
 ) {
-    const disposeHandlers: Set<() => unknown> = new Set();
+    const disposeHandlers = new Set<() => unknown>();
     const socketServerNamespace = socketServer.of('/_ws');
     const localDevHost = new WsServerHost(socketServerNamespace);
 
@@ -67,8 +27,7 @@ export async function runNodeEnvironment(
                     host: localDevHost,
                     id: name
                 }
-            }),
-            ...(await getConfig(featureName, httpServerPath))
+            })
         ],
         options: new Map(options)
     });
@@ -80,23 +39,6 @@ export async function runNodeEnvironment(
             }
         }
     };
-}
-
-async function getConfig(featureName: string, httpServerPath: string): Promise<Array<[string, object]>> {
-    return new Promise((resolve, reject) => {
-        http.get(`${httpServerPath}config?feature=${featureName}`, response => {
-            let data = '';
-            response.on('data', chunk => {
-                data += chunk;
-            });
-            response.on('end', () => {
-                resolve(JSON.parse(data));
-            });
-            response.on('error', err => {
-                reject(err);
-            });
-        });
-    });
 }
 
 function createFeatureLoaders(

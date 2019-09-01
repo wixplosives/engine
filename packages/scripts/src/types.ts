@@ -2,13 +2,12 @@ import { Environment, EnvironmentContext, EnvironmentTypes, SomeFeature, TopLeve
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
-export type ServerEnvironmentOptions = IEnvironment & {
+export interface ServerEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
     features: Array<[string, IFeatureDefinition]>;
-    httpServerPath: string;
-    options?: Array<[string, string]>;
-};
+    options?: Array<[string, string | boolean]>;
+}
 export interface VirtualEntry {
     source: string;
     filename: string;
@@ -96,7 +95,7 @@ export type ProcessMessageId =
     | 'feature-closed'
     | 'server-disconnect'
     | 'server-disconnected'
-    | 'port';
+    | 'port-request';
 
 export interface IProcessMessage<T> {
     id: ProcessMessageId;
@@ -107,7 +106,7 @@ export const isProcessMessage = (value: unknown): value is IProcessMessage<unkno
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
 
 export const isPortMessage = (value: unknown): value is IProcessMessage<IPortMessage> => {
-    return isProcessMessage(value) && value.id === 'port';
+    return isProcessMessage(value) && value.id === 'port-request';
 };
 
 export const isFeatureMessage = (value: unknown): value is IProcessMessage<IFeatureMessage> => {
@@ -122,14 +121,14 @@ export interface IPortMessage {
     port: number;
 }
 
-export type IEnvironmentMessageID = 'start' | 'close' | 'port';
+export type IEnvironmentMessageID = 'start' | 'close' | 'port-request';
 
 export interface ICommunicationMessage {
     id: IEnvironmentMessageID;
 }
 
 export interface IEnvironmentPortMessage extends ICommunicationMessage {
-    id: 'port';
+    id: 'port-request';
     port: number;
 }
 
@@ -138,7 +137,7 @@ export interface IEnvironmentMessage extends ICommunicationMessage {
     envName: string;
 }
 
-export interface IEnvironmaneStartMessage extends IEnvironmentMessage {
+export interface IEnvironmentStartMessage extends IEnvironmentMessage {
     id: 'start';
     data: ServerEnvironmentOptions;
 }
@@ -147,6 +146,7 @@ export interface RemoteProcess {
     on: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
     postMessage: (message: ICommunicationMessage) => unknown;
     terminate?: () => void;
+    off: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
 }
 
 export interface IFeatureModule {
@@ -184,14 +184,14 @@ export interface IEnvironment {
     childEnvName?: string;
 }
 
-export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
+export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
     message.id === 'start';
 
-export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmaneStartMessage =>
+export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
     message.id === 'close';
 
 export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
-    message.id === 'port';
+    message.id === 'port-request';
 
 export interface IConfigDefinition {
     name: string;
@@ -207,39 +207,4 @@ export interface IFeatureDefinition extends IFeatureModule {
     resolvedContexts: Record<string, string>;
     isRoot: boolean;
     toJSON(): unknown;
-}
-
-export interface IFeatureModule {
-    /**
-     * Feature name.
-     * @example "gui" for "gui.feature.ts"
-     */
-    name: string;
-
-    /**
-     * Absolute path pointing to the feature file.
-     */
-    filePath: string;
-
-    /**
-     * Actual evaluated Feature instance exported from the file.
-     */
-    exportedFeature: SomeFeature;
-
-    /**
-     * Exported environments from module.
-     */
-    exportedEnvs: IEnvironment[];
-
-    /**
-     * If module exports any `processingEnv.use('worker')`,
-     * it will be set as `'processing': 'worker'`
-     */
-    usedContexts: Record<string, string>;
-}
-
-export interface IEnvironment {
-    type: EnvironmentTypes;
-    name: string;
-    childEnvName?: string;
 }

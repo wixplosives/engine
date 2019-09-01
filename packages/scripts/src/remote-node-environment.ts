@@ -1,47 +1,40 @@
 import { fork } from 'child_process';
-import { ForkedProcess } from '../src';
-import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '../src/types';
+import { ForkedProcess, ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '../src';
+
+export interface IRemoteNodeEnvironmentOptions {
+    inspect?: boolean;
+}
 
 export class RemoteNodeEnvironment {
-    private childEnv: RemoteProcess | undefined;
-    private messageHandlers: Set<(message: ICommunicationMessage) => void> = new Set();
+    private childEnv: RemoteProcess;
+    private messageHandlers = new Set<(message: ICommunicationMessage) => void>();
 
-    constructor(private entityFilePath: string) {}
+    constructor(private entryFilePath: string, options: IRemoteNodeEnvironmentOptions) {
+        this.childEnv = this.startRemoteEnvironment(options);
+    }
 
-    public async start(inspect: boolean = false): Promise<number> {
+    public async getRemotePort(): Promise<number> {
         return new Promise(async resolve => {
-            this.childEnv = this.startRemoteEnvironment(inspect);
             this.subscribe((message: ICommunicationMessage): void => {
                 if (isEnvironmentPortMessage(message)) {
                     resolve(message.port);
                 }
             });
-            this.postMessage({
-                id: 'port'
-            });
+            this.postMessage({ id: 'port-request' });
         });
     }
 
     public subscribe(handler: (message: ICommunicationMessage) => void) {
-        if (!this.childEnv) {
-            throw new Error('worker is not started');
-        }
-        if (!this.messageHandlers.has(handler)) {
-            this.messageHandlers.add(handler);
-            this.childEnv.on('message', handler);
-        }
+        this.messageHandlers.add(handler);
+        this.childEnv.on('message', handler);
     }
 
     public unsubscribe(handler: (message: ICommunicationMessage) => void) {
-        if (this.messageHandlers.has(handler)) {
-            this.messageHandlers.delete(handler);
-        }
+        this.messageHandlers.delete(handler);
+        this.childEnv.off('message', handler);
     }
 
     public postMessage(message: ICommunicationMessage) {
-        if (!this.childEnv) {
-            throw new Error('worker is not started');
-        }
         this.childEnv.postMessage(message);
     }
 
@@ -51,7 +44,7 @@ export class RemoteNodeEnvironment {
         }
     }
 
-    private startRemoteEnvironment(inspect: boolean): RemoteProcess {
+    private startRemoteEnvironment({ inspect }: IRemoteNodeEnvironmentOptions): RemoteProcess {
         // Roman: add this lines after worker threads will be debuggable
         // the current behavior should be a fallback
 
@@ -60,7 +53,7 @@ export class RemoteNodeEnvironment {
         // return new WorkerThreadsModule.Worker(this.entityFilePath, {});
         // } catch {
         const execArgv = inspect ? ['--inspect'] : [];
-        const proc = fork(require.resolve(this.entityFilePath), [], { execArgv });
+        const proc = fork(this.entryFilePath, [], { execArgv });
         // tslint:disable-next-line: no-console
         proc.on('error', console.error);
         return new ForkedProcess(proc);

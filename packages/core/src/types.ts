@@ -143,7 +143,7 @@ export type RunningFeatures<
 
 export interface IRunOptions {
     has(key: string): boolean;
-    get(key: string): string | null | undefined;
+    get(key: string): string | boolean | null | undefined;
 }
 
 type SettingUpFeature<ID extends string, API extends EntityMap, ENV extends string> = {

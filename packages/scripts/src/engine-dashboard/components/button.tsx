@@ -14,7 +14,7 @@ export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
     configName,
     onClick
 }) => {
-    const changeNodeEnvitonmrtState = async () =>
+    const changeNodeEnvironmentState = async () =>
         await (await fetch(`node-env`, {
             method: isNodeEnvActive ? 'DELETE' : 'PUT',
             body: JSON.stringify({
@@ -27,7 +27,7 @@ export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
         })).json();
 
     const onButtonClick = async () => {
-        const response = await changeNodeEnvitonmrtState();
+        const response = await changeNodeEnvironmentState();
         if (isServerResponseMessage(response)) {
             onClick(response);
         } else {

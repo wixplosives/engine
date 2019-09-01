@@ -4,15 +4,15 @@ import { join } from 'path';
 import io from 'socket.io';
 
 import { SetMultiMap } from '@file-services/utils';
-import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
+import { COM, flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 
 import { RemoteNodeEnvironment } from './remote-node-environment';
 import { runNodeEnvironment } from './run-node-environment';
 import {
     IConfigDefinition,
-    IEnvironmaneStartMessage,
     IEnvironment,
     IEnvironmentMessage,
+    IEnvironmentStartMessage,
     IFeatureDefinition,
     isEnvironmentStartMessage,
     ServerEnvironmentOptions
@@ -20,52 +20,55 @@ import {
 
 export interface IRuntimeEnvironment {
     close: () => Promise<void>;
-    topology: Record<string, string>;
 }
 
 export interface RunEnvironmentOptions {
     featureName: string;
     configName?: string;
-    options?: Record<string, string>;
+    options?: Record<string, string | boolean>;
 }
 
-const remoteEnvironmentEntryFile = join(__dirname, '..', 'static', 'init-remote-environment.js');
+const remoteEnvironmentEntryFile = require.resolve(join(__dirname, '..', 'static', 'init-remote-environment.js'));
+
+export interface INodeEnvironmentsManagerOptions {
+    features: Map<string, IFeatureDefinition>;
+    configurations: SetMultiMap<string, IConfigDefinition>;
+    port: number;
+    inspect?: boolean;
+}
 export class NodeEnvironmentsManager {
     public topology = new Map<string, Record<string, string>>();
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
-    constructor(
-        private features: Map<string, IFeatureDefinition>,
-        private configurations: SetMultiMap<string, IConfigDefinition>,
-        private httpServerPort: number,
-        private socketServer: io.Server
-    ) {}
+    constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
     public async runEnvironment({ featureName, configName, options = {} }: RunEnvironmentOptions) {
         if (this.runningEnvironments.has(featureName)) {
             throw new Error(`node environment for ${featureName} already running`);
         }
         const topology: Record<string, string> = {};
-        const disposables = [] as Array<() => Promise<void>>;
-
-        const config: TopLevelConfig = await this.getConfig(configName);
+        const disposables: Array<() => unknown> = [];
 
         for (const nodeEnv of this.getNodeEnvironments(featureName)) {
-            const { close, topologyUrl } = await this.launchEnvironment(options, nodeEnv, config, featureName);
-            topology[nodeEnv.name] = topologyUrl;
+            const { close, port } = await this.launchEnvironment(
+                nodeEnv,
+                featureName,
+                [...this.getBaseConfig(featureName), ...(await this.getConfig(configName))],
+                options
+            );
+            topology[nodeEnv.name] = `http://localhost:${port}/_ws`;
             disposables.push(() => close());
         }
 
-        const runningEnvironment = {
+        const runningEnvironment: IRuntimeEnvironment = {
             async close() {
                 for (const dispose of disposables) {
                     await dispose();
                 }
                 disposables.length = 0;
-            },
-            topology
-        } as IRuntimeEnvironment;
+            }
+        };
 
-        this.topology.set(featureName, runningEnvironment.topology);
+        this.topology.set(featureName, topology);
 
         this.runningEnvironments.set(featureName, runningEnvironment);
     }
@@ -91,13 +94,17 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    public middleware(initialOptions?: Record<string, string>) {
+    public getBaseConfig(featureName: string) {
+        return [COM.use({ config: { topology: this.topology.get(featureName) } })] as TopLevelConfig;
+    }
+
+    public middleware(baseOptions?: Record<string, string | boolean>) {
         const router = Router();
         router.use(bodyParser.json());
         router.put('/node-env', async (req, res) => {
             const { configName, featureName, options }: RunEnvironmentOptions = req.body;
             try {
-                await this.runEnvironment({ configName, featureName, options: { ...options, ...initialOptions } });
+                await this.runEnvironment({ configName, featureName, options: { ...baseOptions, ...options } });
                 res.json({
                     result: 'success'
                 });
@@ -143,43 +150,38 @@ export class NodeEnvironmentsManager {
     }
 
     private async launchEnvironment(
-        options: Record<string, string>,
         nodeEnv: IEnvironment,
+        featureName: string,
         config: Array<[string, object]>,
-        featureName: string
+        options: Record<string, string | boolean>
     ) {
-        const httpServerPath = `http://localhost:${this.httpServerPort}/`;
+        const { features, port, inspect } = this.options;
         const serverEnvironmentOptions: ServerEnvironmentOptions = {
             ...nodeEnv,
             config,
             featureName,
-            features: Array.from(this.features.entries()),
-            httpServerPath,
+            features: Array.from(features.entries()),
             options: Object.entries(options)
         };
 
-        let environmentPort = this.httpServerPort;
-        let dispose: () => Promise<void>;
-        if (Object.keys(options).includes('inspect')) {
-            const { close, port } = await this.startRemoteNodeEnvironment(serverEnvironmentOptions);
-            environmentPort = port;
-            dispose = close;
-        } else {
-            const { close } = await runNodeEnvironment(this.socketServer, serverEnvironmentOptions);
-            dispose = close;
+        if (inspect) {
+            return this.startRemoteNodeEnvironment(serverEnvironmentOptions);
         }
+
+        const { close } = await runNodeEnvironment(this.socketServer, serverEnvironmentOptions);
         return {
-            topologyUrl: `http://localhost:${environmentPort}/_ws`,
-            close: () => dispose()
+            close,
+            port
         };
     }
 
     private async getConfig(configName: string | undefined) {
         const config: TopLevelConfig = [];
+        const { configurations } = this.options;
         if (configName) {
-            const configDefinition = this.configurations.get(configName);
+            const configDefinition = configurations.get(configName);
             if (!configDefinition) {
-                const configNames = Array.from(this.configurations.keys());
+                const configNames = Array.from(configurations.keys());
                 throw new Error(
                     `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
                 );
@@ -198,8 +200,10 @@ export class NodeEnvironmentsManager {
     }
 
     private async startRemoteNodeEnvironment(options: ServerEnvironmentOptions) {
-        const remoteNodeEnvironment = new RemoteNodeEnvironment(remoteEnvironmentEntryFile);
-        const port = await remoteNodeEnvironment.start(true);
+        const remoteNodeEnvironment = new RemoteNodeEnvironment(remoteEnvironmentEntryFile, {
+            inspect: true
+        });
+        const port = await remoteNodeEnvironment.getRemotePort();
         const startMessage = new Promise(resolve => {
             remoteNodeEnvironment.subscribe(message => {
                 if (isEnvironmentStartMessage(message)) {
@@ -207,10 +211,14 @@ export class NodeEnvironmentsManager {
                 }
             });
         });
-        const startFeature: IEnvironmaneStartMessage = { id: 'start', envName: options.name, data: options };
-        remoteNodeEnvironment.postMessage(startFeature);
+        remoteNodeEnvironment.postMessage({
+            id: 'start',
+            envName: options.name,
+            data: options
+        } as IEnvironmentStartMessage);
 
         await startMessage;
+
         return {
             close: async () => {
                 await new Promise<void>(resolve => {
@@ -219,8 +227,7 @@ export class NodeEnvironmentsManager {
                             resolve();
                         }
                     });
-                    const enviroenentCloseServer: IEnvironmentMessage = { id: 'close', envName: options.name };
-                    remoteNodeEnvironment.postMessage(enviroenentCloseServer);
+                    remoteNodeEnvironment.postMessage({ id: 'close', envName: options.name } as IEnvironmentMessage);
                 });
                 return remoteNodeEnvironment.dispose();
             },
@@ -229,16 +236,18 @@ export class NodeEnvironmentsManager {
     }
 
     private getNodeEnvironments(featureName: string) {
-        const featureDefinition = this.features.get(featureName);
+        const nodeEnvs = new Set<IEnvironment>();
+
+        const { features } = this.options;
+        const featureDefinition = features.get(featureName);
         if (!featureDefinition) {
-            const featureNames = Array.from(this.features.keys());
+            const featureNames = Array.from(features.keys());
             throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
         }
         const { resolvedContexts } = featureDefinition;
 
-        const nodeEnvs = new Set<IEnvironment>();
         const deepDefsForFeature = flattenTree(featureDefinition, f =>
-            f.dependencies.map(fName => this.features.get(fName)!)
+            f.dependencies.map(fName => features.get(fName)!)
         );
         for (const { exportedEnvs } of deepDefsForFeature) {
             for (const exportedEnv of exportedEnvs) {

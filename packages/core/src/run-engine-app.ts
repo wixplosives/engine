@@ -23,7 +23,7 @@ export interface IRunEngineAppOptions {
     featureName?: string | null;
     featureLoaders: Record<string, IFeatureLoader>;
     config?: TopLevelConfig;
-    options?: Map<string, string>;
+    options?: Map<string, string | boolean>;
 }
 
 export async function runEngineApp({ featureName, featureLoaders, config = [], options }: IRunEngineAppOptions) {

@@ -8,11 +8,18 @@ export class ForkedProcess implements RemoteProcess {
         this.proc.on(event, handler);
     }
 
+    public off(event: 'message', handler: (message: ICommunicationMessage) => unknown) {
+        this.proc.off(event, handler);
+    }
+
     public postMessage(message: ICommunicationMessage) {
-        this.proc.send!(message);
+        if (this.proc.send) {
+            this.proc.send(message);
+        }
     }
 
     public terminate() {
+        this.proc.removeAllListeners();
         if (this.proc.send) {
             (this.proc as ChildProcess).kill();
         }

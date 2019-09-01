@@ -2,10 +2,10 @@
 
 const { normalize, join } = require('path');
 
-const inOwnRepo = __dirname.includes(normalize('/packages/scripts'));
+const inOwnRepo = __filename.endsWith(normalize('packages/scripts/static/init-remote-environment.js'));
 
 if (inOwnRepo) {
     require('@ts-tools/node/r');
 }
 
-require(join(__dirname, '..', inOwnRepo ? 'src' : 'cjs', 'run-node-environment'));
+require(join(__dirname, '..', inOwnRepo ? 'src' : 'cjs', 'remote-process-environment'));

@@ -22,7 +22,7 @@ export class DetachedApp implements IExecutableApplication {
 
         this.engineStartProcess = engineStartProcess;
 
-        const { port } = (await this.waitForProcessMessage('port')) as IPortMessage;
+        const { port } = (await this.waitForProcessMessage('port-request')) as IPortMessage;
 
         this.port = port;
 

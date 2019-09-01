@@ -27,7 +27,7 @@ FileServer.setup(server, ({ [RUN_OPTIONS]: runOptions }, {}) => {
     /**
      * exposing the remoteFiles implementation of thje server side
      */
-    const projectPath = runOptions.get('projectPath') || process.cwd();
+    const projectPath = (runOptions.get('projectPath') as string | undefined) || process.cwd();
     return {
         remoteFiles: new RemoteFilesAPI(projectPath)
     };

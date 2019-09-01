@@ -31,11 +31,12 @@ const { basename, dirname, extname, join } = fs;
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
-    options?: Record<string, string>;
+    options?: Record<string, string | boolean>;
 }
 
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
+    inspect?: boolean;
 }
 
 export interface IBuildManifest {
@@ -89,7 +90,7 @@ export class Application {
         return stats;
     }
 
-    public async start({ featureName, configName, options }: IRunOptions = {}) {
+    public async start({ featureName, configName, options, inspect = false }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
         const { port, app, close, socketServer } = await this.launchHttpServer();
 
@@ -97,7 +98,12 @@ export class Application {
 
         const compiler = this.createCompiler(features, featureName, configName);
 
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(features, configurations, port, socketServer);
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
+            configurations,
+            features,
+            port,
+            inspect
+        });
 
         app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
 
@@ -126,7 +132,11 @@ export class Application {
             }
         }
 
-        app.use(nodeEnvironmentManager.middleware(options));
+        app.use(
+            nodeEnvironmentManager.middleware({
+                inspect
+            })
+        );
 
         disposables.push(() => close());
 
@@ -143,7 +153,11 @@ export class Application {
             });
         });
         if (featureName) {
-            await nodeEnvironmentManager.runEnvironment({ featureName, configName, options });
+            await nodeEnvironmentManager.runEnvironment({
+                featureName,
+                configName,
+                options: { ...options, inspect }
+            });
             disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
 
@@ -166,7 +180,7 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
 
-        const { configName: providedConfigName, featureName = defaultFeatureName, options } = runOptions;
+        const { configName: providedConfigName, featureName = defaultFeatureName, options, inspect } = runOptions;
         const disposables: Array<() => unknown> = [];
 
         const configurations = await this.readConfigs();
@@ -175,12 +189,12 @@ export class Application {
 
         const { port, close, socketServer, app } = await this.launchHttpServer();
 
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(
-            new Map(features),
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
+            features: new Map(features),
             port,
-            socketServer
-        );
+            inspect
+        });
 
         app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
 

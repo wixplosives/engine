@@ -4,7 +4,7 @@ import { join } from 'path';
 
 import { createDisposables } from '@wixc3/engine-test-kit';
 
-import { Application } from '../src/';
+import { Application } from '../src';
 
 chai.use(chaiAsPromised);
 

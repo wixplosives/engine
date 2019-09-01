@@ -10,20 +10,19 @@ Error.stackTraceLimit = 100;
 
 program.version(version);
 
-const kebabCaseToCamelCase = (currentArgument: string): string =>
-    currentArgument.slice(2).replace(/[-]\S/g, match => match.slice(1).toUpperCase());
+const kebabCaseToCamelCase = (value: string): string => value.replace(/[-]\S/g, match => match.slice(1).toUpperCase());
 
-function getProcessOptions(args: string[]) {
+function parseCliArguments(args: string[]) {
     const argumentQueue: string[] = [];
-    const options: Record<string, string> = {};
+    const options: Record<string, string | boolean> = {};
     while (args.length) {
         const currentArgument = args.shift()!;
         if (currentArgument.startsWith('--')) {
             if (argumentQueue.length) {
-                options[argumentQueue.shift()!] = argumentQueue.join(' ');
+                options[argumentQueue.shift()!] = argumentQueue.length ? argumentQueue.join(' ') : true;
                 argumentQueue.length = 0;
             }
-            argumentQueue.push(kebabCaseToCamelCase(currentArgument));
+            argumentQueue.push(kebabCaseToCamelCase(currentArgument.slice(2)));
         } else if (argumentQueue.length) {
             argumentQueue.push(currentArgument);
         } else if (args.length && !args[0].startsWith('--')) {
@@ -40,6 +39,7 @@ program
     .command('start [path]')
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
+    .option('--inspect')
     .allowUnknownOption(true)
     .action(async (path, cmd: Record<string, string | undefined>) => {
         const { feature: featureName, config: configName } = cmd;
@@ -48,11 +48,12 @@ program
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
                 configName,
-                options: getProcessOptions(process.argv.slice(3))
+                options: parseCliArguments(process.argv.slice(3)),
+                inspect: cmd.inspect ? true : false
             });
 
             if (process.send) {
-                process.send({ id: 'port', payload: { port } } as IProcessMessage<IPortMessage>);
+                process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
             }
 
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
@@ -107,7 +108,7 @@ program
             const { port } = await app.run({
                 configName,
                 featureName,
-                options: getProcessOptions(process.argv.slice(3))
+                options: parseCliArguments(process.argv.slice(3))
             });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);

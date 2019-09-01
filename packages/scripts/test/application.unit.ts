@@ -191,9 +191,7 @@ describe('Application', function() {
             const app = new Application({ basePath: nodeFeatureFixturePath });
             const runningApp = await app.start({
                 featureName: 'engine-node/x',
-                options: {
-                    inspect: ''
-                }
+                inspect: true
             });
             disposables.add('closing app', () => runningApp.close());
 
