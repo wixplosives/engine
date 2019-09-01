@@ -53,7 +53,10 @@ export class NodeEnvironmentsManager {
             const { close, port } = await this.launchEnvironment(
                 nodeEnv,
                 featureName,
-                [...this.getBaseConfig(featureName), ...(await this.getConfig(configName))],
+                [
+                    COM.use({ config: { topology: this.topology.get(featureName) } }),
+                    ...(await this.getConfig(configName))
+                ],
                 { ...baseRunOptions, ...options }
             );
             topology[nodeEnv.name] = `http://localhost:${port}/_ws`;
@@ -93,10 +96,6 @@ export class NodeEnvironmentsManager {
             await runningEnvironment.close();
         }
         this.runningEnvironments.clear();
-    }
-
-    public getBaseConfig(featureName: string) {
-        return [COM.use({ config: { topology: this.topology.get(featureName) } })] as TopLevelConfig;
     }
 
     public middleware() {
