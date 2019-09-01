@@ -27,6 +27,7 @@ import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
 const { basename, dirname, extname, join } = fs;
+export const DEFAULT_PORT = 3000;
 
 export interface IFeatureTarget {
     featureName?: string;
@@ -37,6 +38,7 @@ export interface IFeatureTarget {
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
     inspect?: boolean;
+    port?: number;
 }
 
 export interface IBuildManifest {
@@ -90,9 +92,15 @@ export class Application {
         return stats;
     }
 
-    public async start({ featureName, configName, defaultRuntimeOptions = {}, inspect = false }: IRunOptions = {}) {
+    public async start({
+        featureName,
+        configName,
+        defaultRuntimeOptions = {},
+        inspect = false,
+        port: httpServerPort = DEFAULT_PORT
+    }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
-        const { port, app, close, socketServer } = await this.launchHttpServer();
+        const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
 
         const { features, configurations, packages } = this.analyzeFeatures();
 
@@ -180,7 +188,8 @@ export class Application {
             configName: providedConfigName,
             featureName = defaultFeatureName,
             defaultRuntimeOptions,
-            inspect
+            inspect,
+            port: httpServerPort = DEFAULT_PORT
         } = runOptions;
         const disposables: Array<() => unknown> = [];
 
@@ -188,7 +197,7 @@ export class Application {
 
         const configName = providedConfigName || defaultConfigName;
 
-        const { port, close, socketServer, app } = await this.launchHttpServer();
+        const { port, close, socketServer, app } = await this.launchHttpServer(httpServerPort);
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
@@ -337,10 +346,10 @@ export class Application {
         return packageToConfigurationMapping;
     }
 
-    private async launchHttpServer() {
+    private async launchHttpServer(httpServerPort: number) {
         const app = express();
 
-        const { port, httpServer } = await safeListeningHttpServer(3000, app);
+        const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
 
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));

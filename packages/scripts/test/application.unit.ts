@@ -201,6 +201,16 @@ describe('Application', function() {
                 expect(await getBodyContent(page)).to.equal('Hello');
             });
         });
+
+        it('runs http server on different port', async () => {
+            const app = new Application({
+                basePath: engineFeatureFixturePath
+            });
+
+            const { port, close } = await app.start({ featureName: 'engine-single/x', port: 8080 });
+            disposables.add(() => close());
+            expect(port, 'application is not created on port 8080').to.eq(8080);
+        });
     });
 
     describe('run', function() {
