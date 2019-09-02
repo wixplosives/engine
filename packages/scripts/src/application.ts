@@ -21,7 +21,9 @@ import { SetMultiMap } from '@file-services/utils';
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
+import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
+import { createCommunication } from './process-communication';
 import { IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 
@@ -97,7 +99,7 @@ export class Application {
         configName,
         runtimeOptions: defaultRuntimeOptions = {},
         inspect = false,
-        port: httpServerPort = DEFAULT_PORT
+        port: httpServerPort
     }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
         const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
@@ -189,7 +191,7 @@ export class Application {
             featureName = defaultFeatureName,
             runtimeOptions: defaultRuntimeOptions,
             inspect,
-            port: httpServerPort = DEFAULT_PORT
+            port: httpServerPort
         } = runOptions;
         const disposables: Array<() => unknown> = [];
 
@@ -231,6 +233,28 @@ export class Application {
                 disposables.length = 0;
             }
         };
+    }
+
+    public async remote({ port: preferedPort }: IRunOptions = {}) {
+        if (!process.send) {
+            throw new Error('Cant launch remote from main process');
+        }
+
+        await this.loadEngineConfig();
+        const { socketServer, close, port } = await this.launchHttpServer(preferedPort);
+        const forkedProcess = new ForkedProcess(process);
+        createCommunication(forkedProcess, socketServer, { port, onClose: () => close() });
+        forkedProcess.postMessage({ id: 'init' });
+    }
+
+    private async loadEngineConfig() {
+        const engineConfig = await fs.promises.findClosestFile(this.basePath, 'engine.config.js');
+        if (engineConfig) {
+            const { require: requiredModules } = await import(engineConfig);
+            for (const requiredModule of requiredModules) {
+                await import(requiredModule);
+            }
+        }
     }
 
     private async readConfigs(): Promise<SetMultiMap<string, IConfigDefinition>> {
@@ -346,7 +370,7 @@ export class Application {
         return packageToConfigurationMapping;
     }
 
-    private async launchHttpServer(httpServerPort: number) {
+    private async launchHttpServer(httpServerPort: number = DEFAULT_PORT) {
         const app = express();
 
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);

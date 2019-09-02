@@ -27,7 +27,7 @@ export interface RunEnvironmentOptions {
     runtimeOptions?: Record<string, string | boolean>;
 }
 
-const remoteEnvironmentEntryFile = require.resolve('../static/init-remote-environment.js');
+const cliEntry = require.resolve('../cli');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
@@ -204,8 +204,9 @@ export class NodeEnvironmentsManager {
     }
 
     private async startRemoteNodeEnvironment(options: ServerEnvironmentOptions) {
-        const remoteNodeEnvironment = new RemoteNodeEnvironment(remoteEnvironmentEntryFile, {
-            inspect: this.options.inspect
+        const remoteNodeEnvironment = new RemoteNodeEnvironment(cliEntry, {
+            inspect: this.options.inspect,
+            port: this.options.port
         });
         const port = await remoteNodeEnvironment.getRemotePort();
         const startMessage = new Promise(resolve => {

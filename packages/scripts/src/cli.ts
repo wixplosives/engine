@@ -131,6 +131,20 @@ program.command('clean [path]').action(async path => {
     }
 });
 
+program
+    .command('remote [path]')
+    .option('-p --port <port>')
+    .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
+        try {
+            const { port: httpServerPort } = cmd;
+            const app = new Application({ basePath: path });
+            const port = httpServerPort ? Number(httpServerPort) : undefined;
+            await app.remote({ port });
+        } catch (e) {
+            printErrorAndExit(e);
+        }
+    });
+
 program.parse(process.argv);
 
 function printErrorAndExit(message: unknown) {

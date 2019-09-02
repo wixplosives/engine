@@ -121,7 +121,7 @@ export interface IPortMessage {
     port: number;
 }
 
-export type IEnvironmentMessageID = 'start' | 'close' | 'port-request';
+export type IEnvironmentMessageID = 'start' | 'close' | 'port-request' | 'init';
 
 export interface ICommunicationMessage {
     id: IEnvironmentMessageID;
