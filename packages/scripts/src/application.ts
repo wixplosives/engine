@@ -383,12 +383,6 @@ export class Application {
         httpServer.on('connection', socket => {
             connections.push(socket);
         });
-        const close = () => {
-            for (const connection of connections) {
-                connection.destroy();
-            }
-            connections.length = 0;
-        };
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
         const socketServer = io(httpServer);
@@ -396,7 +390,10 @@ export class Application {
         return {
             close: async () => {
                 await new Promise(res => {
-                    close();
+                    for (const connection of connections) {
+                        connection.destroy();
+                    }
+                    connections.length = 0;
                     socketServer.close(res);
                 });
             },
