@@ -121,7 +121,7 @@ export interface IPortMessage {
     port: number;
 }
 
-export type IEnvironmentMessageID = 'start' | 'close' | 'port-request' | 'init';
+export type IEnvironmentMessageID = 'start' | 'close' | 'port-request' | 'initiated';
 
 export interface ICommunicationMessage {
     id: IEnvironmentMessageID;
@@ -207,4 +207,8 @@ export interface IFeatureDefinition extends IFeatureModule {
     resolvedContexts: Record<string, string>;
     isRoot: boolean;
     toJSON(): unknown;
+}
+
+export interface EngineConfig {
+    require?: string[];
 }

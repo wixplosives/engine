@@ -19,12 +19,13 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { SetMultiMap } from '@file-services/utils';
 import { loadFeaturesFromPackages } from './analyze-feature';
+import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
-import { createCommunication } from './process-communication';
-import { IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
+import { createIPC } from './process-communication';
+import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
@@ -235,24 +236,28 @@ export class Application {
         };
     }
 
-    public async remote({ port: preferedPort }: IRunOptions = {}) {
+    public async remote({ port: preferredPort }: IRunOptions = {}) {
         if (!process.send) {
-            throw new Error('Cant launch remote from main process');
+            throw new Error('"remote" command can only be used in a forked process');
         }
 
         await this.loadEngineConfig();
-        const { socketServer, close, port } = await this.launchHttpServer(preferedPort);
-        const forkedProcess = new ForkedProcess(process);
-        createCommunication(forkedProcess, socketServer, { port, onClose: () => close() });
-        forkedProcess.postMessage({ id: 'init' });
+        const { socketServer, close, port } = await this.launchHttpServer(preferredPort);
+        const parentProcess = new ForkedProcess(process);
+        createIPC(parentProcess, socketServer, { port, onClose: close });
+        parentProcess.postMessage({ id: 'initiated' });
     }
 
     private async loadEngineConfig() {
-        const engineConfig = await fs.promises.findClosestFile(this.basePath, 'engine.config.js');
-        if (engineConfig) {
-            const { require: requiredModules } = await import(engineConfig);
-            for (const requiredModule of requiredModules) {
-                await import(requiredModule);
+        const engineConfigFilePath = await fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
+        if (engineConfigFilePath) {
+            try {
+                const { require: requiredModules = [] } = (await import(engineConfigFilePath)) as EngineConfig;
+                for (const requiredModule of requiredModules) {
+                    await import(requiredModule);
+                }
+            } catch (ex) {
+                throw new Error(`failed evaluating config file: ${engineConfigFilePath}`);
             }
         }
     }
@@ -370,7 +375,7 @@ export class Application {
         return packageToConfigurationMapping;
     }
 
-    private async launchHttpServer(httpServerPort: number = DEFAULT_PORT) {
+    private async launchHttpServer(httpServerPort = DEFAULT_PORT) {
         const app = express();
 
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);

@@ -15,7 +15,7 @@ export interface ICreateCommunicationOptions {
     onClose?: () => unknown;
 }
 
-export function createCommunication(
+export function createIPC(
     remoteProcess: RemoteProcess,
     socketServer: io.Server,
     { port, onClose }: ICreateCommunicationOptions

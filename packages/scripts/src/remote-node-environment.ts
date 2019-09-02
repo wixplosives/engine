@@ -1,23 +1,39 @@
 import { fork } from 'child_process';
 import { ForkedProcess, ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '../src';
 
-export interface IRemoteNodeEnvironmentOptions {
+export interface IStartRemoteNodeEnvironmentOptions {
     port: number;
     inspect?: boolean;
 }
 
+export async function startRemoteNodeEnvironment(
+    entryFilePath: string,
+    { inspect, port }: IStartRemoteNodeEnvironmentOptions
+) {
+    // Roman: add this lines after worker threads will be debuggable
+    // the current behavior should be a fallback
+
+    // try {
+    // const WorkerThreadsModule = await import('worker_threads');
+    // return new RemoteNodeEnvironment(new WorkerThreadsModule.Worker(entityFilePath, {}));
+    // } catch {
+    const execArgv = inspect ? ['--inspect'] : [];
+    const childProc = fork(entryFilePath, ['remote', '-p', `${port}`], { execArgv });
+    await new Promise(res => {
+        childProc.once('message', res);
+    });
+    // tslint:disable-next-line: no-console
+    childProc.on('error', console.error);
+    // }
+    return new RemoteNodeEnvironment(new ForkedProcess(childProc));
+}
+
 export class RemoteNodeEnvironment {
-    private childEnv: RemoteProcess | undefined;
     private messageHandlers = new Set<(message: ICommunicationMessage) => void>();
 
-    constructor(private entryFilePath: string, private options: IRemoteNodeEnvironmentOptions) {}
+    constructor(private childEnv: RemoteProcess) {}
 
     public async getRemotePort(): Promise<number> {
-        await this.init();
-        if (!this.childEnv) {
-            throw new Error('Remote environment is not running');
-        }
-
         return new Promise(async resolve => {
             this.subscribe(message => {
                 if (isEnvironmentPortMessage(message)) {
@@ -29,32 +45,20 @@ export class RemoteNodeEnvironment {
     }
 
     public subscribe(handler: (message: ICommunicationMessage) => void) {
-        if (!this.childEnv) {
-            throw new Error('Remote environment is not running');
-        }
         this.messageHandlers.add(handler);
         this.childEnv.on('message', handler);
     }
 
     public unsubscribe(handler: (message: ICommunicationMessage) => void) {
-        if (!this.childEnv) {
-            throw new Error('Remote environment is not running');
-        }
         this.messageHandlers.delete(handler);
         this.childEnv.off('message', handler);
     }
 
     public postMessage(message: ICommunicationMessage) {
-        if (!this.childEnv) {
-            throw new Error('Remote environment is not running');
-        }
         this.childEnv.postMessage(message);
     }
 
     public dispose() {
-        if (!this.childEnv) {
-            return;
-        }
         for (const handler of this.messageHandlers) {
             this.childEnv.off('message', handler);
         }
@@ -62,32 +66,5 @@ export class RemoteNodeEnvironment {
         if (this.childEnv && this.childEnv.terminate) {
             this.childEnv.terminate();
         }
-    }
-
-    private async init() {
-        return new Promise(resolve => {
-            this.childEnv = this.startRemoteEnvironment(this.options);
-            this.subscribe(message => {
-                if (message.id === 'init') {
-                    resolve();
-                }
-            });
-        });
-    }
-
-    private startRemoteEnvironment({ inspect, port }: IRemoteNodeEnvironmentOptions): RemoteProcess {
-        // Roman: add this lines after worker threads will be debuggable
-        // the current behavior should be a fallback
-
-        // try {
-        // const WorkerThreadsModule = await import('worker_threads');
-        // return new WorkerThreadsModule.Worker(this.entityFilePath, {});
-        // } catch {
-        const execArgv = inspect ? ['--inspect'] : [];
-        const proc = fork(this.entryFilePath, ['remote', '-p', `${port}`], { execArgv });
-        // tslint:disable-next-line: no-console
-        proc.on('error', console.error);
-        return new ForkedProcess(proc);
-        // }
     }
 }
