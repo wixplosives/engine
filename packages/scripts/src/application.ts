@@ -18,6 +18,7 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { SetMultiMap } from '@file-services/utils';
+import { Socket } from 'net';
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import { createConfigMiddleware } from './config-middleware';
@@ -377,15 +378,28 @@ export class Application {
 
     private async launchHttpServer(httpServerPort = DEFAULT_PORT) {
         const app = express();
-
+        const connections: Socket[] = [];
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
-
+        httpServer.on('connection', socket => {
+            connections.push(socket);
+        });
+        const close = () => {
+            for (const connection of connections) {
+                connection.destroy();
+            }
+            connections.length = 0;
+        };
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
         const socketServer = io(httpServer);
 
         return {
-            close: async () => new Promise(res => socketServer.close(res)),
+            close: async () => {
+                await new Promise(res => {
+                    close();
+                    socketServer.close(res);
+                });
+            },
             port,
             app,
             socketServer
