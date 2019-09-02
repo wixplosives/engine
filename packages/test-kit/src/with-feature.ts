@@ -119,7 +119,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             await executableApp.runFeature({
                 featureName,
                 configName,
-                defaultRuntimeOptions: runOptions
+                runtimeOptions: runOptions
             });
 
             disposeAfterEach.add(async () =>

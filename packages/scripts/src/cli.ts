@@ -49,7 +49,7 @@ program
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
                 configName,
-                defaultRuntimeOptions: parseCliArguments(process.argv.slice(3)),
+                runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect: cmd.inspect ? true : false,
                 port: httpServerPort ? Number(httpServerPort) : undefined
             });
@@ -111,7 +111,7 @@ program
             const { port } = await app.run({
                 configName,
                 featureName,
-                defaultRuntimeOptions: parseCliArguments(process.argv.slice(3)),
+                runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 port: httpServerPort ? Number(httpServerPort) : undefined
             });
             console.log(`Listening:`);

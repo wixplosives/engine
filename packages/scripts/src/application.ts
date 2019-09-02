@@ -32,7 +32,7 @@ export const DEFAULT_PORT = 3000;
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
-    defaultRuntimeOptions?: Record<string, string | boolean>;
+    runtimeOptions?: Record<string, string | boolean>;
 }
 
 export interface IRunOptions extends IFeatureTarget {
@@ -95,7 +95,7 @@ export class Application {
     public async start({
         featureName,
         configName,
-        defaultRuntimeOptions = {},
+        runtimeOptions: defaultRuntimeOptions = {},
         inspect = false,
         port: httpServerPort = DEFAULT_PORT
     }: IRunOptions = {}) {
@@ -187,7 +187,7 @@ export class Application {
         const {
             configName: providedConfigName,
             featureName = defaultFeatureName,
-            defaultRuntimeOptions,
+            runtimeOptions: defaultRuntimeOptions,
             inspect,
             port: httpServerPort = DEFAULT_PORT
         } = runOptions;
