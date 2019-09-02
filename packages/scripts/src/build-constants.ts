@@ -5,6 +5,7 @@ export const FEATURE_FILENAME_HINT = '.feature.';
 export const CONFIG_FILENAME_HINT = '.config.';
 export const ENV_FILENAME_HINT = '.env.';
 export const CONTEXT_FILENAME_HINT = '.context.';
+export const ENGINE_CONFIG_FILE_NAME = 'engine.config.js';
 
 // Packages
 export const CORE_PACKAGE = '@wixc3/engine-core';

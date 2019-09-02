@@ -1,8 +1,5 @@
-import { safeListeningHttpServer } from 'create-listening-server';
-import express from 'express';
 import io from 'socket.io';
 
-import { ForkedProcess } from './forked-process';
 import { runNodeEnvironment } from './run-node-environment';
 import {
     ICommunicationMessage,
@@ -13,30 +10,17 @@ import {
     RemoteProcess
 } from './types';
 
-function getParentProcess(): RemoteProcess | null {
-    // this is commented for when we will be able to debug with them.
-    // try {
-    //     const WorkerThreads = await import('worker_threads');
-    //     return WorkerThreads.parentPort;
-    // } catch {
-    if (process.send) {
-        return new ForkedProcess(process);
-    }
-    return null;
-    // }
+export interface ICreateCommunicationOptions {
+    port: number;
+    onClose?: () => unknown;
 }
 
-const parentProcess = getParentProcess();
-if (parentProcess) {
-    // tslint:disable-next-line: no-floating-promises
-    createCommunication(parentProcess);
-}
-
-export async function createCommunication(remoteProcess: RemoteProcess) {
-    const app = express();
+export function createIPC(
+    remoteProcess: RemoteProcess,
+    socketServer: io.Server,
+    { port, onClose }: ICreateCommunicationOptions
+) {
     const environments: Record<string, { close: () => unknown }> = {};
-    const { httpServer, port } = await safeListeningHttpServer(3000, app);
-    const socketServer = io(httpServer);
 
     const messageHandler = async (message: ICommunicationMessage) => {
         if (isEnvironmentPortMessage(message)) {
@@ -48,6 +32,9 @@ export async function createCommunication(remoteProcess: RemoteProcess) {
             await environments[message.envName].close();
             remoteProcess.postMessage({ id: 'close' });
             remoteProcess.off('message', messageHandler);
+            if (onClose) {
+                await onClose();
+            }
         }
     };
 

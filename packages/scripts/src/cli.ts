@@ -104,7 +104,7 @@ program
     .option('--out-dir <outDir>')
     .option('-p ,--port <port>')
     .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
-        const { config: configName, outDir = 'dist', feature: featureName, port: httpServerPort } = cmd;
+        const { config: configName, outDir = 'dist', feature: featureName, port: preferredPort } = cmd;
 
         try {
             const app = new Application({ basePath: path, outputPath: join(path, outDir) });
@@ -112,7 +112,7 @@ program
                 configName,
                 featureName,
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
-                port: httpServerPort ? Number(httpServerPort) : undefined
+                port: preferredPort ? parseInt(preferredPort, 10) : undefined
             });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);
@@ -130,6 +130,20 @@ program.command('clean [path]').action(async path => {
         printErrorAndExit(e);
     }
 });
+
+program
+    .command('remote [path]')
+    .option('-p --port <port>')
+    .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
+        try {
+            const { port: preferredPort } = cmd;
+            const app = new Application({ basePath: path });
+            const port = preferredPort ? parseInt(preferredPort, 10) : undefined;
+            await app.remote({ port });
+        } catch (e) {
+            printErrorAndExit(e);
+        }
+    });
 
 program.parse(process.argv);
 

@@ -5,7 +5,7 @@ import io from 'socket.io';
 import { SetMultiMap } from '@file-services/utils';
 import { COM, flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 
-import { RemoteNodeEnvironment } from './remote-node-environment';
+import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runNodeEnvironment } from './run-node-environment';
 import {
     IConfigDefinition,
@@ -27,7 +27,7 @@ export interface RunEnvironmentOptions {
     runtimeOptions?: Record<string, string | boolean>;
 }
 
-const remoteEnvironmentEntryFile = require.resolve('../static/init-remote-environment.js');
+const cliEntry = require.resolve('../cli');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
@@ -204,8 +204,9 @@ export class NodeEnvironmentsManager {
     }
 
     private async startRemoteNodeEnvironment(options: ServerEnvironmentOptions) {
-        const remoteNodeEnvironment = new RemoteNodeEnvironment(remoteEnvironmentEntryFile, {
-            inspect: this.options.inspect
+        const remoteNodeEnvironment = await startRemoteNodeEnvironment(cliEntry, {
+            inspect: this.options.inspect,
+            port: this.options.port
         });
         const port = await remoteNodeEnvironment.getRemotePort();
         const startMessage = new Promise(resolve => {

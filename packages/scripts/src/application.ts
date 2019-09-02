@@ -18,11 +18,15 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
 import { SetMultiMap } from '@file-services/utils';
+import { Socket } from 'net';
 import { loadFeaturesFromPackages } from './analyze-feature';
+import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import { createConfigMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
+import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
-import { IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
+import { createIPC } from './process-communication';
+import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
@@ -97,7 +101,7 @@ export class Application {
         configName,
         runtimeOptions: defaultRuntimeOptions = {},
         inspect = false,
-        port: httpServerPort = DEFAULT_PORT
+        port: httpServerPort
     }: IRunOptions = {}) {
         const disposables: Array<() => unknown> = [];
         const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
@@ -189,7 +193,7 @@ export class Application {
             featureName = defaultFeatureName,
             runtimeOptions: defaultRuntimeOptions,
             inspect,
-            port: httpServerPort = DEFAULT_PORT
+            port: httpServerPort
         } = runOptions;
         const disposables: Array<() => unknown> = [];
 
@@ -231,6 +235,32 @@ export class Application {
                 disposables.length = 0;
             }
         };
+    }
+
+    public async remote({ port: preferredPort }: IRunOptions = {}) {
+        if (!process.send) {
+            throw new Error('"remote" command can only be used in a forked process');
+        }
+
+        await this.loadEngineConfig();
+        const { socketServer, close, port } = await this.launchHttpServer(preferredPort);
+        const parentProcess = new ForkedProcess(process);
+        createIPC(parentProcess, socketServer, { port, onClose: close });
+        parentProcess.postMessage({ id: 'initiated' });
+    }
+
+    private async loadEngineConfig() {
+        const engineConfigFilePath = await fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
+        if (engineConfigFilePath) {
+            try {
+                const { require: requiredModules = [] } = (await import(engineConfigFilePath)) as EngineConfig;
+                for (const requiredModule of requiredModules) {
+                    await import(requiredModule);
+                }
+            } catch (ex) {
+                throw new Error(`failed evaluating config file: ${engineConfigFilePath}`);
+            }
+        }
     }
 
     private async readConfigs(): Promise<SetMultiMap<string, IConfigDefinition>> {
@@ -346,17 +376,27 @@ export class Application {
         return packageToConfigurationMapping;
     }
 
-    private async launchHttpServer(httpServerPort: number) {
+    private async launchHttpServer(httpServerPort = DEFAULT_PORT) {
         const app = express();
-
+        const connections: Socket[] = [];
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
-
+        httpServer.on('connection', socket => {
+            connections.push(socket);
+        });
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
         const socketServer = io(httpServer);
 
         return {
-            close: async () => new Promise(res => socketServer.close(res)),
+            close: async () => {
+                await new Promise(res => {
+                    for (const connection of connections) {
+                        connection.destroy();
+                    }
+                    connections.length = 0;
+                    socketServer.close(res);
+                });
+            },
             port,
             app,
             socketServer
