@@ -151,5 +151,5 @@ export function dontRun() {
         };
     });
 
-    new RuntimeEngine([]).run(addPanel);
+    new RuntimeEngine([]).run(addPanel, 'main');
 }
