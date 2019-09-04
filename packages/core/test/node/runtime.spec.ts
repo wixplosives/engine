@@ -26,14 +26,14 @@ chai.use(chaiAsPromised);
 
 describe('Feature', () => {
     it('single feature entry', () => {
-        const f = new Feature({
+        const entryFeature = new Feature({
             id: 'test',
             api: {
                 config: Config.withType<{ name: string }>().defineEntity({ name: 'test' })
             }
         });
 
-        expect(runEngine(f).get(f).api.config.name).to.be.equal('test');
+        expect(runEngine({ entryFeature }).get(entryFeature).api.config.name).to.be.equal('test');
     });
 
     it('single feature entry with dependencies', () => {
@@ -51,7 +51,9 @@ describe('Feature', () => {
                 config: Config.withType<{ name: string }>().defineEntity({ name: 'test2' })
             }
         });
-        const engine = runEngine([f1, f2]);
+        const engine = runEngine({
+            entryFeature: [f1, f2]
+        });
 
         expect(engine.get(f1).api.config.name).to.equal('test1');
         expect(engine.get(f2).api.config.name).to.equal('test2');
@@ -59,7 +61,7 @@ describe('Feature', () => {
 
     it('feature run stage', () => {
         const f0 = new Feature({ id: 'test', api: {} });
-        const f1 = new Feature({ id: 'test', api: {}, dependencies: [f0] });
+        const entryFeature = new Feature({ id: 'test', api: {}, dependencies: [f0] });
         const calls: string[] = [];
 
         f0.setup(AllEnvironments, ({ run }) => {
@@ -69,14 +71,14 @@ describe('Feature', () => {
             return null;
         });
 
-        f1.setup(AllEnvironments, ({ run }) => {
+        entryFeature.setup(AllEnvironments, ({ run }) => {
             run(() => {
                 calls.push('f1 run');
             });
             return null;
         });
 
-        runEngine(f1);
+        runEngine({ entryFeature });
 
         expect(calls).to.eql(['f0 run', 'f1 run']);
     });
@@ -102,9 +104,22 @@ describe('Feature', () => {
             return null;
         });
 
-        runEngine([f0, f1, f0, f1]);
+        runEngine({ entryFeature: [f0, f1, f0, f1] });
 
         expect(calls).to.eql(['f0 setup', 'f1 setup', 'f0 run', 'f1 run']);
+    });
+
+    it('feature setup/run stage should happen per environment', () => {
+        const spyEnvOne = spy();
+        const spyEnvTwo = spy();
+        const oneEnv = new Environment('one', 'node', 'single');
+        const twoEnv = new Environment('two', 'node', 'single');
+        const entryFeature = new Feature({ id: 'test', api: {} });
+        entryFeature.setup(oneEnv, spyEnvOne);
+        entryFeature.setup(twoEnv, spyEnvTwo);
+        runEngine({ entryFeature, envName: 'one' });
+        expect(spyEnvOne).to.have.callCount(1);
+        expect(spyEnvTwo).to.have.callCount(0);
     });
 
     it('feature should provide requirements (outputs) of each environment', () => {
@@ -137,7 +152,7 @@ describe('Feature', () => {
                 }
             };
         });
-        const { service1, service2 } = runEngine([f0]).get(f0).api;
+        const { service1, service2 } = runEngine({ entryFeature: [f0], envName: 'main1' }).get(f0).api;
         expect(service1.echo('ECHO')).to.eql('ECHO-main1');
         expect(service2.echo('ECHO')).to.eql('ECHO-main2');
     });
@@ -175,7 +190,7 @@ describe('Feature', () => {
 
     describe('Feature Config', () => {
         it('support multiple top level partial configs', () => {
-            const test = new Feature({
+            const entryFeature = new Feature({
                 id: 'test',
                 api: {
                     config: Config.withType<{ a: string; b: string; c: number[] }>().defineEntity({
@@ -186,16 +201,19 @@ describe('Feature', () => {
                 }
             });
 
-            const engine = runEngine(test, [
-                test.use({
-                    config: { a: 'a' }
-                }),
-                test.use({
-                    config: { b: 'b', c: [1] }
-                })
-            ]);
+            const engine = runEngine({
+                entryFeature,
+                topLevelConfig: [
+                    entryFeature.use({
+                        config: { a: 'a' }
+                    }),
+                    entryFeature.use({
+                        config: { b: 'b', c: [1] }
+                    })
+                ]
+            });
 
-            expect(engine.get(test).api.config).to.be.eql({
+            expect(engine.get(entryFeature).api.config).to.be.eql({
                 a: 'a',
                 b: 'b',
                 c: [1]
@@ -203,7 +221,7 @@ describe('Feature', () => {
         });
 
         it('support config merger', () => {
-            const test = new Feature({
+            const entryFeature = new Feature({
                 id: 'test',
                 api: {
                     config: Config.withType<{ a: string; b: string; c: number[] }>().defineEntity(
@@ -219,16 +237,19 @@ describe('Feature', () => {
                 }
             });
 
-            const engine = runEngine(test, [
-                test.use({
-                    config: { a: 'a', c: [1] }
-                }),
-                test.use({
-                    config: { b: 'b', c: [2] }
-                })
-            ]);
+            const engine = runEngine({
+                entryFeature,
+                topLevelConfig: [
+                    entryFeature.use({
+                        config: { a: 'a', c: [1] }
+                    }),
+                    entryFeature.use({
+                        config: { b: 'b', c: [2] }
+                    })
+                ]
+            });
 
-            expect(engine.get(test).api.config).to.be.eql({
+            expect(engine.get(entryFeature).api.config).to.be.eql({
                 a: 'a',
                 b: 'b',
                 c: [1, 2]
@@ -254,28 +275,30 @@ describe('Feature', () => {
                 };
             });
 
-            const f1 = new Feature({
+            const envName = 'main';
+            const entryFeature = new Feature({
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup('main', ({}, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
                 return null;
             });
 
-            const engine = runEngine(f1);
+            const engine = runEngine({ entryFeature, envName });
             expect(engine.get(maps).api.retrieveService.getValue('1')).to.be.equal('test');
         });
 
         it('two features that adds to slots', () => {
+            const envName = 'main';
             const maps = new Feature({
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity('main')
+                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity(envName)
                 }
-            }).setup('main', ({ mapSlot }) => {
+            }).setup(envName, ({ mapSlot }) => {
                 return {
                     retrieveService: {
                         getValue(key: string) {
@@ -289,7 +312,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup('main', ({}, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
                 return null;
@@ -299,24 +322,25 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup('main', ({}, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
                 return null;
             });
 
-            const engine = runEngine([f1, f2]);
+            const engine = runEngine({ entryFeature: [f1, f2], envName });
             expect(engine.get(maps).api.retrieveService.getValue('1')).to.be.equal('test');
             expect(engine.get(maps).api.retrieveService.getValue('2')).to.be.equal('test2');
         });
 
         it('try to get value from the slot, when the key is not in the map', () => {
+            const envName = 'main';
             const maps = new Feature({
                 id: 'testSlotsFeature',
                 api: {
-                    mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity('main')
+                    mapSlot: MapSlot.withType<string, string>().defineEntity(envName),
+                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity(envName)
                 }
-            }).setup('main', ({ mapSlot }) => {
+            }).setup(envName, ({ mapSlot }) => {
                 return {
                     retrieveService: {
                         getValue(key: string) {
@@ -326,15 +350,15 @@ describe('Feature', () => {
                 };
             });
 
-            const f1 = new Feature({
+            const entryFeature = new Feature({
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup('main', ({}, {}) => {
+            }).setup(envName, ({}, {}) => {
                 return null;
             });
 
-            const engine = runEngine(f1);
+            const engine = runEngine({ entryFeature, envName });
 
             expect(engine.get(maps).api.retrieveService.getValue('1')).to.be.equal(null);
         });
@@ -343,13 +367,14 @@ describe('Feature', () => {
 
 describe('feature interaction', () => {
     it('should run engine with two features interacting', () => {
+        const envName = 'main';
         const echoFeature = new Feature({
             id: 'echoFeature',
             api: {
-                transformers: Slot.withType<(s: string) => string>().defineEntity('main'),
-                echoService: Service.withType<{ echo(s: string): string }>().defineEntity('main')
+                transformers: Slot.withType<(s: string) => string>().defineEntity(envName),
+                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(envName)
             }
-        }).setup('main', ({ transformers }) => {
+        }).setup(envName, ({ transformers }) => {
             return {
                 echoService: {
                     echo(s: string) {
@@ -363,27 +388,31 @@ describe('feature interaction', () => {
 
         ////////////////////////////////////////////////////////
 
-        const feature2 = new Feature({
+        const entryFeature = new Feature({
             id: 'feature2',
             dependencies: [echoFeature],
             api: {
                 config: Config.withType<{ prefix: string; suffix: string }>().defineEntity({ prefix: '', suffix: '' })
             }
-        }).setup('main', ({ config }, { echoFeature: { transformers } }) => {
+        }).setup(envName, ({ config }, { echoFeature: { transformers } }) => {
             transformers.register((s: string) => {
                 return `${config.prefix}${s}${config.suffix}`;
             });
             return null;
         });
 
-        const engine = runEngine(feature2, [
-            feature2.use({
-                config: { prefix: '!' }
-            }),
-            feature2.use({
-                config: { suffix: '?' }
-            })
-        ]);
+        const engine = runEngine({
+            entryFeature,
+            topLevelConfig: [
+                entryFeature.use({
+                    config: { prefix: '!' }
+                }),
+                entryFeature.use({
+                    config: { suffix: '?' }
+                })
+            ],
+            envName
+        });
 
         expect(engine.get(echoFeature).api.echoService.echo('yoo')).to.be.equal('!yoo?');
     });
@@ -398,7 +427,7 @@ describe('Contextual environments', () => {
             name: string;
         }
 
-        const echoFeature = new Feature({
+        const entryFeature = new Feature({
             id: 'echoFeature',
             dependencies: [COM],
             api: {
@@ -410,19 +439,19 @@ describe('Contextual environments', () => {
             }
         });
 
-        echoFeature.setupContext(processing, 'processingContext', () => {
+        entryFeature.setupContext(processing, 'processingContext', () => {
             return {
                 name: 'test'
             };
         });
 
-        echoFeature.setupContext(processing, 'processingContext2', () => {
+        entryFeature.setupContext(processing, 'processingContext2', () => {
             return {
                 age: 1
             };
         });
 
-        echoFeature.setup(processing, ({}, {}, { processingContext: { name }, processingContext2: { age } }) => {
+        entryFeature.setup(processing, ({}, {}, { processingContext: { name }, processingContext2: { age } }) => {
             return {
                 echoService: {
                     echo(s: string) {
@@ -432,73 +461,87 @@ describe('Contextual environments', () => {
             };
         });
 
-        const engine = runEngine(echoFeature);
+        const engine = runEngine({ entryFeature, envName: processing.env });
 
-        expect(await engine.get(echoFeature).api.echoService.echo('hello')).to.eq('hello test 1');
+        expect(await engine.get(entryFeature).api.echoService.echo('hello')).to.eq('hello test 1');
     });
 });
 
 describe('feature disposal', () => {
     it('disposes a feature on engine dispose call', async () => {
-        const mainEnv = new Environment('main', 'window', 'single');
-        const disposableFeature = new Feature({
+        const envName = 'main';
+        const mainEnv = new Environment(envName, 'window', 'single');
+        const entryFeature = new Feature({
             id: 'test',
             api: {}
         });
         const dispose = spy(() => Promise.resolve());
-        disposableFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
             return null;
         });
 
-        const engine = runEngine(disposableFeature);
+        const engine = runEngine({
+            entryFeature,
+            envName
+        });
 
-        await engine.dispose(disposableFeature);
+        await engine.dispose(entryFeature, 'main');
 
         expect(dispose).to.have.have.callCount(1);
     });
 
     it('allows feature to register to onDispose several times', async () => {
-        const mainEnv = new Environment('main', 'window', 'single');
-        const disposableFeature = new Feature({
+        const envName = 'main';
+        const mainEnv = new Environment(envName, 'window', 'single');
+        const entryFeature = new Feature({
             id: 'test',
             api: {}
         });
         const dispose = spy(() => Promise.resolve());
+        const dispose2 = spy(() => Promise.resolve());
 
-        disposableFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
-            onDispose(dispose);
+            onDispose(dispose2);
 
             return null;
         });
 
-        const engine = runEngine(disposableFeature);
+        const engine = runEngine({
+            entryFeature,
+            envName
+        });
 
-        await engine.dispose(disposableFeature);
+        await engine.dispose(entryFeature, 'main');
 
-        expect(dispose).to.have.have.callCount(2);
+        expect(dispose).to.have.have.callCount(1);
+        expect(dispose2).to.have.have.callCount(1);
     });
 
     it('throws an error if on of the onDispose functiones was rejected', async () => {
-        const mainEnv = new Environment('main', 'window', 'single');
-        const disposableFeature = new Feature({
+        const envName = 'main';
+        const mainEnv = new Environment(envName, 'window', 'single');
+        const entryFeature = new Feature({
             id: 'test',
             api: {}
         });
         const disposeFirst = spy(() => Promise.resolve());
         const disposeSecond = spy(() => Promise.reject('err'));
 
-        disposableFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(disposeFirst);
             onDispose(disposeSecond);
 
             return null;
         });
 
-        const engine = runEngine(disposableFeature);
+        const engine = runEngine({
+            entryFeature,
+            envName
+        });
 
-        await expect(engine.dispose(disposableFeature)).to.be.rejectedWith('err');
+        await expect(engine.dispose(entryFeature, 'main')).to.be.rejectedWith('err');
 
         expect(disposeFirst).to.have.have.callCount(1);
         expect(disposeSecond).to.have.have.callCount(1);

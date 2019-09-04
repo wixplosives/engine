@@ -29,7 +29,8 @@ export async function runNodeEnvironment(
                 }
             })
         ],
-        options: new Map(options)
+        options: new Map(options),
+        envName: name
     });
 
     return {

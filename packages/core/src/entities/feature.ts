@@ -1,3 +1,4 @@
+import { SetMultiMap } from '@file-services/utils';
 import { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, DISPOSE, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import {
@@ -20,38 +21,41 @@ import { Environment, testEnvironmentCollision, Universal } from './env';
 
 export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], API extends EntityMap> {
     private running = false;
-    private runHandlers: Array<() => void> = [];
-    private disposeHandlers: DisposeFunction[] = [];
+    private runHandlers = new SetMultiMap<string, () => void>();
+    private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
 
     constructor(
         public feature: T,
         public api: MapToProxyType<API>,
         public dependencies: RunningFeatures<Deps, string>
     ) {}
-    public addRunHandler(fn: () => void) {
-        this.runHandlers.push(fn);
+
+    public addRunHandler(fn: () => void, envName: string) {
+        this.runHandlers.add(envName, fn);
     }
-    public addOnDisposeHandler(fn: DisposeFunction) {
-        this.disposeHandlers.push(fn);
+    public addOnDisposeHandler(fn: DisposeFunction, envName: string) {
+        this.disposeHandlers.add(envName, fn);
     }
-    public [RUN](context: RuntimeEngine) {
+    public [RUN](context: RuntimeEngine, envName: string) {
         if (this.running) {
             return;
         }
         this.running = true;
         for (const dep of this.feature.dependencies) {
-            context.runFeature(dep);
+            context.runFeature(dep, envName);
         }
-        for (const handler of this.runHandlers) {
+        const envRunHandlers = this.runHandlers.get(envName) || [];
+        for (const handler of envRunHandlers) {
             handler();
         }
     }
 
-    public async [DISPOSE](context: RuntimeEngine) {
+    public async [DISPOSE](context: RuntimeEngine, envName: string) {
         for (const dep of this.feature.dependencies) {
-            await context.dispose(dep);
+            await context.dispose(dep, envName);
         }
-        for (const handler of this.disposeHandlers) {
+        const featureDisposeHandlers = this.disposeHandlers.get(envName) || new Set();
+        for (const handler of featureDisposeHandlers) {
             await handler();
         }
     }
@@ -68,7 +72,7 @@ export class Feature<
     public api: API;
     public context: EnvironmentContext;
     private environmentIml = new Set<string>();
-    private setupHandlers = new Set<SetupHandler<Environment, ID, Deps, API, EnvironmentContext>>();
+    private setupHandlers = new SetMultiMap<string, SetupHandler<Environment, ID, Deps, API, EnvironmentContext>>();
     private contextHandlers = new Map<string | number | symbol, ContextHandler<object, EnvironmentFilter, Deps>>();
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
@@ -86,7 +90,9 @@ export class Feature<
                 `Feature can only have single setup for each environment. ${this.id} Feature already implements: ${containsEnvs}`
             );
         }
-        this.setupHandlers.add(setupHandler);
+        const envName = typeof env === 'object' ? (env as Record<string, string>).env : (env as string);
+
+        this.setupHandlers.add(envName, setupHandler);
         return this;
     }
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
@@ -112,7 +118,7 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME](runningEngine: RuntimeEngine): RuntimeFeature<this, Deps, API> {
+    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string): RuntimeFeature<this, Deps, API> {
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};
@@ -125,7 +131,7 @@ export class Feature<
         runningEngine.features.set(this, feature);
 
         for (const dep of this.dependencies) {
-            deps[dep.id] = runningEngine.initFeature(dep);
+            deps[dep.id] = runningEngine.initFeature(dep, envName);
             depsApis[dep.id] = deps[dep.id].api;
         }
 
@@ -140,10 +146,10 @@ export class Feature<
             ...inputApi,
             id: this.id,
             run(fn: () => void) {
-                feature.addRunHandler(fn);
+                feature.addRunHandler(fn, envName);
             },
             onDispose(fn: DisposeFunction) {
-                feature.addOnDisposeHandler(fn);
+                feature.addOnDisposeHandler(fn, envName);
             },
             [RUN_OPTIONS]: runningEngine.runOptions
         };
@@ -153,8 +159,20 @@ export class Feature<
             const contextValue = contextHandler(depsApis);
             environmentContext[key] = { ...emptyDispose, ...contextValue };
         }
-
-        for (const setupHandler of this.setupHandlers) {
+        const setupHandlers: Array<SetupHandler<Environment, ID, Deps, API, EnvironmentContext>> = [];
+        const universalSetupHandlers = this.setupHandlers.get('<Universal>');
+        const allSetupHandlers = this.setupHandlers.get('<All>');
+        const environmentSetupHandlers = this.setupHandlers.get(envName);
+        if (universalSetupHandlers) {
+            setupHandlers.push(...universalSetupHandlers);
+        }
+        if (allSetupHandlers) {
+            setupHandlers.push(...allSetupHandlers);
+        }
+        if (environmentSetupHandlers) {
+            setupHandlers.push(...environmentSetupHandlers);
+        }
+        for (const setupHandler of setupHandlers) {
             const featureOutput = setupHandler(settingUpFeature, depsApis, environmentContext);
             for (const [key, entity] of apiEntries) {
                 if (featureOutput && entity.providedFrom === Universal) {
