@@ -1,68 +1,41 @@
 import { IFeatureTarget } from '@wixc3/engine-scripts';
-import { get, request } from 'http';
+import { request } from 'http';
 import { IExecutableApplication } from './types';
 
 const NODE_ENV_PATH = '/node-env';
 
+interface IEnvironmentHttpCall {
+    method: 'PUT' | 'DELETE' | 'GET';
+    path?: string;
+    featureTarget?: IFeatureTarget;
+}
+
 export class AttachedApp implements IExecutableApplication {
-    constructor(private port: number) {}
-    public startServer() {
-        return new Promise<number>((resolve, reject) => {
-            const req = get(`http://localhost:${this.port}`, res => {
-                res.on('data', () => {
-                    /** */
-                });
-
-                res.on('end', () => {
-                    resolve(this.port);
-                });
-                res.on('error', err => {
-                    reject(err);
-                });
-            });
-
-            req.on('error', err => {
-                reject(err);
-            });
-        });
+    constructor(private port = 3000, private hostname = 'localhost') {}
+    public async startServer() {
+        await this.makeEnvironmentHttpCall({ method: 'GET', path: '/' });
+        return this.port;
     }
 
     public runFeature(featureTarget: IFeatureTarget) {
-        return new Promise<void>((resolve, reject) => {
-            const req = request(
-                {
-                    method: 'PUT',
-                    hostname: 'localhost',
-                    path: NODE_ENV_PATH,
-                    headers: {
-                        'Content-type': 'application/json'
-                    },
-                    port: this.port
-                },
-                res => {
-                    res.on('data', () => {
-                        /** */
-                    });
-
-                    res.on('end', () => {
-                        resolve();
-                    });
-                    res.on('error', reject);
-                }
-            );
-            req.on('error', reject);
-            req.write(JSON.stringify(featureTarget));
-            req.end();
-        });
+        return this.makeEnvironmentHttpCall({ featureTarget, method: 'PUT' });
     }
 
     public closeFeature(featureTarget: IFeatureTarget) {
+        return this.makeEnvironmentHttpCall({ featureTarget, method: 'DELETE' });
+    }
+
+    public async closeServer() {
+        /**/
+    }
+
+    private makeEnvironmentHttpCall({ method, path = NODE_ENV_PATH, featureTarget }: IEnvironmentHttpCall) {
         return new Promise<void>((resolve, reject) => {
             const req = request(
                 {
-                    method: 'DELETE',
-                    hostname: 'localhost',
-                    path: NODE_ENV_PATH,
+                    method,
+                    hostname: this.hostname,
+                    path,
                     port: this.port,
                     headers: {
                         'Content-type': 'application/json'
@@ -70,21 +43,17 @@ export class AttachedApp implements IExecutableApplication {
                 },
                 res => {
                     res.on('data', () => {
-                        /** */
+                        /**/
                     });
-                    res.on('end', () => {
-                        resolve();
-                    });
-                    res.on('error', reject);
+                    res.on('end', resolve);
+                    res.on('error', () => reject());
                 }
             );
             req.on('error', reject);
-            req.write(JSON.stringify(featureTarget));
+            if (featureTarget) {
+                req.write(JSON.stringify(featureTarget));
+            }
             req.end();
         });
-    }
-
-    public async closeServer() {
-        // do nothing
     }
 }
