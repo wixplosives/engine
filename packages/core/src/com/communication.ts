@@ -435,7 +435,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                error: String(error),
+                error: String(error.stack),
                 callbackId: message.callbackId
             });
         }
