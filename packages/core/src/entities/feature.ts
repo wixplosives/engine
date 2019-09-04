@@ -67,6 +67,7 @@ export class Feature<
     API extends EntityMap,
     EnvironmentContext extends Record<string, DisposableContext<any>>
 > {
+    public asEntity: Feature<ID, SomeFeature[], API, EnvironmentContext> = this
     public id: ID;
     public dependencies: Deps;
     public api: API;
