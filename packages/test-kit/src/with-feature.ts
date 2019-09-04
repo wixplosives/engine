@@ -1,7 +1,9 @@
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
+import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
 import { createDisposables } from './disposables';
+import { IExecutableApplication } from './types';
 
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
@@ -13,11 +15,12 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
     queryParams?: Record<string, string>;
     allowErrors?: boolean;
     runOptions?: Record<string, string>;
+    attach?: number;
 }
 
 let browser: puppeteer.Browser | null = null;
 let featureUrl: string = '';
-const executableApp = new DetachedApp(cliEntry, process.cwd());
+let executableApp: IExecutableApplication;
 
 after('close puppeteer browser, if open', async () => {
     if (browser) {
@@ -49,7 +52,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         configName: suiteConfigName,
         runOptions: suiteOptions = {},
         allowErrors: suiteAllowErrors = false,
-        queryParams: suiteQueryParams
+        queryParams: suiteQueryParams,
+        attach
     } = withFeatureOptions;
 
     if (isCI && (headless === false || devtools === true || slowMo !== undefined)) {
@@ -60,6 +64,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
 
     let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
+
+    executableApp = attach ? new AttachedApp(attach) : new DetachedApp(cliEntry, process.cwd());
 
     before('launch puppeteer', async function() {
         if (!browser) {
