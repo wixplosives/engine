@@ -20,7 +20,7 @@ export class RuntimeEngine {
         }
     }
 
-    public run(features: SomeFeature | SomeFeature[]): RuntimeEngine {
+    public run(features: SomeFeature | SomeFeature[], envName: string): RuntimeEngine {
         if (this.running) {
             throw new Error('Engine already running!');
         }
@@ -29,34 +29,34 @@ export class RuntimeEngine {
             features = [features];
         }
         for (const feature of features) {
-            this.initFeature(feature);
+            this.initFeature(feature, envName);
         }
         for (const feature of features) {
-            this.runFeature(feature);
+            this.runFeature(feature, envName);
         }
         return this;
     }
 
-    public initFeature<T extends SomeFeature>(feature: T) {
+    public initFeature<T extends SomeFeature>(feature: T, envName: string) {
         let instance = this.features.get(feature);
         if (!instance) {
-            instance = feature[CREATE_RUNTIME](this);
+            instance = feature[CREATE_RUNTIME](this, envName);
         }
         return instance;
     }
 
-    public runFeature(feature: SomeFeature) {
+    public runFeature(feature: SomeFeature, envName: string) {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
         }
-        featureInstance[RUN](this);
+        featureInstance[RUN](this, envName);
     }
 
-    public async dispose(feature: SomeFeature) {
+    public async dispose(feature: SomeFeature, envName: string) {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
-            await runningFeature[DISPOSE](this);
+            await runningFeature[DISPOSE](this, envName);
             this.features.delete(feature);
         }
     }

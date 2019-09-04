@@ -3,12 +3,15 @@ import { flattenTree } from './flatten-tree';
 import { RuntimeEngine } from './runtime-engine';
 import { IRunOptions, SomeFeature, TopLevelConfig } from './types';
 
-export function run(
-    entryFeature: SomeFeature | SomeFeature[],
-    topLevelConfig: TopLevelConfig = [],
-    runOptions?: IRunOptions
-): RuntimeEngine {
-    return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature);
+export interface IRunEngineOptions {
+    entryFeature: SomeFeature | SomeFeature[];
+    topLevelConfig?: TopLevelConfig;
+    envName?: string;
+    runOptions?: IRunOptions;
+}
+
+export function run({ entryFeature, topLevelConfig = [], envName = '', runOptions }: IRunEngineOptions): RuntimeEngine {
+    return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature, envName);
 }
 
 export const getFeaturesDeep = (feature: SomeFeature) => flattenTree(feature, f => f.dependencies);
@@ -24,9 +27,16 @@ export interface IRunEngineAppOptions {
     featureLoaders: Record<string, IFeatureLoader>;
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;
+    envName: string;
 }
 
-export async function runEngineApp({ featureName, featureLoaders, config = [], options }: IRunEngineAppOptions) {
+export async function runEngineApp({
+    featureName,
+    featureLoaders,
+    config = [],
+    options,
+    envName
+}: IRunEngineAppOptions) {
     const featureNames = Object.keys(featureLoaders);
 
     const rootFeatureLoader = featureName && featureLoaders[featureName];
@@ -43,13 +53,14 @@ export async function runEngineApp({ featureName, featureLoaders, config = [], o
     const [runningFeature] = allFeatures;
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts } }), ...config], options).run(
-        runningFeature
+        runningFeature,
+        envName
     );
 
     return {
         async dispose() {
             for (const feature of allFeatures) {
-                await engine.dispose(feature);
+                await engine.dispose(feature, envName);
             }
         }
     };

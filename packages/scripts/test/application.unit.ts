@@ -187,7 +187,7 @@ describe('Application', function() {
 
         it('runs node environments with inspect mode', async function() {
             // these tests takes longer in CI
-            this.timeout(20_000);
+            this.timeout(25_000);
             const app = new Application({ basePath: nodeFeatureFixturePath });
             const runningApp = await app.start({
                 featureName: 'engine-node/x',
