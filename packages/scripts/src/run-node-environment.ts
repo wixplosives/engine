@@ -10,7 +10,7 @@ export async function runNodeEnvironment(
     { featureName, childEnvName, features, config = [], name, type, options }: ServerEnvironmentOptions
 ) {
     const disposeHandlers = new Set<() => unknown>();
-    const socketServerNamespace = socketServer.of('/_ws');
+    const socketServerNamespace = socketServer.of(name);
     const localDevHost = new WsServerHost(socketServerNamespace);
 
     await runEngineApp({
