@@ -1,6 +1,5 @@
 import { TupleToUnion } from 'typescript-type-utils';
 import { LogMessage } from './common-types';
-import { Config } from './entities/config';
 import { Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
