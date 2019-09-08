@@ -60,7 +60,7 @@ export class NodeEnvironmentsManager {
             );
             disposables.push(() => close());
 
-            topology[nodeEnv.name] = `http://localhost:${port}/_ws`;
+            topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
         }
 
         const runningEnvironment: IRuntimeEnvironment = {
