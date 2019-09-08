@@ -9,13 +9,68 @@ const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
 export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
+    /**
+     * absolute path to the root directory of the feature package.
+     * @default process.cwd
+     */
     basePath?: string;
+
+    /**
+     * feature file name scoped to feature root directory.
+     * if feature name is the same as folder name, scoping is unnecessary.
+     * @example given the following structure:
+     *
+     * --my-feature
+     *   -- feature
+     *      -- my-feature.feature.ts
+     *      -- my-feature2.feature.ts
+     *   -- fixtures
+     *      -- my-feature-fixture.feature.ts
+     * possible feature names will be:
+     * `my-feature`
+     * `my-feature/my-feature1`
+     * `my-feature/my-feature-fixture`
+     */
     featureName?: string;
+
+    /**
+     * configuration file name scoped to feature root directory.
+     *
+     * @example given the following structure:
+     * --my-feature
+     *   -- feature
+     *      -- my-feature.feature.ts
+     *      -- production.config.ts
+     *   -- fixtures
+     *      -- dev.config.ts
+     * possible feature names will be:
+     * `my-feature/production`
+     * `my-feature/dev`
+     *
+     */
     configName?: string;
+
+    /**
+     * query parameters to open the page with
+     */
     queryParams?: Record<string, string>;
+
+    /**
+     * if value will be set to `true`, errors from the browser will not fail tests
+     * @default false
+     */
     allowErrors?: boolean;
+
+    /**
+     * runtime options that will be provided to the node environments
+     */
     runOptions?: Record<string, string>;
-    attach?: number;
+
+    /**
+     * If we want to test the engine against a running application, proveide the port of the application.
+     * It can be extracted from the log printed after 'engine start' or 'engine run'
+     */
+    runningApplicationPort?: number;
 }
 
 let browser: puppeteer.Browser | null = null;
@@ -53,7 +108,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         runOptions: suiteOptions = {},
         allowErrors: suiteAllowErrors = false,
         queryParams: suiteQueryParams,
-        attach
+        runningApplicationPort
     } = withFeatureOptions;
 
     if (isCI && (headless === false || devtools === true || slowMo !== undefined)) {
@@ -65,7 +120,9 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
     let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
 
-    executableApp = attach ? new AttachedApp(attach) : new DetachedApp(cliEntry, process.cwd());
+    executableApp = runningApplicationPort
+        ? new AttachedApp(runningApplicationPort)
+        : new DetachedApp(cliEntry, process.cwd());
 
     before('launch puppeteer', async function() {
         if (!browser) {
@@ -77,7 +134,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
     before('engine start', async function() {
         if (!featureUrl) {
             this.timeout(60_000 * 4); // 4 minutes
-            const port = await executableApp.startServer();
+            const port = await executableApp.getServerPort();
             featureUrl = `http://localhost:${port}/main.html`;
         }
     });

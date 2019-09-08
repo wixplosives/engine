@@ -11,8 +11,8 @@ interface IEnvironmentHttpCall {
 }
 
 export class AttachedApp implements IExecutableApplication {
-    constructor(private port = 3000, private hostname = 'localhost') {}
-    public async startServer() {
+    constructor(private port: number, private hostname = 'localhost') {}
+    public async getServerPort() {
         await this.makeEnvironmentHttpCall({ method: 'GET', path: '/' });
         return this.port;
     }
@@ -26,7 +26,7 @@ export class AttachedApp implements IExecutableApplication {
     }
 
     public async closeServer() {
-        /**/
+        /* We don't close the running app */
     }
 
     private makeEnvironmentHttpCall({ method, path = NODE_ENV_PATH, featureTarget }: IEnvironmentHttpCall) {
@@ -43,10 +43,10 @@ export class AttachedApp implements IExecutableApplication {
                 },
                 res => {
                     res.on('data', () => {
-                        /**/
+                        /* if the server had errors when launching, it will reject. if we received any data, it means the server launched */
                     });
                     res.on('end', resolve);
-                    res.on('error', () => reject());
+                    res.on('error', reject);
                 }
             );
             req.on('error', reject);
