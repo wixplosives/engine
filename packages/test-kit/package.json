@@ -16,7 +16,7 @@
     "@wixc3/engine-scripts": "^7.1.5",
     "is-ci": "^2.0.0",
     "puppeteer": "^1.19.0",
-    "sinon": "^7.4.1"
+    "sinon": "^7.4.2"
   },
   "files": [
     "cjs",
