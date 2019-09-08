@@ -4,7 +4,7 @@ import { Config } from './entities/config';
 import { Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
+import { CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
 /*************** HELPER TYPES  ***************/
 
@@ -35,7 +35,7 @@ export interface Entity<
     VisibleAt extends EnvVisibility,
     Mode extends EntityDefModes,
     RemoteAccess extends boolean
-> {
+    > {
     type: TYPE;
     proxyType: PROXY_TYPE;
     providedFrom: ProvidedFrom;
@@ -50,6 +50,7 @@ export interface Entity<
         entityKey: string
     ) => PROXY_TYPE;
     [CREATE_RUNTIME]: (context: RuntimeEngine, featureID: string, entityKey: string) => TYPE | PROXY_TYPE | void;
+    [IDENTIFY_API]?: (featureID: string, entityKey: string) => void;
 }
 
 type AnyEntity = Entity<any, any, EnvVisibility, EnvVisibility, EntityDefModes, boolean>;
@@ -106,7 +107,7 @@ type MapProxyTypesForEnv<
     T extends EntityMap,
     EnvFilter extends string,
     Key extends 'visibleAt' | 'providedFrom'
-> = MapToProxyType<FilterEnv<T, EnvFilter, Key>>;
+    > = MapToProxyType<FilterEnv<T, EnvFilter, Key>>;
 
 type MapTypesForEnv<T extends EntityMap, EnvFilter extends string, Key extends 'visibleAt' | 'providedFrom'> = MapType<
     FilterEnv<T, EnvFilter, Key>
@@ -121,7 +122,7 @@ export interface FeatureDef<
     Deps extends SomeFeature[],
     API extends EntityMap,
     EnvironmentContext extends Record<string, Context<any>>
-> {
+    > {
     id: ID;
     dependencies?: Deps;
     api: API;
@@ -139,7 +140,7 @@ export type RunningFeatures<
     T extends SomeFeature[],
     ENV extends string,
     FeatureMap extends MapBy<T, 'id'> = MapBy<T, 'id'>
-> = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
+    > = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
 
 export interface IRunOptions {
     has(key: string): boolean;
@@ -163,7 +164,7 @@ export type RegisteringFeature<
         ENV,
         'providedFrom'
     >
-> = keyof ProvidedOutputs extends never ? null : ProvidedOutputs;
+    > = keyof ProvidedOutputs extends never ? null : ProvidedOutputs;
 
 export interface SetupHandlerEnvironmentContext<EnvironmentContext extends Record<string, Context<any>>> {
     context: EnvironmentContext;
@@ -198,20 +199,26 @@ export type SetupHandler<
     API extends EntityMap,
     EnvironmentContext extends Record<string, Context<any>>,
     Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>
-> = (
-    feature: SettingUpFeature<ID, API, Filter>,
-    runningFeatures: RunningFeatures<Deps, Filter>,
-    context: MapRecordType<EnvironmentContext>
-) => RegisteringFeature<API, Filter>;
+    > = (
+        feature: SettingUpFeature<ID, API, Filter>,
+        runningFeatures: RunningFeatures<Deps, Filter>,
+        context: MapRecordType<EnvironmentContext>
+    ) => RegisteringFeature<API, Filter>;
 
 export type ContextHandler<
     C,
     EnvFilter extends EnvironmentFilter,
     Deps extends SomeFeature[],
     Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>
-> = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
+    > = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
 
-export type PartialFeatureConfig<API> = Partial<MapToPartialType<JustFilter<API, Config<any, any>>>>;
+export interface Configurable<T> {
+    defaultValue: Readonly<T>;
+}
+
+export type PartialFeatureConfig<API> = {
+    [key in keyof API]?: API[key] extends Configurable<infer T> ? Partial<T> : never;
+};
 
 export type TopLevelConfig = Array<[string, object]>;
 
