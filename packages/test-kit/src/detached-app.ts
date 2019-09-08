@@ -8,7 +8,7 @@ export class DetachedApp implements IExecutableApplication {
 
     constructor(private cliEntry: string, private basePath: string) {}
 
-    public async startServer() {
+    public async getServerPort() {
         if (this.port) {
             throw new Error('The server is already running.');
         }
