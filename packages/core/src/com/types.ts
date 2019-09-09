@@ -39,8 +39,6 @@ export interface EnvironmentInstanceToken {
 
 export type ValuePromise<R> = R extends Promise<unknown> ? R : Promise<R>;
 
-export type FunctionArgs<T extends any> = T extends (...x: infer Args) => any ? Args : never;
-
 export type ServiceConfig<T extends any> = T[typeof SERVICE_CONFIG];
 
 export type MultiTanentProxyFunction<T extends any, K extends string> = ReturnType<
@@ -51,7 +49,7 @@ export type FilterFirstArgument<T extends any> = T extends (_a: infer _First, ..
     ? Args
     : never;
 
-export type AnyFunction = (...args: any[]) => any;
+export type AnyFunction = (...args: any[]) => unknown;
 
 export interface APIService {
     [SERVICE_CONFIG]?: Record<string, UnknownFunction>;
