@@ -1,29 +1,21 @@
-// tslint:disable: no-console
-export interface IDisposables {
-    dispose(): Promise<void>;
-    add(toDispose: () => unknown): void;
-    add(message: string, toDispose: () => unknown): void;
-}
+export function createDisposables() {
+    const disposables = new Set<() => unknown>();
 
-export function createDisposables(): IDisposables {
-    const disposables: Array<() => unknown> = [];
     return {
         async dispose() {
-            for (const dispose of disposables) {
+            const toDispose = new Set(disposables);
+            disposables.clear();
+            for (const dispose of toDispose) {
                 await dispose();
             }
-            disposables.length = 0;
         },
-        add(message: string | (() => unknown), toDispose?: () => unknown) {
-            if (typeof message === 'string') {
-                disposables.push(async () => {
-                    console.time(message);
-                    await toDispose!();
-                    console.timeEnd(message);
-                });
+        add<T extends { dispose(): unknown } | (() => unknown)>(disposable: T): T {
+            if (typeof disposable === 'function') {
+                disposables.add(disposable as () => unknown);
             } else {
-                disposables.push(message);
+                disposables.add(() => (disposable as { dispose(): unknown }).dispose());
             }
+            return disposable;
         }
     };
 }
