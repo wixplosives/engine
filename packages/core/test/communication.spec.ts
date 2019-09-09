@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { ComBrowserTestKit } from './com-browser-test-kit';
+import { Communication, Environment } from '../src';
 import {
     ITestServiceData,
     multiTanentServiceId,
@@ -12,22 +12,46 @@ import {
 describe('Communication API', function() {
     this.timeout(10_000);
 
-    const syncIframe = 'iframe';
-    const tk = new ComBrowserTestKit();
+    const disposables = new Set<() => unknown>();
+    afterEach(() => Promise.all(Array.from(disposables).map(dispose => dispose())));
+    afterEach(() => disposables.clear());
 
-    afterEach(() => tk.dispose());
+    const disposeAfterTest = <T extends { dispose(): unknown }>(disposable: T): T => {
+        disposables.add(() => disposable.dispose());
+        return disposable;
+    };
+
+    const iframeStyle: Partial<CSSStyleDeclaration> = {
+        width: '300px',
+        height: '300px',
+        bottom: '0px',
+        right: '0px',
+        position: 'fixed'
+    };
+    const createIframe = (): HTMLIFrameElement => {
+        const iframe = document.createElement('iframe');
+        disposables.add(() => iframe.remove());
+        Object.assign(iframe.style, iframeStyle);
+        document.body.appendChild(iframe);
+        return iframe;
+    };
+
+    const comId = 'TEST_COM';
+    const iframeEnv = new Environment('iframe', 'iframe', 'multi');
 
     it('should proxy remote service api', async () => {
-        const com = tk.createTestCom();
-        const env = await tk.createTestIframe(com, syncIframe);
+        const com = disposeAfterTest(new Communication(window, comId));
+        const env = await com.spawn(iframeEnv, createIframe());
+
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
         const res = await api.testApi(1, 2, 3);
+
         expect(res).to.eql({ echo: [1, 2, 3] });
     });
 
     it('should listen to remote api callbacks', async () => {
-        const com = tk.createTestCom();
-        const env = await tk.createTestIframe(com, syncIframe);
+        const com = disposeAfterTest(new Communication(window, comId));
+        const env = await com.spawn(iframeEnv, createIframe());
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
         const capturedCalls: ITestServiceData[] = [];
@@ -40,38 +64,41 @@ describe('Communication API', function() {
     });
 
     it('handles a multi tenant function in api services', async () => {
-        const com = tk.createTestCom();
-        const iframeEnv = await tk.createTestIframe(com, syncIframe);
+        const com = disposeAfterTest(new Communication(window, comId));
+        const env = await com.spawn(iframeEnv, createIframe());
 
-        const api = com.apiProxy<MultiTenantTestService>(iframeEnv, { id: multiTanentServiceId });
-        const expectedResult = {
+        const api = com.apiProxy<MultiTenantTestService>(env, { id: multiTanentServiceId });
+
+        const result = await api.multiTenantFunction('test');
+
+        expect(result).to.eql({
             id: com.getEnvironmentId(),
             anotherArg: 'test'
-        };
-        const result = await api.multiTenantFunction('test');
-        expect(result).to.eql(expectedResult);
+        });
     });
 
     it('handles a single tanent function in api services that have multi tanent functions', async () => {
-        const com = tk.createTestCom();
-        const iframeEnv = await tk.createTestIframe(com, syncIframe);
+        const com = disposeAfterTest(new Communication(window, comId));
+        const env = await com.spawn(iframeEnv, createIframe());
 
-        const api = com.apiProxy<MultiTenantTestService>(iframeEnv, { id: multiTanentServiceId });
-        const expectedResult = {
-            id: 'id',
-            anotherArg: 'test'
-        };
+        const api = com.apiProxy<MultiTenantTestService>(env, { id: multiTanentServiceId });
 
         const result = await api.singleTenantFunction('id', 'test');
-        expect(result).to.eql(expectedResult);
+
+        expect(result).to.eql({
+            id: 'id',
+            anotherArg: 'test'
+        });
     });
 
     it('listen to multiple environment with the same api (iframe)', async () => {
-        const com = tk.createTestCom();
+        const com = disposeAfterTest(new Communication(window, comId));
+
         const [env1, env2] = await Promise.all([
-            tk.createTestIframe(com, syncIframe),
-            tk.createTestIframe(com, syncIframe)
+            com.spawn(iframeEnv, createIframe()),
+            com.spawn(iframeEnv, createIframe())
         ]);
+
         const api1 = com.apiProxy<TestService>(env1, { id: testServiceId });
         const api2 = com.apiProxy<TestService>(env2, { id: testServiceId });
 
@@ -93,11 +120,13 @@ describe('Communication API', function() {
     });
 
     it('resolves spawn only when com is ready', async () => {
-        const com = tk.createTestCom();
-        const env = await tk.createTestIframe(com, 'delayed-iframe');
+        const com = disposeAfterTest(new Communication(window, comId));
+        const delayedIframeEnv = new Environment('delayed-iframe', 'iframe', 'multi');
+        const env = await com.spawn(delayedIframeEnv, createIframe());
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
         const res = await api.testApi(1, 2, 3);
+
         expect(res).to.eql({ echo: [1, 2, 3] });
     });
 });
