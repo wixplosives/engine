@@ -57,7 +57,7 @@
     "tslint": "^5.20.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-react": "^4.0.0",
-    "typescript": "~3.6.2",
+    "typescript": "~3.6.3",
     "@types/react-table": "^6.8.5",
     "webpack": "^4.39.3"
   },
