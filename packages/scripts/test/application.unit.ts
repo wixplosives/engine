@@ -110,7 +110,7 @@ describe('Application', function() {
             const runningApp = await app.start({
                 featureName: 'engine-node/x'
             });
-            disposables.add('closing app', () => runningApp.close());
+            disposables.add(() => runningApp.close());
 
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
@@ -124,7 +124,7 @@ describe('Application', function() {
             const runningApp = await app.start({
                 featureName: 'contextual/some-feature'
             });
-            disposables.add('closing app', () => runningApp.close());
+            disposables.add(() => runningApp.close());
 
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
@@ -138,7 +138,7 @@ describe('Application', function() {
             const runningApp = await app.start({
                 featureName: 'contextual/server-env'
             });
-            disposables.add('closing app', () => runningApp.close());
+            disposables.add(() => runningApp.close());
 
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
@@ -193,7 +193,7 @@ describe('Application', function() {
                 featureName: 'engine-node/x',
                 inspect: true
             });
-            disposables.add('closing app', () => runningApp.close());
+            disposables.add(() => runningApp.close());
 
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
