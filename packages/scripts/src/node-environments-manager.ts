@@ -58,8 +58,7 @@ export class NodeEnvironmentsManager {
                 ],
                 { ...defaultRuntimeOptions, ...runtimeOptions }
             );
-            disposables.push(() => close());
-
+            disposables.push(close);
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
         }
 

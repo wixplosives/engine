@@ -1,42 +1,43 @@
 import { Server } from 'socket.io';
 
 import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
-import { WsServerHost } from '@wixc3/engine-core-node';
+import { WsServerSocketHost } from '@wixc3/engine-core-node';
 
 import { IEnvironment, IFeatureDefinition, ServerEnvironmentOptions } from './types';
 
-export async function runNodeEnvironment(
+export function runNodeEnvironment(
     socketServer: Server,
     { featureName, childEnvName, features, config = [], name, type, options }: ServerEnvironmentOptions
 ) {
-    const disposeHandlers = new Set<() => unknown>();
     const socketServerNamespace = socketServer.of(name);
-    const localDevHost = new WsServerHost(socketServerNamespace);
-
-    await runEngineApp({
-        featureName,
-        featureLoaders: createFeatureLoaders(new Map(features), {
-            name,
-            childEnvName,
-            type
-        }),
-        config: [
-            ...config,
-            COM.use({
-                config: {
-                    host: localDevHost,
-                    id: name
-                }
-            })
-        ],
-        options: new Map(options),
-        envName: name
+    const disposeHandlers: Array<() => unknown> = [];
+    socketServerNamespace.on('connection', async socket => {
+        const { dispose } = await runEngineApp({
+            featureName,
+            featureLoaders: createFeatureLoaders(new Map(features), {
+                name,
+                childEnvName,
+                type
+            }),
+            config: [
+                ...config,
+                COM.use({
+                    config: {
+                        host: new WsServerSocketHost(socket),
+                        id: name
+                    }
+                })
+            ],
+            options: new Map(options),
+            envName: name
+        });
+        disposeHandlers.push(() => dispose());
     });
-
     return {
-        close: async () => {
-            for (const disposeHandler of disposeHandlers) {
-                await disposeHandler();
+        async close() {
+            socketServerNamespace.removeAllListeners();
+            for (const handler of disposeHandlers) {
+                await handler();
             }
         }
     };

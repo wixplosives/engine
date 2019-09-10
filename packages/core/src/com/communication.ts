@@ -276,6 +276,9 @@ export class Communication {
     public dispose(): void {
         for (const { host } of Object.values(this.environments)) {
             host.removeEventListener('message', this.handleEvent, true);
+            if (host instanceof BaseHost) {
+                host.dispose();
+            }
         }
     }
 

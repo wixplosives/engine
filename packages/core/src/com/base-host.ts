@@ -26,6 +26,10 @@ export class BaseHost implements Target {
         host.parent = this;
         return host;
     }
+
+    public dispose() {
+        this.handlers.clear();
+    }
     protected emitMessageHandlers(message: any) {
         for (const hander of this.handlers.get('message') || []) {
             hander({ data: message });
