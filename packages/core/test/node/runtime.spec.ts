@@ -7,13 +7,18 @@ import {
     AllEnvironments,
     COM,
     Config,
+    CREATE_RUNTIME,
     DisposeFunction,
     Environment,
     Feature,
+    FeatureInput,
+    IDENTIFY_API,
     IRunOptions,
     MapSlot,
+    REGISTER_VALUE,
     run as runEngine,
     RUN_OPTIONS,
+    RuntimeEngine,
     Service,
     SingleEndpointContextualEnvironment,
     Slot,
@@ -280,7 +285,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
                 return null;
@@ -312,7 +317,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
                 return null;
@@ -322,7 +327,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
                 return null;
             });
@@ -354,13 +359,69 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({}, {}) => {
+            }).setup(envName, ({ }, { }) => {
                 return null;
             });
 
             const engine = runEngine({ entryFeature, envName });
 
             expect(engine.get(maps).api.retrieveService.getValue('1')).to.be.equal(null);
+        });
+    });
+
+    describe('identefiable entities', () => {
+        interface Identity {
+            featureID: string;
+            entityKey: string;
+        }
+        class Identefiable extends FeatureInput<
+            Readonly<Identity>,
+            Environment,
+            any
+            >{
+            public identity!: Identity;
+            constructor() {
+                super(Universal, Universal);
+            }
+            public [IDENTIFY_API](featureID: string, entityKey: string) {
+                this.identity = {
+                    entityKey,
+                    featureID
+                };
+            }
+            public [CREATE_RUNTIME](_context: RuntimeEngine, featureID: string, entityKey: string) {
+                return {
+                    featureID,
+                    entityKey,
+                };
+            }
+
+            public [REGISTER_VALUE](
+                _context: RuntimeEngine,
+                _providedValue: undefined,
+                inputValue: any,
+                _featureID: string,
+                _entityKey: string
+            ) {
+                return inputValue;
+            }
+
+            public getIdentity() {
+                return this.identity;
+            }
+        }
+        it('when creating a new feature the APIs should be identified ', () => {
+            const ids = new Feature({
+                id: 'testIdentify',
+                api: {
+                    identifiable: new Identefiable()
+                }
+            });
+
+            expect(ids.api.identifiable.getIdentity()).to.be.eql({
+                featureID: 'testIdentify',
+                entityKey: 'identifiable'
+            });
         });
     });
 });
@@ -451,7 +512,7 @@ describe('Contextual environments', () => {
             };
         });
 
-        entryFeature.setup(processing, ({}, {}, { processingContext: { name }, processingContext2: { age } }) => {
+        entryFeature.setup(processing, ({ }, { }, { processingContext: { name }, processingContext2: { age } }) => {
             return {
                 echoService: {
                     echo(s: string) {
@@ -476,7 +537,7 @@ describe('feature disposal', () => {
             api: {}
         });
         const dispose = spy(() => Promise.resolve());
-        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
             onDispose(dispose);
             return null;
         });
@@ -501,7 +562,7 @@ describe('feature disposal', () => {
         const dispose = spy(() => Promise.resolve());
         const dispose2 = spy(() => Promise.resolve());
 
-        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
             onDispose(dispose);
             onDispose(dispose2);
 
@@ -529,7 +590,7 @@ describe('feature disposal', () => {
         const disposeFirst = spy(() => Promise.resolve());
         const disposeSecond = spy(() => Promise.reject('err'));
 
-        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
             onDispose(disposeFirst);
             onDispose(disposeSecond);
 
@@ -645,7 +706,7 @@ describe.skip('Environments Type tests 1', () => {
             }
         });
 
-        echoFeature.setup(processing, ({}, {}) => {
+        echoFeature.setup(processing, ({ }, { }) => {
             return {
                 echoService: {
                     echo(s: string) {

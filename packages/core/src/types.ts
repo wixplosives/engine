@@ -3,7 +3,7 @@ import { LogMessage } from './common-types';
 import { Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
-import { CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
+import { CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS, CONFIGURABLE } from './symbols';
 
 /*************** HELPER TYPES  ***************/
 
@@ -212,6 +212,7 @@ export type ContextHandler<
     > = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
 
 export interface Configurable<T> {
+    [CONFIGURABLE]: true;
     defaultValue: Readonly<T>;
 }
 
