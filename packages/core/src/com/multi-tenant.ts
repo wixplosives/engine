@@ -1,8 +1,8 @@
-import { AnyFunction, FilterFirstArgument, FunctionArgs, ValuePromise } from './types';
+import { AnyFunction, FilterFirstArgument, ValuePromise } from './types';
 
 export function multiTenantMethod<T extends AnyFunction>(method: T) {
     return (context: any) => {
-        function getArgs([_first, ...rest]: FunctionArgs<T>) {
+        function getArgs([_first, ...rest]: Parameters<T>) {
             return rest as FilterFirstArgument<T>;
         }
         function proxyFunction(...args: ReturnType<typeof getArgs>): ValuePromise<ReturnType<T>> {

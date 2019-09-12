@@ -103,8 +103,9 @@ export class Application {
         inspect = false,
         port: httpServerPort
     }: IRunOptions = {}) {
-        const disposables: Array<() => unknown> = [];
+        const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
+        disposables.add(() => close());
 
         const { features, configurations, packages } = this.analyzeFeatures();
 
@@ -117,12 +118,13 @@ export class Application {
             port,
             inspect
         });
+        disposables.add(() => nodeEnvironmentManager.closeAll());
 
         app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
-            disposables.push(() => new Promise(res => devMiddleware.close(res)));
+            disposables.add(() => new Promise(res => devMiddleware.close(res)));
             app.use(devMiddleware);
         }
 
@@ -147,8 +149,6 @@ export class Application {
 
         app.use(nodeEnvironmentManager.middleware());
 
-        disposables.push(() => close());
-
         app.get('/server-state', (_req, res) => {
             res.json({
                 result: 'success',
@@ -166,10 +166,7 @@ export class Application {
                 featureName,
                 configName
             });
-            disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
         }
-
-        disposables.push(() => nodeEnvironmentManager.closeAll());
 
         return {
             port,
@@ -178,7 +175,7 @@ export class Application {
                 for (const dispose of disposables) {
                     await dispose();
                 }
-                disposables.length = 0;
+                disposables.clear();
             }
         };
     }
@@ -195,13 +192,14 @@ export class Application {
             inspect,
             port: httpServerPort
         } = runOptions;
-        const disposables: Array<() => unknown> = [];
+        const disposables = new Set<() => unknown>();
 
         const configurations = await this.readConfigs();
 
         const configName = providedConfigName || defaultConfigName;
 
         const { port, close, socketServer, app } = await this.launchHttpServer(httpServerPort);
+        disposables.add(() => close());
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
@@ -210,17 +208,15 @@ export class Application {
             defaultRuntimeOptions,
             inspect
         });
+        disposables.add(() => nodeEnvironmentManager.closeAll());
 
         app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
-
-        disposables.push(() => close());
 
         if (featureName) {
             await nodeEnvironmentManager.runEnvironment({
                 featureName,
                 configName
             });
-            disposables.push(() => nodeEnvironmentManager.closeEnvironment({ featureName }));
 
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);
@@ -232,7 +228,7 @@ export class Application {
                 for (const dispose of disposables) {
                     await dispose();
                 }
-                disposables.length = 0;
+                disposables.clear();
             }
         };
     }
