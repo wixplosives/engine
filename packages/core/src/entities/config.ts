@@ -1,5 +1,5 @@
 import { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
+import { CONFIGURABLE, CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import { EnvVisibility } from '../types';
 import { AllEnvironments, Environment } from './env';
 import { FeatureInput } from './input';
@@ -10,7 +10,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
     Readonly<T>,
     Environment,
     VisibleAt
-> {
+    > {
     public static withType<T extends object>() {
         return {
             defineEntity<E_ENV extends EnvVisibility>(
@@ -22,6 +22,8 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
             }
         };
     }
+
+    public [CONFIGURABLE]: true;
     constructor(
         public defaultValue: Readonly<T>,
         public mergeConfig: MergeConfigHook<T> = (a: T, b: Partial<T>) => ({ ...a, ...b }),
