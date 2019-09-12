@@ -3,7 +3,7 @@ import { LogMessage } from './common-types';
 import { Universal } from './entities/env';
 import { Feature, RuntimeFeature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
-import { CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS, CONFIGURABLE } from './symbols';
+import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
 /*************** HELPER TYPES  ***************/
 
