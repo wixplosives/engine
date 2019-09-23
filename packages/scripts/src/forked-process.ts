@@ -20,6 +20,5 @@ export class ForkedProcess implements RemoteProcess {
 
     public terminate() {
         this.proc.removeAllListeners();
-        (this.proc as ChildProcess).kill();
     }
 }

@@ -83,6 +83,7 @@ after('close puppeteer browser, if open', async () => {
         browser = null;
     }
 });
+
 after('close engine server, if open', async function() {
     this.timeout(60_000);
     if (featureUrl) {
@@ -97,7 +98,6 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         basePath = correctWin32DriveLetter(basePath);
     }
 
-    const disposeAfterAll = createDisposables();
     const disposeAfterEach = createDisposables();
     const {
         headless,
@@ -153,11 +153,6 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             }
         }
         allowErrors = suiteAllowErrors;
-    });
-
-    after(async function() {
-        this.timeout(60_000);
-        await disposeAfterAll.dispose();
     });
 
     return {
