@@ -66,5 +66,6 @@ describe('Node environments manager', function() {
         await expect(nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
             'there are no node environments running for test'
         );
+        setTimeout(() => require('why-is-node-running')(), 5_000);
     });
 });
