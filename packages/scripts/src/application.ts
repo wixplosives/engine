@@ -374,10 +374,11 @@ export class Application {
 
     private async launchHttpServer(httpServerPort = DEFAULT_PORT) {
         const app = express();
-        const connections: Socket[] = [];
+        const openSockets = new Set<Socket>();
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
         httpServer.on('connection', socket => {
-            connections.push(socket);
+            openSockets.add(socket);
+            socket.once('close', () => openSockets.delete(socket));
         });
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
@@ -386,10 +387,10 @@ export class Application {
         return {
             close: async () => {
                 await new Promise(res => {
-                    for (const connection of connections) {
+                    for (const connection of openSockets) {
                         connection.destroy();
                     }
-                    connections.length = 0;
+                    openSockets.clear();
                     socketServer.close(res);
                 });
             },
