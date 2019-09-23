@@ -1,0 +1,8 @@
+{
+  "name": "@example/reloaded-iframe",
+  "version": "7.0.0",
+  "scripts": {
+    "start": "engine start"
+  },
+  "private": true
+}
