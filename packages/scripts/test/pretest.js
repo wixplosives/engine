@@ -8,6 +8,6 @@ fs.watch = function(filePath, ...args) {
     const watcher = originalWatch(filePath, ...args)
     watcher.filePath = filePath
     openWatchers.add(watcher)
-    watcher.once('close', () => openWatchers.delete(openWatchers))
+    watcher.once('close', () => openWatchers.delete(watcher))
     return watcher
 }
