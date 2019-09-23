@@ -3,8 +3,6 @@ import { SerializableArguments } from './types';
 export interface RemoteCallAddress {
     api: string;
     method: string;
-    rootEnvId: string;
-    envId: string;
 }
 
 export interface BaseMessage {
@@ -12,27 +10,28 @@ export interface BaseMessage {
     to: string;
     from: string;
     callbackId?: string;
-    handlerId?: RemoteCallAddress;
     error?: string;
 }
 
 export interface CallMessage extends BaseMessage {
     type: 'call';
-    data: SerializableArguments;
+    data: RemoteCallAddress & { args: SerializableArguments };
 }
 
 export interface CallbackMessage extends BaseMessage {
     type: 'callback';
-    data?: unknown;
+    data?: SerializableArguments | unknown;
 }
 
 export interface ListenMessage extends BaseMessage {
     type: 'listen';
+    data: RemoteCallAddress & { handlerId: string };
 }
 
 export interface EventMessage extends BaseMessage {
     type: 'event';
     data: SerializableArguments;
+    handlerId: string;
 }
 
 export interface ReadyMessage extends BaseMessage {

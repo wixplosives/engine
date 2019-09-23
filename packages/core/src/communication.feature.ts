@@ -49,12 +49,12 @@ export default new Feature({
         spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
+        manage: Service.withType<
+            (endPoint: Environment, host: HTMLIFrameElement) => Promise<{ id: string }>
+        >().defineEntity(AllEnvironments),
         connect: Service.withType<(endPoint: Environment<string, 'node'>) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
-        manage: Service.withType<
-            (endPoint: Environment<string, 'iframe'>, host: HTMLIFrameElement) => Promise<{ id: string }>
-        >().defineEntity(AllEnvironments),
         spawnOrConnect: Service.withType<
             (endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) => Promise<{ id: string }>
         >().defineEntity(AllEnvironments),
