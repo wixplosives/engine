@@ -40,8 +40,12 @@ export class DetachedApp implements IExecutableApplication {
         // });
         await new Promise((res, rej) => {
             engineStartProcess.once('error', rej);
-            engineStartProcess.once('exit', res);
-            engineStartProcess.kill();
+            if (!engineStartProcess.killed) {
+                engineStartProcess.once('exit', res);
+                engineStartProcess.kill();
+            } else {
+                res();
+            }
         });
         this.engineStartProcess = undefined;
     }
