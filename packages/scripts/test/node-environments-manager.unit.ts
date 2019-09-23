@@ -74,7 +74,7 @@ after(() =>
         require('wtfnode').dump();
         for (const watcher of require('./pretest.js').openWatchers) {
             // tslint:disable-next-line: no-console
-            console.log('OPEN WATCHER ON', watcher.filePath);
+            console.log('STILL-OPEN:', watcher.filePath);
         }
     }, 5000)
 );
