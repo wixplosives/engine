@@ -101,7 +101,8 @@ export class Application {
         configName,
         runtimeOptions: defaultRuntimeOptions = {},
         inspect = false,
-        port: httpServerPort
+        port: httpServerPort,
+        singleRun
     }: IRunOptions = {}) {
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
@@ -110,7 +111,19 @@ export class Application {
         const { features, configurations, packages } = this.analyzeFeatures();
 
         const compiler = this.createCompiler(features, featureName, configName);
-
+        if (singleRun) {
+            compiler.watch = function watch(_watchOptions, handler) {
+                compiler.run(handler);
+                return {
+                    close(cb) {
+                        if (cb) {
+                            cb();
+                        }
+                    },
+                    invalidate: () => undefined
+                };
+            };
+        }
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
             features,

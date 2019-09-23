@@ -41,9 +41,10 @@ program
     .option('-c ,--config <config>')
     .option('--inspect')
     .option('-p ,--port <port>')
+    .option('--singleRun', 'when enabled, webpack will not watch files', false)
     .allowUnknownOption(true)
     .action(async (path, cmd: Record<string, string | undefined>) => {
-        const { feature: featureName, config: configName, port: httpServerPort } = cmd;
+        const { feature: featureName, config: configName, port: httpServerPort, singleRun } = cmd;
         try {
             const app = new Application({ basePath: path || process.cwd() });
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
@@ -51,7 +52,8 @@ program
                 configName,
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect: cmd.inspect ? true : false,
-                port: httpServerPort ? Number(httpServerPort) : undefined
+                port: httpServerPort ? Number(httpServerPort) : undefined,
+                singleRun: !!singleRun
             });
 
             if (process.send) {
