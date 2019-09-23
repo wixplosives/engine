@@ -79,13 +79,18 @@ let executableApp: IExecutableApplication;
 
 after('close puppeteer browser, if open', async () => {
     if (browser) {
+        // tslint:disable-next-line: no-console
+        console.log('browser.close()');
         await browser.close();
         browser = null;
     }
 });
+
 after('close engine server, if open', async function() {
     this.timeout(60_000);
     if (featureUrl) {
+        // tslint:disable-next-line: no-console
+        console.log('executableApp.closeServer()');
         await executableApp.closeServer();
         featureUrl = '';
     }
@@ -97,7 +102,6 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         basePath = correctWin32DriveLetter(basePath);
     }
 
-    const disposeAfterAll = createDisposables();
     const disposeAfterEach = createDisposables();
     const {
         headless,
@@ -153,11 +157,6 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             }
         }
         allowErrors = suiteAllowErrors;
-    });
-
-    after(async function() {
-        this.timeout(60_000);
-        await disposeAfterAll.dispose();
     });
 
     return {
