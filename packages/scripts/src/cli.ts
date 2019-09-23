@@ -70,6 +70,7 @@ program
                     }
                     if (id === 'server-disconnect') {
                         await closeServer();
+                        process.off('message', processListener);
                         process.send({ id: 'server-disconnected' } as IProcessMessage<unknown>);
                     }
                 }

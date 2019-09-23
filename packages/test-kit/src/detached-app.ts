@@ -35,17 +35,8 @@ export class DetachedApp implements IExecutableApplication {
             throw new Error('Engine is not started yet');
         }
         // socket server hangs on close on CIs for some reason
-        // await this.waitForProcessMessage('server-disconnected', p => {
-        //     p.send({ id: 'server-disconnect' });
-        // });
-        await new Promise((res, rej) => {
-            engineStartProcess.once('error', rej);
-            if (!engineStartProcess.killed) {
-                engineStartProcess.once('exit', res);
-                engineStartProcess.kill();
-            } else {
-                res();
-            }
+        await this.waitForProcessMessage('server-disconnected', p => {
+            p.send({ id: 'server-disconnect' });
         });
         this.engineStartProcess = undefined;
     }
