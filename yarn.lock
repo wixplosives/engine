@@ -972,24 +972,21 @@
     find-config "^1.0.0"
     webpack-sources "^1.4.3"
 
-"@ts-tools/build@^0.1.16":
-  version "0.1.16"
-  resolved "https://registry.yarnpkg.com/@ts-tools/build/-/build-0.1.16.tgz#84ddc3ad4c43d665fd5801889ccf93c5de872597"
-  integrity sha512-taq5b32P44tufu7lcZ0VW0DM9T7gvqlqZvvUXdzCAfcBMZZg0C+fjupn12lsRpsoyTOmztMT5h1BvIy3u08v8Q==
+"@ts-tools/build@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@ts-tools/build/-/build-0.11.0.tgz#18c3143760eca11f15cd88b714e297d8482d414a"
+  integrity sha512-owg43HHF2H3ga4brP3FxC5jZOXqHHuzzex6x6stV1SbZ5daTWV8WunYuXNSOTkzMCyhrCQ/7lqLPLdC+dzHbMw==
   dependencies:
     "@ts-tools/service" "^2.0.5"
     chalk "^2.4.2"
-    commander "^3.0.0"
+    commander "^3.0.1"
     proper-fs "^1.1.2"
 
-"@ts-tools/node@^0.9.10":
-  version "0.9.10"
-  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-0.9.10.tgz#675c58d04b741662a05629493496bf60f51ce1f3"
-  integrity sha512-TTuPKlTbyKjO1XTXHDHJOwcG4oO+VE8OMvbN2xPdO3N6gsYTBR1bKxLkyGT+5gc7y8nYnzI/bclav77EPru1DQ==
+"@ts-tools/node@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-0.11.0.tgz#72f2a2d0bd2b65f153b3fcc81a9c1d335d68f6b5"
+  integrity sha512-O7m2CSxXaIwe+jWOH/Ha1Gjx/DmIHtXplvJ1wZ4X3xhhsXKHiTrQ8/r+TLIj0Enxn1YlbAnqZ5W+gk7u1ZMAXA==
   dependencies:
-    "@ts-tools/robotrix" "^0.7.7"
-    "@ts-tools/service" "^2.0.5"
-    is-ci "^2.0.0"
     source-map-support "^0.5.13"
 
 "@ts-tools/robotrix@^0.7.7":
@@ -1106,6 +1103,11 @@
   integrity sha512-J8ytIdkALbTrqcJ6OZiEv0B9skfyok/zCDj1q06GGCDa1rlHnPobUBT0BYR1vku2oZVwVEgCurtXqCASAfjCiQ==
   dependencies:
     "@types/ci-info" "*"
+
+"@types/json5@^0.0.29":
+  version "0.0.29"
+  resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
+  integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
 
 "@types/memory-fs@*":
   version "0.3.2"
@@ -4974,9 +4976,9 @@ minimist@~0.0.1:
   integrity sha1-3j+YVD2/lggr5IrRoMfNqDYwHc8=
 
 minipass@^2.2.1, minipass@^2.3.5, minipass@^2.6.0, minipass@^2.6.4:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/minipass/-/minipass-2.7.0.tgz#c01093a82287c8331f08f1075499fef124888796"
-  integrity sha512-+CbZuJ4uEiuTL9s5Z/ULkuRg1O9AvVqVvceaBrhbYHIy1R3dPO7FMmG0nZLD0//ZzZq0MUOjwdBQvk+w1JHUqQ==
+  version "2.8.1"
+  resolved "https://registry.yarnpkg.com/minipass/-/minipass-2.8.1.tgz#a73bdc84cad62e8e6c8d56eba1302a5fe04c5910"
+  integrity sha512-QCG523ParRcE2+9A6wYh9UI3uy2FFLw4DQaVYQrY5HPfszc5M6VDD+j0QCwHm19LI2imes4RB+NBD8cOJccyCg==
   dependencies:
     safe-buffer "^5.1.2"
     yallist "^3.0.0"
@@ -7366,6 +7368,16 @@ trim-off-newlines@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-off-newlines/-/trim-off-newlines-1.0.1.tgz#9f9ba9d9efa8764c387698bcbfeb2c848f11adb3"
   integrity sha1-n5up2e+odkw4dpi8v+sshI8RrbM=
+
+tsconfig-paths@^3.9.0:
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/tsconfig-paths/-/tsconfig-paths-3.9.0.tgz#098547a6c4448807e8fcb8eae081064ee9a3c90b"
+  integrity sha512-dRcuzokWhajtZWkQsDVKbWyY+jgcLC5sqJhg2PSgf4ZkH2aHPvaOY8YWGhmjb68b5qqTfasSsDO9k7RUiEmZAw==
+  dependencies:
+    "@types/json5" "^0.0.29"
+    json5 "^1.0.1"
+    minimist "^1.2.0"
+    strip-bom "^3.0.0"
 
 tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.10.0"

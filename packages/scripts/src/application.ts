@@ -5,7 +5,7 @@
  * This configuration can (and should) be written as a `.ts` file.
  */
 import '@stylable/node/register';
-import '@ts-tools/node/fast';
+import '@ts-tools/node/r';
 import './own-repo-hook';
 
 import fs from '@file-services/node';
