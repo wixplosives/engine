@@ -79,9 +79,9 @@ let executableApp: IExecutableApplication;
 
 after('close puppeteer browser, if open', async () => {
     if (browser) {
+        await browser.close();
         // tslint:disable-next-line: no-console
         console.log('browser.close()');
-        await browser.close();
         browser = null;
     }
 });
@@ -89,9 +89,9 @@ after('close puppeteer browser, if open', async () => {
 after('close engine server, if open', async function() {
     this.timeout(60_000);
     if (featureUrl) {
+        await executableApp.closeServer();
         // tslint:disable-next-line: no-console
         console.log('executableApp.closeServer()');
-        await executableApp.closeServer();
         featureUrl = '';
     }
 });
