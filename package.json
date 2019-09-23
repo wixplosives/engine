@@ -60,9 +60,7 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-react": "^4.1.0",
     "typescript": "~3.6.3",
-    "webpack": "^4.40.2",
-    "why-is-node-running": "^2.1.0",
-    "wtfnode": "^0.8.0"
+    "webpack": "^4.40.2"
   },
   "license": "MIT",
   "private": true

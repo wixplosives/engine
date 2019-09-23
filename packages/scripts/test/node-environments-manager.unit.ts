@@ -68,13 +68,3 @@ describe('Node environments manager', function() {
         );
     });
 });
-
-after(() =>
-    setTimeout(() => {
-        require('wtfnode').dump();
-        for (const watcher of require('./pretest.js').openWatchers) {
-            // tslint:disable-next-line: no-console
-            console.log('STILL-OPEN:', watcher.filePath);
-        }
-    }, 5000)
-);

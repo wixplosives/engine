@@ -6988,11 +6988,6 @@ ssri@^6.0.0, ssri@^6.0.1:
   dependencies:
     figgy-pudding "^3.5.1"
 
-stackback@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/stackback/-/stackback-0.0.2.tgz#1ac8a0d9483848d1695e418b6d031a3c3ce68e3b"
-  integrity sha1-Gsig2Ug4SNFpXkGLbQMaPDzmjjs=
-
 static-extend@^0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/static-extend/-/static-extend-0.1.2.tgz#60809c39cbff55337226fd5e0b520f341f1fb5c6"
@@ -7799,13 +7794,6 @@ which@1, which@1.3.1, which@^1.2.9, which@^1.3.1:
   dependencies:
     isexe "^2.0.0"
 
-why-is-node-running@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/why-is-node-running/-/why-is-node-running-2.1.0.tgz#e71a9816a32ca4d4f759aabe90edd1007d805f48"
-  integrity sha512-oLmJ1uZOaKra+GDmYcUHMnVhi4CnZnlt4IE3J05ZDSEAiejeB5dMoR4a4rGcMWRy1Avx24dGTw8yxJ/+EmwPBQ==
-  dependencies:
-    stackback "0.0.2"
-
 wide-align@1.1.3, wide-align@^1.1.0:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/wide-align/-/wide-align-1.1.3.tgz#ae074e6bdc0c14a431e804e624549c633b000457"
@@ -7906,11 +7894,6 @@ ws@~6.1.0:
   integrity sha512-eqZfL+NE/YQc1/ZynhojeV8q+H050oR8AZ2uIev7RU10svA9ZnJUddHcOUZTJLinZ9yEfdA2kSATS2qZK5fhJA==
   dependencies:
     async-limiter "~1.0.0"
-
-wtfnode@^0.8.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/wtfnode/-/wtfnode-0.8.0.tgz#26a1a6b8e07727d7ed29dacc6708bea4647ccd20"
-  integrity sha512-A5jm/0REykxUac1q4Q5kv+hDIiacvqVpwIoXzCQcRL7syeEKucVVOxyLLrt+jIiZoXfla3lnsxUw/cmWXIaGWA==
 
 xmlhttprequest-ssl@~1.5.4:
   version "1.5.5"
