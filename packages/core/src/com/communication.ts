@@ -8,7 +8,15 @@ import {
     UNKNOWN_CALLBACK_ID
 } from './errors';
 import { isIframe, isWindow, isWorkerContext, MultiCounter } from './helpers';
-import { CallbackMessage, CallMessage, EventMessage, ListenMessage, Message, ReadyMessage } from './message-types';
+import {
+    CallbackMessage,
+    CallMessage,
+    EventMessage,
+    ListenMessage,
+    Message,
+    ReadyMessage,
+    RemoteCallAddress
+} from './message-types';
 import {
     APIService,
     AsyncApi,
@@ -49,8 +57,8 @@ export class Communication {
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private pendingEnvs: Map<string, UnknownFunction> = new Map();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
-    private handlers: Map<string, UnknownFunction[]> = new Map();
-    private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
+    private handlers = new Map<RemoteCallAddress, UnknownFunction[]>();
+    private eventDispatchers = new Map<RemoteCallAddress, SerializableMethod>();
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<ICommunicationOptions>;
@@ -118,9 +126,36 @@ export class Communication {
         const isSingleton = endpointType === 'single';
         const instanceId = isSingleton ? env : this.generateEnvInstanceID(env);
 
-        await (envType === 'worker'
-            ? this.useWorker(defaultWorkerFactory(env, instanceId, this.topology.publicPath), instanceId)
-            : this.useWindow(host!, instanceId, defaultSourceFactory(env, instanceId, this.topology.publicPath)));
+        switch (envType) {
+            case 'worker':
+                await this.useWorker(defaultWorkerFactory(env, instanceId, this.topology.publicPath), instanceId);
+                break;
+            case 'iframe':
+            case 'window':
+                await this.useWindow(
+                    host!,
+                    instanceId,
+                    defaultSourceFactory(env, instanceId, this.topology.publicPath)
+                );
+                break;
+        }
+
+        return {
+            id: instanceId
+        };
+    }
+
+    public async manage(endPoint: Environment, host: HTMLIFrameElement) {
+        const { endpointType, env } = endPoint;
+
+        const isSingleton = endpointType === 'single';
+        const instanceId = isSingleton ? env : this.generateEnvInstanceID(env);
+
+        await this.useIframe(
+            (host as HTMLIFrameElement)!,
+            defaultHtmlSourceFactory(env, instanceId, this.topology.publicPath),
+            instanceId
+        );
 
         return {
             id: instanceId
@@ -164,7 +199,15 @@ export class Communication {
                     let method = obj[methodName];
                     if (!method) {
                         method = async (...args: unknown[]) =>
-                            this.callMethod((await instanceToken).id, serviceId, methodName, args);
+                            this.callMethod(
+                                {
+                                    envId: (await instanceToken).id,
+                                    api: serviceId,
+                                    method: methodName,
+                                    rootEnvId: this.rootEnvId
+                                },
+                                args
+                            );
                         obj[methodName] = method;
                     }
                     return method;
@@ -190,28 +233,37 @@ export class Communication {
     /**
      * Calls a remote method in any opened environment.
      */
-    public callMethod(envId: string, apiId: string, methodName: string, args: SerializableArguments): Promise<unknown> {
+    public callMethod(handlerId: RemoteCallAddress, args: SerializableArguments): Promise<unknown> {
         return new Promise((res, rej) => {
             if (this.isListenCall(args)) {
                 const message: ListenMessage = {
-                    to: envId,
+                    to: handlerId.envId,
                     from: this.rootEnvId,
                     type: 'listen',
-                    data: this.createHandlerRecord(envId, apiId, methodName, args[0] as UnknownFunction),
+                    handlerId: this.createHandlerRecord(
+                        handlerId.envId,
+                        handlerId.api,
+                        handlerId.method,
+                        args[0] as UnknownFunction
+                    ),
                     callbackId: this.idsCounter.next('c')
                 };
                 this.createCallbackRecord(message, message.callbackId!, res, rej);
-                this.sendTo(envId, message);
+                this.sendTo(handlerId.envId, message);
             } else {
                 const message: CallMessage = {
-                    to: envId,
+                    to: handlerId.envId,
                     from: this.rootEnvId,
                     type: 'call',
-                    data: { api: apiId, method: methodName, args },
+                    handlerId: {
+                        ...handlerId,
+                        rootEnvId: this.rootEnvId
+                    },
+                    data: args,
                     callbackId: this.idsCounter.next('c')
                 };
                 this.createCallbackRecord(message, message.callbackId!, res, rej);
-                this.sendTo(envId, message);
+                this.sendTo(handlerId.envId, message);
             }
         });
     }
@@ -270,6 +322,31 @@ export class Communication {
         await this.envReady(instanceId);
     }
 
+    public async useIframe(host: HTMLIFrameElement, instanceId: string, src: string): Promise<void> {
+        const win = host.contentWindow;
+        if (!win) {
+            throw new Error('cannot spawn detached iframe.');
+        }
+
+        await this.changeLocation(win, host, instanceId, src);
+
+        const reload = () => {
+            for (const [handlerId] of this.handlers.entries()) {
+                if (handlerId.rootEnvId === this.rootEnvId && handlerId.envId === instanceId) {
+                    this.reconnectHandler(instanceId, handlerId);
+                }
+            }
+        };
+
+        host.addEventListener('load', async () => {
+            await this.envReady(instanceId);
+            reload();
+        });
+
+        this.registerEnv(instanceId, win);
+        await this.envReady(instanceId);
+    }
+
     /**
      * Dispose the Communication and stop listening to messages.
      */
@@ -285,6 +362,27 @@ export class Communication {
 
     public getEnvironmentName() {
         return this.rootEnvName;
+    }
+
+    private reconnectHandler(instanceId: string, handlerId: RemoteCallAddress) {
+        const message: ListenMessage = {
+            to: instanceId,
+            from: this.rootEnvId,
+            type: 'listen',
+            handlerId,
+            callbackId: this.idsCounter.next('c')
+        };
+        this.createCallbackRecord(
+            message,
+            message.callbackId!,
+            () => {
+                /**/
+            },
+            () => {
+                /**/
+            }
+        );
+        this.sendTo(instanceId, message);
     }
 
     private mapAPIMultiTenantFunctions(id: string, api: APIService): void {
@@ -309,7 +407,14 @@ export class Communication {
                 from: message.to,
                 type: 'callback',
                 to: message.from,
-                data: await this.callMethod(env.id, message.data.api, message.data.method, message.data.args),
+                data: await this.callMethod(
+                    {
+                        ...message.handlerId!,
+                        envId: env.id
+                    },
+                    message.data
+                ),
+
                 callbackId: message.callbackId
             });
         } else {
@@ -372,7 +477,7 @@ export class Communication {
     }
 
     private handleEventMessage(message: EventMessage): void {
-        const handlers = this.handlers.get(message.handlerId);
+        const handlers = this.handlers.get(message.handlerId!);
         if (!handlers) {
             return;
         }
@@ -398,14 +503,14 @@ export class Communication {
 
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
-            if (this.eventDispatchers[message.data.handlerId]) {
+            if (this.eventDispatchers.get(message.handlerId!)) {
                 return;
             }
             this.sendTo(message.from, {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                data: await this.apiCall(message.from, message.data.api, message.data.method, [
+                data: await this.apiCall(message.from, message.handlerId!.api, message.handlerId!.method, [
                     this.createDispatcher(message.from, message)
                 ]),
                 callbackId: message.callbackId
@@ -427,7 +532,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                data: await this.apiCall(message.from, message.data.api, message.data.method, message.data.args),
+                data: await this.apiCall(message.from, message.handlerId!.api, message.handlerId!.method, message.data),
                 callbackId: message.callbackId
             });
         } catch (error) {
@@ -452,16 +557,26 @@ export class Communication {
     }
 
     private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
-        const id = message.data.handlerId;
-        return (this.eventDispatchers[id] = (...args: SerializableArguments) => {
+        const dispacher = (...args: SerializableArguments) => {
             this.sendTo(envId, {
                 to: envId,
                 from: this.rootEnvId,
                 type: 'event',
                 data: args,
-                handlerId: message.data.handlerId
+                handlerId: message.handlerId
             });
-        });
+        };
+
+        this.eventDispatchers.set(
+            {
+                api: message.handlerId!.api,
+                envId,
+                method: message.handlerId!.method,
+                rootEnvId: this.rootEnvId
+            },
+            dispacher
+        );
+        return dispacher;
     }
 
     private isListenCall(args: unknown[]): boolean {
@@ -478,15 +593,16 @@ export class Communication {
         api: string,
         method: string,
         fn: UnknownFunction
-    ): ListenMessage['data'] {
-        const handlerId = `${this.rootEnvId}__${envId}_${api}_${method}`;
+    ): ListenMessage['handlerId'] {
+        const handlerId = {
+            api,
+            envId,
+            method,
+            rootEnvId: this.rootEnvId
+        };
         const handlersBucket = this.handlers.get(handlerId);
         handlersBucket ? handlersBucket.push(fn) : this.handlers.set(handlerId, [fn]);
-        return {
-            api,
-            method,
-            handlerId
-        };
+        return handlerId;
     }
     private createCallbackRecord(
         message: Message,
@@ -533,6 +649,20 @@ export class Communication {
             win.document.head.appendChild(scriptEl);
         });
     }
+
+    private changeLocation(win: Window, host: HTMLIFrameElement, rootComId: string, iframeSrc: string) {
+        return new Promise<Window>((res, rej) => {
+            // This is the contract of the communication to get the root communication id
+            win.name = rootComId;
+            const loaded = () => {
+                host.removeEventListener('load', loaded);
+                res();
+            };
+            host.addEventListener('load', loaded);
+            host.addEventListener('error', () => rej());
+            win.location.href = iframeSrc;
+        });
+    }
 }
 
 /*
@@ -544,6 +674,10 @@ const defaultWorkerFactory = (envName: string, instanceId: string, publicPath: s
 
 const defaultSourceFactory = (envName: string, _instanceId: string, publicPath: string = '/') => {
     return `${publicPath}${envName}.web.js${location.search}`;
+};
+
+const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath: string = '/') => {
+    return `${publicPath}${envName}.html${location.search}`;
 };
 
 const removeMessageArgs = (message: Message): Message => {
