@@ -111,18 +111,21 @@ export class Application {
         const { features, configurations, packages } = this.analyzeFeatures();
 
         const compiler = this.createCompiler(features, featureName, configName);
+
         if (singleRun) {
-            compiler.watch = function watch(_watchOptions, handler) {
-                compiler.run(handler);
-                return {
-                    close(cb) {
-                        if (cb) {
-                            cb();
-                        }
-                    },
-                    invalidate: () => undefined
+            for (const childCompiler of compiler.compilers) {
+                childCompiler.watch = function watch(_watchOptions, handler) {
+                    childCompiler.run(handler);
+                    return {
+                        close(cb) {
+                            if (cb) {
+                                cb();
+                            }
+                        },
+                        invalidate: () => undefined
+                    };
                 };
-            };
+            }
         }
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
