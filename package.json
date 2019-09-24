@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@file-services/memory": "^2.0.1",
-    "@ts-tools/build": "^0.11.0",
+    "@ts-tools/build": "^0.11.2",
     "@ts-tools/node": "^0.11.0",
     "@ts-tools/webpack-loader": "^0.8.14",
     "@types/chai": "^4.2.3",
@@ -53,14 +53,14 @@
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "rimraf": "^3.0.0",
-    "sinon": "^7.4.2",
+    "sinon": "^7.5.0",
     "sinon-chai": "^3.3.0",
     "tsconfig-paths": "^3.9.0",
     "tslint": "^5.20.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-react": "^4.1.0",
     "typescript": "~3.6.3",
-    "webpack": "^4.40.2"
+    "webpack": "^4.41.0"
   },
   "license": "MIT",
   "private": true
