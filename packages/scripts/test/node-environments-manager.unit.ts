@@ -20,11 +20,9 @@ describe('Node environments manager', function() {
     it('launches a new node environment', async () => {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
+        disposables.add(() => close());
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
-
-        disposables.add(() => nodeEnvironmentManager.closeEnvironment(runFeatureOptions));
-        disposables.add(() => close());
 
         const allOpenEnvironments = await nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
         expect(allOpenEnvironments).to.be.not.an('undefined');
@@ -35,6 +33,7 @@ describe('Node environments manager', function() {
     it('lists only open environments', async () => {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
+        disposables.add(() => close());
 
         const allOpenEnvironments = await nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
 
@@ -42,8 +41,6 @@ describe('Node environments manager', function() {
         expect(allOpenEnvironments.length).to.equal(0);
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
-        disposables.add(() => nodeEnvironmentManager.closeEnvironment(runFeatureOptions));
-        disposables.add(() => close());
 
         expect(await nodeEnvironmentManager.getFeaturesWithRunningEnvironments()).to.contain(
             runFeatureOptions.featureName
@@ -54,6 +51,7 @@ describe('Node environments manager', function() {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
+
         await expect(
             nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
         ).to.eventually.be.rejectedWith(

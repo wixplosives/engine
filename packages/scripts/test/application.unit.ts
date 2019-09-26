@@ -157,13 +157,14 @@ describe('Application', function() {
             await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(originalConfigValue));
 
             // after the test, delete the file
-            disposables.add(() => fs.promises.unlink(configFilePathInRepo));
             const app = new Application({ basePath: useConfigsFeaturePath });
             const runningApp = await app.start({
                 featureName: 'configs/use-configs',
                 configName: 'configs/example'
             });
             disposables.add(() => runningApp.close());
+            disposables.add(() => fs.promises.unlink(configFilePathInRepo));
+
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
             // validate original config file is used

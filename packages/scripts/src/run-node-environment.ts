@@ -14,7 +14,7 @@ export async function runNodeEnvironment(
     const localDevHost = new WsServerHost(socketServerNamespace);
     disposeHandlers.add(() => localDevHost.dispose());
 
-    await runEngineApp({
+    const runningEngine = await runEngineApp({
         featureName,
         featureLoaders: createFeatureLoaders(new Map(features), {
             name,
@@ -33,6 +33,7 @@ export async function runNodeEnvironment(
         options: new Map(options),
         envName: name
     });
+    disposeHandlers.add(() => runningEngine.dispose());
 
     return {
         close: async () => {

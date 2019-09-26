@@ -5,7 +5,7 @@
  * This configuration can (and should) be written as a `.ts` file.
  */
 import '@stylable/node/register';
-import '@ts-tools/node/fast';
+import '@ts-tools/node/r';
 import './own-repo-hook';
 
 import fs from '@file-services/node';
@@ -101,7 +101,8 @@ export class Application {
         configName,
         runtimeOptions: defaultRuntimeOptions = {},
         inspect = false,
-        port: httpServerPort
+        port: httpServerPort,
+        singleRun
     }: IRunOptions = {}) {
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
@@ -111,6 +112,21 @@ export class Application {
 
         const compiler = this.createCompiler(features, featureName, configName);
 
+        if (singleRun) {
+            for (const childCompiler of compiler.compilers) {
+                childCompiler.watch = function watch(_watchOptions, handler) {
+                    childCompiler.run(handler);
+                    return {
+                        close(cb) {
+                            if (cb) {
+                                cb();
+                            }
+                        },
+                        invalidate: () => undefined
+                    };
+                };
+            }
+        }
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             configurations,
             features,
@@ -374,10 +390,11 @@ export class Application {
 
     private async launchHttpServer(httpServerPort = DEFAULT_PORT) {
         const app = express();
-        const connections: Socket[] = [];
+        const openSockets = new Set<Socket>();
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
         httpServer.on('connection', socket => {
-            connections.push(socket);
+            openSockets.add(socket);
+            socket.once('close', () => openSockets.delete(socket));
         });
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
@@ -386,10 +403,10 @@ export class Application {
         return {
             close: async () => {
                 await new Promise(res => {
-                    for (const connection of connections) {
+                    for (const connection of openSockets) {
                         connection.destroy();
                     }
-                    connections.length = 0;
+                    openSockets.clear();
                     socketServer.close(res);
                 });
             },
