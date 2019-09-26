@@ -11,8 +11,8 @@ describe('managed iframe environment', () => {
         const { page } = await getLoadedFeature();
         const echoBtn = await page.$(`#${echoBtnId}`);
         const content = await page.$(`#${contentId}`);
-        const rebreshBtn = await page.$(`#${refreshBtnId}`);
-        await rebreshBtn!.click();
+        const refreshBtn = await page.$(`#${refreshBtnId}`);
+        await refreshBtn!.click();
         await echoBtn!.click();
         expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
     });
