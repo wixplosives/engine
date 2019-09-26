@@ -21,7 +21,7 @@ describe('Node environments manager', function() {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
 
-        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
+        await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
         disposables.add(() => nodeEnvironmentManager.closeEnvironment(runFeatureOptions));
         disposables.add(() => close());
@@ -41,7 +41,7 @@ describe('Node environments manager', function() {
         expect(allOpenEnvironments).to.be.an('Array');
         expect(allOpenEnvironments.length).to.equal(0);
 
-        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
+        await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
         disposables.add(() => nodeEnvironmentManager.closeEnvironment(runFeatureOptions));
         disposables.add(() => close());
 
@@ -54,7 +54,9 @@ describe('Node environments manager', function() {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
-        await expect(nodeEnvironmentManager.runEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
+        await expect(
+            nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
+        ).to.eventually.be.rejectedWith(
             'cannot find feature test. available features: engine-node/x, engine-core/communication'
         );
     });
@@ -64,7 +66,7 @@ describe('Node environments manager', function() {
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
 
-        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
+        await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
         await expect(nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
             'there are no node environments running for test'
         );

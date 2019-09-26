@@ -162,7 +162,7 @@ export class Application {
             });
         });
         if (featureName) {
-            await nodeEnvironmentManager.runEnvironment({
+            await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName
             });
@@ -213,7 +213,7 @@ export class Application {
         app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
 
         if (featureName) {
-            await nodeEnvironmentManager.runEnvironment({
+            await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName
             });
