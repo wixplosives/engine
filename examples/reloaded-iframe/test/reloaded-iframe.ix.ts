@@ -14,10 +14,15 @@ describe('managed iframe environment', () => {
         const content = await page.$(`#${contentId}`);
         const refreshBtn = await page.$(`#${refreshBtnId}`);
         await refreshBtn!.click();
-        await waitFor(async () => {
-            const timesRefreshed = await page.$(`#${timesRefreshedId}`);
-            expect(await (await timesRefreshed!.getProperty('textContent')!).jsonValue()).to.contain('1');
-        });
+        await waitFor(
+            async () => {
+                const timesRefreshed = await page.$(`#${timesRefreshedId}`);
+                expect(await (await timesRefreshed!.getProperty('textContent')!).jsonValue()).to.contain('1');
+            },
+            {
+                timeout: 2000
+            }
+        );
         await echoBtn!.click();
         await waitFor(async () => {
             expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
