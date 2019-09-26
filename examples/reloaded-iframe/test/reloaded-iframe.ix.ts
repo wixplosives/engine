@@ -1,6 +1,7 @@
 import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
-import { contentId, echoBtnId, refreshBtnId } from '../src/consts';
+import { waitFor } from 'promise-assist';
+import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../src/consts';
 
 describe('managed iframe environment', () => {
     const { getLoadedFeature } = withFeature({
@@ -13,7 +14,13 @@ describe('managed iframe environment', () => {
         const content = await page.$(`#${contentId}`);
         const refreshBtn = await page.$(`#${refreshBtnId}`);
         await refreshBtn!.click();
+        await waitFor(async () => {
+            const timesRefreshed = await page.$(`#${timesRefreshedId}`);
+            expect(await (await timesRefreshed!.getProperty('textContent')!).jsonValue()).to.contain('1');
+        });
         await echoBtn!.click();
-        expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
+        await waitFor(async () => {
+            expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
+        });
     });
 });
