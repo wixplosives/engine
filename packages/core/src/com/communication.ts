@@ -154,17 +154,17 @@ export class Communication {
 
         const handlerPrefix = `${this.rootEnvId}__${instanceId}_`;
 
-        const reload = () => {
+        const reload = async () => {
             for (const handlerId of this.handlers.keys()) {
                 if (handlerId.startsWith(handlerPrefix)) {
-                    this.reconnectHandler(instanceId, this.parseHandlerId(handlerId, handlerPrefix));
+                    await this.reconnectHandler(instanceId, this.parseHandlerId(handlerId, handlerPrefix));
                 }
             }
         };
 
         host.addEventListener('load', async () => {
             await this.envReady(instanceId);
-            reload();
+            await reload();
         });
 
         this.registerEnv(instanceId, win);
@@ -341,24 +341,17 @@ export class Communication {
     }
 
     private reconnectHandler(instanceId: string, data: ListenMessage['data']) {
-        const message: ListenMessage = {
-            to: instanceId,
-            from: this.rootEnvId,
-            type: 'listen',
-            data,
-            callbackId: this.idsCounter.next('c')
-        };
-        this.createCallbackRecord(
-            message,
-            message.callbackId!,
-            () => {
-                /**/
-            },
-            () => {
-                /**/
-            }
-        );
-        this.sendTo(instanceId, message);
+        return new Promise((res, rej) => {
+            const message: ListenMessage = {
+                to: instanceId,
+                from: this.rootEnvId,
+                type: 'listen',
+                data,
+                callbackId: this.idsCounter.next('c')
+            };
+            this.createCallbackRecord(message, message.callbackId!, res, rej);
+            this.sendTo(instanceId, message);
+        });
     }
 
     private mapAPIMultiTenantFunctions(id: string, api: APIService): void {
