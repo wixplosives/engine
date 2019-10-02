@@ -49,6 +49,9 @@ export default new Feature({
         spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
+        manage: Service.withType<
+            (endPoint: Environment, host: HTMLIFrameElement) => Promise<{ id: string }>
+        >().defineEntity(AllEnvironments),
         connect: Service.withType<(endPoint: Environment<string, 'node'>) => Promise<{ id: string }>>().defineEntity(
             AllEnvironments
         ),
@@ -96,7 +99,8 @@ export default new Feature({
             communication,
             spawn: communication.spawn.bind(communication),
             connect: communication.connect.bind(communication),
-            spawnOrConnect: communication.spawnOrConnect.bind(communication)
+            spawnOrConnect: communication.spawnOrConnect.bind(communication),
+            manage: communication.manage.bind(communication)
         };
     }
 );

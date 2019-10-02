@@ -41,7 +41,7 @@ export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
     constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
-    public async runEnvironment({ featureName, configName, runtimeOptions = {} }: RunEnvironmentOptions) {
+    public async runServerEnvironments({ featureName, configName, runtimeOptions = {} }: RunEnvironmentOptions) {
         if (this.runningEnvironments.has(featureName)) {
             throw new Error(`node environment for ${featureName} already running`);
         }
@@ -104,7 +104,7 @@ export class NodeEnvironmentsManager {
         router.put('/node-env', async (req, res) => {
             const { configName, featureName, runtimeOptions: options }: RunEnvironmentOptions = req.body;
             try {
-                await this.runEnvironment({
+                await this.runServerEnvironments({
                     configName,
                     featureName,
                     runtimeOptions: options

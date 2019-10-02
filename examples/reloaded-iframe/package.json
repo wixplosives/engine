@@ -1,0 +1,10 @@
+{
+  "name": "@example/reloaded-iframe",
+  "version": "7.0.0",
+  "scripts": {
+    "start": "engine start",
+    "test": "mocha \"test/**/*.ix.ts?(x)\""
+
+  },
+  "private": true
+}

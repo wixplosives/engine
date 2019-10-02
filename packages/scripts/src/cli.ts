@@ -63,7 +63,7 @@ program
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
                 if (process.send) {
                     if (id === 'run-feature') {
-                        await nodeEnvironmentManager.runEnvironment(payload as Required<IFeatureTarget>);
+                        await nodeEnvironmentManager.runServerEnvironments(payload as Required<IFeatureTarget>);
                         process.send({ id: 'feature-initialized' });
                     }
                     if (id === 'close-feature') {

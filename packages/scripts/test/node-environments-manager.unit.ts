@@ -22,7 +22,7 @@ describe('Node environments manager', function() {
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
 
-        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
+        await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
         const allOpenEnvironments = await nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
         expect(allOpenEnvironments).to.be.not.an('undefined');
@@ -40,7 +40,7 @@ describe('Node environments manager', function() {
         expect(allOpenEnvironments).to.be.an('Array');
         expect(allOpenEnvironments.length).to.equal(0);
 
-        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
+        await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
         expect(await nodeEnvironmentManager.getFeaturesWithRunningEnvironments()).to.contain(
             runFeatureOptions.featureName
@@ -52,7 +52,9 @@ describe('Node environments manager', function() {
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
 
-        await expect(nodeEnvironmentManager.runEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
+        await expect(
+            nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
+        ).to.eventually.be.rejectedWith(
             'cannot find feature test. available features: engine-node/x, engine-core/communication'
         );
     });
@@ -62,7 +64,7 @@ describe('Node environments manager', function() {
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
 
-        await nodeEnvironmentManager.runEnvironment(runFeatureOptions);
+        await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
         await expect(nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
             'there are no node environments running for test'
         );

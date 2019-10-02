@@ -127,6 +127,50 @@ export class Communication {
         };
     }
 
+    public async manage(endPoint: Environment, host: HTMLIFrameElement, src?: string) {
+        const { endpointType, env } = endPoint;
+
+        const isSingleton = endpointType === 'single';
+        const instanceId = isSingleton ? env : this.generateEnvInstanceID(env);
+
+        await this.useIframe(
+            (host as HTMLIFrameElement)!,
+            instanceId,
+            src || defaultHtmlSourceFactory(env, instanceId, this.topology.publicPath)
+        );
+
+        return {
+            id: instanceId
+        };
+    }
+
+    public async useIframe(host: HTMLIFrameElement, instanceId: string, src: string): Promise<void> {
+        const win = host.contentWindow;
+        if (!win) {
+            throw new Error('cannot spawn detached iframe.');
+        }
+
+        await this.changeLocation(win, host, instanceId, src);
+
+        const handlerPrefix = `${this.rootEnvId}__${instanceId}_`;
+
+        const reload = async () => {
+            for (const handlerId of this.handlers.keys()) {
+                if (handlerId.startsWith(handlerPrefix)) {
+                    await this.reconnectHandler(instanceId, this.parseHandlerId(handlerId, handlerPrefix));
+                }
+            }
+        };
+
+        host.addEventListener('load', async () => {
+            await this.envReady(instanceId);
+            await reload();
+        });
+
+        this.registerEnv(instanceId, win);
+        await this.envReady(instanceId);
+    }
+
     /**
      * Connects to a remote node environment
      */
@@ -287,6 +331,29 @@ export class Communication {
         return this.rootEnvName;
     }
 
+    private parseHandlerId(handlerId: string, prelude: string) {
+        const [api, method] = handlerId.slice(prelude.length).split('@');
+        return {
+            api,
+            method,
+            handlerId
+        };
+    }
+
+    private reconnectHandler(instanceId: string, data: ListenMessage['data']) {
+        return new Promise((res, rej) => {
+            const message: ListenMessage = {
+                to: instanceId,
+                from: this.rootEnvId,
+                type: 'listen',
+                data,
+                callbackId: this.idsCounter.next('c')
+            };
+            this.createCallbackRecord(message, message.callbackId!, res, rej);
+            this.sendTo(instanceId, message);
+        });
+    }
+
     private mapAPIMultiTenantFunctions(id: string, api: APIService): void {
         const serviceConfig = api[SERVICE_CONFIG];
         if (serviceConfig) {
@@ -315,6 +382,20 @@ export class Communication {
         } else {
             throw new Error(MISSING_FORWARD_FOR_MESSAGE(message));
         }
+    }
+
+    private changeLocation(win: Window, host: HTMLIFrameElement, rootComId: string, iframeSrc: string) {
+        return new Promise<Window>((res, rej) => {
+            // This is the contract of the communication to get the root communication id
+            win.name = rootComId;
+            const loaded = () => {
+                host.removeEventListener('load', loaded);
+                res();
+            };
+            host.addEventListener('load', loaded);
+            host.addEventListener('error', () => rej());
+            win.location.href = iframeSrc;
+        });
     }
 
     private apiCall(from: string, api: string, method: string, args: unknown[]): unknown {
@@ -479,7 +560,7 @@ export class Communication {
         method: string,
         fn: UnknownFunction
     ): ListenMessage['data'] {
-        const handlerId = `${this.rootEnvId}__${envId}_${api}_${method}`;
+        const handlerId = `${this.rootEnvId}__${envId}_${api}@${method}`;
         const handlersBucket = this.handlers.get(handlerId);
         handlersBucket ? handlersBucket.push(fn) : this.handlers.set(handlerId, [fn]);
         return {
@@ -544,6 +625,10 @@ const defaultWorkerFactory = (envName: string, instanceId: string, publicPath: s
 
 const defaultSourceFactory = (envName: string, _instanceId: string, publicPath: string = '/') => {
     return `${publicPath}${envName}.web.js${location.search}`;
+};
+
+const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath: string = '/') => {
+    return `${publicPath}${envName}.html${location.search}`;
 };
 
 const removeMessageArgs = (message: Message): Message => {
