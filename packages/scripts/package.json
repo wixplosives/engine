@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "7.2.3",
+  "version": "7.3.0",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
@@ -23,11 +23,11 @@
     "@stylable/core": "^2.3.1",
     "@stylable/node": "^2.3.1",
     "@stylable/webpack-plugin": "^2.3.1",
-    "@ts-tools/node": "^0.11.0",
-    "@ts-tools/webpack-loader": "^0.8.14",
+    "@ts-tools/node": "^1.0.0",
+    "@ts-tools/webpack-loader": "^1.0.0",
     "@wixc3/engine-core": "^7.2.0",
     "@wixc3/engine-core-node": "^7.2.0",
-    "commander": "^3.0.1",
+    "commander": "^3.0.2",
     "create-listening-server": "^0.1.2",
     "deindent": "^0.1.0",
     "express": "^4.17.1",
@@ -35,14 +35,14 @@
     "html-webpack-plugin": "^4.0.0-beta.8",
     "import-fresh": "^3.1.0",
     "prop-types": "^15.7.2",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
+    "react": "^16.10.1",
+    "react-dom": "^16.10.1",
     "react-table": "^6.10.3",
     "rimraf": "^3.0.0",
     "socket.io": "^2.3.0",
     "webpack": "^4.41.0",
-    "webpack-dev-middleware": "^3.7.1",
-    "webpack-virtual-modules": "^0.1.11"
+    "webpack-dev-middleware": "^3.7.2",
+    "webpack-virtual-modules": "^0.1.12"
   },
   "files": [
     "cjs",
