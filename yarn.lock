@@ -2293,7 +2293,7 @@ commander@^2.12.1, commander@^2.19.0, commander@^2.20.0, commander@~2.20.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.1.tgz#3863ce3ca92d0831dcf2a102f5fb4b5926afd0f9"
   integrity sha512-cCuLsMhJeWQ/ZpsFTbE765kvVfoeSddc4nU3up4fV+fDBcfUXnbITJ+JzhkdjzOqhURjZgujxaioam4RM9yGUg==
 
-commander@^3.0.0, commander@^3.0.2:
+commander@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/commander/-/commander-3.0.2.tgz#6837c3fb677ad9933d1cfba42dd14d5117d6b39e"
   integrity sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow==
@@ -2554,10 +2554,10 @@ create-hmac@^1.1.0, create-hmac@^1.1.2, create-hmac@^1.1.4:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-create-listening-server@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/create-listening-server/-/create-listening-server-0.1.2.tgz#bc4e1e0adf0ad17cb1d09599bb899b0c1e6aeea4"
-  integrity sha512-74qqb84lbUM+lOI32TX9CY5pzijUwyB1urORGZlH6NTd3SQx18TWdUiQzzJd40ZiAqD5L2+AtlOSd8Gq5K78rQ==
+create-listening-server@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/create-listening-server/-/create-listening-server-1.0.0.tgz#d33d93a8a71b613bb937ab27a54a82b0f6079661"
+  integrity sha512-Nb94WAhopCcWAmCzlAy+rJ8lsCojeZP/1YLcReOdsi5i9mXgC+TDKAjZQYMmEvlEGq/qKvt44EdH9RAxEMRr6A==
 
 cross-spawn@^6.0.0:
   version "6.0.5"
@@ -5037,23 +5037,23 @@ mkdirp@*, mkdirp@0.5.1, mkdirp@^0.5.0, mkdirp@^0.5.1:
   dependencies:
     minimist "0.0.8"
 
-mocha-pup@^0.1.18:
-  version "0.1.18"
-  resolved "https://registry.yarnpkg.com/mocha-pup/-/mocha-pup-0.1.18.tgz#1e8fbdaf06af2c46e659d0b3c14c87efdceb447e"
-  integrity sha512-jBiAWHbWDZc/UArM0GixsGD6n5q+HMthTEmQ2quKQahu13ykKsE8l5lPjLyuQiLMyP74wr1iWdQNhTdhApaokA==
+mocha-pup@^0.1.19:
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/mocha-pup/-/mocha-pup-0.1.19.tgz#4d955fe0280f2b4fdf426291af8329ee12f87cea"
+  integrity sha512-GodwRJHfaSgjmdxzWPWHA2AwNYqzbb1eJ4girwgiXZuBnjHXZr7/V/gkaljwOzTzZnXs+QqOranb06RghsLikw==
   dependencies:
     chalk "^2.4.2"
-    commander "^3.0.0"
-    create-listening-server "^0.1.2"
+    commander "^3.0.2"
+    create-listening-server "^1.0.0"
     css-loader "^3.2.0"
     express "^4.17.1"
     find-up "^4.1.0"
     glob "^7.1.4"
     html-webpack-plugin "^4.0.0-beta.8"
     promise-assist "^1.2.6"
-    puppeteer "^1.19.0"
+    puppeteer "^1.20.0"
     style-loader "^1.0.0"
-    webpack-dev-middleware "^3.7.0"
+    webpack-dev-middleware "^3.7.2"
 
 mocha@^6.2.1:
   version "6.2.1"
@@ -6143,7 +6143,7 @@ punycode@^2.1.0:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer@^1.19.0, puppeteer@^1.20.0:
+puppeteer@^1.20.0:
   version "1.20.0"
   resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-1.20.0.tgz#e3d267786f74e1d87cf2d15acc59177f471bbe38"
   integrity sha512-bt48RDBy2eIwZPrkgbcwHtb51mj2nKvHOPMaSH2IsWiv7lOG9k9zhaRzpDZafrk05ajMc3cu+lSQYYOfH2DkVQ==
@@ -7242,9 +7242,9 @@ terser-webpack-plugin@^1.4.1:
     worker-farm "^1.7.0"
 
 terser@^4.1.2:
-  version "4.3.7"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-4.3.7.tgz#9dafb4a6730868608c9c7af96d44182f4107b29f"
-  integrity sha512-rJFxzWIzJdgiOwYIPJHu6L3hDegEYJj2cHuKcngMraUfhMXGDEbok9Tqjw7yxzrU4IagvG74uTEKdiqeG6T7bg==
+  version "4.3.8"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-4.3.8.tgz#707f05f3f4c1c70c840e626addfdb1c158a17136"
+  integrity sha512-otmIRlRVmLChAWsnSFNO0Bfk6YySuBp6G9qrHiJwlLDd4mxe2ta4sjI7TzIR+W1nBMjilzrMcPOz9pSusgx3hQ==
   dependencies:
     commander "^2.20.0"
     source-map "~0.6.1"
@@ -7719,7 +7719,7 @@ webidl-conversions@^4.0.2:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-4.0.2.tgz#a855980b1f0b6b359ba1d5d9fb39ae941faa63ad"
   integrity sha512-YQ+BmxuTgd6UXZW3+ICGfyqRyHXVlD5GtQr5+qjiNW7bF0cqrzX500HVXPBOvgXb5YnzDd+h0zqyv61KUD7+Sg==
 
-webpack-dev-middleware@^3.7.0, webpack-dev-middleware@^3.7.2:
+webpack-dev-middleware@^3.7.2:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/webpack-dev-middleware/-/webpack-dev-middleware-3.7.2.tgz#0019c3db716e3fa5cecbf64f2ab88a74bab331f3"
   integrity sha512-1xC42LxbYoqLNAhV6YzTYacicgMZQTqRd27Sim9wn5hJrX3I5nxYy1SxSd4+gjUFsz1dQFj+yEe6zEVmSkeJjw==

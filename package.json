@@ -46,7 +46,7 @@
     "deindent": "^0.1.0",
     "lerna": "^3.16.4",
     "mocha": "^6.2.1",
-    "mocha-pup": "^0.1.18",
+    "mocha-pup": "^0.1.19",
     "prettier": "^1.18.2",
     "promise-assist": "^1.2.6",
     "puppeteer": "^1.20.0",
