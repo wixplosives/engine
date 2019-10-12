@@ -28,7 +28,7 @@
     "@types/is-ci": "^2.0.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "10",
-    "@types/puppeteer": "^1.20.1",
+    "@types/puppeteer": "^1.20.2",
     "@types/react": "^16.9.5",
     "@types/react-dom": "^16.9.1",
     "@types/react-table": "^6.8.5",
@@ -44,7 +44,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "deindent": "^0.1.0",
-    "lerna": "^3.16.5",
+    "lerna": "^3.17.0",
     "mocha": "^6.2.1",
     "mocha-pup": "^0.1.19",
     "prettier": "^1.18.2",
@@ -60,7 +60,7 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-react": "^4.1.0",
     "typescript": "~3.6.4",
-    "webpack": "^4.41.0"
+    "webpack": "^4.41.1"
   },
   "license": "MIT",
   "private": true
