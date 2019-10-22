@@ -19,8 +19,7 @@
   },
   "files": [
     "cjs",
-    "src",
-    "!src/tsconfig.json"
+    "src"
   ],
   "license": "MIT",
   "publishConfig": {
