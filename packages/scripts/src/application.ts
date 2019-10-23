@@ -107,7 +107,7 @@ export class Application {
         inspect = false,
         port: httpServerPort,
         singleRun,
-        config
+        config = []
     }: IRunOptions = {}) {
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
@@ -137,7 +137,8 @@ export class Application {
             features,
             defaultRuntimeOptions,
             port,
-            inspect
+            inspect,
+            config
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
@@ -212,7 +213,7 @@ export class Application {
             runtimeOptions: defaultRuntimeOptions,
             inspect,
             port: httpServerPort,
-            config
+            config = []
         } = runOptions;
         const disposables = new Set<() => unknown>();
 
@@ -228,7 +229,8 @@ export class Application {
             features: new Map(features),
             port,
             defaultRuntimeOptions,
-            inspect
+            inspect,
+            config
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
