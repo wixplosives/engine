@@ -34,17 +34,17 @@ export class SingleEndpointContextualEnvironment<NAME extends string, ENVS exten
     }
 
     public useContext(contextEnv: keyof MapBy<ENVS, 'env'>): EnvironmentContext {
-        return new EnvironmentContext(
-            this.env,
-            contextEnv,
-            this.environments.find(({ env }) => env === contextEnv)!.envType
-        );
+        return new EnvironmentContext(this.env, contextEnv, this.getEnvironmentById(contextEnv).envType);
     }
 
     public withContext<I extends object>(): DisposableContext<I> {
         return {
             type: runtimeType<I & { dispose(): unknown }>(this.env + ' context')
         };
+    }
+
+    public getEnvironmentById(id: keyof MapBy<ENVS, 'env'>) {
+        return this.environments.find(({ env }) => env === id)!;
     }
 }
 
