@@ -1,3 +1,4 @@
+import { TopLevelConfig } from '@wixc3/engine-core/src';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { AttachedApp } from './attached-app';
@@ -71,6 +72,12 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
      * It can be extracted from the log printed after 'engine start' or 'engine run'
      */
     runningApplicationPort?: number;
+
+    /**
+     * Allows providing a Top level config
+     * If configName was provided, the matching configurations will be overriden by the config provided
+     */
+    config?: TopLevelConfig;
 }
 
 let browser: puppeteer.Browser | null = null;
@@ -108,7 +115,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         runOptions: suiteOptions = {},
         allowErrors: suiteAllowErrors = false,
         queryParams: suiteQueryParams,
-        runningApplicationPort
+        runningApplicationPort,
+        config: suiteConfig
     } = withFeatureOptions;
 
     if (isCI && (headless === false || devtools === true || slowMo !== undefined)) {
@@ -162,7 +170,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
                 configName = suiteConfigName,
                 runOptions = suiteOptions,
                 queryParams = suiteQueryParams,
-                allowErrors: targetAllowErrors = false
+                allowErrors: targetAllowErrors = false,
+                config = suiteConfig
             }: IFeatureTestOptions = {},
             options?: puppeteer.DirectNavigationOptions
         ) {
@@ -177,7 +186,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             await executableApp.runFeature({
                 featureName,
                 configName,
-                runtimeOptions: runOptions
+                runtimeOptions: runOptions,
+                config
             });
 
             disposeAfterEach.add(async () =>

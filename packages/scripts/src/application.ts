@@ -40,13 +40,13 @@ export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
+    config?: TopLevelConfig;
 }
 
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
     inspect?: boolean;
     port?: number;
-    config?: TopLevelConfig;
 }
 
 export interface IBuildManifest {
