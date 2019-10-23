@@ -6,7 +6,8 @@ import { IConfigDefinition } from './types';
 
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition>,
-    topology: Map<string, Record<string, string>>
+    topology: Map<string, Record<string, string>>,
+    overrideConfig: TopLevelConfig = []
 ): express.RequestHandler {
     return async (req, res) => {
         const { feature: reqFeature, env: reqEnv } = req.query;
@@ -31,6 +32,8 @@ export function createConfigMiddleware(
                 }
             }
         }
+        config.push(...overrideConfig);
+
         res.send(config);
     };
 }

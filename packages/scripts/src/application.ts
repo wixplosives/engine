@@ -8,7 +8,6 @@ import '@stylable/node/register';
 import '@ts-tools/node/r';
 import './own-repo-hook';
 
-import fs from '@file-services/node';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import rimrafCb from 'rimraf';
@@ -17,8 +16,12 @@ import { promisify } from 'util';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 
-import { SetMultiMap } from '@file-services/utils';
 import { Socket } from 'net';
+
+import fs from '@file-services/node';
+import { SetMultiMap } from '@file-services/utils';
+import { TopLevelConfig } from '@wixc3/engine-core';
+
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import { createConfigMiddleware } from './config-middleware';
@@ -43,6 +46,7 @@ export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
     inspect?: boolean;
     port?: number;
+    config?: TopLevelConfig;
 }
 
 export interface IBuildManifest {
@@ -102,7 +106,8 @@ export class Application {
         runtimeOptions: defaultRuntimeOptions = {},
         inspect = false,
         port: httpServerPort,
-        singleRun
+        singleRun,
+        config
     }: IRunOptions = {}) {
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
@@ -136,7 +141,7 @@ export class Application {
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
+        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config));
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
@@ -206,7 +211,8 @@ export class Application {
             featureName = defaultFeatureName,
             runtimeOptions: defaultRuntimeOptions,
             inspect,
-            port: httpServerPort
+            port: httpServerPort,
+            config
         } = runOptions;
         const disposables = new Set<() => unknown>();
 
@@ -226,7 +232,7 @@ export class Application {
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology));
+        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config));
 
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
