@@ -35,6 +35,7 @@ export interface INodeEnvironmentsManagerOptions {
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
+    config: TopLevelConfig;
 }
 export class NodeEnvironmentsManager {
     public topology = new Map<string, Record<string, string>>();
@@ -54,7 +55,8 @@ export class NodeEnvironmentsManager {
                 featureName,
                 [
                     COM.use({ config: { topology: this.topology.get(featureName) } }),
-                    ...(await this.getConfig(configName))
+                    ...(await this.getConfig(configName)),
+                    ...this.options.config
                 ],
                 { ...defaultRuntimeOptions, ...runtimeOptions }
             );
