@@ -1,6 +1,6 @@
 {
   "name": "@fixture/engine-single-feature",
-  "version": "7.0.0",
+  "version": "7.6.0",
   "scripts": {
     "start": "engine start"
   },
