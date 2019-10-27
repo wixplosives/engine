@@ -369,12 +369,12 @@ describe('Feature', () => {
         });
     });
 
-    describe('identefiable entities', () => {
+    describe('Identifiable entities', () => {
         interface Identity {
             featureID: string;
             entityKey: string;
         }
-        class Identefiable extends FeatureInput<Readonly<Identity>, Environment, any> {
+        class Identifiable extends FeatureInput<Readonly<Identity>, Environment, any> {
             public identity!: Identity;
             constructor() {
                 super(Universal, Universal);
@@ -410,7 +410,7 @@ describe('Feature', () => {
             const ids = new Feature({
                 id: 'testIdentify',
                 api: {
-                    identifiable: new Identefiable()
+                    identifiable: new Identifiable()
                 }
             });
 
