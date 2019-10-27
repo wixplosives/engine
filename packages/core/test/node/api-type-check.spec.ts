@@ -1,7 +1,7 @@
 import { EQUAL, ExpectTrue } from 'typescript-type-utils';
 import { DisposeFunction, Environment, IRunOptions, RUN_OPTIONS, Universal } from '../../src';
 import { Config, Feature, Registry, Running, RunningFeatures, RuntimeEngine, Service, Slot } from '../../src';
-import { type_check } from '../type-check';
+import { typeCheck } from '../type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/
 
@@ -16,7 +16,7 @@ const logger = new Feature({
     }
 });
 
-type_check(
+typeCheck(
     (
         _runningFeature: EQUAL<
             Running<typeof logger, 'main'>,
@@ -36,7 +36,7 @@ const gui = new Feature({
     }
 });
 
-type_check(
+typeCheck(
     (
         _runningDependencies: EQUAL<
             RunningFeatures<typeof gui['dependencies'], 'main'>,
@@ -70,7 +70,7 @@ const addPanel = new Feature({
         service3: Service.withType<DataService>().defineEntity(Universal)
     }
 });
-type_check(
+typeCheck(
     (
         _runningFeature: EQUAL<
             Running<typeof addPanel, 'main'>,
@@ -114,7 +114,7 @@ export function dontRun() {
             service1.setData(await dataPromise);
         });
 
-        type_check(
+        typeCheck(
             (
                 _featureTest: ExpectTrue<
                     EQUAL<
@@ -133,7 +133,7 @@ export function dontRun() {
             ) => true
         );
 
-        type_check(
+        typeCheck(
             (
                 _engineTest: EQUAL<
                     typeof engine,

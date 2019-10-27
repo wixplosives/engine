@@ -1,3 +1,5 @@
+/* eslint-disable react/display-name */
+
 import React, { useEffect, useState } from 'react';
 import ReactTable, { Column, DefaultFilterFunction } from 'react-table';
 import 'react-table/react-table.css';
@@ -18,7 +20,6 @@ export const FeaturesList: React.FunctionComponent = () => {
             const serverStateResponse = await fetchServerState();
             setServerState(serverStateResponse.data);
         } else {
-            // tslint:disable-next-line no-console
             console.error(serverResponse);
         }
     };
@@ -30,7 +31,6 @@ export const FeaturesList: React.FunctionComponent = () => {
         };
 
         possibleFeaturesRequest().catch(error => {
-            // tslint:disable-next-line no-console
             console.error(error);
         });
     }, []);

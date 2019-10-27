@@ -24,7 +24,7 @@ describe('Node environments manager', function() {
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
-        const allOpenEnvironments = await nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
+        const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
         expect(allOpenEnvironments).to.be.not.an('undefined');
         expect(allOpenEnvironments).to.be.an('Array');
         expect(allOpenEnvironments).to.contain(runFeatureOptions.featureName);
@@ -35,16 +35,14 @@ describe('Node environments manager', function() {
         const { close, nodeEnvironmentManager } = await app.start();
         disposables.add(() => close());
 
-        const allOpenEnvironments = await nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
+        const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
 
         expect(allOpenEnvironments).to.be.an('Array');
         expect(allOpenEnvironments.length).to.equal(0);
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
-        expect(await nodeEnvironmentManager.getFeaturesWithRunningEnvironments()).to.contain(
-            runFeatureOptions.featureName
-        );
+        expect(nodeEnvironmentManager.getFeaturesWithRunningEnvironments()).to.contain(runFeatureOptions.featureName);
     });
 
     it('fails to launch if wrong config name or feature name are provided', async () => {

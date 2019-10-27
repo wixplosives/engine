@@ -22,6 +22,5 @@ export const MISSING_CONTEXT_FOR_API_PROXY = (type: string, remoteServiceId: str
     `Missing ${type} when trying to get remote service api proxy for ${remoteServiceId}`;
 
 export function reportError(e: Error) {
-    // tslint:disable-next-line: no-console
     console.error(e);
 }

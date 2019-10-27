@@ -1,5 +1,3 @@
-// tslint:disable: no-console
-
 /**
  * We use Node's native module system to directly load configuration file.
  * This configuration can (and should) be written as a `.ts` file.

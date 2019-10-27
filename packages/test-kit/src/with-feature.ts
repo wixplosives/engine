@@ -81,7 +81,7 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
 }
 
 let browser: puppeteer.Browser | null = null;
-let featureUrl: string = '';
+let featureUrl = '';
 let executableApp: IExecutableApplication;
 
 after('close puppeteer browser, if open', async () => {
@@ -100,11 +100,6 @@ after('close engine server, if open', async function() {
 });
 
 export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
-    let { basePath = process.cwd() } = withFeatureOptions;
-    if (process.platform === 'win32') {
-        basePath = correctWin32DriveLetter(basePath);
-    }
-
     const disposeAfterEach = createDisposables();
     const {
         headless,
@@ -206,7 +201,6 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             pages.add(page);
             page.on('pageerror', e => {
                 capturedErrors.push(e);
-                // tslint:disable-next-line: no-console
                 console.error(e);
             });
             const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...options });

@@ -134,7 +134,7 @@ export class Communication {
         const instanceId = isSingleton ? env : this.generateEnvInstanceID(env);
 
         await this.useIframe(
-            (host as HTMLIFrameElement)!,
+            host,
             instanceId,
             src || defaultHtmlSourceFactory(env, instanceId, this.topology.publicPath)
         );
@@ -162,9 +162,10 @@ export class Communication {
             }
         };
 
-        host.addEventListener('load', async () => {
-            await this.envReady(instanceId);
-            await reload();
+        host.addEventListener('load', () => {
+            this.envReady(instanceId)
+                .then(reload)
+                .catch(reportError);
         });
 
         this.registerEnv(instanceId, win);
@@ -273,28 +274,24 @@ export class Communication {
             await this.forwardMessage(message, env);
             return;
         }
-        try {
-            switch (message.type) {
-                case 'call':
-                    await this.handleCall(message);
-                    break;
-                case 'callback':
-                    this.handleCallback(message);
-                    break;
-                case 'event':
-                    this.handleEventMessage(message);
-                    break;
-                case 'listen':
-                    await this.handleListen(message);
-                    break;
-                case 'ready':
-                    await this.handleReady(message);
-                    break;
-                default:
-                    break;
-            }
-        } catch (e) {
-            throw e;
+        switch (message.type) {
+            case 'call':
+                await this.handleCall(message);
+                break;
+            case 'callback':
+                this.handleCallback(message);
+                break;
+            case 'event':
+                this.handleEventMessage(message);
+                break;
+            case 'listen':
+                await this.handleListen(message);
+                break;
+            case 'ready':
+                this.handleReady(message);
+                break;
+            default:
+                break;
         }
     }
 
@@ -400,9 +397,9 @@ export class Communication {
 
     private apiCall(from: string, api: string, method: string, args: unknown[]): unknown {
         if (this.apisOverrides[api] && this.apisOverrides[api][method]) {
-            return (this.apisOverrides[api][method] as any)(...[from, ...args]);
+            return this.apisOverrides[api][method](...[from, ...args]);
         }
-        return (this.apis[api][method] as any)(...args);
+        return this.apis[api][method](...args);
     }
 
     private unhandledMessage(_message: Message): void {
@@ -587,7 +584,6 @@ export class Communication {
         if (this.options.warnOnSlow) {
             setTimeout(() => {
                 if (this.callbacks[callbackId]) {
-                    // tslint:disable-next-line: no-console
                     console.error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message)));
                 }
             }, this.slowThreshold);
@@ -619,15 +615,15 @@ export class Communication {
 /*
  * We only use the default factories so as a solution to pass the config name we append the location.search
  */
-const defaultWorkerFactory = (envName: string, instanceId: string, publicPath: string = '/') => {
+const defaultWorkerFactory = (envName: string, instanceId: string, publicPath = '/') => {
     return new Worker(`${publicPath}${envName}.webworker.js${location.search}`, { name: instanceId });
 };
 
-const defaultSourceFactory = (envName: string, _instanceId: string, publicPath: string = '/') => {
+const defaultSourceFactory = (envName: string, _instanceId: string, publicPath = '/') => {
     return `${publicPath}${envName}.web.js${location.search}`;
 };
 
-const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath: string = '/') => {
+const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '/') => {
     return `${publicPath}${envName}.html${location.search}`;
 };
 

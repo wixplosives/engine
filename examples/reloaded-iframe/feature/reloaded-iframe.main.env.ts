@@ -35,8 +35,7 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
             timesRefreshed.innerText = `document was refreshed ${++refreshCounter} times`;
         };
 
-        // tslint:disable-next-line: no-floating-promises
-        echoService.get(envToken).onEcho(times => {
+        await echoService.get(envToken).onEcho(times => {
             div.innerText = `document was called ${times} times`;
         });
     });

@@ -24,10 +24,8 @@ export function createConfigMiddleware(
                         };
                         config.push(...configValue);
                     } catch (e) {
-                        // tslint:disable: no-console
                         console.error(`Failed evaluating config file: ${filePath}`);
                         console.error(e);
-                        // tslint:enable: no-console
                     }
                 }
             }

@@ -1,4 +1,4 @@
-// tslint:disable: no-console
+/* eslint-disable @typescript-eslint/no-misused-promises */
 
 import program from 'commander';
 import { join } from 'path';
