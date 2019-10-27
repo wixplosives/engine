@@ -11,7 +11,7 @@ Preview.setup(PROCESSING, ({ complierExtension }, { playgroundCodeEditor: { remo
                 .join('');
         },
         matcher(_content: string) {
-            return _content.indexOf('reverse') !== -1;
+            return _content.includes('reverse');
         }
     });
 

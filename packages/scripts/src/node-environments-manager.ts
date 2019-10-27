@@ -197,7 +197,6 @@ export class NodeEnvironmentsManager {
                     const { default: topLevelConfig } = await import(filePath);
                     config.push(...topLevelConfig);
                 } catch (e) {
-                    // tslint:disable-next-line: no-console
                     console.error(e);
                 }
             }

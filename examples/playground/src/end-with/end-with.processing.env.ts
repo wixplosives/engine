@@ -7,7 +7,7 @@ EndWith.setup(PROCESSING, ({}, { preview }) => {
             return content + '!!!!!!!';
         },
         matcher(_content: string) {
-            return _content.indexOf('!') !== -1;
+            return _content.includes('!');
         }
     });
     return null;

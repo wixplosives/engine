@@ -1,3 +1,3 @@
-export function type_check<U extends true, T extends (...args: U[]) => U>(_fn: T): void {
+export function typeCheck<U extends true, T extends (...args: U[]) => U>(_fn: T): void {
     /**/
 }

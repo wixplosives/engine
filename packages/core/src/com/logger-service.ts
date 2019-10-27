@@ -1,5 +1,3 @@
-// tslint:disable: no-console
-
 import { LogMessage, LogMetadata } from '../common-types';
 import { EventEmitter } from '../event-emitter';
 import { LoggerTransport, LogLevel } from '../types';

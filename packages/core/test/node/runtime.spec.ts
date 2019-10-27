@@ -24,7 +24,7 @@ import {
     Slot,
     Universal
 } from '../../src';
-import { type_check } from '../type-check';
+import { typeCheck } from '../type-check';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -285,7 +285,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
                 return null;
@@ -317,7 +317,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
                 return null;
@@ -327,7 +327,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
                 return null;
             });
@@ -359,7 +359,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({ }, { }) => {
+            }).setup(envName, ({}, {}) => {
                 return null;
             });
 
@@ -374,11 +374,7 @@ describe('Feature', () => {
             featureID: string;
             entityKey: string;
         }
-        class Identefiable extends FeatureInput<
-            Readonly<Identity>,
-            Environment,
-            any
-            >{
+        class Identefiable extends FeatureInput<Readonly<Identity>, Environment, any> {
             public identity!: Identity;
             constructor() {
                 super(Universal, Universal);
@@ -392,7 +388,7 @@ describe('Feature', () => {
             public [CREATE_RUNTIME](_context: RuntimeEngine, featureID: string, entityKey: string) {
                 return {
                     featureID,
-                    entityKey,
+                    entityKey
                 };
             }
 
@@ -480,7 +476,7 @@ describe('feature interaction', () => {
 });
 
 describe('Contextual environments', () => {
-    it('Feature should define contextual environment, set up the environment context and use it in the environment setup', async () => {
+    it('Feature should define contextual environment, set up the environment context and use it in the environment setup', () => {
         const workerEnv = new Environment('worker', 'worker', 'single');
         const processing = new SingleEndpointContextualEnvironment('processing', [workerEnv]);
 
@@ -512,7 +508,7 @@ describe('Contextual environments', () => {
             };
         });
 
-        entryFeature.setup(processing, ({ }, { }, { processingContext: { name }, processingContext2: { age } }) => {
+        entryFeature.setup(processing, ({}, {}, { processingContext: { name }, processingContext2: { age } }) => {
             return {
                 echoService: {
                     echo(s: string) {
@@ -524,7 +520,7 @@ describe('Contextual environments', () => {
 
         const engine = runEngine({ entryFeature, envName: processing.env });
 
-        expect(await engine.get(entryFeature).api.echoService.echo('hello')).to.eq('hello test 1');
+        expect(engine.get(entryFeature).api.echoService.echo('hello')).to.eq('hello test 1');
     });
 });
 
@@ -537,7 +533,7 @@ describe('feature disposal', () => {
             api: {}
         });
         const dispose = spy(() => Promise.resolve());
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
             return null;
         });
@@ -562,7 +558,7 @@ describe('feature disposal', () => {
         const dispose = spy(() => Promise.resolve());
         const dispose2 = spy(() => Promise.resolve());
 
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
             onDispose(dispose2);
 
@@ -590,7 +586,7 @@ describe('feature disposal', () => {
         const disposeFirst = spy(() => Promise.resolve());
         const disposeSecond = spy(() => Promise.reject('err'));
 
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(disposeFirst);
             onDispose(disposeSecond);
 
@@ -626,7 +622,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                 return null;
             })
             .setup(processing, x => {
-                type_check(
+                typeCheck(
                     (
                         _noSlot: EQUAL<
                             typeof x,
@@ -706,7 +702,7 @@ describe.skip('Environments Type tests 1', () => {
             }
         });
 
-        echoFeature.setup(processing, ({ }, { }) => {
+        echoFeature.setup(processing, ({}, {}) => {
             return {
                 echoService: {
                     echo(s: string) {

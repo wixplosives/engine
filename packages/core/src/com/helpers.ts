@@ -1,5 +1,5 @@
 // we cannot mix types of "dom" and "webworker". tsc fails building.
-declare var WorkerGlobalScope: new () => Worker;
+declare let WorkerGlobalScope: new () => Worker;
 
 export function isWorkerContext(target: unknown): target is Worker {
     return (

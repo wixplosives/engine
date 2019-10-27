@@ -19,7 +19,7 @@ export function evalEntry(entrySource: string, urlSearchParams: { [key: string]:
     const { moduleExports, requireCalls } = evalModule(
         entrySource,
         (id: string) => {
-            if (id.indexOf(CONFIG_FILENAME_HINT) !== -1) {
+            if (id.includes(CONFIG_FILENAME_HINT)) {
                 return [id];
             }
             switch (id) {
@@ -79,7 +79,6 @@ export function evalModule(
         }
     });
 
-    // tslint:disable-next-line:function-constructor
     const runCode = new Function('module', 'exports', 'require', 'URLSearchParams', 'location', outputText);
     const requireCalls: Array<{ id: string; [moduleExportsSymbol]: unknown }> = [];
 

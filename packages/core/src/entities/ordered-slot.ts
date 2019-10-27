@@ -24,10 +24,12 @@ function composeCompare<T>(f: Compare<T>, g: Compare<T>): Compare<T> {
     };
 }
 
+const { hasOwnProperty } = Object.prototype;
+
 function mkCompare<T>(params: SlotOrdering<T>): Compare<T> {
     let func: Compare<T> = (_a: T, _b: T) => 0;
     for (const p in params) {
-        if (params.hasOwnProperty(p)) {
+        if (hasOwnProperty.call(params, p)) {
             const [key, mode] = params[p];
             if (mode === true) {
                 func = composeCompare<T>(func, (a: any, b: any) => compareAny(b[key], a[key]));

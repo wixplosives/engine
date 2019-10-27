@@ -91,7 +91,7 @@ export default new Feature({
         const loggerService = new LoggerService(
             loggerTransports,
             { environment: communication.getEnvironmentId() },
-            { severity: loggerSeverity!, maxLogMessages, logToConsole }
+            { severity: loggerSeverity, maxLogMessages, logToConsole }
         );
 
         return {
