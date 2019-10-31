@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "7.6.1",
+  "version": "7.6.2",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "scripts": {
@@ -13,7 +13,7 @@
     "typescript": ">=3.0.0"
   },
   "dependencies": {
-    "@wixc3/engine-scripts": "^7.6.0",
+    "@wixc3/engine-scripts": "^7.6.2",
     "is-ci": "^2.0.0",
     "puppeteer": "^2.0.0",
     "sinon": "^7.5.0"
