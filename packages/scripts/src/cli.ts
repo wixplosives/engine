@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
+/**
+ * We use Node's native module system to directly load configuration file.
+ * This configuration can (and should) be written as a `.ts` file.
+ */
+import '@stylable/node/register';
+import '@ts-tools/node/r';
+import './own-repo-hook';
+
 import program from 'commander';
 import { join } from 'path';
 import { version } from '../package.json';

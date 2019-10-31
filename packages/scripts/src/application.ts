@@ -1,11 +1,3 @@
-/**
- * We use Node's native module system to directly load configuration file.
- * This configuration can (and should) be written as a `.ts` file.
- */
-import '@stylable/node/register';
-import '@ts-tools/node/r';
-import './own-repo-hook';
-
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
 import rimrafCb from 'rimraf';
