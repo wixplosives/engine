@@ -76,7 +76,7 @@ program
             if (process.send) {
                 process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
             } else if (featureName && configName && openBrowser === 'true') {
-                open(`http://localhost:${port}/main.html`);
+                await open(`http://localhost:${port}/main.html`);
             }
 
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
