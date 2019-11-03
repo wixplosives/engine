@@ -10,6 +10,8 @@ import './own-repo-hook';
 
 import program from 'commander';
 import { join } from 'path';
+import open from 'open';
+
 import { version } from '../package.json';
 import { Application, IFeatureTarget } from './application';
 import { IFeatureMessage, IPortMessage, IProcessMessage } from './types';
@@ -50,9 +52,16 @@ program
     .option('--inspect')
     .option('-p ,--port <port>')
     .option('--singleRun', 'when enabled, webpack will not watch files', false)
+    .option('--open <open>')
     .allowUnknownOption(true)
     .action(async (path, cmd: Record<string, string | undefined>) => {
-        const { feature: featureName, config: configName, port: httpServerPort, singleRun } = cmd;
+        const {
+            feature: featureName,
+            config: configName,
+            port: httpServerPort,
+            singleRun,
+            open: openBrowser = 'true'
+        } = cmd;
         try {
             const app = new Application({ basePath: path || process.cwd() });
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
@@ -66,6 +75,8 @@ program
 
             if (process.send) {
                 process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
+            } else if (featureName && configName && openBrowser === 'true') {
+                open(`http://localhost:${port}/main.html`);
             }
 
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
