@@ -6,13 +6,12 @@ import 'react-table/react-table.css';
 import { isServerResponseMessage, ServerResponse, ServerState } from '../../server-types';
 import { ServerEnvironmentButton } from './button';
 
-const fetchServerState = async () => (await fetch('/server-state')).json();
+const fetchServerState = async () => (await fetch('/engine-state')).json();
 
 export const FeaturesList: React.FunctionComponent = () => {
     const [serverState, setServerState] = useState<ServerState>({
-        runningNodeEnvironments: [],
-        features: [],
-        configs: []
+        featuresWithRunningNodeEnvs: [],
+        features: {}
     });
 
     const onServerEnvironmentStatusChange = async (serverResponse: ServerResponse) => {
@@ -35,14 +34,21 @@ export const FeaturesList: React.FunctionComponent = () => {
         });
     }, []);
 
-    const data: Array<{ featureName: string; configName: string; url: string; runningNodeEnvironment: boolean }> = [];
-    for (const featureName of serverState.features) {
-        for (const configName of serverState.configs) {
+    const data: Array<{
+        featureName: string;
+        configName: string;
+        url: string;
+        runningNodeEnvironment: boolean;
+        hasServerEnvironments: boolean;
+    }> = [];
+    for (const [featureName, { configurations, hasServerEnvironments }] of Object.entries(serverState.features)) {
+        for (const configName of configurations) {
             data.push({
-                configName,
                 featureName,
+                configName,
+                hasServerEnvironments,
                 url: `${location.href}main.html?feature=${featureName}&config=${configName}`,
-                runningNodeEnvironment: serverState.runningNodeEnvironments.includes(featureName)
+                runningNodeEnvironment: serverState.featuresWithRunningNodeEnvs.includes(featureName)
             });
         }
     }
@@ -69,12 +75,12 @@ export const FeaturesList: React.FunctionComponent = () => {
             accessor: d => d,
             id: 'server-env',
             Cell: props => (
-                <ServerEnvironmentButton
+                props.value.hasServerEnvironments ? <ServerEnvironmentButton
                     isNodeEnvActive={props.value.runningNodeEnvironment}
                     configName={props.value.configName}
                     featureName={props.value.featureName}
                     onClick={onServerEnvironmentStatusChange}
-                />
+                /> : ''
             )
         },
         {

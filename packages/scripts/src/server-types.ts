@@ -15,10 +15,15 @@ export interface ListNodeEnvironmentsResponse extends SuccessResponse {
     data?: string[];
 }
 
+export type ServerFeatureDef = {
+    configurations: string[];
+    hasServerEnvironments: boolean;
+    featureName: string;
+};
+
 export interface ServerState {
-    features: string[];
-    configs: string[];
-    runningNodeEnvironments: string[];
+    features: Record<string, ServerFeatureDef>;
+    featuresWithRunningNodeEnvs: string[];
 }
 
 export interface ServerStateResponse extends SuccessResponse {
