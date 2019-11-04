@@ -43,7 +43,6 @@
     "@types/webpack-virtual-modules": "^0.1.0",
     "@typescript-eslint/eslint-plugin": "^2.6.0",
     "@typescript-eslint/parser": "^2.6.0",
-    "@wixc3/simulation-core": "^2.4.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "deindent": "^0.1.0",

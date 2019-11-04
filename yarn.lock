@@ -1572,20 +1572,6 @@
     "@webassemblyjs/wast-parser" "1.8.5"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/simulation-core@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/simulation-core/-/simulation-core-2.4.0.tgz#f639df2e7f794d01c576ca1d559ddb46f96bcb69"
-  integrity sha512-1qZTjh2ymrVmgedWlRVm0ykCF/PglLxV0Xomx1mVTepxY5KX++k2NU9dYgz/wbLxfWUDH8C+NL+ZXRhn68084w==
-  dependencies:
-    "@wixc3/typescript-schema-core" "^4.10.0"
-
-"@wixc3/typescript-schema-core@^4.10.0":
-  version "4.10.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/typescript-schema-core/-/typescript-schema-core-4.10.0.tgz#d48c8a8e94fdf79f3557885659583950e55c4a48"
-  integrity sha512-NkGAonv4OQ3J8N/kajWYeT+Op9mNiWWt3AS4GxpueCMdFPefSjxl6u79nSw9+m1ISxeDdcio/0NMGYmgNcK8aA==
-  dependencies:
-    "@types/json-schema" "^7.0.3"
-
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz#eef014a3145ae477a1cbc00cd1e552336dceb790"
