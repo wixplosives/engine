@@ -1,12 +1,13 @@
 import { createMultipleComponentSimulations } from "@wixc3/simulation-core";
 import { FeaturesSelection } from "../../packages/scripts/src/engine-dashboard/components/features-selection";
+import { features } from './features';
 
 export default createMultipleComponentSimulations([{
         name: "New Simulation",
         readOnly: false,
         props: {
         features: {
-            value: undefined
+            value: features
         }
     },
         environmentProps: {

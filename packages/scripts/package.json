@@ -39,7 +39,6 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-select": "^3.0.8",
-    "react-table": "^6.10.3",
     "rimraf": "^3.0.0",
     "socket.io": "^2.3.0",
     "webpack": "^4.41.2",

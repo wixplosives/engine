@@ -11,9 +11,10 @@ export interface IRuntimeOptionProps {
 export const RuntimeOption: React.FC<IRuntimeOptionProps> = ({ runtimeArguments, index, onChange }) => {
     const { key, value } = runtimeArguments[index];
     return (
-        <div className={classes['run-options-container']}>
-            <TitledElement title={'key'}>
+        <div className={classes.runOptionsContainer}>
+            <TitledElement title={'Key'}>
                 <input
+                className={classes.input}
                     type="string"
                     value={key}
                     onChange={({ target: { value: keyValue } }) => {
@@ -22,8 +23,9 @@ export const RuntimeOption: React.FC<IRuntimeOptionProps> = ({ runtimeArguments,
                     }}
                 />
             </TitledElement>
-            <TitledElement title={'value'}>
+            <TitledElement title={'Value'}>
                 <input
+                className={classes.input}
                     type="string"
                     value={value}
                     onChange={({ target: { value: runtimeValue } }) => {
@@ -31,7 +33,7 @@ export const RuntimeOption: React.FC<IRuntimeOptionProps> = ({ runtimeArguments,
                         onChange([...runtimeArguments]);
                     }}
                 />
-            </TitledElement>
+            </TitledElement> 
         </div>
     );
 };

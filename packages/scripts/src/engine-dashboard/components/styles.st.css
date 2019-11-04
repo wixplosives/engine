@@ -1,30 +1,148 @@
-.options {
-    display: flex;
-    justify-content: space-between;
+.root {
+    height: 100vh;
+    width: 100vw;
 }
 
-.options>div {
+.dashboardContainer {
+    font-family: Helvetica, sans-serif;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.dashboardContainer > * {
+    margin-bottom: 20px;
+}
+
+.options {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.options > div {
     width: 270px;
 }
 
-.input-container {
+.columnedContainer {
     display: flex;
     flex-direction: column;
 }
 
-.input-title {
-    font-size: 1em;
+.inputTitle {
+    font-size: 1.2em;
+    margin-bottom: 0.1em;
 }
 
-.run-options-container {
+.runtimeContainer {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-around;
+    width: 100%;
+    flex-direction: column;
 }
 
-.runtime-elements-container>div {
+.runOptionsContainer {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+
+}
+
+.runtimeElementsContainer > div {
     margin-bottom: 5px;
 }
 
-.dashboard-container>* {
-    margin-bottom: 10px;
+.actionButton {
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 20px;
+    border-radius: 5px;
+    border: none;
+    transition: all 0.4s ease 0s;
+    width: fit-content;
+    margin: 0 auto;
+    cursor: pointer;
+    background-color: transparent;
+    font-size: 1em;
+}
+
+.actionButton:hover {
+    background: #dbdbdb;
+    transition: all 0.4s ease 0s;
+}
+
+.input {
+    align-items: center;
+    background-color: hsl(0, 0%, 100%);
+    border-color: hsl(0, 0%, 80%);
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 1px;
+    min-height: 38px;
+    width: 270px;
+    transition: all 100ms;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.runtimeOptionsTitle {
+    margin: 0 auto;
+    color: #8a8a8a;
+    font-size: 1.5em;
+    width: fit-content;
+}
+
+.toggle {
+    -st-states: toggled;
+    width: 50px;
+    height: 30px;
+    background: tomato;
+    border-radius: 50px;
+    position: relative;
+    transition: 0.2s;
+}
+
+.toggle:toggled {
+    background: yellowgreen;
+}
+
+.toggleBtn {
+    -st-states: toggled;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    transition: 0.2s;
+}
+.toggleBtn:toggled {
+    transform: translate(20px);
+}
+
+.actionsContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 370px;
+    margin: 0 auto;
+}
+
+.actionsContainer > * {
+    margin-left: 10px;
+}
+
+.serverState {
+    display: flex;
+    text-transform: uppercase;
+    text-decoration: none;
+    align-items: center;
+    font-size: 1em;
+}
+
+.serverState > * {
+    margin-right: 10px;
 }

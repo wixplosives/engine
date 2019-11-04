@@ -1,18 +1,21 @@
 import React from 'react';
 import { isServerResponseMessage, ServerResponse } from '../../server-types';
+import { classes, style } from './styles.st.css';
 
 export interface ButtonProps {
-    featureName: string;
-    configName: string;
+    featureName?: string;
+    configName?: string;
+    runtimeOptions?: Array<{ key: string; value: string }>;
     isNodeEnvActive: boolean;
     onClick: (response: ServerResponse) => void;
 }
 
-export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
+export const ServerEnvironmentToggle: React.FunctionComponent<ButtonProps> = ({
     isNodeEnvActive,
     featureName,
     configName,
-    onClick
+    onClick,
+    runtimeOptions = []
 }) => {
     const changeNodeEnvironmentState = async () =>
         await (await fetch(`node-env`, {
@@ -20,13 +23,20 @@ export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
             body: JSON.stringify({
                 featureName,
                 configName,
+                runtimeOptions: runtimeOptions.reduce(
+                    (acc, curr) => {
+                        acc[curr.key] = curr.value;
+                        return acc;
+                    },
+                    {} as Record<string, string>
+                )
             }),
             headers: {
                 'Content-type': 'application/json'
             }
         })).json();
 
-    const onButtonClick = async () => {
+    const onToggleChange = async () => {
         const response = await changeNodeEnvironmentState();
         if (isServerResponseMessage(response)) {
             onClick(response);
@@ -35,6 +45,9 @@ export const ServerEnvironmentButton: React.FunctionComponent<ButtonProps> = ({
         }
     };
 
-    const action = isNodeEnvActive ? 'Close': 'Start';
-    return <button onClick={onButtonClick}>{action} server environment(s)</button>;
+    return (
+        <div className={style(classes.toggle, { toggled: isNodeEnvActive })} onClick={onToggleChange}>
+            <div className={style(classes.toggleBtn, { toggled: isNodeEnvActive })}></div>
+        </div>
+    );
 };
