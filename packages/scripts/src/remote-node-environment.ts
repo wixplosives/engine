@@ -1,5 +1,6 @@
 import { fork } from 'child_process';
-import { ForkedProcess, ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '../src';
+import { ForkedProcess } from './forked-process';
+import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from './types';
 
 export interface IStartRemoteNodeEnvironmentOptions {
     port: number;
