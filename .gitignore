@@ -2,6 +2,7 @@ dist
 cjs
 esm
 _wcs
+__wcs
 
 # OSX indexing
 .DS_Store
