@@ -3,3 +3,4 @@ cjs
 esm
 umd
 dist
+webpack.config.js

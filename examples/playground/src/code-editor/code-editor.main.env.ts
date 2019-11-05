@@ -1,9 +1,7 @@
 import CodeEditor, { MAIN, PROCESSING } from './code-editor.feature';
 import { CodeService } from './code-service';
 import { ErrorService } from './error-service';
-import { classes } from './style.st.css';
-
-document.body.classList.add(classes.root);
+import './style.css';
 
 CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM }) => {
     const codeService = new CodeService();
@@ -49,9 +47,9 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM }) => {
 });
 
 function render() {
-    const mainArea = document.createElement('main-area');
+    const mainArea = document.createElement('main');
     const codeInput = document.createElement('textarea');
-    const sidebar = document.createElement('sidebar');
+    const sidebar = document.createElement('aside');
     sidebar.style.background = 'rgba(0,0,0,0.1)';
     sidebar.style.display = 'block';
     mainArea.innerHTML = '<h1>Type text here</h1>';

@@ -6,7 +6,6 @@
  */
 import '@stylable/node/register';
 import '@ts-tools/node/r';
-import './own-repo-hook';
 
 import program from 'commander';
 import { join } from 'path';
@@ -15,8 +14,6 @@ import open from 'open';
 import { version } from '../package.json';
 import { Application, IFeatureTarget } from './application';
 import { IFeatureMessage, IPortMessage, IProcessMessage } from './types';
-
-Error.stackTraceLimit = 100;
 
 program.version(version);
 
