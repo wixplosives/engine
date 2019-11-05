@@ -1,5 +1,6 @@
 const { join } = require('path');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const {StylableWebpackPlugin} = require('@stylable/webpack-plugin');
 
 module.exports = {
     resolve: {
@@ -26,5 +27,8 @@ module.exports = {
                 }
             }
         ]
-    }
+    },
+    plugins: [
+        new StylableWebpackPlugin()
+    ]
 };
