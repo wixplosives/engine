@@ -1,35 +1,33 @@
-
-
-:global(body),
-:global(html) {
+body,
+html {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     height: 100%;
 }
 
-:global(*),
-:global(*:before),
-:global(*:after) {
+*,
+*:before,
+*:after {
     box-sizing: inherit;
 }
 
-:global(body) {
+body {
     display: flex;
 }
 
-:global(sidebar) {
+aside {
     display: block;
     margin: 1em;
     background: rgba(0, 0, 0, 0.1);
 }
 
-:global(main-area) {
+main {
     margin: 1em;
     width: 100%;
 }
 
-:global(textarea) {
+textarea {
     display: block;
     height: 50%;
     width: 100%;
