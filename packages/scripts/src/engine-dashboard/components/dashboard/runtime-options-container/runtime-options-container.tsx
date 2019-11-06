@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 import { classes } from './runtime-options-container.st.css';
 import { RuntimeOption } from './runtime-option/runtime-option';
 
@@ -14,7 +14,7 @@ export interface IRuntimeOptionsProps {
     actionBtnClassName: string
 }
 
-export const RuntimeOptionsContainer: React.FC<IRuntimeOptionsProps> = ({
+export const RuntimeOptionsContainer = memo<IRuntimeOptionsProps>(({
     onOptionAdded,
     runtimeOptions,
     setRuntimeArguments,
@@ -42,4 +42,4 @@ export const RuntimeOptionsContainer: React.FC<IRuntimeOptionsProps> = ({
             </button>
         </div>
     );
-};
+});

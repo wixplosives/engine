@@ -6,7 +6,7 @@ export interface IToggleProps {
     onChange: (toggled: boolean) => void;
 }
 
-export const Toggle: React.FunctionComponent<IToggleProps> = memo(({ toggled, onChange }) => {
+export const Toggle = memo<IToggleProps>(({ toggled, onChange }) => {
     const onToggleChange = () => onChange(!toggled);
     return (
         <div className={style(classes.root, { toggled: toggled })} onClick={onToggleChange}>

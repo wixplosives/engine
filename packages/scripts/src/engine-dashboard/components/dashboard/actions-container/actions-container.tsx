@@ -1,5 +1,5 @@
 import React, {memo} from 'react';
-import { Toggle } from '../dashboard/toggle/toggle';
+import { Toggle } from '../toggle/toggle';
 import { classes } from './actions-container.st.css';
 
 export interface IActionsContainerProps {
@@ -11,7 +11,7 @@ export interface IActionsContainerProps {
     actionBtnClassName: string;
 }
 
-export const ActionsContainer: React.FC<IActionsContainerProps> = memo(({
+export const ActionsContainer = memo<IActionsContainerProps>(({
     displayServerToggle,
     isServerActive,
     onToggleChange,

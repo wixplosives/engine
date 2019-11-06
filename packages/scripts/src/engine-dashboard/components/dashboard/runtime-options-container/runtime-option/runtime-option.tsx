@@ -11,7 +11,7 @@ export interface IRuntimeOptionProps {
     className: string
 }
 
-export const RuntimeOption: React.FC<IRuntimeOptionProps> = memo(({ runtimeArguments, index, onChange, className }) => {
+export const RuntimeOption = memo<IRuntimeOptionProps>(({ runtimeArguments, index, onChange, className }) => {
     const { key, value } = runtimeArguments[index];
 
     const onValueChange = useCallback<(key: string) => InputChangeEvent>(
@@ -33,4 +33,4 @@ export const RuntimeOption: React.FC<IRuntimeOptionProps> = memo(({ runtimeArgum
     );
 });
 
-RuntimeOption.displayName = 'RuntimeOption';
+RuntimeOption.displayName = 'RuntimeOption'

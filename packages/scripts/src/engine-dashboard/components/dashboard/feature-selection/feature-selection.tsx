@@ -20,7 +20,7 @@ interface IFeatureSelectionProps {
     onSelected?: (featureName?: string, configName?: string) => unknown;
 }
 
-export const FeaturesSelection: React.FC<IFeatureSelectionProps> = memo(({ features, onSelected }) => {
+export const FeaturesSelection= memo<IFeatureSelectionProps>(({ features, onSelected }) => {
     const [selectedFeatureConfigurations, setSelectedFeatureConfigurations] = useState<string[]>([]);
     const [selectedFeatureName, setSelectedFeatureName] = useState<string>('');
     const [selectedConfigName, setSelectedConfigName] = useState<string>();

@@ -3,7 +3,7 @@ import { FeaturesSelection } from './feature-selection';
 import { ServerState, isServerResponseMessage } from '../../../server-types';
 import { classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
-import { ActionsContainer } from '../actions-container';
+import { ActionsContainer } from './actions-container';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
@@ -24,7 +24,7 @@ interface SelectedFeature {
     runtimeArguments?: string;
 }
 
-export const Dashboard: React.FC<IDashboardProps> = memo(({ fetchServerState, changeNodeEnvironmentState }) => {
+export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEnvironmentState }) => {
     const [serverState, setServerState] = useState<ServerState>({
         featuresWithRunningNodeEnvs: [],
         features: {}
