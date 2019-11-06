@@ -241,7 +241,7 @@ export class NodeEnvironmentsManager {
         };
     }
 
-    private getNodeEnvironments(featureName: string) {
+    public getNodeEnvironments(featureName: string) {
         const nodeEnvs = new Set<IEnvironment>();
 
         const { features } = this.options;

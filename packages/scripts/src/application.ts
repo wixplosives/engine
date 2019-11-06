@@ -148,28 +148,25 @@ export class Application {
         console.log(`Listening:`);
         console.log(mainUrl);
 
-        const runningFeaturesAndConfigs = this.getConfigNamesForRunningFeatures(features, configurations);
+        const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations, nodeEnvironmentManager);
 
         if (packages.length === 1) {
             // print links to features
-            for (const runningFeatureName of runningFeaturesAndConfigs.features) {
-                for (const runningConfigName of runningFeaturesAndConfigs.configs) {
-                    console.log(`${mainUrl}/main.html?feature=${runningFeatureName}&config=${runningConfigName}`);
+            for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
+                for (const runningConfigName of configurations) {
+                    console.log(`${mainUrl}/main.html?feature=${featureName}&config=${runningConfigName}`);
                 }
             }
         }
 
         app.use(nodeEnvironmentManager.middleware());
 
-        app.get('/server-state', (_req, res) => {
+        app.get('/engine-state', (_req, res) => {
             res.json({
                 result: 'success',
                 data: {
-                    configs: Array.from(configurations.keys()),
-                    features: Array.from(features.values())
-                        .filter(({ isRoot }) => isRoot)
-                        .map(({ scopedName }) => scopedName),
-                    runningNodeEnvironments: nodeEnvironmentManager.getFeaturesWithRunningEnvironments()
+                    features: featureEnvDefinitions,
+                    featuresWithRunningNodeEnvs: nodeEnvironmentManager.getFeaturesWithRunningEnvironments()
                 }
             });
         });
@@ -375,20 +372,28 @@ export class Application {
         return { ...featuresAndConfigs, packages };
     }
 
-    private getConfigNamesForRunningFeatures(
+    private getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
-        configurations: SetMultiMap<string, IConfigDefinition>
+        configurations: SetMultiMap<string, IConfigDefinition>,
+        nodeEnvironmentManager: NodeEnvironmentsManager
     ) {
-        const packageToConfigurationMapping: { features: string[]; configs: string[] } = {
-            configs: Array.from(configurations.keys()),
-            features: []
-        };
-        for (const { scopedName, isRoot } of features.values()) {
-            if (isRoot) {
-                packageToConfigurationMapping.features.push(scopedName);
-            }
+        const rootFeatures = Array.from(features.values()).filter(({ isRoot }) => isRoot);
+        const configNames = Array.from(configurations.keys());
+        const featureEnvDefinitions: Record<
+            string,
+            { configurations: string[]; hasServerEnvironments: boolean; featureName: string }
+        > = {};
+
+        for (const { scopedName } of rootFeatures) {
+            const [rootFeatureName] = scopedName.split('/');
+            featureEnvDefinitions[scopedName] = {
+                configurations: configNames.filter(name => name.includes(rootFeatureName)),
+                hasServerEnvironments: nodeEnvironmentManager.getNodeEnvironments(scopedName).size > 0,
+                featureName: scopedName
+            };
         }
-        return packageToConfigurationMapping;
+
+        return featureEnvDefinitions;
     }
 
     private async launchHttpServer(httpServerPort = DEFAULT_PORT) {
