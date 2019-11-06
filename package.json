@@ -8,7 +8,7 @@
   "scripts": {
     "clean": "lerna run clean --stream --parallel",
     "build": "lerna run build --stream --parallel",
-    "lint": "eslint . --ext .js,.ts,.tsx -f codeframe",
+    "lint": "eslint . --ext .js,.ts,.tsx -f codeframe ",
     "start": "engine start",
     "pretest": "yarn typecheck && yarn lint",
     "test": "lerna run test --stream --concurrency=1",

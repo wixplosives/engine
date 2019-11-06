@@ -14,3 +14,5 @@ export const Toggle: React.FunctionComponent<IToggleProps> = memo(({ toggled, on
         </div>
     );
 });
+
+Toggle.displayName = 'Toggle';

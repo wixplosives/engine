@@ -14,3 +14,5 @@ export const TitledElement: React.FC<IInputProps> = memo(({ title, className, ch
         </div>
     );
 });
+
+TitledElement.displayName = 'TitledElement';

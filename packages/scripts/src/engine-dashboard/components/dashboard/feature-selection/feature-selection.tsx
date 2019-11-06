@@ -102,3 +102,5 @@ export const FeaturesSelection: React.FC<IFeatureSelectionProps> = memo(({ featu
         </div>
     );
 });
+
+FeaturesSelection.displayName = 'FeaturesSelection';

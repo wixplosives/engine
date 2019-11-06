@@ -54,7 +54,7 @@ export const Dashboard: React.FC<IDashboardProps> = memo(({ fetchServerState, ch
                 console.error(serverResponse);
             }
         },
-        [fetchServerState, selectedFeature, serverState, runtimeArguments]
+        [fetchServerState, selectedFeature, runtimeArguments, changeNodeEnvironmentState]
     );
 
     useEffect(() => {
@@ -75,7 +75,7 @@ export const Dashboard: React.FC<IDashboardProps> = memo(({ fetchServerState, ch
             }
             setSelectedFeature({ ...selectedFeature, featureName, configName });
         },
-        [setSelectedFeature]
+        [setSelectedFeature, selectedFeature]
     );
 
     const hasNodeEnvironments =
@@ -114,3 +114,5 @@ export const Dashboard: React.FC<IDashboardProps> = memo(({ fetchServerState, ch
         </div>
     );
 });
+
+Dashboard.displayName = 'Dashboard';

@@ -19,7 +19,7 @@ export const RuntimeOption: React.FC<IRuntimeOptionProps> = memo(({ runtimeArgum
             runtimeArguments.splice(index, 1, { ...runtimeArguments[index], [key]: runtimeValue });
             onChange([...runtimeArguments]);
         },
-        [runtimeArguments]
+        [runtimeArguments, index, onChange]
     );
     return (
         <div className={style(classes.root, className)}>
@@ -32,3 +32,5 @@ export const RuntimeOption: React.FC<IRuntimeOptionProps> = memo(({ runtimeArgum
         </div>
     );
 });
+
+RuntimeOption.displayName = 'RuntimeOption';

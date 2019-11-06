@@ -43,3 +43,5 @@ export const ActionsContainer: React.FC<IActionsContainerProps> = memo(({
         </div>
     );
 });
+
+ActionsContainer.displayName = 'ActionsContainer'
