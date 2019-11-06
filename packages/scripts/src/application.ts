@@ -148,7 +148,7 @@ export class Application {
         console.log(`Listening:`);
         console.log(mainUrl);
 
-        const featureEnvDefinitions = this.getFeatureEnvDefenitions(features, configurations, nodeEnvironmentManager);
+        const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations, nodeEnvironmentManager);
 
         if (packages.length === 1) {
             // print links to features
@@ -367,25 +367,28 @@ export class Application {
         return { ...featuresAndConfigs, packages };
     }
 
-    private getFeatureEnvDefenitions(
+    private getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
         configurations: SetMultiMap<string, IConfigDefinition>,
         nodeEnvironmentManager: NodeEnvironmentsManager
     ) {
         const rootFeatures = Array.from(features.values()).filter(({ isRoot }) => isRoot);
         const configNames = Array.from(configurations.keys());
-        return rootFeatures.reduce(
-            (acc, { scopedName }) => {
-                const [rootFeatureName] = scopedName.split('/');
-                acc[scopedName] = {
-                    configurations: configNames.filter(name => name.includes(rootFeatureName)),
-                    hasServerEnvironments: nodeEnvironmentManager.getNodeEnvironments(scopedName).size > 0,
-                    featureName: scopedName
-                };
-                return acc;
-            },
-            {} as Record<string, { configurations: string[]; hasServerEnvironments: boolean; featureName: string }>
-        );
+        const featureEnvDefinitions: Record<
+            string,
+            { configurations: string[]; hasServerEnvironments: boolean; featureName: string }
+        > = {};
+
+        for (const { scopedName } of rootFeatures) {
+            const [rootFeatureName] = scopedName.split('/');
+            featureEnvDefinitions[scopedName] = {
+                configurations: configNames.filter(name => name.includes(rootFeatureName)),
+                hasServerEnvironments: nodeEnvironmentManager.getNodeEnvironments(scopedName).size > 0,
+                featureName: scopedName
+            };
+        }
+
+        return featureEnvDefinitions;
     }
 
     private async launchHttpServer(httpServerPort = DEFAULT_PORT) {

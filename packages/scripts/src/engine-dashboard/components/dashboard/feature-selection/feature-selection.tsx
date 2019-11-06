@@ -1,44 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import Select from 'react-select';
-import { ServerFeatureDef } from '../../server-types';
-import { classes } from './styles.st.css';
-import { TitledElement } from './titled-element';
+import { ServerFeatureDef } from '../../../../server-types';
+import { classes } from './feature-selection.st.css';
+import { TitledElement } from '../titled-element';
 
 type SelectedValue<T> =
     | {
-          label: string;
-          value: T;
+          label?: string;
+          value?: T;
       }
     | readonly {
-          label: string;
-          value: T;
+          label?: string;
+          value?: T;
       }[]
     | null;
 
 interface IFeatureSelectionProps {
     features: Record<string, ServerFeatureDef>;
-    onSelected?: (featureName: string, configName: string) => unknown;
+    onSelected?: (featureName?: string, configName?: string) => unknown;
 }
 
-export const FeaturesSelection: React.FC<IFeatureSelectionProps> = ({
-    features,
-    onSelected
-}) => {
+export const FeaturesSelection: React.FC<IFeatureSelectionProps> = memo(({ features, onSelected }) => {
     const [selectedFeatureConfigurations, setSelectedFeatureConfigurations] = useState<string[]>([]);
     const [selectedFeatureName, setSelectedFeatureName] = useState<string>('');
-    const [selectedConfigName, setSelectedConfigName] = useState<string>('');
+    const [selectedConfigName, setSelectedConfigName] = useState<string>();
 
-    const featuresOptions = Object.entries(features).map(([featureName, featureDef]) => ({
-        label: featureName,
-        value: featureDef
-    }));
+    const featuresOptions = useMemo(
+        () =>
+            Object.entries(features).map(([featureName, featureDef]) => ({
+                label: featureName,
+                value: featureDef
+            })),
+        [features]
+    );
 
     const onFeatureSelectedChange = (selectedValue?: SelectedValue<ServerFeatureDef>) => {
         if (!selectedValue) {
             setSelectedFeatureConfigurations([]);
             if (onSelected) {
-                setSelectedConfigName('');
-                onSelected('', '');
+                setSelectedConfigName(undefined);
+                onSelected(undefined, undefined);
             }
         } else {
             const featureValue = Array.isArray(selectedValue) ? selectedValue[0] : selectedValue;
@@ -50,24 +51,32 @@ export const FeaturesSelection: React.FC<IFeatureSelectionProps> = ({
         }
     };
 
-    const selectedConfigurationsOptions = selectedFeatureConfigurations.map(config => ({
-        value: config,
-        label: config
-    }));
+    const selectedConfigurationsOptions = useMemo(
+        () =>
+            selectedFeatureConfigurations.map(config => ({
+                value: config,
+                label: config
+            })),
+        [selectedFeatureConfigurations]
+    );
 
-    const onConfigurationSelect = (selectedValue?: SelectedValue<string>) => {
-        const configName = !selectedValue
-            ? ''
-            : (Array.isArray(selectedValue) ? selectedValue[0] : selectedValue).label;
-        setSelectedConfigName(configName);
-        if (onSelected) {
-            onSelected(selectedFeatureName, configName);
-        }
-    };
+    const onConfigurationSelect = useCallback(
+        (selectedValue?: SelectedValue<string>) => {
+            const configName = !selectedValue
+                ? selectedValue
+                : (Array.isArray(selectedValue) ? selectedValue[0] : selectedValue).label;
+
+            setSelectedConfigName(configName);
+            if (onSelected) {
+                onSelected(selectedFeatureName, configName);
+            }
+        },
+        [setSelectedConfigName, onSelected, selectedFeatureName]
+    );
 
     return (
-        <div className={classes.options}>
-            <TitledElement title={'Feature'}>
+        <div className={classes.root}>
+            <TitledElement title={'Feature'} className={classes.option}>
                 <Select
                     isSearchable={true}
                     options={featuresOptions}
@@ -76,7 +85,7 @@ export const FeaturesSelection: React.FC<IFeatureSelectionProps> = ({
                     isClearable={true}
                 />
             </TitledElement>
-            <TitledElement title={'Config'}>
+            <TitledElement title={'Config'} className={classes.option}>
                 <Select
                     isSearchable={true}
                     isMulti={false}
@@ -92,4 +101,4 @@ export const FeaturesSelection: React.FC<IFeatureSelectionProps> = ({
             </TitledElement>
         </div>
     );
-};
+});

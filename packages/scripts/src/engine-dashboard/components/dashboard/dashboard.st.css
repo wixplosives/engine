@@ -1,0 +1,29 @@
+.root {
+    font-family: Helvetica, sans-serif;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.root > * {
+    margin-bottom: 20px;
+}
+
+.actionButton {
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 20px;
+    border-radius: 5px;
+    border: none;
+    transition: all 0.4s ease 0s;
+    margin: 0 auto;
+    cursor: pointer;
+    background-color: transparent;
+    font-size: 1em;
+}
+
+.actionButton:hover {
+    background: #dbdbdb;
+}
