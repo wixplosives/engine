@@ -1004,6 +1004,18 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
+"@stylable/cli@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-2.4.0.tgz#fb0f6c1f0d55c3adc6e11baaa631860291c107bb"
+  integrity sha512-l67Jc1Z5MUD+97b+GTvR+DaX2JuDLw19AIUu4h+FdzDx6KPbkx8EL5gvcaZ4ur9caDuoQw4SBeSzo8z0kuIT8w==
+  dependencies:
+    "@stylable/core" "^2.4.0"
+    "@stylable/node" "^2.4.0"
+    "@stylable/optimizer" "^2.4.0"
+    lodash.camelcase "^4.3.0"
+    lodash.upperfirst "^4.3.1"
+    yargs "^14.2.0"
+
 "@stylable/core@^2.3.1":
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/@stylable/core/-/core-2.3.1.tgz#2853a0c0226d146eb7fb6998a6ac0ae6ff9327ef"
@@ -1026,12 +1038,40 @@
     postcss-value-parser "^4.0.2"
     url-regex "^5.0.0"
 
+"@stylable/core@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-2.4.0.tgz#79265cfb052786e0b2ea3812442de42f201dd89e"
+  integrity sha512-04HfE3xRQjnNUNDTWo6dt4OoaiTTrhbbmQSEiYCA6MqJ/I6fqM7bxg553d0+t3klpo8f/MUpgYf3yIYvhP0s3g==
+  dependencies:
+    css-selector-tokenizer "^0.7.1"
+    deindent "^0.1.0"
+    enhanced-resolve "^4.1.1"
+    is-vendor-prefixed "^3.3.1"
+    jest-docblock "^24.9.0"
+    lodash.clonedeep "^4.5.0"
+    lodash.clonedeepwith "^4.5.0"
+    murmurhash "^0.0.2"
+    postcss "^7.0.21"
+    postcss-js "^2.0.3"
+    postcss-nested "^4.2.0"
+    postcss-safe-parser "^4.0.1"
+    postcss-selector-matches "^4.0.0"
+    postcss-value-parser "^4.0.2"
+    url-regex "^5.0.0"
+
 "@stylable/module-utils@^2.3.1":
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-2.3.1.tgz#5be8d85530040b7bb60a4bcdd10673c94d3f8ea9"
   integrity sha512-0siL1N4VMaN3xCZ84kipzXMna9OVGLSHO8cOxLKIKRFV2fvcYM2bf6VdEONUbMyMCQ6pESTVdpRDCZy69aUVzg==
   dependencies:
     "@stylable/core" "^2.3.1"
+
+"@stylable/module-utils@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-2.4.0.tgz#22943f6873f3b06bc765820d90556107597f9acd"
+  integrity sha512-a0wHzSswdzkPxCCqCbkJ8UQyQAvtsha+tdIAzr3DDD6i+ue0TqugcnCo1r4nLYmH4DVDdfzqNv/Q0zh3W9c8+A==
+  dependencies:
+    "@stylable/core" "^2.4.0"
 
 "@stylable/node@^2.3.1":
   version "2.3.1"
@@ -1043,6 +1083,16 @@
     find-config "^1.0.0"
     murmurhash "^0.0.2"
 
+"@stylable/node@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-2.4.0.tgz#f7d7a19ef84463266f5ea4cc314fae97189d9057"
+  integrity sha512-Bxv5bVizZoessvpzlu3yKe/HxdZjv3/iDIDEZGAtbizy0OiWaGYxNFy914jFnbNe8JoUU9JtTkUbcX+SQJGgeQ==
+  dependencies:
+    "@stylable/core" "^2.4.0"
+    "@stylable/module-utils" "^2.4.0"
+    find-config "^1.0.0"
+    murmurhash "^0.0.2"
+
 "@stylable/optimizer@^2.3.1":
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-2.3.1.tgz#0b1a5224b78e0cb657e45aafc4e5a8ec500792aa"
@@ -1051,6 +1101,15 @@
     "@stylable/core" "^2.3.1"
     csso "^3.5.1"
     postcss "^7.0.18"
+
+"@stylable/optimizer@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-2.4.0.tgz#bef1cd671f9e82037f4bef3025a95b350ac44984"
+  integrity sha512-Xpp9Vlo2AJJv1bXkDcJjvLL1Em3iSrDC685nW1ItLv23z/igsGvkGtltNP7rvIXda7LWhNf45fgVOakbwBg+UQ==
+  dependencies:
+    "@stylable/core" "^2.4.0"
+    csso "^4.0.2"
+    postcss "^7.0.21"
 
 "@stylable/runtime@^2.3.1":
   version "2.3.1"
@@ -2837,6 +2896,14 @@ css-tree@1.0.0-alpha.29:
     mdn-data "~1.1.0"
     source-map "^0.5.3"
 
+css-tree@1.0.0-alpha.37:
+  version "1.0.0-alpha.37"
+  resolved "https://registry.yarnpkg.com/css-tree/-/css-tree-1.0.0-alpha.37.tgz#98bebd62c4c1d9f960ec340cf9f7522e30709a22"
+  integrity sha512-DMxWJg0rnz7UgxKT0Q1HU/L9BeJI0M6ksor0OgqOnF+aRCDWg/N2641HmVyU9KVIu0OVVWOb2IpC9A+BJRnejg==
+  dependencies:
+    mdn-data "2.0.4"
+    source-map "^0.6.1"
+
 css-what@2.1:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/css-what/-/css-what-2.1.3.tgz#a6d7604573365fe74686c3f311c56513d88285f2"
@@ -2858,6 +2925,13 @@ csso@^3.5.1:
   integrity sha512-vrqULLffYU1Q2tLdJvaCYbONStnfkfimRxXNaGjxMldI0C7JPBC4rB1RyjhfdZ4m1frm8pM9uRPKH3d2knZ8gg==
   dependencies:
     css-tree "1.0.0-alpha.29"
+
+csso@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/csso/-/csso-4.0.2.tgz#e5f81ab3a56b8eefb7f0092ce7279329f454de3d"
+  integrity sha512-kS7/oeNVXkHWxby5tHVxlhjizRCSv8QdU7hB2FpdAibDU8FjTAolhNjKNTiLzXtUrKT6HwClE81yXwEk1309wg==
+  dependencies:
+    css-tree "1.0.0-alpha.37"
 
 csstype@^2.2.0, csstype@^2.5.7:
   version "2.6.7"
@@ -3289,7 +3363,7 @@ engine.io@~3.4.0:
     engine.io-parser "~2.2.0"
     ws "^7.1.2"
 
-enhanced-resolve@^4.0.0, enhanced-resolve@^4.1.0:
+enhanced-resolve@^4.0.0, enhanced-resolve@^4.1.0, enhanced-resolve@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-4.1.1.tgz#2937e2b8066cd0fe7ce0990a98f0d71a35189f66"
   integrity sha512-98p2zE+rL7/g/DzMHMTF4zZlCgeVdJ7yr6xzEpJRYwFYrGi9ANdn5DnJURg6RpBkyk60XYDnWIv51VfIhfNGuA==
@@ -5046,6 +5120,11 @@ lodash._reinterpolate@^3.0.0:
   resolved "https://registry.yarnpkg.com/lodash._reinterpolate/-/lodash._reinterpolate-3.0.0.tgz#0ccf2d89166af03b3663c796538b75ac6e114d9d"
   integrity sha1-DM8tiRZq8Ds2Y8eWU4t1rG4RTZ0=
 
+lodash.camelcase@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz#b28aa6288a2b9fc651035c7711f65ab6190331a6"
+  integrity sha1-soqmKIorn8ZRA1x3EfZathkDMaY=
+
 lodash.clonedeep@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
@@ -5100,6 +5179,11 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
+
+lodash.upperfirst@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/lodash.upperfirst/-/lodash.upperfirst-4.3.1.tgz#1365edf431480481ef0d1c68957a5ed99d49f7ce"
+  integrity sha1-E2Xt9DFIBIHvDRxolXpe2Z1J984=
 
 lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.2.1:
   version "4.17.15"
@@ -5222,6 +5306,11 @@ md5.js@^1.3.4:
     hash-base "^3.0.0"
     inherits "^2.0.1"
     safe-buffer "^5.1.2"
+
+mdn-data@2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/mdn-data/-/mdn-data-2.0.4.tgz#699b3c38ac6f1d728091a64650b65d388502fd5b"
+  integrity sha512-iV3XNKw06j5Q7mi6h+9vbx23Tv7JkjEVgKHW4pimwyDGWm0OIQntJJ+u1C6mg6mK1EaTv42XQ7w76yuzH7M2cA==
 
 mdn-data@~1.1.0:
   version "1.1.4"
@@ -6386,7 +6475,7 @@ postcss-modules-values@^3.0.0:
     icss-utils "^4.0.0"
     postcss "^7.0.6"
 
-postcss-nested@^4.1.2:
+postcss-nested@^4.1.2, postcss-nested@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/postcss-nested/-/postcss-nested-4.2.0.tgz#e6e6777b05dddd47358c676d983bd7251d0e67a2"
   integrity sha512-qRAOC0uJ4TbFXlURB+3Y5sCi9+MLTkXmt7VGpqHw5oAWCnHqeFa4MGf7kb5ceFDthknumJc+E4A0TjV4XEVWBQ==
