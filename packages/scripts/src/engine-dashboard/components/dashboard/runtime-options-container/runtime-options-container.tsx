@@ -43,3 +43,5 @@ export const RuntimeOptionsContainer = memo<IRuntimeOptionsProps>(({
         </div>
     );
 });
+
+RuntimeOptionsContainer.displayName = 'RuntimeOptionsContainer';
