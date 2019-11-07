@@ -18,7 +18,11 @@ import { Environment, testEnvironmentCollision, Universal } from './env';
 
 /*************** FEATURE ***************/
 
-export class RuntimeFeature<T extends Feature = Feature, Deps extends Feature[] = any[], API extends EntityMap = any> {
+export class RuntimeFeature<
+    T extends Feature = Feature,
+    Deps extends Feature[] = Feature[],
+    API extends EntityMap = EntityMap
+> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => void>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
