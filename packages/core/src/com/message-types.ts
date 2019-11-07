@@ -11,6 +11,7 @@ export interface BaseMessage {
     from: string;
     callbackId?: string;
     error?: string;
+    origin: string;
 }
 
 export interface CallMessage extends BaseMessage {
