@@ -5,10 +5,9 @@ import {
     ContextHandler,
     DisposableContext,
     DisposeFunction,
-    EntityMap,
+    EntityRecord,
     EnvironmentFilter,
     FeatureDef,
-    IDTagArray,
     MapToProxyType,
     PartialFeatureConfig,
     RunningFeatures,
@@ -21,7 +20,7 @@ import { Environment, testEnvironmentCollision, Universal } from './env';
 export class RuntimeFeature<
     T extends Feature = Feature,
     Deps extends Feature[] = Feature[],
-    API extends EntityMap = EntityMap
+    API extends EntityRecord = EntityRecord
 > {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => void>();
@@ -65,9 +64,9 @@ export class RuntimeFeature<
 }
 
 export class Feature<
-    ID extends string = any,
+    ID extends string = string,
     Deps extends Feature[] = any[],
-    API extends EntityMap = any,
+    API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any
 > {
     public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
@@ -75,16 +74,19 @@ export class Feature<
     public dependencies: Deps;
     public api: API;
     public context: EnvironmentContext;
+
     private environmentIml = new Set<string>();
-    private setupHandlers = new SetMultiMap<string, SetupHandler<Environment, ID, Deps, API, EnvironmentContext>>();
+    private setupHandlers = new SetMultiMap<string, SetupHandler<Environment, string, Deps, API, EnvironmentContext>>();
     private contextHandlers = new Map<string | number | symbol, ContextHandler<object, EnvironmentFilter, Deps>>();
+
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
-        this.dependencies = def.dependencies || (([] as IDTagArray) as Deps);
-        this.api = def.api || (({} as EntityMap) as API);
+        this.dependencies = def.dependencies || (([] as Feature[]) as Deps);
+        this.api = def.api || ({} as API);
         this.context = def.context || ({} as EnvironmentContext);
         this.identifyApis();
     }
+
     public setup<EnvFilter extends EnvironmentFilter>(
         env: EnvFilter,
         setupHandler: SetupHandler<EnvFilter, ID, Deps, API, EnvironmentContext>
@@ -97,14 +99,14 @@ export class Feature<
         }
         const envName = typeof env === 'object' ? (env as Record<string, string>).env : (env as string);
 
-        this.setupHandlers.add(envName, setupHandler);
+        this.setupHandlers.add(envName, setupHandler as SetupHandler<EnvFilter, string, Deps, API, EnvironmentContext>);
         return this;
     }
+
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
         return [this.id, config];
     }
 
-    // context = Context<Interface>
     public setupContext<K extends keyof EnvironmentContext, Env extends EnvironmentFilter>(
         _env: Env,
         environmentContext: K,
@@ -196,10 +198,12 @@ export class Feature<
 
         return feature;
     }
+
     private identifyApis() {
         for (const [key, api] of Object.entries(this.api)) {
-            if (api[IDENTIFY_API]) {
-                api[IDENTIFY_API]!(this.id, key);
+            const entityFn = api[IDENTIFY_API];
+            if (entityFn) {
+                entityFn(this.id, key);
             }
         }
     }

@@ -87,7 +87,7 @@ export class Communication {
     /**
      * Registers local api implementation of the remote service.
      */
-    public registerAPI<T>({ id }: IDTag<string>, api: T): T {
+    public registerAPI<T>({ id }: IDTag, api: T): T {
         if (!this.apis[id]) {
             this.apis[id] = api;
             this.mapAPIMultiTenantFunctions(id, api);
@@ -201,7 +201,7 @@ export class Communication {
      */
     public apiProxy<T>(
         instanceToken: EnvironmentInstanceToken | Promise<EnvironmentInstanceToken>,
-        { id: serviceId }: IDTag<any>
+        { id: serviceId }: IDTag
     ): AsyncApi<T> {
         return new Proxy(Object.create(null), {
             get: (obj, methodName) => {
