@@ -203,7 +203,7 @@ export class Feature<
         for (const [key, api] of Object.entries(this.api)) {
             const entityFn = api[IDENTIFY_API];
             if (entityFn) {
-                entityFn(this.id, key);
+                entityFn.call(api, this.id, key);
             }
         }
     }
