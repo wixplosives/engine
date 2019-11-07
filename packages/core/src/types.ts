@@ -1,7 +1,7 @@
 import { TupleToUnion } from 'typescript-type-utils';
 import { LogMessage } from './common-types';
 import { Universal } from './entities/env';
-import { Feature, RuntimeFeature } from './entities/feature';
+import { Feature } from './entities/feature';
 import { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
@@ -34,7 +34,7 @@ export interface Entity<
     VisibleAt extends EnvVisibility,
     Mode extends EntityDefModes,
     RemoteAccess extends boolean
-    > {
+> {
     type: TYPE;
     proxyType: PROXY_TYPE;
     providedFrom: ProvidedFrom;
@@ -64,9 +64,6 @@ export type GetOutputs<T extends EntityMap> = JustFilter<T, AnyOutput>;
 
 export type GetRemoteOutputs<T extends EntityMap> = JustFilter<T, AnyRemote>;
 export type GetOnlyLocalUniversalOutputs<T extends EntityMap> = JustFilter<T, OnlyLocalUniversalOutput>;
-
-export type SomeFeature = Feature<any, any, any, any>;
-export type SomeRuntimeFeature = RuntimeFeature<any, any, any>;
 
 export interface EntityMap {
     [key: string]: AnyEntity;
@@ -106,7 +103,7 @@ type MapProxyTypesForEnv<
     T extends EntityMap,
     EnvFilter extends string,
     Key extends 'visibleAt' | 'providedFrom'
-    > = MapToProxyType<FilterEnv<T, EnvFilter, Key>>;
+> = MapToProxyType<FilterEnv<T, EnvFilter, Key>>;
 
 type MapTypesForEnv<T extends EntityMap, EnvFilter extends string, Key extends 'visibleAt' | 'providedFrom'> = MapType<
     FilterEnv<T, EnvFilter, Key>
@@ -118,17 +115,17 @@ type MapVisibleInputs<T extends EntityMap, EnvFilter extends string> = MapType<
 
 export interface FeatureDef<
     ID extends string,
-    Deps extends SomeFeature[],
+    Deps extends Feature[],
     API extends EntityMap,
     EnvironmentContext extends Record<string, Context<any>>
-    > {
+> {
     id: ID;
     dependencies?: Deps;
     api: API;
     context?: EnvironmentContext;
 }
 
-export type UnknownFeatureDef = FeatureDef<string, SomeFeature[], EntityMap, Record<string, Context<any>>>;
+export type UnknownFeatureDef = FeatureDef<string, Feature[], EntityMap, Record<string, Context<any>>>;
 export type Running<T extends UnknownFeatureDef, ENV extends string> = MapProxyTypesForEnv<
     T['api'],
     ENV | EnvType<typeof Universal>,
@@ -136,10 +133,10 @@ export type Running<T extends UnknownFeatureDef, ENV extends string> = MapProxyT
 >;
 
 export type RunningFeatures<
-    T extends SomeFeature[],
+    T extends Feature[],
     ENV extends string,
     FeatureMap extends MapBy<T, 'id'> = MapBy<T, 'id'>
-    > = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
+> = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
 
 export interface IRunOptions {
     has(key: string): boolean;
@@ -163,7 +160,7 @@ export type RegisteringFeature<
         ENV,
         'providedFrom'
     >
-    > = keyof ProvidedOutputs extends never ? null : ProvidedOutputs;
+> = keyof ProvidedOutputs extends never ? null : ProvidedOutputs;
 
 export interface SetupHandlerEnvironmentContext<EnvironmentContext extends Record<string, Context<any>>> {
     context: EnvironmentContext;
@@ -194,22 +191,22 @@ export type DisposableContext<T> = Context<T & IContextDispose>;
 export type SetupHandler<
     EnvFilter extends EnvironmentFilter,
     ID extends string,
-    Deps extends SomeFeature[],
+    Deps extends Feature[],
     API extends EntityMap,
     EnvironmentContext extends Record<string, Context<any>>,
     Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>
-    > = (
-        feature: SettingUpFeature<ID, API, Filter>,
-        runningFeatures: RunningFeatures<Deps, Filter>,
-        context: MapRecordType<EnvironmentContext>
-    ) => RegisteringFeature<API, Filter>;
+> = (
+    feature: SettingUpFeature<ID, API, Filter>,
+    runningFeatures: RunningFeatures<Deps, Filter>,
+    context: MapRecordType<EnvironmentContext>
+) => RegisteringFeature<API, Filter>;
 
 export type ContextHandler<
     C,
     EnvFilter extends EnvironmentFilter,
-    Deps extends SomeFeature[],
+    Deps extends Feature[],
     Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>
-    > = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
+> = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
 
 export interface Configurable<T> {
     [CONFIGURABLE]: true;
