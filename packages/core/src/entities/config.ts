@@ -4,13 +4,13 @@ import { EnvVisibility } from '../types';
 import { AllEnvironments, Environment } from './env';
 import { FeatureInput } from './input';
 
-type MergeConfigHook<T extends object> = (a: Readonly<T>, b: Readonly<Partial<T>>) => T;
+export type MergeConfigHook<T extends object> = (a: Readonly<T>, b: Readonly<Partial<T>>) => T;
 
 export class Config<T extends object, VisibleAt extends EnvVisibility = Environment> extends FeatureInput<
     Readonly<T>,
     Environment,
     VisibleAt
-    > {
+> {
     public static withType<T extends object>() {
         return {
             defineEntity<E_ENV extends EnvVisibility>(

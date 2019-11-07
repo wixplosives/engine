@@ -12,14 +12,17 @@ import {
     MapToProxyType,
     PartialFeatureConfig,
     RunningFeatures,
-    SetupHandler,
-    SomeFeature
+    SetupHandler
 } from '../types';
 import { Environment, testEnvironmentCollision, Universal } from './env';
 
 /*************** FEATURE ***************/
 
-export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], API extends EntityMap> {
+export class RuntimeFeature<
+    T extends Feature = Feature,
+    Deps extends Feature[] = Feature[],
+    API extends EntityMap = EntityMap
+> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => void>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
@@ -28,8 +31,7 @@ export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], A
         public feature: T,
         public api: MapToProxyType<API>,
         public dependencies: RunningFeatures<Deps, string>
-    ) {
-    }
+    ) {}
 
     public addRunHandler(fn: () => void, envName: string) {
         this.runHandlers.add(envName, fn);
@@ -63,12 +65,12 @@ export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], A
 }
 
 export class Feature<
-    ID extends string,
-    Deps extends SomeFeature[],
-    API extends EntityMap,
-    EnvironmentContext extends Record<string, DisposableContext<any>>
-    > {
-    public asEntity: Feature<ID, SomeFeature[], API, EnvironmentContext> = this;
+    ID extends string = any,
+    Deps extends Feature[] = any[],
+    API extends EntityMap = any,
+    EnvironmentContext extends Record<string, DisposableContext<any>> = any
+> {
+    public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
     public id: ID;
     public dependencies: Deps;
     public api: API;
@@ -112,7 +114,7 @@ export class Feature<
         if (registerdContext) {
             throw new Error(
                 `Feature can only have single setupContext for each context id. ${
-                this.id
+                    this.id
                 } Feature already implements: ${environmentContext}\n${registerdContext.toString()}`
             );
         }
@@ -121,7 +123,7 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string): RuntimeFeature<this, Deps, API> {
+    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string) {
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};
