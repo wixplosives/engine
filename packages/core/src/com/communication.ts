@@ -387,7 +387,7 @@ export class Communication {
                     message.data.api,
                     message.data.method,
                     message.data.args,
-                    message.from
+                    message.origin
                 ),
                 callbackId: message.callbackId,
                 origin: message.from
