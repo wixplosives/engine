@@ -70,7 +70,7 @@ export class Communication {
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
 
-        this.post(this.getPostEndpoint(host), { type: 'ready', from: id, to: '*' });
+        this.post(this.getPostEndpoint(host), { type: 'ready', from: id, to: '*', origin: id });
     }
 
     /**
@@ -235,7 +235,13 @@ export class Communication {
     /**
      * Calls a remote method in any opened environment.
      */
-    public callMethod(envId: string, apiId: string, methodName: string, args: SerializableArguments): Promise<unknown> {
+    public callMethod(
+        envId: string,
+        apiId: string,
+        methodName: string,
+        args: SerializableArguments,
+        origin = this.rootEnvId
+    ): Promise<unknown> {
         return new Promise((res, rej) => {
             if (this.isListenCall(args)) {
                 const message: ListenMessage = {
@@ -243,7 +249,8 @@ export class Communication {
                     from: this.rootEnvId,
                     type: 'listen',
                     data: this.createHandlerRecord(envId, apiId, methodName, args[0] as UnknownFunction),
-                    callbackId: this.idsCounter.next('c')
+                    callbackId: this.idsCounter.next('c'),
+                    origin
                 };
                 this.createCallbackRecord(message, message.callbackId!, res, rej);
                 this.sendTo(envId, message);
@@ -253,7 +260,8 @@ export class Communication {
                     from: this.rootEnvId,
                     type: 'call',
                     data: { api: apiId, method: methodName, args },
-                    callbackId: this.idsCounter.next('c')
+                    callbackId: this.idsCounter.next('c'),
+                    origin
                 };
                 this.createCallbackRecord(message, message.callbackId!, res, rej);
                 this.sendTo(envId, message);
@@ -344,7 +352,8 @@ export class Communication {
                 from: this.rootEnvId,
                 type: 'listen',
                 data,
-                callbackId: this.idsCounter.next('c')
+                callbackId: this.idsCounter.next('c'),
+                origin: this.rootEnvId
             };
             this.createCallbackRecord(message, message.callbackId!, res, rej);
             this.sendTo(instanceId, message);
@@ -369,12 +378,21 @@ export class Communication {
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
         if (message.type === 'call') {
+            const forwardResponse = await this.callMethod(
+                env.id,
+                message.data.api,
+                message.data.method,
+                message.data.args,
+                message.origin
+            );
+
             this.sendTo(message.from, {
                 from: message.to,
                 type: 'callback',
                 to: message.from,
-                data: await this.callMethod(env.id, message.data.api, message.data.method, message.data.args),
-                callbackId: message.callbackId
+                data: forwardResponse,
+                callbackId: message.callbackId,
+                origin: message.to
             });
         } else {
             throw new Error(MISSING_FORWARD_FOR_MESSAGE(message));
@@ -395,9 +413,9 @@ export class Communication {
         });
     }
 
-    private apiCall(from: string, api: string, method: string, args: unknown[]): unknown {
+    private apiCall(origin: string, api: string, method: string, args: unknown[]): unknown {
         if (this.apisOverrides[api] && this.apisOverrides[api][method]) {
-            return this.apisOverrides[api][method](...[from, ...args]);
+            return this.apisOverrides[api][method](...[origin, ...args]);
         }
         return this.apis[api][method](...args);
     }
@@ -483,10 +501,11 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                data: await this.apiCall(message.from, message.data.api, message.data.method, [
+                data: await this.apiCall(message.origin, message.data.api, message.data.method, [
                     this.createDispatcher(message.from, message)
                 ]),
-                callbackId: message.callbackId
+                callbackId: message.callbackId,
+                origin: this.rootEnvId
             });
         } catch (error) {
             this.sendTo(message.from, {
@@ -494,7 +513,8 @@ export class Communication {
                 from: this.rootEnvId,
                 type: 'callback',
                 error: String(error),
-                callbackId: message.callbackId
+                callbackId: message.callbackId,
+                origin: this.rootEnvId
             });
         }
     }
@@ -505,8 +525,9 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                data: await this.apiCall(message.from, message.data.api, message.data.method, message.data.args),
-                callbackId: message.callbackId
+                data: await this.apiCall(message.origin, message.data.api, message.data.method, message.data.args),
+                callbackId: message.callbackId,
+                origin: this.rootEnvId
             });
         } catch (error) {
             this.sendTo(message.from, {
@@ -514,7 +535,8 @@ export class Communication {
                 from: this.rootEnvId,
                 type: 'callback',
                 error: String(error.stack),
-                callbackId: message.callbackId
+                callbackId: message.callbackId,
+                origin: this.rootEnvId
             });
         }
     }
@@ -537,7 +559,8 @@ export class Communication {
                 from: this.rootEnvId,
                 type: 'event',
                 data: args,
-                handlerId: message.data.handlerId
+                handlerId: message.data.handlerId,
+                origin: this.rootEnvId
             });
         });
     }

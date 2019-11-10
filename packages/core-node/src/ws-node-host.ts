@@ -63,6 +63,11 @@ export class WsServerHost extends BaseHost implements IDisposable {
                 message.data.handlerId += socket.id;
             }
             this.socketToEnvId.set(socket.id, { socket, clientID: message.from });
+            if (message.origin !== message.from) {
+                console.warn(`Warning: ${JSON.stringify(message)} has different origin and sender.
+                This means that the message was forwarded not properly`);
+            }
+            message.origin = socket.id;
             message.from = socket.id;
             this.emitMessageHandlers(message);
         };
