@@ -378,19 +378,21 @@ export class Communication {
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
         if (message.type === 'call') {
+            const forwardResponse = await this.callMethod(
+                env.id,
+                message.data.api,
+                message.data.method,
+                message.data.args,
+                message.origin
+            );
+
             this.sendTo(message.from, {
                 from: message.to,
                 type: 'callback',
                 to: message.from,
-                data: await this.callMethod(
-                    env.id,
-                    message.data.api,
-                    message.data.method,
-                    message.data.args,
-                    message.origin
-                ),
+                data: forwardResponse,
                 callbackId: message.callbackId,
-                origin: message.from
+                origin: message.to
             });
         } else {
             throw new Error(MISSING_FORWARD_FOR_MESSAGE(message));
