@@ -1,13 +1,22 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import { BaseHost } from '../../src/com/base-host';
 import { Communication } from '../../src/com/communication';
-import { SERVICE_CONFIG, multiTenantMethod } from '@wixc3/engine-core/src';
+import { SERVICE_CONFIG, multiTenantMethod } from '@wixc3/engine-core';
+import sinonChai from 'sinon-chai';
+import { stub } from 'sinon';
+import chaiAsPromised from 'chai-as-promised';
+
+chai.use(sinonChai);
+chai.use(chaiAsPromised);
+
+class EchoService {
+    echo(s: string) {
+        return s;
+    }
+}
 
 describe('Communication', () => {
     it('single communication', async () => {
-        interface EchoService {
-            echo(s: string): string;
-        }
         const host = new BaseHost();
 
         const main = new Communication(host, 'main');
@@ -28,10 +37,6 @@ describe('Communication', () => {
         expect(res).to.be.equal('Yoo!');
     });
     it('multi communication', async () => {
-        interface EchoService {
-            echo(s: string): string;
-        }
-
         const host = new BaseHost();
         const main = new Communication(host, 'main');
 
@@ -94,5 +99,37 @@ describe('Communication', () => {
         const res = await childProxy.echo('Yoo!');
 
         expect(res).to.be.equal('child echo Yoo!');
+    });
+
+    it.only('doesnt send callback message on a method that was defined not to send one', async () => {
+        const host = new BaseHost();
+        const main = new Communication(host, 'main', undefined, undefined, undefined, {
+            warnOnSlow: true
+        });
+
+        const host2 = host.open();
+        const child = new Communication(host2, 'child', undefined, undefined, undefined, {
+            warnOnSlow: true
+        });
+
+        const handleMessageStub = stub(main, 'handleMessage');
+        const childCallMethodStub = stub(child, 'callMethod');
+
+        main.registerEnv('child', host2);
+
+        child.registerAPI({ id: 'echoService' }, new EchoService());
+        const proxy = main.apiProxy<EchoService>(
+            Promise.resolve({ id: 'child' }),
+            { id: 'echoService' },
+            {
+                echo: {
+                    emitOnly: true
+                }
+            }
+        );
+        await proxy.echo('Yo!');
+
+        expect(childCallMethodStub).to.have.not.been.called;
+        expect(handleMessageStub).to.have.not.been.called;
     });
 });
