@@ -1,10 +1,9 @@
 import chai, { expect } from 'chai';
-import { BaseHost } from '../../src/com/base-host';
-import { Communication } from '../../src/com/communication';
-import { SERVICE_CONFIG, multiTenantMethod } from '@wixc3/engine-core';
 import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
 import chaiAsPromised from 'chai-as-promised';
+
+import { SERVICE_CONFIG, multiTenantMethod, BaseHost, Communication } from '../../src';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
