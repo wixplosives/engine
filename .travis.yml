@@ -30,8 +30,8 @@ deploy:
   provider: script
   script: lerna-publisher publish
   on:
-    os: linux
-    node: 12
     branch: master
+    node_js: 12
+    condition: os = linux
     # Disabled because of 3 tags limitation https://developer.github.com/v3/activity/events/types/#createevent 
     # tags: true
