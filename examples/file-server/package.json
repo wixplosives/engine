@@ -6,8 +6,8 @@
     "test": "mocha \"test/**/*.ix.ts?(x)\""
   },
   "dependencies": {
-    "@file-services/directory": "^2.0.1",
-    "@file-services/node": "^2.0.2"
+    "@file-services/directory": "^2.1.0",
+    "@file-services/node": "^2.1.0"
   },
   "license": "UNLICENSED",
   "private": true

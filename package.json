@@ -16,7 +16,7 @@
     "prettify": "yarn prettier \"packages/**/*.{js,ts,tsx}\" --write"
   },
   "devDependencies": {
-    "@file-services/memory": "^2.0.1",
+    "@file-services/memory": "^2.1.0",
     "@stylable/cli": "^2.4.1",
     "@stylable/core": "^2.4.1",
     "@stylable/webpack-plugin": "^2.4.1",
@@ -44,8 +44,8 @@
     "@types/webpack-dev-middleware": "^2.0.3",
     "@types/webpack-sources": "^0.1.5",
     "@types/webpack-virtual-modules": "^0.1.0",
-    "@typescript-eslint/eslint-plugin": "^2.6.1",
-    "@typescript-eslint/parser": "^2.6.1",
+    "@typescript-eslint/eslint-plugin": "^2.7.0",
+    "@typescript-eslint/parser": "^2.7.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "deindent": "^0.1.0",
