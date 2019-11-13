@@ -58,7 +58,7 @@ describe('Communication', () => {
         expect(res).to.be.equal('Yoo!');
     });
 
-    it.only('multitenant multi communication', async () => {
+    it('multitenant multi communication', async () => {
         // creating 3 environments - main as a parent, and 2 child environments
         const host = new BaseHost();
         const main = new Communication(host, 'main');

@@ -408,7 +408,8 @@ export class Communication {
         if (message.type === 'call') {
             const forwardResponse = await this.callMethod({
                 envId: env.id,
-                ...message.data
+                ...message.data,
+                origin: message.origin
             });
 
             if (message.callbackId) {
