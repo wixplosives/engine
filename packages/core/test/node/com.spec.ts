@@ -1,12 +1,10 @@
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
-import chaiAsPromised from 'chai-as-promised';
 
 import { SERVICE_CONFIG, multiTenantMethod, BaseHost, Communication } from '../../src';
 
 chai.use(sinonChai);
-chai.use(chaiAsPromised);
 
 class EchoService {
     echo(s: string) {
@@ -60,7 +58,7 @@ describe('Communication', () => {
         expect(res).to.be.equal('Yoo!');
     });
 
-    it('multitenant multi communication', async () => {
+    it.only('multitenant multi communication', async () => {
         // creating 3 environments - main as a parent, and 2 child environments
         const host = new BaseHost();
         const main = new Communication(host, 'main');
@@ -100,7 +98,7 @@ describe('Communication', () => {
         expect(res).to.be.equal('child echo Yoo!');
     });
 
-    it.only('doesnt send callback message on a method that was defined not to send one', async () => {
+    it('doesnt send callback message on a method that was defined not to send one', async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main', undefined, undefined, undefined, {
             warnOnSlow: true
