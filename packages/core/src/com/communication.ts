@@ -36,6 +36,15 @@ export interface ICommunicationOptions {
     warnOnSlow?: boolean;
 }
 
+interface ICallMethodOptions {
+    envId: string;
+    api: string;
+    method: string;
+    args: SerializableArguments;
+    origin?: string;
+    serviceComConfig?: ServiceComConfig<any>;
+}
+
 /**
  * Manages all API registrations and message forwarding
  * in each execution context.
@@ -202,26 +211,25 @@ export class Communication {
      */
     public apiProxy<T>(
         instanceToken: EnvironmentInstanceToken | Promise<EnvironmentInstanceToken>,
-        { id: serviceId }: IDTag,
+        { id: api }: IDTag,
         serviceComConfig: ServiceComConfig<T> = {}
     ): AsyncApi<T> {
         return new Proxy(Object.create(null), {
-            get: (obj, methodName) => {
-                if (typeof methodName === 'string') {
-                    let method = obj[methodName];
-                    if (!method) {
-                        method = async (...args: unknown[]) =>
-                            this.callMethod(
-                                (await instanceToken).id,
-                                serviceId,
-                                methodName,
+            get: (obj, method) => {
+                if (typeof method === 'string') {
+                    let runtimeMethod = obj[method];
+                    if (!runtimeMethod) {
+                        runtimeMethod = async (...args: unknown[]) =>
+                            this.callMethod({
+                                envId: (await instanceToken).id,
+                                api,
+                                method,
                                 args,
-                                undefined,
                                 serviceComConfig
-                            );
-                        obj[methodName] = method;
+                            });
+                        obj[method] = runtimeMethod;
                     }
-                    return method;
+                    return runtimeMethod;
                 }
             }
         });
@@ -244,28 +252,28 @@ export class Communication {
     /**
      * Calls a remote method in any opened environment.
      */
-    public callMethod(
-        envId: string,
-        apiId: string,
-        methodName: string,
-        args: SerializableArguments,
+    public callMethod({
+        envId,
+        api,
+        method,
+        args,
         origin = this.rootEnvId,
-        serviceComConfig: ServiceComConfig<any> = {}
-    ): Promise<unknown> {
+        serviceComConfig = {}
+    }: ICallMethodOptions): Promise<unknown> {
         return new Promise((res, rej) => {
-            const callbackId = !serviceComConfig[methodName]?.emitOnly ? this.idsCounter.next('c') : undefined;
+            const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
 
             if (this.isListenCall(args)) {
                 const message: ListenMessage = {
                     to: envId,
                     from: this.rootEnvId,
                     type: 'listen',
-                    data: this.createHandlerRecord(envId, apiId, methodName, args[0] as UnknownFunction),
+                    data: this.createHandlerRecord(envId, api, method, args[0] as UnknownFunction),
                     callbackId,
                     origin
                 };
                 this.sendTo(envId, message);
-                if(callbackId) {
+                if (callbackId) {
                     this.createCallbackRecord(message, message.callbackId!, res, rej);
                 } else {
                     res();
@@ -275,15 +283,14 @@ export class Communication {
                     to: envId,
                     from: this.rootEnvId,
                     type: 'call',
-                    data: { api: apiId, method: methodName, args },
+                    data: { api, method, args },
                     callbackId,
                     origin
                 };
                 this.sendTo(envId, message);
-                if(callbackId) {
+                if (callbackId) {
                     this.createCallbackRecord(message, message.callbackId!, res, rej);
-                }
-                else {
+                } else {
                     res();
                 }
             }
@@ -399,13 +406,10 @@ export class Communication {
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
         if (message.type === 'call') {
-            const forwardResponse = await this.callMethod(
-                env.id,
-                message.data.api,
-                message.data.method,
-                message.data.args,
-                message.origin
-            );
+            const forwardResponse = await this.callMethod({
+                envId: env.id,
+                ...message.data
+            });
 
             if (message.callbackId) {
                 this.sendTo(message.from, {
