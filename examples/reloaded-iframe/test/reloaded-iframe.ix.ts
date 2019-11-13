@@ -24,8 +24,13 @@ describe('managed iframe environment', () => {
             }
         );
         await echoBtn!.click();
-        await waitFor(async () => {
-            expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
-        });
+        await waitFor(
+            async () => {
+                expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
+            },
+            {
+                timeout: 2000
+            }
+        );
     });
 });
