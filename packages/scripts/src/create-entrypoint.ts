@@ -49,9 +49,11 @@ ${Array.from(features.values())
 async function main() {
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
-
-    const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
-    const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
+    const { featureName: defaultFeatureName = ${stringify(featureName)}, configName: defaultConfigName = ${stringify(
+        configName
+    )}} = await (await fetch('/defaults')).json();
+    const featureName = options.get('${FEATURE_QUERY_PARAM}') || defaultFeatureName;
+    const configName = options.get('${CONFIG_QUERY_PARAM}') || defaultConfigName;
     const config = []
     config.push(...await (await fetch('/config/' + configName + '?env=${envName}&feature=' + featureName)).json());
 

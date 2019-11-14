@@ -100,7 +100,11 @@ export class Application {
         config = []
     }: IRunOptions = {}) {
         const disposables = new Set<() => unknown>();
-        const { port, app, close, socketServer } = await this.launchHttpServer(httpServerPort);
+        const { port, app, close, socketServer } = await this.launchHttpServer({
+            httpServerPort,
+            featureName,
+            configName
+        });
         disposables.add(() => close());
 
         const { features, configurations, packages } = this.analyzeFeatures();
@@ -195,7 +199,7 @@ export class Application {
         )) as IBuildManifest;
 
         const {
-            configName: providedConfigName,
+            configName = defaultConfigName,
             featureName = defaultFeatureName,
             runtimeOptions: defaultRuntimeOptions,
             inspect,
@@ -206,9 +210,11 @@ export class Application {
 
         const configurations = await this.readConfigs();
 
-        const configName = providedConfigName || defaultConfigName;
-
-        const { port, close, socketServer, app } = await this.launchHttpServer(httpServerPort);
+        const { port, close, socketServer, app } = await this.launchHttpServer({
+            httpServerPort,
+            featureName,
+            configName
+        });
         disposables.add(() => close());
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
@@ -250,7 +256,9 @@ export class Application {
         }
 
         await this.loadEngineConfig();
-        const { socketServer, close, port } = await this.launchHttpServer(preferredPort);
+        const { socketServer, close, port } = await this.launchHttpServer({
+            httpServerPort: preferredPort
+        });
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
         parentProcess.postMessage({ id: 'initiated' });
@@ -396,7 +404,15 @@ export class Application {
         return featureEnvDefinitions;
     }
 
-    private async launchHttpServer(httpServerPort = DEFAULT_PORT) {
+    private async launchHttpServer({
+        httpServerPort = DEFAULT_PORT,
+        featureName,
+        configName
+    }: {
+        httpServerPort?: number;
+        featureName?: string;
+        configName?: string;
+    }) {
         const app = express();
         const openSockets = new Set<Socket>();
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
@@ -406,6 +422,12 @@ export class Application {
         });
         app.use('/favicon.ico', noContentHandler);
         app.use('/', express.static(this.outputPath));
+        app.use('/defaults', (_, res) => {
+            res.json({
+                featureName,
+                configName
+            });
+        });
         const socketServer = io(httpServer);
 
         return {
