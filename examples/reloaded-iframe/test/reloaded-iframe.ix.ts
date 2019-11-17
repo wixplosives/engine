@@ -8,7 +8,7 @@ describe('managed iframe environment', () => {
         featureName: 'reloaded-iframe'
     });
 
-    it('successfully reload iframe enviroenment when iframe refreshes', async () => {
+    it.skip('successfully reload iframe enviroenment when iframe refreshes', async () => {
         const { page } = await getLoadedFeature();
         const echoBtn = await page.$(`#${echoBtnId}`);
         const content = await page.$(`#${contentId}`);
