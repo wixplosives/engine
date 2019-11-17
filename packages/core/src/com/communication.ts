@@ -164,7 +164,7 @@ export class Communication {
 
         host.addEventListener('load', () => {
             this.envReady(instanceId)
-                .then(async () => await reload())
+                .then(reload)
                 .catch(reportError);
         });
 

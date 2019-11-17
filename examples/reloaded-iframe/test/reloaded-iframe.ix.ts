@@ -1,6 +1,6 @@
 import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
-import { waitFor } from 'promise-assist';
+import { waitFor, sleep } from 'promise-assist';
 import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../src/consts';
 
 describe('managed iframe environment', () => {
@@ -23,14 +23,16 @@ describe('managed iframe environment', () => {
                 timeout: 2000
             }
         );
+        await sleep(500);
         await echoBtn!.click();
-        await waitFor(
-            async () => {
-                expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
-            },
-            {
-                timeout: 2000
-            }
-        );
+        await sleep(500);
+        expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
+        // await waitFor(
+        //     async () => {
+        //     },
+        //     {
+        //         timeout: 2000
+        //     }
+        // );
     });
 });
