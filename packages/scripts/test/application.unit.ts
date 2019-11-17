@@ -388,5 +388,52 @@ describe('Application', function() {
                 }
             });
         });
+
+        it('overrides default values on browser with which the project was build, when providing feature name', async () => {
+            const app = new Application({
+                basePath: useConfigsFeaturePath
+            });
+            await app.build({
+                featureName: 'configs/use-configs'
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                featureName: 'configs/fixture'
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    expect(bodyContent).to.contain('alternative');
+                }
+            });
+        });
+
+        it('overrides default values on browser with which the project was build, when providing config name', async () => {
+            const app = new Application({
+                basePath: useConfigsFeaturePath
+            });
+            await app.build({
+                configName: 'configs/default',
+                featureName: 'configs/use-configs'
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                configName: 'configs/alternative'
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    expect(bodyContent).to.contain('gaga');
+                }
+            });
+        });
     });
 });

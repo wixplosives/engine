@@ -35,7 +35,8 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
             timesRefreshed.innerText = `document was refreshed ${++refreshCounter} times`;
         };
 
-        await echoService.get(envToken).onEcho(times => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        echoService.get(envToken).onEcho(times => {
             div.innerText = `document was called ${times} times`;
         });
     });
