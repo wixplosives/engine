@@ -1,5 +1,5 @@
 import { SERVICE_CONFIG } from '../src';
-import { multiTenantMethod } from '../src/com/multi-tenant';
+import { multiTenantMethod } from '../src/com/service-config';
 
 export interface ITestServiceData {
     echo: number[];
