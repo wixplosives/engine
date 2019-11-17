@@ -20,7 +20,8 @@ import {
     SerializableMethod,
     Target,
     UnknownFunction,
-    WindowHost
+    WindowHost,
+    ServiceComConfig
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -201,18 +202,26 @@ export class Communication {
      */
     public apiProxy<T>(
         instanceToken: EnvironmentInstanceToken | Promise<EnvironmentInstanceToken>,
-        { id: serviceId }: IDTag
+        { id: api }: IDTag,
+        serviceComConfig: ServiceComConfig<T> = {}
     ): AsyncApi<T> {
         return new Proxy(Object.create(null), {
-            get: (obj, methodName) => {
-                if (typeof methodName === 'string') {
-                    let method = obj[methodName];
-                    if (!method) {
-                        method = async (...args: unknown[]) =>
-                            this.callMethod((await instanceToken).id, serviceId, methodName, args);
-                        obj[methodName] = method;
+            get: (obj, method) => {
+                if (typeof method === 'string') {
+                    let runtimeMethod = obj[method];
+                    if (!runtimeMethod) {
+                        runtimeMethod = async (...args: unknown[]) =>
+                            this.callMethod(
+                                (await instanceToken).id,
+                                api,
+                                method,
+                                args,
+                                this.rootEnvId,
+                                serviceComConfig
+                            );
+                        obj[method] = runtimeMethod;
                     }
-                    return method;
+                    return runtimeMethod;
                 }
             }
         });
@@ -237,34 +246,45 @@ export class Communication {
      */
     public callMethod(
         envId: string,
-        apiId: string,
-        methodName: string,
-        args: SerializableArguments,
-        origin = this.rootEnvId
+        api: string,
+        method: string,
+        args: unknown[],
+        origin: string,
+        serviceComConfig: ServiceComConfig<any>
     ): Promise<unknown> {
         return new Promise((res, rej) => {
+            const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
+
             if (this.isListenCall(args)) {
                 const message: ListenMessage = {
                     to: envId,
                     from: this.rootEnvId,
                     type: 'listen',
-                    data: this.createHandlerRecord(envId, apiId, methodName, args[0] as UnknownFunction),
-                    callbackId: this.idsCounter.next('c'),
+                    data: this.createHandlerRecord(envId, api, method, args[0] as UnknownFunction),
+                    callbackId,
                     origin
                 };
-                this.createCallbackRecord(message, message.callbackId!, res, rej);
                 this.sendTo(envId, message);
+                if (callbackId) {
+                    this.createCallbackRecord(message, message.callbackId!, res, rej);
+                } else {
+                    res();
+                }
             } else {
                 const message: CallMessage = {
                     to: envId,
                     from: this.rootEnvId,
                     type: 'call',
-                    data: { api: apiId, method: methodName, args },
-                    callbackId: this.idsCounter.next('c'),
+                    data: { api, method, args },
+                    callbackId,
                     origin
                 };
-                this.createCallbackRecord(message, message.callbackId!, res, rej);
                 this.sendTo(envId, message);
+                if (callbackId) {
+                    this.createCallbackRecord(message, message.callbackId!, res, rej);
+                } else {
+                    res();
+                }
             }
         });
     }
@@ -383,17 +403,20 @@ export class Communication {
                 message.data.api,
                 message.data.method,
                 message.data.args,
-                message.origin
+                message.origin,
+                {}
             );
 
-            this.sendTo(message.from, {
-                from: message.to,
-                type: 'callback',
-                to: message.from,
-                data: forwardResponse,
-                callbackId: message.callbackId,
-                origin: message.to
-            });
+            if (message.callbackId) {
+                this.sendTo(message.from, {
+                    from: message.to,
+                    type: 'callback',
+                    to: message.from,
+                    data: forwardResponse,
+                    callbackId: message.callbackId,
+                    origin: message.to
+                });
+            }
         } else {
             throw new Error(MISSING_FORWARD_FOR_MESSAGE(message));
         }
@@ -497,16 +520,21 @@ export class Communication {
             if (this.eventDispatchers[message.data.handlerId]) {
                 return;
             }
-            this.sendTo(message.from, {
-                to: message.from,
-                from: this.rootEnvId,
-                type: 'callback',
-                data: await this.apiCall(message.origin, message.data.api, message.data.method, [
-                    this.createDispatcher(message.from, message)
-                ]),
-                callbackId: message.callbackId,
-                origin: this.rootEnvId
-            });
+
+            const data = await this.apiCall(message.origin, message.data.api, message.data.method, [
+                this.createDispatcher(message.from, message)
+            ]);
+
+            if (message.callbackId) {
+                this.sendTo(message.from, {
+                    to: message.from,
+                    from: this.rootEnvId,
+                    type: 'callback',
+                    data,
+                    callbackId: message.callbackId,
+                    origin: this.rootEnvId
+                });
+            }
         } catch (error) {
             this.sendTo(message.from, {
                 to: message.from,
@@ -521,14 +549,17 @@ export class Communication {
 
     private async handleCall(message: CallMessage): Promise<void> {
         try {
-            this.sendTo(message.from, {
-                to: message.from,
-                from: this.rootEnvId,
-                type: 'callback',
-                data: await this.apiCall(message.origin, message.data.api, message.data.method, message.data.args),
-                callbackId: message.callbackId,
-                origin: this.rootEnvId
-            });
+            const data = await this.apiCall(message.origin, message.data.api, message.data.method, message.data.args);
+            if (message.callbackId) {
+                this.sendTo(message.from, {
+                    to: message.from,
+                    from: this.rootEnvId,
+                    type: 'callback',
+                    data,
+                    callbackId: message.callbackId,
+                    origin: this.rootEnvId
+                });
+            }
         } catch (error) {
             this.sendTo(message.from, {
                 to: message.from,
@@ -547,7 +578,9 @@ export class Communication {
             message.error ? rec.reject(new Error(REMOTE_CALL_FAILED(message))) : rec.resolve(message.data);
         } else {
             // TODO: only in dev mode
-            throw new Error(UNKNOWN_CALLBACK_ID(removeMessageArgs(message)));
+            if (message.callbackId) {
+                throw new Error(UNKNOWN_CALLBACK_ID(removeMessageArgs(message)));
+            }
         }
     }
 
