@@ -23,7 +23,6 @@ describe('managed iframe environment', () => {
                 timeout: 2000
             }
         );
-        await sleep(500);
         await echoBtn!.click();
         await sleep(500);
         expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
