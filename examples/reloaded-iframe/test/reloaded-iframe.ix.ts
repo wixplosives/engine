@@ -1,6 +1,6 @@
 import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
-import { waitFor, sleep } from 'promise-assist';
+import { waitFor } from 'promise-assist';
 import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../src/consts';
 
 describe('managed iframe environment', () => {
