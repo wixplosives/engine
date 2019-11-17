@@ -18,7 +18,6 @@ describe('managed iframe environment', () => {
             const timesRefreshed = await page.$(`#${timesRefreshedId}`);
             expect(await (await timesRefreshed!.getProperty('textContent')!).jsonValue()).to.contain('1');
         });
-        await sleep(100);
         await echoBtn!.click();
 
         await waitFor(async () => {
