@@ -4,6 +4,6 @@ export * from './errors';
 export * from './helpers';
 export * from './logger-service';
 export * from './message-types';
-export * from './multi-tenant';
+export * from './service-config';
 export * from './types';
 export * from './ws-client-host';
