@@ -36,15 +36,6 @@ export interface ICommunicationOptions {
     warnOnSlow?: boolean;
 }
 
-interface ICallMethodOptions {
-    envId: string;
-    api: string;
-    method: string;
-    args: SerializableArguments;
-    origin?: string;
-    serviceComConfig?: ServiceComConfig<any>;
-}
-
 /**
  * Manages all API registrations and message forwarding
  * in each execution context.
@@ -220,13 +211,14 @@ export class Communication {
                     let runtimeMethod = obj[method];
                     if (!runtimeMethod) {
                         runtimeMethod = async (...args: unknown[]) =>
-                            this.callMethod({
-                                envId: (await instanceToken).id,
+                            this.callMethod(
+                                (await instanceToken).id,
                                 api,
                                 method,
                                 args,
+                                this.rootEnvId,
                                 serviceComConfig
-                            });
+                            );
                         obj[method] = runtimeMethod;
                     }
                     return runtimeMethod;
@@ -252,14 +244,14 @@ export class Communication {
     /**
      * Calls a remote method in any opened environment.
      */
-    public callMethod({
-        envId,
-        api,
-        method,
-        args,
-        origin = this.rootEnvId,
-        serviceComConfig = {}
-    }: ICallMethodOptions): Promise<unknown> {
+    public callMethod(
+        envId: string,
+        api: string,
+        method: string,
+        args: unknown[],
+        origin: string,
+        serviceComConfig: ServiceComConfig<any>
+    ): Promise<unknown> {
         return new Promise((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
 
@@ -406,11 +398,14 @@ export class Communication {
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
         if (message.type === 'call') {
-            const forwardResponse = await this.callMethod({
-                envId: env.id,
-                ...message.data,
-                origin: message.origin
-            });
+            const forwardResponse = await this.callMethod(
+                env.id,
+                message.data.api,
+                message.data.method,
+                message.data.args,
+                message.origin,
+                {}
+            );
 
             if (message.callbackId) {
                 this.sendTo(message.from, {

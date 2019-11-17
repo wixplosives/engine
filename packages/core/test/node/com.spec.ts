@@ -109,7 +109,10 @@ describe('Communication', () => {
             warnOnSlow: true
         });
 
+        // handleMessage is called when message is recieved from remote
         const handleMessageStub = stub(main, 'handleMessage');
+
+        // callMethod is being called when sending call/listen request to other origin
         const childCallMethodStub = stub(child, 'callMethod');
 
         main.registerEnv('child', host2);
@@ -126,7 +129,10 @@ describe('Communication', () => {
         );
         await proxy.echo('Yo!');
 
+        // we want to check a callback message was not send
         expect(childCallMethodStub).to.have.not.been.called;
+
+        // we need to check that no message was received
         expect(handleMessageStub).to.have.not.been.called;
     });
 });
