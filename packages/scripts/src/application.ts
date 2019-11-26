@@ -166,8 +166,9 @@ export class Application {
         const mainUrl = `http://localhost:${port}${publicPath}`;
         console.log(`Listening:`);
         console.log('Dashboard URL: ', mainUrl);
-        console.log('Main application URL: ', `${mainUrl}/main.html`);
-
+        if (featureName) {
+            console.log('Main application URL: ', `${mainUrl}main.html`);
+        }
         const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations, nodeEnvironmentManager);
 
         if (packages.length === 1) {
