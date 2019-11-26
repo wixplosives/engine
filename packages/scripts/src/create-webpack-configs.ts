@@ -14,12 +14,17 @@ export interface ICreateWebpackConfigsOptions {
     mode?: 'production' | 'development';
     outputPath: string;
     enviroments: IEnvironment[];
+    publicPath: string;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const { enviroments, mode = 'development', baseConfig = {} } = options;
+    const { enviroments, mode = 'development', baseConfig = {}, publicPath } = options;
+    if (!baseConfig.output) {
+        baseConfig.output = {};
+    }
+    baseConfig.output.publicPath = publicPath;
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
@@ -45,6 +50,11 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             );
             entry.index = engineDashboardEntry;
         }
+        plugins.push(
+            new webpack.DefinePlugin({
+                'process.env.WCS_PUBLIC_PATH': JSON.stringify(publicPath)
+            })
+        );
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -65,7 +75,12 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: workerEnvs,
                 target: 'webworker',
                 virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)]
+                plugins: [
+                    new VirtualModulesPlugin(virtualModules),
+                    new webpack.DefinePlugin({
+                        'process.env.WCS_PUBLIC_PATH': JSON.stringify(publicPath)
+                    })
+                ]
             })
         );
     }

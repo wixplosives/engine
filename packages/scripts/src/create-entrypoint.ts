@@ -45,17 +45,17 @@ ${Array.from(features.values())
     })
     .join(',\n')}
 };
-        
+
 async function main() {
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
     const { featureName: defaultFeatureName = ${stringify(featureName)}, configName: defaultConfigName = ${stringify(
         configName
-    )}} = await (await fetch('/defaults')).json();
+    )}} = await (await fetch('defaults')).json();
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || defaultFeatureName;
     const configName = options.get('${CONFIG_QUERY_PARAM}') || defaultConfigName;
     const config = []
-    config.push(...await (await fetch('/config/' + configName + '?env=${envName}&feature=' + featureName)).json());
+    config.push(...await (await fetch('config/' + configName + '?env=${envName}&feature=' + featureName)).json());
 
     const runtimeEngine = await runEngineApp(
         { featureName, configName, featureLoaders, config, options, envName: '${envName}' }

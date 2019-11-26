@@ -37,6 +37,7 @@ export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
     inspect?: boolean;
     port?: number;
+    publicPath?: string;
 }
 
 export interface IBuildManifest {
@@ -64,9 +65,15 @@ export class Application {
         await rimraf(fs.join(this.basePath, 'npm'));
     }
 
-    public async build({ featureName, configName }: IRunOptions = {}): Promise<webpack.Stats> {
+    public async build({ featureName, configName, publicPath }: IRunOptions = {}): Promise<webpack.Stats> {
         const { features, configurations } = this.analyzeFeatures();
-        const compiler = this.createCompiler(features, featureName, configName, 'production');
+        const compiler = this.createCompiler({
+            features,
+            featureName,
+            configName,
+            mode: 'production',
+            publicPath
+        });
 
         const stats = await new Promise<webpack.Stats>((resolve, reject) =>
             compiler.run((e, s) => {
@@ -97,19 +104,21 @@ export class Application {
         inspect = false,
         port: httpServerPort,
         singleRun,
-        config = []
+        config = [],
+        publicPath = '/'
     }: IRunOptions = {}) {
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
             httpServerPort,
             featureName,
-            configName
+            configName,
+            publicPath
         });
         disposables.add(() => close());
 
         const { features, configurations, packages } = this.analyzeFeatures();
 
-        const compiler = this.createCompiler(features, featureName, configName);
+        const compiler = this.createCompiler({ features, featureName, configName, publicPath });
 
         if (singleRun) {
             for (const childCompiler of compiler.compilers) {
@@ -136,10 +145,16 @@ export class Application {
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config));
+        app.use(
+            `${publicPath}config`,
+            createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config, publicPath)
+        );
 
         for (const childCompiler of compiler.compilers) {
-            const devMiddleware = webpackDevMiddleware(childCompiler, { publicPath: '/', logLevel: 'silent' });
+            const devMiddleware = webpackDevMiddleware(childCompiler, {
+                publicPath,
+                logLevel: 'silent'
+            });
             disposables.add(() => new Promise(res => devMiddleware.close(res)));
             app.use(devMiddleware);
         }
@@ -148,24 +163,26 @@ export class Application {
             compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
-        const mainUrl = `http://localhost:${port}`;
+        const mainUrl = `http://localhost:${port}${publicPath}`;
         console.log(`Listening:`);
-        console.log(mainUrl);
+        console.log('Dashboard URL: ', mainUrl);
+        console.log('Main application URL: ', `${mainUrl}/main.html`);
 
         const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations, nodeEnvironmentManager);
 
         if (packages.length === 1) {
             // print links to features
+            console.log('Alternative links: ');
             for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
                 for (const runningConfigName of configurations) {
-                    console.log(`${mainUrl}/main.html?feature=${featureName}&config=${runningConfigName}`);
+                    console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
                 }
             }
         }
 
-        app.use(nodeEnvironmentManager.middleware());
+        app.use(nodeEnvironmentManager.middleware(publicPath));
 
-        app.get('/engine-state', (_req, res) => {
+        app.get(`${publicPath}engine-state`, (_req, res) => {
             res.json({
                 result: 'success',
                 data: {
@@ -204,7 +221,8 @@ export class Application {
             runtimeOptions: defaultRuntimeOptions,
             inspect,
             port: httpServerPort,
-            config = []
+            config = [],
+            publicPath = '/'
         } = runOptions;
         const disposables = new Set<() => unknown>();
 
@@ -213,7 +231,8 @@ export class Application {
         const { port, close, socketServer, app } = await this.launchHttpServer({
             httpServerPort,
             featureName,
-            configName
+            configName,
+            publicPath
         });
         disposables.add(() => close());
 
@@ -227,7 +246,10 @@ export class Application {
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        app.use('/config', createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config));
+        app.use(
+            `${publicPath}config`,
+            createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config, publicPath)
+        );
 
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
@@ -236,7 +258,7 @@ export class Application {
             });
 
             console.log(`Listening:`);
-            console.log(`http://localhost:${port}/main.html`);
+            console.log(`http://localhost:${port}${publicPath}main.html`);
         }
 
         return {
@@ -250,14 +272,15 @@ export class Application {
         };
     }
 
-    public async remote({ port: preferredPort }: IRunOptions = {}) {
+    public async remote({ port: preferredPort, publicPath = '/' }: IRunOptions = {}) {
         if (!process.send) {
             throw new Error('"remote" command can only be used in a forked process');
         }
 
         await this.loadEngineConfig();
         const { socketServer, close, port } = await this.launchHttpServer({
-            httpServerPort: preferredPort
+            httpServerPort: preferredPort,
+            publicPath
         });
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
@@ -336,12 +359,19 @@ export class Application {
         }
     }
 
-    private createCompiler(
-        features: Map<string, IFeatureDefinition>,
-        featureName?: string,
-        configName?: string,
-        mode?: 'production' | 'development'
-    ) {
+    private createCompiler({
+        features,
+        featureName,
+        configName,
+        publicPath = '/',
+        mode
+    }: {
+        features: Map<string, IFeatureDefinition>;
+        featureName?: string;
+        configName?: string;
+        publicPath?: string;
+        mode?: 'production' | 'development';
+    }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig: webpack.Configuration = typeof baseConfigPath === 'string' ? require(baseConfigPath) : {};
@@ -354,7 +384,6 @@ export class Application {
                 }
             }
         }
-
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
             context: basePath,
@@ -363,7 +392,8 @@ export class Application {
             enviroments: Array.from(enviroments),
             features,
             featureName,
-            configName
+            configName,
+            publicPath
         });
 
         const compiler = webpack(webpackConfigs);
@@ -407,8 +437,10 @@ export class Application {
     private async launchHttpServer({
         httpServerPort = DEFAULT_PORT,
         featureName,
-        configName
+        configName,
+        publicPath
     }: {
+        publicPath: string;
         httpServerPort?: number;
         featureName?: string;
         configName?: string;
@@ -420,9 +452,11 @@ export class Application {
             openSockets.add(socket);
             socket.once('close', () => openSockets.delete(socket));
         });
-        app.use('/favicon.ico', noContentHandler);
-        app.use('/', express.static(this.outputPath));
-        app.use('/defaults', (_, res) => {
+
+        app.use(publicPath, express.static(this.outputPath));
+
+        app.use(`${publicPath}favicon.ico`, noContentHandler);
+        app.use(`${publicPath}defaults`, (_, res) => {
             res.json({
                 featureName,
                 configName

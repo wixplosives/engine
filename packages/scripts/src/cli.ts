@@ -60,6 +60,7 @@ program
             open: openBrowser = 'true'
         } = cmd;
         try {
+            const publicPath = process.env.WCS_PUBLIC_PATH || '/';
             const app = new Application({ basePath: path || process.cwd() });
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
@@ -67,13 +68,14 @@ program
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect: cmd.inspect ? true : false,
                 port: httpServerPort ? Number(httpServerPort) : undefined,
-                singleRun: !!singleRun
+                singleRun: !!singleRun,
+                publicPath
             });
 
             if (process.send) {
                 process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
             } else if (featureName && configName && openBrowser === 'true') {
-                await open(`http://localhost:${port}/main.html`);
+                await open(`http://localhost:${port}${publicPath}main.html`);
             }
 
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
@@ -109,7 +111,7 @@ program
         const { feature: featureName, config: configName, outDir = 'dist' } = cmd;
         try {
             const app = new Application({ basePath: path, outputPath: join(path, outDir) });
-            const stats = await app.build({ featureName, configName });
+            const stats = await app.build({ featureName, configName, publicPath: process.env.WCS_PUBLIC_PATH });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
             printErrorAndExit(e);
@@ -124,17 +126,18 @@ program
     .option('-p ,--port <port>')
     .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
         const { config: configName, outDir = 'dist', feature: featureName, port: preferredPort } = cmd;
-
+        const publicPath = process.env.WCS_PUBLIC_PATH || '/';
         try {
             const app = new Application({ basePath: path, outputPath: join(path, outDir) });
             const { port } = await app.run({
                 configName,
                 featureName,
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
-                port: preferredPort ? parseInt(preferredPort, 10) : undefined
+                port: preferredPort ? parseInt(preferredPort, 10) : undefined,
+                publicPath
             });
             console.log(`Listening:`);
-            console.log(`http://localhost:${port}/main.html`);
+            console.log(`http://localhost:${port}${publicPath}main.html`);
         } catch (e) {
             printErrorAndExit(e);
         }
