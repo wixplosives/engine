@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "7.9.0",
+  "version": "7.10.0",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
@@ -26,8 +26,8 @@
     "@stylable/node": "^2.5.3",
     "@ts-tools/node": "^1.1.2",
     "@ts-tools/webpack-loader": "^1.1.0",
-    "@wixc3/engine-core": "^7.9.0",
-    "@wixc3/engine-core-node": "^7.9.0",
+    "@wixc3/engine-core": "^7.10.0",
+    "@wixc3/engine-core-node": "^7.10.0",
     "commander": "^4.0.1",
     "create-listening-server": "^1.0.0",
     "deindent": "^0.1.0",
