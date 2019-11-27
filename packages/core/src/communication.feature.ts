@@ -18,6 +18,7 @@ export interface IComConfig {
     loggerSeverity: LogLevel;
     logToConsole?: boolean;
     maxLogMessages: number;
+    publicPath: string;
 }
 
 export default new Feature({
@@ -29,7 +30,8 @@ export default new Feature({
                 loggerSeverity: LogLevel.DEBUG,
                 maxLogMessages: 100,
                 topology: {},
-                resolvedContexts: {}
+                resolvedContexts: {},
+                publicPath: '/'
             },
             (a: IComConfig, b: Partial<IComConfig>) => ({
                 ...a,
@@ -63,7 +65,7 @@ export default new Feature({
 }).setup(
     Universal,
     ({
-        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts },
+        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts, publicPath },
         loggerTransports,
         [RUN_OPTIONS]: runOptions
     }) => {
@@ -76,7 +78,8 @@ export default new Feature({
         const comId = id || (host && host.name) || (typeof self !== 'undefined' && self.name) || 'main';
 
         const comOptions: ICommunicationOptions = {
-            warnOnSlow: runOptions.has('warnOnSlow')
+            warnOnSlow: runOptions.has('warnOnSlow'),
+            publicPath
         };
 
         const communication = new Communication(

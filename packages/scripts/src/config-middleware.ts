@@ -7,11 +7,12 @@ import { IConfigDefinition } from './types';
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition>,
     topology: Map<string, Record<string, string>>,
-    overrideConfig: TopLevelConfig = []
+    overrideConfig: TopLevelConfig = [],
+    publicPath: string
 ): express.RequestHandler {
     return async (req, res) => {
         const { feature: reqFeature, env: reqEnv } = req.query;
-        const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(reqFeature) } })];
+        const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(reqFeature), publicPath } })];
         const requestedConfig = req.path.slice(1);
         const configDefinitions = configurations.get(requestedConfig);
 

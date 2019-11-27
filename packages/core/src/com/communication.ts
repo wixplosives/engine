@@ -34,6 +34,7 @@ import { WsClientHost } from './ws-client-host';
 
 export interface ICommunicationOptions {
     warnOnSlow?: boolean;
+    publicPath?: string;
 }
 
 /**
@@ -64,7 +65,7 @@ export class Communication {
         public isServer = false,
         options?: ICommunicationOptions
     ) {
-        this.options = { warnOnSlow: false, ...options };
+        this.options = { warnOnSlow: false, publicPath: '/', ...options };
         this.rootEnvId = id;
         this.rootEnvName = id.split('/')[0];
         this.registerMessageHandler(host);
@@ -120,8 +121,8 @@ export class Communication {
         const instanceId = isSingleton ? env : this.generateEnvInstanceID(env);
 
         await (envType === 'worker'
-            ? this.useWorker(defaultWorkerFactory(env, instanceId, this.topology.publicPath), instanceId)
-            : this.useWindow(host!, instanceId, defaultSourceFactory(env, instanceId, this.topology.publicPath)));
+            ? this.useWorker(defaultWorkerFactory(env, instanceId, this.options.publicPath), instanceId)
+            : this.useWindow(host!, instanceId, defaultSourceFactory(env, instanceId, this.options.publicPath)));
 
         return {
             id: instanceId
@@ -137,7 +138,7 @@ export class Communication {
         await this.useIframe(
             host,
             instanceId,
-            src || defaultHtmlSourceFactory(env, instanceId, this.topology.publicPath)
+            src || defaultHtmlSourceFactory(env, instanceId, this.options.publicPath)
         );
 
         return {

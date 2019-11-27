@@ -14,14 +14,21 @@ export interface ICreateWebpackConfigsOptions {
     mode?: 'production' | 'development';
     outputPath: string;
     enviroments: IEnvironment[];
+    publicPath: string;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const { enviroments, mode = 'development', baseConfig = {} } = options;
+    const { enviroments, mode = 'development', baseConfig = {}, publicPath } = options;
+    if (!baseConfig.output) {
+        baseConfig.output = {};
+    }
+    baseConfig.output.publicPath = publicPath;
     const configurations: webpack.Configuration[] = [];
-    const virtualModules: Record<string, string> = {};
+    const virtualModules: Record<string, string> = {
+        './__webpack_publis_path.js': `__webpack_public_path__=${JSON.stringify(publicPath)}`
+    };
 
     const webEnvs = new Map<string, string[]>();
     const workerEnvs = new Map<string, string[]>();

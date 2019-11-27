@@ -32,7 +32,7 @@ export const ActionsContainer = memo<IActionsContainerProps>(({
 
             {featureName ? (
                 <a
-                    href={`/main.html?feature=${featureName}&config=${configName}`}
+                    href={`main.html?feature=${featureName}&config=${configName}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={actionBtnClassName}

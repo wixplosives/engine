@@ -2,7 +2,7 @@ import React from 'react';
 import { Dashboard } from './dashboard';
 import { classes } from './styles.st.css';
 
-const fetchServerState = async () => (await fetch('/engine-state')).json();
+const fetchServerState = async () => (await fetch(`engine-state`)).json();
 
 const changeNodeEnvironmentState = async (
     featureName: string,
