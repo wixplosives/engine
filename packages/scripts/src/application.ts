@@ -107,18 +107,19 @@ export class Application {
         config = [],
         publicPath = '/'
     }: IRunOptions = {}) {
+        const normilizedPublicPath = normilizePublicPath(publicPath);
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
             httpServerPort,
             featureName,
             configName,
-            publicPath
+            publicPath: normilizedPublicPath
         });
         disposables.add(() => close());
 
         const { features, configurations, packages } = this.analyzeFeatures();
 
-        const compiler = this.createCompiler({ features, featureName, configName, publicPath });
+        const compiler = this.createCompiler({ features, featureName, configName, publicPath: normilizedPublicPath });
 
         if (singleRun) {
             for (const childCompiler of compiler.compilers) {
@@ -146,13 +147,13 @@ export class Application {
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
         app.use(
-            `${publicPath}config`,
-            createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config, publicPath)
+            '/config',
+            createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config, normilizedPublicPath)
         );
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
-                publicPath,
+                publicPath: '/',
                 logLevel: 'silent'
             });
             disposables.add(() => new Promise(res => devMiddleware.close(res)));
@@ -163,7 +164,7 @@ export class Application {
             compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
-        const mainUrl = `http://localhost:${port}${publicPath}`;
+        const mainUrl = `http://localhost:${port}${normilizedPublicPath}`;
         console.log(`Listening:`);
         console.log('Dashboard URL: ', mainUrl);
         if (featureName) {
@@ -173,7 +174,7 @@ export class Application {
 
         if (packages.length === 1) {
             // print links to features
-            console.log('Alternative links: ');
+            console.log('Available Configurations:');
             for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
                 for (const runningConfigName of configurations) {
                     console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
@@ -181,9 +182,9 @@ export class Application {
             }
         }
 
-        app.use(nodeEnvironmentManager.middleware(publicPath));
+        app.use(nodeEnvironmentManager.middleware());
 
-        app.get(`${publicPath}engine-state`, (_req, res) => {
+        app.get('/engine-state', (_req, res) => {
             res.json({
                 result: 'success',
                 data: {
@@ -226,14 +227,14 @@ export class Application {
             publicPath = '/'
         } = runOptions;
         const disposables = new Set<() => unknown>();
-
+        const normilizedPublicPath = normilizePublicPath(publicPath);
         const configurations = await this.readConfigs();
 
         const { port, close, socketServer, app } = await this.launchHttpServer({
             httpServerPort,
             featureName,
             configName,
-            publicPath
+            publicPath: normilizedPublicPath
         });
         disposables.add(() => close());
 
@@ -248,8 +249,8 @@ export class Application {
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
         app.use(
-            `${publicPath}config`,
-            createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config, publicPath)
+            `/config`,
+            createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config, normilizedPublicPath)
         );
 
         if (featureName) {
@@ -259,7 +260,7 @@ export class Application {
             });
 
             console.log(`Listening:`);
-            console.log(`http://localhost:${port}${publicPath}main.html`);
+            console.log(`http://localhost:${port}${normilizedPublicPath}main.html`);
         }
 
         return {
@@ -279,9 +280,10 @@ export class Application {
         }
 
         await this.loadEngineConfig();
+        const normilizedPublicPath = normilizePublicPath(publicPath);
         const { socketServer, close, port } = await this.launchHttpServer({
             httpServerPort: preferredPort,
-            publicPath
+            publicPath: normilizedPublicPath
         });
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
@@ -454,15 +456,19 @@ export class Application {
             socket.once('close', () => openSockets.delete(socket));
         });
 
-        app.use(publicPath, express.static(this.outputPath));
+        const router = express.Router();
 
-        app.use(`${publicPath}favicon.ico`, noContentHandler);
-        app.use(`${publicPath}defaults`, (_, res) => {
+        router.use('/', express.static(this.outputPath));
+
+        router.use('/favicon.ico', noContentHandler);
+        router.use('/defaults', (_, res) => {
             res.json({
                 featureName,
                 configName
             });
         });
+        app.use(publicPath, router);
+
         const socketServer = io(httpServer);
 
         return {
@@ -476,7 +482,7 @@ export class Application {
                 });
             },
             port,
-            app,
+            app: router,
             socketServer
         };
     }
@@ -489,6 +495,10 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target} using webpack...`);
+
+function normilizePublicPath(publicPath: string) {
+    return `${publicPath.startsWith('/') ? '' : '/'}${publicPath}${publicPath.endsWith('/') ? '' : '/'}`;
+}
 
 function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);

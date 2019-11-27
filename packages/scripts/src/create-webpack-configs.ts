@@ -26,7 +26,9 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     }
     baseConfig.output.publicPath = publicPath;
     const configurations: webpack.Configuration[] = [];
-    const virtualModules: Record<string, string> = {};
+    const virtualModules: Record<string, string> = {
+        './__webpack_publis_path.js': `__webpack_public_path__=${JSON.stringify(publicPath)}`
+    };
 
     const webEnvs = new Map<string, string[]>();
     const workerEnvs = new Map<string, string[]>();
@@ -50,11 +52,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             );
             entry.index = engineDashboardEntry;
         }
-        plugins.push(
-            new webpack.DefinePlugin({
-                'process.env.WCS_PUBLIC_PATH': JSON.stringify(publicPath)
-            })
-        );
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -75,12 +72,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: workerEnvs,
                 target: 'webworker',
                 virtualModules,
-                plugins: [
-                    new VirtualModulesPlugin(virtualModules),
-                    new webpack.DefinePlugin({
-                        'process.env.WCS_PUBLIC_PATH': JSON.stringify(publicPath)
-                    })
-                ]
+                plugins: [new VirtualModulesPlugin(virtualModules)]
             })
         );
     }

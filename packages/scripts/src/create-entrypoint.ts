@@ -12,7 +12,8 @@ export interface ICreateEntrypointsOptions {
 }
 
 export function createEntrypoint({ features, envName, childEnvs, featureName, configName }: ICreateEntrypointsOptions) {
-    return `import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
+    return `import './__webpack_publis_path';
+import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
     
 const featureLoaders = {
 ${Array.from(features.values())

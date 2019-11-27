@@ -15,6 +15,8 @@ import { version } from '../package.json';
 import { Application, IFeatureTarget } from './application';
 import { IFeatureMessage, IPortMessage, IProcessMessage } from './types';
 
+const publicPath = process.env.ENGINE_PUBLIC_PATH || '/';
+
 program.version(version);
 
 const kebabCaseToCamelCase = (value: string): string => value.replace(/[-]\S/g, match => match.slice(1).toUpperCase());
@@ -60,7 +62,6 @@ program
             open: openBrowser = 'true'
         } = cmd;
         try {
-            const publicPath = process.env.WCS_PUBLIC_PATH || '/';
             const app = new Application({ basePath: path || process.cwd() });
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
@@ -111,7 +112,7 @@ program
         const { feature: featureName, config: configName, outDir = 'dist' } = cmd;
         try {
             const app = new Application({ basePath: path, outputPath: join(path, outDir) });
-            const stats = await app.build({ featureName, configName, publicPath: process.env.WCS_PUBLIC_PATH });
+            const stats = await app.build({ featureName, configName, publicPath });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
             printErrorAndExit(e);
@@ -126,7 +127,6 @@ program
     .option('-p ,--port <port>')
     .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
         const { config: configName, outDir = 'dist', feature: featureName, port: preferredPort } = cmd;
-        const publicPath = process.env.WCS_PUBLIC_PATH || '/';
         try {
             const app = new Application({ basePath: path, outputPath: join(path, outDir) });
             const { port } = await app.run({

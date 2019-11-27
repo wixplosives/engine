@@ -100,10 +100,10 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    public middleware(publicPath: string) {
+    public middleware() {
         const router = Router();
         router.use(bodyParser.json());
-        router.put(`${publicPath}node-env`, async (req, res) => {
+        router.put('/node-env', async (req, res) => {
             const { configName, featureName, runtimeOptions: options }: RunEnvironmentOptions = req.body;
             try {
                 await this.runServerEnvironments({
@@ -122,7 +122,7 @@ export class NodeEnvironmentsManager {
             }
         });
 
-        router.delete(`${publicPath}node-env`, async (req, res) => {
+        router.delete('/node-env', async (req, res) => {
             const { featureName }: RunEnvironmentOptions = req.body;
             try {
                 await this.closeEnvironment({ featureName });
@@ -137,7 +137,7 @@ export class NodeEnvironmentsManager {
             }
         });
 
-        router.get(`${publicPath}node-env`, (_req, res) => {
+        router.get('/node-env', (_req, res) => {
             try {
                 const data = this.getFeaturesWithRunningEnvironments();
                 res.json({
