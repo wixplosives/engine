@@ -436,4 +436,18 @@ describe('Application', function() {
             });
         });
     });
+
+    it('allows adding routes to the engine router', async () => {
+        const app = new Application({
+            basePath: engineFeatureFixturePath
+        });
+
+        const { close, port, router } = await app.start();
+        disposables.add(() => close());
+        router.get('/test/me', (_req, res) => {
+            res.send('OK');
+        });
+        const page = await loadPage(`http://localhost:${port}/test/me`);
+        expect(await page.content()).to.include('OK');
+    });
 });
