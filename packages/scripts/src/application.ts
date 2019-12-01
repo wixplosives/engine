@@ -203,6 +203,7 @@ export class Application {
         return {
             port,
             nodeEnvironmentManager,
+            router: app,
             async close() {
                 for (const dispose of disposables) {
                     await dispose();
@@ -265,6 +266,7 @@ export class Application {
 
         return {
             port,
+            router: app,
             async close() {
                 for (const dispose of disposables) {
                     await dispose();
