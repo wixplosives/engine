@@ -193,8 +193,9 @@ export const isEnvironmentPortMessage = (message: ICommunicationMessage): messag
 
 export interface IConfigDefinition {
     name: string;
-    filePath: string;
+    config: TopLevelConfig;
     envName?: string;
+    filePath: string;
 }
 
 export interface IFeatureDefinition extends IFeatureModule {

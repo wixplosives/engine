@@ -224,7 +224,7 @@ export class Application {
             runtimeOptions: defaultRuntimeOptions,
             inspect,
             port: httpServerPort,
-            config = [],
+            config: userConfig = [],
             publicPath = '/'
         } = runOptions;
         const disposables = new Set<() => unknown>();
@@ -237,15 +237,23 @@ export class Application {
             configName,
             publicPath: normilizedPublicPath
         });
+        const config: TopLevelConfig = [];
         disposables.add(() => close());
-
+        const topLevelConfigs = configName ? configurations.get(configName) ?? undefined : undefined;
+        if (topLevelConfigs) {
+            const providedConfigs = Array.from(topLevelConfigs.values()).map(({ config }) => config);
+            for (const topLevelConfig of providedConfigs) {
+                config.push(...topLevelConfig);
+            }
+        }
+        config.push(...userConfig);
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
-            configurations,
             features: new Map(features),
             port,
             defaultRuntimeOptions,
             inspect,
-            config
+            config,
+            configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
