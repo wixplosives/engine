@@ -31,7 +31,7 @@ const cliEntry = require.resolve('../cli');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
-    configurations: SetMultiMap<string, IConfigDefinition>;
+    configurations?: SetMultiMap<string, IConfigDefinition>;
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
@@ -184,7 +184,7 @@ export class NodeEnvironmentsManager {
     private async getConfig(configName: string | undefined) {
         const config: TopLevelConfig = [];
         const { configurations } = this.options;
-        if (configName) {
+        if (configurations && configName) {
             const configDefinition = configurations.get(configName);
             if (!configDefinition) {
                 const configNames = Array.from(configurations.keys());
@@ -192,10 +192,9 @@ export class NodeEnvironmentsManager {
                     `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
                 );
             }
-            for (const { filePath } of configDefinition) {
+            for (const { config: activeConfig } of configDefinition) {
                 try {
-                    const { default: topLevelConfig } = await import(filePath);
-                    config.push(...topLevelConfig);
+                    config.push(...activeConfig);
                 } catch (e) {
                     console.error(e);
                 }

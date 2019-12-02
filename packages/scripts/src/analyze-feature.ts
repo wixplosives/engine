@@ -4,7 +4,7 @@ import {
     EnvironmentContext,
     Feature,
     getFeaturesDeep,
-    SingleEndpointContextualEnvironment,
+    SingleEndpointContextualEnvironment
 } from '@wixc3/engine-core';
 import { basename } from 'path';
 
@@ -127,10 +127,12 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         for (const filePath of configurations) {
             const { configName, envName } = parseConfigFileName(fs.basename(filePath));
             const scopedConfigName = scopeToPackage(featurePackage.simplifiedName, configName);
+            const configFilePath = getFilePathInPackage(fs, featurePackage, filePath);
             foundConfigs.add(scopedConfigName, {
-                filePath: getFilePathInPackage(fs, featurePackage, filePath),
                 envName,
-                name: configName
+                name: configName,
+                config: require(configFilePath).default,
+                filePath: configFilePath
             });
         }
 
@@ -275,7 +277,11 @@ const parseContextualEnv = ({
     }));
 
 export const getFeatureModules = (module: NodeModule) =>
-    flattenTree(module, m => m.children, m => isFeatureFile(basename(m.filename)));
+    flattenTree(
+        module,
+        m => m.children,
+        m => isFeatureFile(basename(m.filename))
+    );
 
 export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
     const featureToDef = new Map<Feature, IFeatureDefinition>();

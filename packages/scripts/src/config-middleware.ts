@@ -31,7 +31,9 @@ export function createConfigMiddleware(
                 }
             }
         }
-        config.push(...overrideConfig);
+        if (overrideConfig.length) {
+            config.push(...overrideConfig);
+        }
 
         res.send(config);
     };
