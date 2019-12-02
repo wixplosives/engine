@@ -239,7 +239,7 @@ export class Application {
         });
         const config: TopLevelConfig = [];
         disposables.add(() => close());
-        const topLevelConfigs = configName ? configurations.get(configName) ?? undefined : undefined;
+        const topLevelConfigs = configName ? configurations.get(configName) : undefined;
         if (topLevelConfigs) {
             const providedConfigs = Array.from(topLevelConfigs.values()).map(({ config }) => config);
             for (const topLevelConfig of providedConfigs) {
