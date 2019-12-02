@@ -131,7 +131,6 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             foundConfigs.add(scopedConfigName, {
                 envName,
                 name: configName,
-                config: require(configFilePath).default,
                 filePath: configFilePath
             });
         }

@@ -19,7 +19,7 @@ import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
 import { createIPC } from './process-communication';
-import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
+import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition, IExportedConfigDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 
 const rimraf = promisify(rimrafCb);
@@ -314,8 +314,8 @@ export class Application {
         }
     }
 
-    private async readConfigs(): Promise<SetMultiMap<string, IConfigDefinition>> {
-        const configurations = new SetMultiMap<string, IConfigDefinition>();
+    private async readConfigs(): Promise<SetMultiMap<string, IExportedConfigDefinition>> {
+        const configurations = new SetMultiMap<string, IExportedConfigDefinition>();
         const configsDirectoryPath = join(this.outputPath, 'configs');
         if (await fs.promises.exists(configsDirectoryPath)) {
             const folderEntities = await fs.promises.readdir(configsDirectoryPath, { withFileTypes: true });
@@ -333,7 +333,7 @@ export class Application {
 
                             const config = (await fs.promises.readJsonFile(
                                 join(featureConfigsDirectory, possibleConfigFile.name)
-                            )) as IConfigDefinition;
+                            )) as IExportedConfigDefinition;
 
                             configurations.add(`${featureName}/${configName}`, config);
                         }
@@ -368,7 +368,11 @@ export class Application {
         for (const [currentConfigName, config] of configurations) {
             const configFilePath = join(configsFolderPath, `${currentConfigName}.json`);
             await fs.promises.ensureDirectory(dirname(configFilePath));
-            await fs.promises.writeFile(configFilePath, JSON.stringify(config, null, 2));
+            const configFileContent: IExportedConfigDefinition = {
+                ...config,
+                config: require(config.filePath).default
+            };
+            await fs.promises.writeFile(configFilePath, JSON.stringify(configFileContent, null, 2));
         }
     }
 
