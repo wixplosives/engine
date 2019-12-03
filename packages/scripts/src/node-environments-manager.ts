@@ -14,7 +14,8 @@ import {
     IEnvironmentStartMessage,
     IFeatureDefinition,
     isEnvironmentStartMessage,
-    ServerEnvironmentOptions
+    ServerEnvironmentOptions,
+    IExportedConfigDefinition
 } from './types';
 
 export interface IRuntimeEnvironment {
@@ -31,7 +32,7 @@ const cliEntry = require.resolve('../cli');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
-    configurations?: SetMultiMap<string, IConfigDefinition>;
+    configurations?: SetMultiMap<string, IConfigDefinition | IExportedConfigDefinition>;
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
@@ -192,9 +193,13 @@ export class NodeEnvironmentsManager {
                     `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
                 );
             }
-            for (const { config: activeConfig } of configDefinition) {
+            for (const definition of configDefinition) {
                 try {
-                    config.push(...activeConfig);
+                    if ((definition as IExportedConfigDefinition).config) {
+                        config.push(...(definition as IExportedConfigDefinition).config);
+                    } else {
+                        config.push(...(await import(definition.filePath)).default);
+                    }
                 } catch (e) {
                     console.error(e);
                 }
