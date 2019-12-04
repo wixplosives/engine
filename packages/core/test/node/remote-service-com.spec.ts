@@ -41,32 +41,31 @@ describe('com emitter service', () => {
             ...decalreComEmitter<EmitterService>('on', 'off', 'removeAll')
         });
 
-        const x = stub();
+        const testListenerStub = stub();
 
-        await proxy.on(x);
-        await proxy.on(x);
+        await proxy.on(testListenerStub);
+        await proxy.on(testListenerStub);
 
         api.dispatch('');
 
         expect(api.listeners.size).to.be.equal(1);
-        expect(x.callCount).to.be.equal(2);
-        
-        await proxy.off(x);
+        expect(testListenerStub.callCount).to.be.equal(2);
+
+        await proxy.off(testListenerStub);
         expect(api.listeners.size).to.be.equal(1);
 
-        await proxy.off(x);
+        await proxy.off(testListenerStub);
         expect(api.listeners.size).to.be.equal(0);
 
-        await proxy.on(x);
-        await proxy.on(x);
+        await proxy.on(testListenerStub);
+        await proxy.on(testListenerStub);
 
         api.dispatch('');
 
         expect(api.listeners.size).to.be.equal(1);
-        expect(x.callCount).to.be.equal(4);
+        expect(testListenerStub.callCount).to.be.equal(4);
 
         await proxy.removeAll();
         expect(api.listeners.size).to.be.equal(0);
-
     });
 });
