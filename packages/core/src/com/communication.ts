@@ -54,7 +54,7 @@ export class Communication {
     private rootEnvId: string;
     private rootEnvName: string;
     private idsCounter = new MultiCounter();
-    private readonly callbackTimeout = 6000 * 1; // 2 minutes
+    private readonly callbackTimeout = 60_000 * 2; // 2 minutes
     private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
