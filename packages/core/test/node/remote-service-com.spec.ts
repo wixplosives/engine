@@ -48,11 +48,11 @@ describe('com emitter service', () => {
 
         api.dispatch('');
 
-        expect(api.listeners.size).to.be.equal(1);
+        expect(api.listeners.size, 'only one listener exists on the other side').to.be.equal(1);
         expect(testListenerStub.callCount).to.be.equal(2);
 
         await proxy.off(testListenerStub);
-        expect(api.listeners.size).to.be.equal(1);
+        expect(api.listeners.size, 'listener remains because not all listener removed').to.be.equal(1);
 
         await proxy.off(testListenerStub);
         expect(api.listeners.size).to.be.equal(0);
@@ -67,5 +67,8 @@ describe('com emitter service', () => {
 
         await proxy.removeAll();
         expect(api.listeners.size).to.be.equal(0);
+
+        api.dispatch('');
+        expect(testListenerStub.callCount, 'no listenr calls').to.be.equal(4);
     });
 });
