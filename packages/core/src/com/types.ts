@@ -27,22 +27,33 @@ export interface EnvironmentRecord {
 export type UnknownFunction = (...args: unknown[]) => unknown;
 
 export type AsyncApi<T> = {
-    [P in keyof T]: (P extends keyof ServiceConfig<T>
+    [P in keyof T]: P extends keyof ServiceConfig<T>
         ? MultiTanentProxyFunction<T, P extends string ? P : never>
         : T[P] extends (...args: infer Args) => infer R
         ? (...args: Args) => ValuePromise<R>
-        : never);
+        : never;
 };
 export interface EnvironmentInstanceToken {
     id: string;
 }
 
-export interface IServiceMethodOptions {
+export interface IServiceMethodOptions<T, K> {
     emitOnly?: boolean;
+    listener?: boolean;
+    removeListener?: Exclude<keyof T, K>;
+    removeAllListeners?: Exclude<keyof T, K>;
 }
 
+export interface AnyServiceMethodOptions {
+    emitOnly?: boolean;
+    listener?: boolean;
+    removeListener?: string;
+    removeAllListeners?: string;
+}
+
+
 export type ServiceComConfig<T> = {
-    [K in keyof T]?: T[K] extends (...args: any[]) => unknown ? IServiceMethodOptions : never;
+    [K in keyof T]?: T[K] extends (...args: any[]) => unknown ? IServiceMethodOptions<T, K> : never;
 };
 
 export type ValuePromise<R> = R extends Promise<unknown> ? R : Promise<R>;
@@ -60,10 +71,10 @@ export type FilterFirstArgument<T extends any> = T extends (_a: infer _First, ..
 export type AnyFunction = (...args: any[]) => unknown;
 
 export interface APIService {
-    [SERVICE_CONFIG]?: Record<string, UnknownFunction>;
-    [fnName: string]: any;
+    [SERVICE_CONFIG]?: Record<string, (...args: any[]) => { proxyFunction: AnyFunction }>;
+    [fnName: string]: AnyFunction;
 }
 
 export interface RemoteAPIServicesMapping {
-    [remoteServiceId: string]: APIService;
+    [remoteServiceId: string]: Record<string, AnyFunction>;
 }

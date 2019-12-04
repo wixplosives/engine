@@ -8,7 +8,15 @@ import {
     UNKNOWN_CALLBACK_ID
 } from './errors';
 import { isIframe, isWindow, isWorkerContext, MultiCounter } from './helpers';
-import { CallbackMessage, CallMessage, EventMessage, ListenMessage, Message, ReadyMessage } from './message-types';
+import {
+    CallbackMessage,
+    CallMessage,
+    EventMessage,
+    ListenMessage,
+    UnListenMessage,
+    Message,
+    ReadyMessage
+} from './message-types';
 import {
     APIService,
     AsyncApi,
@@ -21,6 +29,7 @@ import {
     Target,
     UnknownFunction,
     WindowHost,
+    AnyServiceMethodOptions,
     ServiceComConfig
 } from './types';
 
@@ -45,7 +54,7 @@ export class Communication {
     private rootEnvId: string;
     private rootEnvName: string;
     private idsCounter = new MultiCounter();
-    private readonly callbackTimeout = 60_000 * 2; // 2 minutes
+    private readonly callbackTimeout = 6000 * 1; // 2 minutes
     private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
@@ -89,10 +98,10 @@ export class Communication {
     /**
      * Registers local api implementation of the remote service.
      */
-    public registerAPI<T>({ id }: IDTag, api: T): T {
+    public registerAPI<T extends {}>({ id }: IDTag, api: T): T {
         if (!this.apis[id]) {
             this.apis[id] = api;
-            this.mapAPIMultiTenantFunctions(id, api);
+            this.applyApiDirectives(id, api);
             return api;
         } else {
             throw new Error(DUPLICATE_REGISTER(id, 'RemoteService'));
@@ -218,7 +227,7 @@ export class Communication {
                                 method,
                                 args,
                                 this.rootEnvId,
-                                serviceComConfig
+                                serviceComConfig as Record<string, AnyServiceMethodOptions>
                             );
                         obj[method] = runtimeMethod;
                     }
@@ -251,25 +260,80 @@ export class Communication {
         method: string,
         args: unknown[],
         origin: string,
-        serviceComConfig: ServiceComConfig<any>
+        serviceComConfig: Record<string, AnyServiceMethodOptions>
     ): Promise<unknown> {
         return new Promise((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
 
-            if (this.isListenCall(args)) {
-                const message: ListenMessage = {
-                    to: envId,
-                    from: this.rootEnvId,
-                    type: 'listen',
-                    data: this.createHandlerRecord(envId, api, method, args[0] as UnknownFunction),
-                    callbackId,
-                    origin
-                };
-                this.sendTo(envId, message);
-                if (callbackId) {
-                    this.createCallbackRecord(message, message.callbackId!, res, rej);
+            if (this.isListenCall(args) || serviceComConfig[method]?.removeAllListeners) {
+                const removeListenerRef =
+                    serviceComConfig[method]?.removeAllListeners || serviceComConfig[method]?.removeListener;
+
+                if (removeListenerRef) {
+                    const listenerHandlerId = this.getHandlerId(envId, api, removeListenerRef);
+                    const listenerHandlersBucket = this.handlers.get(listenerHandlerId);
+                    if (!listenerHandlersBucket) {
+                        throw new Error('Cannot Remove handler ' + listenerHandlerId);
+                    }
+                    if (serviceComConfig[method]?.removeListener) {
+                        const i = listenerHandlersBucket.indexOf(args[0] as UnknownFunction);
+                        if (i !== -1) {
+                            listenerHandlersBucket.splice(i, 1);
+                        }
+                    } else {
+                        listenerHandlersBucket.length = 0;
+                    }
+                    if (listenerHandlersBucket.length === 0) {
+                        // send remove handler call
+                        const message: UnListenMessage = {
+                            to: envId,
+                            from: this.rootEnvId,
+                            type: 'unlisten',
+                            data: {
+                                api,
+                                method,
+                                handlerId: listenerHandlerId
+                            },
+                            callbackId,
+                            origin
+                        };
+
+                        this.sendTo(envId, message);
+                        if (callbackId) {
+                            this.createCallbackRecord(message, message.callbackId!, res, rej);
+                        } else {
+                            res();
+                        }
+                    } else {
+                        res();
+                    }
                 } else {
-                    res();
+                    if (serviceComConfig[method]?.listener) {
+                        const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
+
+                        if (handlersBucket && handlersBucket.length !== 0) {
+                            handlersBucket.push(args[0] as UnknownFunction);
+                            res();
+                        } else {
+                            const message: ListenMessage = {
+                                to: envId,
+                                from: this.rootEnvId,
+                                type: 'listen',
+                                data: this.createHandlerRecord(envId, api, method, args[0] as UnknownFunction),
+                                callbackId,
+                                origin
+                            };
+
+                            this.sendTo(envId, message);
+                            if (callbackId) {
+                                this.createCallbackRecord(message, message.callbackId!, res, rej);
+                            } else {
+                                res();
+                            }
+                        }
+                    } else {
+                        throw new Error('cannot add listenr to unconfigured method ' + method);
+                    }
                 }
             } else {
                 const message: CallMessage = {
@@ -315,6 +379,9 @@ export class Communication {
                 break;
             case 'listen':
                 await this.handleListen(message);
+                break;
+            case 'unlisten':
+                await this.handleUnListen(message);
                 break;
             case 'ready':
                 this.handleReady(message);
@@ -381,12 +448,15 @@ export class Communication {
         });
     }
 
-    private mapAPIMultiTenantFunctions(id: string, api: APIService): void {
+    private applyApiDirectives(id: string, api: APIService): void {
         const serviceConfig = api[SERVICE_CONFIG];
         if (serviceConfig) {
             this.apisOverrides[id] = {};
             for (const methodName of Object.keys(serviceConfig)) {
-                this.apisOverrides[id][methodName] = (serviceConfig[methodName](api) as any).proxyFunction;
+                const config = serviceConfig[methodName](api);
+                if (config.proxyFunction) {
+                    this.apisOverrides[id][methodName] = config.proxyFunction;
+                }
             }
         }
     }
@@ -515,16 +585,43 @@ export class Communication {
             pendingEnvCb();
         }
     }
-
+    private async handleUnListen(message: UnListenMessage) {
+        const dispatcher = this.eventDispatchers[message.data.handlerId];
+        if (dispatcher) {
+            delete this.eventDispatchers[message.data.handlerId];
+            const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
+            if (message.callbackId) {
+                this.sendTo(message.from, {
+                    to: message.from,
+                    from: this.rootEnvId,
+                    type: 'callback',
+                    data,
+                    callbackId: message.callbackId,
+                    origin: this.rootEnvId
+                });
+            }
+        }
+    }
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
-            if (this.eventDispatchers[message.data.handlerId]) {
-                return;
-            }
+            // if (this.eventDispatchers[message.data.handlerId]) {
+            //     const data = this.eventDispatchers[message.data.handlerId].resolvedData;
 
-            const data = await this.apiCall(message.origin, message.data.api, message.data.method, [
-                this.createDispatcher(message.from, message)
-            ]);
+            //     if (message.callbackId) {
+            //         this.sendTo(message.from, {
+            //             to: message.from,
+            //             from: this.rootEnvId,
+            //             type: 'callback',
+            //             data,
+            //             callbackId: message.callbackId,
+            //             origin: this.rootEnvId
+            //         });
+            //     }
+            //     return;
+            // }
+            const dispatcher =
+                this.eventDispatchers[message.data.handlerId] || this.createDispatcher(message.from, message);
+            const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
 
             if (message.callbackId) {
                 this.sendTo(message.from, {
@@ -608,13 +705,16 @@ export class Communication {
         this.handleMessage(data).catch(reportError);
     };
 
+    private getHandlerId(envId: string, api: string, method: string) {
+        return `${this.rootEnvId}__${envId}_${api}@${method}`;
+    }
     private createHandlerRecord(
         envId: string,
         api: string,
         method: string,
         fn: UnknownFunction
     ): ListenMessage['data'] {
-        const handlerId = `${this.rootEnvId}__${envId}_${api}@${method}`;
+        const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
         handlersBucket ? handlersBucket.push(fn) : this.handlers.set(handlerId, [fn]);
         return {
@@ -694,3 +794,18 @@ const removeMessageArgs = (message: Message): Message => {
     }
     return message;
 };
+
+export function decalreComEmitter<T>(
+    onMethod: keyof T,
+    offMethod: keyof T,
+    removeAll?: keyof T
+): Record<string, AnyServiceMethodOptions> {
+    if (typeof onMethod !== 'string') {
+        throw 'onMethod ref must be a string';
+    }
+    return {
+        [onMethod]: { listener: true },
+        [offMethod]: { removeListener: onMethod },
+        ...(removeAll ? { [removeAll]: { removeAllListeners: onMethod } } : undefined)
+    };
+}

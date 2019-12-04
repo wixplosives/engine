@@ -29,6 +29,11 @@ export interface ListenMessage extends BaseMessage {
     data: RemoteCallAddress & { handlerId: string };
 }
 
+export interface UnListenMessage extends BaseMessage {
+    type: 'unlisten';
+    data: RemoteCallAddress & { handlerId: string };
+}
+
 export interface EventMessage extends BaseMessage {
     type: 'event';
     data: SerializableArguments;
@@ -39,4 +44,4 @@ export interface ReadyMessage extends BaseMessage {
     type: 'ready';
 }
 
-export type Message = CallMessage | CallbackMessage | ListenMessage | EventMessage | ReadyMessage;
+export type Message = CallMessage | CallbackMessage | ListenMessage | UnListenMessage | EventMessage | ReadyMessage;
