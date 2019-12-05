@@ -604,21 +604,6 @@ export class Communication {
     }
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
-            // if (this.eventDispatchers[message.data.handlerId]) {
-            //     const data = this.eventDispatchers[message.data.handlerId].resolvedData;
-
-            //     if (message.callbackId) {
-            //         this.sendTo(message.from, {
-            //             to: message.from,
-            //             from: this.rootEnvId,
-            //             type: 'callback',
-            //             data,
-            //             callbackId: message.callbackId,
-            //             origin: this.rootEnvId
-            //         });
-            //     }
-            //     return;
-            // }
             const dispatcher =
                 this.eventDispatchers[message.data.handlerId] || this.createDispatcher(message.from, message);
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
