@@ -1,7 +1,7 @@
 import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { Communication, Environment } from '../src';
+import { Communication, Environment, decalreComEmitter } from '../src';
 import {
     ITestServiceData,
     multiTanentServiceId,
@@ -48,7 +48,7 @@ describe('Communication API', function() {
         const com = disposables.add(new Communication(window, comId));
         const env = await com.spawn(iframeEnv, createIframe());
 
-        const api = com.apiProxy<TestService>(env, { id: testServiceId });
+        const api = com.apiProxy<TestService>(env, { id: testServiceId }, decalreComEmitter('listen', '', ''));
         const capturedCalls: ITestServiceData[] = [];
         await api.listen(data => capturedCalls.push(data));
 
@@ -94,8 +94,8 @@ describe('Communication API', function() {
             com.spawn(iframeEnv, createIframe())
         ]);
 
-        const api1 = com.apiProxy<TestService>(env1, { id: testServiceId });
-        const api2 = com.apiProxy<TestService>(env2, { id: testServiceId });
+        const api1 = com.apiProxy<TestService>(env1, { id: testServiceId }, { listen: { listener: true } });
+        const api2 = com.apiProxy<TestService>(env2, { id: testServiceId }, { listen: { listener: true } });
 
         const capturedCallsApi1: ITestServiceData[] = [];
         const capturedCallsApi2: ITestServiceData[] = [];

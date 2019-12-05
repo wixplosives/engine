@@ -332,7 +332,7 @@ export class Communication {
                             }
                         }
                     } else {
-                        throw new Error('cannot add listenr to unconfigured method ' + method);
+                        throw new Error(`cannot add listenr to unconfigured method ${api} ${method}`);
                     }
                 }
             } else {
