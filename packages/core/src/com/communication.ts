@@ -266,75 +266,17 @@ export class Communication {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
 
             if (this.isListenCall(args) || serviceComConfig[method]?.removeAllListeners) {
-                const removeListenerRef =
-                    serviceComConfig[method]?.removeAllListeners || serviceComConfig[method]?.removeListener;
-
-                if (removeListenerRef) {
-                    const listenerHandlerId = this.getHandlerId(envId, api, removeListenerRef);
-                    const listenerHandlersBucket = this.handlers.get(listenerHandlerId);
-                    if (!listenerHandlersBucket) {
-                        throw new Error('Cannot Remove handler ' + listenerHandlerId);
-                    }
-                    if (serviceComConfig[method]?.removeListener) {
-                        const i = listenerHandlersBucket.indexOf(args[0] as UnknownFunction);
-                        if (i !== -1) {
-                            listenerHandlersBucket.splice(i, 1);
-                        }
-                    } else {
-                        listenerHandlersBucket.length = 0;
-                    }
-                    if (listenerHandlersBucket.length === 0) {
-                        // send remove handler call
-                        const message: UnListenMessage = {
-                            to: envId,
-                            from: this.rootEnvId,
-                            type: 'unlisten',
-                            data: {
-                                api,
-                                method,
-                                handlerId: listenerHandlerId
-                            },
-                            callbackId,
-                            origin
-                        };
-
-                        this.sendTo(envId, message);
-                        if (callbackId) {
-                            this.createCallbackRecord(message, message.callbackId!, res, rej);
-                        } else {
-                            res();
-                        }
-                    } else {
-                        res();
-                    }
-                } else {
-                    if (serviceComConfig[method]?.listener) {
-                        const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
-
-                        if (handlersBucket && handlersBucket.length !== 0) {
-                            handlersBucket.push(args[0] as UnknownFunction);
-                            res();
-                        } else {
-                            const message: ListenMessage = {
-                                to: envId,
-                                from: this.rootEnvId,
-                                type: 'listen',
-                                data: this.createHandlerRecord(envId, api, method, args[0] as UnknownFunction),
-                                callbackId,
-                                origin
-                            };
-
-                            this.sendTo(envId, message);
-                            if (callbackId) {
-                                this.createCallbackRecord(message, message.callbackId!, res, rej);
-                            } else {
-                                res();
-                            }
-                        }
-                    } else {
-                        throw new Error(`cannot add listenr to unconfigured method ${api} ${method}`);
-                    }
-                }
+                this.addOrRemoveListener(
+                    envId,
+                    api,
+                    method,
+                    callbackId,
+                    origin,
+                    serviceComConfig,
+                    args[0] as UnknownFunction,
+                    res,
+                    rej
+                );
             } else {
                 const message: CallMessage = {
                     to: envId,
@@ -344,16 +286,10 @@ export class Communication {
                     callbackId,
                     origin
                 };
-                this.sendTo(envId, message);
-                if (callbackId) {
-                    this.createCallbackRecord(message, message.callbackId!, res, rej);
-                } else {
-                    res();
-                }
+                this.callWithCallback(envId, message, callbackId, res, rej);
             }
         });
     }
-
     /**
      * handles Communication incoming message.
      */
@@ -519,7 +455,95 @@ export class Communication {
         //   `unhandledMessage at ${this.rootEnv} message:\n${JSON.stringify(message, null, 2)}`
         // )
     }
+    private addOrRemoveListener(
+        envId: string,
+        api: string,
+        method: string,
+        callbackId: string | undefined,
+        origin: string,
+        serviceComConfig: Record<string, AnyServiceMethodOptions>,
+        fn: UnknownFunction,
+        res: () => void,
+        rej: () => void
+    ) {
+        const removeListenerRef =
+            serviceComConfig[method]?.removeAllListeners || serviceComConfig[method]?.removeListener;
 
+        if (removeListenerRef) {
+            const listenerHandlerId = this.getHandlerId(envId, api, removeListenerRef);
+            const listenerHandlersBucket = this.handlers.get(listenerHandlerId);
+            if (!listenerHandlersBucket) {
+                throw new Error('Cannot Remove handler ' + listenerHandlerId);
+            }
+            if (serviceComConfig[method]?.removeListener) {
+                const i = listenerHandlersBucket.indexOf(fn);
+                if (i !== -1) {
+                    listenerHandlersBucket.splice(i, 1);
+                }
+            } else {
+                listenerHandlersBucket.length = 0;
+            }
+            if (listenerHandlersBucket.length === 0) {
+                // send remove handler call
+                const message: UnListenMessage = {
+                    to: envId,
+                    from: this.rootEnvId,
+                    type: 'unlisten',
+                    data: {
+                        api,
+                        method,
+                        handlerId: listenerHandlerId
+                    },
+                    callbackId,
+                    origin
+                };
+
+                this.callWithCallback(envId, message, callbackId, res, rej);
+            } else {
+                res();
+            }
+        } else {
+            if (serviceComConfig[method]?.listener) {
+                const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
+
+                if (handlersBucket && handlersBucket.length !== 0) {
+                    handlersBucket.push(fn);
+                    res();
+                } else {
+                    const message: ListenMessage = {
+                        to: envId,
+                        from: this.rootEnvId,
+                        type: 'listen',
+                        data: {
+                            api,
+                            method,
+                            handlerId: this.createHandlerRecord(envId, api, method, fn)
+                        },
+                        callbackId,
+                        origin
+                    };
+
+                    this.callWithCallback(envId, message, callbackId, res, rej);
+                }
+            } else {
+                throw new Error(`cannot add listenr to unconfigured method ${api} ${method}`);
+            }
+        }
+    }
+    private callWithCallback(
+        envId: string,
+        message: Message,
+        callbackId: string | undefined,
+        res: () => void,
+        rej: () => void
+    ) {
+        this.sendTo(envId, message);
+        if (callbackId) {
+            this.createCallbackRecord(message, message.callbackId!, res, rej);
+        } else {
+            res();
+        }
+    }
     private sendTo(envId: string, message: Message): void {
         const start = this.resolveMessageTarget(envId);
         if (!start) {
@@ -693,20 +717,11 @@ export class Communication {
     private getHandlerId(envId: string, api: string, method: string) {
         return `${this.rootEnvId}__${envId}_${api}@${method}`;
     }
-    private createHandlerRecord(
-        envId: string,
-        api: string,
-        method: string,
-        fn: UnknownFunction
-    ): ListenMessage['data'] {
+    private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
         const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
         handlersBucket ? handlersBucket.push(fn) : this.handlers.set(handlerId, [fn]);
-        return {
-            api,
-            method,
-            handlerId
-        };
+        return handlerId;
     }
     private createCallbackRecord(
         message: Message,
