@@ -112,8 +112,7 @@ export class Application {
         const { port, app, close, socketServer } = await this.launchHttpServer({
             httpServerPort,
             featureName,
-            configName,
-            publicPath: normilizedPublicPath
+            configName
         });
         disposables.add(() => close());
 
@@ -234,8 +233,7 @@ export class Application {
         const { port, close, socketServer, app } = await this.launchHttpServer({
             httpServerPort,
             featureName,
-            configName,
-            publicPath: normilizedPublicPath
+            configName
         });
         const config: TopLevelConfig = [];
         disposables.add(() => close());
@@ -284,16 +282,14 @@ export class Application {
         };
     }
 
-    public async remote({ port: preferredPort, publicPath = '/' }: IRunOptions = {}) {
+    public async remote({ port: preferredPort }: IRunOptions = {}) {
         if (!process.send) {
             throw new Error('"remote" command can only be used in a forked process');
         }
 
         await this.loadEngineConfig();
-        const normilizedPublicPath = normilizePublicPath(publicPath);
         const { socketServer, close, port } = await this.launchHttpServer({
-            httpServerPort: preferredPort,
-            publicPath: normilizedPublicPath
+            httpServerPort: preferredPort
         });
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
@@ -454,10 +450,8 @@ export class Application {
     private async launchHttpServer({
         httpServerPort = DEFAULT_PORT,
         featureName,
-        configName,
-        publicPath
+        configName
     }: {
-        publicPath: string;
         httpServerPort?: number;
         featureName?: string;
         configName?: string;
@@ -470,18 +464,15 @@ export class Application {
             socket.once('close', () => openSockets.delete(socket));
         });
 
-        const router = express.Router();
+        app.use('/', express.static(this.outputPath));
 
-        router.use('/', express.static(this.outputPath));
-
-        router.use('/favicon.ico', noContentHandler);
-        router.use('/defaults', (_, res) => {
+        app.use('/favicon.ico', noContentHandler);
+        app.use('/defaults', (_, res) => {
             res.json({
                 featureName,
                 configName
             });
         });
-        app.use(publicPath, router);
 
         const socketServer = io(httpServer);
 
@@ -496,7 +487,7 @@ export class Application {
                 });
             },
             port,
-            app: router,
+            app,
             socketServer
         };
     }
