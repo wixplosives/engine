@@ -26,9 +26,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     }
     baseConfig.output.publicPath = publicPath;
     const configurations: webpack.Configuration[] = [];
-    const virtualModules: Record<string, string> = {
-        './__webpack_publis_path.js': `__webpack_public_path__=${JSON.stringify(publicPath)}`
-    };
+    const virtualModules: Record<string, string> = {};
 
     const webEnvs = new Map<string, string[]>();
     const workerEnvs = new Map<string, string[]>();
@@ -116,7 +114,8 @@ function createWebpackConfig({
     mode = 'development',
     outputPath,
     plugins = [],
-    entry = {}
+    entry = {},
+    publicPath
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -126,7 +125,8 @@ function createWebpackConfig({
             childEnvs,
             envName,
             featureName,
-            configName
+            configName,
+            publicPath
         });
         if (target === 'web') {
             plugins.push(
