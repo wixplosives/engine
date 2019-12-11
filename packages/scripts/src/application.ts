@@ -66,6 +66,7 @@ export class Application {
     }
 
     public async build({ featureName, configName, publicPath }: IRunOptions = {}): Promise<webpack.Stats> {
+        await this.loadEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
         const compiler = this.createCompiler({
             features,
@@ -107,7 +108,9 @@ export class Application {
         config = [],
         publicPath = '/'
     }: IRunOptions = {}) {
-        const normilizedPublicPath = normilizePublicPath(publicPath);
+        const normilizedPublicPath = normalizePublicPath(publicPath);
+        await this.loadEngineConfig();
+
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
             httpServerPort,
@@ -227,7 +230,7 @@ export class Application {
             publicPath = '/'
         } = runOptions;
         const disposables = new Set<() => unknown>();
-        const normilizedPublicPath = normilizePublicPath(publicPath);
+        const normilizedPublicPath = normalizePublicPath(publicPath);
         const configurations = await this.readConfigs();
 
         const { port, close, socketServer, app } = await this.launchHttpServer({
@@ -501,8 +504,14 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target} using webpack...`);
 
-function normilizePublicPath(publicPath: string) {
-    return `${publicPath.startsWith('/') ? '' : '/'}${publicPath}${publicPath.endsWith('/') ? '' : '/'}`;
+function normalizePublicPath(publicPath: string) {
+    if (!publicPath.startsWith('/')) {
+        publicPath = '/' + publicPath;
+    }
+    if (!publicPath.endsWith('/')) {
+        publicPath = publicPath + '/';
+    }
+    return publicPath;
 }
 
 function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
