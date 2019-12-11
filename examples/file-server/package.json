@@ -1,6 +1,6 @@
 {
   "name": "@example/file-server",
-  "version": "7.10.0",
+  "version": "7.11.0",
   "scripts": {
     "start": "engine start",
     "test": "mocha \"test/**/*.ix.ts?(x)\""
