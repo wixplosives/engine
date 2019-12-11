@@ -506,10 +506,10 @@ const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
 
 function normalizePublicPath(publicPath: string) {
     if (!publicPath.startsWith('/')) {
-        publicPath = '/' + publicPath;
+        publicPath = `/${publicPath}`;
     }
     if (!publicPath.endsWith('/')) {
-        publicPath = publicPath + '/';
+        publicPath = `${publicPath}/`;
     }
     return publicPath;
 }
