@@ -30,6 +30,7 @@ program
     .option('--singleRun', 'when enabled, webpack will not watch files', false)
     .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
+    .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
             feature: featureName,
@@ -91,6 +92,7 @@ program
     .option('-c ,--config <config>')
     .option('--outDir <outDir>')
     .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
+    .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const { feature: featureName, config: configName, outDir = 'dist', require: pathsToRequire, publicPath } = cmd;
         try {
@@ -113,6 +115,7 @@ program
     .option('--outDir <outDir>')
     .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
     .option('-p ,--port <port>')
+    .allowUnknownOption(true)
     .action(async (path, cmd: Record<string, any>) => {
         const {
             config: configName,
