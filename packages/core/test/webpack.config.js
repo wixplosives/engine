@@ -1,3 +1,5 @@
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
 module.exports = {
     mode: 'development',
     context: __dirname,
@@ -18,5 +20,9 @@ module.exports = {
                 loader: '@ts-tools/webpack-loader'
             }
         ]
-    }
+    },
+    plugins: [new HtmlWebpackPlugin({
+        filename: `iframe.html`,
+        chunks: ['iframe']
+    })]
 };

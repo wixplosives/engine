@@ -1,13 +1,16 @@
 import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
+import { spy } from 'sinon';
 import { Communication, Environment } from '../src';
 import {
     ITestServiceData,
     multiTanentServiceId,
     MultiTenantTestService,
     TestService,
-    testServiceId
+    testServiceId,
+    HashParamsRetriever,
+    hashParamsRetriever
 } from './test-api-service';
 
 describe('Communication API', function() {
@@ -123,5 +126,54 @@ describe('Communication API', function() {
         const res = await api.testApi(1, 2, 3);
 
         expect(res).to.eql({ echo: [1, 2, 3] });
+    });
+
+    it('allows initiating iframe environment with parameters', async () => {
+        const com = disposables.add(new Communication(window, comId));
+        const hashParams = {
+            test: 'test'
+        };
+        const env = await com.manage(iframeEnv, createIframe(), hashParams);
+        const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
+
+        await waitFor(async () => {
+            const deserializedHash = decodeURIComponent(await api.getHashParams());
+            expect(deserializedHash).to.eq(`#${JSON.stringify(hashParams)}`);
+        });
+    });
+
+    it('supports updating hash params when communicating with iframe', async () => {
+        const com = disposables.add(new Communication(window, comId));
+        const env = await com.manage(iframeEnv, createIframe());
+
+        const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
+        expect(await api.getHashParams()).to.eq('');
+        const hashParams = {
+            test: 'test'
+        };
+        env.updateHashParams(hashParams);
+
+        await waitFor(async () => {
+            const deserializedHash = decodeURIComponent(await api.getHashParams());
+            expect(deserializedHash).to.eq(`#${JSON.stringify(hashParams)}`);
+        });
+    });
+
+    it('triggers hashupdate event when changing hash params', async () => {
+        const onHashChange = spy();
+        const com = disposables.add(new Communication(window, comId));
+        const env = await com.manage(iframeEnv, createIframe());
+
+        const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
+
+        await api.onHashChange(onHashChange);
+
+        env.updateHashParams({
+            test: 'test'
+        });
+
+        await waitFor(async () => {
+            expect(onHashChange.callCount).to.eq(1);
+        });
     });
 });

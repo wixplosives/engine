@@ -23,7 +23,6 @@ import {
     WindowHost,
     ServiceComConfig,
     Json
-    
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -144,7 +143,12 @@ export class Communication {
         );
 
         return {
-            id: instanceId
+            id: instanceId,
+            updateHashParams: (hashParams: Json) => {
+                if (host.contentWindow) {
+                    host.contentWindow.location.hash = getHashParams(hashParams);
+                }
+            }
         };
     }
 
@@ -682,13 +686,8 @@ const defaultSourceFactory = (envName: string, _instanceId: string, publicPath =
     return `${publicPath}${envName}.web.js${location.search}`;
 };
 
-const defaultHtmlSourceFactory = (
-    envName: string,
-    _instanceId: string,
-    publicPath = '/',
-    hashParams?: Json
-) => {
-    return `${publicPath}${envName}.html${location.search}${hashParams ? `#${JSON.stringify(hashParams)}` : ``}`;
+const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '/', hashParams?: Json) => {
+    return `${publicPath}${envName}.html${location.search}${hashParams ? getHashParams(hashParams) : ``}`;
 };
 
 const removeMessageArgs = (message: Message): Message => {
@@ -701,3 +700,4 @@ const removeMessageArgs = (message: Message): Message => {
     }
     return message;
 };
+const getHashParams = (hashParams: Json) => `#${JSON.stringify(hashParams)}`;

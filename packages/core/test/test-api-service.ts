@@ -38,6 +38,26 @@ export class MultiTenantTestService {
     }
 }
 
+export class HashParamsRetriever {
+    private handlers: Array<() => void> = [];
+    constructor() {
+        window.addEventListener('hashchange', () => {
+            for (const handler of this.handlers) {
+                handler();
+            }
+        });
+    }
+    public getHashParams() {
+        return location.hash;
+    }
+
+    public onHashChange(onHashChange: () => void) {
+        this.handlers.push(onHashChange);
+    }
+}
+
 export const testServiceId = 'TestService';
 
 export const multiTanentServiceId = 'MultiTanentService';
+
+export const hashParamsRetriever = 'HashParamsRetriever';
