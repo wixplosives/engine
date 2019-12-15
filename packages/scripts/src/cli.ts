@@ -39,7 +39,7 @@ program
             singleRun,
             open: openBrowser = 'true',
             require: pathsToRequire,
-            publicPath
+            publicPath = defaultPublicPath
         } = cmd;
         try {
             const basePath = resolve(path);
