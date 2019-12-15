@@ -21,7 +21,9 @@ import {
     Target,
     UnknownFunction,
     WindowHost,
-    ServiceComConfig
+    ServiceComConfig,
+    Json
+    
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -129,7 +131,7 @@ export class Communication {
         };
     }
 
-    public async manage(endPoint: Environment, host: HTMLIFrameElement, src?: string) {
+    public async manage(endPoint: Environment, host: HTMLIFrameElement, hashParams?: Json) {
         const { endpointType, env } = endPoint;
 
         const isSingleton = endpointType === 'single';
@@ -138,7 +140,7 @@ export class Communication {
         await this.useIframe(
             host,
             instanceId,
-            src || defaultHtmlSourceFactory(env, instanceId, this.options.publicPath)
+            defaultHtmlSourceFactory(env, instanceId, this.options.publicPath, hashParams)
         );
 
         return {
@@ -680,8 +682,13 @@ const defaultSourceFactory = (envName: string, _instanceId: string, publicPath =
     return `${publicPath}${envName}.web.js${location.search}`;
 };
 
-const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '/') => {
-    return `${publicPath}${envName}.html${location.search}`;
+const defaultHtmlSourceFactory = (
+    envName: string,
+    _instanceId: string,
+    publicPath = '/',
+    hashParams?: Json
+) => {
+    return `${publicPath}${envName}.html${location.search}${hashParams ? `#${JSON.stringify(hashParams)}` : ``}`;
 };
 
 const removeMessageArgs = (message: Message): Message => {
