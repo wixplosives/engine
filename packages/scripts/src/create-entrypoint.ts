@@ -9,10 +9,19 @@ export interface ICreateEntrypointsOptions {
     childEnvs: string[];
     featureName?: string;
     configName?: string;
+    publicPath?: string;
 }
 
-export function createEntrypoint({ features, envName, childEnvs, featureName, configName }: ICreateEntrypointsOptions) {
-    return `import './__webpack_publis_path';
+export function createEntrypoint({
+    features,
+    envName,
+    childEnvs,
+    featureName,
+    configName,
+    publicPath
+}: ICreateEntrypointsOptions) {
+    return `${typeof publicPath === 'string' ? `__webpack_public_path__= ${JSON.stringify(publicPath)};` : ''}
+
 import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
     
 const featureLoaders = {

@@ -4,7 +4,7 @@ export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;
 
 export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'context';
-
+export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {
     name?: string;
     addEventListener(type: 'message', handler: (event: { data: any }) => void, capture?: boolean): void;

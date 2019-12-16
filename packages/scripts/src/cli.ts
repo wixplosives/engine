@@ -4,65 +4,47 @@
  * We use Node's native module system to directly load configuration file.
  * This configuration can (and should) be written as a `.ts` file.
  */
-import '@stylable/node/register';
-import '@ts-tools/node/r';
 
 import program from 'commander';
-import { join } from 'path';
+import { resolve } from 'path';
 import open from 'open';
 
 import { version } from '../package.json';
 import { Application, IFeatureTarget } from './application';
 import { IFeatureMessage, IPortMessage, IProcessMessage } from './types';
-
-const publicPath = process.env.ENGINE_PUBLIC_PATH || '/';
+import { resolveFrom, parseCliArguments } from './utils';
 
 program.version(version);
 
-const kebabCaseToCamelCase = (value: string): string => value.replace(/[-]\S/g, match => match.slice(1).toUpperCase());
-
-function parseCliArguments(args: string[]) {
-    const argumentQueue: string[] = [];
-    const options: Record<string, string | boolean> = {};
-    while (args.length) {
-        const currentArgument = args.shift()!;
-        if (currentArgument.startsWith('--')) {
-            if (argumentQueue.length) {
-                options[argumentQueue.shift()!] = argumentQueue.length ? argumentQueue.join(' ') : true;
-                argumentQueue.length = 0;
-            }
-            argumentQueue.push(kebabCaseToCamelCase(currentArgument.slice(2)));
-        } else if (argumentQueue.length) {
-            argumentQueue.push(currentArgument);
-        } else if (args.length && !args[0].startsWith('--')) {
-            args.shift();
-        }
-    }
-    if (argumentQueue.length) {
-        options[argumentQueue.shift()!] = argumentQueue.join(' ');
-    }
-    return options;
-}
+const collectMultiple = (val: string, prev: string[]) => [...prev, val];
+const preRequireParams = ['-r, --require <path>', 'path to require before anything else', collectMultiple, []] as const;
+const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '/';
 
 program
     .command('start [path]')
-    .option('-f ,--feature <feature>')
-    .option('-c ,--config <config>')
+    .option(...preRequireParams)
+    .option('-f, --feature <feature>')
+    .option('-c, --config <config>')
     .option('--inspect')
     .option('-p ,--port <port>')
     .option('--singleRun', 'when enabled, webpack will not watch files', false)
+    .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
     .allowUnknownOption(true)
-    .action(async (path, cmd: Record<string, string | undefined>) => {
+    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
             feature: featureName,
             config: configName,
             port: httpServerPort,
             singleRun,
-            open: openBrowser = 'true'
+            open: openBrowser = 'true',
+            require: pathsToRequire,
+            publicPath = defaultPublicPath
         } = cmd;
         try {
-            const app = new Application({ basePath: path || process.cwd() });
+            const basePath = resolve(path);
+            preRequire(pathsToRequire, basePath);
+            const app = new Application({ basePath });
             const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
                 featureName,
                 configName,
@@ -105,13 +87,19 @@ program
 
 program
     .command('build [path]')
+    .option(...preRequireParams)
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
-    .option('--out-dir <outDir>')
-    .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
-        const { feature: featureName, config: configName, outDir = 'dist' } = cmd;
+    .option('--outDir <outDir>')
+    .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
+    .allowUnknownOption(true)
+    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
+        const { feature: featureName, config: configName, outDir = 'dist', require: pathsToRequire, publicPath } = cmd;
         try {
-            const app = new Application({ basePath: path, outputPath: join(path, outDir) });
+            const basePath = resolve(path);
+            preRequire(pathsToRequire, basePath);
+            const outputPath = resolve(outDir);
+            const app = new Application({ basePath, outputPath });
             const stats = await app.build({ featureName, configName, publicPath });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
@@ -121,14 +109,27 @@ program
 
 program
     .command('run [path]')
+    .option(...preRequireParams)
     .option('-c ,--config <config>')
     .option('-f ,--feature <feature>')
-    .option('--out-dir <outDir>')
+    .option('--outDir <outDir>')
+    .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
     .option('-p ,--port <port>')
-    .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
-        const { config: configName, outDir = 'dist', feature: featureName, port: preferredPort } = cmd;
+    .allowUnknownOption(true)
+    .action(async (path, cmd: Record<string, any>) => {
+        const {
+            config: configName,
+            outDir = 'dist',
+            feature: featureName,
+            port: preferredPort,
+            require: pathsToRequire,
+            publicPath
+        } = cmd;
         try {
-            const app = new Application({ basePath: path, outputPath: join(path, outDir) });
+            const basePath = resolve(path);
+            preRequire(pathsToRequire, basePath);
+            const outputPath = resolve(outDir);
+            const app = new Application({ basePath, outputPath });
             const { port } = await app.run({
                 configName,
                 featureName,
@@ -143,9 +144,10 @@ program
         }
     });
 
-program.command('clean [path]').action(async path => {
-    const app = new Application({ basePath: path || process.cwd() });
+program.command('clean [path]').action(async (path = process.cwd()) => {
     try {
+        const basePath = resolve(path);
+        const app = new Application({ basePath });
         console.log(`Removing: ${app.outputPath}`);
         await app.clean();
     } catch (e) {
@@ -157,9 +159,10 @@ program
     .command('remote [path]')
     .option('-p --port <port>')
     .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
+        const { port: preferredPort } = cmd;
         try {
-            const { port: preferredPort } = cmd;
-            const app = new Application({ basePath: path });
+            const basePath = resolve(path);
+            const app = new Application({ basePath });
             const port = preferredPort ? parseInt(preferredPort, 10) : undefined;
             await app.remote({ port });
         } catch (e) {
@@ -168,6 +171,16 @@ program
     });
 
 program.parse(process.argv);
+
+function preRequire(pathsToRequire: string[], basePath: string) {
+    for (const request of pathsToRequire) {
+        const resolvedRequest = resolveFrom(basePath, request);
+        if (!resolvedRequest) {
+            throw new Error(`cannot resolve required module: "${request}"`);
+        }
+        require(resolvedRequest);
+    }
+}
 
 function printErrorAndExit(message: unknown) {
     console.error(message);

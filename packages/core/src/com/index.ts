@@ -7,3 +7,4 @@ export * from './message-types';
 export * from './service-config';
 export * from './types';
 export * from './ws-client-host';
+export * from './managed-iframe';
