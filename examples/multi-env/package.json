@@ -1,6 +1,6 @@
 {
   "name": "@example/multi-env",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "scripts": {
     "start": "engine start"
   },
