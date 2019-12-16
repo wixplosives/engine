@@ -1,6 +1,6 @@
 {
   "name": "@fixture/engine-multi-feature",
-  "version": "8.0.1",
+  "version": "8.0.2",
   "scripts": {
     "start": "engine start"
   },
