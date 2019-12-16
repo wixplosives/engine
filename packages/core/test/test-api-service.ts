@@ -38,6 +38,14 @@ export class MultiTenantTestService {
     }
 }
 
+export class HashParamsRetriever {
+    public getHashParams() {
+        return location.hash;
+    }
+}
+
 export const testServiceId = 'TestService';
 
 export const multiTanentServiceId = 'MultiTanentService';
+
+export const hashParamsRetriever = 'HashParamsRetriever';

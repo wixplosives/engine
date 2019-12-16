@@ -7,7 +7,9 @@ import {
     multiTanentServiceId,
     MultiTenantTestService,
     TestService,
-    testServiceId
+    testServiceId,
+    HashParamsRetriever,
+    hashParamsRetriever
 } from './test-api-service';
 
 describe('Communication API', function() {
@@ -123,5 +125,16 @@ describe('Communication API', function() {
         const res = await api.testApi(1, 2, 3);
 
         expect(res).to.eql({ echo: [1, 2, 3] });
+    });
+
+    it('allows initiating iframe environment with parameters', async () => {
+        const com = disposables.add(new Communication(window, comId));
+        const env = await com.manage(iframeEnv, createIframe(), '#test');
+        const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
+
+        await waitFor(async () => {
+            const deserializedHash = decodeURIComponent(await api.getHashParams());
+            expect(deserializedHash).to.eq(`#test`);
+        });
     });
 });

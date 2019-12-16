@@ -1,9 +1,9 @@
 import { BaseHost } from './com/base-host';
 import { Communication, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
-import { Target, WindowHost } from './com/types';
+import { Target } from './com/types';
 import { Config } from './entities/config';
-import { AllEnvironments, Environment, SingleEndpointContextualEnvironment, Universal } from './entities/env';
+import { AllEnvironments, Universal } from './entities/env';
 import { Feature } from './entities/feature';
 import { Service } from './entities/service';
 import { Slot } from './entities/slot';
@@ -48,18 +48,10 @@ export default new Feature({
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Service.withType<LoggerService>().defineEntity(Universal),
-        spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
-            AllEnvironments
-        ),
-        manage: Service.withType<
-            (endPoint: Environment, host: HTMLIFrameElement) => Promise<{ id: string }>
-        >().defineEntity(AllEnvironments),
-        connect: Service.withType<(endPoint: Environment<string, 'node'>) => Promise<{ id: string }>>().defineEntity(
-            AllEnvironments
-        ),
-        spawnOrConnect: Service.withType<
-            (endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) => Promise<{ id: string }>
-        >().defineEntity(AllEnvironments),
+        spawn: Service.withType<Communication['spawn']>().defineEntity(AllEnvironments),
+        manage: Service.withType<Communication['manage']>().defineEntity(AllEnvironments),
+        connect: Service.withType<Communication['connect']>().defineEntity(AllEnvironments),
+        spawnOrConnect: Service.withType<Communication['spawnOrConnect']>().defineEntity(AllEnvironments),
         communication: Service.withType<Communication>().defineEntity(AllEnvironments)
     }
 }).setup(
