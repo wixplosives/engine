@@ -1,7 +1,6 @@
 import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { spy } from 'sinon';
 import { Communication, Environment } from '../src';
 import {
     ITestServiceData,
@@ -130,50 +129,12 @@ describe('Communication API', function() {
 
     it('allows initiating iframe environment with parameters', async () => {
         const com = disposables.add(new Communication(window, comId));
-        const hashParams = {
-            test: 'test'
-        };
-        const env = await com.manage(iframeEnv, createIframe(), hashParams);
+        const env = await com.manage(iframeEnv, createIframe(), '#test');
         const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
 
         await waitFor(async () => {
             const deserializedHash = decodeURIComponent(await api.getHashParams());
-            expect(deserializedHash).to.eq(`#${JSON.stringify(hashParams)}`);
-        });
-    });
-
-    it('supports updating hash params when communicating with iframe', async () => {
-        const com = disposables.add(new Communication(window, comId));
-        const env = await com.manage(iframeEnv, createIframe());
-
-        const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
-        expect(await api.getHashParams()).to.eq('');
-        const hashParams = {
-            test: 'test'
-        };
-        env.updateHashParams(hashParams);
-
-        await waitFor(async () => {
-            const deserializedHash = decodeURIComponent(await api.getHashParams());
-            expect(deserializedHash).to.eq(`#${JSON.stringify(hashParams)}`);
-        });
-    });
-
-    it('triggers hashupdate event when changing hash params', async () => {
-        const onHashChange = spy();
-        const com = disposables.add(new Communication(window, comId));
-        const env = await com.manage(iframeEnv, createIframe());
-
-        const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
-
-        await api.onHashChange(onHashChange);
-
-        env.updateHashParams({
-            test: 'test'
-        });
-
-        await waitFor(async () => {
-            expect(onHashChange.callCount).to.eq(1);
+            expect(deserializedHash).to.eq(`#test`);
         });
     });
 });

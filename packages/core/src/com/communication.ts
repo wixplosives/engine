@@ -21,8 +21,7 @@ import {
     Target,
     UnknownFunction,
     WindowHost,
-    ServiceComConfig,
-    Json
+    ServiceComConfig
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -130,7 +129,7 @@ export class Communication {
         };
     }
 
-    public async manage(endPoint: Environment, host: HTMLIFrameElement, hashParams?: Json) {
+    public async manage(endPoint: Environment, host: HTMLIFrameElement, hashParams?: string) {
         const { endpointType, env } = endPoint;
 
         const isSingleton = endpointType === 'single';
@@ -143,12 +142,7 @@ export class Communication {
         );
 
         return {
-            id: instanceId,
-            updateHashParams: (hashParams: Json) => {
-                if (host.contentWindow) {
-                    host.contentWindow.location.hash = getHashParams(hashParams);
-                }
-            }
+            id: instanceId
         };
     }
 
@@ -686,8 +680,8 @@ const defaultSourceFactory = (envName: string, _instanceId: string, publicPath =
     return `${publicPath}${envName}.web.js${location.search}`;
 };
 
-const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '/', hashParams?: Json) => {
-    return `${publicPath}${envName}.html${location.search}${hashParams ? getHashParams(hashParams) : ``}`;
+const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '/', hashParams?: string) => {
+    return `${publicPath}${envName}.html${location.search}${hashParams ?? ''}`;
 };
 
 const removeMessageArgs = (message: Message): Message => {
@@ -700,4 +694,3 @@ const removeMessageArgs = (message: Message): Message => {
     }
     return message;
 };
-const getHashParams = (hashParams: Json) => `#${JSON.stringify(hashParams)}`;
