@@ -6,9 +6,9 @@ export const GLOBAL_REF = (id: string) => `Com with id "${id}" is already runnin
 export const REMOTE_CALL_FAILED = (message: Message) =>
     `Remote call failed with error: "${message.error}" from "${message.from}"`;
 export const UNKNOWN_CALLBACK_ID = (message: Message) =>
-    `Unknown callback id "${message.callbackId}" in message:\n${JSON.stringify(message, null, 2)}`;
+    `Unknown callback id "${message.callbackId}" in message:\n${JSON.stringify(message)}`;
 export const CALLBACK_TIMEOUT = (callbackId: string, hostId: string, message: Message) =>
-    `Callback timeout "${callbackId}" at ${hostId} on message:\n${JSON.stringify(message, null, 2)}`;
+    `Callback timeout "${callbackId}" at ${hostId} on message:\n${JSON.stringify(message)}`;
 export const MISSING_ENV = (target: string, environments: string[]) =>
     `Destination environment ${target} is not registered. available environments: [${environments}]`;
 export const MISSING_FORWARD_FOR_MESSAGE = (message: Message) => `Not implemented forward for ${message.type}`;
