@@ -1,7 +1,7 @@
 import { Json } from './types';
 
 export class ManagedIframe {
-    constructor(private host: HTMLIFrameElement) {}
+    constructor(private host: Window | null) {}
     public getHashParams() {
         const contentWindow = this.getContentWindow();
         return contentWindow.location.hash.length
@@ -19,10 +19,10 @@ export class ManagedIframe {
     }
 
     private getContentWindow() {
-        if (!this.host.contentWindow) {
+        if (!this.host) {
             throw new Error('Target is not connected to the DOM');
         }
-        return this.host.contentWindow;
+        return this.host;
     }
 
     public offHashChange(onHashChange: (ev: HashChangeEvent) => unknown) {
