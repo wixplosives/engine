@@ -19,7 +19,7 @@ describe('Managed Iframe', () => {
     it('supports updating hash params when communicating with iframe', async () => {
         const host = createIframe();
 
-        const managedIframe = new ManagedIframe(host);
+        const managedIframe = new ManagedIframe(host.contentWindow);
         expect(await managedIframe.getHashParams()).to.eq(undefined);
         const hashParams = {
             test: 'test'
@@ -36,7 +36,7 @@ describe('Managed Iframe', () => {
     it('triggers hashupdate event when changing hash params', async () => {
         const onHashChange = spy();
         const host = createIframe();
-        const managedIframe = new ManagedIframe(host);
+        const managedIframe = new ManagedIframe(host.contentWindow);
 
         managedIframe.onHashChange(onHashChange);
 
