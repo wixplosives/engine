@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@file-services/directory": "^2.1.0",
-    "@file-services/node": "^2.1.0"
+    "@file-services/node": "^2.1.1"
   },
   "license": "UNLICENSED",
   "private": true
