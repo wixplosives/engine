@@ -97,8 +97,15 @@ program
     .option('--outDir <outDir>')
     .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
     .allowUnknownOption(true)
-    .action(async (path = process.cwd(), cmd: Record<string, any>, mode) => {
-        const { feature: featureName, config: configName, outDir = 'dist', require: pathsToRequire, publicPath } = cmd;
+    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
+        const {
+            feature: featureName,
+            config: configName,
+            outDir = 'dist',
+            require: pathsToRequire,
+            publicPath,
+            mode
+        } = cmd;
         try {
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
