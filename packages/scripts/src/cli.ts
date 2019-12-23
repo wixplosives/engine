@@ -25,6 +25,7 @@ program
     .option(...preRequireParams)
     .option('-f, --feature <feature>')
     .option('-c, --config <config>')
+    .option('--mode <mode>', 'mode passed to webpack', 'development')
     .option('--inspect')
     .option('-p ,--port <port>')
     .option('--singleRun', 'when enabled, webpack will not watch files', false)
@@ -39,7 +40,8 @@ program
             singleRun,
             open: openBrowser = 'true',
             require: pathsToRequire,
-            publicPath = defaultPublicPath
+            publicPath = defaultPublicPath,
+            mode
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -52,7 +54,8 @@ program
                 inspect: cmd.inspect ? true : false,
                 port: httpServerPort ? Number(httpServerPort) : undefined,
                 singleRun: !!singleRun,
-                publicPath
+                publicPath,
+                mode
             });
 
             if (process.send) {
@@ -90,17 +93,18 @@ program
     .option(...preRequireParams)
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
+    .option('--mode <mode>', 'mode passed to webpack', 'production')
     .option('--outDir <outDir>')
     .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
     .allowUnknownOption(true)
-    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
+    .action(async (path = process.cwd(), cmd: Record<string, any>, mode) => {
         const { feature: featureName, config: configName, outDir = 'dist', require: pathsToRequire, publicPath } = cmd;
         try {
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const outputPath = resolve(outDir);
             const app = new Application({ basePath, outputPath });
-            const stats = await app.build({ featureName, configName, publicPath });
+            const stats = await app.build({ featureName, configName, publicPath, mode });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
             printErrorAndExit(e);

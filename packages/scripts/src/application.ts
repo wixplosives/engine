@@ -38,6 +38,7 @@ export interface IRunOptions extends IFeatureTarget {
     inspect?: boolean;
     port?: number;
     publicPath?: string;
+    mode?: 'development' | 'production';
 }
 
 export interface IBuildManifest {
@@ -65,14 +66,16 @@ export class Application {
         await rimraf(fs.join(this.basePath, 'npm'));
     }
 
-    public async build({ featureName, configName, publicPath }: IRunOptions = {}): Promise<webpack.Stats> {
+    public async build({ featureName, configName, publicPath, mode = 'production' }: IRunOptions = {}): Promise<
+        webpack.Stats
+    > {
         await this.loadEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
         const compiler = this.createCompiler({
+            mode,
             features,
             featureName,
             configName,
-            mode: 'production',
             publicPath
         });
 
@@ -106,7 +109,8 @@ export class Application {
         port: httpServerPort,
         singleRun,
         config = [],
-        publicPath = '/'
+        publicPath = '/',
+        mode = 'development'
     }: IRunOptions = {}) {
         const normilizedPublicPath = normalizePublicPath(publicPath);
         await this.loadEngineConfig();
@@ -121,7 +125,13 @@ export class Application {
 
         const { features, configurations, packages } = this.analyzeFeatures();
 
-        const compiler = this.createCompiler({ features, featureName, configName, publicPath: normilizedPublicPath });
+        const compiler = this.createCompiler({
+            mode,
+            features,
+            featureName,
+            configName,
+            publicPath: normilizedPublicPath
+        });
 
         if (singleRun) {
             for (const childCompiler of compiler.compilers) {
