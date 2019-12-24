@@ -114,7 +114,10 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         config: suiteConfig
     } = withFeatureOptions;
 
-    if (isCI && (headless === false || devtools === true || slowMo !== undefined)) {
+    if (
+        isCI &&
+        (headless === false || devtools === true || slowMo !== undefined || runningApplicationPort !== undefined)
+    ) {
         throw new Error(
             `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`
         );
