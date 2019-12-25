@@ -11,7 +11,8 @@ function getConfigForMode(mode) {
             library: 'EngineCore',
             libraryTarget: 'umd',
             path: path.join(__dirname, 'umd'),
-            filename: mode === 'production' ? 'engine-core.min.js' : 'engine-core.js'
+            filename: mode === 'production' ? 'engine-core.min.js' : 'engine-core.js',
+            globalObject: 'globalThis'
         },
         externals: {
             'socket.io-client': {
