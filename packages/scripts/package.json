@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "8.0.5",
+  "version": "8.1.0",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
@@ -22,8 +22,8 @@
     "@file-services/node": "^2.1.1",
     "@file-services/types": "^2.1.0",
     "@file-services/utils": "^2.1.0",
-    "@wixc3/engine-core": "^8.0.5",
-    "@wixc3/engine-core-node": "^8.0.5",
+    "@wixc3/engine-core": "^8.1.0",
+    "@wixc3/engine-core-node": "^8.1.0",
     "commander": "^4.0.1",
     "create-listening-server": "^1.0.0",
     "deindent": "^0.1.0",
