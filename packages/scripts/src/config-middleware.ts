@@ -4,13 +4,23 @@ import express from 'express';
 import importFresh from 'import-fresh';
 import { IConfigDefinition } from './types';
 
+interface IConfigMiddleware {
+    middleware: express.RequestHandler;
+    setConfig(config: TopLevelConfig): void;
+}
+
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition>,
     topology: Map<string, Record<string, string>>,
     overrideConfig: TopLevelConfig = [],
     publicPath: string
-): express.RequestHandler {
-    return async (req, res) => {
+): IConfigMiddleware {
+    let topLevelConfig = overrideConfig;
+
+    const setConfig = (config: TopLevelConfig) => {
+        topLevelConfig = config;
+    };
+    const middleware: express.RequestHandler = async (req, res) => {
         const { feature: reqFeature, env: reqEnv } = req.query;
         const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(reqFeature), publicPath } })];
         const requestedConfig = req.path.slice(1);
@@ -31,10 +41,15 @@ export function createConfigMiddleware(
                 }
             }
         }
-        if (overrideConfig.length) {
-            config.push(...overrideConfig);
+        if (topLevelConfig.length) {
+            config.push(...topLevelConfig);
         }
 
         res.send(config);
+    };
+
+    return {
+        middleware,
+        setConfig
     };
 }
