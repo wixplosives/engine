@@ -1,8 +1,8 @@
 import COM from './communication.feature';
-import { flattenTree } from './flatten-tree';
 import { RuntimeEngine } from './runtime-engine';
 import { IRunOptions, TopLevelConfig } from './types';
 import { Feature } from './entities';
+import { flattenTree } from './helpers';
 
 export interface IRunEngineOptions {
     entryFeature: Feature | Feature[];
