@@ -2,7 +2,9 @@
   "name": "@example/multi-env",
   "version": "8.1.0",
   "scripts": {
-    "start": "engine start"
+    "start": "engine start",
+    "test": "mocha \"test/**/*.ix.ts?(x)\""
+
   },
   "license": "UNLICENSED",
   "private": true

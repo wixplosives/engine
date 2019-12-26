@@ -1,4 +1,4 @@
-import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment } from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment, Config } from '@wixc3/engine-core';
 
 export const mainEnv = new Environment('main', 'window', 'single');
 const workerEnv = new Environment('worker', 'worker', 'single');
@@ -17,6 +17,9 @@ export default new Feature({
     id: 'contextual-environment-test',
     dependencies: [COM],
     api: {
+        config: new Config<{ name: string }>({
+            name: 'test'
+        }),
         echoService: Service.withType<IEchoService>()
             .defineEntity(processingEnv)
             .allowRemoteAccess()

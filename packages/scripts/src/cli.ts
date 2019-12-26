@@ -47,7 +47,7 @@ program
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const app = new Application({ basePath });
-            const { close: closeServer, port, nodeEnvironmentManager } = await app.start({
+            const { close: closeServer, port, nodeEnvironmentManager, setRunningConfig } = await app.start({
                 featureName,
                 configName,
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
@@ -67,7 +67,11 @@ program
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
                 if (process.send) {
                     if (id === 'run-feature') {
-                        await nodeEnvironmentManager.runServerEnvironments(payload as Required<IFeatureTarget>);
+                        const runOptions = payload as Required<IFeatureTarget>;
+                        if (runOptions.config) {
+                            setRunningConfig(runOptions.config);
+                        }
+                        await nodeEnvironmentManager.runServerEnvironments(runOptions);
                         process.send({ id: 'feature-initialized' });
                     }
                     if (id === 'close-feature') {

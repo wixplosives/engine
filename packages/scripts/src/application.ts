@@ -157,11 +157,18 @@ export class Application {
             config
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-
-        app.use(
-            '/config',
-            createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config, normilizedPublicPath)
+        const middleware = createConfigMiddleware(
+            configurations,
+            nodeEnvironmentManager.topology,
+            normilizedPublicPath
         );
+
+        let currentConfig = config;
+
+        const middlewareConfigProxy: express.RequestHandler = (req, res, next) =>
+            middleware(currentConfig)(req, res, next);
+
+        app.use('/config', middlewareConfigProxy);
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
@@ -216,6 +223,9 @@ export class Application {
             port,
             nodeEnvironmentManager,
             router: app,
+            setRunningConfig: (config: TopLevelConfig = []) => {
+                currentConfig = config;
+            },
             async close() {
                 for (const dispose of disposables) {
                     await dispose();
@@ -267,11 +277,12 @@ export class Application {
             configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-
-        app.use(
-            `/config`,
-            createConfigMiddleware(configurations, nodeEnvironmentManager.topology, config, normilizedPublicPath)
+        const configMiddleware = createConfigMiddleware(
+            configurations,
+            nodeEnvironmentManager.topology,
+            normilizedPublicPath
         );
+        app.use(`/config`, configMiddleware(config));
 
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
