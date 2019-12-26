@@ -1,8 +1,10 @@
 const { join } = require('path');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
-const {StylableWebpackPlugin} = require('@stylable/webpack-plugin');
+const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
 
 module.exports = {
+    context: __dirname,
+    devtool: 'source-map',
     resolve: {
         extensions: ['.ts', '.tsx', '.mjs', '.js', '.json'],
         plugins: [new TsconfigPathsPlugin({ configFile: join(__dirname, 'tsconfig.json') })]
@@ -11,7 +13,6 @@ module.exports = {
         rules: [
             {
                 test: /\.tsx?$/,
-                exclude: /\.d\.ts$/,
                 loader: '@ts-tools/webpack-loader'
             },
             {
@@ -28,7 +29,5 @@ module.exports = {
             }
         ]
     },
-    plugins: [
-        new StylableWebpackPlugin()
-    ]
+    plugins: [new StylableWebpackPlugin()]
 };

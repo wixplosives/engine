@@ -1,4 +1,3 @@
-import { SetMultiMap } from '@file-services/utils';
 import { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, DISPOSE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import {
@@ -14,6 +13,7 @@ import {
     SetupHandler
 } from '../types';
 import { Environment, testEnvironmentCollision, Universal } from './env';
+import { SetMultiMap } from '../helpers';
 
 /*************** FEATURE ***************/
 

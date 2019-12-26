@@ -1,6 +1,6 @@
-import { deferred } from 'promise-assist';
 import io from 'socket.io-client';
 import { BaseHost } from './base-host';
+import { deferred } from '../helpers';
 
 export class WsClientHost extends BaseHost {
     public connected: Promise<void>;

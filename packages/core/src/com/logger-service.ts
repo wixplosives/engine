@@ -1,5 +1,5 @@
 import { LogMessage, LogMetadata } from '../common-types';
-import { EventEmitter } from '../event-emitter';
+import { EventEmitter } from '../helpers';
 import { LoggerTransport, LogLevel } from '../types';
 
 export interface LogValueData {

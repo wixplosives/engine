@@ -35,7 +35,7 @@ import {
 
 import { SERVICE_CONFIG } from '../symbols';
 
-import { SetMultiMap } from '@file-services/utils';
+import { SetMultiMap } from '../helpers';
 import { Environment, SingleEndpointContextualEnvironment } from '../entities/env';
 import { IDTag } from '../types';
 import { BaseHost } from './base-host';
