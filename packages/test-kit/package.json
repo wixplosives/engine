@@ -16,7 +16,7 @@
   "dependencies": {
     "@wixc3/engine-scripts": "^8.1.2",
     "is-ci": "^2.0.0",
-    "sinon": "^8.0.1"
+    "sinon": "^8.0.2"
   },
   "files": [
     "cjs",
