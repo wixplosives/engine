@@ -1,0 +1,38 @@
+{
+    "name": "@wixc3/feature-generator",
+    "version": "1.0.0",
+    "description": "CLI tool for generation of new features",
+    "main": "index.js",
+    "bin": {
+        "engine-generate": "./index.js"
+    },
+    "scripts": {
+        "start": "engine-generate",
+        "plop": "plop --plopfile plopfile.js",
+        "clean": "rimraf cjs umd",
+        "prebuild": "yarn clean",
+        "build": "yarn build:cjs",
+        "build:cjs": "ts-build src --cjs",
+        "test": "mocha \"test/**/*.spec.ts?(x)\"",
+        "prepack": "yarn build"
+    },
+    "peerDependencies": {
+        "typescript": ">=3.0.0"
+    },
+    "files": [
+        "cjs",
+        "src",
+        "index.js",
+        "plopfile.js"
+    ],
+    "license": "MIT",
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "@file-services/node": "^2.1.1",
+        "@types/lodash": "^4.14.149",
+        "lodash": "^4.17.15",
+        "plop": "^2.5.3"
+    }
+}

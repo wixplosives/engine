@@ -1,0 +1,21 @@
+{{#if hasConfig}}
+import { Feature, Config } from '@wixc3/engine-core';
+
+export interface {{pascalCase featureName}}Options {
+    key: string;
+}
+{{else}}
+import { Feature } from '@wixc3/engine-core';
+{{/if}}
+
+export default new Feature({
+    id: '{{camelCase featureName}}',
+    dependencies: [],
+    {{#if hasConfig}}
+    api: {
+        {{camelCase featureName}}Options: new Config<{{pascalCase featureName}}Options>({ key: 'default value' })
+    }
+    {{else}}
+    api: {}
+    {{/if}}
+});
