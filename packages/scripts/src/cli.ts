@@ -29,7 +29,7 @@ program
     .option('--inspect')
     .option('-p ,--port <port>')
     .option('--singleRun', 'when enabled, webpack will not watch files', false)
-    .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
+    .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -99,7 +99,7 @@ program
     .option('-c ,--config <config>')
     .option('--mode <mode>', 'mode passed to webpack', 'production')
     .option('--outDir <outDir>')
-    .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
+    .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -128,7 +128,7 @@ program
     .option('-c ,--config <config>')
     .option('-f ,--feature <feature>')
     .option('--outDir <outDir>')
-    .option('--publicPath', 'public path prefix to use as base', defaultPublicPath)
+    .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('-p ,--port <port>')
     .allowUnknownOption(true)
     .action(async (path, cmd: Record<string, any>) => {
