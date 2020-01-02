@@ -2,7 +2,7 @@ import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
 
-import { BaseHost, Communication, decalreComEmitter } from '../../src';
+import { BaseHost, Communication, declareComEmitter } from '../../src';
 
 chai.use(sinonChai);
 
@@ -38,7 +38,7 @@ describe('com emitter service', () => {
         main2.registerAPI(emitterServiceId, api);
 
         const proxy = main.apiProxy<EmitterService>(Promise.resolve({ id: 'main2' }), emitterServiceId, {
-            ...decalreComEmitter<EmitterService>('on', 'off', 'removeAll')
+            ...declareComEmitter<EmitterService>('on', 'off', 'removeAll')
         });
 
         const testListenerStub = stub();

@@ -795,7 +795,7 @@ const removeMessageArgs = (message: Message): Message => {
     return message;
 };
 
-export function decalreComEmitter<T>(
+export function declareComEmitter<T>(
     onMethod: keyof T,
     offMethod: keyof T,
     removeAll?: keyof T
