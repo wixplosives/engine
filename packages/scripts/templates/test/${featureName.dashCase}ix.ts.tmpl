@@ -1,0 +1,24 @@
+import { expect } from 'chai';
+import { waitFor } from 'promise-assist';
+import { withFeature } from '@wixc3/engine-test-kit';
+
+describe('${featureName.pascalCase} IX', function() {
+    this.timeout(30_000);
+
+    const { getLoadedFeature } = withFeature({
+        featureName: '${featureName.dashCase}-test',
+        configName: '${featureName.dashCase}/example'
+    });
+
+    it('has element', async function() {
+        const { page } = await getLoadedFeature();
+
+        await waitFor(
+            async () => {
+                const element = await page.waitForSelector('.some-selector');
+                expect(element).to.have.lengthOf(1);
+            },
+            { timeout: 10_000 }
+        );
+    });
+});
