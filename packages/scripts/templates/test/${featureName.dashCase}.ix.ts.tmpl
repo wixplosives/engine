@@ -6,7 +6,7 @@ describe('${featureName.pascalCase} IX', function() {
     this.timeout(30_000);
 
     const { getLoadedFeature } = withFeature({
-        featureName: '${featureName.dashCase}-test',
+        featureName: '${featureName.dashCase}/${featureName.dashCase}-test',
         configName: '${featureName.dashCase}/example'
     });
 
