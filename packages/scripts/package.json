@@ -45,7 +45,8 @@
   "files": [
     "cjs",
     "src",
-    "cli.js"
+    "cli.js",
+    "templates"
   ],
   "license": "MIT",
   "publishConfig": {
