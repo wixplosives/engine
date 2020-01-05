@@ -21,6 +21,7 @@ import { NodeEnvironmentsManager } from './node-environments-manager';
 import { createIPC } from './process-communication';
 import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition, IExportedConfigDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
+import generateFeature, { pathToPackagesPath } from './feature-generator';
 
 const rimraf = promisify(rimrafCb);
 const { basename, dirname, extname, join } = fs;
@@ -45,6 +46,11 @@ export interface IBuildManifest {
     features: Array<[string, IFeatureDefinition]>;
     defaultFeatureName?: string;
     defaultConfigName?: string;
+}
+
+export interface ICreateOptions {
+    featureName?: string;
+    templatesDir?: string;
 }
 
 export interface IApplicationOptions {
@@ -318,6 +324,18 @@ export class Application {
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
         parentProcess.postMessage({ id: 'initiated' });
+    }
+
+    public create({ featureName, templatesDir }: ICreateOptions = {}) {
+        if (!featureName) {
+            throw new Error('Feature name is mandatory');
+        }
+
+        generateFeature(fs, {
+            featureName,
+            targetPath: pathToPackagesPath(fs, this.basePath),
+            templatesDirPath: templatesDir || fs.join(__dirname, '../templates')
+        });
     }
 
     private async loadEngineConfig() {

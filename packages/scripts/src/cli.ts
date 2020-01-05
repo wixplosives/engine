@@ -185,6 +185,20 @@ program
         }
     });
 
+program
+    .command('create [featureName]')
+    .option('--path <path>')
+    .option('--templatesDir <templatesDir>', 'path to a costumized templates folder (optional)')
+    .action(async (featureName, { path = process.cwd(), templatesDir }) => {
+        try {
+            const basePath = resolve(path);
+            const app = new Application({ basePath });
+            app.create({ featureName, templatesDir });
+        } catch (e) {
+            printErrorAndExit(e);
+        }
+    });
+
 program.parse(process.argv);
 
 function preRequire(pathsToRequire: string[], basePath: string) {
