@@ -59,12 +59,14 @@ describe('Feature Generator', () => {
     });
 
     describe('pathToPackagesPath()', () => {
+        const expectedPath = fs.normalize('/proj/packages');
+
         it('Goes up in path to packages folder', () => {
-            expect(pathToPackagesPath(fs, '/proj/packages/some-package')).to.equal('/proj/packages');
+            expect(pathToPackagesPath(fs, '/proj/packages/some-package')).to.equal(expectedPath);
         });
 
         it('Adds `packages` to the path if path has no such parent directory', () => {
-            expect(pathToPackagesPath(fs, '/proj')).to.equal('/proj/packages');
+            expect(pathToPackagesPath(fs, '/proj')).to.equal(expectedPath);
         });
     });
 

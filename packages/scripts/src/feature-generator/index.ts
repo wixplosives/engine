@@ -52,10 +52,13 @@ const PACKAGES_DIR = '/packages';
  * // => './proj/packages'
  */
 export const pathToPackagesPath = (fs: IFileSystem, path: string) => {
-    const packagesIndex = path.indexOf(PACKAGES_DIR);
+    const normalizedPackagesDir = fs.normalize(PACKAGES_DIR);
+    const normalizedPath = fs.normalize(path);
+
+    const packagesIndex = normalizedPath.indexOf(normalizedPackagesDir);
     if (packagesIndex !== -1) {
-        return path.slice(0, packagesIndex + PACKAGES_DIR.length);
+        return normalizedPath.slice(0, packagesIndex + normalizedPackagesDir.length);
     } else {
-        return fs.join(path, PACKAGES_DIR);
+        return fs.join(path, normalizedPackagesDir);
     }
 };
