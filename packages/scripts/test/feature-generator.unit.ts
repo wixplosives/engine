@@ -58,9 +58,9 @@ describe('Feature Generator', () => {
         expect(featureDir).to.eql(expectedDirContents);
     });
 
-    describe.only('pathToPackagesPath()', () => {
+    describe('pathToPackagesPath()', () => {
         it('Goes up in path to packages folder', () => {
-            expect(pathToPackagesPath(fs, '/proj/packages/some-package')).to.equal('proj/packages');
+            expect(pathToPackagesPath(fs, '/proj/packages/some-package')).to.equal('/proj/packages');
         });
 
         it('Adds `packages` to the path if path has no such parent directory', () => {
