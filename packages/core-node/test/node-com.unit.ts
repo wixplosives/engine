@@ -167,8 +167,7 @@ describe('Node communication', () => {
         });
 
         onDisconnect(spy);
-        socketServer.close();
-
+        await disposables.dispose();
         // waiting for spy function to have called
         await waitFor(() => {
             expect(spy.callCount).to.be.greaterThan(0);
