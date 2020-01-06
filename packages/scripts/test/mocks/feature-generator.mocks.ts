@@ -8,7 +8,7 @@ export const templatesDirContents = {
         }
     },
     'index.ts.tmpl': "export * from './feature/${featureName.dashCase}.feature.ts'",
-    'const-file.txt': 'no chanege here: ${featureName.dashCase}',
+    'const-file.txt': 'no change here: ${featureName.dashCase}',
     'README.md.tmpl': 'This is readme for ${featureName.camelCase}'
 };
 
@@ -25,7 +25,7 @@ export const expectedDirContents = {
             }
         },
         'index.ts': "export * from './feature/cool-thing.feature.ts'",
-        'const-file.txt': 'no chanege here: ${featureName.dashCase}',
+        'const-file.txt': 'no change here: ${featureName.dashCase}',
         'README.md': 'This is readme for coolThing'
     }
 };

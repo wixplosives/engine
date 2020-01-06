@@ -188,7 +188,7 @@ program
 program
     .command('create [featureName]')
     .option('--path <path>')
-    .option('--templatesDir <templatesDir>', 'path to a costumized templates folder (optional)')
+    .option('--templatesDir <templatesDir>', 'path to a customized templates folder (optional)')
     .action(async (featureName, { path = process.cwd(), templatesDir }) => {
         try {
             const basePath = resolve(path);
