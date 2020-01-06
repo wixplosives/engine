@@ -13,7 +13,7 @@ export type ITemplateContext = {
 
 export type IEnrichedTemplateContext = Record<keyof ITemplateContext, IEnrichedString>;
 
-interface IEnrichedString extends String {
+export interface IEnrichedString extends String {
     camelCase: string;
     dashCase: string;
     pascalCase: string;

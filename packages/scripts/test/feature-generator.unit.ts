@@ -1,27 +1,32 @@
 import { createMemoryFs } from '@file-services/memory';
 import fs from '@file-services/node';
 import { expect } from 'chai';
-import generateFeature, { pathToPackagesPath } from '../src/feature-generator';
+import generateFeature, {
+    pathToPackagesPath,
+    readDirectoryContentsSync,
+    writeDirectoryContentsSync,
+    mapDirectory,
+    enrichContext
+} from '../src/feature-generator';
 import { expectedDirContents, templatesDirContents, FEATURE_NAME } from './mocks/feature-generator.mocks';
-import { readDirectorySync, writeDirectorySync, mapDirectory, enrichContext } from '../src/feature-generator/utils';
-import { compileTemplate } from '../src/utils/string-utils';
+import { compileTemplate } from '../src/utils';
 
 describe('Feature Generator', () => {
-    it('reads sync directory', () => {
+    it('reads directory contents', () => {
         const memoryFs = createMemoryFs(templatesDirContents);
-        const contentsFromFs = readDirectorySync(memoryFs, '/');
+        const contentsFromFs = readDirectoryContentsSync(memoryFs, '/');
         expect(contentsFromFs).to.eql(templatesDirContents);
     });
 
-    it('writes sync directory', () => {
+    it('writes directory contents', () => {
         const memoryFs = createMemoryFs();
-        writeDirectorySync(memoryFs, expectedDirContents, '/');
-        const contentsFromFs = readDirectorySync(memoryFs, '/');
+        writeDirectoryContentsSync(memoryFs, expectedDirContents, '/');
+        const contentsFromFs = readDirectoryContentsSync(memoryFs, '/');
         expect(contentsFromFs).to.eql(expectedDirContents);
     });
 
-    it('maps directory content', () => {
-        const dirContent = {
+    it('maps directory contents', () => {
+        const dirContents = {
             'text1.txt': 'text1.txt content',
             folder: {
                 'text2.txt': 'text2.txt content'
@@ -32,7 +37,7 @@ describe('Feature Generator', () => {
             content: `map-${content || ''}`
         });
 
-        const mappedDirectory = mapDirectory(dirContent, mapper);
+        const mappedDirectory = mapDirectory(dirContents, mapper);
 
         expect(mappedDirectory).to.eql({
             'map-text1.txt': 'map-text1.txt content',
@@ -53,7 +58,7 @@ describe('Feature Generator', () => {
             templatesDirPath: '/templates'
         });
 
-        const featureDir = readDirectorySync(memoryFs, '/packages');
+        const featureDir = readDirectoryContentsSync(memoryFs, '/packages');
 
         expect(featureDir).to.eql(expectedDirContents);
     });

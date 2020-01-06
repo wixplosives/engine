@@ -1,35 +1,38 @@
 import { DirectoryContentMapper, ITemplateContext, IEnrichedTemplateContext } from './types';
 import { IDirectoryContents, IFileSystem } from '@file-services/types';
-import { kebabCase, camelCase, upperFirst } from '../utils/string-utils';
+import { toKebabCase, toCamelCase, toCapitalCase } from '../utils';
 
 // adds display options to each context value
 export function enrichContext(context: ITemplateContext): IEnrichedTemplateContext {
-    return mapValues(context, value => {
-        const camel = camelCase(value);
+    return walkRecordValues(context, value => {
+        const camel = toCamelCase(value);
         return Object.assign(new String(value), {
             camelCase: camel,
-            dashCase: kebabCase(value),
-            pascalCase: upperFirst(camel)
+            dashCase: toKebabCase(value),
+            pascalCase: toCapitalCase(camel)
         });
     });
 }
 
-export function readDirectorySync(fs: IFileSystem, path: string) {
+export function readDirectoryContentsSync(fs: IFileSystem, path: string) {
     const dir: IDirectoryContents = {};
     _readDirectorySync(fs, path, dir);
     return dir;
 }
 
-export function mapDirectory(
-    sourceDir: IDirectoryContents,
-    mapper: DirectoryContentMapper,
-    targetDir: IDirectoryContents = {}
-) {
-    _mapDirectory(sourceDir, mapper, targetDir);
-    return targetDir;
+export function mapDirectory(sourceDir: IDirectoryContents, mapper: DirectoryContentMapper): IDirectoryContents {
+    return Object.entries(sourceDir).reduce((mappedDir: IDirectoryContents, [name, content]) => {
+        if (typeof content === 'string') {
+            const { name: mappedName, content: mappedContent } = mapper(name, content);
+            return Object.assign(mappedDir, { [mappedName]: mappedContent });
+        } else {
+            const { name: mappedName } = mapper(name);
+            return Object.assign(mappedDir, { [mappedName]: mapDirectory(content, mapper) });
+        }
+    }, {});
 }
 
-export function writeDirectorySync(fs: IFileSystem, directoryContents: IDirectoryContents, path: string) {
+export function writeDirectoryContentsSync(fs: IFileSystem, directoryContents: IDirectoryContents, path: string) {
     fs.ensureDirectorySync(path);
     Object.entries(directoryContents).forEach(([name, content]) => {
         const currentPath = fs.join(path, name);
@@ -38,7 +41,7 @@ export function writeDirectorySync(fs: IFileSystem, directoryContents: IDirector
             fs.writeFileSync(currentPath, content);
         } else {
             const subDirectory = directoryContents[name] as IDirectoryContents;
-            writeDirectorySync(fs, subDirectory, currentPath);
+            writeDirectoryContentsSync(fs, subDirectory, currentPath);
         }
     });
 }
@@ -54,28 +57,9 @@ function _readDirectorySync(fs: IFileSystem, path: string, dir: IDirectoryConten
     }
 }
 
-function _mapDirectory(
-    sourceDir: IDirectoryContents,
-    mapper: DirectoryContentMapper,
-    targetDir: IDirectoryContents = {}
-) {
-    Object.entries(sourceDir).forEach(([name, content]) => {
-        if (typeof content === 'string') {
-            const { name: mappedName, content: mappedContent } = mapper(name, content);
-            targetDir[mappedName] = mappedContent!;
-        } else {
-            const { name: mappedName } = mapper(name);
-            _mapDirectory(content, mapper, (targetDir[mappedName] = {}));
-        }
-    });
-}
-
-function mapValues<T, U, K extends string>(obj: Record<K, T>, mapper: (value: T) => U): Record<K, U> {
-    return Object.entries(obj).reduce(
-        (mappedObj, [key, value]) =>
-            Object.assign(mappedObj, {
-                [key]: mapper(value as T)
-            }),
-        {} as Record<K, U>
-    );
+function walkRecordValues<T, U>(obj: Record<string, T>, mappingMethod: (value: T) => U): Record<string, U> {
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+        acc[key] = mappingMethod(value);
+        return acc;
+    }, {} as Record<string, U>);
 }

@@ -2,55 +2,54 @@
  * @param str A dash-separated string
  * @returns An array of lower-cased words from str
  * @example
- * words('Dash-separated--STRING')
+ * getWordsFromDashedString('Dash-separated--STRING')
  * // => ['dash', 'separated', 'string']
  */
-function words(str: string) {
+function getWordsFromDashedString(str: string) {
     return str
         .split('-')
-        .map(w => w.trim())
-        .filter(w => w)
-        .map(w => w.toLowerCase());
+        .map(w => w.trim().toLowerCase())
+        .filter(w => w);
 }
 
 /**
  * @example
- * upperFirst('word')
+ * toCapitalCase('word')
  * // => Word
  */
-export const upperFirst = (str: string) => str.slice(0, 1).toUpperCase() + str.slice(1);
+export const toCapitalCase = (str: string) => str.slice(0, 1).toUpperCase() + str.slice(1);
 
 /**
  * @param str A dash-separated string
  * @returns The kebab-cased string
  * @example
- * kebabCase('Kebab-Case')
+ * toKebabCase('Kebab-Case')
  * // => kebab-case
  */
-export const kebabCase = (str: string) => words(str).join('-');
+export const toKebabCase = (str: string) => getWordsFromDashedString(str).join('-');
 
 /**
  * @param str A dash-separated string
  * @returns The camel-cased string
  * @example
- * camelCase('Camel-Case')
+ * toCamelCase('Camel-Case')
  * // => camelCase
  */
-export const camelCase = (str: string) =>
-    words(str)
-        .map((w, i) => (i ? upperFirst(w) : w))
+export const toCamelCase = (str: string) =>
+    getWordsFromDashedString(str)
+        .map((w, i) => (i ? toCapitalCase(w) : w))
         .join('');
 
 /**
  * @param obj The object to query
- * @param path The path of the property to get.
+ * @param keys The path of the property to get.
  * @returns The value at `path` of `object` id exists, `undefined` otherwise
  * @example
  * getIn({ a: { b: 'c' } }, ['a', 'b'])
  * // => c
  */
-function getIn(obj: any, path: string[]) {
-    return path.reduce((value, key) => (value[key] !== undefined ? value[key] : undefined), obj);
+function getIn(obj: Record<string, any>, keys: string[]): any {
+    return keys.reduce((value, key) => (value[key] !== undefined ? value[key] : undefined), obj);
 }
 
 const templateReg = /\$\{(.+?)\}/g;
