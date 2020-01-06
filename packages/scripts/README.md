@@ -2,7 +2,7 @@
 
 Tooling for building and running of applications written using the `@wixc3/engine-core` package.
 
-## `engin create [feature-name]`
+## `engine create [feature-name]`
 
 Generates a feature folder with all basic imports and declarations.
 
