@@ -4,6 +4,8 @@ import { createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { safeListeningHttpServer } from 'create-listening-server';
 import io from 'socket.io';
+import sinon from 'sinon';
+import { waitFor } from 'promise-assist';
 
 interface ICommunicationTestApi {
     sayHello: () => string;
@@ -150,5 +152,29 @@ describe('Node communication', () => {
 
         expect(await Server1Methods.sayHelloWithDataAndParams('test')).to.eq('hello test');
         expect(await Server2Methods.sayHelloWithDataAndParams('test')).to.eq('hello test');
+    });
+
+    it('notifies if environment is disconnected', async () => {
+        const spy = sinon.spy();
+        const clientCom = new Communication(clientHost, 'client-host', {
+            'server-host': `http://localhost:${port}`
+        });
+
+        const { onDisconnect } = await clientCom.connect({
+            env: 'server-host',
+            envType: 'node',
+            endpointType: 'single'
+        });
+
+        onDisconnect(spy);
+        socketServer.close();
+
+        // waiting for spy function to have called
+        await waitFor(() => {
+            expect(spy.callCount).to.be.greaterThan(0);
+        });
+
+        // checking spy was called only once
+        expect(spy.callCount).to.eq(1);
     });
 });
