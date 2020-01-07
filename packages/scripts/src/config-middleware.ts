@@ -3,11 +3,13 @@ import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import express from 'express';
 import importFresh from 'import-fresh';
 import { IConfigDefinition } from './types';
+import { resolveFrom } from './utils';
 
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition>,
     topology: Map<string, Record<string, string>>,
-    publicPath: string
+    publicPath: string,
+    basePath: string
 ): (config: TopLevelConfig) => express.RequestHandler {
     return (overrideConfig?: TopLevelConfig) => {
         return async (req, res) => {
@@ -19,14 +21,19 @@ export function createConfigMiddleware(
             if (configDefinitions) {
                 for (const { filePath, envName } of configDefinitions) {
                     if (envName === reqEnv || !envName) {
-                        try {
-                            const { default: configValue } = (await importFresh(filePath)) as {
-                                default: TopLevelConfig;
-                            };
-                            config.push(...configValue);
-                        } catch (e) {
-                            console.error(`Failed evaluating config file: ${filePath}`);
-                            console.error(e);
+                        const resolvedPath = resolveFrom(basePath, filePath);
+                        if (resolvedPath) {
+                            try {
+                                const { default: configValue } = (await importFresh(resolvedPath)) as {
+                                    default: TopLevelConfig;
+                                };
+                                config.push(...configValue);
+                            } catch (e) {
+                                console.error(`Failed evaluating config file: ${filePath}`);
+                                console.error(e);
+                            }
+                        } else {
+                            throw new Error(`cannot find ${filePath}`);
                         }
                     }
                 }

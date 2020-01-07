@@ -35,6 +35,7 @@ export interface IFeatureTarget {
 
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
+    singleFeature?: boolean;
     inspect?: boolean;
     port?: number;
     publicPath?: string;
@@ -66,11 +67,27 @@ export class Application {
         await rimraf(fs.join(this.basePath, 'npm'));
     }
 
-    public async build({ featureName, configName, publicPath, mode = 'production' }: IRunOptions = {}): Promise<
-        webpack.Stats
-    > {
+    public async build({
+        featureName,
+        configName,
+        publicPath,
+        mode = 'production',
+        singleFeature
+    }: IRunOptions = {}): Promise<webpack.Stats> {
         await this.loadEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
+        if (singleFeature && featureName) {
+            const foundFeature = features.get(featureName);
+            if (!foundFeature) {
+                throw new Error(`cannot find feature: ${featureName}`);
+            }
+            const featuresToInclude = new Set([...foundFeature.dependencies, featureName]);
+            for (const [foundFeatureName] of features) {
+                if (featuresToInclude.has(foundFeatureName)) {
+                    features.delete(foundFeatureName);
+                }
+            }
+        }
         const compiler = this.createCompiler({
             mode,
             features,
@@ -160,7 +177,8 @@ export class Application {
         const middleware = createConfigMiddleware(
             configurations,
             nodeEnvironmentManager.topology,
-            normilizedPublicPath
+            normilizedPublicPath,
+            this.basePath
         );
 
         let currentConfig = config;
@@ -280,7 +298,8 @@ export class Application {
         const configMiddleware = createConfigMiddleware(
             configurations,
             nodeEnvironmentManager.topology,
-            normilizedPublicPath
+            normilizedPublicPath,
+            this.basePath
         );
         app.use(`/config`, configMiddleware(config));
 
