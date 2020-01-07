@@ -203,7 +203,10 @@ export class Communication {
         await host.connected;
 
         return {
-            id: instanceId
+            id: instanceId,
+            onDisconnect: (cb: () => void) => {
+                host.subscribers.listeners.add('disconnect', cb);
+            }
         };
     }
 
