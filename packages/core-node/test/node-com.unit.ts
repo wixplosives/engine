@@ -169,9 +169,14 @@ describe('Node communication', () => {
         onDisconnect(spy);
         await disposables.dispose();
         // waiting for spy function to have called
-        await waitFor(() => {
-            expect(spy.callCount).to.be.greaterThan(0);
-        });
+        await waitFor(
+            () => {
+                expect(spy.callCount).to.be.greaterThan(0);
+            },
+            {
+                timeout: 2_000
+            }
+        );
 
         // checking spy was called only once
         expect(spy.callCount).to.eq(1);
