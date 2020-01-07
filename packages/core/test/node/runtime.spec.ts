@@ -193,6 +193,41 @@ describe('Feature', () => {
         }).to.throw('Feature can only have single setup for each environment.');
     });
 
+    it('Universal input apis should be available universaly', () => {
+        const env = new Environment('main', 'window', 'single');
+
+        const f0 = new Feature({
+            id: 'test',
+            api: {
+                slot1: Slot.withType<{ echo(x: string): string }>().defineEntity(Universal),
+                service1: Service.withType<{ echo(x: string): string }>().defineEntity(Universal),
+                service2: Service.withType<{ echo(x: string): string }>().defineEntity(env)
+            }
+        });
+        f0.setup(Universal, ({ slot1 }) => {
+            return {
+                service1: {
+                    echo(x: string) {
+                        return x + '-' + [...slot1].length;
+                    }
+                }
+            };
+        });
+        f0.setup(env, ({ service1, slot1 }) => {
+            return {
+                service2: {
+                    echo(x: string) {
+                        return service1.echo(x) + '-main2-' + [...slot1].length;
+                    }
+                }
+            };
+        });
+        const { slot1, service1, service2 } = runEngine({ entryFeature: [f0], envName: env.env }).get(f0).api;
+        expect([...slot1].length).to.eql(0);
+        expect(service1.echo('ECHO')).to.eql('ECHO-0');
+        expect(service2.echo('ECHO')).to.eql('ECHO-0-main2-0');
+    });
+
     describe('Feature Config', () => {
         it('support multiple top level partial configs', () => {
             const entryFeature = new Feature({

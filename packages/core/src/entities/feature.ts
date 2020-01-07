@@ -182,7 +182,7 @@ export class Feature<
         for (const setupHandler of setupHandlers) {
             const featureOutput = setupHandler(settingUpFeature, depsApis, environmentContext);
             for (const [key, entity] of apiEntries) {
-                if (featureOutput && entity.providedFrom === Universal) {
+                if (featureOutput && (featureOutput as any)[key] && entity.providedFrom === Universal) {
                     settingUpFeature[key] = (featureOutput as any)[key];
                 }
             }
