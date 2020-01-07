@@ -77,16 +77,7 @@ export class Application {
         await this.loadEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
         if (singleFeature && featureName) {
-            const foundFeature = features.get(featureName);
-            if (!foundFeature) {
-                throw new Error(`cannot find feature: ${featureName}`);
-            }
-            const featuresToInclude = new Set([...foundFeature.dependencies, featureName]);
-            for (const [foundFeatureName] of features) {
-                if (featuresToInclude.has(foundFeatureName)) {
-                    features.delete(foundFeatureName);
-                }
-            }
+            this.filterByFeatureName(features, featureName);
         }
         const compiler = this.createCompiler({
             mode,
@@ -127,7 +118,8 @@ export class Application {
         singleRun,
         config = [],
         publicPath = '/',
-        mode = 'development'
+        mode = 'development',
+        singleFeature
     }: IRunOptions = {}) {
         const normilizedPublicPath = normalizePublicPath(publicPath);
         await this.loadEngineConfig();
@@ -141,7 +133,9 @@ export class Application {
         disposables.add(() => close());
 
         const { features, configurations, packages } = this.analyzeFeatures();
-
+        if (singleFeature && featureName) {
+            this.filterByFeatureName(features, featureName);
+        }
         const compiler = this.createCompiler({
             mode,
             features,
@@ -399,6 +393,7 @@ export class Application {
             defaultFeatureName: featureName
         };
 
+        await fs.promises.ensureDirectory(this.outputPath);
         await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
     }
 
@@ -533,6 +528,19 @@ export class Application {
             app,
             socketServer
         };
+    }
+
+    private filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+        const foundFeature = features.get(featureName);
+        if (!foundFeature) {
+            throw new Error(`cannot find feature: ${featureName}`);
+        }
+        const featuresToInclude = new Set([...foundFeature.dependencies, featureName]);
+        for (const [foundFeatureName] of features) {
+            if (!featuresToInclude.has(foundFeatureName)) {
+                features.delete(foundFeatureName);
+            }
+        }
     }
 }
 
