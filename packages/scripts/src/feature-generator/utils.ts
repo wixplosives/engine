@@ -15,20 +15,32 @@ export function enrichContext(context: ITemplateContext): IEnrichedTemplateConte
 }
 
 export function readDirectoryContentsSync(fs: IFileSystem, path: string) {
-    const dir: IDirectoryContents = {};
-    _readDirectorySync(fs, path, dir);
-    return dir;
+    const directoryEntries = fs.readdirSync(path, { withFileTypes: true });
+
+    return directoryEntries.reduce((dir, entry) => {
+        const currentPath = fs.join(path, entry.name);
+
+        if (entry.isFile()) {
+            dir[entry.name] = fs.readFileSync(currentPath, { encoding: 'utf8' });
+        } else if (entry.isDirectory()) {
+            dir[entry.name] = readDirectoryContentsSync(fs, currentPath);
+        }
+
+        return dir;
+    }, {} as IDirectoryContents);
 }
 
 export function mapDirectory(sourceDir: IDirectoryContents, mapper: DirectoryContentMapper): IDirectoryContents {
     return Object.entries(sourceDir).reduce((mappedDir: IDirectoryContents, [name, content]) => {
         if (typeof content === 'string') {
             const { name: mappedName, content: mappedContent } = mapper(name, content);
-            return Object.assign(mappedDir, { [mappedName]: mappedContent });
+            mappedDir[mappedName] = mappedContent || '';
         } else {
             const { name: mappedName } = mapper(name);
-            return Object.assign(mappedDir, { [mappedName]: mapDirectory(content, mapper) });
+            mappedDir[mappedName] = mapDirectory(content, mapper);
         }
+
+        return mappedDir;
     }, {});
 }
 
@@ -44,17 +56,6 @@ export function writeDirectoryContentsSync(fs: IFileSystem, directoryContents: I
             writeDirectoryContentsSync(fs, subDirectory, currentPath);
         }
     });
-}
-
-function _readDirectorySync(fs: IFileSystem, path: string, dir: IDirectoryContents) {
-    for (const node of fs.readdirSync(path, { withFileTypes: true })) {
-        const currentPath = fs.join(path, node.name);
-        if (node.isFile()) {
-            dir[node.name] = fs.readFileSync(currentPath, { encoding: 'utf8' });
-        } else if (node.isDirectory()) {
-            _readDirectorySync(fs, currentPath, (dir[node.name] = {}));
-        }
-    }
 }
 
 function walkRecordValues<T, U>(obj: Record<string, T>, mappingMethod: (value: T) => U): Record<string, U> {

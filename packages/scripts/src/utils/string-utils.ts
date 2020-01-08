@@ -42,14 +42,14 @@ export const toCamelCase = (str: string) =>
 
 /**
  * @param obj The object to query
- * @param keys The path of the property to get.
+ * @param path The path of the property to get.
  * @returns The value at `path` of `object` id exists, `undefined` otherwise
  * @example
  * getIn({ a: { b: 'c' } }, ['a', 'b'])
  * // => c
  */
-function getIn(obj: Record<string, any>, keys: string[]): any {
-    return keys.reduce((value, key) => (value[key] !== undefined ? value[key] : undefined), obj);
+function getIn(obj: Record<string, any>, path: string[]): any {
+    return path.reduce((value, key) => (value[key] !== undefined ? value[key] : undefined), obj);
 }
 
 const templateReg = /\$\{(.+?)\}/g;

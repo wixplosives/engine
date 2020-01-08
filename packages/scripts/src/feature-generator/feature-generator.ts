@@ -6,15 +6,13 @@ import { compileTemplate } from '../utils';
 export const TEMPLATE_EXTENSION = '.tmpl';
 export const DEFAULT_FEATURE_DIR_NAME_TEMPLATE = '${featureName.dashCase}';
 
-export default function generateFeature(
-    fs: IFileSystem,
-    {
-        featureName,
-        targetPath,
-        templatesDirPath,
-        featureDirNameTemplate = DEFAULT_FEATURE_DIR_NAME_TEMPLATE
-    }: IGeneratorOptions
-) {
+export default function generateFeature({
+    fs,
+    featureName,
+    targetPath,
+    templatesDirPath,
+    featureDirNameTemplate = DEFAULT_FEATURE_DIR_NAME_TEMPLATE
+}: IGeneratorOptions) {
     const templatesDir = readDirectoryContentsSync(fs, templatesDirPath);
     const templateContext = enrichContext({ featureName });
     const featureMapper = createFeatureMapper(templateContext);
@@ -41,25 +39,34 @@ export const templateParser = (name: string, content: string | undefined, contex
 const createFeatureMapper = (context: IEnrichedTemplateContext) => (name: string, content?: string) =>
     templateParser(name, content, context);
 
-const PACKAGES_DIR = '/packages';
 /**
- * returns the path to `packages` folder in the project
+ * returns the path to features directory in the project
  * @param fs IFileSystem
  * @param path A general path in an project
- * @example
- * pathToPackagesPath('./proj/packages/some-package')
- * // => './proj/packages'
- * pathToPackagesPath('./proj')
- * // => './proj/packages'
+ * @param featuresDir The features directory name (optional, if not used, returns `path` normalized)
+ *
+ * @examples
+ * pathToFeaturesDirectory(fs, '/proj', 'packages');
+ * // => '/proj/packages'
+ *
+ * pathToFeaturesDirectory(fs, '/proj/packages/some-feature', 'packages');
+ * // => '/proj/packages'
+ *
+ * pathToFeaturesDirectory(fs, '/proj');
+ * // => '/proj'
  */
-export const pathToPackagesPath = (fs: IFileSystem, path: string) => {
-    const normalizedPackagesDir = fs.normalize(PACKAGES_DIR);
+export const pathToFeaturesDirectory = (fs: IFileSystem, path: string, featuresDir?: string) => {
+    if (!featuresDir) {
+        return fs.normalize(path);
+    }
+
+    const normalizedFeaturesDir = fs.normalize(featuresDir);
     const normalizedPath = fs.normalize(path);
 
-    const packagesIndex = normalizedPath.indexOf(normalizedPackagesDir);
-    if (packagesIndex !== -1) {
-        return normalizedPath.slice(0, packagesIndex + normalizedPackagesDir.length);
+    const featuresDirIndex = normalizedPath.indexOf(normalizedFeaturesDir);
+    if (featuresDirIndex !== -1) {
+        return normalizedPath.slice(0, featuresDirIndex + normalizedFeaturesDir.length);
     } else {
-        return fs.join(path, normalizedPackagesDir);
+        return fs.join(path, normalizedFeaturesDir);
     }
 };

@@ -21,7 +21,7 @@ import { NodeEnvironmentsManager } from './node-environments-manager';
 import { createIPC } from './process-communication';
 import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition, IExportedConfigDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
-import generateFeature, { pathToPackagesPath } from './feature-generator';
+import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 
 const rimraf = promisify(rimrafCb);
 const { basename, dirname, extname, join } = fs;
@@ -51,6 +51,7 @@ export interface IBuildManifest {
 export interface ICreateOptions {
     featureName?: string;
     templatesDir?: string;
+    featuresDir?: string;
 }
 
 export interface IApplicationOptions {
@@ -75,7 +76,7 @@ export class Application {
     public async build({ featureName, configName, publicPath, mode = 'production' }: IRunOptions = {}): Promise<
         webpack.Stats
     > {
-        await this.loadEngineConfig();
+        await this.loadRequiredModulesFromEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
         const compiler = this.createCompiler({
             mode,
@@ -119,7 +120,7 @@ export class Application {
         mode = 'development'
     }: IRunOptions = {}) {
         const normilizedPublicPath = normalizePublicPath(publicPath);
-        await this.loadEngineConfig();
+        await this.loadRequiredModulesFromEngineConfig();
 
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
@@ -317,7 +318,7 @@ export class Application {
             throw new Error('"remote" command can only be used in a forked process');
         }
 
-        await this.loadEngineConfig();
+        await this.loadRequiredModulesFromEngineConfig();
         const { socketServer, close, port } = await this.launchHttpServer({
             httpServerPort: preferredPort
         });
@@ -326,28 +327,53 @@ export class Application {
         parentProcess.postMessage({ id: 'initiated' });
     }
 
-    public create({ featureName, templatesDir }: ICreateOptions = {}) {
+    public async create({ featureName, templatesDir, featuresDir }: ICreateOptions = {}) {
         if (!featureName) {
             throw new Error('Feature name is mandatory');
         }
 
-        generateFeature(fs, {
+        const config = await this.getEngineConfig();
+
+        const targetPath = pathToFeaturesDirectory(fs, this.basePath, config?.featuresDirectory || featuresDir);
+        const featureDirNameTemplate = config?.featureFolderNameTemplate;
+        const userTemplatesDirPath = config?.featureTemplatesFolder || templatesDir;
+        const templatesDirPath = userTemplatesDirPath
+            ? fs.join(this.basePath, userTemplatesDirPath)
+            : fs.join(__dirname, '../templates');
+
+        generateFeature({
+            fs,
             featureName,
-            targetPath: pathToPackagesPath(fs, this.basePath),
-            templatesDirPath: templatesDir || fs.join(__dirname, '../templates')
+            targetPath,
+            templatesDirPath,
+            featureDirNameTemplate
         });
     }
 
-    private async loadEngineConfig() {
+    private async getEngineConfig() {
         const engineConfigFilePath = await fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
         if (engineConfigFilePath) {
             try {
-                const { require: requiredModules = [] } = (await import(engineConfigFilePath)) as EngineConfig;
-                for (const requiredModule of requiredModules) {
-                    await import(requiredModule);
-                }
+                return (await import(engineConfigFilePath)) as EngineConfig;
             } catch (ex) {
                 throw new Error(`failed evaluating config file: ${engineConfigFilePath}`);
+            }
+        }
+        return null;
+    }
+
+    private async loadRequiredModulesFromEngineConfig() {
+        const config = await this.getEngineConfig();
+
+        if (config) {
+            const { require: requiredModules = [] } = config;
+
+            for (const requiredModule of requiredModules) {
+                try {
+                    await import(requiredModule);
+                } catch (ex) {
+                    throw new Error(`failed requiring: ${requiredModule}`);
+                }
             }
         }
     }

@@ -1,4 +1,7 @@
+import { IFileSystem } from '@file-services/types';
+
 export interface IGeneratorOptions {
+    fs: IFileSystem;
     featureName: string;
     targetPath: string;
     templatesDirPath: string;

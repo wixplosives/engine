@@ -7,7 +7,14 @@ Tooling for building and running of applications written using the `@wixc3/engin
 Generates a feature folder with all basic imports and declarations.
 
 -   `feature-name` should be dash-separated
--   optional `templatesDir` argument for having customized templates/folder structure.
+-   optional `featuresDir` argument for specifying the path to the features directory in the project .
+-   optional `templatesDir` argument for having customized templates/folder structure
+
+## `engine.config.js` options
+
+-   `featuresDirectory` - same as `featuresDir` in CLI options
+-   `featureTemplatesFolder` - same as `templatesDir` in CLI options
+-   `featureFolderNameTemplate` - for overriding default feature folder name template (see [Templating options](#templating-options))
 
 ### Templating options
 

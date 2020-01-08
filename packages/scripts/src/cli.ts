@@ -188,12 +188,13 @@ program
 program
     .command('create [featureName]')
     .option('--path <path>')
+    .option('--featuresDir <featuresDir>', 'path to the features directory in the project (optional)')
     .option('--templatesDir <templatesDir>', 'path to a customized templates folder (optional)')
-    .action(async (featureName, { path = process.cwd(), templatesDir }) => {
+    .action(async (featureName, { path = process.cwd(), templatesDir, featuresDir }) => {
         try {
             const basePath = resolve(path);
             const app = new Application({ basePath });
-            app.create({ featureName, templatesDir });
+            await app.create({ featureName, templatesDir, featuresDir });
         } catch (e) {
             printErrorAndExit(e);
         }

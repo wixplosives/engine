@@ -2,11 +2,11 @@ import { createMemoryFs } from '@file-services/memory';
 import fs from '@file-services/node';
 import { expect } from 'chai';
 import generateFeature, {
-    pathToPackagesPath,
     readDirectoryContentsSync,
     writeDirectoryContentsSync,
     mapDirectory,
-    enrichContext
+    enrichContext,
+    pathToFeaturesDirectory
 } from '../src/feature-generator';
 import { expectedDirContents, templatesDirContents, FEATURE_NAME } from './mocks/feature-generator.mocks';
 import { compileTemplate } from '../src/utils';
@@ -52,7 +52,8 @@ describe('Feature Generator', () => {
             templates: templatesDirContents
         });
 
-        generateFeature(memoryFs, {
+        generateFeature({
+            fs: memoryFs,
             featureName: FEATURE_NAME,
             targetPath: '/packages',
             templatesDirPath: '/templates'
@@ -63,15 +64,21 @@ describe('Feature Generator', () => {
         expect(featureDir).to.eql(expectedDirContents);
     });
 
-    describe('pathToPackagesPath()', () => {
+    describe('pathToFeaturesDirectory()', () => {
+        const featuresDir = './packages';
         const expectedPath = fs.normalize('/proj/packages');
 
-        it('Goes up in path to packages folder', () => {
-            expect(pathToPackagesPath(fs, '/proj/packages/some-package')).to.equal(expectedPath);
+        it('Goes up in path to features folder', () => {
+            expect(pathToFeaturesDirectory(fs, '/proj/packages/some-package', featuresDir)).to.equal(expectedPath);
         });
 
-        it('Adds `packages` to the path if path has no such parent directory', () => {
-            expect(pathToPackagesPath(fs, '/proj')).to.equal(expectedPath);
+        it('Adds `featuresDir` to the path if path has no such parent directory', () => {
+            expect(pathToFeaturesDirectory(fs, '/proj', featuresDir)).to.equal(expectedPath);
+        });
+
+        it.only('Returns normalized path if features directory name is not specified', () => {
+            const expectedPath = fs.normalize('/proj');
+            expect(pathToFeaturesDirectory(fs, '/proj')).to.equal(expectedPath);
         });
     });
 
