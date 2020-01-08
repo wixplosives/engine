@@ -29,6 +29,7 @@ program
     .option('--inspect')
     .option('-p ,--port <port>')
     .option('--singleRun', 'when enabled, webpack will not watch files', false)
+    .option('--singleFeature', 'build only the feature set by --feature', false)
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
     .allowUnknownOption(true)
@@ -38,6 +39,7 @@ program
             config: configName,
             port: httpServerPort,
             singleRun,
+            singleFeature,
             open: openBrowser = 'true',
             require: pathsToRequire,
             publicPath = defaultPublicPath,
@@ -53,7 +55,8 @@ program
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect: cmd.inspect ? true : false,
                 port: httpServerPort ? Number(httpServerPort) : undefined,
-                singleRun: !!singleRun,
+                singleRun,
+                singleFeature,
                 publicPath,
                 mode
             });
@@ -100,6 +103,7 @@ program
     .option('--mode <mode>', 'mode passed to webpack', 'production')
     .option('--outDir <outDir>')
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
+    .option('--singleFeature', 'build only the feature set by --feature', true)
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -108,14 +112,15 @@ program
             outDir = 'dist',
             require: pathsToRequire,
             publicPath,
-            mode
+            mode,
+            singleFeature
         } = cmd;
         try {
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const outputPath = resolve(outDir);
             const app = new Application({ basePath, outputPath });
-            const stats = await app.build({ featureName, configName, publicPath, mode });
+            const stats = await app.build({ featureName, configName, publicPath, mode, singleFeature });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
             printErrorAndExit(e);
