@@ -76,7 +76,7 @@ describe('Feature Generator', () => {
             expect(pathToFeaturesDirectory(fs, '/proj', featuresDir)).to.equal(expectedPath);
         });
 
-        it.only('Returns normalized path if features directory name is not specified', () => {
+        it('Returns normalized path if features directory name is not specified', () => {
             const expectedPath = fs.normalize('/proj');
             expect(pathToFeaturesDirectory(fs, '/proj')).to.equal(expectedPath);
         });
