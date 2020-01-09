@@ -81,7 +81,7 @@ export class Application {
         mode = 'production',
         singleFeature
     }: IRunOptions = {}): Promise<webpack.Stats> {
-        await this.loadRequiredModulesFromEngineConfig()
+        await this.loadRequiredModulesFromEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
@@ -309,9 +309,6 @@ export class Application {
                 featureName,
                 configName
             });
-
-            console.log(`Listening:`);
-            console.log(`http://localhost:${port}${normilizedPublicPath}main.html`);
         }
 
         return {
