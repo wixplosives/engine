@@ -35,6 +35,7 @@ export interface IFeatureTarget {
 
 export interface IRunOptions extends IFeatureTarget {
     singleRun?: boolean;
+    singleFeature?: boolean;
     inspect?: boolean;
     port?: number;
     publicPath?: string;
@@ -66,11 +67,18 @@ export class Application {
         await rimraf(fs.join(this.basePath, 'npm'));
     }
 
-    public async build({ featureName, configName, publicPath, mode = 'production' }: IRunOptions = {}): Promise<
-        webpack.Stats
-    > {
+    public async build({
+        featureName,
+        configName,
+        publicPath,
+        mode = 'production',
+        singleFeature
+    }: IRunOptions = {}): Promise<webpack.Stats> {
         await this.loadEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
+        if (singleFeature && featureName) {
+            this.filterByFeatureName(features, featureName);
+        }
         const compiler = this.createCompiler({
             mode,
             features,
@@ -110,7 +118,8 @@ export class Application {
         singleRun,
         config = [],
         publicPath = '/',
-        mode = 'development'
+        mode = 'development',
+        singleFeature
     }: IRunOptions = {}) {
         const normilizedPublicPath = normalizePublicPath(publicPath);
         await this.loadEngineConfig();
@@ -124,7 +133,9 @@ export class Application {
         disposables.add(() => close());
 
         const { features, configurations, packages } = this.analyzeFeatures();
-
+        if (singleFeature && featureName) {
+            this.filterByFeatureName(features, featureName);
+        }
         const compiler = this.createCompiler({
             mode,
             features,
@@ -160,7 +171,8 @@ export class Application {
         const middleware = createConfigMiddleware(
             configurations,
             nodeEnvironmentManager.topology,
-            normilizedPublicPath
+            normilizedPublicPath,
+            this.basePath
         );
 
         let currentConfig = config;
@@ -280,7 +292,8 @@ export class Application {
         const configMiddleware = createConfigMiddleware(
             configurations,
             nodeEnvironmentManager.topology,
-            normilizedPublicPath
+            normilizedPublicPath,
+            this.basePath
         );
         app.use(`/config`, configMiddleware(config));
 
@@ -380,6 +393,7 @@ export class Application {
             defaultFeatureName: featureName
         };
 
+        await fs.promises.ensureDirectory(this.outputPath);
         await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
     }
 
@@ -514,6 +528,19 @@ export class Application {
             app,
             socketServer
         };
+    }
+
+    private filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+        const foundFeature = features.get(featureName);
+        if (!foundFeature) {
+            throw new Error(`cannot find feature: ${featureName}`);
+        }
+        const featuresToInclude = new Set([...foundFeature.dependencies, featureName]);
+        for (const [foundFeatureName] of features) {
+            if (!featuresToInclude.has(foundFeatureName)) {
+                features.delete(foundFeatureName);
+            }
+        }
     }
 }
 

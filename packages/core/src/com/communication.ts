@@ -108,7 +108,9 @@ export class Communication {
         }
     }
 
-    public async spawnOrConnect(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
+    public async spawnOrConnect(
+        endPoint: SingleEndpointContextualEnvironment<string, Environment[]>
+    ): Promise<{ id: string; onDisconnect?: (cb: () => void) => void }> {
         const runtimeEnvironmentName = this.resolvedContexts[endPoint.env];
 
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
