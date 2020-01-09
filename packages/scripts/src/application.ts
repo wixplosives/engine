@@ -279,13 +279,7 @@ export class Application {
         });
         const config: TopLevelConfig = [];
         disposables.add(() => close());
-        const topLevelConfigs = configName ? configurations.get(configName) : undefined;
-        if (topLevelConfigs) {
-            const providedConfigs = Array.from(topLevelConfigs.values()).map(({ config }) => config);
-            for (const topLevelConfig of providedConfigs) {
-                config.push(...topLevelConfig);
-            }
-        }
+
         config.push(...userConfig);
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             features: new Map(features),
@@ -403,7 +397,8 @@ export class Application {
                     for (const possibleConfigFile of featureConfigsEntities) {
                         const fileExtention = extname(possibleConfigFile.name);
                         if (possibleConfigFile.isFile() && fileExtention === '.json') {
-                            const configName = basename(possibleConfigFile.name, fileExtention);
+                            const configFileName = basename(possibleConfigFile.name, fileExtention);
+                            const [configName] = configFileName.split('.');
 
                             const config = (await fs.promises.readJsonFile(
                                 join(featureConfigsDirectory, possibleConfigFile.name)
@@ -441,7 +436,9 @@ export class Application {
     private async writeConfigFiles(configurations: SetMultiMap<string, IConfigDefinition>) {
         const configsFolderPath = join(this.outputPath, 'configs');
         for (const [currentConfigName, config] of configurations) {
-            const configFilePath = join(configsFolderPath, `${currentConfigName}.json`);
+            const configFileName = `${currentConfigName}${config.envName ? `.${config.envName}` : ''}.json`;
+
+            const configFilePath = join(configsFolderPath, configFileName);
             await fs.promises.ensureDirectory(dirname(configFilePath));
             const configFileContent: IExportedConfigDefinition = {
                 ...config,
