@@ -83,40 +83,32 @@ describe('Feature Generator', () => {
     });
 
     describe('enrichContext()', () => {
+        const featureName = 'Bla-Bla';
+        const enrichedContext = enrichContext({ featureName });
+        const templateCompiler = templateCompilerProvider(enrichedContext);
+
         it('keeps original context', () => {
-            const featureName = 'Bla-Bla';
             const template = '${featureName}';
-            const enrichedContext = enrichContext({ featureName });
-            const transformed = templateCompilerProvider(enrichedContext)(template);
-            const expected = 'Bla-Bla';
-            expect(transformed).to.equal(expected);
+            const compiled = templateCompiler(template);
+            expect(compiled).to.equal('Bla-Bla');
         });
 
         it('adds camelCase option', () => {
-            const featureName = 'Bla-Bla';
             const template = '${featureName.camelCase}';
-            const enrichedContext = enrichContext({ featureName });
-            const transformed = templateCompilerProvider(enrichedContext)(template);
-            const expected = 'blaBla';
-            expect(transformed).to.equal(expected);
+            const compiled = templateCompiler(template);
+            expect(compiled).to.equal('blaBla');
         });
 
         it('adds dashCase option', () => {
-            const featureName = 'Bla-Bla';
             const template = '${featureName.dashCase}';
-            const enrichedContext = enrichContext({ featureName });
-            const transformed = templateCompilerProvider(enrichedContext)(template);
-            const expected = 'bla-bla';
-            expect(transformed).to.equal(expected);
+            const compiled = templateCompiler(template);
+            expect(compiled).to.equal('bla-bla');
         });
 
         it('adds pascalCase option', () => {
-            const featureName = 'Bla-Bla';
             const template = '${featureName.pascalCase}';
-            const enrichedContext = enrichContext({ featureName });
-            const transformed = templateCompilerProvider(enrichedContext)(template);
-            const expected = 'BlaBla';
-            expect(transformed).to.equal(expected);
+            const compiled = templateCompiler(template);
+            expect(compiled).to.equal('BlaBla');
         });
     });
 });
