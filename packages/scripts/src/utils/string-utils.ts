@@ -49,19 +49,19 @@ export const toCamelCase = (str: string) =>
  * // => c
  */
 function getIn(obj: Record<string, any>, path: string[]): any {
-    return path.reduce((value, key) => (value[key] !== undefined ? value[key] : undefined), obj);
+    return path.reduce((value, key) => value?.[key], obj);
 }
 
 const templateReg = /\$\{(.+?)\}/g;
 /**
- * @param template A template to compile
- * @returns A compiled template function which accepts a context and return the evaluated template
+ * @param context A context for the compiler
+ * @returns A template compiler function which accepts a template and compile it with `context`
  * @example
- * compileTemplate('${greetings} ${person.name}!')({ greetings: 'Hello', person: { name: 'Elad' } })
+ * templateCompilerProvider({ greetings: 'Hello', person: { name: 'Elad' } })('${greetings} ${person.name}!')
  * // => Hello Elad!
  */
-export function compileTemplate(template: string) {
-    return function compiledTemplate(context: { [key: string]: any }) {
+export function templateCompilerProvider(context: Record<string, any>) {
+    return function templateCompiler(template: string) {
         return template.replace(templateReg, (match, templateExpression: string) => {
             const pathInContext = templateExpression.trim().split('.');
             const valueInContext = getIn(context, pathInContext);

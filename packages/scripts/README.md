@@ -10,7 +10,7 @@ Generates a feature folder with all basic imports and declarations.
 -   optional `featuresDir` argument for specifying the path to the features directory in the project .
 -   optional `templatesDir` argument for having customized templates/folder structure
 
-## `engine.config.js` options
+### `engine.config.js` options
 
 -   `featuresDirectory` - same as `featuresDir` in CLI options
 -   `featureTemplatesFolder` - same as `templatesDir` in CLI options

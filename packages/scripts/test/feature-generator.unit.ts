@@ -9,7 +9,7 @@ import generateFeature, {
     pathToFeaturesDirectory
 } from '../src/feature-generator';
 import { expectedDirContents, templatesDirContents, FEATURE_NAME } from './mocks/feature-generator.mocks';
-import { compileTemplate } from '../src/utils';
+import { templateCompilerProvider } from '../src/utils';
 
 describe('Feature Generator', () => {
     it('reads directory contents', () => {
@@ -87,7 +87,7 @@ describe('Feature Generator', () => {
             const featureName = 'Bla-Bla';
             const template = '${featureName}';
             const enrichedContext = enrichContext({ featureName });
-            const transformed = compileTemplate(template)(enrichedContext);
+            const transformed = templateCompilerProvider(enrichedContext)(template);
             const expected = 'Bla-Bla';
             expect(transformed).to.equal(expected);
         });
@@ -96,7 +96,7 @@ describe('Feature Generator', () => {
             const featureName = 'Bla-Bla';
             const template = '${featureName.camelCase}';
             const enrichedContext = enrichContext({ featureName });
-            const transformed = compileTemplate(template)(enrichedContext);
+            const transformed = templateCompilerProvider(enrichedContext)(template);
             const expected = 'blaBla';
             expect(transformed).to.equal(expected);
         });
@@ -105,7 +105,7 @@ describe('Feature Generator', () => {
             const featureName = 'Bla-Bla';
             const template = '${featureName.dashCase}';
             const enrichedContext = enrichContext({ featureName });
-            const transformed = compileTemplate(template)(enrichedContext);
+            const transformed = templateCompilerProvider(enrichedContext)(template);
             const expected = 'bla-bla';
             expect(transformed).to.equal(expected);
         });
@@ -114,7 +114,7 @@ describe('Feature Generator', () => {
             const featureName = 'Bla-Bla';
             const template = '${featureName.pascalCase}';
             const enrichedContext = enrichContext({ featureName });
-            const transformed = compileTemplate(template)(enrichedContext);
+            const transformed = templateCompilerProvider(enrichedContext)(template);
             const expected = 'BlaBla';
             expect(transformed).to.equal(expected);
         });
