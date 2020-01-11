@@ -132,7 +132,7 @@ export class Application {
         await this.loadRequiredModulesFromEngineConfig();
 
         const disposables = new Set<() => unknown>();
-        const { port, app, close, socketServer } = await this.launchHttpServer({
+        const { port, app, close, socketServer, scopedApp } = await this.launchHttpServer({
             httpServerPort,
             featureName,
             configName,
@@ -188,7 +188,7 @@ export class Application {
         const middlewareConfigProxy: express.RequestHandler = (req, res, next) =>
             middleware(currentConfig)(req, res, next);
 
-        app.use('/config', middlewareConfigProxy);
+        scopedApp.use('/config', middlewareConfigProxy);
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
@@ -196,7 +196,7 @@ export class Application {
                 logLevel: 'silent'
             });
             disposables.add(() => new Promise(res => devMiddleware.close(res)));
-            app.use(devMiddleware);
+            scopedApp.use(devMiddleware);
         }
 
         await new Promise(resolve => {
@@ -221,9 +221,9 @@ export class Application {
             }
         }
 
-        app.use(nodeEnvironmentManager.middleware());
+        scopedApp.use(nodeEnvironmentManager.middleware());
 
-        app.get('/engine-state', (_req, res) => {
+        scopedApp.get('/engine-state', (_req, res) => {
             res.json({
                 result: 'success',
                 data: {
@@ -273,7 +273,7 @@ export class Application {
         const normilizedPublicPath = normalizePublicPath(publicPath);
         const configurations = await this.readConfigs();
 
-        const { port, close, socketServer, app } = await this.launchHttpServer({
+        const { port, close, socketServer, app, scopedApp } = await this.launchHttpServer({
             httpServerPort,
             featureName,
             configName,
@@ -298,7 +298,7 @@ export class Application {
             normilizedPublicPath,
             this.basePath
         );
-        app.use(`/config`, configMiddleware(config));
+        scopedApp.use(`/config`, configMiddleware(config));
 
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
@@ -573,7 +573,8 @@ export class Application {
             },
             port,
             app,
-            socketServer
+            socketServer,
+            scopedApp: router
         };
     }
 
