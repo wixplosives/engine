@@ -1,0 +1,13 @@
+import { Feature, Config } from '@wixc3/engine-core';
+
+export interface ${featureName.pascalCase}Options {
+    key: string;
+}
+
+export default new Feature({
+    id: '${featureName.camelCase}',
+    dependencies: [],
+    api: {
+        ${featureName.camelCase}Options: new Config<${featureName.pascalCase}Options>({ key: 'default value' })
+    }
+});

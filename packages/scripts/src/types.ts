@@ -213,4 +213,7 @@ export interface IFeatureDefinition extends IFeatureModule {
 
 export interface EngineConfig {
     require?: string[];
+    featuresDirectory?: string;
+    featureTemplatesFolder?: string;
+    featureFolderNameTemplate?: string;
 }

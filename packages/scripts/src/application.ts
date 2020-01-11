@@ -21,6 +21,7 @@ import { NodeEnvironmentsManager } from './node-environments-manager';
 import { createIPC } from './process-communication';
 import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition, IExportedConfigDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
+import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 
 const rimraf = promisify(rimrafCb);
 const { basename, dirname, extname, join } = fs;
@@ -46,6 +47,12 @@ export interface IBuildManifest {
     features: Array<[string, IFeatureDefinition]>;
     defaultFeatureName?: string;
     defaultConfigName?: string;
+}
+
+export interface ICreateOptions {
+    featureName?: string;
+    templatesDir?: string;
+    featuresDir?: string;
 }
 
 export interface IApplicationOptions {
@@ -74,19 +81,10 @@ export class Application {
         mode = 'production',
         singleFeature
     }: IRunOptions = {}): Promise<webpack.Stats> {
-        await this.loadEngineConfig();
+        await this.loadRequiredModulesFromEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
         if (singleFeature && featureName) {
-            const foundFeature = features.get(featureName);
-            if (!foundFeature) {
-                throw new Error(`cannot find feature: ${featureName}`);
-            }
-            const featuresToInclude = new Set([...foundFeature.dependencies, featureName]);
-            for (const [foundFeatureName] of features) {
-                if (featuresToInclude.has(foundFeatureName)) {
-                    features.delete(foundFeatureName);
-                }
-            }
+            this.filterByFeatureName(features, featureName);
         }
         const compiler = this.createCompiler({
             mode,
@@ -127,10 +125,11 @@ export class Application {
         singleRun,
         config = [],
         publicPath = '/',
-        mode = 'development'
+        mode = 'development',
+        singleFeature
     }: IRunOptions = {}) {
         const normilizedPublicPath = normalizePublicPath(publicPath);
-        await this.loadEngineConfig();
+        await this.loadRequiredModulesFromEngineConfig();
 
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
@@ -141,7 +140,9 @@ export class Application {
         disposables.add(() => close());
 
         const { features, configurations, packages } = this.analyzeFeatures();
-
+        if (singleFeature && featureName) {
+            this.filterByFeatureName(features, featureName);
+        }
         const compiler = this.createCompiler({
             mode,
             features,
@@ -278,13 +279,7 @@ export class Application {
         });
         const config: TopLevelConfig = [];
         disposables.add(() => close());
-        const topLevelConfigs = configName ? configurations.get(configName) : undefined;
-        if (topLevelConfigs) {
-            const providedConfigs = Array.from(topLevelConfigs.values()).map(({ config }) => config);
-            for (const topLevelConfig of providedConfigs) {
-                config.push(...topLevelConfig);
-            }
-        }
+
         config.push(...userConfig);
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             features: new Map(features),
@@ -308,9 +303,6 @@ export class Application {
                 featureName,
                 configName
             });
-
-            console.log(`Listening:`);
-            console.log(`http://localhost:${port}${normilizedPublicPath}main.html`);
         }
 
         return {
@@ -330,7 +322,7 @@ export class Application {
             throw new Error('"remote" command can only be used in a forked process');
         }
 
-        await this.loadEngineConfig();
+        await this.loadRequiredModulesFromEngineConfig();
         const { socketServer, close, port } = await this.launchHttpServer({
             httpServerPort: preferredPort
         });
@@ -339,16 +331,53 @@ export class Application {
         parentProcess.postMessage({ id: 'initiated' });
     }
 
-    private async loadEngineConfig() {
+    public async create({ featureName, templatesDir, featuresDir }: ICreateOptions = {}) {
+        if (!featureName) {
+            throw new Error('Feature name is mandatory');
+        }
+
+        const config = await this.getEngineConfig();
+
+        const targetPath = pathToFeaturesDirectory(fs, this.basePath, config?.featuresDirectory || featuresDir);
+        const featureDirNameTemplate = config?.featureFolderNameTemplate;
+        const userTemplatesDirPath = config?.featureTemplatesFolder || templatesDir;
+        const templatesDirPath = userTemplatesDirPath
+            ? fs.join(this.basePath, userTemplatesDirPath)
+            : fs.join(__dirname, '../templates');
+
+        generateFeature({
+            fs,
+            featureName,
+            targetPath,
+            templatesDirPath,
+            featureDirNameTemplate
+        });
+    }
+
+    private async getEngineConfig() {
         const engineConfigFilePath = await fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
         if (engineConfigFilePath) {
             try {
-                const { require: requiredModules = [] } = (await import(engineConfigFilePath)) as EngineConfig;
-                for (const requiredModule of requiredModules) {
-                    await import(requiredModule);
-                }
+                return (await import(engineConfigFilePath)) as EngineConfig;
             } catch (ex) {
                 throw new Error(`failed evaluating config file: ${engineConfigFilePath}`);
+            }
+        }
+        return null;
+    }
+
+    private async loadRequiredModulesFromEngineConfig() {
+        const config = await this.getEngineConfig();
+
+        if (config) {
+            const { require: requiredModules = [] } = config;
+
+            for (const requiredModule of requiredModules) {
+                try {
+                    await import(requiredModule);
+                } catch (ex) {
+                    throw new Error(`failed requiring: ${requiredModule}`);
+                }
             }
         }
     }
@@ -368,7 +397,8 @@ export class Application {
                     for (const possibleConfigFile of featureConfigsEntities) {
                         const fileExtention = extname(possibleConfigFile.name);
                         if (possibleConfigFile.isFile() && fileExtention === '.json') {
-                            const configName = basename(possibleConfigFile.name, fileExtention);
+                            const configFileName = basename(possibleConfigFile.name, fileExtention);
+                            const [configName] = configFileName.split('.');
 
                             const config = (await fs.promises.readJsonFile(
                                 join(featureConfigsDirectory, possibleConfigFile.name)
@@ -399,13 +429,16 @@ export class Application {
             defaultFeatureName: featureName
         };
 
+        await fs.promises.ensureDirectory(this.outputPath);
         await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
     }
 
     private async writeConfigFiles(configurations: SetMultiMap<string, IConfigDefinition>) {
         const configsFolderPath = join(this.outputPath, 'configs');
         for (const [currentConfigName, config] of configurations) {
-            const configFilePath = join(configsFolderPath, `${currentConfigName}.json`);
+            const configFileName = `${currentConfigName}${config.envName ? `.${config.envName}` : ''}.json`;
+
+            const configFilePath = join(configsFolderPath, configFileName);
             await fs.promises.ensureDirectory(dirname(configFilePath));
             const configFileContent: IExportedConfigDefinition = {
                 ...config,
@@ -533,6 +566,19 @@ export class Application {
             app,
             socketServer
         };
+    }
+
+    private filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+        const foundFeature = features.get(featureName);
+        if (!foundFeature) {
+            throw new Error(`cannot find feature: ${featureName}`);
+        }
+        const featuresToInclude = new Set([...foundFeature.dependencies, featureName]);
+        for (const [foundFeatureName] of features) {
+            if (!featuresToInclude.has(foundFeatureName)) {
+                features.delete(foundFeatureName);
+            }
+        }
     }
 }
 
