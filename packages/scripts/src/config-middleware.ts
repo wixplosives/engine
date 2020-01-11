@@ -2,11 +2,11 @@ import { SetMultiMap } from '@file-services/utils';
 import { COM, TopLevelConfig } from '@wixc3/engine-core';
 import express from 'express';
 import importFresh from 'import-fresh';
-import { IConfigDefinition } from './types';
+import { IConfigDefinition, IExportedConfigDefinition } from './types';
 import { resolveFrom } from './utils';
 
 export function createConfigMiddleware(
-    configurations: SetMultiMap<string, IConfigDefinition>,
+    configurations: SetMultiMap<string, IConfigDefinition | IExportedConfigDefinition>,
     topology: Map<string, Record<string, string>>,
     publicPath: string,
     basePath: string
@@ -19,8 +19,12 @@ export function createConfigMiddleware(
             const configDefinitions = configurations.get(requestedConfig);
 
             if (configDefinitions) {
-                for (const { filePath, envName } of configDefinitions) {
-                    if (envName === reqEnv || !envName) {
+                for (const configDefinition of configDefinitions) {
+                    const { config: exportedConfig, filePath, envName } = configDefinition as IExportedConfigDefinition;
+                    // dont evaluate configs on bundled version
+                    if (exportedConfig) {
+                        config.push(...exportedConfig);
+                    } else if (envName === reqEnv || !envName) {
                         const resolvedPath = resolveFrom(basePath, filePath);
                         if (resolvedPath) {
                             try {

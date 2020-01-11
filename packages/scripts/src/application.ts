@@ -132,10 +132,11 @@ export class Application {
         await this.loadRequiredModulesFromEngineConfig();
 
         const disposables = new Set<() => unknown>();
-        const { port, app, close, socketServer } = await this.launchHttpServer({
+        const { port, app, close, socketServer, scopedApp } = await this.launchHttpServer({
             httpServerPort,
             featureName,
-            configName
+            configName,
+            publicPath: normilizedPublicPath
         });
         disposables.add(() => close());
 
@@ -187,7 +188,7 @@ export class Application {
         const middlewareConfigProxy: express.RequestHandler = (req, res, next) =>
             middleware(currentConfig)(req, res, next);
 
-        app.use('/config', middlewareConfigProxy);
+        scopedApp.use('/config', middlewareConfigProxy);
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
@@ -195,7 +196,7 @@ export class Application {
                 logLevel: 'silent'
             });
             disposables.add(() => new Promise(res => devMiddleware.close(res)));
-            app.use(devMiddleware);
+            scopedApp.use(devMiddleware);
         }
 
         await new Promise(resolve => {
@@ -220,9 +221,9 @@ export class Application {
             }
         }
 
-        app.use(nodeEnvironmentManager.middleware());
+        scopedApp.use(nodeEnvironmentManager.middleware());
 
-        app.get('/engine-state', (_req, res) => {
+        scopedApp.get('/engine-state', (_req, res) => {
             res.json({
                 result: 'success',
                 data: {
@@ -272,10 +273,11 @@ export class Application {
         const normilizedPublicPath = normalizePublicPath(publicPath);
         const configurations = await this.readConfigs();
 
-        const { port, close, socketServer, app } = await this.launchHttpServer({
+        const { port, close, socketServer, app, scopedApp } = await this.launchHttpServer({
             httpServerPort,
             featureName,
-            configName
+            configName,
+            publicPath: normilizedPublicPath
         });
         const config: TopLevelConfig = [];
         disposables.add(() => close());
@@ -296,7 +298,7 @@ export class Application {
             normilizedPublicPath,
             this.basePath
         );
-        app.use(`/config`, configMiddleware(config));
+        scopedApp.use(`/config`, configMiddleware(config));
 
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
@@ -324,7 +326,8 @@ export class Application {
 
         await this.loadRequiredModulesFromEngineConfig();
         const { socketServer, close, port } = await this.launchHttpServer({
-            httpServerPort: preferredPort
+            httpServerPort: preferredPort,
+            publicPath: '/'
         });
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
@@ -526,13 +529,17 @@ export class Application {
     private async launchHttpServer({
         httpServerPort = DEFAULT_PORT,
         featureName,
-        configName
+        configName,
+        publicPath
     }: {
         httpServerPort?: number;
         featureName?: string;
         configName?: string;
+        publicPath: string;
     }) {
         const app = express();
+        const router = express.Router();
+
         const openSockets = new Set<Socket>();
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
         httpServer.on('connection', socket => {
@@ -540,10 +547,10 @@ export class Application {
             socket.once('close', () => openSockets.delete(socket));
         });
 
-        app.use('/', express.static(this.outputPath));
+        router.use('/', express.static(this.outputPath));
 
-        app.use('/favicon.ico', noContentHandler);
-        app.use('/defaults', (_, res) => {
+        router.use('/favicon.ico', noContentHandler);
+        router.use('/defaults', (_, res) => {
             res.json({
                 featureName,
                 configName
@@ -551,6 +558,8 @@ export class Application {
         });
 
         const socketServer = io(httpServer);
+
+        app.use(publicPath, router);
 
         return {
             close: async () => {
@@ -564,7 +573,8 @@ export class Application {
             },
             port,
             app,
-            socketServer
+            socketServer,
+            scopedApp: router
         };
     }
 
