@@ -135,7 +135,8 @@ export class Application {
         const { port, app, close, socketServer } = await this.launchHttpServer({
             httpServerPort,
             featureName,
-            configName
+            configName,
+            publicPath: normilizedPublicPath
         });
         disposables.add(() => close());
 
@@ -275,7 +276,8 @@ export class Application {
         const { port, close, socketServer, app } = await this.launchHttpServer({
             httpServerPort,
             featureName,
-            configName
+            configName,
+            publicPath: normilizedPublicPath
         });
         const config: TopLevelConfig = [];
         disposables.add(() => close());
@@ -324,7 +326,8 @@ export class Application {
 
         await this.loadRequiredModulesFromEngineConfig();
         const { socketServer, close, port } = await this.launchHttpServer({
-            httpServerPort: preferredPort
+            httpServerPort: preferredPort,
+            publicPath: '/'
         });
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
@@ -526,13 +529,17 @@ export class Application {
     private async launchHttpServer({
         httpServerPort = DEFAULT_PORT,
         featureName,
-        configName
+        configName,
+        publicPath
     }: {
         httpServerPort?: number;
         featureName?: string;
         configName?: string;
+        publicPath: string;
     }) {
         const app = express();
+        const router = express.Router();
+
         const openSockets = new Set<Socket>();
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
         httpServer.on('connection', socket => {
@@ -540,10 +547,10 @@ export class Application {
             socket.once('close', () => openSockets.delete(socket));
         });
 
-        app.use('/', express.static(this.outputPath));
+        router.use('/', express.static(this.outputPath));
 
-        app.use('/favicon.ico', noContentHandler);
-        app.use('/defaults', (_, res) => {
+        router.use('/favicon.ico', noContentHandler);
+        router.use('/defaults', (_, res) => {
             res.json({
                 featureName,
                 configName
@@ -551,6 +558,8 @@ export class Application {
         });
 
         const socketServer = io(httpServer);
+
+        app.use(publicPath, router);
 
         return {
             close: async () => {
