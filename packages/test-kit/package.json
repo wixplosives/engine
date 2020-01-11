@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "8.2.6",
+  "version": "8.2.7",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "scripts": {
@@ -14,7 +14,7 @@
     "typescript": ">=3.0.0"
   },
   "dependencies": {
-    "@wixc3/engine-scripts": "^8.2.6",
+    "@wixc3/engine-scripts": "^8.2.7",
     "is-ci": "^2.0.0",
     "sinon": "^8.0.2"
   },
