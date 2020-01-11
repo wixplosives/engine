@@ -22,22 +22,24 @@ export function createConfigMiddleware(
                 for (const configDefinition of configDefinitions) {
                     const { config: exportedConfig, filePath, envName } = configDefinition as IExportedConfigDefinition;
                     // dont evaluate configs on bundled version
-                    if (exportedConfig) {
-                        config.push(...exportedConfig);
-                    } else if (envName === reqEnv || !envName) {
-                        const resolvedPath = resolveFrom(basePath, filePath);
-                        if (resolvedPath) {
-                            try {
-                                const { default: configValue } = (await importFresh(resolvedPath)) as {
-                                    default: TopLevelConfig;
-                                };
-                                config.push(...configValue);
-                            } catch (e) {
-                                console.error(`Failed evaluating config file: ${filePath}`);
-                                console.error(e);
-                            }
+                    if (envName === reqEnv || !envName) {
+                        if (exportedConfig) {
+                            config.push(...exportedConfig);
                         } else {
-                            throw new Error(`cannot find ${filePath}`);
+                            const resolvedPath = resolveFrom(basePath, filePath);
+                            if (resolvedPath) {
+                                try {
+                                    const { default: configValue } = (await importFresh(resolvedPath)) as {
+                                        default: TopLevelConfig;
+                                    };
+                                    config.push(...configValue);
+                                } catch (e) {
+                                    console.error(`Failed evaluating config file: ${filePath}`);
+                                    console.error(e);
+                                }
+                            } else {
+                                throw new Error(`cannot find ${filePath}`);
+                            }
                         }
                     }
                 }
