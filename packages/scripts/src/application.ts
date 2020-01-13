@@ -201,7 +201,7 @@ export class Application {
             compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
-        const mainUrl = `http://localhost:${port}`;
+        const mainUrl = `http://localhost:${port}/`;
         console.log(`Listening:`);
         console.log('Dashboard URL: ', mainUrl);
         if (featureName) {
