@@ -124,11 +124,10 @@ export class Application {
         port: httpServerPort,
         singleRun,
         config = [],
-        publicPath = '/',
+        publicPath,
         mode = 'development',
         singleFeature
     }: IRunOptions = {}) {
-        const normilizedPublicPath = normalizePublicPath(publicPath);
         await this.loadRequiredModulesFromEngineConfig();
 
         const disposables = new Set<() => unknown>();
@@ -148,7 +147,7 @@ export class Application {
             features,
             featureName,
             configName,
-            publicPath: normilizedPublicPath
+            publicPath
         });
 
         if (singleRun) {
@@ -178,8 +177,8 @@ export class Application {
         const middleware = createConfigMiddleware(
             configurations,
             nodeEnvironmentManager.topology,
-            normilizedPublicPath,
-            this.basePath
+            this.basePath,
+            publicPath
         );
 
         let currentConfig = config;
@@ -202,7 +201,7 @@ export class Application {
             compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
-        const mainUrl = `http://localhost:${port}${normilizedPublicPath}`;
+        const mainUrl = `http://localhost:${port}`;
         console.log(`Listening:`);
         console.log('Dashboard URL: ', mainUrl);
         if (featureName) {
@@ -266,10 +265,9 @@ export class Application {
             inspect,
             port: httpServerPort,
             config: userConfig = [],
-            publicPath = '/'
+            publicPath
         } = runOptions;
         const disposables = new Set<() => unknown>();
-        const normilizedPublicPath = normalizePublicPath(publicPath);
         const configurations = await this.readConfigs();
 
         const { port, close, socketServer, app } = await this.launchHttpServer({
@@ -293,8 +291,8 @@ export class Application {
         const configMiddleware = createConfigMiddleware(
             configurations,
             nodeEnvironmentManager.topology,
-            normilizedPublicPath,
-            this.basePath
+            this.basePath,
+            publicPath
         );
         app.use(`/config`, configMiddleware(config));
 
@@ -452,7 +450,7 @@ export class Application {
         features,
         featureName,
         configName,
-        publicPath = '/',
+        publicPath,
         mode
     }: {
         features: Map<string, IFeatureDefinition>;
@@ -589,16 +587,6 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target} using webpack...`);
-
-function normalizePublicPath(publicPath: string) {
-    if (!publicPath.startsWith('/')) {
-        publicPath = `/${publicPath}`;
-    }
-    if (!publicPath.endsWith('/')) {
-        publicPath = `${publicPath}/`;
-    }
-    return publicPath;
-}
 
 function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);

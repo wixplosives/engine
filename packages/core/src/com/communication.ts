@@ -74,7 +74,7 @@ export class Communication {
         public isServer = false,
         options?: ICommunicationOptions
     ) {
-        this.options = { warnOnSlow: false, publicPath: '/', ...options };
+        this.options = { warnOnSlow: false, publicPath: '', ...options };
         this.rootEnvId = id;
         this.rootEnvName = id.split('/')[0];
         this.registerMessageHandler(host);
@@ -777,15 +777,15 @@ export class Communication {
 /*
  * We only use the default factories so as a solution to pass the config name we append the location.search
  */
-const defaultWorkerFactory = (envName: string, instanceId: string, publicPath = '/') => {
+const defaultWorkerFactory = (envName: string, instanceId: string, publicPath = '') => {
     return new Worker(`${publicPath}${envName}.webworker.js${location.search}`, { name: instanceId });
 };
 
-const defaultSourceFactory = (envName: string, _instanceId: string, publicPath = '/') => {
+const defaultSourceFactory = (envName: string, _instanceId: string, publicPath = '') => {
     return `${publicPath}${envName}.web.js${location.search}`;
 };
 
-const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '/', hashParams?: string) => {
+const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '', hashParams?: string) => {
     return `${publicPath}${envName}.html${location.search}${hashParams ?? ''}`;
 };
 
