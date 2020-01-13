@@ -193,7 +193,7 @@ describe('Feature', () => {
         }).to.throw('Feature can only have single setup for each environment.');
     });
 
-    it('Universal input apis should be available universaly', () => {
+    it('Universal input apis should be available universally', () => {
         const env = new Environment('main', 'window', 'single');
 
         const f0 = new Feature({
