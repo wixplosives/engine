@@ -1,6 +1,6 @@
 import { EnvironmentTypes } from '../com/types';
 import { runtimeType } from '../entity-helpers';
-import { DisposableContext, EnvVisibility, MapBy } from '../types';
+import { DisposableContext, EnvVisibility, MapBy, EnvironmentFilter } from '../types';
 
 export type EnvironmentMode = 'single' | 'multi';
 
@@ -20,6 +20,7 @@ export const Universal = new Environment('<Universal>', 'window', 'multi');
 export const AllEnvironments: Environment = new Environment('<All>', 'window', 'multi');
 export const NoEnvironments = new Environment('<None>', 'window', 'multi');
 
+export const globallyProvidingEnvironments = new Set([Universal.env, AllEnvironments.env]);
 export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
     NAME,
     'context',
@@ -77,4 +78,22 @@ export function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: S
         test(envVisibility.env);
     }
     return [...containsEnv];
+}
+
+export function getEnvName(env: EnvironmentFilter): string {
+    return typeof env === 'string' ? env : env.env;
+}
+
+export function isProvidedFrom(envVisibility: EnvVisibility, envSet: Set<string>) {
+    if (Array.isArray(envVisibility)) {
+        return envVisibility.some(e => envSet.has(e.env));
+    } else if (typeof envVisibility === 'string') {
+        return envSet.has(envVisibility);
+    } else {
+        return envSet.has(envVisibility.env);
+    }
+}
+
+export function isGloballyProvided(envVisibility: EnvVisibility) {
+    return isProvidedFrom(envVisibility, globallyProvidingEnvironments);
 }

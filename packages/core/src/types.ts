@@ -11,6 +11,7 @@ export type MapBy<T extends any[] | undefined, FIELD extends keyof TupleToUnion<
     [key in TupleToUnion<T>[FIELD]]: Extract<TupleToUnion<T>, { [exc in FIELD]: key }>;
 };
 
+/* prettier-ignore */
 type JustFilterKeys<T, Filter> = ({ [P in keyof T]: T[P] extends Filter ? P : never })[keyof T];
 type JustFilter<T, Filter> = Pick<T, JustFilterKeys<T, Filter>>;
 // type JustFilterReverse<T, Filter> = Pick<T, Exclude<keyof T, JustFilterKeys<T, Filter>>>
@@ -76,6 +77,7 @@ export type EnvType<T extends EnvVisibility> = T extends []
     ? U1
     : T;
 
+/* prettier-ignore */
 type FilterENVKeys<T extends any, ENV extends string, Key extends 'visibleAt' | 'providedFrom'> = ({
     [P in keyof T]: ENV extends EnvType<T[P][Key]> ? P : never;
 })[keyof T];
@@ -144,7 +146,8 @@ type SettingUpFeature<ID extends string, API extends EntityRecord, ENV extends s
     run: (fn: () => unknown) => void;
     onDispose: (fn: DisposeFunction) => void;
     [RUN_OPTIONS]: IRunOptions;
-} & MapVisibleInputs<API, ENV> &
+} & MapVisibleInputs<API, '<Universal>'> &
+    MapVisibleInputs<API, ENV> &
     MapToProxyType<GetRemoteOutputs<API>> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<API>>;
 
