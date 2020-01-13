@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "7.5.0",
+  "version": "8.2.7",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
@@ -9,7 +9,9 @@
   "scripts": {
     "clean": "rimraf cjs",
     "prebuild": "yarn clean",
-    "build": "ts-build src --cjs",
+    "build": "yarn build:typescript && yarn build:stylable",
+    "build:stylable": "stc --srcDir src --outDir cjs --stcss",
+    "build:typescript": "ts-build src --cjs",
     "test": "mocha \"test/**/*.unit.ts?(x)\"",
     "prepack": "yarn build"
   },
@@ -17,37 +19,34 @@
     "typescript": ">=3.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^2.0.2",
-    "@file-services/types": "^2.0.1",
-    "@file-services/utils": "^2.0.1",
-    "@stylable/core": "^2.3.1",
-    "@stylable/node": "^2.3.1",
-    "@stylable/webpack-plugin": "^2.3.1",
-    "@ts-tools/node": "^1.1.1",
-    "@ts-tools/webpack-loader": "^1.1.0",
-    "@wixc3/engine-core": "^7.5.0",
-    "@wixc3/engine-core-node": "^7.5.0",
-    "commander": "^3.0.2",
+    "@file-services/node": "^2.1.1",
+    "@file-services/types": "^2.1.0",
+    "@file-services/utils": "^2.1.0",
+    "@wixc3/engine-core": "^8.2.2",
+    "@wixc3/engine-core-node": "^8.2.2",
+    "commander": "^4.0.1",
     "create-listening-server": "^1.0.0",
     "deindent": "^0.1.0",
     "express": "^4.17.1",
-    "glob": "^7.1.5",
-    "html-webpack-plugin": "^4.0.0-beta.8",
-    "import-fresh": "^3.1.0",
+    "glob": "^7.1.6",
+    "html-webpack-plugin": "^4.0.0-beta.11",
+    "import-fresh": "^3.2.1",
+    "open": "^7.0.0",
     "prop-types": "^15.7.2",
-    "react": "^16.10.2",
-    "react-dom": "^16.10.2",
-    "react-table": "^6.10.3",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-select": "^3.0.8",
     "rimraf": "^3.0.0",
     "socket.io": "^2.3.0",
-    "webpack": "^4.41.2",
+    "webpack": "^4.41.5",
     "webpack-dev-middleware": "^3.7.2",
-    "webpack-virtual-modules": "^0.2.0"
+    "webpack-virtual-modules": "^0.2.1"
   },
   "files": [
     "cjs",
     "src",
-    "cli.js"
+    "cli.js",
+    "templates"
   ],
   "license": "MIT",
   "publishConfig": {

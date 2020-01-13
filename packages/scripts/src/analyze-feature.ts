@@ -4,8 +4,7 @@ import {
     EnvironmentContext,
     Feature,
     getFeaturesDeep,
-    SingleEndpointContextualEnvironment,
-    SomeFeature
+    SingleEndpointContextualEnvironment
 } from '@wixc3/engine-core';
 import { basename } from 'path';
 
@@ -116,7 +115,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
-    const featureToScopedName = new Map<SomeFeature, string>();
+    const featureToScopedName = new Map<Feature, string>();
 
     for (const { directoryPath, features, configurations, envs, contexts } of featureDirectories) {
         const featurePackage = directoryToPackage.get(directoryPath);
@@ -128,10 +127,11 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         for (const filePath of configurations) {
             const { configName, envName } = parseConfigFileName(fs.basename(filePath));
             const scopedConfigName = scopeToPackage(featurePackage.simplifiedName, configName);
+            const configFilePath = getFilePathInPackage(fs, featurePackage, filePath);
             foundConfigs.add(scopedConfigName, {
-                filePath: getFilePathInPackage(fs, featurePackage, filePath),
                 envName,
-                name: configName
+                name: configName,
+                filePath: configFilePath
             });
         }
 
@@ -229,7 +229,7 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeModule
         throw new Error(`${filePath} does not export an object.`);
     }
 
-    const { default: exportedFeature } = exports as { default: SomeFeature };
+    const { default: exportedFeature } = exports as { default: Feature };
 
     if (!instanceOf(exportedFeature, Feature)) {
         throw new Error(`${filePath} does not "export default" a Feature.`);
@@ -276,10 +276,14 @@ const parseContextualEnv = ({
     }));
 
 export const getFeatureModules = (module: NodeModule) =>
-    flattenTree(module, m => m.children, m => isFeatureFile(basename(m.filename)));
+    flattenTree(
+        module,
+        m => m.children,
+        m => isFeatureFile(basename(m.filename))
+    );
 
 export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
-    const featureToDef = new Map<SomeFeature, IFeatureDefinition>();
+    const featureToDef = new Map<Feature, IFeatureDefinition>();
     for (const featureDef of features.values()) {
         featureToDef.set(featureDef.exportedFeature, featureDef);
     }

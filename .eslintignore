@@ -1,0 +1,7 @@
+node_modules
+cjs
+esm
+umd
+dist
+webpack.config.js
+_wcs

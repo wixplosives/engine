@@ -1,9 +1,9 @@
 import { BaseHost } from './com/base-host';
 import { Communication, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
-import { Target, WindowHost } from './com/types';
+import { Target } from './com/types';
 import { Config } from './entities/config';
-import { AllEnvironments, Environment, SingleEndpointContextualEnvironment, Universal } from './entities/env';
+import { AllEnvironments, Universal } from './entities/env';
 import { Feature } from './entities/feature';
 import { Service } from './entities/service';
 import { Slot } from './entities/slot';
@@ -18,6 +18,7 @@ export interface IComConfig {
     loggerSeverity: LogLevel;
     logToConsole?: boolean;
     maxLogMessages: number;
+    publicPath: string;
 }
 
 export default new Feature({
@@ -29,7 +30,8 @@ export default new Feature({
                 loggerSeverity: LogLevel.DEBUG,
                 maxLogMessages: 100,
                 topology: {},
-                resolvedContexts: {}
+                resolvedContexts: {},
+                publicPath: '/'
             },
             (a: IComConfig, b: Partial<IComConfig>) => ({
                 ...a,
@@ -46,24 +48,16 @@ export default new Feature({
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Service.withType<LoggerService>().defineEntity(Universal),
-        spawn: Service.withType<(endPoint: Environment, host?: WindowHost) => Promise<{ id: string }>>().defineEntity(
-            AllEnvironments
-        ),
-        manage: Service.withType<
-            (endPoint: Environment, host: HTMLIFrameElement) => Promise<{ id: string }>
-        >().defineEntity(AllEnvironments),
-        connect: Service.withType<(endPoint: Environment<string, 'node'>) => Promise<{ id: string }>>().defineEntity(
-            AllEnvironments
-        ),
-        spawnOrConnect: Service.withType<
-            (endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) => Promise<{ id: string }>
-        >().defineEntity(AllEnvironments),
+        spawn: Service.withType<Communication['spawn']>().defineEntity(AllEnvironments),
+        manage: Service.withType<Communication['manage']>().defineEntity(AllEnvironments),
+        connect: Service.withType<Communication['connect']>().defineEntity(AllEnvironments),
+        spawnOrConnect: Service.withType<Communication['spawnOrConnect']>().defineEntity(AllEnvironments),
         communication: Service.withType<Communication>().defineEntity(AllEnvironments)
     }
 }).setup(
     Universal,
     ({
-        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts },
+        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts, publicPath },
         loggerTransports,
         [RUN_OPTIONS]: runOptions
     }) => {
@@ -76,7 +70,8 @@ export default new Feature({
         const comId = id || (host && host.name) || (typeof self !== 'undefined' && self.name) || 'main';
 
         const comOptions: ICommunicationOptions = {
-            warnOnSlow: runOptions.has('warnOnSlow')
+            warnOnSlow: runOptions.has('warnOnSlow'),
+            publicPath
         };
 
         const communication = new Communication(
@@ -91,7 +86,7 @@ export default new Feature({
         const loggerService = new LoggerService(
             loggerTransports,
             { environment: communication.getEnvironmentId() },
-            { severity: loggerSeverity!, maxLogMessages, logToConsole }
+            { severity: loggerSeverity, maxLogMessages, logToConsole }
         );
 
         return {

@@ -24,7 +24,7 @@ import {
     Slot,
     Universal
 } from '../../src';
-import { type_check } from '../type-check';
+import { typeCheck } from '../type-check';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -193,6 +193,41 @@ describe('Feature', () => {
         }).to.throw('Feature can only have single setup for each environment.');
     });
 
+    it('Universal input apis should be available universally', () => {
+        const env = new Environment('main', 'window', 'single');
+
+        const f0 = new Feature({
+            id: 'test',
+            api: {
+                slot1: Slot.withType<{ echo(x: string): string }>().defineEntity(Universal),
+                service1: Service.withType<{ echo(x: string): string }>().defineEntity(Universal),
+                service2: Service.withType<{ echo(x: string): string }>().defineEntity(env)
+            }
+        });
+        f0.setup(Universal, ({ slot1 }) => {
+            return {
+                service1: {
+                    echo(x: string) {
+                        return x + '-' + [...slot1].length;
+                    }
+                }
+            };
+        });
+        f0.setup(env, ({ service1, slot1 }) => {
+            return {
+                service2: {
+                    echo(x: string) {
+                        return service1.echo(x) + '-main2-' + [...slot1].length;
+                    }
+                }
+            };
+        });
+        const { slot1, service1, service2 } = runEngine({ entryFeature: [f0], envName: env.env }).get(f0).api;
+        expect([...slot1].length).to.eql(0);
+        expect(service1.echo('ECHO')).to.eql('ECHO-0');
+        expect(service2.echo('ECHO')).to.eql('ECHO-0-main2-0');
+    });
+
     describe('Feature Config', () => {
         it('support multiple top level partial configs', () => {
             const entryFeature = new Feature({
@@ -285,7 +320,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
                 return null;
@@ -317,7 +352,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
                 return null;
@@ -327,7 +362,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
                 return null;
             });
@@ -359,7 +394,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps]
-            }).setup(envName, ({ }, { }) => {
+            }).setup(envName, ({}, {}) => {
                 return null;
             });
 
@@ -369,16 +404,12 @@ describe('Feature', () => {
         });
     });
 
-    describe('identefiable entities', () => {
+    describe('Identifiable entities', () => {
         interface Identity {
             featureID: string;
             entityKey: string;
         }
-        class Identefiable extends FeatureInput<
-            Readonly<Identity>,
-            Environment,
-            any
-            >{
+        class Identifiable extends FeatureInput<Readonly<Identity>, Environment, any> {
             public identity!: Identity;
             constructor() {
                 super(Universal, Universal);
@@ -392,7 +423,7 @@ describe('Feature', () => {
             public [CREATE_RUNTIME](_context: RuntimeEngine, featureID: string, entityKey: string) {
                 return {
                     featureID,
-                    entityKey,
+                    entityKey
                 };
             }
 
@@ -414,7 +445,7 @@ describe('Feature', () => {
             const ids = new Feature({
                 id: 'testIdentify',
                 api: {
-                    identifiable: new Identefiable()
+                    identifiable: new Identifiable()
                 }
             });
 
@@ -480,7 +511,7 @@ describe('feature interaction', () => {
 });
 
 describe('Contextual environments', () => {
-    it('Feature should define contextual environment, set up the environment context and use it in the environment setup', async () => {
+    it('Feature should define contextual environment, set up the environment context and use it in the environment setup', () => {
         const workerEnv = new Environment('worker', 'worker', 'single');
         const processing = new SingleEndpointContextualEnvironment('processing', [workerEnv]);
 
@@ -512,7 +543,7 @@ describe('Contextual environments', () => {
             };
         });
 
-        entryFeature.setup(processing, ({ }, { }, { processingContext: { name }, processingContext2: { age } }) => {
+        entryFeature.setup(processing, ({}, {}, { processingContext: { name }, processingContext2: { age } }) => {
             return {
                 echoService: {
                     echo(s: string) {
@@ -524,7 +555,7 @@ describe('Contextual environments', () => {
 
         const engine = runEngine({ entryFeature, envName: processing.env });
 
-        expect(await engine.get(entryFeature).api.echoService.echo('hello')).to.eq('hello test 1');
+        expect(engine.get(entryFeature).api.echoService.echo('hello')).to.eq('hello test 1');
     });
 });
 
@@ -537,7 +568,7 @@ describe('feature disposal', () => {
             api: {}
         });
         const dispose = spy(() => Promise.resolve());
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
             return null;
         });
@@ -562,7 +593,7 @@ describe('feature disposal', () => {
         const dispose = spy(() => Promise.resolve());
         const dispose2 = spy(() => Promise.resolve());
 
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
             onDispose(dispose2);
 
@@ -590,7 +621,7 @@ describe('feature disposal', () => {
         const disposeFirst = spy(() => Promise.resolve());
         const disposeSecond = spy(() => Promise.reject('err'));
 
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(disposeFirst);
             onDispose(disposeSecond);
 
@@ -626,7 +657,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                 return null;
             })
             .setup(processing, x => {
-                type_check(
+                typeCheck(
                     (
                         _noSlot: EQUAL<
                             typeof x,
@@ -706,7 +737,7 @@ describe.skip('Environments Type tests 1', () => {
             }
         });
 
-        echoFeature.setup(processing, ({ }, { }) => {
+        echoFeature.setup(processing, ({}, {}) => {
             return {
                 echoService: {
                     echo(s: string) {

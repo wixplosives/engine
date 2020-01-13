@@ -1,25 +1,27 @@
-import { SetMultiMap } from '@file-services/utils';
 import { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, DISPOSE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import {
     ContextHandler,
     DisposableContext,
     DisposeFunction,
-    EntityMap,
+    EntityRecord,
     EnvironmentFilter,
     FeatureDef,
-    IDTagArray,
     MapToProxyType,
     PartialFeatureConfig,
     RunningFeatures,
-    SetupHandler,
-    SomeFeature
+    SetupHandler
 } from '../types';
-import { Environment, testEnvironmentCollision, Universal } from './env';
+import { Environment, testEnvironmentCollision, getEnvName, isGloballyProvided } from './env';
+import { SetMultiMap } from '../helpers';
 
 /*************** FEATURE ***************/
 
-export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], API extends EntityMap> {
+export class RuntimeFeature<
+    T extends Feature = Feature,
+    Deps extends Feature[] = Feature[],
+    API extends EntityRecord = EntityRecord
+> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => void>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
@@ -28,8 +30,7 @@ export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], A
         public feature: T,
         public api: MapToProxyType<API>,
         public dependencies: RunningFeatures<Deps, string>
-    ) {
-    }
+    ) {}
 
     public addRunHandler(fn: () => void, envName: string) {
         this.runHandlers.add(envName, fn);
@@ -63,65 +64,53 @@ export class RuntimeFeature<T extends SomeFeature, Deps extends SomeFeature[], A
 }
 
 export class Feature<
-    ID extends string,
-    Deps extends SomeFeature[],
-    API extends EntityMap,
-    EnvironmentContext extends Record<string, DisposableContext<any>>
-    > {
-    public asEntity: Feature<ID, SomeFeature[], API, EnvironmentContext> = this;
+    ID extends string = string,
+    Deps extends Feature[] = any[],
+    API extends EntityRecord = any,
+    EnvironmentContext extends Record<string, DisposableContext<any>> = any
+> {
+    public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
     public id: ID;
     public dependencies: Deps;
     public api: API;
     public context: EnvironmentContext;
+
     private environmentIml = new Set<string>();
-    private setupHandlers = new SetMultiMap<string, SetupHandler<Environment, ID, Deps, API, EnvironmentContext>>();
+    private setupHandlers = new SetMultiMap<string, SetupHandler<Environment, any, Deps, API, EnvironmentContext>>();
     private contextHandlers = new Map<string | number | symbol, ContextHandler<object, EnvironmentFilter, Deps>>();
+
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
-        this.dependencies = def.dependencies || (([] as IDTagArray) as Deps);
-        this.api = def.api || (({} as EntityMap) as API);
+        this.dependencies = def.dependencies || (([] as Feature[]) as Deps);
+        this.api = def.api || ({} as API);
         this.context = def.context || ({} as EnvironmentContext);
         this.identifyApis();
     }
+
     public setup<EnvFilter extends EnvironmentFilter>(
         env: EnvFilter,
         setupHandler: SetupHandler<EnvFilter, ID, Deps, API, EnvironmentContext>
     ): this {
-        const containsEnvs = testEnvironmentCollision(env, this.environmentIml);
-        if (containsEnvs.length) {
-            throw new Error(
-                `Feature can only have single setup for each environment. ${this.id} Feature already implements: ${containsEnvs}`
-            );
-        }
-        const envName = typeof env === 'object' ? (env as Record<string, string>).env : (env as string);
-
-        this.setupHandlers.add(envName, setupHandler);
+        validateNoDuplicateEnvRegistration(env, this.id, this.environmentIml);
+        this.setupHandlers.add(getEnvName(env), setupHandler);
         return this;
     }
+
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
         return [this.id, config];
     }
 
-    // context = Context<Interface>
     public setupContext<K extends keyof EnvironmentContext, Env extends EnvironmentFilter>(
         _env: Env,
         environmentContext: K,
         contextHandler: ContextHandler<EnvironmentContext[K]['type'], Env, Deps>
     ) {
-        const registerdContext = this.contextHandlers.get(environmentContext);
-        if (registerdContext) {
-            throw new Error(
-                `Feature can only have single setupContext for each context id. ${
-                this.id
-                } Feature already implements: ${environmentContext}\n${registerdContext.toString()}`
-            );
-        }
-
+        validateNoDuplicateContextRegistration(environmentContext, this.id, this.contextHandlers);
         this.contextHandlers.set(environmentContext, contextHandler);
         return this;
     }
 
-    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string): RuntimeFeature<this, Deps, API> {
+    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string) {
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};
@@ -129,6 +118,9 @@ export class Feature<
         const providedAPI: any = {};
         const environmentContext: any = {};
         const apiEntries = Object.entries(this.api);
+        const universalApiEntries = apiEntries.filter(
+            ([_, entity]) => entity.mode !== 'input' && isGloballyProvided(entity.providedFrom)
+        );
         const feature = new RuntimeFeature<this, Deps, API>(this, runningApi, deps);
 
         runningEngine.features.set(this, feature);
@@ -177,12 +169,12 @@ export class Feature<
         }
         for (const setupHandler of setupHandlers) {
             const featureOutput = setupHandler(settingUpFeature, depsApis, environmentContext);
-            for (const [key, entity] of apiEntries) {
-                if (featureOutput && entity.providedFrom === Universal) {
+            if (featureOutput) {
+                for (const [key] of universalApiEntries) {
                     settingUpFeature[key] = (featureOutput as any)[key];
                 }
+                Object.assign(providedAPI, featureOutput);
             }
-            Object.assign(providedAPI, featureOutput);
         }
 
         for (const [key, entity] of apiEntries) {
@@ -194,11 +186,37 @@ export class Feature<
 
         return feature;
     }
+
     private identifyApis() {
         for (const [key, api] of Object.entries(this.api)) {
-            if (api[IDENTIFY_API]) {
-                api[IDENTIFY_API]!(this.id, key);
+            const entityFn = api[IDENTIFY_API];
+            if (entityFn) {
+                entityFn.call(api, this.id, key);
             }
         }
+    }
+}
+
+function validateNoDuplicateEnvRegistration(env: EnvironmentFilter, featureId: string, registered: Set<string>) {
+    const hasCollision = testEnvironmentCollision(env, registered);
+    if (hasCollision.length) {
+        throw new Error(
+            `Feature can only have single setup for each environment. ${featureId} Feature already implements: ${hasCollision}`
+        );
+    }
+}
+
+function validateNoDuplicateContextRegistration(
+    environmentContext: string | number | symbol,
+    featureId: string,
+    contextHandlers: Map<string | number | symbol, ContextHandler<object, EnvironmentFilter, any>>
+) {
+    const registeredContext = contextHandlers.get(environmentContext);
+    if (registeredContext) {
+        throw new Error(
+            `Feature can only have single setupContext for each context id. ${featureId} Feature already implements: ${String(
+                environmentContext
+            )}\n${registeredContext}`
+        );
     }
 }

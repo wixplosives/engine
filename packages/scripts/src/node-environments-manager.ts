@@ -14,7 +14,8 @@ import {
     IEnvironmentStartMessage,
     IFeatureDefinition,
     isEnvironmentStartMessage,
-    ServerEnvironmentOptions
+    ServerEnvironmentOptions,
+    IExportedConfigDefinition
 } from './types';
 
 export interface IRuntimeEnvironment {
@@ -31,10 +32,11 @@ const cliEntry = require.resolve('../cli');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
-    configurations: SetMultiMap<string, IConfigDefinition>;
+    configurations?: SetMultiMap<string, IConfigDefinition | IExportedConfigDefinition>;
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
+    config: TopLevelConfig;
 }
 export class NodeEnvironmentsManager {
     public topology = new Map<string, Record<string, string>>();
@@ -54,7 +56,8 @@ export class NodeEnvironmentsManager {
                 featureName,
                 [
                     COM.use({ config: { topology: this.topology.get(featureName) } }),
-                    ...(await this.getConfig(configName))
+                    ...(await this.getConfig(configName)),
+                    ...this.options.config
                 ],
                 { ...defaultRuntimeOptions, ...runtimeOptions }
             );
@@ -182,7 +185,7 @@ export class NodeEnvironmentsManager {
     private async getConfig(configName: string | undefined) {
         const config: TopLevelConfig = [];
         const { configurations } = this.options;
-        if (configName) {
+        if (configurations && configName) {
             const configDefinition = configurations.get(configName);
             if (!configDefinition) {
                 const configNames = Array.from(configurations.keys());
@@ -190,12 +193,14 @@ export class NodeEnvironmentsManager {
                     `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
                 );
             }
-            for (const { filePath } of configDefinition) {
+            for (const definition of configDefinition) {
                 try {
-                    const { default: topLevelConfig } = await import(filePath);
-                    config.push(...topLevelConfig);
+                    if ((definition as IExportedConfigDefinition).config) {
+                        config.push(...(definition as IExportedConfigDefinition).config);
+                    } else {
+                        config.push(...(await import(definition.filePath)).default);
+                    }
                 } catch (e) {
-                    // tslint:disable-next-line: no-console
                     console.error(e);
                 }
             }
@@ -240,7 +245,7 @@ export class NodeEnvironmentsManager {
         };
     }
 
-    private getNodeEnvironments(featureName: string) {
+    public getNodeEnvironments(featureName: string) {
         const nodeEnvs = new Set<IEnvironment>();
 
         const { features } = this.options;

@@ -1,3 +1,4 @@
+import { TopLevelConfig } from '@wixc3/engine-core/src';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { AttachedApp } from './attached-app';
@@ -71,10 +72,16 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
      * It can be extracted from the log printed after 'engine start' or 'engine run'
      */
     runningApplicationPort?: number;
+
+    /**
+     * Allows providing a Top level config
+     * If configName was provided, the matching configurations will be overriden by the config provided
+     */
+    config?: TopLevelConfig;
 }
 
 let browser: puppeteer.Browser | null = null;
-let featureUrl: string = '';
+let featureUrl = '';
 let executableApp: IExecutableApplication;
 
 after('close puppeteer browser, if open', async () => {
@@ -93,11 +100,6 @@ after('close engine server, if open', async function() {
 });
 
 export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
-    let { basePath = process.cwd() } = withFeatureOptions;
-    if (process.platform === 'win32') {
-        basePath = correctWin32DriveLetter(basePath);
-    }
-
     const disposeAfterEach = createDisposables();
     const {
         headless,
@@ -108,10 +110,14 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         runOptions: suiteOptions = {},
         allowErrors: suiteAllowErrors = false,
         queryParams: suiteQueryParams,
-        runningApplicationPort
+        runningApplicationPort,
+        config: suiteConfig
     } = withFeatureOptions;
 
-    if (isCI && (headless === false || devtools === true || slowMo !== undefined)) {
+    if (
+        isCI &&
+        (headless === false || devtools === true || slowMo !== undefined || runningApplicationPort !== undefined)
+    ) {
         throw new Error(
             `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`
         );
@@ -162,7 +168,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
                 configName = suiteConfigName,
                 runOptions = suiteOptions,
                 queryParams = suiteQueryParams,
-                allowErrors: targetAllowErrors = false
+                allowErrors: targetAllowErrors = false,
+                config = suiteConfig
             }: IFeatureTestOptions = {},
             options?: puppeteer.DirectNavigationOptions
         ) {
@@ -177,7 +184,8 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             await executableApp.runFeature({
                 featureName,
                 configName,
-                runtimeOptions: runOptions
+                runtimeOptions: runOptions,
+                config
             });
 
             disposeAfterEach.add(async () =>
@@ -196,7 +204,6 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             pages.add(page);
             page.on('pageerror', e => {
                 capturedErrors.push(e);
-                // tslint:disable-next-line: no-console
                 console.error(e);
             });
             const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...options });

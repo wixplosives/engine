@@ -1,13 +1,15 @@
 import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { Communication, Environment } from '../src';
+import { Communication, Environment, decalreComEmitter } from '../src';
 import {
     ITestServiceData,
     multiTanentServiceId,
     MultiTenantTestService,
     TestService,
-    testServiceId
+    testServiceId,
+    HashParamsRetriever,
+    hashParamsRetriever
 } from './test-api-service';
 
 describe('Communication API', function() {
@@ -48,7 +50,7 @@ describe('Communication API', function() {
         const com = disposables.add(new Communication(window, comId));
         const env = await com.spawn(iframeEnv, createIframe());
 
-        const api = com.apiProxy<TestService>(env, { id: testServiceId });
+        const api = com.apiProxy<TestService>(env, { id: testServiceId }, decalreComEmitter('listen', '', ''));
         const capturedCalls: ITestServiceData[] = [];
         await api.listen(data => capturedCalls.push(data));
 
@@ -94,8 +96,8 @@ describe('Communication API', function() {
             com.spawn(iframeEnv, createIframe())
         ]);
 
-        const api1 = com.apiProxy<TestService>(env1, { id: testServiceId });
-        const api2 = com.apiProxy<TestService>(env2, { id: testServiceId });
+        const api1 = com.apiProxy<TestService>(env1, { id: testServiceId }, { listen: { listener: true } });
+        const api2 = com.apiProxy<TestService>(env2, { id: testServiceId }, { listen: { listener: true } });
 
         const capturedCallsApi1: ITestServiceData[] = [];
         const capturedCallsApi2: ITestServiceData[] = [];
@@ -123,5 +125,16 @@ describe('Communication API', function() {
         const res = await api.testApi(1, 2, 3);
 
         expect(res).to.eql({ echo: [1, 2, 3] });
+    });
+
+    it('allows initiating iframe environment with parameters', async () => {
+        const com = disposables.add(new Communication(window, comId));
+        const env = await com.manage(iframeEnv, createIframe(), '#test');
+        const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
+
+        await waitFor(async () => {
+            const deserializedHash = decodeURIComponent(await api.getHashParams());
+            expect(deserializedHash).to.eq(`#test`);
+        });
     });
 });

@@ -1,5 +1,6 @@
 import { fork } from 'child_process';
-import { ForkedProcess, ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '../src';
+import { ForkedProcess } from './forked-process';
+import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from './types';
 
 export interface IStartRemoteNodeEnvironmentOptions {
     port: number;
@@ -22,7 +23,6 @@ export async function startRemoteNodeEnvironment(
     await new Promise(res => {
         childProc.once('message', res);
     });
-    // tslint:disable-next-line: no-console
     childProc.on('error', console.error);
     // }
     return new RemoteNodeEnvironment(new ForkedProcess(childProc));
@@ -34,7 +34,7 @@ export class RemoteNodeEnvironment {
     constructor(private childEnv: RemoteProcess) {}
 
     public async getRemotePort(): Promise<number> {
-        return new Promise(async resolve => {
+        return new Promise(resolve => {
             this.subscribe(message => {
                 if (isEnvironmentPortMessage(message)) {
                     resolve(message.port);

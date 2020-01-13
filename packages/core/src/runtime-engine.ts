@@ -1,26 +1,26 @@
 import COM from './communication.feature';
-import { RuntimeFeature } from './entities/feature';
+import { RuntimeFeature, Feature } from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
-import { IRunOptions, SomeFeature, SomeRuntimeFeature, TopLevelConfig } from './types';
+import { IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine {
-    public features = new Map<SomeFeature, SomeRuntimeFeature>();
+    public features = new Map<Feature, RuntimeFeature>();
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
     constructor(topLevelConfig: TopLevelConfig = [], public runOptions: IRunOptions = new Map()) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
     }
 
-    public get<T extends SomeFeature>(feature: T): RuntimeFeature<T, T['dependencies'], T['api']> {
+    public get<T extends Feature>(feature: T) {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
-            return runningFeature;
+            return runningFeature as RuntimeFeature<T, T['dependencies'], T['api']>;
         } else {
             throw new Error('missing feature');
         }
     }
 
-    public run(features: SomeFeature | SomeFeature[], envName: string): RuntimeEngine {
+    public run(features: Feature | Feature[], envName: string): RuntimeEngine {
         if (this.running) {
             throw new Error('Engine already running!');
         }
@@ -37,7 +37,7 @@ export class RuntimeEngine {
         return this;
     }
 
-    public initFeature<T extends SomeFeature>(feature: T, envName: string) {
+    public initFeature<T extends Feature>(feature: T, envName: string) {
         let instance = this.features.get(feature);
         if (!instance) {
             instance = feature[CREATE_RUNTIME](this, envName);
@@ -45,7 +45,7 @@ export class RuntimeEngine {
         return instance;
     }
 
-    public runFeature(feature: SomeFeature, envName: string) {
+    public runFeature(feature: Feature, envName: string) {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
@@ -53,7 +53,7 @@ export class RuntimeEngine {
         featureInstance[RUN](this, envName);
     }
 
-    public async dispose(feature: SomeFeature, envName: string) {
+    public async dispose(feature: Feature, envName: string) {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
             await runningFeature[DISPOSE](this, envName);

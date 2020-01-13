@@ -1,4 +1,4 @@
-import { Environment, EnvironmentContext, EnvironmentTypes, SomeFeature, TopLevelConfig } from '@wixc3/engine-core';
+import { Environment, EnvironmentContext, EnvironmentTypes, TopLevelConfig, Feature } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -64,7 +64,7 @@ export type SymbolList<T> = Array<{ name: string; value: T }>;
 export interface EvaluatedFeature {
     id: string;
     filePath: string;
-    features: SymbolList<SomeFeature>;
+    features: SymbolList<Feature>;
     environments: SymbolList<Environment>;
     contexts: SymbolList<EnvironmentContext>;
 }
@@ -162,7 +162,7 @@ export interface IFeatureModule {
     /**
      * Actual evaluated Feature instance exported from the file.
      */
-    exportedFeature: SomeFeature;
+    exportedFeature: Feature;
 
     /**
      * Exported environments from module.
@@ -193,8 +193,12 @@ export const isEnvironmentPortMessage = (message: ICommunicationMessage): messag
 
 export interface IConfigDefinition {
     name: string;
-    filePath: string;
     envName?: string;
+    filePath: string;
+}
+
+export interface IExportedConfigDefinition extends IConfigDefinition {
+    config: TopLevelConfig;
 }
 
 export interface IFeatureDefinition extends IFeatureModule {
@@ -209,4 +213,7 @@ export interface IFeatureDefinition extends IFeatureModule {
 
 export interface EngineConfig {
     require?: string[];
+    featuresDirectory?: string;
+    featureTemplatesFolder?: string;
+    featureFolderNameTemplate?: string;
 }

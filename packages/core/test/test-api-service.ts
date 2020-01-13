@@ -1,5 +1,5 @@
 import { SERVICE_CONFIG } from '../src';
-import { multiTenantMethod } from '../src/com/multi-tenant';
+import { multiTenantMethod } from '../src/com/service-config';
 
 export interface ITestServiceData {
     echo: number[];
@@ -38,6 +38,14 @@ export class MultiTenantTestService {
     }
 }
 
+export class HashParamsRetriever {
+    public getHashParams() {
+        return location.hash;
+    }
+}
+
 export const testServiceId = 'TestService';
 
 export const multiTanentServiceId = 'MultiTanentService';
+
+export const hashParamsRetriever = 'HashParamsRetriever';

@@ -1,4 +1,5 @@
 import fs from '@file-services/node';
+import { TopLevelConfig } from '@wixc3/engine-core';
 import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
@@ -64,7 +65,7 @@ describe('Application', function() {
 
             const text = await getBodyContent(page);
 
-            expect(text).to.equal('App is running.');
+            expect(text).to.include('App is running');
         });
 
         it(`serves a fixture feature`, async () => {
@@ -212,6 +213,57 @@ describe('Application', function() {
             disposables.add(() => close());
             expect(port, 'application is not created on port 8080').to.eq(8080);
         });
+
+        it('allows providing top level config', async () => {
+            const config: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const app = new Application({
+                basePath: engineFeatureFixturePath
+            });
+
+            const { close, port } = await app.start({
+                featureName: 'engine-single/x',
+                config
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
+                }
+            });
+        });
+
+        it('allows providing top level config with default config', async () => {
+            const config: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const app = new Application({
+                basePath: engineFeatureFixturePath
+            });
+
+            const { close, port } = await app.start({
+                configName: 'engine-single/x',
+                featureName: 'engine-single/x',
+                config
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
+                }
+            });
+        });
     });
 
     describe('run', function() {
@@ -231,7 +283,7 @@ describe('Application', function() {
 
             const text = await getBodyContent(page);
 
-            expect(text).to.equal('App is running.');
+            expect(text).to.include('App is running');
         });
 
         it(`launches a built application with node environment`, async () => {
@@ -281,5 +333,121 @@ describe('Application', function() {
 
             expect(textFromServer).to.contain('server');
         });
+
+        it('allows providing top level config', async () => {
+            const config: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const app = new Application({
+                basePath: engineFeatureFixturePath
+            });
+            await app.build();
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                featureName: 'engine-single/x',
+                config
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
+                }
+            });
+        });
+
+        it('allows providing top level config and config name', async () => {
+            const config: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const app = new Application({
+                basePath: engineFeatureFixturePath
+            });
+            await app.build();
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                configName: 'engine-single/x',
+                featureName: 'engine-single/x',
+                config
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
+                }
+            });
+        });
+
+        it('overrides default values on browser with which the project was build, when providing feature name', async () => {
+            const app = new Application({
+                basePath: useConfigsFeaturePath
+            });
+            await app.build({
+                featureName: 'configs/use-configs'
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                featureName: 'configs/fixture'
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    expect(bodyContent).to.contain('alternative');
+                }
+            });
+        });
+
+        it('overrides default values on browser with which the project was build, when providing config name', async () => {
+            const app = new Application({
+                basePath: useConfigsFeaturePath
+            });
+            await app.build({
+                configName: 'configs/default',
+                featureName: 'configs/use-configs'
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                configName: 'configs/alternative'
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    expect(bodyContent).to.contain('gaga');
+                }
+            });
+        });
+    });
+
+    it('allows adding routes to the engine router', async () => {
+        const app = new Application({
+            basePath: engineFeatureFixturePath
+        });
+
+        const { close, port, router } = await app.start();
+        disposables.add(() => close());
+        router.get('/test/me', (_req, res) => {
+            res.send('OK');
+        });
+        const page = await loadPage(`http://localhost:${port}/test/me`);
+        expect(await page.content()).to.include('OK');
     });
 });

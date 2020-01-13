@@ -1,10 +1,11 @@
-import { deferred } from 'promise-assist';
 import io from 'socket.io-client';
 import { BaseHost } from './base-host';
+import { deferred, EventEmitter } from '../helpers';
 
 export class WsClientHost extends BaseHost {
     public connected: Promise<void>;
     private socketClient: SocketIOClient.Socket;
+    public subscribers = new EventEmitter<{ disconnect: void }>();
 
     constructor(url: string) {
         super();
@@ -22,6 +23,7 @@ export class WsClientHost extends BaseHost {
         });
 
         this.socketClient.on('disconnect', () => {
+            this.subscribers.emit('disconnect', undefined);
             this.socketClient.close();
         });
     }

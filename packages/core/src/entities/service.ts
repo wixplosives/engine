@@ -1,4 +1,4 @@
-import { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes } from '../com/types';
+import { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComConfig } from '../com/types';
 import { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import { EnvVisibility } from '../types';
@@ -30,15 +30,17 @@ export class Service<
     private constructor(
         public providedFrom: ProvidedFrom,
         public visibleAt: VisibleAt,
-        public remoteAccess: RemoteAccess
+        public remoteAccess: RemoteAccess,
+        private options: ServiceComConfig<T> = {}
     ) {
         super(providedFrom, visibleAt, remoteAccess);
     }
-    public allowRemoteAccess() {
+    public allowRemoteAccess(options?: ServiceComConfig<T>) {
         return new Service<T, ServiceRuntime<T, ProvidedFrom>, ProvidedFrom, Environment, true>(
             this.providedFrom,
             AllEnvironments,
-            true
+            true,
+            options
         );
     }
 
@@ -76,11 +78,11 @@ export class Service<
         const { communication } = context.getCOM().api;
         const instanceId = getSingleInstanceId(this.providedFrom);
         if (instanceId) {
-            return communication.apiProxy<T>({ id: instanceId }, { id: serviceKey });
+            return communication.apiProxy<T>({ id: instanceId }, { id: serviceKey }, this.options);
         } else {
             return {
                 get(token: EnvironmentInstanceToken) {
-                    return communication.apiProxy<T>(token, { id: serviceKey });
+                    return communication.apiProxy<T>(token, { id: serviceKey }, this.options);
                 }
             };
         }

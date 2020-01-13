@@ -1,10 +1,11 @@
 import COM from './communication.feature';
-import { flattenTree } from './flatten-tree';
 import { RuntimeEngine } from './runtime-engine';
-import { IRunOptions, SomeFeature, TopLevelConfig } from './types';
+import { IRunOptions, TopLevelConfig } from './types';
+import { Feature } from './entities';
+import { flattenTree } from './helpers';
 
 export interface IRunEngineOptions {
-    entryFeature: SomeFeature | SomeFeature[];
+    entryFeature: Feature | Feature[];
     topLevelConfig?: TopLevelConfig;
     envName?: string;
     runOptions?: IRunOptions;
@@ -14,10 +15,10 @@ export function run({ entryFeature, topLevelConfig = [], envName = '', runOption
     return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature, envName);
 }
 
-export const getFeaturesDeep = (feature: SomeFeature) => flattenTree(feature, f => f.dependencies);
+export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, f => f.dependencies);
 
 export interface IFeatureLoader {
-    load: (resolvedContexts: Record<string, string>) => Promise<SomeFeature>;
+    load: (resolvedContexts: Record<string, string>) => Promise<Feature>;
     depFeatures: string[];
     resolvedContexts: Record<string, string>;
 }

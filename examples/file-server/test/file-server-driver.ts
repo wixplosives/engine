@@ -13,6 +13,6 @@ export class FileServerDriver {
     public async getTestContentDiv(page: Page) {
         const elem = await page.waitForSelector('#testdiv');
         const textContent = await elem.getProperty('textContent');
-        return textContent.jsonValue();
+        return textContent.jsonValue() as Promise<string>;
     }
 }

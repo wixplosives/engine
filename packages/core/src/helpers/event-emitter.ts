@@ -1,4 +1,4 @@
-import { SetMultiMap } from '@file-services/utils';
+import { SetMultiMap } from './set-multi-map';
 
 export type EventListener<T> = (event: T) => void;
 
