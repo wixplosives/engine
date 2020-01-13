@@ -8,8 +8,8 @@ import { resolveFrom } from './utils';
 export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition | IExportedConfigDefinition>,
     topology: Map<string, Record<string, string>>,
-    publicPath: string,
-    basePath: string
+    basePath: string,
+    publicPath?: string
 ): (config: TopLevelConfig) => express.RequestHandler {
     return (overrideConfig?: TopLevelConfig) => {
         return async (req, res) => {

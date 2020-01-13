@@ -18,12 +18,15 @@ export function createEntrypoint({
     childEnvs,
     featureName,
     configName,
-    publicPath
+    publicPath = ''
 }: ICreateEntrypointsOptions) {
-    return `${typeof publicPath === 'string' ? `__webpack_public_path__= ${JSON.stringify(publicPath)};` : ''}
-
+    return `
 import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
-    
+
+const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
+const options = new URLSearchParams(topWindow.location.search);
+__webpack_public_path__= options.has('publicPath') ? options.get('publicPath') : ${JSON.stringify(publicPath)};
+
 const featureLoaders = {
 ${Array.from(features.values())
     .map(({ scopedName, name, filePath, envFilePaths, contextFilePaths, dependencies, resolvedContexts }) => {
