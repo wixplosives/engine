@@ -64,7 +64,7 @@ program
             if (process.send) {
                 process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
             } else if (featureName && configName && openBrowser === 'true') {
-                await open(`http://localhost:${port}${publicPath}main.html`);
+                await open(`http://localhost:${port}/main.html`);
             }
 
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
@@ -158,7 +158,7 @@ program
                 publicPath
             });
             console.log(`Listening:`);
-            console.log(`http://localhost:${port}${publicPath}main.html`);
+            console.log(`http://localhost:${port}/main.html`);
         } catch (e) {
             printErrorAndExit(e);
         }
