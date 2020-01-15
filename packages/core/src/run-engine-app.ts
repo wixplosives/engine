@@ -70,8 +70,16 @@ export async function runEngineApp({
 }
 
 export function getTopWindow(win: Window): Window {
-    while (win.parent && win.parent !== win) {
+    while (win.parent && win.parent !== win && canAccessWindow(win.parent)) {
         win = win.parent;
     }
     return win;
+}
+
+function canAccessWindow(win: Window): boolean {
+    try {
+        return !!win.location.search;
+    } catch {
+        return false;
+    }
 }
