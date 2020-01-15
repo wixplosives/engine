@@ -4,11 +4,11 @@ import {
     EnvironmentContext,
     Feature,
     getFeaturesDeep,
-    SingleEndpointContextualEnvironment
+    SingleEndpointContextualEnvironment,
+    SetMultiMap
 } from '@wixc3/engine-core';
 import { basename } from 'path';
 
-import { SetMultiMap } from '@file-services/utils';
 import { flattenTree } from '@wixc3/engine-core';
 import {
     isFeatureFile,

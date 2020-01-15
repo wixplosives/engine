@@ -1,5 +1,4 @@
-import { SetMultiMap } from '@file-services/utils';
-import { COM, TopLevelConfig } from '@wixc3/engine-core';
+import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 import express from 'express';
 import importFresh from 'import-fresh';
 import { IConfigDefinition, IExportedConfigDefinition } from './types';

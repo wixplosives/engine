@@ -1,16 +1,15 @@
-import { safeListeningHttpServer } from 'create-listening-server';
-import express from 'express';
-import rimrafCb from 'rimraf';
-import io from 'socket.io';
 import { promisify } from 'util';
-import webpack from 'webpack';
-import webpackDevMiddleware from 'webpack-dev-middleware';
-
 import { Socket } from 'net';
 
+import { safeListeningHttpServer } from 'create-listening-server';
+import express from 'express';
+import cors from 'cors';
+import rimrafCb from 'rimraf';
+import io from 'socket.io';
+import webpack from 'webpack';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 import fs from '@file-services/node';
-import { SetMultiMap } from '@file-services/utils';
-import { TopLevelConfig } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -531,6 +530,7 @@ export class Application {
         configName?: string;
     }) {
         const app = express();
+        app.use(cors());
         const openSockets = new Set<Socket>();
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
         httpServer.on('connection', socket => {
