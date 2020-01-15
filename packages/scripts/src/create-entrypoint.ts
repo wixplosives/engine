@@ -18,14 +18,10 @@ export function createEntrypoint({
     childEnvs,
     featureName,
     configName,
-    publicPath = ''
+    publicPath
 }: ICreateEntrypointsOptions) {
     return `
 import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
-
-const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
-const options = new URLSearchParams(topWindow.location.search);
-__webpack_public_path__= options.has('publicPath') ? options.get('publicPath') : ${JSON.stringify(publicPath)};
 
 const featureLoaders = {
 ${Array.from(features.values())
@@ -62,6 +58,12 @@ ${Array.from(features.values())
 async function main() {
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
+
+    const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
+        typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
+    };
+    __webpack_public_path__= publicPath;
+
     const { featureName: defaultFeatureName = ${stringify(featureName)}, configName: defaultConfigName = ${stringify(
         configName
     )}} = await (await fetch('defaults')).json();
@@ -69,9 +71,9 @@ async function main() {
     const configName = options.get('${CONFIG_QUERY_PARAM}') || defaultConfigName;
     const config = []
     config.push(...await (await fetch('config/' + configName + '?env=${envName}&feature=' + featureName)).json());
-
+    
     const runtimeEngine = await runEngineApp(
-        { featureName, configName, featureLoaders, config, options, envName: '${envName}' }
+        { featureName, configName, featureLoaders, config, options, envName: '${envName}', publicPath }
     );
 
     return runtimeEngine;
