@@ -5,7 +5,7 @@ import { deferred, EventEmitter } from '../helpers';
 export class WsClientHost extends BaseHost {
     public connected: Promise<void>;
     private socketClient: SocketIOClient.Socket;
-    public subscribers = new EventEmitter<{ disconnect: void }>();
+    public subscribers = new EventEmitter<{ disconnect: void; reconnect: void }>();
 
     constructor(url: string) {
         super();
@@ -25,6 +25,10 @@ export class WsClientHost extends BaseHost {
         this.socketClient.on('disconnect', () => {
             this.subscribers.emit('disconnect', undefined);
             this.socketClient.close();
+        });
+
+        this.socketClient.on('reconnect', () => {
+            this.subscribers.emit('reconnect', undefined);
         });
     }
 

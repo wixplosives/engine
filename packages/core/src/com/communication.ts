@@ -30,7 +30,8 @@ import {
     UnknownFunction,
     WindowHost,
     AnyServiceMethodOptions,
-    ServiceComConfig
+    ServiceComConfig,
+    ILiveEnvironment
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -110,7 +111,7 @@ export class Communication {
 
     public async spawnOrConnect(
         endPoint: SingleEndpointContextualEnvironment<string, Environment[]>
-    ): Promise<{ id: string; onDisconnect?: (cb: () => void) => void }> {
+    ): Promise<ILiveEnvironment> {
         const runtimeEnvironmentName = this.resolvedContexts[endPoint.env];
 
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
@@ -208,6 +209,9 @@ export class Communication {
             id: instanceId,
             onDisconnect: (cb: () => void) => {
                 host.subscribers.listeners.add('disconnect', cb);
+            },
+            onReconnect: (cb: () => void) => {
+                host.subscribers.listeners.add('reconnect', cb);
             }
         };
     }
@@ -353,6 +357,9 @@ export class Communication {
      */
     public dispose(): void {
         for (const { host } of Object.values(this.environments)) {
+            if (host instanceof WsClientHost) {
+                host.subscribers.clear();
+            }
             host.removeEventListener('message', this.handleEvent, true);
         }
     }
