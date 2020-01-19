@@ -40,6 +40,7 @@ export interface IRunOptions extends IFeatureTarget {
     port?: number;
     publicPath?: string;
     mode?: 'development' | 'production';
+    title?: string;
 }
 
 export interface IBuildManifest {
@@ -78,7 +79,8 @@ export class Application {
         configName,
         publicPath,
         mode = 'production',
-        singleFeature
+        singleFeature,
+        title
     }: IRunOptions = {}): Promise<webpack.Stats> {
         await this.loadRequiredModulesFromEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
@@ -90,7 +92,8 @@ export class Application {
             features,
             featureName,
             configName,
-            publicPath
+            publicPath,
+            title
         });
 
         const stats = await new Promise<webpack.Stats>((resolve, reject) =>
@@ -125,7 +128,8 @@ export class Application {
         config = [],
         publicPath,
         mode = 'development',
-        singleFeature
+        singleFeature,
+        title
     }: IRunOptions = {}) {
         await this.loadRequiredModulesFromEngineConfig();
 
@@ -146,7 +150,8 @@ export class Application {
             features,
             featureName,
             configName,
-            publicPath
+            publicPath,
+            title
         });
 
         if (singleRun) {
@@ -450,13 +455,15 @@ export class Application {
         featureName,
         configName,
         publicPath,
-        mode
+        mode,
+        title
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
         publicPath?: string;
         mode?: 'production' | 'development';
+        title?: string;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -479,7 +486,8 @@ export class Application {
             features,
             featureName,
             configName,
-            publicPath
+            publicPath,
+            title
         });
 
         const compiler = webpack(webpackConfigs);

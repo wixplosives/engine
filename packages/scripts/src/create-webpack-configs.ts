@@ -15,6 +15,7 @@ export interface ICreateWebpackConfigsOptions {
     outputPath: string;
     enviroments: IEnvironment[];
     publicPath?: string;
+    title?: string;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
@@ -92,6 +93,7 @@ interface ICreateWebpackConfigOptions {
     virtualModules: Record<string, string>;
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;
+    title?: string;
 }
 
 function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
@@ -115,7 +117,8 @@ function createWebpackConfig({
     outputPath,
     plugins = [],
     entry = {},
-    publicPath
+    publicPath,
+    title
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -132,7 +135,8 @@ function createWebpackConfig({
             plugins.push(
                 new HtmlWebpackPlugin({
                     filename: `${envName}.html`,
-                    chunks: [envName]
+                    chunks: [envName],
+                    title
                 })
             );
         }

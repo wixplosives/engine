@@ -32,6 +32,7 @@ program
     .option('--singleFeature', 'build only the feature set by --feature', false)
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
+    .option('--title <title>', 'application title to display in browser')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -43,7 +44,8 @@ program
             open: openBrowser = 'true',
             require: pathsToRequire,
             publicPath = defaultPublicPath,
-            mode
+            mode,
+            title
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -58,7 +60,8 @@ program
                 singleRun,
                 singleFeature,
                 publicPath,
-                mode
+                mode,
+                title
             });
 
             if (process.send) {
@@ -104,6 +107,7 @@ program
     .option('--outDir <outDir>')
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--singleFeature', 'build only the feature set by --feature', true)
+    .option('--title <title>', 'application title to display in browser')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -113,14 +117,15 @@ program
             require: pathsToRequire,
             publicPath,
             mode,
-            singleFeature
+            singleFeature,
+            title
         } = cmd;
         try {
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const outputPath = resolve(outDir);
             const app = new Application({ basePath, outputPath });
-            const stats = await app.build({ featureName, configName, publicPath, mode, singleFeature });
+            const stats = await app.build({ featureName, configName, publicPath, mode, singleFeature, title });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
             printErrorAndExit(e);
