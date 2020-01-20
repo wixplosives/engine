@@ -96,9 +96,7 @@ const configLoaders = {
         .map(([scopedName, { envName: configEnvName }]) => {
             const importedConfigPaths = configs[scopedName].map(
                 filePath =>
-                    `import(/* webpackChunkName: "${filePath}" */ /* webpackMode: "${
-                        mode === 'production' && configName ? 'eager' : 'lazy'
-                    }" */ ${JSON.stringify(
+                    `import(/* webpackChunkName: "${filePath}" */ ${JSON.stringify(
                         join(__dirname, '..', 'loaders', 'top-level-config-loader') + '!' + filePath
                     )})`
             );
