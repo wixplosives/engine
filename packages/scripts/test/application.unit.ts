@@ -154,7 +154,6 @@ describe('Application', function() {
             const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
 
             // creating config file
-
             await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(originalConfigValue));
 
             // after the test, delete the file
@@ -176,19 +175,18 @@ describe('Application', function() {
             // modifying the config file
             await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(modifiedConfigValue));
 
-            // reload the page (to see if the config file was changed, without re-running the application)
-            await page.reload({
-                waitUntil: 'networkidle2'
-            });
-
             // checking if config content is changed
             await waitFor(
                 async () => {
+                    // reload the page (to see if the config file was changed, without re-running the application)
+                    await page.reload({
+                        waitUntil: 'networkidle2'
+                    });
                     expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
                 },
-                { timeout: 20_000 }
+                { timeout: 10_000, delay: 500 }
             );
-        }).timeout(30_000);
+        });
 
         it('runs node environments with inspect mode', async function() {
             // these tests takes longer in CI
