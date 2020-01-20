@@ -169,12 +169,9 @@ describe('Application', function() {
             const page = await loadPage(`http://localhost:${runningApp.port}/main.html`);
 
             // validate original config file is used
-            await waitFor(
-                async () => {
-                    expect(await getBodyContent(page)).to.equal(originalConfigValue);
-                },
-                { timeout: 3_000 }
-            );
+            await waitFor(async () => {
+                expect(await getBodyContent(page)).to.equal(originalConfigValue);
+            });
 
             // modifying the config file
             await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(modifiedConfigValue));
@@ -189,9 +186,9 @@ describe('Application', function() {
                 async () => {
                     expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
                 },
-                { timeout: 3_000 }
+                { timeout: 10_000 }
             );
-        });
+        }).timeout(15_000);
 
         it('runs node environments with inspect mode', async function() {
             // these tests takes longer in CI

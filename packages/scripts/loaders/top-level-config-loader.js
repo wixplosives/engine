@@ -1,5 +1,3 @@
-// import webpack from 'webpack';
-
 const freshImport = require('import-fresh');
 
 const loader = function() {
