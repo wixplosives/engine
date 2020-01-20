@@ -186,9 +186,9 @@ describe('Application', function() {
                 async () => {
                     expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
                 },
-                { timeout: 10_000 }
+                { timeout: 20_000 }
             );
-        }).timeout(15_000);
+        }).timeout(30_000);
 
         it('runs node environments with inspect mode', async function() {
             // these tests takes longer in CI
