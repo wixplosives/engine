@@ -1,21 +1,22 @@
-const freshImport = require('import-fresh');
+import { loader as webpackLoader } from 'webpack';
+import freshImport from 'import-fresh';
 
-const loader = function() {
+export default function(this: webpackLoader.LoaderContext) {
     walkChildModules(require.cache[this.resourcePath], ({ filename }) => {
-        if(!filename.includes('node_modules') && filename.includes(this.rootContext)) {
+        if (!filename.includes('node_modules') && filename.includes(this.rootContext)) {
             delete require.cache[filename];
         }
     });
-    const imported = freshImport(this.resourcePath);
-    walkChildModules(require.cache[this.resourcePath], ({filename}) => {
-        if(!filename.includes('node_modules') && filename.includes(this.rootContext)){
+    const imported = freshImport(this.resourcePath) as { default?: any };
+    walkChildModules(require.cache[this.resourcePath], ({ filename }) => {
+        if (!filename.includes('node_modules') && filename.includes(this.rootContext)) {
             this.addDependency(filename);
-        }        
+        }
     });
     return `export default JSON.parse(${JSON.stringify(JSON.stringify(imported.default || imported))})`;
-};
+}
 
-function walkChildModules(nodeJsModule, visitor, registryCache = new Set()) {
+function walkChildModules(nodeJsModule: NodeModule, visitor: (module: NodeModule) => void, registryCache = new Set()) {
     if (!nodeJsModule || registryCache.has(nodeJsModule)) {
         return;
     }
@@ -27,5 +28,3 @@ function walkChildModules(nodeJsModule, visitor, registryCache = new Set()) {
         });
     }
 }
-
-module.exports = loader;
