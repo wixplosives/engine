@@ -97,7 +97,7 @@ const configLoaders = {
             const importedConfigPaths = configs[scopedName].map(
                 filePath =>
                     `import(/* webpackChunkName: "${filePath}" */ ${JSON.stringify(
-                        join(__dirname, '..', 'loaders', 'top-level-config-loader') + '!' + filePath
+                        join(__dirname, 'top-level-config-loader') + '!' + filePath
                     )})`
             );
 
@@ -122,7 +122,7 @@ async function main() {
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
     if(configName) {
-        const loadedConfigurations = (await configLoaders[configName]()).map(importedConfig=> importedConfig.default).filter(importedConfig => importedConfig.length).flat();
+        const loadedConfigurations = configLoaders[configName] ? (await configLoaders[configName]()).map(importedConfig=> importedConfig.default).filter(importedConfig => importedConfig.length).flat() : [];
         config.push(...loadedConfigurations);
     }
     
