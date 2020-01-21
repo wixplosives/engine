@@ -29,6 +29,7 @@ export interface IRunEngineAppOptions {
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;
     envName: string;
+    publicPath?: string;
 }
 
 export async function runEngineApp({
@@ -36,7 +37,8 @@ export async function runEngineApp({
     featureLoaders,
     config = [],
     options,
-    envName
+    envName,
+    publicPath
 }: IRunEngineAppOptions) {
     const featureNames = Object.keys(featureLoaders);
 
@@ -53,7 +55,7 @@ export async function runEngineApp({
     ]);
     const [runningFeature] = allFeatures;
 
-    const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts } }), ...config], options).run(
+    const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options).run(
         runningFeature,
         envName
     );
@@ -68,8 +70,16 @@ export async function runEngineApp({
 }
 
 export function getTopWindow(win: Window): Window {
-    while (win.parent && win.parent !== win) {
+    while (win.parent && win.parent !== win && canAccessWindow(win.parent)) {
         win = win.parent;
     }
     return win;
+}
+
+function canAccessWindow(win: Window): boolean {
+    try {
+        return !!win.location.search;
+    } catch {
+        return false;
+    }
 }

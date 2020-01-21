@@ -30,7 +30,8 @@ import {
     UnknownFunction,
     WindowHost,
     AnyServiceMethodOptions,
-    ServiceComConfig
+    ServiceComConfig,
+    ILiveEnvironment
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -74,7 +75,7 @@ export class Communication {
         public isServer = false,
         options?: ICommunicationOptions
     ) {
-        this.options = { warnOnSlow: false, publicPath: '/', ...options };
+        this.options = { warnOnSlow: false, publicPath: '', ...options };
         this.rootEnvId = id;
         this.rootEnvName = id.split('/')[0];
         this.registerMessageHandler(host);
@@ -110,7 +111,7 @@ export class Communication {
 
     public async spawnOrConnect(
         endPoint: SingleEndpointContextualEnvironment<string, Environment[]>
-    ): Promise<{ id: string; onDisconnect?: (cb: () => void) => void }> {
+    ): Promise<ILiveEnvironment> {
         const runtimeEnvironmentName = this.resolvedContexts[endPoint.env];
 
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
@@ -208,6 +209,9 @@ export class Communication {
             id: instanceId,
             onDisconnect: (cb: () => void) => {
                 host.subscribers.listeners.add('disconnect', cb);
+            },
+            onReconnect: (cb: () => void) => {
+                host.subscribers.listeners.add('reconnect', cb);
             }
         };
     }
@@ -353,6 +357,9 @@ export class Communication {
      */
     public dispose(): void {
         for (const { host } of Object.values(this.environments)) {
+            if (host instanceof WsClientHost) {
+                host.subscribers.clear();
+            }
             host.removeEventListener('message', this.handleEvent, true);
         }
     }
@@ -777,15 +784,15 @@ export class Communication {
 /*
  * We only use the default factories so as a solution to pass the config name we append the location.search
  */
-const defaultWorkerFactory = (envName: string, instanceId: string, publicPath = '/') => {
+const defaultWorkerFactory = (envName: string, instanceId: string, publicPath = '') => {
     return new Worker(`${publicPath}${envName}.webworker.js${location.search}`, { name: instanceId });
 };
 
-const defaultSourceFactory = (envName: string, _instanceId: string, publicPath = '/') => {
+const defaultSourceFactory = (envName: string, _instanceId: string, publicPath = '') => {
     return `${publicPath}${envName}.web.js${location.search}`;
 };
 
-const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '/', hashParams?: string) => {
+const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '', hashParams?: string) => {
     return `${publicPath}${envName}.html${location.search}${hashParams ?? ''}`;
 };
 

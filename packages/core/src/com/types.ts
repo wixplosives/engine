@@ -51,6 +51,11 @@ export interface AnyServiceMethodOptions {
     removeAllListeners?: string;
 }
 
+export interface ILiveEnvironment {
+    id: string;
+    onDisconnect?: (cb: () => void) => void;
+    onReconnect?: (cb: () => void) => void;
+}
 
 export type ServiceComConfig<T> = {
     [K in keyof T]?: T[K] extends (...args: any[]) => unknown ? IServiceMethodOptions<T, K> : never;

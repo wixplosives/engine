@@ -1,16 +1,15 @@
-import { safeListeningHttpServer } from 'create-listening-server';
-import express from 'express';
-import rimrafCb from 'rimraf';
-import io from 'socket.io';
 import { promisify } from 'util';
-import webpack from 'webpack';
-import webpackDevMiddleware from 'webpack-dev-middleware';
-
 import { Socket } from 'net';
 
+import { safeListeningHttpServer } from 'create-listening-server';
+import express from 'express';
+import cors from 'cors';
+import rimrafCb from 'rimraf';
+import io from 'socket.io';
+import webpack from 'webpack';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 import fs from '@file-services/node';
-import { SetMultiMap } from '@file-services/utils';
-import { TopLevelConfig } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -41,6 +40,7 @@ export interface IRunOptions extends IFeatureTarget {
     port?: number;
     publicPath?: string;
     mode?: 'development' | 'production';
+    title?: string;
 }
 
 export interface IBuildManifest {
@@ -79,7 +79,8 @@ export class Application {
         configName,
         publicPath,
         mode = 'production',
-        singleFeature
+        singleFeature,
+        title
     }: IRunOptions = {}): Promise<webpack.Stats> {
         await this.loadRequiredModulesFromEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
@@ -91,7 +92,8 @@ export class Application {
             features,
             featureName,
             configName,
-            publicPath
+            publicPath,
+            title
         });
 
         const stats = await new Promise<webpack.Stats>((resolve, reject) =>
@@ -124,11 +126,11 @@ export class Application {
         port: httpServerPort,
         singleRun,
         config = [],
-        publicPath = '/',
+        publicPath,
         mode = 'development',
-        singleFeature
+        singleFeature,
+        title
     }: IRunOptions = {}) {
-        const normilizedPublicPath = normalizePublicPath(publicPath);
         await this.loadRequiredModulesFromEngineConfig();
 
         const disposables = new Set<() => unknown>();
@@ -148,7 +150,8 @@ export class Application {
             features,
             featureName,
             configName,
-            publicPath: normilizedPublicPath
+            publicPath,
+            title
         });
 
         if (singleRun) {
@@ -178,8 +181,8 @@ export class Application {
         const middleware = createConfigMiddleware(
             configurations,
             nodeEnvironmentManager.topology,
-            normilizedPublicPath,
-            this.basePath
+            this.basePath,
+            publicPath
         );
 
         let currentConfig = config;
@@ -202,7 +205,7 @@ export class Application {
             compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
-        const mainUrl = `http://localhost:${port}${normilizedPublicPath}`;
+        const mainUrl = `http://localhost:${port}/`;
         console.log(`Listening:`);
         console.log('Dashboard URL: ', mainUrl);
         if (featureName) {
@@ -266,10 +269,9 @@ export class Application {
             inspect,
             port: httpServerPort,
             config: userConfig = [],
-            publicPath = '/'
+            publicPath
         } = runOptions;
         const disposables = new Set<() => unknown>();
-        const normilizedPublicPath = normalizePublicPath(publicPath);
         const configurations = await this.readConfigs();
 
         const { port, close, socketServer, app } = await this.launchHttpServer({
@@ -293,8 +295,8 @@ export class Application {
         const configMiddleware = createConfigMiddleware(
             configurations,
             nodeEnvironmentManager.topology,
-            normilizedPublicPath,
-            this.basePath
+            this.basePath,
+            publicPath
         );
         app.use(`/config`, configMiddleware(config));
 
@@ -452,14 +454,16 @@ export class Application {
         features,
         featureName,
         configName,
-        publicPath = '/',
-        mode
+        publicPath,
+        mode,
+        title
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
         publicPath?: string;
         mode?: 'production' | 'development';
+        title?: string;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -482,7 +486,8 @@ export class Application {
             features,
             featureName,
             configName,
-            publicPath
+            publicPath,
+            title
         });
 
         const compiler = webpack(webpackConfigs);
@@ -533,6 +538,7 @@ export class Application {
         configName?: string;
     }) {
         const app = express();
+        app.use(cors());
         const openSockets = new Set<Socket>();
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
         httpServer.on('connection', socket => {
@@ -589,16 +595,6 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target} using webpack...`);
-
-function normalizePublicPath(publicPath: string) {
-    if (!publicPath.startsWith('/')) {
-        publicPath = `/${publicPath}`;
-    }
-    if (!publicPath.endsWith('/')) {
-        publicPath = `${publicPath}/`;
-    }
-    return publicPath;
-}
 
 function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);

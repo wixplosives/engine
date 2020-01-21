@@ -2,8 +2,7 @@ import bodyParser from 'body-parser';
 import { Router } from 'express';
 import io from 'socket.io';
 
-import { SetMultiMap } from '@file-services/utils';
-import { COM, flattenTree, TopLevelConfig } from '@wixc3/engine-core';
+import { COM, flattenTree, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runNodeEnvironment } from './run-node-environment';

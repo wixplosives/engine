@@ -18,7 +18,7 @@ export interface IComConfig {
     loggerSeverity: LogLevel;
     logToConsole?: boolean;
     maxLogMessages: number;
-    publicPath: string;
+    publicPath?: string;
 }
 
 export default new Feature({
@@ -30,8 +30,7 @@ export default new Feature({
                 loggerSeverity: LogLevel.DEBUG,
                 maxLogMessages: 100,
                 topology: {},
-                resolvedContexts: {},
-                publicPath: '/'
+                resolvedContexts: {}
             },
             (a: IComConfig, b: Partial<IComConfig>) => ({
                 ...a,

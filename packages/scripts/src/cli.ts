@@ -32,6 +32,7 @@ program
     .option('--singleFeature', 'build only the feature set by --feature', false)
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
+    .option('--title <title>', 'application title to display in browser')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -43,7 +44,8 @@ program
             open: openBrowser = 'true',
             require: pathsToRequire,
             publicPath = defaultPublicPath,
-            mode
+            mode,
+            title
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -58,13 +60,14 @@ program
                 singleRun,
                 singleFeature,
                 publicPath,
-                mode
+                mode,
+                title
             });
 
             if (process.send) {
                 process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
             } else if (featureName && configName && openBrowser === 'true') {
-                await open(`http://localhost:${port}${publicPath}main.html`);
+                await open(`http://localhost:${port}/main.html`);
             }
 
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
@@ -104,6 +107,7 @@ program
     .option('--outDir <outDir>')
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--singleFeature', 'build only the feature set by --feature', true)
+    .option('--title <title>', 'application title to display in browser')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -113,14 +117,15 @@ program
             require: pathsToRequire,
             publicPath,
             mode,
-            singleFeature
+            singleFeature,
+            title
         } = cmd;
         try {
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const outputPath = resolve(outDir);
             const app = new Application({ basePath, outputPath });
-            const stats = await app.build({ featureName, configName, publicPath, mode, singleFeature });
+            const stats = await app.build({ featureName, configName, publicPath, mode, singleFeature, title });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
             printErrorAndExit(e);
@@ -158,7 +163,7 @@ program
                 publicPath
             });
             console.log(`Listening:`);
-            console.log(`http://localhost:${port}${publicPath}main.html`);
+            console.log(`http://localhost:${port}/main.html`);
         } catch (e) {
             printErrorAndExit(e);
         }
