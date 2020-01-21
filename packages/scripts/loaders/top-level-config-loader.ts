@@ -1,5 +1,4 @@
 import { loader as webpackLoader } from 'webpack';
-import freshImport from 'import-fresh';
 
 export default function(this: webpackLoader.LoaderContext) {
     walkChildModules(require.cache[this.resourcePath], ({ filename }) => {
@@ -7,7 +6,7 @@ export default function(this: webpackLoader.LoaderContext) {
             delete require.cache[filename];
         }
     });
-    const imported = freshImport(this.resourcePath) as { default?: any };
+    const imported = require(this.resourcePath) as { default?: any };
     walkChildModules(require.cache[this.resourcePath], ({ filename }) => {
         if (!filename.includes('node_modules') && filename.includes(this.rootContext)) {
             this.addDependency(filename);
