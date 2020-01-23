@@ -1,7 +1,7 @@
 import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { Communication, Environment, decalreComEmitter } from '../src';
+import { Communication, Environment, declareComEmitter } from '../src';
 import {
     ITestServiceData,
     multiTanentServiceId,
@@ -50,7 +50,7 @@ describe('Communication API', function() {
         const com = disposables.add(new Communication(window, comId));
         const env = await com.spawn(iframeEnv, createIframe());
 
-        const api = com.apiProxy<TestService>(env, { id: testServiceId }, decalreComEmitter('listen', '', ''));
+        const api = com.apiProxy<TestService>(env, { id: testServiceId }, declareComEmitter('listen', '', ''));
         const capturedCalls: ITestServiceData[] = [];
         await api.listen(data => capturedCalls.push(data));
 
