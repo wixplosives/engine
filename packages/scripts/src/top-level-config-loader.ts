@@ -7,7 +7,7 @@ export default function(this: webpackLoader.LoaderContext) {
             this.addDependency(filename);
         }
     });
-    return `export default JSON.parse(${JSON.stringify(JSON.stringify(imported.default || imported))})`;
+    return `export default JSON.parse(${JSON.stringify(JSON.stringify(imported))})`;
 }
 
 function walkChildModules(nodeJsModule: NodeModule, visitor: (module: NodeModule) => void, registryCache = new Set()) {
@@ -39,5 +39,5 @@ function requireDeepHack(resourcePath: string, rootContext: string) {
         require.cache[key] = nodeModule;
     }
 
-    return imported;
+    return imported.default ?? imported;
 }
