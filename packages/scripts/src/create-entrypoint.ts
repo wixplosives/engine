@@ -17,14 +17,14 @@ export interface ICreateEntrypointsOptions {
 }
 
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
-    const configNameToFiles: Record<string, string[]> = {};
+    const configNameToFiles: Record<string, { filePath: string; configEnvName?: string }[]> = {};
 
     configurations.map(([configName, { filePath, envName: configEnvName }]) => {
         if (!configNameToFiles[configName]) {
             configNameToFiles[configName] = [];
         }
         if (!configEnvName || configEnvName === envName) {
-            configNameToFiles[configName].push(filePath);
+            configNameToFiles[configName].push({ filePath, configEnvName });
         }
     });
 
@@ -92,20 +92,19 @@ ${Array.from(features.values())
 
 
 const configLoaders = {
-    ${configurationsToLoad
-        .map(([scopedName, { envName: configEnvName }]) => {
+    ${Object.keys(configs)
+        .map(scopedName => {
             const importedConfigPaths = configs[scopedName].map(
-                filePath =>
-                    `import(/* webpackChunkName: "${filePath}" */ ${JSON.stringify(
-                        join(__dirname, 'top-level-config-loader') + '!' + filePath
+                ({ filePath, configEnvName }) =>
+                    `import(/* webpackChunkName: "${filePath}" */ /* webpackMode: 'eager' */ ${JSON.stringify(
+                        join(__dirname, 'top-level-config-loader') +
+                            `?scopedName=${scopedName}&envName=${configEnvName}!` +
+                            filePath
                     )})`
             );
 
-            return !configEnvName || configEnvName === envName
-                ? `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`
-                : '';
+            return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;
         })
-        .filter(config => config)
         .join(',\n')}
 }
 
@@ -122,8 +121,9 @@ async function main() {
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
     if(configName) {
-        const loadedConfigurations = configLoaders[configName] ? (await configLoaders[configName]()).map(importedConfig=> importedConfig.default).filter(importedConfig => importedConfig.length).flat() : [];
-        config.push(...loadedConfigurations);
+        const loadedConfigurations = configLoaders[configName] ? (await configLoaders[configName]()).map(module => module.default) : Promise.resolve([]);
+        const allLoadedConfigs = await Promise.all(loadedConfigurations); 
+        config.push(...allLoadedConfigs.flat());
     }
     
     config.push(...await (await fetch('config/' + configName + '?env=${envName}&feature=' + featureName)).json());
