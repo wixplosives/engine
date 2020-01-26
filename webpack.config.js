@@ -9,9 +9,6 @@ module.exports = {
         extensions: ['.ts', '.tsx', '.mjs', '.js', '.json'],
         plugins: [new TsconfigPathsPlugin({ configFile: join(__dirname, 'tsconfig.json') })]
     },
-    resolveLoader: {
-        extensions: ['.ts', '.mjs', '.js']
-    },
     module: {
         rules: [
             {

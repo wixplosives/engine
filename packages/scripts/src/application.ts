@@ -93,8 +93,7 @@ export class Application {
             featureName,
             configName,
             publicPath,
-            title,
-            configurations
+            title
         });
 
         const stats = await new Promise<webpack.Stats>((resolve, reject) =>
@@ -136,7 +135,9 @@ export class Application {
 
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
-            httpServerPort
+            httpServerPort,
+            featureName,
+            configName
         });
         disposables.add(() => close());
 
@@ -150,8 +151,7 @@ export class Application {
             featureName,
             configName,
             publicPath,
-            title,
-            configurations
+            title
         });
 
         if (singleRun) {
@@ -178,7 +178,12 @@ export class Application {
             config
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-        const middleware = createConfigMiddleware(nodeEnvironmentManager.topology, publicPath);
+        const middleware = createConfigMiddleware(
+            configurations,
+            nodeEnvironmentManager.topology,
+            this.basePath,
+            publicPath
+        );
 
         let currentConfig = config;
 
@@ -270,7 +275,9 @@ export class Application {
         const configurations = await this.readConfigs();
 
         const { port, close, socketServer, app } = await this.launchHttpServer({
-            httpServerPort
+            httpServerPort,
+            featureName,
+            configName
         });
         const config: TopLevelConfig = [];
         disposables.add(() => close());
@@ -285,7 +292,12 @@ export class Application {
             configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-        const configMiddleware = createConfigMiddleware(nodeEnvironmentManager.topology, publicPath);
+        const configMiddleware = createConfigMiddleware(
+            configurations,
+            nodeEnvironmentManager.topology,
+            this.basePath,
+            publicPath
+        );
         app.use(`/config`, configMiddleware(config));
 
         if (featureName) {
@@ -444,8 +456,7 @@ export class Application {
         configName,
         publicPath,
         mode,
-        title,
-        configurations
+        title
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -453,7 +464,6 @@ export class Application {
         publicPath?: string;
         mode?: 'production' | 'development';
         title?: string;
-        configurations: SetMultiMap<string, IConfigDefinition>;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -477,8 +487,7 @@ export class Application {
             featureName,
             configName,
             publicPath,
-            title,
-            configurations
+            title
         });
 
         const compiler = webpack(webpackConfigs);
@@ -519,7 +528,15 @@ export class Application {
         return featureEnvDefinitions;
     }
 
-    private async launchHttpServer({ httpServerPort = DEFAULT_PORT }: { httpServerPort?: number }) {
+    private async launchHttpServer({
+        httpServerPort = DEFAULT_PORT,
+        featureName,
+        configName
+    }: {
+        httpServerPort?: number;
+        featureName?: string;
+        configName?: string;
+    }) {
         const app = express();
         app.use(cors());
         const openSockets = new Set<Socket>();
@@ -532,6 +549,12 @@ export class Application {
         app.use('/', express.static(this.outputPath));
 
         app.use('/favicon.ico', noContentHandler);
+        app.use('/defaults', (_, res) => {
+            res.json({
+                featureName,
+                configName
+            });
+        });
 
         const socketServer = io(httpServer);
 

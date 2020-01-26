@@ -3,8 +3,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import { createEntrypoint } from './create-entrypoint';
-import { IEnvironment, IFeatureDefinition, IConfigDefinition } from './types';
-import { SetMultiMap } from '@wixc3/engine-core/src';
+import { IEnvironment, IFeatureDefinition } from './types';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -17,7 +16,6 @@ export interface ICreateWebpackConfigsOptions {
     enviroments: IEnvironment[];
     publicPath?: string;
     title?: string;
-    configurations: SetMultiMap<string, IConfigDefinition>;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
@@ -41,7 +39,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             addEnv(workerEnvs, env);
         }
     }
-
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
@@ -97,7 +94,6 @@ interface ICreateWebpackConfigOptions {
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;
     title?: string;
-    configurations: SetMultiMap<string, IConfigDefinition>;
 }
 
 function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
@@ -122,8 +118,7 @@ function createWebpackConfig({
     plugins = [],
     entry = {},
     publicPath,
-    title,
-    configurations
+    title
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -134,9 +129,7 @@ function createWebpackConfig({
             envName,
             featureName,
             configName,
-            publicPath,
-            configurations,
-            mode
+            publicPath
         });
         if (target === 'web') {
             plugins.push(
