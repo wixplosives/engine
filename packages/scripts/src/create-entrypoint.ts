@@ -13,7 +13,9 @@ export interface ICreateEntrypointsOptions {
     configName?: string;
     publicPath?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
+    staticBuild: boolean;
     mode: 'production' | 'development';
+    publicConfigsRoute?: string;
 }
 
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
@@ -50,7 +52,9 @@ export function createEntrypoint({
     configName,
     publicPath,
     configurations,
-    mode
+    mode,
+    staticBuild,
+    publicConfigsRoute
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -89,8 +93,9 @@ ${Array.from(features.values())
 };
 
 
-
-const configLoaders = {
+${
+    staticBuild
+        ? `const configLoaders = {
     ${Object.keys(configs)
         .map(scopedName => {
             const importedConfigPaths = configs[scopedName].map(
@@ -105,8 +110,9 @@ const configLoaders = {
             return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;
         })
         .join(',\n')}
+}`
+        : ''
 }
-
 async function main() {
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
@@ -119,13 +125,24 @@ async function main() {
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
-    if(configName) {
+    ${
+        staticBuild
+            ? `if(configName) {
         const loadedConfigurations = configLoaders[configName] ? (await configLoaders[configName]()).map(module => module.default) : Promise.resolve([]);
         const allLoadedConfigs = await Promise.all(loadedConfigurations); 
         config.push(...allLoadedConfigs.flat());
+    }`
+            : ''
     }
     
-    config.push(...await (await fetch('config/' + configName + '?env=${envName}&feature=' + featureName)).json());
+    ${
+        publicConfigsRoute
+            ? `config.push(...await (await fetch('${normilazeRoute(
+                  publicConfigsRoute
+              )}' + configName + '?env=${envName}&feature=' + featureName)).json());`
+            : ''
+    }
+    
     
     const runtimeEngine = await runEngineApp(
         { featureName, configName, featureLoaders, config, options, envName: '${envName}', publicPath }
@@ -136,4 +153,12 @@ async function main() {
 
 main().catch(console.error);
 `;
+}
+
+function normilazeRoute(route?: string) {
+    if (route && !route.endsWith('/')) {
+        return route + '/';
+    }
+
+    return route;
 }

@@ -23,7 +23,7 @@ import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 
 const rimraf = promisify(rimrafCb);
-const { basename, dirname, extname, join } = fs;
+const { basename, extname, join } = fs;
 export const DEFAULT_PORT = 3000;
 
 export interface IFeatureTarget {
@@ -41,6 +41,7 @@ export interface IRunOptions extends IFeatureTarget {
     publicPath?: string;
     mode?: 'development' | 'production';
     title?: string;
+    publicConfigsRoute?: string;
 }
 
 export interface IBuildManifest {
@@ -80,7 +81,8 @@ export class Application {
         publicPath,
         mode = 'production',
         singleFeature,
-        title
+        title,
+        publicConfigsRoute
     }: IRunOptions = {}): Promise<webpack.Stats> {
         await this.loadRequiredModulesFromEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
@@ -94,7 +96,9 @@ export class Application {
             configName,
             publicPath,
             title,
-            configurations
+            configurations,
+            staticBuild: true,
+            publicConfigsRoute
         });
 
         const stats = await new Promise<webpack.Stats>((resolve, reject) =>
@@ -114,7 +118,7 @@ export class Application {
             featureName,
             configName
         });
-        await this.writeConfigFiles(configurations);
+        // await this.writeConfigFiles(configurations);
 
         return stats;
     }
@@ -130,7 +134,8 @@ export class Application {
         publicPath,
         mode = 'development',
         singleFeature,
-        title
+        title,
+        publicConfigsRoute
     }: IRunOptions = {}) {
         await this.loadRequiredModulesFromEngineConfig();
 
@@ -151,7 +156,9 @@ export class Application {
             configName,
             publicPath,
             title,
-            configurations
+            configurations,
+            staticBuild: false,
+            publicConfigsRoute
         });
 
         if (singleRun) {
@@ -294,7 +301,8 @@ export class Application {
             configurations,
             nodeEnvironmentManager.topology,
             this.basePath,
-            publicPath
+            publicPath,
+            true
         );
         app.use(`/config`, configMiddleware(config));
 
@@ -433,21 +441,6 @@ export class Application {
         await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
     }
 
-    private async writeConfigFiles(configurations: SetMultiMap<string, IConfigDefinition>) {
-        const configsFolderPath = join(this.outputPath, 'configs');
-        for (const [currentConfigName, config] of configurations) {
-            const configFileName = `${currentConfigName}${config.envName ? `.${config.envName}` : ''}.json`;
-
-            const configFilePath = join(configsFolderPath, configFileName);
-            await fs.promises.ensureDirectory(dirname(configFilePath));
-            const configFileContent: IExportedConfigDefinition = {
-                ...config,
-                config: require(config.filePath).default
-            };
-            await fs.promises.writeFile(configFilePath, JSON.stringify(configFileContent, null, 2));
-        }
-    }
-
     private createCompiler({
         features,
         featureName,
@@ -455,7 +448,9 @@ export class Application {
         publicPath,
         mode,
         title,
-        configurations
+        configurations,
+        staticBuild,
+        publicConfigsRoute
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -464,6 +459,8 @@ export class Application {
         mode?: 'production' | 'development';
         title?: string;
         configurations: SetMultiMap<string, IConfigDefinition>;
+        staticBuild: boolean;
+        publicConfigsRoute?: string;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -488,7 +485,9 @@ export class Application {
             configName,
             publicPath,
             title,
-            configurations
+            configurations,
+            staticBuild,
+            publicConfigsRoute
         });
 
         const compiler = webpack(webpackConfigs);

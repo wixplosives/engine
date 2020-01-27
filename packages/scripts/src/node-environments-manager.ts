@@ -194,8 +194,8 @@ export class NodeEnvironmentsManager {
             }
             for (const definition of configDefinition) {
                 try {
-                    if ((definition as IExportedConfigDefinition).config) {
-                        config.push(...(definition as IExportedConfigDefinition).config);
+                    if (Array.isArray(definition)) {
+                        config.push(...definition);
                     } else {
                         config.push(...(await import(definition.filePath)).default);
                     }

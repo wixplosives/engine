@@ -18,6 +18,8 @@ export interface ICreateWebpackConfigsOptions {
     publicPath?: string;
     title?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
+    staticBuild: boolean;
+    publicConfigsRoute?: string;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
@@ -97,6 +99,8 @@ interface ICreateWebpackConfigOptions {
     entry?: webpack.Entry;
     title?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
+    staticBuild: boolean;
+    publicConfigsRoute?: string;
 }
 
 function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
@@ -122,7 +126,9 @@ function createWebpackConfig({
     entry = {},
     publicPath,
     title,
-    configurations
+    configurations,
+    staticBuild,
+    publicConfigsRoute
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -135,7 +141,9 @@ function createWebpackConfig({
             configName,
             publicPath,
             configurations,
-            mode
+            mode,
+            staticBuild,
+            publicConfigsRoute
         });
         if (target === 'web') {
             plugins.push(

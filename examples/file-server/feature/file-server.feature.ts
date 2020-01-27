@@ -1,4 +1,4 @@
-import { COM, Environment, Feature, Service } from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service, Config } from '@wixc3/engine-core';
 import { IDirectoryContents } from '../src/types';
 
 /**
@@ -25,6 +25,7 @@ export default new Feature({
     api: {
         remoteFiles: Service.withType<FileSystemAPI>()
             .defineEntity(server)
-            .allowRemoteAccess()
+            .allowRemoteAccess(),
+        config: new Config<{ title?: string }>({})
     }
 });

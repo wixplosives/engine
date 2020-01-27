@@ -8,7 +8,8 @@ export function createConfigMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition | IExportedConfigDefinition>,
     topology: Map<string, Record<string, string>>,
     basePath: string,
-    publicPath?: string
+    publicPath?: string,
+    staticBuild?: boolean
 ): (config: TopLevelConfig) => express.RequestHandler {
     return (overrideConfig?: TopLevelConfig) => {
         return async (req, res) => {
@@ -17,7 +18,7 @@ export function createConfigMiddleware(
             const requestedConfig = req.path.slice(1);
             const configDefinitions = configurations.get(requestedConfig);
 
-            if (configDefinitions) {
+            if (configDefinitions && !staticBuild) {
                 for (const configDefinition of configDefinitions) {
                     const { config: exportedConfig, filePath, envName } = configDefinition as IExportedConfigDefinition;
                     // dont evaluate configs on bundled version
