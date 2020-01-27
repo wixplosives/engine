@@ -389,6 +389,7 @@ describe('Application', function() {
             });
         });
 
+        // next 2 tests are disabled because at this moment this not a behavior we need
         xit('overrides default values on browser with which the project was build, when providing feature name', async () => {
             const app = new Application({
                 basePath: useConfigsFeaturePath
