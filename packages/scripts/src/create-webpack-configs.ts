@@ -41,7 +41,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             addEnv(workerEnvs, env);
         }
     }
-
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};

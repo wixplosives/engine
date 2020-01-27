@@ -178,7 +178,12 @@ export class Application {
             config
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-        const middleware = createConfigMiddleware(nodeEnvironmentManager.topology, publicPath);
+        const middleware = createConfigMiddleware(
+            configurations,
+            nodeEnvironmentManager.topology,
+            this.basePath,
+            publicPath
+        );
 
         let currentConfig = config;
 
@@ -285,7 +290,12 @@ export class Application {
             configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-        const configMiddleware = createConfigMiddleware(nodeEnvironmentManager.topology, publicPath);
+        const configMiddleware = createConfigMiddleware(
+            configurations,
+            nodeEnvironmentManager.topology,
+            this.basePath,
+            publicPath
+        );
         app.use(`/config`, configMiddleware(config));
 
         if (featureName) {

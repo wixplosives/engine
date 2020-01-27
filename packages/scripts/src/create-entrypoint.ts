@@ -1,6 +1,6 @@
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import { IFeatureDefinition, IConfigDefinition } from './types';
-import { SetMultiMap } from '@wixc3/engine-core';
+import { SetMultiMap } from '@wixc3/engine-core/src';
 import { join } from 'path';
 
 const { stringify } = JSON;
@@ -13,7 +13,7 @@ export interface ICreateEntrypointsOptions {
     configName?: string;
     publicPath?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
-    mode: 'development' | 'production';
+    mode: 'production' | 'development';
 }
 
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
@@ -52,11 +52,10 @@ export function createEntrypoint({
     configurations,
     mode
 }: ICreateEntrypointsOptions) {
-    const configurationsToLoad = getConfigLoaders(configurations, mode, configName);
-
-    const configs = getAllValidConfigurations(configurationsToLoad, envName);
+    const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
+
 const featureLoaders = {
 ${Array.from(features.values())
     .map(({ scopedName, name, filePath, envFilePaths, contextFilePaths, dependencies, resolvedContexts }) => {
