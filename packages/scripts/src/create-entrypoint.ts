@@ -137,7 +137,7 @@ async function main() {
     
     ${
         publicConfigsRoute
-            ? `config.push(...await (await fetch('${normilazeRoute(
+            ? `config.push(...await (await fetch('${normalizeRoute(
                   publicConfigsRoute
               )}' + configName + '?env=${envName}&feature=' + featureName)).json());`
             : ''
@@ -155,7 +155,7 @@ main().catch(console.error);
 `;
 }
 
-function normilazeRoute(route?: string) {
+function normalizeRoute(route?: string) {
     if (route && !route.endsWith('/')) {
         return route + '/';
     }
