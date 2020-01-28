@@ -197,7 +197,9 @@ export class Application {
         const middlewareConfigProxy: express.RequestHandler = (req, res, next) =>
             middleware(currentConfig)(req, res, next);
 
-        app.use('/config', middlewareConfigProxy);
+        if (publicConfigsRoute) {
+            app.use(`/${publicConfigsRoute}`, middlewareConfigProxy);
+        }
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
@@ -276,7 +278,8 @@ export class Application {
             inspect,
             port: httpServerPort,
             config: userConfig = [],
-            publicPath
+            publicPath,
+            publicConfigsRoute
         } = runOptions;
         const disposables = new Set<() => unknown>();
         const configurations = await this.readConfigs();
@@ -304,7 +307,9 @@ export class Application {
             publicPath,
             true
         );
-        app.use(`/config`, configMiddleware(config));
+        if (publicConfigsRoute) {
+            app.use(`/${publicConfigsRoute}`, configMiddleware(config));
+        }
 
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({

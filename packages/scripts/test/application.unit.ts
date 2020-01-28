@@ -88,7 +88,9 @@ describe('Application', function() {
 
         it(`allows specfiying a config`, async () => {
             const app = new Application({ basePath: multiFeatureFixturePath });
-            const { close, port } = await app.start();
+            const { close, port } = await app.start({
+                publicConfigsRoute: 'configs'
+            });
             disposables.add(() => close());
 
             const page = await loadPage(
@@ -109,7 +111,8 @@ describe('Application', function() {
         it(`runs node environments`, async () => {
             const app = new Application({ basePath: nodeFeatureFixturePath });
             const runningApp = await app.start({
-                featureName: 'engine-node/x'
+                featureName: 'engine-node/x',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => runningApp.close());
 
@@ -137,7 +140,8 @@ describe('Application', function() {
         it('launches a feature with contextual environment with server context', async () => {
             const app = new Application({ basePath: contextualFeatureFixturePath });
             const runningApp = await app.start({
-                featureName: 'contextual/server-env'
+                featureName: 'contextual/server-env',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => runningApp.close());
 
@@ -160,7 +164,8 @@ describe('Application', function() {
             const app = new Application({ basePath: useConfigsFeaturePath });
             const runningApp = await app.start({
                 featureName: 'configs/use-configs',
-                configName: 'configs/example'
+                configName: 'configs/example',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => runningApp.close());
             disposables.add(() => fs.promises.unlink(configFilePathInRepo));
@@ -193,7 +198,8 @@ describe('Application', function() {
             const app = new Application({ basePath: nodeFeatureFixturePath });
             const runningApp = await app.start({
                 featureName: 'engine-node/x',
-                inspect: true
+                inspect: true,
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => runningApp.close());
 
@@ -209,7 +215,11 @@ describe('Application', function() {
                 basePath: engineFeatureFixturePath
             });
 
-            const { port, close } = await app.start({ featureName: 'engine-single/x', port: 8080 });
+            const { port, close } = await app.start({
+                featureName: 'engine-single/x',
+                port: 8080,
+                publicConfigsRoute: 'configs'
+            });
             disposables.add(() => close());
             expect(port, 'application is not created on port 8080').to.eq(8080);
         });
@@ -222,7 +232,8 @@ describe('Application', function() {
 
             const { close, port } = await app.start({
                 featureName: 'engine-single/x',
-                config
+                config,
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => close());
 
@@ -248,7 +259,8 @@ describe('Application', function() {
             const { close, port } = await app.start({
                 configName: 'engine-single/x',
                 featureName: 'engine-single/x',
-                config
+                config,
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => close());
 
@@ -289,11 +301,14 @@ describe('Application', function() {
         it(`launches a built application with node environment`, async () => {
             const app = new Application({ basePath: nodeFeatureFixturePath });
             await app.build({
-                featureName: 'engine-node/x'
+                featureName: 'engine-node/x',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => app.clean());
 
-            const { close, port } = await app.run();
+            const { close, port } = await app.run({
+                publicConfigsRoute: 'configs'
+            });
             disposables.add(() => close());
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
@@ -305,9 +320,10 @@ describe('Application', function() {
 
         it(`launches a built application with a contextual environment`, async () => {
             const app = new Application({ basePath: contextualFeatureFixturePath });
-            await app.build();
+            await app.build({ publicConfigsRoute: 'configs' });
             const { close: webWorkerServer, port: webWorkerAppPort } = await app.run({
-                featureName: 'contextual/some-feature'
+                featureName: 'contextual/some-feature',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => app.clean());
             disposables.add(() => webWorkerServer());
@@ -321,7 +337,8 @@ describe('Application', function() {
             expect(textFromWebWorker).to.contain('worker');
 
             const { close: closeServer, port: serverAppPort } = await app.run({
-                featureName: 'contextual/server-env'
+                featureName: 'contextual/server-env',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => closeServer());
 
