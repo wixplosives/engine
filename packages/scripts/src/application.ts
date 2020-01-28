@@ -118,7 +118,6 @@ export class Application {
             featureName,
             configName
         });
-        // await this.writeConfigFiles(configurations);
 
         return stats;
     }

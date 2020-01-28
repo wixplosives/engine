@@ -33,7 +33,7 @@ program
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
     .option('--title <title>', 'application title to display in browser')
-    .option('-pcr, --publicConfigsRoute <publicConfigsRoute>', 'public route for configurations', 'config')
+    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations', 'config')
 
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -112,7 +112,7 @@ program
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--singleFeature', 'build only the feature set by --feature', true)
     .option('--title <title>', 'application title to display in browser')
-    .option('-pcr, --publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
