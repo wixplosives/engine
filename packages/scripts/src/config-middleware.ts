@@ -4,21 +4,18 @@ import importFresh from 'import-fresh';
 import { IConfigDefinition, IExportedConfigDefinition } from './types';
 import { resolveFrom } from './utils';
 
-export function createConfigMiddleware(
+export function createLiveConfigsMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition | IExportedConfigDefinition>,
-    topology: Map<string, Record<string, string>>,
-    basePath: string,
-    publicPath?: string,
-    staticBuild?: boolean
-): (config: TopLevelConfig) => express.RequestHandler {
-    return (overrideConfig?: TopLevelConfig) => {
-        return async (req, res) => {
-            const { feature: reqFeature, env: reqEnv } = req.query;
-            const config: TopLevelConfig = [COM.use({ config: { topology: topology.get(reqFeature), publicPath } })];
+    basePath: string
+): (configs: TopLevelConfig) => express.RequestHandler {
+    return configs => {
+        return async (req, _res, _next) => {
+            const config: TopLevelConfig = [];
+            const { env: reqEnv } = req.query;
             const requestedConfig = req.path.slice(1);
             const configDefinitions = configurations.get(requestedConfig);
 
-            if (configDefinitions && !staticBuild) {
+            if (configDefinitions) {
                 for (const configDefinition of configDefinitions) {
                     const { config: exportedConfig, filePath, envName } = configDefinition as IExportedConfigDefinition;
                     // dont evaluate configs on bundled version
@@ -44,11 +41,41 @@ export function createConfigMiddleware(
                     }
                 }
             }
-            if (overrideConfig?.length) {
-                config.push(...overrideConfig);
-            }
 
-            res.send(config);
+            configs.push(...config);
         };
+    };
+}
+
+export function createTopologyMiddleware(
+    topology: Map<string, Record<string, string>>,
+    publicPath?: string
+): (configs: TopLevelConfig) => express.RequestHandler {
+    return configs => {
+        return (req, _res, _next) => {
+            const { feature: reqFeature } = req.query;
+            configs.push(...[COM.use({ config: { topology: topology.get(reqFeature), publicPath } })]);
+        };
+    };
+}
+
+export function createConfigMiddleware(
+    middlewares: ((configs: TopLevelConfig) => express.RequestHandler)[]
+): (config: TopLevelConfig) => express.RequestHandler {
+    return (config: TopLevelConfig) => (req, res, next) => {
+        const topLevelConfigs: TopLevelConfig = [];
+        const promises = [];
+        for (const middleware of middlewares) {
+            promises.push(middleware(topLevelConfigs)(req, res, next));
+        }
+        Promise.all(promises)
+            .then(() => {
+                res.send([...topLevelConfigs, ...config]);
+            })
+            .catch(ex => {
+                res.status(500).json({
+                    error: ex
+                });
+            });
     };
 }

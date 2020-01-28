@@ -33,7 +33,7 @@ program
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
     .option('--title <title>', 'application title to display in browser')
-    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations', 'config')
+    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
 
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {

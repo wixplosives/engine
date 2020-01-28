@@ -13,7 +13,7 @@ import { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
-import { createConfigMiddleware } from './config-middleware';
+import { createConfigMiddleware, createLiveConfigsMiddleware, createTopologyMiddleware } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
@@ -134,7 +134,7 @@ export class Application {
         mode = 'development',
         singleFeature,
         title,
-        publicConfigsRoute
+        publicConfigsRoute = 'configs/'
     }: IRunOptions = {}) {
         await this.loadRequiredModulesFromEngineConfig();
 
@@ -184,17 +184,15 @@ export class Application {
             config
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-        const middleware = createConfigMiddleware(
-            configurations,
-            nodeEnvironmentManager.topology,
-            this.basePath,
-            publicPath
-        );
 
         let currentConfig = config;
 
-        const middlewareConfigProxy: express.RequestHandler = (req, res, next) =>
-            middleware(currentConfig)(req, res, next);
+        const liveConfigurationsMiddleware = createLiveConfigsMiddleware(configurations, this.basePath);
+        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
+
+        const middlewareConfigProxy: express.RequestHandler = (req, res, next) => {
+            createConfigMiddleware([topologyMiddleware, liveConfigurationsMiddleware])(currentConfig)(req, res, next);
+        };
 
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, middlewareConfigProxy);
@@ -299,15 +297,11 @@ export class Application {
             configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-        const configMiddleware = createConfigMiddleware(
-            configurations,
-            nodeEnvironmentManager.topology,
-            this.basePath,
-            publicPath,
-            true
-        );
+
+        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
+
         if (publicConfigsRoute) {
-            app.use(`/${publicConfigsRoute}`, configMiddleware(config));
+            app.use(`/${publicConfigsRoute}`, createConfigMiddleware([topologyMiddleware])(config));
         }
 
         if (featureName) {

@@ -17,9 +17,13 @@ export interface ICreateEntrypointsOptions {
     mode: 'production' | 'development';
     publicConfigsRoute?: string;
 }
+interface IConfigFileMapping {
+    filePath: string;
+    configEnvName?: string;
+}
 
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
-    const configNameToFiles: Record<string, { filePath: string; configEnvName?: string }[]> = {};
+    const configNameToFiles: Record<string, IConfigFileMapping[]> = {};
 
     configurations.map(([configName, { filePath, envName: configEnvName }]) => {
         if (!configNameToFiles[configName]) {
@@ -93,26 +97,7 @@ ${Array.from(features.values())
 };
 
 
-${
-    staticBuild
-        ? `const configLoaders = {
-    ${Object.keys(configs)
-        .map(scopedName => {
-            const importedConfigPaths = configs[scopedName].map(
-                ({ filePath, configEnvName }) =>
-                    `import(/* webpackChunkName: "${filePath}" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-                        join(__dirname, 'top-level-config-loader') +
-                            `?scopedName=${scopedName}&envName=${configEnvName}!` +
-                            filePath
-                    )})`
-            );
-
-            return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;
-        })
-        .join(',\n')}
-}`
-        : ''
-}
+${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
@@ -125,23 +110,10 @@ async function main() {
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
-    ${
-        staticBuild
-            ? `if(configName) {
-        const loadedConfigurations = configLoaders[configName] ? (await configLoaders[configName]()).map(module => module.default) : Promise.resolve([]);
-        const allLoadedConfigs = await Promise.all(loadedConfigurations); 
-        config.push(...allLoadedConfigs.flat());
-    }`
-            : ''
-    }
     
-    ${
-        publicConfigsRoute
-            ? `config.push(...await (await fetch('${normalizeRoute(
-                  publicConfigsRoute
-              )}' + configName + '?env=${envName}&feature=' + featureName)).json());`
-            : ''
-    }
+    ${staticBuild ? importStaticConfigs() : ''}
+    
+    ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
     
     
     const runtimeEngine = await runEngineApp(
@@ -153,6 +125,46 @@ async function main() {
 
 main().catch(console.error);
 `;
+}
+
+function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
+    return `import(/* webpackChunkName: "${filePath}" */ /* webpackMode: 'eager' */ ${JSON.stringify(
+        join(__dirname, 'top-level-config-loader') + `?scopedName=${scopedName}&envName=${configEnvName}!` + filePath
+    )})`;
+}
+
+function createConfigLoadersObject(configs: Record<string, IConfigFileMapping[]>) {
+    return `const configLoaders = {
+    ${createConfigLoaders(configs)}
+}`;
+}
+
+function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
+    return Object.keys(configs)
+        .map(scopedName => {
+            const importedConfigPaths = configs[scopedName].map(({ filePath, configEnvName }) =>
+                loadConfigFile(filePath, scopedName, configEnvName)
+            );
+            return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;
+        })
+        .join(',\n');
+}
+
+function fetchConfigs(publicConfigsRoute: string, envName: string) {
+    return `config.push(...await (await fetch('${normalizeRoute(
+        publicConfigsRoute
+    )}' + configName + '?env=${envName}&feature=' + featureName)).json());`;
+}
+
+function importStaticConfigs() {
+    return `
+    if(configName) {
+        const loadedConfigurations = configLoaders[configName] ? 
+            (await configLoaders[configName]()).map(module => module.default) : 
+            Promise.resolve([]);
+        const allLoadedConfigs = await Promise.all(loadedConfigurations); 
+        config.push(...allLoadedConfigs.flat());
+    }`;
 }
 
 function normalizeRoute(route?: string) {
