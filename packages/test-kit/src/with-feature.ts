@@ -110,7 +110,9 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         runOptions: suiteOptions = {},
         allowErrors: suiteAllowErrors = false,
         queryParams: suiteQueryParams,
-        runningApplicationPort,
+        runningApplicationPort = process.env.ENGINE_APPLICATION_PORT
+            ? parseInt(process.env.ENGINE_APPLICATION_PORT!)
+            : undefined,
         config: suiteConfig
     } = withFeatureOptions;
 
