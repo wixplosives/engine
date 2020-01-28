@@ -123,12 +123,15 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
         );
     }
 
+    const runningPort =
+        runningApplicationPort ?? process.env.ENGINE_APPLICATION_PORT
+            ? parseInt(process.env.ENGINE_APPLICATION_PORT!)
+            : undefined;
+
     let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
 
-    executableApp = runningApplicationPort
-        ? new AttachedApp(runningApplicationPort)
-        : new DetachedApp(cliEntry, process.cwd());
+    executableApp = runningPort ? new AttachedApp(runningPort) : new DetachedApp(cliEntry, process.cwd());
 
     before('launch puppeteer', async function() {
         if (!browser) {
