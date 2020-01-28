@@ -88,7 +88,7 @@ describe('Application', function() {
 
         it(`allows specfiying a config`, async () => {
             const app = new Application({ basePath: multiFeatureFixturePath });
-            const { close, port } = await app.start({});
+            const { close, port } = await app.start();
             disposables.add(() => close());
 
             const page = await loadPage(
