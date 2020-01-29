@@ -154,7 +154,6 @@ describe('Application', function() {
             const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
 
             // creating config file
-
             await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(originalConfigValue));
 
             // after the test, delete the file
@@ -176,15 +175,16 @@ describe('Application', function() {
             // modifying the config file
             await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(modifiedConfigValue));
 
-            // reload the page (to see if the config file was changed, without re-running the application)
-            await page.reload({
-                waitUntil: 'networkidle2'
-            });
-
-            // checking if config content is changed
-            await waitFor(async () => {
-                expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
-            });
+            await waitFor(
+                async () => {
+                    // reload the page (to see if the config file was changed, without re-running the application)
+                    await page.reload({
+                        waitUntil: 'networkidle2'
+                    });
+                    expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
+                },
+                { timeout: 10_000, delay: 500 }
+            );
         });
 
         it('runs node environments with inspect mode', async function() {
@@ -209,7 +209,10 @@ describe('Application', function() {
                 basePath: engineFeatureFixturePath
             });
 
-            const { port, close } = await app.start({ featureName: 'engine-single/x', port: 8080 });
+            const { port, close } = await app.start({
+                featureName: 'engine-single/x',
+                port: 8080
+            });
             disposables.add(() => close());
             expect(port, 'application is not created on port 8080').to.eq(8080);
         });
@@ -289,11 +292,14 @@ describe('Application', function() {
         it(`launches a built application with node environment`, async () => {
             const app = new Application({ basePath: nodeFeatureFixturePath });
             await app.build({
-                featureName: 'engine-node/x'
+                featureName: 'engine-node/x',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => app.clean());
 
-            const { close, port } = await app.run();
+            const { close, port } = await app.run({
+                publicConfigsRoute: 'configs'
+            });
             disposables.add(() => close());
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
@@ -305,9 +311,12 @@ describe('Application', function() {
 
         it(`launches a built application with a contextual environment`, async () => {
             const app = new Application({ basePath: contextualFeatureFixturePath });
-            await app.build();
+            await app.build({
+                publicConfigsRoute: 'configs'
+            });
             const { close: webWorkerServer, port: webWorkerAppPort } = await app.run({
-                featureName: 'contextual/some-feature'
+                featureName: 'contextual/some-feature',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => app.clean());
             disposables.add(() => webWorkerServer());
@@ -321,7 +330,8 @@ describe('Application', function() {
             expect(textFromWebWorker).to.contain('worker');
 
             const { close: closeServer, port: serverAppPort } = await app.run({
-                featureName: 'contextual/server-env'
+                featureName: 'contextual/server-env',
+                publicConfigsRoute: 'configs'
             });
             disposables.add(() => closeServer());
 
@@ -385,53 +395,6 @@ describe('Application', function() {
                         const parsedBodyConfig = JSON.parse(bodyConfig.trim());
                         expect(parsedBodyConfig.value).to.eq(1);
                     }
-                }
-            });
-        });
-
-        it('overrides default values on browser with which the project was build, when providing feature name', async () => {
-            const app = new Application({
-                basePath: useConfigsFeaturePath
-            });
-            await app.build({
-                featureName: 'configs/use-configs'
-            });
-            disposables.add(() => app.clean());
-
-            const { close, port } = await app.run({
-                featureName: 'configs/fixture'
-            });
-            disposables.add(() => close());
-
-            const page = await loadPage(`http://localhost:${port}/main.html`);
-            await waitFor(async () => {
-                const bodyContent = await getBodyContent(page);
-                if (bodyContent) {
-                    expect(bodyContent).to.contain('alternative');
-                }
-            });
-        });
-
-        it('overrides default values on browser with which the project was build, when providing config name', async () => {
-            const app = new Application({
-                basePath: useConfigsFeaturePath
-            });
-            await app.build({
-                configName: 'configs/default',
-                featureName: 'configs/use-configs'
-            });
-            disposables.add(() => app.clean());
-
-            const { close, port } = await app.run({
-                configName: 'configs/alternative'
-            });
-            disposables.add(() => close());
-
-            const page = await loadPage(`http://localhost:${port}/main.html`);
-            await waitFor(async () => {
-                const bodyContent = await getBodyContent(page);
-                if (bodyContent) {
-                    expect(bodyContent).to.contain('gaga');
                 }
             });
         });

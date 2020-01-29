@@ -1,5 +1,7 @@
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
-import { IFeatureDefinition } from './types';
+import { IFeatureDefinition, IConfigDefinition } from './types';
+import { SetMultiMap } from '@wixc3/engine-core/src';
+import { join } from 'path';
 
 const { stringify } = JSON;
 
@@ -10,7 +12,41 @@ export interface ICreateEntrypointsOptions {
     featureName?: string;
     configName?: string;
     publicPath?: string;
+    configurations: SetMultiMap<string, IConfigDefinition>;
+    staticBuild: boolean;
+    mode: 'production' | 'development';
+    publicConfigsRoute?: string;
 }
+interface IConfigFileMapping {
+    filePath: string;
+    configEnvName?: string;
+}
+
+const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
+    const configNameToFiles: Record<string, IConfigFileMapping[]> = {};
+
+    configurations.map(([configName, { filePath, envName: configEnvName }]) => {
+        if (!configNameToFiles[configName]) {
+            configNameToFiles[configName] = [];
+        }
+        if (!configEnvName || configEnvName === envName) {
+            configNameToFiles[configName].push({ filePath, configEnvName });
+        }
+    });
+
+    return configNameToFiles;
+};
+
+const getConfigLoaders = (
+    configurations: SetMultiMap<string, IConfigDefinition>,
+    mode: 'development' | 'production',
+    configName?: string
+) => {
+    if (mode === 'production' && configName) {
+        return [...configurations.entries()].filter(([scopedConfigName]) => scopedConfigName === configName);
+    }
+    return [...configurations.entries()];
+};
 
 export function createEntrypoint({
     features,
@@ -18,8 +54,13 @@ export function createEntrypoint({
     childEnvs,
     featureName,
     configName,
-    publicPath
+    publicPath,
+    configurations,
+    mode,
+    staticBuild,
+    publicConfigsRoute
 }: ICreateEntrypointsOptions) {
+    const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
 
@@ -55,6 +96,8 @@ ${Array.from(features.values())
     .join(',\n')}
 };
 
+
+${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
@@ -64,13 +107,14 @@ async function main() {
     };
     __webpack_public_path__= publicPath;
 
-    const { featureName: defaultFeatureName = ${stringify(featureName)}, configName: defaultConfigName = ${stringify(
-        configName
-    )}} = await (await fetch('defaults')).json();
-    const featureName = options.get('${FEATURE_QUERY_PARAM}') || defaultFeatureName;
-    const configName = options.get('${CONFIG_QUERY_PARAM}') || defaultConfigName;
-    const config = []
-    config.push(...await (await fetch('config/' + configName + '?env=${envName}&feature=' + featureName)).json());
+    const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
+    const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
+    const config = [];
+    
+    ${staticBuild ? importStaticConfigs() : ''}
+    
+    ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
+    
     
     const runtimeEngine = await runEngineApp(
         { featureName, configName, featureLoaders, config, options, envName: '${envName}', publicPath }
@@ -81,4 +125,52 @@ async function main() {
 
 main().catch(console.error);
 `;
+}
+
+function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
+    return `import(/* webpackChunkName: "${filePath}" */ /* webpackMode: 'eager' */ ${JSON.stringify(
+        join(__dirname, 'top-level-config-loader') + `?scopedName=${scopedName}&envName=${configEnvName}!` + filePath
+    )})`;
+}
+
+function createConfigLoadersObject(configs: Record<string, IConfigFileMapping[]>) {
+    return `const configLoaders = {
+    ${createConfigLoaders(configs)}
+}`;
+}
+
+function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
+    return Object.keys(configs)
+        .map(scopedName => {
+            const importedConfigPaths = configs[scopedName].map(({ filePath, configEnvName }) =>
+                loadConfigFile(filePath, scopedName, configEnvName)
+            );
+            return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;
+        })
+        .join(',\n');
+}
+
+function fetchConfigs(publicConfigsRoute: string, envName: string) {
+    return `config.push(...await (await fetch('${normalizeRoute(
+        publicConfigsRoute
+    )}' + configName + '?env=${envName}&feature=' + featureName)).json());`;
+}
+
+function importStaticConfigs() {
+    return `
+    if(configName) {
+        const loadedConfigurations = configLoaders[configName] ? 
+            (await configLoaders[configName]()).map(module => module.default) : 
+            Promise.resolve([]);
+        const allLoadedConfigs = await Promise.all(loadedConfigurations); 
+        config.push(...allLoadedConfigs.flat());
+    }`;
+}
+
+function normalizeRoute(route?: string) {
+    if (route && !route.endsWith('/')) {
+        return route + '/';
+    }
+
+    return route;
 }

@@ -13,8 +13,7 @@ import {
     IEnvironmentStartMessage,
     IFeatureDefinition,
     isEnvironmentStartMessage,
-    ServerEnvironmentOptions,
-    IExportedConfigDefinition
+    ServerEnvironmentOptions
 } from './types';
 
 export interface IRuntimeEnvironment {
@@ -31,7 +30,7 @@ const cliEntry = require.resolve('../cli');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
-    configurations?: SetMultiMap<string, IConfigDefinition | IExportedConfigDefinition>;
+    configurations?: SetMultiMap<string, IConfigDefinition | TopLevelConfig>;
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
@@ -194,8 +193,8 @@ export class NodeEnvironmentsManager {
             }
             for (const definition of configDefinition) {
                 try {
-                    if ((definition as IExportedConfigDefinition).config) {
-                        config.push(...(definition as IExportedConfigDefinition).config);
+                    if (Array.isArray(definition)) {
+                        config.push(...definition);
                     } else {
                         config.push(...(await import(definition.filePath)).default);
                     }

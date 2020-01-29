@@ -33,6 +33,7 @@ program
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
     .option('--title <title>', 'application title to display in browser')
+    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -45,7 +46,8 @@ program
             require: pathsToRequire,
             publicPath = defaultPublicPath,
             mode,
-            title
+            title,
+            publicConfigsRoute
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -61,7 +63,8 @@ program
                 singleFeature,
                 publicPath,
                 mode,
-                title
+                title,
+                publicConfigsRoute
             });
 
             if (process.send) {
@@ -108,6 +111,7 @@ program
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--singleFeature', 'build only the feature set by --feature', true)
     .option('--title <title>', 'application title to display in browser')
+    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -118,14 +122,23 @@ program
             publicPath,
             mode,
             singleFeature,
-            title
+            title,
+            publicConfigsRoute
         } = cmd;
         try {
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const outputPath = resolve(outDir);
             const app = new Application({ basePath, outputPath });
-            const stats = await app.build({ featureName, configName, publicPath, mode, singleFeature, title });
+            const stats = await app.build({
+                featureName,
+                configName,
+                publicPath,
+                mode,
+                singleFeature,
+                title,
+                publicConfigsRoute
+            });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
             printErrorAndExit(e);
@@ -141,7 +154,7 @@ program
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('-p ,--port <port>')
     .allowUnknownOption(true)
-    .action(async (path, cmd: Record<string, any>) => {
+    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
             config: configName,
             outDir = 'dist',

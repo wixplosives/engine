@@ -13,17 +13,22 @@ import { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
-import { createConfigMiddleware } from './config-middleware';
+import {
+    createConfigMiddleware,
+    createLiveConfigsMiddleware,
+    createTopologyMiddleware,
+    ensureTopLevelConfigMiddleware
+} from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
 import { createIPC } from './process-communication';
-import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition, IExportedConfigDefinition } from './types';
+import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 
 const rimraf = promisify(rimrafCb);
-const { basename, dirname, extname, join } = fs;
+const { basename, extname, join } = fs;
 export const DEFAULT_PORT = 3000;
 
 export interface IFeatureTarget {
@@ -41,6 +46,7 @@ export interface IRunOptions extends IFeatureTarget {
     publicPath?: string;
     mode?: 'development' | 'production';
     title?: string;
+    publicConfigsRoute?: string;
 }
 
 export interface IBuildManifest {
@@ -80,7 +86,8 @@ export class Application {
         publicPath,
         mode = 'production',
         singleFeature,
-        title
+        title,
+        publicConfigsRoute
     }: IRunOptions = {}): Promise<webpack.Stats> {
         await this.loadRequiredModulesFromEngineConfig();
         const { features, configurations } = this.analyzeFeatures();
@@ -93,7 +100,10 @@ export class Application {
             featureName,
             configName,
             publicPath,
-            title
+            title,
+            configurations,
+            staticBuild: true,
+            publicConfigsRoute
         });
 
         const stats = await new Promise<webpack.Stats>((resolve, reject) =>
@@ -113,7 +123,6 @@ export class Application {
             featureName,
             configName
         });
-        await this.writeConfigFiles(configurations);
 
         return stats;
     }
@@ -129,15 +138,14 @@ export class Application {
         publicPath,
         mode = 'development',
         singleFeature,
-        title
+        title,
+        publicConfigsRoute = 'configs/'
     }: IRunOptions = {}) {
         await this.loadRequiredModulesFromEngineConfig();
 
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
-            httpServerPort,
-            featureName,
-            configName
+            httpServerPort
         });
         disposables.add(() => close());
 
@@ -151,7 +159,10 @@ export class Application {
             featureName,
             configName,
             publicPath,
-            title
+            title,
+            configurations,
+            staticBuild: false,
+            publicConfigsRoute
         });
 
         if (singleRun) {
@@ -178,19 +189,21 @@ export class Application {
             config
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-        const middleware = createConfigMiddleware(
-            configurations,
-            nodeEnvironmentManager.topology,
-            this.basePath,
-            publicPath
-        );
 
-        let currentConfig = config;
+        let overrideConfig = config;
 
-        const middlewareConfigProxy: express.RequestHandler = (req, res, next) =>
-            middleware(currentConfig)(req, res, next);
+        const liveConfigurationsMiddleware = createLiveConfigsMiddleware(configurations, this.basePath);
+        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
+        const middlewareConfigProxy: express.RequestHandler = (req, res, next) => {
+            createConfigMiddleware(overrideConfig)(req, res, next);
+        };
 
-        app.use('/config', middlewareConfigProxy);
+        app.use(`/${publicConfigsRoute}`, [
+            ensureTopLevelConfigMiddleware,
+            topologyMiddleware,
+            liveConfigurationsMiddleware,
+            middlewareConfigProxy
+        ]);
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
@@ -246,7 +259,7 @@ export class Application {
             nodeEnvironmentManager,
             router: app,
             setRunningConfig: (config: TopLevelConfig = []) => {
-                currentConfig = config;
+                overrideConfig = config;
             },
             async close() {
                 for (const dispose of disposables) {
@@ -269,15 +282,14 @@ export class Application {
             inspect,
             port: httpServerPort,
             config: userConfig = [],
-            publicPath
+            publicPath,
+            publicConfigsRoute
         } = runOptions;
         const disposables = new Set<() => unknown>();
         const configurations = await this.readConfigs();
 
         const { port, close, socketServer, app } = await this.launchHttpServer({
-            httpServerPort,
-            featureName,
-            configName
+            httpServerPort
         });
         const config: TopLevelConfig = [];
         disposables.add(() => close());
@@ -292,13 +304,16 @@ export class Application {
             configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
-        const configMiddleware = createConfigMiddleware(
-            configurations,
-            nodeEnvironmentManager.topology,
-            this.basePath,
-            publicPath
-        );
-        app.use(`/config`, configMiddleware(config));
+
+        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
+
+        if (publicConfigsRoute) {
+            app.use(`/${publicConfigsRoute}`, [
+                ensureTopLevelConfigMiddleware,
+                topologyMiddleware,
+                createConfigMiddleware(config)
+            ]);
+        }
 
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
@@ -384,8 +399,8 @@ export class Application {
         }
     }
 
-    private async readConfigs(): Promise<SetMultiMap<string, IExportedConfigDefinition>> {
-        const configurations = new SetMultiMap<string, IExportedConfigDefinition>();
+    private async readConfigs(): Promise<SetMultiMap<string, TopLevelConfig>> {
+        const configurations = new SetMultiMap<string, TopLevelConfig>();
         const configsDirectoryPath = join(this.outputPath, 'configs');
         if (await fs.promises.exists(configsDirectoryPath)) {
             const folderEntities = await fs.promises.readdir(configsDirectoryPath, { withFileTypes: true });
@@ -404,7 +419,7 @@ export class Application {
 
                             const config = (await fs.promises.readJsonFile(
                                 join(featureConfigsDirectory, possibleConfigFile.name)
-                            )) as IExportedConfigDefinition;
+                            )) as TopLevelConfig;
 
                             configurations.add(`${featureName}/${configName}`, config);
                         }
@@ -435,28 +450,16 @@ export class Application {
         await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
     }
 
-    private async writeConfigFiles(configurations: SetMultiMap<string, IConfigDefinition>) {
-        const configsFolderPath = join(this.outputPath, 'configs');
-        for (const [currentConfigName, config] of configurations) {
-            const configFileName = `${currentConfigName}${config.envName ? `.${config.envName}` : ''}.json`;
-
-            const configFilePath = join(configsFolderPath, configFileName);
-            await fs.promises.ensureDirectory(dirname(configFilePath));
-            const configFileContent: IExportedConfigDefinition = {
-                ...config,
-                config: require(config.filePath).default
-            };
-            await fs.promises.writeFile(configFilePath, JSON.stringify(configFileContent, null, 2));
-        }
-    }
-
     private createCompiler({
         features,
         featureName,
         configName,
         publicPath,
         mode,
-        title
+        title,
+        configurations,
+        staticBuild,
+        publicConfigsRoute
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -464,6 +467,9 @@ export class Application {
         publicPath?: string;
         mode?: 'production' | 'development';
         title?: string;
+        configurations: SetMultiMap<string, IConfigDefinition>;
+        staticBuild: boolean;
+        publicConfigsRoute?: string;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -487,7 +493,10 @@ export class Application {
             featureName,
             configName,
             publicPath,
-            title
+            title,
+            configurations,
+            staticBuild,
+            publicConfigsRoute
         });
 
         const compiler = webpack(webpackConfigs);
@@ -528,15 +537,7 @@ export class Application {
         return featureEnvDefinitions;
     }
 
-    private async launchHttpServer({
-        httpServerPort = DEFAULT_PORT,
-        featureName,
-        configName
-    }: {
-        httpServerPort?: number;
-        featureName?: string;
-        configName?: string;
-    }) {
+    private async launchHttpServer({ httpServerPort = DEFAULT_PORT }: { httpServerPort?: number }) {
         const app = express();
         app.use(cors());
         const openSockets = new Set<Socket>();
@@ -549,12 +550,6 @@ export class Application {
         app.use('/', express.static(this.outputPath));
 
         app.use('/favicon.ico', noContentHandler);
-        app.use('/defaults', (_, res) => {
-            res.json({
-                featureName,
-                configName
-            });
-        });
 
         const socketServer = io(httpServer);
 
