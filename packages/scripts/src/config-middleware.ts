@@ -4,13 +4,11 @@ import importFresh from 'import-fresh';
 import { IConfigDefinition } from './types';
 import { resolveFrom } from './utils';
 
-export type EngineConfigMiddleware = (req: express.Request) => TopLevelConfig;
-
 export function createLiveConfigsMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition | TopLevelConfig>,
     basePath: string
-): EngineConfigMiddleware {
-    return req => {
+): express.RequestHandler {
+    return (req, res, next) => {
         const config: TopLevelConfig = [];
         const { env: reqEnv } = req.query;
         const requestedConfig = req.path.slice(1);
@@ -43,25 +41,33 @@ export function createLiveConfigsMiddleware(
             }
         }
 
-        return config;
+        res.locals.topLevelConfig = res.locals.topLevelConfig.concat(config);
+        next();
     };
 }
 
 export function createTopologyMiddleware(
     topology: Map<string, Record<string, string>>,
     publicPath?: string
-): EngineConfigMiddleware {
-    return req => {
+): express.RequestHandler {
+    return (req, res, next) => {
         const { feature: reqFeature } = req.query;
-        return [COM.use({ config: { topology: topology.get(reqFeature), publicPath } })];
+        res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
+            COM.use({ config: { topology: topology.get(reqFeature), publicPath } })
+        ]);
+        next();
     };
 }
 
-export function createConfigMiddleware(
-    configMiddlewares: EngineConfigMiddleware[]
-): (config: TopLevelConfig) => express.RequestHandler {
-    return config => (req, res) => {
-        const topLevelConfigs = configMiddlewares.map(configMiddleware => configMiddleware(req));
-        res.send([...topLevelConfigs, ...config]);
+export function createConfigMiddleware(config: TopLevelConfig): express.RequestHandler {
+    return (_req, res) => {
+        res.send(res.locals.topLevelConfig.concat(config));
     };
 }
+
+export const ensureTopLevelConfigMiddleware: express.RequestHandler = (_, res, next) => {
+    if (!res.locals.topLevelConfig) {
+        res.locals.topLevelConfig = [];
+    }
+    next();
+};

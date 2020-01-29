@@ -13,7 +13,12 @@ import { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
-import { createConfigMiddleware, createLiveConfigsMiddleware, createTopologyMiddleware } from './config-middleware';
+import {
+    createConfigMiddleware,
+    createLiveConfigsMiddleware,
+    createTopologyMiddleware,
+    ensureTopLevelConfigMiddleware
+} from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
@@ -185,16 +190,20 @@ export class Application {
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        let currentConfig = config;
+        let overrideConfig = config;
 
         const liveConfigurationsMiddleware = createLiveConfigsMiddleware(configurations, this.basePath);
         const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
-
         const middlewareConfigProxy: express.RequestHandler = (req, res, next) => {
-            createConfigMiddleware([topologyMiddleware, liveConfigurationsMiddleware])(currentConfig)(req, res, next);
+            createConfigMiddleware(overrideConfig)(req, res, next);
         };
 
-        app.use(`/${publicConfigsRoute}`, middlewareConfigProxy);
+        app.use(`/${publicConfigsRoute}`, [
+            ensureTopLevelConfigMiddleware,
+            topologyMiddleware,
+            liveConfigurationsMiddleware,
+            middlewareConfigProxy
+        ]);
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
@@ -250,7 +259,7 @@ export class Application {
             nodeEnvironmentManager,
             router: app,
             setRunningConfig: (config: TopLevelConfig = []) => {
-                currentConfig = config;
+                overrideConfig = config;
             },
             async close() {
                 for (const dispose of disposables) {
@@ -299,7 +308,11 @@ export class Application {
         const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
 
         if (publicConfigsRoute) {
-            app.use(`/${publicConfigsRoute}`, createConfigMiddleware([topologyMiddleware])(config));
+            app.use(`/${publicConfigsRoute}`, [
+                ensureTopLevelConfigMiddleware,
+                topologyMiddleware,
+                createConfigMiddleware(config)
+            ]);
         }
 
         if (featureName) {
