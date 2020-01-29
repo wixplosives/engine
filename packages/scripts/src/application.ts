@@ -18,7 +18,7 @@ import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
 import { createIPC } from './process-communication';
-import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition, IExportedConfigDefinition } from './types';
+import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 
@@ -194,9 +194,7 @@ export class Application {
             createConfigMiddleware([topologyMiddleware, liveConfigurationsMiddleware])(currentConfig)(req, res, next);
         };
 
-        if (publicConfigsRoute) {
-            app.use(`/${publicConfigsRoute}`, middlewareConfigProxy);
-        }
+        app.use(`/${publicConfigsRoute}`, middlewareConfigProxy);
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
@@ -388,8 +386,8 @@ export class Application {
         }
     }
 
-    private async readConfigs(): Promise<SetMultiMap<string, IExportedConfigDefinition>> {
-        const configurations = new SetMultiMap<string, IExportedConfigDefinition>();
+    private async readConfigs(): Promise<SetMultiMap<string, TopLevelConfig>> {
+        const configurations = new SetMultiMap<string, TopLevelConfig>();
         const configsDirectoryPath = join(this.outputPath, 'configs');
         if (await fs.promises.exists(configsDirectoryPath)) {
             const folderEntities = await fs.promises.readdir(configsDirectoryPath, { withFileTypes: true });
@@ -408,7 +406,7 @@ export class Application {
 
                             const config = (await fs.promises.readJsonFile(
                                 join(featureConfigsDirectory, possibleConfigFile.name)
-                            )) as IExportedConfigDefinition;
+                            )) as TopLevelConfig;
 
                             configurations.add(`${featureName}/${configName}`, config);
                         }

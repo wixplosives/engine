@@ -197,10 +197,6 @@ export interface IConfigDefinition {
     filePath: string;
 }
 
-export interface IExportedConfigDefinition extends IConfigDefinition {
-    config: TopLevelConfig;
-}
-
 export interface IFeatureDefinition extends IFeatureModule {
     contextFilePaths: Record<string, string>;
     envFilePaths: Record<string, string>;
