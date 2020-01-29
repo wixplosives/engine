@@ -51,9 +51,9 @@ export function createTopologyMiddleware(
     publicPath?: string
 ): express.RequestHandler {
     return (req, res, next) => {
-        const { feature: reqFeature } = req.query;
+        const { feature } = req.query;
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
-            COM.use({ config: { topology: topology.get(reqFeature), publicPath } })
+            COM.use({ config: { topology: topology.get(feature), publicPath } })
         ]);
         next();
     };
