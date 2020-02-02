@@ -2,6 +2,7 @@ import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { join } from 'path';
 import { FileServerDriver } from './file-server-driver';
+import fileServerFeature from '../feature/file-server.feature';
 
 describe('File Server Feature', () => {
     const { getLoadedFeature } = withFeature({
@@ -9,7 +10,14 @@ describe('File Server Feature', () => {
         configName: 'file-server/run',
         runOptions: {
             projectPath: join(__dirname, '..')
-        }
+        },
+        config: [
+            fileServerFeature.use({
+                config: {
+                    title: 'test-title'
+                }
+            })
+        ]
     });
 
     it('lists working directory contents in DOM', async () => {
@@ -20,5 +28,6 @@ describe('File Server Feature', () => {
         expect(parsedData).to.be.an('object');
         expect(parsedData.fixtures).to.be.an('object');
         expect(parsedData.fixtures['example.feature.ts']).to.have.keys('filePath', 'fileName');
+        expect(await page.title()).to.eq('test-title');
     });
 });

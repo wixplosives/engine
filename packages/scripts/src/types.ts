@@ -7,6 +7,7 @@ export interface ServerEnvironmentOptions extends IEnvironment {
     config?: TopLevelConfig;
     features: Array<[string, IFeatureDefinition]>;
     options?: Array<[string, string | boolean]>;
+    inspect: boolean;
 }
 export interface VirtualEntry {
     source: string;
@@ -114,7 +115,7 @@ export const isFeatureMessage = (value: unknown): value is IProcessMessage<IFeat
 };
 export interface IFeatureMessage {
     featureName: string;
-    configName?: string;
+    configName: string;
 }
 
 export interface IPortMessage {

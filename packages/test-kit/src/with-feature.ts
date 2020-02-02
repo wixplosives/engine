@@ -183,7 +183,7 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             }
 
             allowErrors = targetAllowErrors;
-            await executableApp.runFeature({
+            const newConfigName = await executableApp.runFeature({
                 featureName,
                 configName,
                 runtimeOptions: runOptions,
@@ -193,13 +193,13 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             disposeAfterEach.add(async () =>
                 executableApp.closeFeature({
                     featureName,
-                    configName
+                    configName: newConfigName
                 })
             );
 
             const search = toSearchQuery({
                 featureName,
-                configName,
+                configName: newConfigName,
                 queryParams
             });
             const page = await browser.newPage();

@@ -3,45 +3,66 @@ import express from 'express';
 import importFresh from 'import-fresh';
 import { IConfigDefinition } from './types';
 import { resolveFrom } from './utils';
+// import { NodeEnvironmentsManager } from './node-environments-manager';
+
+export interface OverrideConfig {
+    configName?: string;
+    config: TopLevelConfig;
+}
 
 export function createLiveConfigsMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition | TopLevelConfig>,
-    basePath: string
+    basePath: string,
+    overrideConfigMap: Map<string, OverrideConfig>
 ): express.RequestHandler {
     return (req, res, next) => {
         const config: TopLevelConfig = [];
         const { env: reqEnv } = req.query;
-        const requestedConfig = req.path.slice(1);
-        const configDefinitions = configurations.get(requestedConfig);
+        const overrideConfig: TopLevelConfig = [];
 
-        if (configDefinitions) {
-            for (const configDefinition of configDefinitions) {
-                if (Array.isArray(configDefinition)) {
-                    // dont evaluate configs on bundled version
-                    config.push(...configDefinition);
-                } else {
-                    const { filePath, envName } = configDefinition;
-                    if (envName === reqEnv || !envName) {
-                        const resolvedPath = resolveFrom(basePath, filePath);
-                        if (resolvedPath) {
-                            try {
-                                const { default: configValue } = importFresh(resolvedPath) as {
-                                    default: TopLevelConfig;
-                                };
-                                config.push(...configValue);
-                            } catch (e) {
-                                console.error(`Failed evaluating config file: ${filePath}`);
-                                console.error(e);
-                            }
+        let requestedConfig: string | undefined = req.path.slice(1);
+        requestedConfig = requestedConfig === 'undefined' ? undefined : requestedConfig;
+
+        if (requestedConfig) {
+            const currentOverrideConfig = overrideConfigMap.get(requestedConfig);
+            if (currentOverrideConfig) {
+                const { config: providedOverrideConfig, configName } = currentOverrideConfig;
+                requestedConfig = configName;
+                overrideConfig.push(...providedOverrideConfig);
+            }
+            if (requestedConfig) {
+                const configDefinitions = configurations.get(requestedConfig);
+
+                if (configDefinitions) {
+                    for (const configDefinition of configDefinitions) {
+                        if (Array.isArray(configDefinition)) {
+                            // dont evaluate configs on bundled version
+                            config.push(...configDefinition);
                         } else {
-                            throw new Error(`cannot find ${filePath}`);
+                            const { filePath, envName } = configDefinition;
+                            if (envName === reqEnv || !envName) {
+                                const resolvedPath = resolveFrom(basePath, filePath);
+                                if (resolvedPath) {
+                                    try {
+                                        const { default: configValue } = importFresh(resolvedPath) as {
+                                            default: TopLevelConfig;
+                                        };
+                                        config.push(...configValue);
+                                    } catch (e) {
+                                        console.error(`Failed evaluating config file: ${filePath}`);
+                                        console.error(e);
+                                    }
+                                } else {
+                                    throw new Error(`cannot find ${filePath}`);
+                                }
+                            }
                         }
                     }
                 }
             }
         }
 
-        res.locals.topLevelConfig = res.locals.topLevelConfig.concat(config);
+        res.locals.topLevelConfig = res.locals.topLevelConfig.concat(config, overrideConfig);
         next();
     };
 }
@@ -52,18 +73,30 @@ export function createTopologyMiddleware(
 ): express.RequestHandler {
     return (req, res, next) => {
         const { feature } = req.query;
+        let requestedConfig: string | undefined = req.path.slice(1);
+        requestedConfig = requestedConfig === 'undefined' ? undefined : requestedConfig;
+        console.log(
+            topology.get(JSON.stringify({ featureName: feature, configName: requestedConfig })),
+            topology,
+            JSON.stringify({ featureName: feature, configName: requestedConfig })
+        );
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
-            COM.use({ config: { topology: topology.get(feature), publicPath } })
+            COM.use({
+                config: {
+                    topology: topology.get(JSON.stringify({ featureName: feature, configName: requestedConfig })),
+                    publicPath
+                }
+            })
         ]);
         next();
     };
 }
 
-export function createConfigMiddleware(config: TopLevelConfig): express.RequestHandler {
-    return (_req, res) => {
-        res.send(res.locals.topLevelConfig.concat(config));
-    };
-}
+export const createConfigMiddleware: (runtimeConfig?: TopLevelConfig) => express.RequestHandler = (
+    runtimeConfig = []
+) => (_req, res) => {
+    res.send(res.locals.topLevelConfig.concat(runtimeConfig));
+};
 
 export const ensureTopLevelConfigMiddleware: express.RequestHandler = (_, res, next) => {
     if (!res.locals.topLevelConfig) {

@@ -1,8 +1,9 @@
 import { promisify } from 'util';
 import { Socket } from 'net';
 
+import bodyParser from 'body-parser';
 import { safeListeningHttpServer } from 'create-listening-server';
-import express from 'express';
+import express, { Router } from 'express';
 import cors from 'cors';
 import rimrafCb from 'rimraf';
 import io from 'socket.io';
@@ -17,13 +18,21 @@ import {
     createConfigMiddleware,
     createLiveConfigsMiddleware,
     createTopologyMiddleware,
-    ensureTopLevelConfigMiddleware
+    ensureTopLevelConfigMiddleware,
+    OverrideConfig
 } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
 import { createIPC } from './process-communication';
-import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
+import {
+    EngineConfig,
+    IConfigDefinition,
+    IEnvironment,
+    IFeatureDefinition,
+    IFeatureMessage,
+    IProcessMessage
+} from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 
@@ -190,19 +199,16 @@ export class Application {
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        let overrideConfig = config;
+        const configMap = new Map<string, OverrideConfig>();
 
-        const liveConfigurationsMiddleware = createLiveConfigsMiddleware(configurations, this.basePath);
+        const liveConfigurationsMiddleware = createLiveConfigsMiddleware(configurations, this.basePath, configMap);
         const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
-        const middlewareConfigProxy: express.RequestHandler = (req, res, next) => {
-            createConfigMiddleware(overrideConfig)(req, res, next);
-        };
 
         app.use(`/${publicConfigsRoute}`, [
             ensureTopLevelConfigMiddleware,
             topologyMiddleware,
             liveConfigurationsMiddleware,
-            middlewareConfigProxy
+            createConfigMiddleware(config)
         ]);
 
         for (const childCompiler of compiler.compilers) {
@@ -236,7 +242,7 @@ export class Application {
             }
         }
 
-        app.use(nodeEnvironmentManager.middleware());
+        app.use(this.engineRouterMiddleware(configMap, nodeEnvironmentManager));
 
         app.get('/engine-state', (_req, res) => {
             res.json({
@@ -250,7 +256,8 @@ export class Application {
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
-                configName
+                configName,
+                overrideConfigsMap: configMap
             });
         }
 
@@ -258,16 +265,102 @@ export class Application {
             port,
             nodeEnvironmentManager,
             router: app,
-            setRunningConfig: (config: TopLevelConfig = []) => {
-                overrideConfig = config;
-            },
             async close() {
                 for (const dispose of disposables) {
                     await dispose();
                 }
                 disposables.clear();
+            },
+            async runFeature({ featureName, runtimeOptions = {}, configName, config }: Required<IFeatureTarget>) {
+                if (config) {
+                    configName = generateOverrideConfig(configMap, config, configName);
+                }
+                await nodeEnvironmentManager.runServerEnvironments({
+                    featureName,
+                    configName,
+                    overrideConfigsMap: configMap,
+                    runtimeOptions
+                });
+                return configName;
+            },
+            async closeFeature({ featureName, configName }: IFeatureMessage) {
+                configMap.delete(configName);
+                return nodeEnvironmentManager.closeEnvironment({
+                    featureName,
+                    configName
+                });
             }
         };
+    }
+
+    private engineRouterMiddleware(
+        overrideConfigsMap: Map<string, OverrideConfig>,
+        nodeEnvironmentManager: NodeEnvironmentsManager
+    ) {
+        const router = Router();
+        router.use(bodyParser.json());
+        router.put('/node-env', async (req, res) => {
+            const { configName, featureName, runtimeOptions: options, config }: Required<IFeatureTarget> = req.body;
+            try {
+                const generatedConfigName = generateConfigName(configName);
+                overrideConfigsMap.set(generatedConfigName, { config, configName });
+                await nodeEnvironmentManager.runServerEnvironments({
+                    configName,
+                    featureName,
+                    runtimeOptions: options,
+                    overrideConfigsMap
+                });
+                res.json({
+                    id: 'feature-initialized',
+                    payload: {
+                        configName: generatedConfigName,
+                        featureName
+                    }
+                } as IProcessMessage<IFeatureMessage>);
+            } catch (error) {
+                res.status(404).json({
+                    id: 'error',
+                    error: error && error.message
+                });
+            }
+        });
+
+        router.delete('/node-env', async (req, res) => {
+            const { featureName, configName }: Required<IFeatureTarget> = req.body;
+            overrideConfigsMap.delete(configName);
+            try {
+                await nodeEnvironmentManager.closeEnvironment({ featureName, configName });
+                res.json({
+                    id: 'feature-closed',
+                    payload: {
+                        featureName,
+                        configName
+                    }
+                } as IProcessMessage<IFeatureMessage>);
+            } catch (error) {
+                res.status(404).json({
+                    result: 'error',
+                    error: error && error.message
+                });
+            }
+        });
+
+        router.get('/node-env', (_req, res) => {
+            try {
+                const data = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
+                res.json({
+                    result: 'success',
+                    data
+                });
+            } catch (error) {
+                res.status(404).json({
+                    result: 'error',
+                    error: error && error.message
+                });
+            }
+        });
+
+        return router;
     }
 
     public async run(runOptions: IRunOptions = {}) {
@@ -603,4 +696,21 @@ function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
         }
         console.log('Done bundling.');
     });
+}
+
+export function generateOverrideConfig(
+    configMap: Map<string, OverrideConfig>,
+    config: TopLevelConfig,
+    configName: string
+) {
+    const generatedConfigName = generateConfigName(configName);
+    configMap.set(generatedConfigName, { config, configName });
+    configName = generatedConfigName;
+    return configName;
+}
+
+function generateConfigName(configName?: string) {
+    return `${configName}__${Math.random()
+        .toString(16)
+        .slice(2)}`;
 }

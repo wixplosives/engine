@@ -1,4 +1,4 @@
-import { IFeatureTarget } from '@wixc3/engine-scripts';
+import { IFeatureTarget, IProcessMessage, IFeatureMessage } from '@wixc3/engine-scripts';
 import { request } from 'http';
 import { IExecutableApplication } from './types';
 
@@ -17,12 +17,13 @@ export class AttachedApp implements IExecutableApplication {
         return this.port;
     }
 
-    public runFeature(featureTarget: IFeatureTarget) {
-        return this.makeEnvironmentHttpCall({ featureTarget, method: 'PUT' });
+    public async runFeature(featureTarget: IFeatureTarget) {
+        const { configName } = await this.makeEnvironmentHttpCall({ featureTarget, method: 'PUT' });
+        return configName;
     }
 
-    public closeFeature(featureTarget: IFeatureTarget) {
-        return this.makeEnvironmentHttpCall({ featureTarget, method: 'DELETE' });
+    public async closeFeature(featureTarget: IFeatureTarget) {
+        await this.makeEnvironmentHttpCall({ featureTarget, method: 'DELETE' });
     }
 
     public async closeServer() {
@@ -30,7 +31,7 @@ export class AttachedApp implements IExecutableApplication {
     }
 
     private makeEnvironmentHttpCall({ method, path = NODE_ENV_PATH, featureTarget }: IEnvironmentHttpCall) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<IFeatureMessage>((resolve, reject) => {
             const req = request(
                 {
                     method,
@@ -42,10 +43,15 @@ export class AttachedApp implements IExecutableApplication {
                     }
                 },
                 res => {
-                    res.on('data', () => {
+                    let data = '';
+                    res.on('data', chunk => {
                         /* if the server had errors when launching, it will reject. if we received any data, it means the server launched */
+                        data += chunk;
                     });
-                    res.on('end', resolve);
+                    res.on('end', () => {
+                        const response = JSON.parse(data) as IProcessMessage<IFeatureMessage>;
+                        resolve(response.payload);
+                    });
                     res.on('error', reject);
                 }
             );

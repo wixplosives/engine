@@ -53,7 +53,7 @@ program
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const app = new Application({ basePath });
-            const { close: closeServer, port, nodeEnvironmentManager, setRunningConfig } = await app.start({
+            const { close: closeServer, port, runFeature, closeFeature } = await app.start({
                 featureName,
                 configName,
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
@@ -77,14 +77,11 @@ program
                 if (process.send) {
                     if (id === 'run-feature') {
                         const runOptions = payload as Required<IFeatureTarget>;
-                        if (runOptions.config) {
-                            setRunningConfig(runOptions.config);
-                        }
-                        await nodeEnvironmentManager.runServerEnvironments(runOptions);
-                        process.send({ id: 'feature-initialized' });
+                        const configName = await runFeature(runOptions);
+                        process.send({ id: 'feature-initialized', payload: { configName } });
                     }
                     if (id === 'close-feature') {
-                        await nodeEnvironmentManager.closeEnvironment(payload as IFeatureMessage);
+                        await closeFeature(payload as IFeatureMessage);
                         process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
                     }
                     if (id === 'server-disconnect') {
