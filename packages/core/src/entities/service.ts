@@ -81,7 +81,7 @@ export class Service<
             return communication.apiProxy<T>({ id: instanceId }, { id: serviceKey }, this.options);
         } else {
             return {
-                get(token: EnvironmentInstanceToken) {
+                get: (token: EnvironmentInstanceToken) => {
                     return communication.apiProxy<T>(token, { id: serviceKey }, this.options);
                 }
             };
