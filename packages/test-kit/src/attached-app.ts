@@ -5,7 +5,7 @@ import { IExecutableApplication } from './types';
 const NODE_ENV_PATH = '/engine-feature';
 
 interface IEnvironmentHttpCall {
-    method: 'PUT' | 'DELETE' | 'GET';
+    method: 'PUT' | 'POST' | 'GET';
     path?: string;
     featureTarget?: IFeatureTarget;
 }
@@ -13,7 +13,7 @@ interface IEnvironmentHttpCall {
 export class AttachedApp implements IExecutableApplication {
     constructor(private port: number, private hostname = 'localhost') {}
     public async getServerPort() {
-        await this.makeEnvironmentHttpCall({ method: 'GET', path: '/' });
+        await this.makeEnvironmentHttpCall({ method: 'GET' });
         return this.port;
     }
 
@@ -22,7 +22,7 @@ export class AttachedApp implements IExecutableApplication {
     }
 
     public async closeFeature(featureTarget: IFeatureTarget) {
-        await this.makeEnvironmentHttpCall({ featureTarget, method: 'DELETE' });
+        await this.makeEnvironmentHttpCall({ featureTarget, method: 'POST' });
     }
 
     public async closeServer() {
@@ -31,7 +31,7 @@ export class AttachedApp implements IExecutableApplication {
 
     private makeEnvironmentHttpCall({ method, path = NODE_ENV_PATH, featureTarget }: IEnvironmentHttpCall) {
         return new Promise<IFeatureMessagePayload>((resolve, reject) => {
-            const responseChunks: Array<Buffer | string> = [];
+            const responseChunks: Array<string> = [];
             const req = request(
                 {
                     method,
@@ -45,13 +45,17 @@ export class AttachedApp implements IExecutableApplication {
                 res => {
                     res.on('data', chunk => {
                         /* if the server had errors when launching, it will reject. if we received any data, it means the server launched */
-                        responseChunks.push(chunk);
+                        responseChunks.push(chunk.toString());
                     });
                     res.on('end', () => {
-                        console.log('!!!!', responseChunks);
-                        const response = JSON.parse(responseChunks.join()) as IProcessMessage<IFeatureMessagePayload>;
-                        console.log('!!!!!!!', response);
-                        resolve(response.payload);
+                        if (path === NODE_ENV_PATH) {
+                            const response = JSON.parse(responseChunks.join()) as IProcessMessage<
+                                IFeatureMessagePayload
+                            >;
+                            resolve(response.payload);
+                        } else {
+                            resolve();
+                        }
                     });
                     res.on('error', reject);
                 }

@@ -18,7 +18,7 @@ export function createFeaturesEngineRouter(
             const generatedConfigName = generateConfigName(configName);
             overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
             await nodeEnvironmentManager.runServerEnvironments({
-                configName,
+                configName: generatedConfigName,
                 featureName,
                 runtimeOptions: options,
                 overrideConfigsMap
@@ -38,7 +38,7 @@ export function createFeaturesEngineRouter(
         }
     });
 
-    router.delete('/', async (req, res) => {
+    router.post('/', async (req, res) => {
         const { featureName, configName }: Required<IFeatureTarget> = req.body;
         overrideConfigsMap.delete(configName);
         try {
