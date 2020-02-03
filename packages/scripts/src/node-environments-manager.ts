@@ -25,6 +25,7 @@ export interface RunEnvironmentOptions {
     featureName: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
+    overrideConfigsMap?: Map<string, OverrideConfig>;
 }
 
 const cliEntry = require.resolve('../cli');
@@ -52,15 +53,15 @@ export class NodeEnvironmentsManager {
         configName,
         runtimeOptions = {},
         overrideConfigsMap = new Map()
-    }: RunEnvironmentOptions & { overrideConfigsMap?: Map<string, OverrideConfig> }) {
+    }: RunEnvironmentOptions) {
         const featureId = `${featureName}${delimiter}${configName}`;
-
+        const overrideConfig = [...this.options.config];
         if (configName) {
             const currentOverrideConfig = overrideConfigsMap.get(configName);
             if (currentOverrideConfig) {
                 const { config, configName: originalConfigName } = currentOverrideConfig;
                 configName = originalConfigName;
-                this.options.config.concat(config);
+                overrideConfig.push(...config);
             }
         }
 
@@ -68,16 +69,15 @@ export class NodeEnvironmentsManager {
         const disposables: Array<() => unknown> = [];
         const { defaultRuntimeOptions } = this.options;
         for (const nodeEnv of this.getNodeEnvironments(featureName)) {
-            const { close, port } = await this.launchEnvironment(
-                nodeEnv,
-                featureName,
-                [
-                    COM.use({ config: { topology: this.runningEnvironments.get(featureId)?.topology } }),
-                    ...(await this.getConfig(configName)),
-                    ...this.options.config
-                ],
-                { ...defaultRuntimeOptions, ...runtimeOptions }
-            );
+            const config: TopLevelConfig = [
+                COM.use({ config: { topology: this.runningEnvironments.get(featureId)?.topology } }),
+                ...(await this.getConfig(configName)),
+                ...overrideConfig
+            ];
+            const { close, port } = await this.launchEnvironment(nodeEnv, featureName, config, {
+                ...defaultRuntimeOptions,
+                ...runtimeOptions
+            });
             disposables.push(() => close());
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
         }

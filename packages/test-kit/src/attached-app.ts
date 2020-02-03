@@ -2,7 +2,7 @@ import { IFeatureTarget, IProcessMessage, IFeatureMessage } from '@wixc3/engine-
 import { request } from 'http';
 import { IExecutableApplication } from './types';
 
-const NODE_ENV_PATH = '/node-env';
+const NODE_ENV_PATH = '/engine-feature';
 
 interface IEnvironmentHttpCall {
     method: 'PUT' | 'DELETE' | 'GET';

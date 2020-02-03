@@ -61,7 +61,6 @@ export function createLiveConfigsMiddleware(
                 }
             }
         }
-
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat(config, overrideConfig);
         next();
     };
@@ -86,7 +85,7 @@ export function createTopologyMiddleware(
     };
 }
 
-export const createConfigMiddleware: (runtimeConfig?: TopLevelConfig) => express.RequestHandler = (
+export const createConfigMiddleware: (overrideConfig?: TopLevelConfig) => express.RequestHandler = (
     runtimeConfig = []
 ) => (_req, res) => {
     res.send(res.locals.topLevelConfig.concat(runtimeConfig));

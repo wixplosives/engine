@@ -118,6 +118,11 @@ export interface IFeatureMessage {
     configName: string;
 }
 
+export interface ICloseFeatureOptions {
+    featureName: string;
+    configName?: string;
+}
+
 export interface IPortMessage {
     port: number;
 }

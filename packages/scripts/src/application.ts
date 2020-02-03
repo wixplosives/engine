@@ -31,7 +31,8 @@ import {
     IEnvironment,
     IFeatureDefinition,
     IFeatureMessage,
-    IProcessMessage
+    IProcessMessage,
+    ICloseFeatureOptions
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
@@ -45,6 +46,10 @@ export interface IFeatureTarget {
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
     config?: TopLevelConfig;
+}
+
+export interface IRunFeatureOptions extends IFeatureTarget {
+    featureName: string;
 }
 
 export interface IRunOptions extends IFeatureTarget {
@@ -201,13 +206,10 @@ export class Application {
 
         const configMap = new Map<string, OverrideConfig>();
 
-        const liveConfigurationsMiddleware = createLiveConfigsMiddleware(configurations, this.basePath, configMap);
-        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager, publicPath);
-
         app.use(`/${publicConfigsRoute}`, [
             ensureTopLevelConfigMiddleware,
-            topologyMiddleware,
-            liveConfigurationsMiddleware,
+            createTopologyMiddleware(nodeEnvironmentManager, publicPath),
+            createLiveConfigsMiddleware(configurations, this.basePath, configMap),
             createConfigMiddleware(config)
         ]);
 
@@ -230,6 +232,7 @@ export class Application {
         if (featureName) {
             console.log('Main application URL: ', `${mainUrl}main.html`);
         }
+
         const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations, nodeEnvironmentManager);
 
         if (packages.length === 1) {
@@ -242,7 +245,7 @@ export class Application {
             }
         }
 
-        app.use(this.engineRouterMiddleware(configMap, nodeEnvironmentManager));
+        app.use('/engine-feature', this.createFeaturesEngineRouter(configMap, nodeEnvironmentManager));
 
         app.get('/engine-state', (_req, res) => {
             res.json({
@@ -253,6 +256,7 @@ export class Application {
                 }
             });
         });
+
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
@@ -271,9 +275,9 @@ export class Application {
                 }
                 disposables.clear();
             },
-            async runFeature({ featureName, runtimeOptions = {}, configName, config }: Required<IFeatureTarget>) {
+            runFeature: async ({ featureName, runtimeOptions = {}, configName, config }: IRunFeatureOptions) => {
                 if (config) {
-                    configName = generateOverrideConfig(configMap, config, configName);
+                    configName = this.generateOverrideConfig(configMap, config, configName);
                 }
                 await nodeEnvironmentManager.runServerEnvironments({
                     featureName,
@@ -283,8 +287,10 @@ export class Application {
                 });
                 return configName;
             },
-            async closeFeature({ featureName, configName }: IFeatureMessage) {
-                configMap.delete(configName);
+            closeFeature: ({ featureName, configName }: ICloseFeatureOptions) => {
+                if (configName) {
+                    configMap.delete(configName);
+                }
                 return nodeEnvironmentManager.closeEnvironment({
                     featureName,
                     configName
@@ -293,16 +299,17 @@ export class Application {
         };
     }
 
-    private engineRouterMiddleware(
+    public createFeaturesEngineRouter(
         overrideConfigsMap: Map<string, OverrideConfig>,
         nodeEnvironmentManager: NodeEnvironmentsManager
     ) {
         const router = Router();
         router.use(bodyParser.json());
-        router.put('/node-env', async (req, res) => {
+
+        router.put('/', async (req, res) => {
             const { configName, featureName, runtimeOptions: options, config }: Required<IFeatureTarget> = req.body;
             try {
-                const generatedConfigName = generateConfigName(configName);
+                const generatedConfigName = this.generateConfigName(configName);
                 overrideConfigsMap.set(generatedConfigName, { config, configName });
                 await nodeEnvironmentManager.runServerEnvironments({
                     configName,
@@ -325,7 +332,7 @@ export class Application {
             }
         });
 
-        router.delete('/node-env', async (req, res) => {
+        router.delete('/', async (req, res) => {
             const { featureName, configName }: Required<IFeatureTarget> = req.body;
             overrideConfigsMap.delete(configName);
             try {
@@ -345,7 +352,7 @@ export class Application {
             }
         });
 
-        router.get('/node-env', (_req, res) => {
+        router.get('/', (_req, res) => {
             try {
                 const data = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
                 res.json({
@@ -398,12 +405,10 @@ export class Application {
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager, publicPath);
-
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, [
                 ensureTopLevelConfigMiddleware,
-                topologyMiddleware,
+                createTopologyMiddleware(nodeEnvironmentManager, publicPath),
                 createConfigMiddleware(config)
             ]);
         }
@@ -674,6 +679,23 @@ export class Application {
             }
         }
     }
+
+    private generateOverrideConfig(
+        configMap: Map<string, OverrideConfig>,
+        config: TopLevelConfig,
+        configName?: string
+    ) {
+        const generatedConfigName = this.generateConfigName(configName);
+        configMap.set(generatedConfigName, { config, configName });
+        configName = generatedConfigName;
+        return configName;
+    }
+
+    private generateConfigName(configName?: string) {
+        return `${configName}__${Math.random()
+            .toString(16)
+            .slice(2)}`;
+    }
 }
 
 const noContentHandler: express.RequestHandler = (_req, res) => {
@@ -696,21 +718,4 @@ function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
         }
         console.log('Done bundling.');
     });
-}
-
-export function generateOverrideConfig(
-    configMap: Map<string, OverrideConfig>,
-    config: TopLevelConfig,
-    configName: string
-) {
-    const generatedConfigName = generateConfigName(configName);
-    configMap.set(generatedConfigName, { config, configName });
-    configName = generatedConfigName;
-    return configName;
-}
-
-function generateConfigName(configName?: string) {
-    return `${configName}__${Math.random()
-        .toString(16)
-        .slice(2)}`;
 }
