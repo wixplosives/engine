@@ -27,7 +27,7 @@ describe('Node environments manager', function() {
         const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
         expect(allOpenEnvironments).to.be.not.an('undefined');
         expect(allOpenEnvironments).to.be.an('Array');
-        expect(allOpenEnvironments).to.contain(runFeatureOptions.featureName);
+        expect(allOpenEnvironments[0]).to.contain(runFeatureOptions.featureName);
     });
 
     it('lists only open environments', async () => {
@@ -42,7 +42,9 @@ describe('Node environments manager', function() {
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
-        expect(nodeEnvironmentManager.getFeaturesWithRunningEnvironments()).to.contain(runFeatureOptions.featureName);
+        expect(nodeEnvironmentManager.getFeaturesWithRunningEnvironments()[0]).to.contain(
+            runFeatureOptions.featureName
+        );
     });
 
     it('fails to launch if wrong config name or feature name are provided', async () => {
