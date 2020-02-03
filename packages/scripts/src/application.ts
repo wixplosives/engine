@@ -202,7 +202,7 @@ export class Application {
         const configMap = new Map<string, OverrideConfig>();
 
         const liveConfigurationsMiddleware = createLiveConfigsMiddleware(configurations, this.basePath, configMap);
-        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
+        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager, publicPath);
 
         app.use(`/${publicConfigsRoute}`, [
             ensureTopLevelConfigMiddleware,
@@ -398,7 +398,7 @@ export class Application {
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
+        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager, publicPath);
 
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, [

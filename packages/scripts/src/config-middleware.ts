@@ -3,8 +3,7 @@ import express from 'express';
 import importFresh from 'import-fresh';
 import { IConfigDefinition } from './types';
 import { resolveFrom } from './utils';
-import { delimiter } from 'path';
-// import { NodeEnvironmentsManager } from './node-environments-manager';
+import { NodeEnvironmentsManager } from './node-environments-manager';
 
 export interface OverrideConfig {
     configName?: string;
@@ -69,7 +68,7 @@ export function createLiveConfigsMiddleware(
 }
 
 export function createTopologyMiddleware(
-    topology: Map<string, Record<string, string>>,
+    nodeEnvironmentsManager: NodeEnvironmentsManager,
     publicPath?: string
 ): express.RequestHandler {
     return (req, res, next) => {
@@ -78,7 +77,7 @@ export function createTopologyMiddleware(
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
             COM.use({
                 config: {
-                    topology: topology.get(`${feature}${delimiter}${requestedConfig}`),
+                    topology: nodeEnvironmentsManager.getTopology(feature, requestedConfig),
                     publicPath
                 }
             })

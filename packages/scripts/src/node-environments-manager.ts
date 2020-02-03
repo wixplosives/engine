@@ -17,6 +17,7 @@ import {
 import { OverrideConfig } from './config-middleware';
 
 export interface IRuntimeEnvironment {
+    topology: Record<string, string>;
     close: () => Promise<void>;
 }
 
@@ -42,7 +43,6 @@ export type NodeEnvironmentId = {
 };
 
 export class NodeEnvironmentsManager {
-    public topology = new Map<string, Record<string, string>>();
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
     constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
@@ -72,14 +72,13 @@ export class NodeEnvironmentsManager {
                 nodeEnv,
                 featureName,
                 [
-                    COM.use({ config: { topology: this.topology.get(featureId) } }),
+                    COM.use({ config: { topology: this.runningEnvironments.get(featureId)?.topology } }),
                     ...(await this.getConfig(configName)),
                     ...this.options.config
                 ],
                 { ...defaultRuntimeOptions, ...runtimeOptions }
             );
             disposables.push(() => close());
-
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
         }
 
@@ -89,10 +88,9 @@ export class NodeEnvironmentsManager {
                     await dispose();
                 }
                 disposables.length = 0;
-            }
+            },
+            topology
         };
-
-        this.topology.set(featureId, topology);
 
         this.runningEnvironments.set(featureId, runningEnvironment);
     }
@@ -105,13 +103,17 @@ export class NodeEnvironmentsManager {
         if (!runningEnvironment) {
             throw new Error(`there are no node environments running for ${featureName} and config ${configName}`);
         }
-        this.topology.delete(featureId);
         this.runningEnvironments.delete(featureId);
         await runningEnvironment.close();
     }
 
     public getFeaturesWithRunningEnvironments() {
         return Array.from(this.runningEnvironments.keys());
+    }
+
+    public getTopology(featureName: string, configName?: string) {
+        const featureId = `${featureName}${delimiter}${configName}`;
+        return this.runningEnvironments.get(featureId)?.topology;
     }
 
     public async closeAll() {
