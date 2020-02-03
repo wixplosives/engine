@@ -1,6 +1,6 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { join } from 'path';
+import { join, delimiter } from 'path';
 
 import { createDisposables } from '@wixc3/engine-test-kit';
 
@@ -27,7 +27,7 @@ describe('Node environments manager', function() {
         const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
         expect(allOpenEnvironments).to.be.not.an('undefined');
         expect(allOpenEnvironments).to.be.an('Array');
-        expect(allOpenEnvironments).to.contain(JSON.stringify({ featureName: runFeatureOptions.featureName }));
+        expect(allOpenEnvironments).to.contain(`${runFeatureOptions.featureName}${delimiter}undefined`);
     });
 
     it('lists only open environments', async () => {
@@ -43,7 +43,7 @@ describe('Node environments manager', function() {
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
         expect(nodeEnvironmentManager.getFeaturesWithRunningEnvironments()).to.contain(
-            JSON.stringify({ featureName: runFeatureOptions.featureName })
+            `${runFeatureOptions.featureName}${delimiter}undefined`
         );
     });
 

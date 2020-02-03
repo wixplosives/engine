@@ -3,6 +3,7 @@ import express from 'express';
 import importFresh from 'import-fresh';
 import { IConfigDefinition } from './types';
 import { resolveFrom } from './utils';
+import { delimiter } from 'path';
 // import { NodeEnvironmentsManager } from './node-environments-manager';
 
 export interface OverrideConfig {
@@ -73,17 +74,11 @@ export function createTopologyMiddleware(
 ): express.RequestHandler {
     return (req, res, next) => {
         const { feature } = req.query;
-        let requestedConfig: string | undefined = req.path.slice(1);
-        requestedConfig = requestedConfig === 'undefined' ? undefined : requestedConfig;
-        console.log(
-            topology.get(JSON.stringify({ featureName: feature, configName: requestedConfig })),
-            topology,
-            JSON.stringify({ featureName: feature, configName: requestedConfig })
-        );
+        const requestedConfig: string | undefined = req.path.slice(1);
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
             COM.use({
                 config: {
-                    topology: topology.get(JSON.stringify({ featureName: feature, configName: requestedConfig })),
+                    topology: topology.get(`${feature}${delimiter}${requestedConfig}`),
                     publicPath
                 }
             })

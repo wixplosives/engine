@@ -1,3 +1,4 @@
+import { delimiter } from 'path';
 import io from 'socket.io';
 
 import { COM, flattenTree, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
@@ -52,7 +53,7 @@ export class NodeEnvironmentsManager {
         runtimeOptions = {},
         overrideConfigsMap = new Map()
     }: RunEnvironmentOptions & { overrideConfigsMap?: Map<string, OverrideConfig> }) {
-        const featureId = JSON.stringify({ featureName, configName });
+        const featureId = `${featureName}${delimiter}${configName}`;
 
         if (configName) {
             const currentOverrideConfig = overrideConfigsMap.get(configName);
@@ -97,7 +98,7 @@ export class NodeEnvironmentsManager {
     }
 
     public async closeEnvironment({ featureName, configName }: RunEnvironmentOptions) {
-        const featureId = JSON.stringify({ featureName, configName });
+        const featureId = `${featureName}${delimiter}${configName}`;
 
         const runningEnvironment = this.runningEnvironments.get(featureId);
 
