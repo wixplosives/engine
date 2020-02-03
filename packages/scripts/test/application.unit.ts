@@ -218,14 +218,14 @@ describe('Application', function() {
         });
 
         it('allows providing top level config', async () => {
-            const config: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
                 basePath: engineFeatureFixturePath
             });
 
             const { close, port } = await app.start({
                 featureName: 'engine-single/x',
-                config
+                overrideConfig
             });
             disposables.add(() => close());
 
@@ -243,7 +243,7 @@ describe('Application', function() {
         });
 
         it('allows providing top level config with default config', async () => {
-            const config: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
                 basePath: engineFeatureFixturePath
             });
@@ -251,7 +251,7 @@ describe('Application', function() {
             const { close, port } = await app.start({
                 configName: 'engine-single/x',
                 featureName: 'engine-single/x',
-                config
+                overrideConfig
             });
             disposables.add(() => close());
 
@@ -345,7 +345,7 @@ describe('Application', function() {
         });
 
         it('allows providing top level config', async () => {
-            const config: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
                 basePath: engineFeatureFixturePath
             });
@@ -354,7 +354,7 @@ describe('Application', function() {
 
             const { close, port } = await app.run({
                 featureName: 'engine-single/x',
-                config
+                overrideConfig
             });
             disposables.add(() => close());
 
@@ -372,7 +372,7 @@ describe('Application', function() {
         });
 
         it('allows providing top level config and config name', async () => {
-            const config: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
                 basePath: engineFeatureFixturePath
             });
@@ -382,7 +382,7 @@ describe('Application', function() {
             const { close, port } = await app.run({
                 configName: 'engine-single/x',
                 featureName: 'engine-single/x',
-                config
+                overrideConfig
             });
             disposables.add(() => close());
 

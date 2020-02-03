@@ -183,11 +183,11 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
             }
 
             allowErrors = targetAllowErrors;
-            const newConfigName = await executableApp.runFeature({
+            const { configName: newConfigName } = await executableApp.runFeature({
                 featureName,
                 configName,
                 runtimeOptions: runOptions,
-                config
+                overrideConfig: config
             });
 
             disposeAfterEach.add(async () =>

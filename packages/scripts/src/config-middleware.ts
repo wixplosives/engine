@@ -7,7 +7,7 @@ import { NodeEnvironmentsManager } from './node-environments-manager';
 
 export interface OverrideConfig {
     configName?: string;
-    config: TopLevelConfig;
+    overrideConfig: TopLevelConfig;
 }
 
 export function createLiveConfigsMiddleware(
@@ -26,7 +26,7 @@ export function createLiveConfigsMiddleware(
         if (requestedConfig) {
             const currentOverrideConfig = overrideConfigMap.get(requestedConfig);
             if (currentOverrideConfig) {
-                const { config: providedOverrideConfig, configName } = currentOverrideConfig;
+                const { overrideConfig: providedOverrideConfig, configName } = currentOverrideConfig;
                 requestedConfig = configName;
                 overrideConfig.push(...providedOverrideConfig);
             }
@@ -76,7 +76,10 @@ export function createTopologyMiddleware(
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
             COM.use({
                 config: {
-                    topology: nodeEnvironmentsManager.getTopology(feature, requestedConfig),
+                    topology: nodeEnvironmentsManager.getTopology(
+                        feature,
+                        requestedConfig === 'undefined' ? undefined : requestedConfig
+                    ),
                     publicPath
                 }
             })

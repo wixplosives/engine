@@ -66,7 +66,7 @@ export const FeaturesSelection= memo<IFeatureSelectionProps>(({ features, onSele
                 ? selectedValue
                 : (Array.isArray(selectedValue) ? selectedValue[0] : selectedValue).label;
 
-            setSelectedConfigName(configName);
+            setSelectedConfigName(configName === null ? undefined : configName);
             if (onSelected) {
                 onSelected(selectedFeatureName, configName);
             }

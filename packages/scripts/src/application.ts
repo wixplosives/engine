@@ -1,9 +1,8 @@
 import { promisify } from 'util';
 import { Socket } from 'net';
 
-import bodyParser from 'body-parser';
 import { safeListeningHttpServer } from 'create-listening-server';
-import express, { Router } from 'express';
+import express from 'express';
 import cors from 'cors';
 import rimrafCb from 'rimraf';
 import io from 'socket.io';
@@ -30,23 +29,16 @@ import {
     IConfigDefinition,
     IEnvironment,
     IFeatureDefinition,
-    IFeatureMessage,
-    IProcessMessage,
-    ICloseFeatureOptions
+    IFeatureTarget,
+    IFeatureMessagePayload
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
+import { createFeaturesEngineRouter, generateConfigName } from './engine-router';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
 export const DEFAULT_PORT = 3000;
-
-export interface IFeatureTarget {
-    featureName?: string;
-    configName?: string;
-    runtimeOptions?: Record<string, string | boolean>;
-    config?: TopLevelConfig;
-}
 
 export interface IRunFeatureOptions extends IFeatureTarget {
     featureName: string;
@@ -148,7 +140,7 @@ export class Application {
         inspect = false,
         port: httpServerPort,
         singleRun,
-        config = [],
+        overrideConfig = [],
         publicPath,
         mode = 'development',
         singleFeature,
@@ -200,17 +192,17 @@ export class Application {
             defaultRuntimeOptions,
             port,
             inspect,
-            config
+            overrideConfig
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        const configMap = new Map<string, OverrideConfig>();
+        const overrideConfigsMap = new Map<string, OverrideConfig>();
 
         app.use(`/${publicConfigsRoute}`, [
             ensureTopLevelConfigMiddleware,
             createTopologyMiddleware(nodeEnvironmentManager, publicPath),
-            createLiveConfigsMiddleware(configurations, this.basePath, configMap),
-            createConfigMiddleware(config)
+            createLiveConfigsMiddleware(configurations, this.basePath, overrideConfigsMap),
+            createConfigMiddleware(overrideConfig)
         ]);
 
         for (const childCompiler of compiler.compilers) {
@@ -245,7 +237,7 @@ export class Application {
             }
         }
 
-        app.use('/engine-feature', this.createFeaturesEngineRouter(configMap, nodeEnvironmentManager));
+        app.use('/engine-feature', createFeaturesEngineRouter(overrideConfigsMap, nodeEnvironmentManager));
 
         app.get('/engine-state', (_req, res) => {
             res.json({
@@ -261,13 +253,12 @@ export class Application {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
-                overrideConfigsMap: configMap
+                overrideConfigsMap
             });
         }
 
         return {
             port,
-            nodeEnvironmentManager,
             router: app,
             async close() {
                 for (const dispose of disposables) {
@@ -275,99 +266,35 @@ export class Application {
                 }
                 disposables.clear();
             },
-            runFeature: async ({ featureName, runtimeOptions = {}, configName, config }: IRunFeatureOptions) => {
-                if (config) {
-                    configName = this.generateOverrideConfig(configMap, config, configName);
+            runFeature: async ({
+                featureName,
+                runtimeOptions = {},
+                configName,
+                overrideConfig
+            }: IRunFeatureOptions) => {
+                if (overrideConfig) {
+                    const generatedConfigName = generateConfigName(configName);
+                    overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
+                    configName = generatedConfigName;
                 }
-                await nodeEnvironmentManager.runServerEnvironments({
+                return nodeEnvironmentManager.runServerEnvironments({
                     featureName,
                     configName,
-                    overrideConfigsMap: configMap,
+                    overrideConfigsMap,
                     runtimeOptions
                 });
-                return configName;
             },
-            closeFeature: ({ featureName, configName }: ICloseFeatureOptions) => {
+            closeFeature: ({ featureName, configName }: IFeatureMessagePayload) => {
                 if (configName) {
-                    configMap.delete(configName);
+                    overrideConfigsMap.delete(configName);
                 }
                 return nodeEnvironmentManager.closeEnvironment({
                     featureName,
                     configName
                 });
-            }
+            },
+            nodeEnvironmentManager
         };
-    }
-
-    public createFeaturesEngineRouter(
-        overrideConfigsMap: Map<string, OverrideConfig>,
-        nodeEnvironmentManager: NodeEnvironmentsManager
-    ) {
-        const router = Router();
-        router.use(bodyParser.json());
-
-        router.put('/', async (req, res) => {
-            const { configName, featureName, runtimeOptions: options, config }: Required<IFeatureTarget> = req.body;
-            try {
-                const generatedConfigName = this.generateConfigName(configName);
-                overrideConfigsMap.set(generatedConfigName, { config, configName });
-                await nodeEnvironmentManager.runServerEnvironments({
-                    configName,
-                    featureName,
-                    runtimeOptions: options,
-                    overrideConfigsMap
-                });
-                res.json({
-                    id: 'feature-initialized',
-                    payload: {
-                        configName: generatedConfigName,
-                        featureName
-                    }
-                } as IProcessMessage<IFeatureMessage>);
-            } catch (error) {
-                res.status(404).json({
-                    id: 'error',
-                    error: error && error.message
-                });
-            }
-        });
-
-        router.delete('/', async (req, res) => {
-            const { featureName, configName }: Required<IFeatureTarget> = req.body;
-            overrideConfigsMap.delete(configName);
-            try {
-                await nodeEnvironmentManager.closeEnvironment({ featureName, configName });
-                res.json({
-                    id: 'feature-closed',
-                    payload: {
-                        featureName,
-                        configName
-                    }
-                } as IProcessMessage<IFeatureMessage>);
-            } catch (error) {
-                res.status(404).json({
-                    result: 'error',
-                    error: error && error.message
-                });
-            }
-        });
-
-        router.get('/', (_req, res) => {
-            try {
-                const data = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
-                res.json({
-                    result: 'success',
-                    data
-                });
-            } catch (error) {
-                res.status(404).json({
-                    result: 'error',
-                    error: error && error.message
-                });
-            }
-        });
-
-        return router;
     }
 
     public async run(runOptions: IRunOptions = {}) {
@@ -381,7 +308,7 @@ export class Application {
             runtimeOptions: defaultRuntimeOptions,
             inspect,
             port: httpServerPort,
-            config: userConfig = [],
+            overrideConfig: userConfig = [],
             publicPath,
             publicConfigsRoute
         } = runOptions;
@@ -400,7 +327,7 @@ export class Application {
             port,
             defaultRuntimeOptions,
             inspect,
-            config,
+            overrideConfig: config,
             configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -678,23 +605,6 @@ export class Application {
                 features.delete(foundFeatureName);
             }
         }
-    }
-
-    private generateOverrideConfig(
-        configMap: Map<string, OverrideConfig>,
-        config: TopLevelConfig,
-        configName?: string
-    ) {
-        const generatedConfigName = this.generateConfigName(configName);
-        configMap.set(generatedConfigName, { config, configName });
-        configName = generatedConfigName;
-        return configName;
-    }
-
-    private generateConfigName(configName?: string) {
-        return `${configName}__${Math.random()
-            .toString(16)
-            .slice(2)}`;
     }
 }
 

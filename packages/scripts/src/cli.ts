@@ -10,8 +10,8 @@ import { resolve } from 'path';
 import open from 'open';
 
 import { version } from '../package.json';
-import { Application, IFeatureTarget } from './application';
-import { IFeatureMessage, IPortMessage, IProcessMessage } from './types';
+import { Application } from './application';
+import { IFeatureMessagePayload, IPortMessage, IProcessMessage, IFeatureTarget } from './types';
 import { resolveFrom, parseCliArguments } from './utils';
 
 program.version(version);
@@ -76,13 +76,12 @@ program
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
                 if (process.send) {
                     if (id === 'run-feature') {
-                        const runOptions = payload as Required<IFeatureTarget>;
-                        const configName = await runFeature(runOptions);
-                        process.send({ id: 'feature-initialized', payload: { configName } });
+                        const responsePayload = await runFeature(payload as Required<IFeatureTarget>);
+                        process.send({ id: 'feature-initialized', payload: responsePayload });
                     }
                     if (id === 'close-feature') {
-                        await closeFeature(payload as IFeatureMessage);
-                        process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
+                        await closeFeature(payload as IFeatureMessagePayload);
+                        process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessagePayload>);
                     }
                     if (id === 'server-disconnect') {
                         await closeServer();

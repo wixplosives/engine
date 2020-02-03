@@ -36,12 +36,8 @@ export interface INodeEnvironmentsManagerOptions {
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
-    config: TopLevelConfig;
+    overrideConfig: TopLevelConfig;
 }
-export type NodeEnvironmentId = {
-    featureName: string;
-    configName?: string;
-};
 
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
@@ -54,14 +50,15 @@ export class NodeEnvironmentsManager {
         runtimeOptions = {},
         overrideConfigsMap = new Map()
     }: RunEnvironmentOptions) {
-        const featureId = `${featureName}${delimiter}${configName}`;
-        const overrideConfig = [...this.options.config];
+        const runtimeConfigName = configName;
+        const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
+        const overrideConfigs = [...this.options.overrideConfig];
         if (configName) {
             const currentOverrideConfig = overrideConfigsMap.get(configName);
             if (currentOverrideConfig) {
-                const { config, configName: originalConfigName } = currentOverrideConfig;
+                const { overrideConfig, configName: originalConfigName } = currentOverrideConfig;
                 configName = originalConfigName;
-                overrideConfig.push(...config);
+                overrideConfigs.push(...overrideConfig);
             }
         }
 
@@ -72,7 +69,7 @@ export class NodeEnvironmentsManager {
             const config: TopLevelConfig = [
                 COM.use({ config: { topology: this.runningEnvironments.get(featureId)?.topology } }),
                 ...(await this.getConfig(configName)),
-                ...overrideConfig
+                ...overrideConfigs
             ];
             const { close, port } = await this.launchEnvironment(nodeEnv, featureName, config, {
                 ...defaultRuntimeOptions,
@@ -93,10 +90,15 @@ export class NodeEnvironmentsManager {
         };
 
         this.runningEnvironments.set(featureId, runningEnvironment);
+
+        return {
+            featureName,
+            configName: runtimeConfigName
+        };
     }
 
     public async closeEnvironment({ featureName, configName }: RunEnvironmentOptions) {
-        const featureId = `${featureName}${delimiter}${configName}`;
+        const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
 
         const runningEnvironment = this.runningEnvironments.get(featureId);
 
@@ -108,11 +110,11 @@ export class NodeEnvironmentsManager {
     }
 
     public getFeaturesWithRunningEnvironments() {
-        return Array.from(this.runningEnvironments.keys());
+        return Array.from(this.runningEnvironments.keys()).map(runningFeature => runningFeature.split(delimiter));
     }
 
     public getTopology(featureName: string, configName?: string) {
-        const featureId = `${featureName}${delimiter}${configName}`;
+        const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
         return this.runningEnvironments.get(featureId)?.topology;
     }
 
@@ -128,7 +130,7 @@ export class NodeEnvironmentsManager {
         featureName: string,
         config: Array<[string, object]>,
         options: Record<string, string | boolean>,
-        remote?: boolean
+        fork?: boolean
     ) {
         const { features, port, inspect } = this.options;
         const serverEnvironmentOptions: ServerEnvironmentOptions = {
@@ -137,10 +139,10 @@ export class NodeEnvironmentsManager {
             featureName,
             features: Array.from(features.entries()),
             options: Object.entries(options),
-            inspect: !!inspect
+            inspect
         };
 
-        if (remote || inspect) {
+        if (fork || inspect) {
             return this.startRemoteNodeEnvironment(serverEnvironmentOptions);
         }
 

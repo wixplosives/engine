@@ -1,4 +1,4 @@
-import { IFeatureTarget, IProcessMessage, IFeatureMessage } from '@wixc3/engine-scripts';
+import { IFeatureTarget, IProcessMessage, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 import { request } from 'http';
 import { IExecutableApplication } from './types';
 
@@ -18,8 +18,7 @@ export class AttachedApp implements IExecutableApplication {
     }
 
     public async runFeature(featureTarget: IFeatureTarget) {
-        const { configName } = await this.makeEnvironmentHttpCall({ featureTarget, method: 'PUT' });
-        return configName;
+        return this.makeEnvironmentHttpCall({ featureTarget, method: 'PUT' });
     }
 
     public async closeFeature(featureTarget: IFeatureTarget) {
@@ -31,7 +30,8 @@ export class AttachedApp implements IExecutableApplication {
     }
 
     private makeEnvironmentHttpCall({ method, path = NODE_ENV_PATH, featureTarget }: IEnvironmentHttpCall) {
-        return new Promise<IFeatureMessage>((resolve, reject) => {
+        return new Promise<IFeatureMessagePayload>((resolve, reject) => {
+            const responseChunks: Array<Buffer | string> = [];
             const req = request(
                 {
                     method,
@@ -43,13 +43,14 @@ export class AttachedApp implements IExecutableApplication {
                     }
                 },
                 res => {
-                    let data = '';
                     res.on('data', chunk => {
                         /* if the server had errors when launching, it will reject. if we received any data, it means the server launched */
-                        data += chunk;
+                        responseChunks.push(chunk);
                     });
                     res.on('end', () => {
-                        const response = JSON.parse(data) as IProcessMessage<IFeatureMessage>;
+                        console.log('!!!!', responseChunks);
+                        const response = JSON.parse(responseChunks.join()) as IProcessMessage<IFeatureMessagePayload>;
+                        console.log('!!!!!!!', response);
                         resolve(response.payload);
                     });
                     res.on('error', reject);
