@@ -86,9 +86,9 @@ export function createTopologyMiddleware(
 }
 
 export const createConfigMiddleware: (overrideConfig?: TopLevelConfig) => express.RequestHandler = (
-    runtimeConfig = []
+    overrideConfig = []
 ) => (_req, res) => {
-    res.send(res.locals.topLevelConfig.concat(runtimeConfig));
+    res.send(res.locals.topLevelConfig.concat(overrideConfig));
 };
 
 export const ensureTopLevelConfigMiddleware: express.RequestHandler = (_, res, next) => {
