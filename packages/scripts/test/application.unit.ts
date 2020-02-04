@@ -267,6 +267,63 @@ describe('Application', function() {
                 }
             });
         });
+
+        it.only('runs 2 node features simultaniously', async () => {
+            const app = new Application({
+                basePath: nodeFeatureFixturePath
+            });
+
+            const { runFeature, closeFeature, port, close } = await app.start();
+            disposables.add(() => close());
+
+            const configOne: TopLevelConfig = [
+                [
+                    'XTestFeature',
+                    {
+                        config: {
+                            value: '1'
+                        }
+                    }
+                ]
+            ];
+
+            const configTwo: TopLevelConfig = [
+                [
+                    'XTestFeature',
+                    {
+                        config: {
+                            value: '2'
+                        }
+                    }
+                ]
+            ];
+
+            const { configName: firstFeatureConfigName } = await runFeature({
+                featureName: 'engine-node/x',
+                overrideConfig: configOne
+            });
+            const { configName: secondFeatureConfigName } = await runFeature({
+                featureName: 'engine-node/x',
+                overrideConfig: configTwo
+            });
+            expect(firstFeatureConfigName).to.not.equal(undefined);
+            expect(secondFeatureConfigName).to.not.equal(undefined);
+            disposables.add(() => closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName! }));
+            disposables.add(() => closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName! }));
+
+            const pageOne = await loadPage(
+                `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName}`
+            );
+
+            const pageTwo = await loadPage(
+                `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName}`
+            );
+
+            await waitFor(async () => {
+                expect(await getBodyContent(pageOne)).to.equal('1');
+                expect(await getBodyContent(pageTwo)).to.equal('2');
+            });
+        });
     });
 
     describe('run', function() {

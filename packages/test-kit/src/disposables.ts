@@ -3,7 +3,7 @@ export function createDisposables() {
 
     return {
         async dispose() {
-            const toDispose = new Set(disposables);
+            const toDispose = new Set(Array.from(disposables).reverse());
             disposables.clear();
             for (const dispose of toDispose) {
                 await dispose();
