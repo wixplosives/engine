@@ -268,12 +268,13 @@ describe('Application', function() {
             });
         });
 
-        it('runs 2 node features simultaniously', async () => {
+        it.only('runs 2 node features simultaniously', async () => {
             const app = new Application({
                 basePath: nodeFeatureFixturePath
             });
 
             const { runFeature, closeFeature, port, close } = await app.start();
+            disposables.add(() => close());
 
             const configOne: TopLevelConfig = [
                 [
@@ -322,7 +323,6 @@ describe('Application', function() {
                 expect(await getBodyContent(pageOne)).to.equal('1');
                 expect(await getBodyContent(pageTwo)).to.equal('2');
             });
-            disposables.add(() => close());
         });
     });
 
