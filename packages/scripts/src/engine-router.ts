@@ -15,10 +15,14 @@ export function createFeaturesEngineRouter(
     router.put('/', async (req, res) => {
         const { configName, featureName, runtimeOptions: options, overrideConfig }: Required<IFeatureTarget> = req.body;
         try {
-            const generatedConfigName = generateConfigName(configName);
-            overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
+            let providedConfigName = configName;
+            if (overrideConfig) {
+                const generatedConfigName = generateConfigName(configName);
+                overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
+                providedConfigName = generatedConfigName;
+            }
             await nodeEnvironmentManager.runServerEnvironments({
-                configName: generatedConfigName,
+                configName: providedConfigName,
                 featureName,
                 runtimeOptions: options,
                 overrideConfigsMap
@@ -26,7 +30,7 @@ export function createFeaturesEngineRouter(
             res.json({
                 id: 'feature-initialized',
                 payload: {
-                    configName: generatedConfigName,
+                    configName: providedConfigName,
                     featureName
                 }
             } as IProcessMessage<IFeatureMessagePayload>);
