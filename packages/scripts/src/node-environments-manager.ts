@@ -28,6 +28,7 @@ export interface RunEnvironmentOptions {
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
     overrideConfigsMap?: Map<string, OverrideConfig>;
+    mode?: LaunchEnvironmentMode;
 }
 
 const cliEntry = require.resolve('../cli');
@@ -41,13 +42,14 @@ export interface INodeEnvironmentsManagerOptions {
     overrideConfig: TopLevelConfig;
 }
 
+export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
+
 export interface ILaunchEnvironmentOptions {
     nodeEnv: IEnvironment;
     featureName: string;
-    config: Array<[string, object]>;
+    config: TopLevelConfig;
     options: Record<string, string | boolean>;
-    fork?: boolean;
-    newServer?: boolean;
+    mode?: LaunchEnvironmentMode;
 }
 
 export class NodeEnvironmentsManager {
@@ -59,7 +61,8 @@ export class NodeEnvironmentsManager {
         featureName,
         configName,
         runtimeOptions = {},
-        overrideConfigsMap = new Map()
+        overrideConfigsMap = new Map(),
+        mode = 'new-server'
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
@@ -89,7 +92,8 @@ export class NodeEnvironmentsManager {
                 options: {
                     ...defaultRuntimeOptions,
                     ...runtimeOptions
-                }
+                },
+                mode
             });
             disposables.push(() => close());
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
@@ -141,14 +145,7 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    private async launchEnvironment({
-        nodeEnv,
-        featureName,
-        config,
-        options,
-        fork,
-        newServer = true
-    }: ILaunchEnvironmentOptions) {
+    private async launchEnvironment({ nodeEnv, featureName, config, options, mode }: ILaunchEnvironmentOptions) {
         const { features, port, inspect } = this.options;
         const serverEnvironmentOptions: ServerEnvironmentOptions = {
             ...nodeEnv,
@@ -159,11 +156,17 @@ export class NodeEnvironmentsManager {
             inspect
         };
 
-        if (fork || inspect) {
+        if (inspect || mode === 'forked') {
+            if (inspect && mode !== 'forked') {
+                console.warn(
+                    `Cannot inspect env without forking new process. 
+                    Launchihg environment ${nodeEnv.name} on remote process.`
+                );
+            }
             return this.runRemoteNodeEnvironment(serverEnvironmentOptions);
         }
 
-        if (newServer) {
+        if (mode === 'new-server') {
             return await this.runInNewServer(port, serverEnvironmentOptions);
         }
 
@@ -179,16 +182,18 @@ export class NodeEnvironmentsManager {
         const socketServer = io(httpServer);
         const { close } = await runNodeEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
-        httpServer.on('connection', socket => {
+        const captureConnections = (socket: Socket): void => {
             openSockets.add(socket);
-            socket.on('close', () => {
+            socket.once('close', () => {
                 openSockets.delete(socket);
             });
-        });
+        };
+        httpServer.on('connection', captureConnections);
         return {
             port: realPort,
             close: async () => {
                 await close();
+                httpServer.off('connection', captureConnections);
                 for (const socket of openSockets) {
                     socket.destroy();
                 }

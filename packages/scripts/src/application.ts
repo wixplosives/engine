@@ -22,7 +22,7 @@ import {
 } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
-import { NodeEnvironmentsManager } from './node-environments-manager';
+import { NodeEnvironmentsManager, LaunchEnvironmentMode } from './node-environments-manager';
 import { createIPC } from './process-communication';
 import {
     EngineConfig,
@@ -53,6 +53,7 @@ export interface IRunOptions extends IFeatureTarget {
     mode?: 'development' | 'production';
     title?: string;
     publicConfigsRoute?: string;
+    nodeEnvironmentsMode?: LaunchEnvironmentMode;
 }
 
 export interface IBuildManifest {
@@ -145,7 +146,8 @@ export class Application {
         mode = 'development',
         singleFeature,
         title,
-        publicConfigsRoute = 'configs/'
+        publicConfigsRoute = 'configs/',
+        nodeEnvironmentsMode
     }: IRunOptions = {}) {
         await this.loadRequiredModulesFromEngineConfig();
 
@@ -253,7 +255,8 @@ export class Application {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
-                overrideConfigsMap
+                overrideConfigsMap,
+                mode: nodeEnvironmentsMode
             });
         }
 
@@ -281,7 +284,8 @@ export class Application {
                     featureName,
                     configName,
                     overrideConfigsMap,
-                    runtimeOptions
+                    runtimeOptions,
+                    mode: nodeEnvironmentsMode
                 });
             },
             closeFeature: ({ featureName, configName }: IFeatureMessagePayload) => {
@@ -310,7 +314,8 @@ export class Application {
             port: httpServerPort,
             overrideConfig: userConfig = [],
             publicPath,
-            publicConfigsRoute
+            publicConfigsRoute,
+            nodeEnvironmentsMode = 'new-server'
         } = runOptions;
         const disposables = new Set<() => unknown>();
         const configurations = await this.readConfigs();
@@ -343,7 +348,8 @@ export class Application {
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
-                configName
+                configName,
+                mode: nodeEnvironmentsMode
             });
         }
 
