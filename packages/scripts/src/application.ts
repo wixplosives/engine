@@ -17,25 +17,31 @@ import {
     createConfigMiddleware,
     createLiveConfigsMiddleware,
     createTopologyMiddleware,
-    ensureTopLevelConfigMiddleware
+    ensureTopLevelConfigMiddleware,
+    OverrideConfig
 } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager } from './node-environments-manager';
 import { createIPC } from './process-communication';
-import { EngineConfig, IConfigDefinition, IEnvironment, IFeatureDefinition } from './types';
+import {
+    EngineConfig,
+    IConfigDefinition,
+    IEnvironment,
+    IFeatureDefinition,
+    IFeatureTarget,
+    IFeatureMessagePayload
+} from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
+import { createFeaturesEngineRouter, generateConfigName } from './engine-router';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
 export const DEFAULT_PORT = 3000;
 
-export interface IFeatureTarget {
-    featureName?: string;
-    configName?: string;
-    runtimeOptions?: Record<string, string | boolean>;
-    config?: TopLevelConfig;
+export interface IRunFeatureOptions extends IFeatureTarget {
+    featureName: string;
 }
 
 export interface IRunOptions extends IFeatureTarget {
@@ -134,7 +140,7 @@ export class Application {
         inspect = false,
         port: httpServerPort,
         singleRun,
-        config = [],
+        overrideConfig = [],
         publicPath,
         mode = 'development',
         singleFeature,
@@ -186,23 +192,17 @@ export class Application {
             defaultRuntimeOptions,
             port,
             inspect,
-            config
+            overrideConfig
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        let overrideConfig = config;
-
-        const liveConfigurationsMiddleware = createLiveConfigsMiddleware(configurations, this.basePath);
-        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
-        const middlewareConfigProxy: express.RequestHandler = (req, res, next) => {
-            createConfigMiddleware(overrideConfig)(req, res, next);
-        };
+        const overrideConfigsMap = new Map<string, OverrideConfig>();
 
         app.use(`/${publicConfigsRoute}`, [
             ensureTopLevelConfigMiddleware,
-            topologyMiddleware,
-            liveConfigurationsMiddleware,
-            middlewareConfigProxy
+            createTopologyMiddleware(nodeEnvironmentManager, publicPath),
+            createLiveConfigsMiddleware(configurations, this.basePath, overrideConfigsMap),
+            createConfigMiddleware(overrideConfig)
         ]);
 
         for (const childCompiler of compiler.compilers) {
@@ -224,6 +224,7 @@ export class Application {
         if (featureName) {
             console.log('Main application URL: ', `${mainUrl}main.html`);
         }
+
         const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations, nodeEnvironmentManager);
 
         if (packages.length === 1) {
@@ -236,7 +237,7 @@ export class Application {
             }
         }
 
-        app.use(nodeEnvironmentManager.middleware());
+        app.use('/engine-feature', createFeaturesEngineRouter(overrideConfigsMap, nodeEnvironmentManager));
 
         app.get('/engine-state', (_req, res) => {
             res.json({
@@ -247,26 +248,52 @@ export class Application {
                 }
             });
         });
+
         if (featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
-                configName
+                configName,
+                overrideConfigsMap
             });
         }
 
         return {
             port,
-            nodeEnvironmentManager,
             router: app,
-            setRunningConfig: (config: TopLevelConfig = []) => {
-                overrideConfig = config;
-            },
             async close() {
                 for (const dispose of disposables) {
                     await dispose();
                 }
                 disposables.clear();
-            }
+            },
+            runFeature: async ({
+                featureName,
+                runtimeOptions = {},
+                configName,
+                overrideConfig
+            }: IRunFeatureOptions) => {
+                if (overrideConfig) {
+                    const generatedConfigName = generateConfigName(configName);
+                    overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
+                    configName = generatedConfigName;
+                }
+                return nodeEnvironmentManager.runServerEnvironments({
+                    featureName,
+                    configName,
+                    overrideConfigsMap,
+                    runtimeOptions
+                });
+            },
+            closeFeature: ({ featureName, configName }: IFeatureMessagePayload) => {
+                if (configName) {
+                    overrideConfigsMap.delete(configName);
+                }
+                return nodeEnvironmentManager.closeEnvironment({
+                    featureName,
+                    configName
+                });
+            },
+            nodeEnvironmentManager
         };
     }
 
@@ -281,7 +308,7 @@ export class Application {
             runtimeOptions: defaultRuntimeOptions,
             inspect,
             port: httpServerPort,
-            config: userConfig = [],
+            overrideConfig: userConfig = [],
             publicPath,
             publicConfigsRoute
         } = runOptions;
@@ -300,17 +327,15 @@ export class Application {
             port,
             defaultRuntimeOptions,
             inspect,
-            config,
+            overrideConfig: config,
             configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        const topologyMiddleware = createTopologyMiddleware(nodeEnvironmentManager.topology, publicPath);
-
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, [
                 ensureTopLevelConfigMiddleware,
-                topologyMiddleware,
+                createTopologyMiddleware(nodeEnvironmentManager, publicPath),
                 createConfigMiddleware(config)
             ]);
         }

@@ -89,7 +89,7 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
     ]);
 
     const isNodeEnvRunning = !!serverState.featuresWithRunningNodeEnvs.find(
-        featureName => selectedFeature.featureName === featureName
+        ([featureName, configName]) => selectedFeature.featureName === featureName && ((!selectedFeature.configName && !configName) || (configName && selectedFeature.configName === configName))
     );
 
     return (

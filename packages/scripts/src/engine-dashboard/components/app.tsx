@@ -10,8 +10,8 @@ const changeNodeEnvironmentState = async (
     isNodeEnvActive: boolean,
     runtimeOptions: Array<{ key: string; value: string }> = []
 ) =>
-    await (await fetch(`node-env`, {
-        method: isNodeEnvActive ? 'DELETE' : 'PUT',
+    await (await fetch(`engine-feature`, {
+        method: isNodeEnvActive ? 'POST' : 'PUT',
         body: JSON.stringify({
             featureName,
             configName,

@@ -1,4 +1,10 @@
-import { IFeatureTarget, IPortMessage, isProcessMessage, ProcessMessageId } from '@wixc3/engine-scripts';
+import {
+    IFeatureTarget,
+    IPortMessage,
+    isProcessMessage,
+    ProcessMessageId,
+    IFeatureMessagePayload
+} from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
 import { IExecutableApplication } from './types';
 
@@ -36,12 +42,12 @@ export class DetachedApp implements IExecutableApplication {
     }
 
     public async runFeature(payload: IFeatureTarget) {
-        await this.waitForProcessMessage('feature-initialized', p => {
+        return (await this.waitForProcessMessage('feature-initialized', p => {
             p.send({
                 id: 'run-feature',
                 payload
             });
-        });
+        })) as IFeatureMessagePayload;
     }
 
     public async closeFeature(payload: IFeatureTarget) {

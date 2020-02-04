@@ -2,11 +2,19 @@ import { Environment, EnvironmentContext, EnvironmentTypes, TopLevelConfig, Feat
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
+export interface IFeatureTarget {
+    featureName?: string;
+    configName?: string;
+    runtimeOptions?: Record<string, string | boolean>;
+    overrideConfig?: TopLevelConfig;
+}
+
 export interface ServerEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
     features: Array<[string, IFeatureDefinition]>;
     options?: Array<[string, string | boolean]>;
+    inspect?: boolean;
 }
 export interface VirtualEntry {
     source: string;
@@ -95,7 +103,8 @@ export type ProcessMessageId =
     | 'feature-closed'
     | 'server-disconnect'
     | 'server-disconnected'
-    | 'port-request';
+    | 'port-request'
+    | 'error';
 
 export interface IProcessMessage<T> {
     id: ProcessMessageId;
@@ -109,12 +118,16 @@ export const isPortMessage = (value: unknown): value is IProcessMessage<IPortMes
     return isProcessMessage(value) && value.id === 'port-request';
 };
 
-export const isFeatureMessage = (value: unknown): value is IProcessMessage<IFeatureMessage> => {
+export const isFeatureMessage = (value: unknown): value is IProcessMessage<IFeatureMessagePayload> => {
     return isProcessMessage(value) && value.id === 'feature-initialized';
 };
-export interface IFeatureMessage {
+
+export interface ErrorResponse extends IProcessMessage<string> {
+    id: 'error';
+}
+export interface IFeatureMessagePayload {
     featureName: string;
-    configName?: string;
+    configName: string;
 }
 
 export interface IPortMessage {

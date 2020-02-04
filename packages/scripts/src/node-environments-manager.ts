@@ -1,5 +1,4 @@
-import bodyParser from 'body-parser';
-import { Router } from 'express';
+import { delimiter } from 'path';
 import io from 'socket.io';
 
 import { COM, flattenTree, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
@@ -15,8 +14,10 @@ import {
     isEnvironmentStartMessage,
     ServerEnvironmentOptions
 } from './types';
+import { OverrideConfig } from './config-middleware';
 
 export interface IRuntimeEnvironment {
+    topology: Record<string, string>;
     close: () => Promise<void>;
 }
 
@@ -24,6 +25,7 @@ export interface RunEnvironmentOptions {
     featureName: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
+    overrideConfigsMap?: Map<string, OverrideConfig>;
 }
 
 const cliEntry = require.resolve('../cli');
@@ -34,33 +36,46 @@ export interface INodeEnvironmentsManagerOptions {
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
-    config: TopLevelConfig;
+    overrideConfig: TopLevelConfig;
 }
+
 export class NodeEnvironmentsManager {
-    public topology = new Map<string, Record<string, string>>();
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
     constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
-    public async runServerEnvironments({ featureName, configName, runtimeOptions = {} }: RunEnvironmentOptions) {
-        if (this.runningEnvironments.has(featureName)) {
-            throw new Error(`node environment for ${featureName} already running`);
+
+    public async runServerEnvironments({
+        featureName,
+        configName,
+        runtimeOptions = {},
+        overrideConfigsMap = new Map()
+    }: RunEnvironmentOptions) {
+        const runtimeConfigName = configName;
+        const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
+        const overrideConfigs = [...this.options.overrideConfig];
+        if (configName) {
+            const currentOverrideConfig = overrideConfigsMap.get(configName);
+            if (currentOverrideConfig) {
+                const { overrideConfig, configName: originalConfigName } = currentOverrideConfig;
+                configName = originalConfigName;
+                overrideConfigs.push(...overrideConfig);
+            }
         }
+
         const topology: Record<string, string> = {};
         const disposables: Array<() => unknown> = [];
         const { defaultRuntimeOptions } = this.options;
         for (const nodeEnv of this.getNodeEnvironments(featureName)) {
-            const { close, port } = await this.launchEnvironment(
-                nodeEnv,
-                featureName,
-                [
-                    COM.use({ config: { topology: this.topology.get(featureName) } }),
-                    ...(await this.getConfig(configName)),
-                    ...this.options.config
-                ],
-                { ...defaultRuntimeOptions, ...runtimeOptions }
-            );
+            const config: TopLevelConfig = [
+                COM.use({ config: { topology: this.runningEnvironments.get(featureId)?.topology } }),
+                ...(await this.getConfig(configName)),
+                ...overrideConfigs
+            ];
+            const { close, port } = await this.launchEnvironment(nodeEnv, featureName, config, {
+                ...defaultRuntimeOptions,
+                ...runtimeOptions
+            });
             disposables.push(() => close());
-
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
         }
 
@@ -70,26 +85,37 @@ export class NodeEnvironmentsManager {
                     await dispose();
                 }
                 disposables.length = 0;
-            }
+            },
+            topology
         };
 
-        this.topology.set(featureName, topology);
+        this.runningEnvironments.set(featureId, runningEnvironment);
 
-        this.runningEnvironments.set(featureName, runningEnvironment);
+        return {
+            featureName,
+            configName: runtimeConfigName
+        };
     }
 
-    public async closeEnvironment({ featureName }: RunEnvironmentOptions) {
-        const runningEnvironment = this.runningEnvironments.get(featureName);
+    public async closeEnvironment({ featureName, configName }: RunEnvironmentOptions) {
+        const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
+
+        const runningEnvironment = this.runningEnvironments.get(featureId);
+
         if (!runningEnvironment) {
-            throw new Error(`there are no node environments running for ${featureName}`);
+            throw new Error(`there are no node environments running for ${featureName} and config ${configName}`);
         }
-        this.topology.delete(featureName);
-        this.runningEnvironments.delete(featureName);
+        this.runningEnvironments.delete(featureId);
         await runningEnvironment.close();
     }
 
     public getFeaturesWithRunningEnvironments() {
-        return Array.from(this.runningEnvironments.keys());
+        return Array.from(this.runningEnvironments.keys()).map(runningFeature => runningFeature.split(delimiter));
+    }
+
+    public getTopology(featureName: string, configName?: string) {
+        const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
+        return this.runningEnvironments.get(featureId)?.topology;
     }
 
     public async closeAll() {
@@ -99,66 +125,12 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    public middleware() {
-        const router = Router();
-        router.use(bodyParser.json());
-        router.put('/node-env', async (req, res) => {
-            const { configName, featureName, runtimeOptions: options }: RunEnvironmentOptions = req.body;
-            try {
-                await this.runServerEnvironments({
-                    configName,
-                    featureName,
-                    runtimeOptions: options
-                });
-                res.json({
-                    result: 'success'
-                });
-            } catch (error) {
-                res.status(404).json({
-                    result: 'error',
-                    error: error && error.message
-                });
-            }
-        });
-
-        router.delete('/node-env', async (req, res) => {
-            const { featureName }: RunEnvironmentOptions = req.body;
-            try {
-                await this.closeEnvironment({ featureName });
-                res.json({
-                    result: 'success'
-                });
-            } catch (error) {
-                res.status(404).json({
-                    result: 'error',
-                    error: error && error.message
-                });
-            }
-        });
-
-        router.get('/node-env', (_req, res) => {
-            try {
-                const data = this.getFeaturesWithRunningEnvironments();
-                res.json({
-                    result: 'success',
-                    data
-                });
-            } catch (error) {
-                res.status(404).json({
-                    result: 'error',
-                    error: error && error.message
-                });
-            }
-        });
-
-        return router;
-    }
-
     private async launchEnvironment(
         nodeEnv: IEnvironment,
         featureName: string,
         config: Array<[string, object]>,
-        options: Record<string, string | boolean>
+        options: Record<string, string | boolean>,
+        fork?: boolean
     ) {
         const { features, port, inspect } = this.options;
         const serverEnvironmentOptions: ServerEnvironmentOptions = {
@@ -166,10 +138,11 @@ export class NodeEnvironmentsManager {
             config,
             featureName,
             features: Array.from(features.entries()),
-            options: Object.entries(options)
+            options: Object.entries(options),
+            inspect
         };
 
-        if (inspect) {
+        if (fork || inspect) {
             return this.startRemoteNodeEnvironment(serverEnvironmentOptions);
         }
 

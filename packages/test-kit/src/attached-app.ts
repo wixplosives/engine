@@ -1,11 +1,11 @@
-import { IFeatureTarget } from '@wixc3/engine-scripts';
+import { IFeatureTarget, IProcessMessage, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 import { request } from 'http';
 import { IExecutableApplication } from './types';
 
-const NODE_ENV_PATH = '/node-env';
+const NODE_ENV_PATH = '/engine-feature';
 
 interface IEnvironmentHttpCall {
-    method: 'PUT' | 'DELETE' | 'GET';
+    method: 'PUT' | 'POST' | 'GET';
     path?: string;
     featureTarget?: IFeatureTarget;
 }
@@ -13,16 +13,16 @@ interface IEnvironmentHttpCall {
 export class AttachedApp implements IExecutableApplication {
     constructor(private port: number, private hostname = 'localhost') {}
     public async getServerPort() {
-        await this.makeEnvironmentHttpCall({ method: 'GET', path: '/' });
+        await this.makeEnvironmentHttpCall({ method: 'GET' });
         return this.port;
     }
 
-    public runFeature(featureTarget: IFeatureTarget) {
+    public async runFeature(featureTarget: IFeatureTarget) {
         return this.makeEnvironmentHttpCall({ featureTarget, method: 'PUT' });
     }
 
-    public closeFeature(featureTarget: IFeatureTarget) {
-        return this.makeEnvironmentHttpCall({ featureTarget, method: 'DELETE' });
+    public async closeFeature(featureTarget: IFeatureTarget) {
+        await this.makeEnvironmentHttpCall({ featureTarget, method: 'POST' });
     }
 
     public async closeServer() {
@@ -30,7 +30,8 @@ export class AttachedApp implements IExecutableApplication {
     }
 
     private makeEnvironmentHttpCall({ method, path = NODE_ENV_PATH, featureTarget }: IEnvironmentHttpCall) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<IFeatureMessagePayload>((resolve, reject) => {
+            const responseChunks: Array<string> = [];
             const req = request(
                 {
                     method,
@@ -42,10 +43,20 @@ export class AttachedApp implements IExecutableApplication {
                     }
                 },
                 res => {
-                    res.on('data', () => {
+                    res.on('data', chunk => {
                         /* if the server had errors when launching, it will reject. if we received any data, it means the server launched */
+                        responseChunks.push(chunk.toString());
                     });
-                    res.on('end', resolve);
+                    res.on('end', () => {
+                        if (path === NODE_ENV_PATH) {
+                            const response = JSON.parse(responseChunks.join()) as IProcessMessage<
+                                IFeatureMessagePayload
+                            >;
+                            resolve(response.payload);
+                        } else {
+                            resolve();
+                        }
+                    });
                     res.on('error', reject);
                 }
             );

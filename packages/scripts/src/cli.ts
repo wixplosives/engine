@@ -10,8 +10,8 @@ import { resolve } from 'path';
 import open from 'open';
 
 import { version } from '../package.json';
-import { Application, IFeatureTarget } from './application';
-import { IFeatureMessage, IPortMessage, IProcessMessage } from './types';
+import { Application } from './application';
+import { IFeatureMessagePayload, IPortMessage, IProcessMessage, IFeatureTarget } from './types';
 import { resolveFrom, parseCliArguments } from './utils';
 
 program.version(version);
@@ -53,7 +53,7 @@ program
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const app = new Application({ basePath });
-            const { close: closeServer, port, nodeEnvironmentManager, setRunningConfig } = await app.start({
+            const { close: closeServer, port, runFeature, closeFeature } = await app.start({
                 featureName,
                 configName,
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
@@ -76,16 +76,12 @@ program
             const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
                 if (process.send) {
                     if (id === 'run-feature') {
-                        const runOptions = payload as Required<IFeatureTarget>;
-                        if (runOptions.config) {
-                            setRunningConfig(runOptions.config);
-                        }
-                        await nodeEnvironmentManager.runServerEnvironments(runOptions);
-                        process.send({ id: 'feature-initialized' });
+                        const responsePayload = await runFeature(payload as Required<IFeatureTarget>);
+                        process.send({ id: 'feature-initialized', payload: responsePayload });
                     }
                     if (id === 'close-feature') {
-                        await nodeEnvironmentManager.closeEnvironment(payload as IFeatureMessage);
-                        process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessage>);
+                        await closeFeature(payload as IFeatureMessagePayload);
+                        process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessagePayload>);
                     }
                     if (id === 'server-disconnect') {
                         await closeServer();
