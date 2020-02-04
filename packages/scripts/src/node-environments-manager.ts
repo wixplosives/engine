@@ -1,6 +1,8 @@
+import { Socket } from 'net';
 import { delimiter } from 'path';
-import io from 'socket.io';
 
+import io from 'socket.io';
+import { safeListeningHttpServer } from 'create-listening-server';
 import { COM, flattenTree, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
@@ -39,6 +41,15 @@ export interface INodeEnvironmentsManagerOptions {
     overrideConfig: TopLevelConfig;
 }
 
+export interface ILaunchEnvironmentOptions {
+    nodeEnv: IEnvironment;
+    featureName: string;
+    config: Array<[string, object]>;
+    options: Record<string, string | boolean>;
+    fork?: boolean;
+    newServer?: boolean;
+}
+
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
@@ -71,9 +82,14 @@ export class NodeEnvironmentsManager {
                 ...(await this.getConfig(configName)),
                 ...overrideConfigs
             ];
-            const { close, port } = await this.launchEnvironment(nodeEnv, featureName, config, {
-                ...defaultRuntimeOptions,
-                ...runtimeOptions
+            const { close, port } = await this.launchEnvironment({
+                nodeEnv,
+                featureName,
+                config,
+                options: {
+                    ...defaultRuntimeOptions,
+                    ...runtimeOptions
+                }
             });
             disposables.push(() => close());
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
@@ -125,13 +141,14 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    private async launchEnvironment(
-        nodeEnv: IEnvironment,
-        featureName: string,
-        config: Array<[string, object]>,
-        options: Record<string, string | boolean>,
-        fork?: boolean
-    ) {
+    private async launchEnvironment({
+        nodeEnv,
+        featureName,
+        config,
+        options,
+        fork,
+        newServer = true
+    }: ILaunchEnvironmentOptions) {
         const { features, port, inspect } = this.options;
         const serverEnvironmentOptions: ServerEnvironmentOptions = {
             ...nodeEnv,
@@ -143,13 +160,40 @@ export class NodeEnvironmentsManager {
         };
 
         if (fork || inspect) {
-            return this.startRemoteNodeEnvironment(serverEnvironmentOptions);
+            return this.runRemoteNodeEnvironment(serverEnvironmentOptions);
+        }
+
+        if (newServer) {
+            return await this.runInNewServer(port, serverEnvironmentOptions);
         }
 
         const { close } = await runNodeEnvironment(this.socketServer, serverEnvironmentOptions);
         return {
             close,
             port
+        };
+    }
+
+    private async runInNewServer(port: number, serverEnvironmentOptions: ServerEnvironmentOptions) {
+        const { httpServer, port: realPort } = await safeListeningHttpServer(port);
+        const socketServer = io(httpServer);
+        const { close } = await runNodeEnvironment(socketServer, serverEnvironmentOptions);
+        const openSockets = new Set<Socket>();
+        httpServer.on('connection', socket => {
+            openSockets.add(socket);
+            socket.on('close', () => {
+                openSockets.delete(socket);
+            });
+        });
+        return {
+            port: realPort,
+            close: async () => {
+                await close();
+                for (const socket of openSockets) {
+                    socket.destroy();
+                }
+                await new Promise((res, rej) => socketServer.close((e?: Error) => (e ? rej(e) : res()) as any));
+            }
         };
     }
 
@@ -179,7 +223,7 @@ export class NodeEnvironmentsManager {
         return config;
     }
 
-    private async startRemoteNodeEnvironment(options: ServerEnvironmentOptions) {
+    private async runRemoteNodeEnvironment(options: ServerEnvironmentOptions) {
         const remoteNodeEnvironment = await startRemoteNodeEnvironment(cliEntry, {
             inspect: this.options.inspect,
             port: this.options.port
