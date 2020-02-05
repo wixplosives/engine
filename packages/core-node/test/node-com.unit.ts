@@ -1,11 +1,14 @@
+import { Socket } from 'net';
+import { safeListeningHttpServer } from 'create-listening-server';
+import io from 'socket.io';
+
+import { expect } from 'chai';
+import sinon from 'sinon';
+import { waitFor } from 'promise-assist';
+
 import { Communication, WsClientHost } from '@wixc3/engine-core';
 import { WsHost } from '@wixc3/engine-core-node';
 import { createDisposables } from '@wixc3/engine-test-kit';
-import { expect } from 'chai';
-import { safeListeningHttpServer } from 'create-listening-server';
-import io from 'socket.io';
-import sinon from 'sinon';
-import { waitFor } from 'promise-assist';
 
 interface ICommunicationTestApi {
     sayHello: () => string;
@@ -23,17 +26,32 @@ describe('Node communication', () => {
     beforeEach(async () => {
         const getSocketAfterConnected = () =>
             new Promise<io.Socket>(resolve => {
-                socketServer.on('connection', socket => {
-                    disposables.add(() => socket.disconnect(true));
+                const onConnection = (socket: io.Socket): void => {
+                    disposables.add(() => {
+                        socket.disconnect(true);
+                    });
                     resolve(socket);
-                });
+                };
+                socketServer.on('connection', onConnection);
             });
 
         const { httpServer: server, port: servingPort } = await safeListeningHttpServer(3050);
         port = servingPort;
-        server.on('connection', connection => disposables.add(() => connection.destroy()));
         socketServer = io(server);
+        const connections = new Set<Socket>();
         disposables.add(() => new Promise(res => socketServer.close(res)));
+        const onConnection = (connection: Socket): void => {
+            connections.add(connection);
+            disposables.add(() => {
+                connections.delete(connection);
+            });
+        };
+        server.on('connection', onConnection);
+        disposables.add(() => {
+            for (const connection of connections) {
+                connection.destroy();
+            }
+        });
 
         clientHost = new WsClientHost(`http://localhost:${port}`);
         serverHost = new WsHost(await getSocketAfterConnected());
@@ -167,18 +185,11 @@ describe('Node communication', () => {
         });
 
         onDisconnect(spy);
-        await disposables.dispose();
+        socketServer.close();
+        // await disposables.dispose();
         // waiting for spy function to have called
-        await waitFor(
-            () => {
-                expect(spy.callCount).to.be.greaterThan(0);
-            },
-            {
-                timeout: 2_000
-            }
-        );
-
-        // checking spy was called only once
-        expect(spy.callCount).to.eq(1);
+        await waitFor(() => {
+            expect(spy.callCount).to.be.eq(1);
+        });
     });
 });
