@@ -186,8 +186,13 @@ describe('Node communication', () => {
 
         onDisconnect(spy);
         socketServer.close();
-        await waitFor(() => {
-            expect(spy.callCount).to.be.eq(1);
-        });
+        await waitFor(
+            () => {
+                expect(spy.callCount).to.be.eq(1);
+            },
+            {
+                timeout: 2_000
+            }
+        );
     });
 });
