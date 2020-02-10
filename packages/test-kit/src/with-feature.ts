@@ -9,13 +9,7 @@ import { IExecutableApplication } from './types';
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
 
-export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
-    /**
-     * absolute path to the root directory of the feature package.
-     * @default process.cwd
-     */
-    basePath?: string;
-
+export interface IFeatureExecutionOptions {
     /**
      * feature file name scoped to feature root directory.
      * if feature name is the same as folder name, scoping is unnecessary.
@@ -68,16 +62,24 @@ export interface IFeatureTestOptions extends puppeteer.LaunchOptions {
     runOptions?: Record<string, string>;
 
     /**
+     * Allows providing a Top level config
+     * If configName was provided, the matching configurations will be overriden by the config provided
+     */
+    config?: TopLevelConfig;
+
+    /** Passed down to `page.setViewport()` right after page creation. */
+    defaultViewport?: puppeteer.Viewport;
+}
+
+export interface IWithFeatureOptions extends IFeatureExecutionOptions, puppeteer.LaunchOptions {
+    /**
      * If we want to test the engine against a running application, proveide the port of the application.
      * It can be extracted from the log printed after 'engine start' or 'engine run'
      */
     runningApplicationPort?: number;
 
-    /**
-     * Allows providing a Top level config
-     * If configName was provided, the matching configurations will be overriden by the config provided
-     */
-    config?: TopLevelConfig;
+    /** Passed down to `page.setViewport()` right after page creation. */
+    defaultViewport?: puppeteer.Viewport;
 }
 
 let browser: puppeteer.Browser | null = null;
@@ -99,12 +101,13 @@ after('close engine server, if open', async function() {
     }
 });
 
-export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
+export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const disposeAfterEach = createDisposables();
     const {
         headless,
         devtools,
         slowMo,
+        defaultViewport: suiteDefaultViewport = { width: 1280, height: 1024 },
         featureName: suiteFeatureName,
         configName: suiteConfigName,
         runOptions: suiteOptions = {},
@@ -135,7 +138,11 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
     before('launch puppeteer', async function() {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            browser = await puppeteer.launch(withFeatureOptions);
+            // to allow parallel testing, we set the viewport size via page.setViewport()
+            browser = await puppeteer.launch({
+                ...withFeatureOptions,
+                defaultViewport: undefined
+            });
         }
     });
 
@@ -171,9 +178,10 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
                 runOptions = suiteOptions,
                 queryParams = suiteQueryParams,
                 allowErrors: targetAllowErrors = false,
-                config = suiteConfig
-            }: IFeatureTestOptions = {},
-            options?: puppeteer.DirectNavigationOptions
+                config = suiteConfig,
+                defaultViewport = suiteDefaultViewport
+            }: IFeatureExecutionOptions = {},
+            navigationOptions?: puppeteer.DirectNavigationOptions
         ) {
             if (!browser) {
                 throw new Error('Browser is not open!');
@@ -202,20 +210,22 @@ export function withFeature(withFeatureOptions: IFeatureTestOptions = {}) {
                 configName: newConfigName,
                 queryParams
             });
+
             const page = await browser.newPage();
+            await page.setViewport(defaultViewport);
             pages.add(page);
             page.on('pageerror', e => {
                 capturedErrors.push(e);
                 console.error(e);
             });
-            const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...options });
+            const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...navigationOptions });
 
             return { page, response };
         }
     };
 }
 
-function toSearchQuery({ featureName, configName, queryParams }: IFeatureTestOptions): string {
+function toSearchQuery({ featureName, configName, queryParams }: IWithFeatureOptions): string {
     const queryStr = `?feature=${encodeURIComponent(featureName || '')}&config=${encodeURIComponent(configName || '')}`;
     if (queryParams) {
         return Object.entries(queryParams).reduce((currQuery, [key, value]) => {
