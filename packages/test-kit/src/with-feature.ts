@@ -107,7 +107,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         headless,
         devtools,
         slowMo,
-        defaultViewport: suiteDefaultViewport = { width: 1280, height: 1024 },
+        defaultViewport: suiteDefaultViewport,
         featureName: suiteFeatureName,
         configName: suiteConfigName,
         runOptions: suiteOptions = {},
@@ -212,7 +212,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             });
 
             const page = await browser.newPage();
-            await page.setViewport(defaultViewport);
+            if (defaultViewport) {
+                await page.setViewport(defaultViewport);
+            }
             pages.add(page);
             page.on('pageerror', e => {
                 capturedErrors.push(e);
