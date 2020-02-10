@@ -268,7 +268,7 @@ describe('Application', function() {
             });
         });
 
-        it.only('runs 2 node features simultaniously', async () => {
+        it('runs 2 node features simultaniously', async () => {
             const app = new Application({
                 basePath: nodeFeatureFixturePath
             });
