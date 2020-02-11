@@ -68,9 +68,11 @@ const featureLoaders = {
 ${Array.from(features.values())
     .map(({ scopedName, name, filePath, envFilePaths, contextFilePaths, dependencies, resolvedContexts }) => {
         const loadStatements: string[] = [];
+        let usesResolvedContexts = false;
         for (const childEnvName of childEnvs) {
             const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
             if (contextFilePath) {
+                usesResolvedContexts = true;
                 loadStatements.push(
                     `                if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
                    await import(/* webpackChunkName: "${name}" */ ${stringify(contextFilePath)});
@@ -86,7 +88,9 @@ ${Array.from(features.values())
         }
 
         return `    '${scopedName}': {
-            async load(resolvedContexts) {${loadStatements.length ? '\n' + loadStatements.join('\n') : ''}
+            async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {${
+            loadStatements.length ? '\n' + loadStatements.join('\n') : ''
+        }
                 return (await import(/* webpackChunkName: "${name}" */ ${stringify(filePath)})).default;
             },
             depFeatures: ${stringify(dependencies)},
