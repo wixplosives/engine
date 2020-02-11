@@ -121,7 +121,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     if (
         isCI &&
-        (headless === false || devtools === true || slowMo !== undefined || runningApplicationPort !== undefined)
+        (headless === false ||
+            devtools === true ||
+            slowMo !== undefined ||
+            (runningApplicationPort !== undefined && !process.env.IS_PARALLEL))
     ) {
         throw new Error(
             `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`
