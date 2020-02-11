@@ -16,7 +16,7 @@ import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import {
     createConfigMiddleware,
     createLiveConfigsMiddleware,
-    createTopologyMiddleware,
+    createCommunicationMiddleware,
     ensureTopLevelConfigMiddleware,
     OverrideConfig
 } from './config-middleware';
@@ -202,7 +202,7 @@ export class Application {
 
         app.use(`/${publicConfigsRoute}`, [
             ensureTopLevelConfigMiddleware,
-            createTopologyMiddleware(nodeEnvironmentManager, publicPath),
+            createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
             createLiveConfigsMiddleware(configurations, this.basePath, overrideConfigsMap),
             createConfigMiddleware(overrideConfig)
         ]);
@@ -340,7 +340,7 @@ export class Application {
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, [
                 ensureTopLevelConfigMiddleware,
-                createTopologyMiddleware(nodeEnvironmentManager, publicPath),
+                createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
                 createConfigMiddleware(config)
             ]);
         }

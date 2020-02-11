@@ -66,12 +66,12 @@ export function createLiveConfigsMiddleware(
     };
 }
 
-export function createTopologyMiddleware(
+export function createCommunicationMiddleware(
     nodeEnvironmentsManager: NodeEnvironmentsManager,
     publicPath?: string
 ): express.RequestHandler {
     return (req, res, next) => {
-        const { feature } = req.query;
+        const { feature, env } = req.query;
         const requestedConfig: string | undefined = req.path.slice(1);
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
             COM.use({
@@ -80,7 +80,8 @@ export function createTopologyMiddleware(
                         feature,
                         requestedConfig === 'undefined' ? undefined : requestedConfig
                     ),
-                    publicPath
+                    publicPath,
+                    id: env
                 }
             })
         ]);
