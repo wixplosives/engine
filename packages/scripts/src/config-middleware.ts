@@ -71,7 +71,7 @@ export function createCommunicationMiddleware(
     publicPath?: string
 ): express.RequestHandler {
     return (req, res, next) => {
-        const { feature, env } = req.query;
+        const { feature } = req.query;
         const requestedConfig: string | undefined = req.path.slice(1);
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
             COM.use({
@@ -80,8 +80,7 @@ export function createCommunicationMiddleware(
                         feature,
                         requestedConfig === 'undefined' ? undefined : requestedConfig
                     ),
-                    publicPath,
-                    id: env
+                    publicPath
                 }
             })
         ]);
