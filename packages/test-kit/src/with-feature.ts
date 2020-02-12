@@ -225,7 +225,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             });
             const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...navigationOptions });
 
-            return { page, response };
+            return { page, response, browser };
         }
     };
 }
