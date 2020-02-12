@@ -146,7 +146,8 @@ export class Feature<
             onDispose(fn: DisposeFunction) {
                 feature.addOnDisposeHandler(fn, envName);
             },
-            [RUN_OPTIONS]: runningEngine.runOptions
+            [RUN_OPTIONS]: runningEngine.runOptions,
+            runningEnvironmentName: envName
         };
 
         const emptyDispose = { dispose: () => undefined };

@@ -58,7 +58,8 @@ export default new Feature({
     ({
         config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts, publicPath },
         loggerTransports,
-        [RUN_OPTIONS]: runOptions
+        [RUN_OPTIONS]: runOptions,
+        runningEnvironmentName
     }) => {
         // TODO: find better way to detect node runtime
         const isNode = typeof process !== 'undefined' && process.title !== 'browser';
@@ -66,7 +67,7 @@ export default new Feature({
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.
         // main frame might not have that configured, so we use 'main' fallback for it.
-        const comId = id || (host && host.name) || (typeof self !== 'undefined' && self.name) || 'main';
+        const comId = id || (host && host.name) || (typeof self !== 'undefined' && self.name) || runningEnvironmentName;
 
         const comOptions: ICommunicationOptions = {
             warnOnSlow: runOptions.has('warnOnSlow'),
