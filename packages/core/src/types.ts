@@ -141,7 +141,17 @@ export interface IRunOptions {
     get(key: string): string | boolean | null | undefined;
 }
 
-type SettingUpFeature<ID extends string, API extends EntityRecord, ENV extends string> = {
+type RunningEnvironmentNameForUniversal<ENV> = ENV extends '<Universal>'
+    ? {
+          /**
+           * The name of the current running environment while setting up a universal feature.
+           * This is NOT the environment instance id
+           */
+          runningEnvironmentName: string;
+      }
+    : {};
+
+export type SettingUpFeature<ID extends string, API extends EntityRecord, ENV extends string> = {
     id: ID;
     run: (fn: () => unknown) => void;
     onDispose: (fn: DisposeFunction) => void;
@@ -149,7 +159,8 @@ type SettingUpFeature<ID extends string, API extends EntityRecord, ENV extends s
 } & MapVisibleInputs<API, '<Universal>'> &
     MapVisibleInputs<API, ENV> &
     MapToProxyType<GetRemoteOutputs<API>> &
-    MapToProxyType<GetOnlyLocalUniversalOutputs<API>>;
+    MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
+    RunningEnvironmentNameForUniversal<ENV>;
 
 export type RegisteringFeature<
     API extends EntityRecord,
