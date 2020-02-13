@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core-node",
-  "version": "10.2.0",
+  "version": "10.3.0",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "scripts": {
@@ -12,7 +12,7 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "@wixc3/engine-core": "^10.0.1",
+    "@wixc3/engine-core": "^10.3.0",
     "create-listening-server": "^1.0.0",
     "express": "^4.17.1",
     "socket.io": "^2.3.0"
