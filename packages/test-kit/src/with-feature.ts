@@ -160,7 +160,14 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     afterEach(disposeAfterEach.dispose);
 
     const pages = new Set<puppeteer.Page>();
-    afterEach('close pages', () => Promise.all(Array.from(pages).map(page => page.close())).then(() => pages.clear()));
+    afterEach('close pages', async () => {
+        for (const page of pages) {
+            if (!page.isClosed()) {
+                await page.close();
+            }
+        }
+        pages.clear();
+    });
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
             const errorsText = capturedErrors.join('\n');
@@ -214,18 +221,31 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams
             });
 
-            const page = await browser.newPage();
-            if (defaultViewport) {
-                await page.setViewport(defaultViewport);
-            }
-            pages.add(page);
-            page.on('pageerror', e => {
-                capturedErrors.push(e);
-                console.error(e);
-            });
-            const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...navigationOptions });
+            const featurePage = await browser.newPage();
+            trackPage(featurePage);
 
-            return { page, response };
+            if (defaultViewport) {
+                await featurePage.setViewport(defaultViewport);
+            }
+
+            function trackPage(page: puppeteer.Page) {
+                pages.add(page);
+
+                page.on('pageerror', e => {
+                    capturedErrors.push(e);
+                    console.error(e);
+                });
+
+                // Emitted when the page opens a new tab or window
+                page.on('popup', trackPage);
+            }
+
+            const response = await featurePage.goto(featureUrl + search, {
+                waitUntil: 'networkidle0',
+                ...navigationOptions
+            });
+
+            return { page: featurePage, response };
         }
     };
 }
