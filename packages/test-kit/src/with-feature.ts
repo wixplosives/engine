@@ -226,7 +226,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 await page.setViewport(defaultViewport);
             }
 
-            (function handlePage(page: puppeteer.Page) {
+            function trackPage(page: puppeteer.Page) {
                 pages.add(page);
 
                 page.on('pageerror', e => {
@@ -235,8 +235,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 });
 
                 // Emitted when the page opens a new tab or window
-                page.on('popup', handlePage);
-            })(page);
+                page.on('popup', trackPage);
+            }
+
+            trackPage(page);
 
             const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...navigationOptions });
 
