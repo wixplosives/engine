@@ -221,9 +221,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams
             });
 
-            const page = await browser.newPage();
+            const featurePage = await browser.newPage();
+            trackPage(featurePage);
+
             if (defaultViewport) {
-                await page.setViewport(defaultViewport);
+                await featurePage.setViewport(defaultViewport);
             }
 
             function trackPage(page: puppeteer.Page) {
@@ -238,11 +240,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 page.on('popup', trackPage);
             }
 
-            trackPage(page);
+            const response = await featurePage.goto(featureUrl + search, {
+                waitUntil: 'networkidle0',
+                ...navigationOptions
+            });
 
-            const response = await page.goto(featureUrl + search, { waitUntil: 'networkidle0', ...navigationOptions });
-
-            return { page, response };
+            return { page: featurePage, response };
         }
     };
 }
