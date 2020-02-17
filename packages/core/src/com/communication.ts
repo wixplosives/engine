@@ -362,6 +362,11 @@ export class Communication {
             }
             host.removeEventListener('message', this.handleEvent, true);
         }
+
+        for (const [id, { timerId }] of Object.entries(this.callbacks)) {
+            clearTimeout(timerId);
+            delete this.callbacks[id];
+        }
     }
 
     public getEnvironmentId() {

@@ -59,7 +59,8 @@ export default new Feature({
         config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts, publicPath },
         loggerTransports,
         [RUN_OPTIONS]: runOptions,
-        runningEnvironmentName
+        runningEnvironmentName,
+        onDispose
     }) => {
         // TODO: find better way to detect node runtime
         const isNode = typeof process !== 'undefined' && process.title !== 'browser';
@@ -88,6 +89,8 @@ export default new Feature({
             { environment: communication.getEnvironmentId() },
             { severity: loggerSeverity, maxLogMessages, logToConsole }
         );
+
+        onDispose(() => communication.dispose());
 
         return {
             loggerService,
