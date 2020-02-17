@@ -76,9 +76,9 @@ export function getTopWindow(win: Window): Window {
     return win;
 }
 
-function canAccessWindow(win: Window): boolean {
+export function canAccessWindow(win: Window): boolean {
     try {
-        return !!win.location.search;
+        return typeof win.location.search === 'string';
     } catch {
         return false;
     }
