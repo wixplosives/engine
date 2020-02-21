@@ -1,6 +1,6 @@
 {
   "name": "@example/multi-env",
-  "version": "10.3.0",
+  "version": "10.3.3",
   "scripts": {
     "start": "engine start",
     "test": "mocha \"test/**/*.ix.ts?(x)\""
