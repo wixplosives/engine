@@ -25,7 +25,7 @@ before_deploy:
 deploy:
   skip_cleanup: true
   provider: script
-  script: npx pleb publish
+  script: npx pleb@2 publish
   on:
     branch: master
     node_js: 12
