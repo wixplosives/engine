@@ -41,7 +41,7 @@
     "@types/sinon-chai": "^3.2.3",
     "@types/socket.io": "^2.1.4",
     "@types/socket.io-client": "^1.4.32",
-    "@types/webpack": "^4.41.6",
+    "@types/webpack": "^4.41.7",
     "@types/webpack-dev-middleware": "^3.7.0",
     "@types/webpack-sources": "^0.1.6",
     "@types/webpack-virtual-modules": "^0.1.0",
@@ -66,7 +66,7 @@
     "sinon-chai": "^3.5.0",
     "tsconfig-paths": "^3.9.0",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
-    "typescript": "~3.8.2",
+    "typescript": "~3.8.3",
     "webpack": "^4.41.6"
   },
   "license": "MIT",
