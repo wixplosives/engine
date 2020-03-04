@@ -86,20 +86,22 @@ let browser: puppeteer.Browser | null = null;
 let featureUrl = '';
 let executableApp: IExecutableApplication;
 
-after('close puppeteer browser, if open', async () => {
-    if (browser) {
-        await browser.close();
-        browser = null;
-    }
-});
+if (typeof after !== 'undefined') {
+    after('close puppeteer browser, if open', async () => {
+        if (browser) {
+            await browser.close();
+            browser = null;
+        }
+    });
 
-after('close engine server, if open', async function() {
-    this.timeout(60_000);
-    if (featureUrl) {
-        await executableApp.closeServer();
-        featureUrl = '';
-    }
-});
+    after('close engine server, if open', async function() {
+        this.timeout(60_000);
+        if (featureUrl) {
+            await executableApp.closeServer();
+            featureUrl = '';
+        }
+    });
+}
 
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const disposeAfterEach = createDisposables();
