@@ -32,6 +32,12 @@ program
     .option('--singleFeature', 'build only the feature set by --feature', false)
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
+    .option(
+        '--autoLaunch <autoLaunch>',
+        'should auto launch node environments if feature name is provided',
+        param => param === 'true',
+        true
+    )
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .allowUnknownOption(true)
@@ -47,7 +53,8 @@ program
             publicPath = defaultPublicPath,
             mode,
             title,
-            publicConfigsRoute
+            publicConfigsRoute,
+            autoLaunch
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -64,7 +71,8 @@ program
                 publicPath,
                 mode,
                 title,
-                publicConfigsRoute
+                publicConfigsRoute,
+                autoLaunch
             });
 
             if (process.send) {
@@ -149,6 +157,12 @@ program
     .option('--outDir <outDir>')
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('-p ,--port <port>')
+    .option(
+        '--autoLaunch <autoLaunch>',
+        'should auto launch node environments if feature name is provided',
+        param => param === 'true',
+        true
+    )
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -157,7 +171,8 @@ program
             feature: featureName,
             port: preferredPort,
             require: pathsToRequire,
-            publicPath
+            publicPath,
+            autoLaunch
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -169,7 +184,8 @@ program
                 featureName,
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 port: preferredPort ? parseInt(preferredPort, 10) : undefined,
-                publicPath
+                publicPath,
+                autoLaunch
             });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);
