@@ -54,6 +54,7 @@ export interface IRunOptions extends IFeatureTarget {
     title?: string;
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
+    autoLaunch?: boolean;
 }
 
 export interface IBuildManifest {
@@ -147,7 +148,8 @@ export class Application {
         singleFeature,
         title,
         publicConfigsRoute = 'configs/',
-        nodeEnvironmentsMode
+        nodeEnvironmentsMode,
+        autoLaunch = true
     }: IRunOptions = {}) {
         await this.loadRequiredModulesFromEngineConfig();
 
@@ -251,7 +253,7 @@ export class Application {
             });
         });
 
-        if (featureName) {
+        if (autoLaunch && featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
@@ -315,7 +317,8 @@ export class Application {
             overrideConfig: userConfig = [],
             publicPath,
             publicConfigsRoute,
-            nodeEnvironmentsMode = 'new-server'
+            nodeEnvironmentsMode = 'new-server',
+            autoLaunch = true
         } = runOptions;
         const disposables = new Set<() => unknown>();
         const configurations = await this.readConfigs();
@@ -323,10 +326,9 @@ export class Application {
         const { port, close, socketServer, app } = await this.launchHttpServer({
             httpServerPort
         });
-        const config: TopLevelConfig = [];
+        const config: TopLevelConfig = [...userConfig];
         disposables.add(() => close());
 
-        config.push(...userConfig);
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             features: new Map(features),
             port,
@@ -344,8 +346,7 @@ export class Application {
                 createConfigMiddleware(config)
             ]);
         }
-
-        if (featureName) {
+        if (autoLaunch && featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
@@ -356,6 +357,7 @@ export class Application {
         return {
             port,
             router: app,
+            nodeEnvironmentManager,
             async close() {
                 for (const dispose of disposables) {
                     await dispose();

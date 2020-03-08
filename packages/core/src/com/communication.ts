@@ -41,6 +41,7 @@ import { Environment, SingleEndpointContextualEnvironment } from '../entities/en
 import { IDTag } from '../types';
 import { BaseHost } from './base-host';
 import { WsClientHost } from './ws-client-host';
+import { deferred } from 'promise-assist';
 
 export interface ICommunicationOptions {
     warnOnSlow?: boolean;
@@ -59,7 +60,7 @@ export class Communication {
     private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
-    private pendingEnvs: Map<string, UnknownFunction> = new Map();
+    private pendingEnvs: SetMultiMap<string, UnknownFunction> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
     private handlers: Map<string, UnknownFunction[]> = new Map();
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
@@ -204,7 +205,7 @@ export class Communication {
         this.registerMessageHandler(host);
         this.registerEnv(instanceId, host);
         await host.connected;
-
+        this.handleReady({ from: instanceId } as ReadyMessage);
         return {
             id: instanceId,
             onDisconnect: (cb: () => void) => {
@@ -214,6 +215,10 @@ export class Communication {
                 host.subscribers.listeners.add('reconnect', cb);
             }
         };
+    }
+
+    public setTopology(envName: string, envUrl: string) {
+        this.topology[envName] = envUrl;
     }
 
     /**
@@ -414,10 +419,10 @@ export class Communication {
         }
     }
 
-    private envReady(instanceId: string): Promise<void> {
-        return new Promise<void>(resolve => {
-            this.pendingEnvs.set(instanceId, () => resolve());
-        });
+    public envReady(instanceId: string): Promise<void> {
+        const { promise, resolve } = deferred();
+        this.pendingEnvs.add(instanceId, () => resolve());
+        return promise;
     }
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
@@ -615,7 +620,7 @@ export class Communication {
     private handleReady({ from }: ReadyMessage): void {
         const pendingEnvCb = this.pendingEnvs.get(from);
         if (pendingEnvCb) {
-            this.pendingEnvs.delete(from);
+            this.pendingEnvs.deleteKey(from);
             const pendingMessages = this.pendingMessages.get(from);
             if (pendingMessages) {
                 for (const postMessage of pendingMessages) {
@@ -623,7 +628,9 @@ export class Communication {
                 }
                 this.pendingMessages.deleteKey(from);
             }
-            pendingEnvCb();
+            for (const cb of pendingEnvCb) {
+                cb();
+            }
         }
     }
     private async handleUnListen(message: UnListenMessage) {

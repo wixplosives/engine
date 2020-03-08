@@ -18,8 +18,10 @@ import {
 } from './types';
 import { OverrideConfig } from './config-middleware';
 
+type RunningEnvironments = Record<string, number>;
+
 export interface IRuntimeEnvironment {
-    topology: Record<string, string>;
+    runningEnvironments: RunningEnvironments;
     close: () => Promise<void>;
 }
 
@@ -43,6 +45,10 @@ export interface INodeEnvironmentsManagerOptions {
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
+export type RunningFeatureIdentification = {
+    featureName: string;
+    configName?: string;
+};
 
 export interface ILaunchEnvironmentOptions {
     nodeEnv: IEnvironment;
@@ -77,14 +83,20 @@ export class NodeEnvironmentsManager {
         }
 
         const topology: Record<string, string> = {};
+        const runningEnvironments: Record<string, number> = {};
         const disposables: Array<() => unknown> = [];
         const { defaultRuntimeOptions } = this.options;
+
+        // checking if already has running environments for this feature
+        const runningEnv = this.runningEnvironments.get(featureId);
+        if (runningEnv) {
+            // adding the topology of the already running environments for this feature
+            Object.assign(topology, this.getTopologyForRunningEnvironments(runningEnv.runningEnvironments));
+        }
         for (const nodeEnv of this.getNodeEnvironments(featureName)) {
-            const config: TopLevelConfig = [
-                COM.use({ config: { topology: this.runningEnvironments.get(featureId)?.topology } }),
-                ...(await this.getConfig(configName)),
-                ...overrideConfigs
-            ];
+            const config: TopLevelConfig = [];
+            config.push(COM.use({ config: { topology } }));
+            config.push(...(await this.getConfig(configName)), ...overrideConfigs);
             const { close, port } = await this.launchEnvironment({
                 nodeEnv,
                 featureName,
@@ -97,6 +109,7 @@ export class NodeEnvironmentsManager {
             });
             disposables.push(() => close());
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
+            runningEnvironments[nodeEnv.name] = port;
         }
 
         const runningEnvironment: IRuntimeEnvironment = {
@@ -106,15 +119,32 @@ export class NodeEnvironmentsManager {
                 }
                 disposables.length = 0;
             },
-            topology
+            runningEnvironments
         };
 
         this.runningEnvironments.set(featureId, runningEnvironment);
 
         return {
             featureName,
-            configName: runtimeConfigName
+            configName: runtimeConfigName,
+            runningEnvironments
         };
+    }
+
+    private getTopologyForRunningEnvironments(runningEnvironments: RunningEnvironments) {
+        return Object.entries(runningEnvironments).reduce<Record<string, string>>((acc, [envName, port]) => {
+            acc[envName] = `http://localhost:${port}/${envName}`;
+            return acc;
+        }, {});
+    }
+
+    public getRunningFeatures() {
+        const runningFeatures = new Map<RunningFeatureIdentification, RunningEnvironments>();
+        for (const [featureId, runningEnvs] of this.runningEnvironments) {
+            const [featureName, configName] = featureId.split(delimiter);
+            runningFeatures.set({ featureName, configName }, runningEnvs.runningEnvironments);
+        }
+        return runningFeatures;
     }
 
     public async closeEnvironment({ featureName, configName }: RunEnvironmentOptions) {
@@ -135,7 +165,9 @@ export class NodeEnvironmentsManager {
 
     public getTopology(featureName: string, configName?: string) {
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
-        return this.runningEnvironments.get(featureId)?.topology;
+        const topology = this.runningEnvironments.get(featureId);
+        if (!topology) return {};
+        return this.getTopologyForRunningEnvironments(topology.runningEnvironments);
     }
 
     public async closeAll() {
