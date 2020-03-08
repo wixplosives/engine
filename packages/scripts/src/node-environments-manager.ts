@@ -138,7 +138,7 @@ export class NodeEnvironmentsManager {
         }, {});
     }
 
-    public get runningFeatures() {
+    public getRunningFeatures() {
         const runningFeatures = new Map<RunningFeatureIdentification, RunningEnvironments>();
         for (const [featureId, runningEnvs] of this.runningEnvironments) {
             const [featureName, configName] = featureId.split(delimiter);
