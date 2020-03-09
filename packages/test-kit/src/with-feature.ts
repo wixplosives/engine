@@ -115,18 +115,13 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         runOptions: suiteOptions = {},
         allowErrors: suiteAllowErrors = false,
         queryParams: suiteQueryParams,
-        runningApplicationPort = process.env.ENGINE_APPLICATION_PORT
-            ? parseInt(process.env.ENGINE_APPLICATION_PORT!)
-            : undefined,
+        runningApplicationPort,
         config: suiteConfig
     } = withFeatureOptions;
 
     if (
         isCI &&
-        (headless === false ||
-            devtools === true ||
-            slowMo !== undefined ||
-            (runningApplicationPort !== undefined && !process.env.IS_PARALLEL))
+        (headless === false || devtools === true || slowMo !== undefined || runningApplicationPort !== undefined)
     ) {
         throw new Error(
             `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`
@@ -136,9 +131,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
 
-    executableApp = runningApplicationPort
-        ? new AttachedApp(runningApplicationPort)
-        : new DetachedApp(cliEntry, process.cwd());
+    const resolvedPort =
+        runningApplicationPort ?? process.env.ENGINE_APPLICATION_PORT
+            ? parseInt(process.env.ENGINE_APPLICATION_PORT!)
+            : undefined;
+
+    executableApp = resolvedPort ? new AttachedApp(resolvedPort) : new DetachedApp(cliEntry, process.cwd());
 
     before('launch puppeteer', async function() {
         if (!browser) {
