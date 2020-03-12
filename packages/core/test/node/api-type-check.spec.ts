@@ -1,5 +1,5 @@
 import { EQUAL, ExpectTrue } from 'typescript-type-utils';
-import { DisposeFunction, Environment, IRunOptions, RUN_OPTIONS, Universal } from '../../src';
+import { DisposeFunction, Environment, IRunOptions, RUN_OPTIONS, Universal, AsyncApi, FilterNotEnv, FilterEnv, MapAllTypesForEnv } from '../../src';
 import { Config, Feature, Registry, Running, RunningFeatures, RuntimeEngine, Service, Slot } from '../../src';
 import { typeCheck } from '../type-check';
 
@@ -12,19 +12,43 @@ const logger = new Feature({
     id: 'logger',
     api: {
         config: Config.withType<{ time: number }>().defineEntity({ time: 1 }),
-        transport: Slot.withType<{ transportName: string }>().defineEntity(MAIN)
+        transport: Slot.withType<{ transportName: string }>().defineEntity(MAIN),
+        sink: Service.withType<{ log: (message: string) => void }>()
+            .defineEntity(MAIN)
+            .allowRemoteAccess()
     }
 });
-
 typeCheck(
     (
         _runningFeature: EQUAL<
             Running<typeof logger, 'main'>,
-            { config: { time: number }; transport: Registry<{ transportName: string }> }
+            {
+                config: { time: number };
+                transport: Registry<{
+                    transportName: string;
+                }>;
+                sink: {
+                    log: (message: string) => void;
+                };
+            }
         >
     ) => true
 );
 
+typeCheck(
+    (
+        _runningFeature: EQUAL<
+            Running<typeof logger, 'zag'>,
+            {
+                config: { time: number };
+
+                sink: AsyncApi<{
+                    log: (message: string) => void;
+                }>;
+            }
+        >
+    ) => true
+);
 /* ------------------------------------------------- */
 
 const gui = new Feature({
@@ -114,6 +138,7 @@ export function dontRun() {
             service1.setData(await dataPromise);
         });
 
+        
         typeCheck(
             (
                 _featureTest: ExpectTrue<
@@ -125,7 +150,6 @@ export function dontRun() {
                             onDispose: (fn: DisposeFunction) => void;
                             [RUN_OPTIONS]: IRunOptions;
                             componentDescription: Registry<ComponentDescription>;
-                            // service2: DataService;
                             service3: DataService;
                         }
                     >
@@ -138,8 +162,8 @@ export function dontRun() {
                 _engineTest: EQUAL<
                     typeof engine,
                     {
-                        gui: Running<typeof gui, 'main' | 'main1'>;
-                        logger: Running<typeof logger, 'main' | 'main1'>;
+                        gui: Running<typeof gui, 'main'>;
+                        logger: Running<typeof logger, 'main'>;
                     }
                 >,
                 _: true

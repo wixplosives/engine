@@ -82,10 +82,21 @@ type FilterENVKeys<T extends any, ENV extends string, Key extends 'visibleAt' | 
     [P in keyof T]: ENV extends EnvType<T[P][Key]> ? P : never;
 })[keyof T];
 
-type FilterEnv<T extends EntityRecord, EnvFilter extends string, Key extends 'visibleAt' | 'providedFrom'> = Pick<
-    T,
-    FilterENVKeys<T, EnvFilter, Key>
->;
+export type FilterEnv<
+    T extends EntityRecord,
+    EnvFilter extends string,
+    Key extends 'visibleAt' | 'providedFrom'
+> = Pick<T, FilterENVKeys<T, EnvFilter, Key>>;
+
+type FilterNotENVKeys<T extends any, ENV extends string, Key extends 'visibleAt' | 'providedFrom'> = {
+    [P in keyof T]: ENV extends EnvType<T[P][Key]> ? never : P;
+}[keyof T];
+
+export type FilterNotEnv<
+    T extends EntityRecord,
+    EnvFilter extends string,
+    Key extends 'visibleAt' | 'providedFrom'
+> = Pick<T, FilterNotENVKeys<T, EnvFilter, Key>>;
 
 type MapType<X extends EntityRecord> = { [k in keyof X]: X[k]['type'] };
 type MapRecordType<X extends Record<string, { type: any }>> = { [k in keyof X]: X[k]['type'] };
@@ -95,11 +106,17 @@ export type MapToProxyType<T extends EntityRecord> = {
 };
 export type MapToPartialType<T extends { [k: string]: any }> = { [K in keyof T]: Partial<T[K]['type']> };
 
-type MapProxyTypesForEnv<
-    T extends EntityRecord,
-    EnvFilter extends string,
-    Key extends 'visibleAt' | 'providedFrom'
-> = MapToProxyType<FilterEnv<T, EnvFilter, Key>>;
+export type MapAllTypesForEnv<T extends EntityRecord, EnvFilter extends string> = MapToProxyType<
+    FilterEnv<FilterNotEnv<T, EnvFilter, 'providedFrom'>, EnvFilter | typeof Universal['env'], 'visibleAt'>
+> &
+    MapType<FilterEnv<T, EnvFilter | typeof Universal['env'], 'providedFrom'>>;
+
+// type StringKeys<T> = Exclude<keyof T, number | symbol>;
+// type MapProxyTypesForEnv<
+//     T extends EntityRecord,
+//     EnvFilter extends string,
+//     Key extends 'visibleAt' | 'providedFrom'
+// > = MapToProxyType<FilterEnv<T, EnvFilter, Key>>;
 
 type MapTypesForEnv<
     T extends EntityRecord,
@@ -124,11 +141,7 @@ export interface FeatureDef<
 }
 
 export type UnknownFeatureDef = FeatureDef<string, Feature[], EntityRecord, Record<string, Context<any>>>;
-export type Running<T extends UnknownFeatureDef, ENV extends string> = MapProxyTypesForEnv<
-    T['api'],
-    ENV | EnvType<typeof Universal>,
-    'visibleAt'
->;
+export type Running<T extends UnknownFeatureDef, ENV extends string> = MapAllTypesForEnv<T['api'], ENV>;
 
 export type RunningFeatures<
     T extends Feature[],
