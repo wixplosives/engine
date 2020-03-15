@@ -201,13 +201,16 @@ describe('Socket communication', () => {
 });
 
 describe('IPC communication', () => {
+    const disposables = createDisposables();
+
+    afterEach(disposables.dispose);
     it('communication with forked process', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
         const forked = fork(join(__dirname, 'process-entry.ts'), [], {
-            cwd: __dirname,
             execArgv: '-r @ts-tools/node/r'.split(' ')
         });
+        disposables.add(() => forked.kill());
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
         communication.registerMessageHandler(host);
