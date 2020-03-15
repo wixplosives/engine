@@ -208,7 +208,8 @@ describe('IPC communication', () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
         const forked = fork(join(__dirname, 'process-entry.ts'), [], {
-            execArgv: '-r @ts-tools/node/r'.split(' ')
+            execArgv: '-r @ts-tools/node/r'.split(' '),
+            cwd: process.cwd()
         });
         disposables.add(() => forked.kill());
         const host = new IPCHost(forked);
