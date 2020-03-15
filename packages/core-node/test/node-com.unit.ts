@@ -6,16 +6,19 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { waitFor } from 'promise-assist';
 
-import { Communication, WsClientHost } from '@wixc3/engine-core';
+import { Communication, WsClientHost, BaseHost } from '@wixc3/engine-core';
 import { WsHost } from '@wixc3/engine-core-node';
 import { createDisposables } from '@wixc3/engine-test-kit';
+import { fork } from 'child_process';
+import { join } from 'path';
+import { IPCHost } from '../src/ipc-host';
 
 interface ICommunicationTestApi {
     sayHello: () => string;
     sayHelloWithDataAndParams: (name: string) => string;
 }
 
-describe('Node communication', () => {
+describe('Socket communication', () => {
     let clientHost: WsClientHost;
     let serverHost: WsHost;
     let socketServer: io.Server;
@@ -194,5 +197,27 @@ describe('Node communication', () => {
                 timeout: 2_000
             }
         );
+    });
+});
+
+describe('IPC communication', () => {
+    it('communication with forked process', async () => {
+        const mainHost = new BaseHost();
+        const communication = new Communication(mainHost, 'main');
+        const forked = fork(join(__dirname, 'process-entry.ts'), [], {
+            cwd: __dirname,
+            execArgv: '-r @ts-tools/node/r'.split(' ')
+        });
+        const host = new IPCHost(forked);
+        communication.registerEnv('process', host);
+        communication.registerMessageHandler(host);
+        const proxy = communication.apiProxy<{ echo(): string }>(
+            {
+                id: 'process'
+            },
+            { id: 'myApi' }
+        );
+
+        expect(await proxy.echo()).to.eq('yo');
     });
 });

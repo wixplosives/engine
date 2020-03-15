@@ -118,9 +118,22 @@ export class Communication {
         const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
         activeEnvironment.env = endPoint.env;
 
-        return activeEnvironment.envType === 'node'
-            ? this.connect(activeEnvironment as Environment<string, 'node'>)
-            : this.spawn(activeEnvironment);
+        if (activeEnvironment.envType === 'node') {
+            return this.connect(activeEnvironment as Environment<string, 'node'>);
+        } else if (activeEnvironment.envType === 'electron') {
+            return this.registerElectronEnvironment(activeEnvironment);
+        } else {
+            return this.spawn(activeEnvironment);
+        }
+    }
+
+    private async registerElectronEnvironment(env: Environment) {
+        const { host } = this.environments[env.env];
+        this.registerMessageHandler(host);
+        await this.envReady(env.env);
+        return {
+            id: env.env
+        };
     }
 
     public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
@@ -193,26 +206,37 @@ export class Communication {
     public async connect(endPoint: Environment<string, 'node'>) {
         const { env, envType } = endPoint;
 
+        const instanceId = env;
         const url = this.topology[env];
-
         if (!url) {
             throw new Error(`Could not find ${envType} topology for ${env}`);
         }
 
-        const instanceId = env;
+        if (typeof url !== 'string') {
+            throw new Error(`${env} was defined as a node environment but invalid topology was provided`);
+        }
+
         const host = new WsClientHost(url);
 
-        this.registerMessageHandler(host);
         this.registerEnv(instanceId, host);
+        this.registerMessageHandler(host);
         await host.connected;
         this.handleReady({ from: instanceId } as ReadyMessage);
+        return this.getConnectedEnvironment(instanceId, host);
+    }
+
+    private getConnectedEnvironment(instanceId: string, host: Target) {
         return {
             id: instanceId,
             onDisconnect: (cb: () => void) => {
-                host.subscribers.listeners.add('disconnect', cb);
+                if (host instanceof WsClientHost) {
+                    host.subscribers.listeners.add('disconnect', cb);
+                }
             },
             onReconnect: (cb: () => void) => {
-                host.subscribers.listeners.add('reconnect', cb);
+                if (host instanceof WsClientHost) {
+                    host.subscribers.listeners.add('reconnect', cb);
+                }
             }
         };
     }

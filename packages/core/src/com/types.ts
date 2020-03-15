@@ -3,7 +3,7 @@ import { SERVICE_CONFIG } from '../symbols';
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;
 
-export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'context';
+export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'context' | 'electron';
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {
     name?: string;
