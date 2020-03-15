@@ -1,5 +1,4 @@
-import { BaseHost } from '@wixc3/engine-core';
-import { IDisposable } from '@wixc3/engine-core';
+import { BaseHost, IDisposable } from '@wixc3/engine-core';
 import io from 'socket.io';
 
 export class WsHost extends BaseHost {
