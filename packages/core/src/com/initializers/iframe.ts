@@ -4,31 +4,33 @@ import { reportError } from '../errors';
 import { isIframe } from '../helpers';
 
 export interface IIframeInitializerOptions {
-    hostProvider?: () => HTMLIFrameElement;
+    iframeElement: HTMLIFrameElement;
     src?: string;
     hashParams?: string;
     managed?: boolean;
 }
 
-export function iframeInitializer(options: IIframeInitializerOptions = {}): EnvironmentInitializer {
+export function iframeInitializer({
+    hashParams,
+    iframeElement,
+    managed,
+    src
+}: IIframeInitializerOptions): EnvironmentInitializer {
     return async (com, { env, endpointType }) => {
-        const { hostProvider, hashParams, src, managed = true } = options;
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
 
-        if (!hostProvider) {
+        if (!iframeElement) {
             throw new Error('should provide a host provider function to the current iframe to initialize');
         }
-
-        const host = hostProvider();
 
         managed
             ? await useIframe(
                   com,
-                  host,
+                  iframeElement,
                   instanceId,
                   src ?? defaultHtmlSourceFactory(env, com.options.publicPath, hashParams)
               )
-            : await useWindow(com, host, instanceId, src ?? defaultSourceFactory(env, com.options.publicPath));
+            : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, com.options.publicPath));
 
         return {
             id: instanceId

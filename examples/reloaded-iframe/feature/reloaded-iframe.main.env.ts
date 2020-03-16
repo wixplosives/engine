@@ -23,12 +23,13 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
     const iframe = document.createElement('iframe');
     document.body.appendChild(iframe);
 
-    iframeEnv.initializer = iframeInitializer({
-        hostProvider: () => iframe
-    });
-
     run(async () => {
-        const envToken = await COM.startEnvironment(iframeEnv);
+        const envToken = await COM.startEnvironment(
+            iframeEnv,
+            iframeInitializer({
+                iframeElement: iframe
+            })
+        );
 
         echoButton.onclick = async () => {
             await echoService.get(envToken).echo();

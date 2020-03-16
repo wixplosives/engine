@@ -66,6 +66,7 @@ export class Communication {
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
     public options: Required<ICommunicationOptions>;
+    private envInitializers: { [envName: string]: EnvironmentInitializer } = {};
 
     constructor(
         host: Target,
@@ -109,9 +110,7 @@ export class Communication {
         }
     }
 
-    public getEnvironmentContext(
-        endPoint: SingleEndpointContextualEnvironment<string, Environment[], EnvironmentInitializer>
-    ) {
+    public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
         return this.resolvedContexts[endPoint.env];
     }
 
@@ -119,8 +118,24 @@ export class Communication {
         return endpointType === 'single' ? envName : this.generateEnvInstanceID(envName);
     }
 
-    public stratEnvironment(endPoint: Environment) {
-        return endPoint.initializer(this, endPoint);
+    public setInitializer(envName: string, initializer: EnvironmentInitializer) {
+        if (this.envInitializers[envName]) {
+            throw new Error(`initializer already provided for ${envName}`);
+        }
+
+        this.envInitializers[envName] = initializer;
+    }
+
+    public getInitializer(envName: string) {
+        return this.envInitializers[envName];
+    }
+
+    public startEnvironment(env: Environment, initializer?: EnvironmentInitializer) {
+        initializer = initializer ?? this.envInitializers[env.env];
+        if (!initializer) {
+            throw new Error(`initializer wasn't provided for ${env.env} environment`);
+        }
+        return initializer(this, env);
     }
 
     public setTopology(envName: string, envUrl: string) {
