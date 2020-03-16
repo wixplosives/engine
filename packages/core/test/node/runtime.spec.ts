@@ -644,7 +644,7 @@ describe('feature disposal', () => {
 
 describe('service with remove access environment visibility', ()=>{
 
-    it.only('local services in the same env uses the provided implementation', () => {
+    it('local services in the same env uses the provided implementation', () => {
 
         const processing = new Environment('processing', 'worker', 'multi');
         const main = new Environment('main', 'worker', 'single');

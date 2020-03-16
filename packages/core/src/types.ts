@@ -65,7 +65,11 @@ export interface EntityRecord {
 }
 
 export type EnvironmentFilter = string | { env: string };
-export type NormalizeEnvironmentFilter<T extends EnvironmentFilter> = T extends { env: infer U1 } ? U1 : T;
+export type NormalizeEnvironmentFilter<T extends EnvironmentFilter> = T extends { env: infer U1 }
+    ? U1
+    : T extends string
+    ? T
+    : never;
 
 export type EnvVisibility = string | { env: string; envType?: string } | Array<{ env: string; envType?: string }>;
 
@@ -87,7 +91,7 @@ type FilterEnv<T extends EntityRecord, EnvFilter extends string, Key extends 'vi
     FilterENVKeys<T, EnvFilter, Key>
 >;
 
-type FilterNotENVKeys<T extends any, ENV extends string, Key extends 'visibleAt' | 'providedFrom'> = {
+type FilterNotENVKeys<T extends EntityRecord, ENV extends string, Key extends 'visibleAt' | 'providedFrom'> = {
     [P in keyof T]: ENV extends EnvType<T[P][Key]> ? never : P;
 }[keyof T];
 
