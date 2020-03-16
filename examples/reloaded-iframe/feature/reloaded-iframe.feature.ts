@@ -1,7 +1,8 @@
-import { COM, Environment, Feature, Service } from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service, windowInitializer } from '@wixc3/engine-core';
+import { iframeInitializer } from '@wixc3/engine-core/src/com/initializers/iframe';
 
-export const mainEnv = new Environment('main', 'window', 'single');
-export const iframeEnv = new Environment('iframe', 'iframe', 'multi');
+export const mainEnv = new Environment('main', 'window', 'single', windowInitializer());
+export const iframeEnv = new Environment('iframe', 'iframe', 'multi', iframeInitializer());
 export interface IEchoService {
     onEcho(handler: (times: number) => void): void;
     echo(): void;

@@ -1,6 +1,6 @@
-import { Config, Environment, Feature } from '@wixc3/engine-core';
+import { Config, Environment, Feature, windowInitializer } from '@wixc3/engine-core';
 
-export const main = new Environment('main', 'window', 'single');
+export const main = new Environment('main', 'window', 'single', windowInitializer());
 
 export interface IDefaultConfig {
     echoText: string;

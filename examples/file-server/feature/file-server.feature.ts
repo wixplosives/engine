@@ -1,11 +1,19 @@
-import { COM, Environment, Feature, Service, Config } from '@wixc3/engine-core';
+import {
+    COM,
+    Environment,
+    Feature,
+    Service,
+    Config,
+    socketServerInitializer,
+    windowInitializer
+} from '@wixc3/engine-core';
 import { IDirectoryContents } from '../src/types';
 
 /**
  * defining that this feature uses 2 environments - 'main' (browser) and LiveServer environment with the semantic name 'server'
  */
-export const main = new Environment('main', 'window', 'single');
-export const server = new Environment('server', 'node', 'single');
+export const main = new Environment('main', 'window', 'single', windowInitializer());
+export const server = new Environment('server', 'node', 'single', socketServerInitializer());
 
 /**
  * defining the interface of the file system api which the server will implement

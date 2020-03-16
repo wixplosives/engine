@@ -1,33 +1,35 @@
-import { EnvironmentTypes } from '../com/types';
+import { EnvironmentInitializer, EnvironmentTypes } from '../com/types';
 import { runtimeType } from '../entity-helpers';
 import { DisposableContext, EnvVisibility, MapBy, EnvironmentFilter } from '../types';
+import { windowInitializer } from '../com';
 
 export type EnvironmentMode = 'single' | 'multi';
 
 export class Environment<
     NAME extends string = string,
     TYPE extends EnvironmentTypes = EnvironmentTypes,
-    MODE extends EnvironmentMode = EnvironmentMode
+    MODE extends EnvironmentMode = EnvironmentMode,
+    INITIALIZER extends EnvironmentInitializer = EnvironmentInitializer
 > {
-    constructor(public env: NAME, public envType: TYPE, public endpointType: MODE) {}
+    constructor(public env: NAME, public envType: TYPE, public endpointType: MODE, public initializer: INITIALIZER) {}
 }
 
 export class EnvironmentContext {
-    constructor(public env: string, public activeEnvironmentName: string, public runtimeEnvType: EnvironmentTypes) {}
+    constructor(public env: string, public activeEnvironmentName: string) {}
 }
 
-export const Universal = new Environment('<Universal>', 'window', 'multi');
-export const AllEnvironments: Environment = new Environment('<All>', 'window', 'multi');
-export const NoEnvironments = new Environment('<None>', 'window', 'multi');
+export const Universal = new Environment('<Universal>', 'node', 'multi', windowInitializer());
+export const AllEnvironments: Environment = new Environment('<All>', 'node', 'multi', windowInitializer());
+export const NoEnvironments = new Environment('<None>', 'node', 'multi', windowInitializer());
 
 export const globallyProvidingEnvironments = new Set([Universal.env, AllEnvironments.env]);
-export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
-    NAME,
-    'context',
-    'single'
-> {
-    constructor(env: NAME, public environments: ENVS) {
-        super(env, 'context', 'single');
+export class SingleEndpointContextualEnvironment<
+    NAME extends string,
+    ENVS extends Environment[],
+    INITIALIZER extends EnvironmentInitializer
+> extends Environment<NAME, 'context', EnvironmentMode, INITIALIZER> {
+    constructor(env: NAME, public environments: ENVS, initializer: INITIALIZER) {
+        super(env, 'context', 'single', initializer);
 
         if (environments.length === 0) {
             throw new Error(`Contextual Environment ${env} initiated without child environments`);
@@ -35,7 +37,7 @@ export class SingleEndpointContextualEnvironment<NAME extends string, ENVS exten
     }
 
     public useContext(contextEnv: keyof MapBy<ENVS, 'env'>): EnvironmentContext {
-        return new EnvironmentContext(this.env, contextEnv, this.getEnvironmentById(contextEnv).envType);
+        return new EnvironmentContext(this.env, contextEnv);
     }
 
     public withContext<I extends object>(): DisposableContext<I> {

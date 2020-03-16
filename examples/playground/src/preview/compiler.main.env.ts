@@ -1,4 +1,5 @@
 import Preview, { PREVIEW } from './compiler.feature';
+import { iframeInitializer } from '@wixc3/engine-core/src/com/initializers/iframe';
 
 Preview.setup('main', ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
     sidebarSlot.register({
@@ -11,7 +12,11 @@ Preview.setup('main', ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
             const iframe = document.createElement('iframe');
             panel.appendChild(iframe);
 
-            iframe.onload = () => COM.spawn(PREVIEW, iframe);
+            PREVIEW.initializer = iframeInitializer({
+                hostProvider: () => iframe
+            });
+
+            iframe.onload = () => COM.startEnvironment(PREVIEW);
             return panel;
         }
     });

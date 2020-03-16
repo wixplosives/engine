@@ -1,8 +1,16 @@
 import { SERVICE_CONFIG } from '../symbols';
+import type { Communication } from './communication';
+import { Environment } from '../entities';
 
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;
 
+export interface IActiveEnvironment {
+    id: string;
+    onDisconnect?: (cb: () => void) => void;
+}
+
+export type EnvironmentInitializer = (communication: Communication, environment: Environment) => IActiveEnvironment | Promise<IActiveEnvironment>
 export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'context';
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {

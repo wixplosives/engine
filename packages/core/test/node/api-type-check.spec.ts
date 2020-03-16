@@ -1,12 +1,12 @@
 import { EQUAL, ExpectTrue } from 'typescript-type-utils';
-import { DisposeFunction, Environment, IRunOptions, RUN_OPTIONS, Universal } from '../../src';
+import { DisposeFunction, Environment, IRunOptions, RUN_OPTIONS, Universal, windowInitializer } from '../../src';
 import { Config, Feature, Registry, Running, RunningFeatures, RuntimeEngine, Service, Slot } from '../../src';
 import { typeCheck } from '../type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/
 
-const MAIN = new Environment('main', 'window', 'single');
-const MAIN_1 = new Environment('main1', 'window', 'single');
+const MAIN = new Environment('main', 'window', 'single', windowInitializer());
+const MAIN_1 = new Environment('main1', 'window', 'single', windowInitializer());
 
 const logger = new Feature({
     id: 'logger',

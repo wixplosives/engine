@@ -24,7 +24,7 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM }) => {
     });
 
     run(async () => {
-        await COM.spawn(PROCESSING); // returns processingID
+        await COM.startEnvironment(PROCESSING); // returns processingID
         const { codeInput, sidebar } = render();
 
         codeInput.value = codeService.getContent();

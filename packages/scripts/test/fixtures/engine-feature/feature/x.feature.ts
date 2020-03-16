@@ -1,6 +1,6 @@
-import { Config, Environment, Feature, Slot } from '@wixc3/engine-core';
+import { Config, Environment, Feature, Slot, windowInitializer } from '@wixc3/engine-core';
 
-export const MAIN = new Environment('main', 'window', 'single');
+export const MAIN = new Environment('main', 'window', 'single', windowInitializer());
 
 export default new Feature({
     id: 'XTestFeature',
