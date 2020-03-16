@@ -76,7 +76,9 @@ export class Feature<
     public context: EnvironmentContext;
 
     private environmentIml = new Set<string>();
+                                                                 /* to any */
     private setupHandlers = new SetMultiMap<string, SetupHandler<Environment, any, Deps, API, EnvironmentContext>>();
+                                                                                       /* to any */
     private contextHandlers = new Map<string | number | symbol, ContextHandler<object, EnvironmentFilter, Deps>>();
 
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
