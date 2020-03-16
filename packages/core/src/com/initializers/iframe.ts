@@ -2,6 +2,7 @@ import { EnvironmentInitializer, WindowHost } from '../types';
 import { Communication } from '../communication';
 import { reportError } from '../errors';
 import { isIframe } from '../helpers';
+import { injectScript } from '../../helpers';
 
 export interface IIframeInitializerOptions {
     iframeElement: HTMLIFrameElement;
@@ -43,7 +44,7 @@ async function useWindow(com: Communication, host: WindowHost, instanceId: strin
         throw new Error('cannot spawn detached iframe.');
     }
     com.registerEnv(instanceId, win);
-    await com.injectScript(win, instanceId, src);
+    await injectScript(win, instanceId, src);
     await com.envReady(instanceId);
 }
 
