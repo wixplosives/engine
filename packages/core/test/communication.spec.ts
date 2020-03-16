@@ -1,7 +1,7 @@
 import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { Communication, Environment, declareComEmitter } from '../src';
+import { Communication, Environment, declareComEmitter, iframeInitializer } from '../src';
 import {
     ITestServiceData,
     multiTanentServiceId,
@@ -11,7 +11,6 @@ import {
     HashParamsRetriever,
     hashParamsRetriever
 } from './test-api-service';
-import { iframeInitializer } from '../src/com/initializers/iframe';
 
 describe('Communication API', function() {
     this.timeout(10_000);

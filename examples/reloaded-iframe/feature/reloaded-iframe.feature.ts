@@ -1,5 +1,5 @@
 import { COM, Environment, Feature, Service, windowInitializer } from '@wixc3/engine-core';
-import { iframeInitializer } from '@wixc3/engine-core/src/com/initializers/iframe';
+import { iframeInitializer } from '@wixc3/engine-core';
 
 export const mainEnv = new Environment('main', 'window', 'single', windowInitializer());
 export const iframeEnv = new Environment('iframe', 'iframe', 'multi', iframeInitializer());
