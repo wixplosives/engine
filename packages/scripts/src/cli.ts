@@ -17,7 +17,12 @@ import { resolveFrom, parseCliArguments } from './utils';
 program.version(version);
 
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
-const preRequireParams = ['-r, --require <path>', 'path to require before anything else', collectMultiple, []] as const;
+const preRequireParams: [string, string, typeof collectMultiple, string[]] = [
+    '-r, --require <path>',
+    'path to require before anything else',
+    collectMultiple,
+    []
+];
 const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '/';
 
 program
