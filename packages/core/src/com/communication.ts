@@ -65,8 +65,8 @@ export class Communication {
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
-    public options: Required<ICommunicationOptions>;
     private envInitializers: { [envName: string]: EnvironmentInitializer } = {};
+    private options: Required<ICommunicationOptions>;
 
     constructor(
         host: Target,
@@ -128,6 +128,10 @@ export class Communication {
 
     public getInitializer(envName: string) {
         return this.envInitializers[envName];
+    }
+
+    public getPublicPath() {
+        return this.options.publicPath;
     }
 
     public startEnvironment(env: Environment, initializer?: EnvironmentInitializer) {
@@ -681,10 +685,6 @@ export class Communication {
         };
     }
 }
-
-/*
- * We only use the default factories so as a solution to pass the config name we append the location.search
- */
 
 const removeMessageArgs = (message: Message): Message => {
     message = { ...message };

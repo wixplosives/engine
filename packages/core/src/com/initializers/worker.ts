@@ -5,7 +5,7 @@ export function workerInitializer(): EnvironmentInitializer {
         const isSingleton = endpointType === 'single';
         const instanceId = isSingleton ? env : communication.generateEnvInstanceID(env);
 
-        const worker = new Worker(`${communication.options.publicPath}${env}.webworker.js${location.search}`, {
+        const worker = new Worker(`${communication.getPublicPath()}${env}.webworker.js${location.search}`, {
             name: instanceId
         });
 

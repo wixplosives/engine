@@ -23,15 +23,15 @@ export function iframeInitializer({
         if (!iframeElement) {
             throw new Error('should provide a host provider function to the current iframe to initialize');
         }
-
+        const publicPath = com.getPublicPath();
         managed
             ? await useIframe(
                   com,
                   iframeElement,
                   instanceId,
-                  src ?? defaultHtmlSourceFactory(env, com.options.publicPath, hashParams)
+                  src ?? defaultHtmlSourceFactory(env, publicPath, hashParams)
               )
-            : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, com.options.publicPath));
+            : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
 
         return {
             id: instanceId

@@ -13,7 +13,7 @@ export function windowInitializer({ host }: WindowInitializerOptions): Environme
         if (!win) {
             throw new Error('cannot spawn detached iframe.');
         }
-        await injectScript(win, instanceId, `${communication.options.publicPath}${env}.web.js${location.search}`);
+        await injectScript(win, instanceId, `${communication.getPublicPath()}${env}.web.js${location.search}`);
         return {
             id: instanceId
         };
