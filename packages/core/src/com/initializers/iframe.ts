@@ -13,26 +13,22 @@ export interface IIframeInitializerOptions {
 export function iframeInitializer(options: IIframeInitializerOptions = {}): EnvironmentInitializer {
     return async (com, { env, endpointType }) => {
         const { hostProvider, hashParams, src, managed = true } = options;
-        const isSingleton = endpointType === 'single';
-        const instanceId = isSingleton ? env : com.generateEnvInstanceID(env);
+        const instanceId = com.getEnvironmentInstanceId(env, endpointType);
 
         if (!hostProvider) {
             throw new Error('should provide a host provider function to the current iframe to initialize');
         }
 
+        const host = hostProvider();
+
         managed
             ? await useIframe(
                   com,
-                  hostProvider(),
+                  host,
                   instanceId,
                   src ?? defaultHtmlSourceFactory(env, com.options.publicPath, hashParams)
               )
-            : await useWindow(
-                  com,
-                  hostProvider(),
-                  instanceId,
-                  src ?? defaultSourceFactory(env, com.options.publicPath)
-              );
+            : await useWindow(com, host, instanceId, src ?? defaultSourceFactory(env, com.options.publicPath));
 
         return {
             id: instanceId

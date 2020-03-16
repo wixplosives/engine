@@ -36,7 +36,7 @@ import {
 import { SERVICE_CONFIG } from '../symbols';
 
 import { SetMultiMap } from '../helpers';
-import { Environment, SingleEndpointContextualEnvironment } from '../entities/env';
+import { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import { IDTag } from '../types';
 import { BaseHost } from './base-host';
 import { WsClientHost } from './ws-client-host';
@@ -115,7 +115,11 @@ export class Communication {
         return this.resolvedContexts[endPoint.env];
     }
 
-    public async stratEnvironment(endPoint: Environment) {
+    public getEnvironmentInstanceId(envName: string, endpointType: EnvironmentMode) {
+        return endpointType === 'single' ? envName : this.generateEnvInstanceID(envName);
+    }
+
+    public stratEnvironment(endPoint: Environment) {
         return endPoint.initializer(this, endPoint);
     }
 
