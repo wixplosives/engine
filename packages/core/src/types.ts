@@ -82,21 +82,19 @@ type FilterENVKeys<T extends any, ENV extends string, Key extends 'visibleAt' | 
     [P in keyof T]: ENV extends EnvType<T[P][Key]> ? P : never;
 })[keyof T];
 
-export type FilterEnv<
-    T extends EntityRecord,
-    EnvFilter extends string,
-    Key extends 'visibleAt' | 'providedFrom'
-> = Pick<T, FilterENVKeys<T, EnvFilter, Key>>;
+type FilterEnv<T extends EntityRecord, EnvFilter extends string, Key extends 'visibleAt' | 'providedFrom'> = Pick<
+    T,
+    FilterENVKeys<T, EnvFilter, Key>
+>;
 
 type FilterNotENVKeys<T extends any, ENV extends string, Key extends 'visibleAt' | 'providedFrom'> = {
     [P in keyof T]: ENV extends EnvType<T[P][Key]> ? never : P;
 }[keyof T];
 
-export type FilterNotEnv<
-    T extends EntityRecord,
-    EnvFilter extends string,
-    Key extends 'visibleAt' | 'providedFrom'
-> = Pick<T, FilterNotENVKeys<T, EnvFilter, Key>>;
+type FilterNotEnv<T extends EntityRecord, EnvFilter extends string, Key extends 'visibleAt' | 'providedFrom'> = Pick<
+    T,
+    FilterNotENVKeys<T, EnvFilter, Key>
+>;
 
 type MapType<X extends EntityRecord> = { [k in keyof X]: X[k]['type'] };
 type MapRecordType<X extends Record<string, { type: any }>> = { [k in keyof X]: X[k]['type'] };
