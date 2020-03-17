@@ -16,7 +16,7 @@ export function iframeInitializer({
     iframeElement,
     managed,
     src
-}: IIframeInitializerOptions): EnvironmentInitializer {
+}: IIframeInitializerOptions): EnvironmentInitializer<{ id: string }> {
     return async (com, { env, endpointType }) => {
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
 
