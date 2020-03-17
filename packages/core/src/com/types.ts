@@ -1,9 +1,21 @@
 import { SERVICE_CONFIG } from '../symbols';
+import type { Communication } from './communication';
+import { Environment } from '../entities';
 
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;
 
 export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'context' | 'electron';
+/**
+ * TODO: remove onReconnect and onDisconnect
+ */
+export interface IActiveEnvironment {
+    id: string;
+    onDisconnect? :(cb: () => void) => void;
+    onReconnect? :(cb: () => void) => void;
+}
+
+export type EnvironmentInitializer<T extends IActiveEnvironment> = (communication: Communication, env: Environment) => Promise<T>
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {
     name?: string;

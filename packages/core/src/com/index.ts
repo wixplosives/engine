@@ -8,3 +8,4 @@ export * from './service-config';
 export * from './types';
 export * from './ws-client-host';
 export * from './managed-iframe';
+export * from './initializers';

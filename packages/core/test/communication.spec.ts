@@ -1,7 +1,7 @@
 import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { Communication, Environment, declareComEmitter } from '../src';
+import { Communication, Environment, declareComEmitter, iframeInitializer } from '../src';
 import {
     ITestServiceData,
     multiTanentServiceId,
@@ -38,7 +38,13 @@ describe('Communication API', function() {
 
     it('should proxy remote service api', async () => {
         const com = disposables.add(new Communication(window, comId));
-        const env = await com.spawn(iframeEnv, createIframe());
+
+        const env = await com.startEnvironment(
+            iframeEnv,
+            iframeInitializer({
+                iframeElement: createIframe()
+            })
+        );
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
         const res = await api.testApi(1, 2, 3);
@@ -48,7 +54,13 @@ describe('Communication API', function() {
 
     it('should listen to remote api callbacks', async () => {
         const com = disposables.add(new Communication(window, comId));
-        const env = await com.spawn(iframeEnv, createIframe());
+
+        const env = await com.startEnvironment(
+            iframeEnv,
+            iframeInitializer({
+                iframeElement: createIframe()
+            })
+        );
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId }, declareComEmitter('listen', '', ''));
         const capturedCalls: ITestServiceData[] = [];
@@ -62,7 +74,13 @@ describe('Communication API', function() {
 
     it('handles a multi tenant function in api services', async () => {
         const com = disposables.add(new Communication(window, comId));
-        const env = await com.spawn(iframeEnv, createIframe());
+
+        const env = await com.startEnvironment(
+            iframeEnv,
+            iframeInitializer({
+                iframeElement: createIframe()
+            })
+        );
 
         const api = com.apiProxy<MultiTenantTestService>(env, { id: multiTanentServiceId });
 
@@ -76,7 +94,13 @@ describe('Communication API', function() {
 
     it('handles a single tanent function in api services that have multi tanent functions', async () => {
         const com = disposables.add(new Communication(window, comId));
-        const env = await com.spawn(iframeEnv, createIframe());
+
+        const env = await com.startEnvironment(
+            iframeEnv,
+            iframeInitializer({
+                iframeElement: createIframe()
+            })
+        );
 
         const api = com.apiProxy<MultiTenantTestService>(env, { id: multiTanentServiceId });
 
@@ -92,8 +116,18 @@ describe('Communication API', function() {
         const com = disposables.add(new Communication(window, comId));
 
         const [env1, env2] = await Promise.all([
-            com.spawn(iframeEnv, createIframe()),
-            com.spawn(iframeEnv, createIframe())
+            com.startEnvironment(
+                iframeEnv,
+                iframeInitializer({
+                    iframeElement: createIframe()
+                })
+            ),
+            com.startEnvironment(
+                iframeEnv,
+                iframeInitializer({
+                    iframeElement: createIframe()
+                })
+            )
         ]);
 
         const api1 = com.apiProxy<TestService>(env1, { id: testServiceId }, { listen: { listener: true } });
@@ -119,7 +153,14 @@ describe('Communication API', function() {
     it('resolves spawn only when com is ready', async () => {
         const com = disposables.add(new Communication(window, comId));
         const delayedIframeEnv = new Environment('delayed-iframe', 'iframe', 'multi');
-        const env = await com.spawn(delayedIframeEnv, createIframe());
+
+        const env = await com.startEnvironment(
+            delayedIframeEnv,
+            iframeInitializer({
+                iframeElement: createIframe(),
+                managed: false
+            })
+        );
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
         const res = await api.testApi(1, 2, 3);
@@ -128,8 +169,16 @@ describe('Communication API', function() {
     });
 
     it('allows initiating iframe environment with parameters', async () => {
+        const iframeEnv = new Environment('iframe', 'iframe', 'multi');
         const com = disposables.add(new Communication(window, comId));
-        const env = await com.manage(iframeEnv, createIframe(), '#test');
+        const env = await com.startEnvironment(
+            iframeEnv,
+            iframeInitializer({
+                iframeElement: createIframe(),
+                hashParams: '#test',
+                managed: true
+            })
+        );
         const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });
 
         await waitFor(async () => {

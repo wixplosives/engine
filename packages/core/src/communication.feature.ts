@@ -47,10 +47,7 @@ export default new Feature({
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Service.withType<LoggerService>().defineEntity(Universal),
-        spawn: Service.withType<Communication['spawn']>().defineEntity(AllEnvironments),
-        manage: Service.withType<Communication['manage']>().defineEntity(AllEnvironments),
-        connect: Service.withType<Communication['connect']>().defineEntity(AllEnvironments),
-        spawnOrConnect: Service.withType<Communication['spawnOrConnect']>().defineEntity(AllEnvironments),
+        startEnvironment: Service.withType<Communication['startEnvironment']>().defineEntity(AllEnvironments),
         communication: Service.withType<Communication>().defineEntity(AllEnvironments)
     }
 }).setup(
@@ -91,14 +88,10 @@ export default new Feature({
         );
 
         onDispose(() => communication.dispose());
-
         return {
             loggerService,
             communication,
-            spawn: communication.spawn.bind(communication),
-            connect: communication.connect.bind(communication),
-            spawnOrConnect: communication.spawnOrConnect.bind(communication),
-            manage: communication.manage.bind(communication)
+            startEnvironment: communication.startEnvironment.bind(communication)
         };
     }
 );

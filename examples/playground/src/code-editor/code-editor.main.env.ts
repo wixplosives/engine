@@ -2,8 +2,9 @@ import CodeEditor, { MAIN, PROCESSING } from './code-editor.feature';
 import { CodeService } from './code-service';
 import { ErrorService } from './error-service';
 import './style.css';
+import { workerInitializer } from '@wixc3/engine-core/src';
 
-CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM }) => {
+CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { startEnvironment } }) => {
     const codeService = new CodeService();
     const errorService = new ErrorService();
 
@@ -24,7 +25,7 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM }) => {
     });
 
     run(async () => {
-        await COM.spawn(PROCESSING); // returns processingID
+        await startEnvironment(PROCESSING, workerInitializer()); // returns processingID
         const { codeInput, sidebar } = render();
 
         codeInput.value = codeService.getContent();

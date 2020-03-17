@@ -61,6 +61,7 @@ export class Service<
                     throw new Error('service is not provide in runtime');
                 }
                 communication.registerAPI({ id: serviceKey }, providedValue);
+                return providedValue;
             }
 
             return inputValue || this.getApiProxy(runtimeEngine, serviceKey);

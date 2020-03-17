@@ -13,7 +13,7 @@ export class Environment<
 }
 
 export class EnvironmentContext {
-    constructor(public env: string, public activeEnvironmentName: string, public runtimeEnvType: EnvironmentTypes) {}
+    constructor(public env: string, public activeEnvironmentName: string) {}
 }
 
 export const Universal = new Environment('<Universal>', 'window', 'multi');
@@ -24,7 +24,7 @@ export const globallyProvidingEnvironments = new Set([Universal.env, AllEnvironm
 export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
     NAME,
     'context',
-    'single'
+    EnvironmentMode
 > {
     constructor(env: NAME, public environments: ENVS) {
         super(env, 'context', 'single');
@@ -35,7 +35,7 @@ export class SingleEndpointContextualEnvironment<NAME extends string, ENVS exten
     }
 
     public useContext(contextEnv: keyof MapBy<ENVS, 'env'>): EnvironmentContext {
-        return new EnvironmentContext(this.env, contextEnv, this.getEnvironmentById(contextEnv).envType);
+        return new EnvironmentContext(this.env, contextEnv);
     }
 
     public withContext<I extends object>(): DisposableContext<I> {
