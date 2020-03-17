@@ -640,6 +640,88 @@ describe('feature disposal', () => {
     });
 });
 
+
+
+describe('service with remove access environment visibility', ()=>{
+
+    it('local services in the same env uses the provided implementation', () => {
+
+        const processing = new Environment('processing', 'worker', 'multi');
+        const main = new Environment('main', 'worker', 'single');
+
+
+        const echoFeature = new Feature({
+            id: 'echoFeature',
+            dependencies: [COM],
+            api: {
+                echoService: Service.withType<{ echo(s: string): string }>()
+                    .defineEntity(processing)
+                    .allowRemoteAccess()
+            }
+        });
+
+        echoFeature.setup(processing, ({echoService}) => {
+
+            // this is the proxy! because we did not defined the service yet.
+            expect(typeof echoService.get === 'function')
+
+            return {
+                echoService: {
+                    echo(s: string) {
+                        return s;
+                    }
+                }
+            };
+        });
+
+
+        echoFeature.setup(main, ({echoService}) => {
+            // this is the proxy! because we are in different env.
+            expect(typeof echoService.get === 'function')
+            return null;
+        });
+
+
+        // const checks = [];
+        const testFeature = new Feature({
+            id: 'test',
+            dependencies: [echoFeature],
+            api: {}
+        });
+
+        testFeature.setup(processing, ({  }, { echoFeature: { echoService } }) => {
+            
+            // this is the real service since we are in the same env!.
+            expect(typeof echoService.echo === 'function')
+            return null;
+        });
+
+        
+        testFeature.setup(main, ({  }, { echoFeature: { echoService } }) => {
+
+            // this is the proxy! because we are in different env.
+            expect(typeof echoService.get === 'function')
+            return null;
+        });
+        
+        runEngine({
+            entryFeature: testFeature,
+            envName: 'processing'
+        });
+
+        runEngine({
+            entryFeature: testFeature,
+            envName: 'main'
+        });
+
+    });
+
+
+})
+
+
+
+
 describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
         const main = new Environment('main', 'window', 'single');
