@@ -88,10 +88,10 @@ let executableApp: IExecutableApplication;
 
 if (typeof after !== 'undefined') {
     after('close puppeteer browser, if open', async () => {
-        if (browser) {
+        if (browser && browser.isConnected) {
             await browser.close();
-            browser = null;
         }
+        browser = null;
     });
 
     after('close engine server, if open', async function() {
