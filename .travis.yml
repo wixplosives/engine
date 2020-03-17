@@ -18,17 +18,3 @@ env:
 before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.22.0
   - export PATH=$HOME/.yarn/bin:$PATH
-
-before_deploy:
-  - echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > ~/.npmrc
-
-deploy:
-  skip_cleanup: true
-  provider: script
-  script: npx pleb@2 publish
-  on:
-    branch: master
-    node_js: 12
-    condition: $TRAVIS_OS_NAME = linux
-    # Disabled because of 3 tags limitation https://developer.github.com/v3/activity/events/types/#createevent 
-    # tags: true
