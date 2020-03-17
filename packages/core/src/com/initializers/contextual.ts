@@ -23,9 +23,7 @@ export function initializeContextualEnv<MODE extends EnvironmentMode, TYPE exten
                 throw new Error(`environment initializer is not set for ${activeEnvironment.env}`);
             }
 
-            activeEnvironment.env = env;
-
-            return communication.startEnvironment(activeEnvironment, envInitializer);
+            return communication.startEnvironment({ ...activeEnvironment, env }, envInitializer);
         },
         setEnvironmentInitializer: ({ env }: Environment, initializer: EnvironmentInitializer) => {
             if (envInitializers[env]) {
