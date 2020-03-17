@@ -15,6 +15,9 @@ export class IPCHost extends BaseHost implements IDisposable {
     };
 
     public postMessage(data: any) {
+        if (!this.prcocess.send) {
+            throw new Error('this process is not forked. There is not to send message to');
+        }
         if (this.prcocess.send) {
             this.prcocess.send(data);
         }
