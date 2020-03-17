@@ -65,7 +65,6 @@ export class Communication {
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
-    private envInitializers: { [envName: string]: EnvironmentInitializer } = {};
     private options: Required<ICommunicationOptions>;
 
     constructor(
@@ -118,27 +117,11 @@ export class Communication {
         return endpointType === 'single' ? envName : this.generateEnvInstanceID(envName);
     }
 
-    public setInitializer(envName: string, initializer: EnvironmentInitializer) {
-        if (this.envInitializers[envName]) {
-            throw new Error(`initializer already provided for ${envName}`);
-        }
-
-        this.envInitializers[envName] = initializer;
-    }
-
-    public getInitializer(envName: string) {
-        return this.envInitializers[envName];
-    }
-
     public getPublicPath() {
         return this.options.publicPath;
     }
 
-    public startEnvironment(env: Environment, initializer?: EnvironmentInitializer) {
-        initializer = initializer ?? this.envInitializers[env.env];
-        if (!initializer) {
-            throw new Error(`initializer wasn't provided for ${env.env} environment`);
-        }
+    public startEnvironment(env: Environment, initializer: EnvironmentInitializer) {
         return initializer(this, env);
     }
 

@@ -1,13 +1,13 @@
 import { contextualEnv, mainEnv, serverEnv, workerEnv } from './some-feature.feature';
 import sampleFeature from './some-feature.feature';
-import { socketServerInitializer, workerInitializer, contextualInitializer } from '@wixc3/engine-core/src';
+import { socketServerInitializer, workerInitializer, initializeContextualEnv } from '@wixc3/engine-core/src';
 
-sampleFeature.setup(mainEnv, ({ run, serverService }, { COM: { startEnvironment, communication } }) => {
-    const { initializer, getEnvironmentInitializerId } = contextualInitializer(contextualEnv);
+sampleFeature.setup(mainEnv, ({ run, serverService }, { COM: { startEnvironment } }) => {
+    const { initializer, setEnvironmentInitializer } = initializeContextualEnv(contextualEnv);
 
-    communication.setInitializer(getEnvironmentInitializerId(serverEnv), socketServerInitializer());
+    setEnvironmentInitializer(serverEnv, socketServerInitializer());
 
-    communication.setInitializer(getEnvironmentInitializerId(workerEnv), workerInitializer());
+    setEnvironmentInitializer(workerEnv, workerInitializer());
 
     run(async () => {
         await startEnvironment(contextualEnv, initializer);

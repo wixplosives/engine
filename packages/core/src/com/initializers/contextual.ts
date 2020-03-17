@@ -1,29 +1,38 @@
-import { EnvironmentTypes } from '../types';
+import { EnvironmentTypes, EnvironmentInitializer } from '../types';
 import { SingleEndpointContextualEnvironment, Environment, EnvironmentMode } from '../../entities';
 import { Communication } from '../communication';
 
-export function contextualInitializer<MODE extends EnvironmentMode, TYPE extends EnvironmentTypes>({
-    environments,
-    env
+export function initializeContextualEnv<MODE extends EnvironmentMode, TYPE extends EnvironmentTypes>({
+    env,
+    environments
 }: SingleEndpointContextualEnvironment<string, Environment<string, TYPE, MODE>[]>) {
-    const getEnvironmentInitializerId = (runtimeEnviromnent: Environment) => {
-        return `${env}/${runtimeEnviromnent.env}`;
-    };
+    const envInitializers: { [envName: string]: EnvironmentInitializer } = {};
 
     return {
         initializer: async (communication: Communication) => {
             const runtimeEnvironmentName = communication.resolvedContexts[env];
 
-            const activeEnvironment = environments.find(env => env.env === runtimeEnvironmentName)!;
+            const activeEnvironment = environments.find(contextualEnv => contextualEnv.env === runtimeEnvironmentName);
 
-            const environmentId = getEnvironmentInitializerId(activeEnvironment);
+            if (!activeEnvironment) {
+                throw new Error(`${runtimeEnvironmentName} cannot be found in definition of ${env} environment`);
+            }
+            const envInitializer = envInitializers[activeEnvironment.env];
+
+            if (!envInitializer) {
+                throw new Error(`environment initializer is not set for ${activeEnvironment.env}`);
+            }
 
             activeEnvironment.env = env;
 
-            const envInitializer = communication.getInitializer(environmentId);
-
             return communication.startEnvironment(activeEnvironment, envInitializer);
         },
-        getEnvironmentInitializerId
+        setEnvironmentInitializer: ({ env }: Environment, initializer: EnvironmentInitializer) => {
+            if (envInitializers[env]) {
+                throw new Error(`cannot set initializer for ${env} because it was already setup`);
+            }
+
+            envInitializers[env] = initializer;
+        }
     };
 }
