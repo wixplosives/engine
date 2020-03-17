@@ -144,7 +144,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             // to allow parallel testing, we set the viewport size via page.setViewport()
             browser = await puppeteer.launch({
                 ...withFeatureOptions,
-                defaultViewport: undefined
+                defaultViewport: undefined,
+                pipe: true
             });
         }
     });
