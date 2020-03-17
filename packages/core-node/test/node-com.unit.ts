@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { waitFor } from 'promise-assist';
 
-import { Communication, WsClientHost } from '@wixc3/engine-core';
+import { Communication, WsClientHost, socketServerInitializer } from '@wixc3/engine-core';
 import { WsHost } from '@wixc3/engine-core-node';
 import { createDisposables } from '@wixc3/engine-test-kit';
 
@@ -177,12 +177,12 @@ describe('Node communication', () => {
         const clientCom = new Communication(clientHost, 'client-host', {
             'server-host': `http://localhost:${port}`
         });
+        const { onDisconnect } = await clientCom.startEnvironment(
+            { env: 'server-host', endpointType: 'single', envType: 'node' },
+            socketServerInitializer()
+        );
 
-        const { onDisconnect } = await clientCom.connect({
-            env: 'server-host',
-            envType: 'node',
-            endpointType: 'single'
-        });
+        expect(onDisconnect).to.not.eq(undefined);
 
         onDisconnect(spy);
         socketServer.close();

@@ -7,7 +7,7 @@ import {
     reportError,
     UNKNOWN_CALLBACK_ID
 } from './errors';
-import { isIframe, isWindow, isWorkerContext, MultiCounter } from './helpers';
+import { isWindow, isWorkerContext, MultiCounter } from './helpers';
 import {
     CallbackMessage,
     CallMessage,
@@ -28,16 +28,16 @@ import {
     SerializableMethod,
     Target,
     UnknownFunction,
-    WindowHost,
     AnyServiceMethodOptions,
     ServiceComConfig,
-    ILiveEnvironment
+    EnvironmentInitializer,
+    IActiveEnvironment
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
 
 import { SetMultiMap } from '../helpers';
-import { Environment, SingleEndpointContextualEnvironment } from '../entities/env';
+import { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import { IDTag } from '../types';
 import { BaseHost } from './base-host';
 import { WsClientHost } from './ws-client-host';
@@ -71,8 +71,8 @@ export class Communication {
     constructor(
         host: Target,
         id: string,
-        private topology: Record<string, string> = {},
-        private resolvedContexts: Record<string, string> = {},
+        public topology: Record<string, string> = {},
+        public resolvedContexts: Record<string, string> = {},
         public isServer = false,
         options?: ICommunicationOptions
     ) {
@@ -110,111 +110,20 @@ export class Communication {
         }
     }
 
-    public async spawnOrConnect(
-        endPoint: SingleEndpointContextualEnvironment<string, Environment[]>
-    ): Promise<ILiveEnvironment> {
-        const runtimeEnvironmentName = this.resolvedContexts[endPoint.env];
-
-        const activeEnvironment = endPoint.environments.find(env => env.env === runtimeEnvironmentName)!;
-        activeEnvironment.env = endPoint.env;
-
-        return activeEnvironment.envType === 'node'
-            ? this.connect(activeEnvironment as Environment<string, 'node'>)
-            : this.spawn(activeEnvironment);
-    }
-
     public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
         return this.resolvedContexts[endPoint.env];
     }
 
-    public async spawn(endPoint: Environment, host?: WindowHost) {
-        const { endpointType, env, envType } = endPoint;
-
-        const isSingleton = endpointType === 'single';
-        const instanceId = isSingleton ? env : this.generateEnvInstanceID(env);
-
-        await (envType === 'worker'
-            ? this.useWorker(defaultWorkerFactory(env, instanceId, this.options.publicPath), instanceId)
-            : this.useWindow(host!, instanceId, defaultSourceFactory(env, instanceId, this.options.publicPath)));
-
-        return {
-            id: instanceId
-        };
+    public getEnvironmentInstanceId(envName: string, endpointType: EnvironmentMode) {
+        return endpointType === 'single' ? envName : this.generateEnvInstanceID(envName);
     }
 
-    public async manage(endPoint: Environment, host: HTMLIFrameElement, hashParams?: string) {
-        const { endpointType, env } = endPoint;
-
-        const isSingleton = endpointType === 'single';
-        const instanceId = isSingleton ? env : this.generateEnvInstanceID(env);
-
-        await this.useIframe(
-            host,
-            instanceId,
-            defaultHtmlSourceFactory(env, instanceId, this.options.publicPath, hashParams)
-        );
-
-        return {
-            id: instanceId
-        };
+    public getPublicPath() {
+        return this.options.publicPath;
     }
 
-    public async useIframe(host: HTMLIFrameElement, instanceId: string, src: string): Promise<void> {
-        const win = host.contentWindow;
-        if (!win) {
-            throw new Error('cannot spawn detached iframe.');
-        }
-
-        await this.changeLocation(win, host, instanceId, src);
-
-        const handlerPrefix = `${this.rootEnvId}__${instanceId}_`;
-
-        const reload = async () => {
-            for (const handlerId of this.handlers.keys()) {
-                if (handlerId.startsWith(handlerPrefix)) {
-                    await this.reconnectHandler(instanceId, this.parseHandlerId(handlerId, handlerPrefix));
-                }
-            }
-        };
-
-        host.addEventListener('load', () => {
-            this.envReady(instanceId)
-                .then(reload)
-                .catch(reportError);
-        });
-
-        this.registerEnv(instanceId, win);
-        await this.envReady(instanceId);
-    }
-
-    /**
-     * Connects to a remote node environment
-     */
-    public async connect(endPoint: Environment<string, 'node'>) {
-        const { env, envType } = endPoint;
-
-        const url = this.topology[env];
-
-        if (!url) {
-            throw new Error(`Could not find ${envType} topology for ${env}`);
-        }
-
-        const instanceId = env;
-        const host = new WsClientHost(url);
-
-        this.registerMessageHandler(host);
-        this.registerEnv(instanceId, host);
-        await host.connected;
-        this.handleReady({ from: instanceId } as ReadyMessage);
-        return {
-            id: instanceId,
-            onDisconnect: (cb: () => void) => {
-                host.subscribers.listeners.add('disconnect', cb);
-            },
-            onReconnect: (cb: () => void) => {
-                host.subscribers.listeners.add('reconnect', cb);
-            }
-        };
+    public startEnvironment<T extends IActiveEnvironment>(env: Environment, initializer: EnvironmentInitializer<T>) {
+        return initializer(this, env);
     }
 
     public setTopology(envName: string, envUrl: string) {
@@ -341,22 +250,6 @@ export class Communication {
         }
     }
 
-    public async useWorker(worker: Worker, instanceId: string): Promise<void> {
-        this.registerMessageHandler(worker);
-        this.registerEnv(instanceId, worker);
-        await this.envReady(instanceId);
-    }
-
-    public async useWindow(host: WindowHost, instanceId: string, src: string): Promise<void> {
-        const win = isIframe(host) ? host.contentWindow : host;
-        if (!win) {
-            throw new Error('cannot spawn detached iframe.');
-        }
-        await this.injectScript(win, instanceId, src);
-        this.registerEnv(instanceId, win);
-        await this.envReady(instanceId);
-    }
-
     /**
      * Dispose the Communication and stop listening to messages.
      */
@@ -406,6 +299,16 @@ export class Communication {
         });
     }
 
+    public async reconnectHandlers(instanceId: string) {
+        const handlerPrefix = `${this.rootEnvId}__${instanceId}_`;
+
+        for (const handlerId of this.handlers.keys()) {
+            if (handlerId.startsWith(handlerPrefix)) {
+                await this.reconnectHandler(instanceId, this.parseHandlerId(handlerId, handlerPrefix));
+            }
+        }
+    }
+
     private applyApiDirectives(id: string, api: APIService): void {
         const serviceConfig = api[SERVICE_CONFIG];
         if (serviceConfig) {
@@ -449,20 +352,6 @@ export class Communication {
         } else {
             throw new Error(MISSING_FORWARD_FOR_MESSAGE(message));
         }
-    }
-
-    private changeLocation(win: Window, host: HTMLIFrameElement, rootComId: string, iframeSrc: string) {
-        return new Promise<Window>((res, rej) => {
-            // This is the contract of the communication to get the root communication id
-            win.name = rootComId;
-            const loaded = () => {
-                host.removeEventListener('load', loaded);
-                res();
-            };
-            host.addEventListener('load', loaded);
-            host.addEventListener('error', () => rej());
-            win.location.href = iframeSrc;
-        });
     }
 
     private apiCall(origin: string, api: string, method: string, args: unknown[]): unknown {
@@ -617,7 +506,7 @@ export class Communication {
         }
     }
 
-    private handleReady({ from }: ReadyMessage): void {
+    public handleReady({ from }: ReadyMessage): void {
         const pendingEnvCb = this.pendingEnvs.get(from);
         if (pendingEnvCb) {
             this.pendingEnvs.deleteKey(from);
@@ -779,34 +668,7 @@ export class Communication {
             reject
         };
     }
-
-    private injectScript(win: Window, rootComId: string, scriptUrl: string) {
-        return new Promise<Window>((res, rej) => {
-            // This is the contract of the communication to get the root communication id
-            win.name = rootComId;
-            const scriptEl = win.document.createElement('script');
-            scriptEl.src = scriptUrl;
-            scriptEl.onload = () => res(win);
-            scriptEl.onerror = e => rej(e);
-            win.document.head.appendChild(scriptEl);
-        });
-    }
 }
-
-/*
- * We only use the default factories so as a solution to pass the config name we append the location.search
- */
-const defaultWorkerFactory = (envName: string, instanceId: string, publicPath = '') => {
-    return new Worker(`${publicPath}${envName}.webworker.js${location.search}`, { name: instanceId });
-};
-
-const defaultSourceFactory = (envName: string, _instanceId: string, publicPath = '') => {
-    return `${publicPath}${envName}.web.js${location.search}`;
-};
-
-const defaultHtmlSourceFactory = (envName: string, _instanceId: string, publicPath = '', hashParams?: string) => {
-    return `${publicPath}${envName}.html${location.search}${hashParams ?? ''}`;
-};
 
 const removeMessageArgs = (message: Message): Message => {
     message = { ...message };

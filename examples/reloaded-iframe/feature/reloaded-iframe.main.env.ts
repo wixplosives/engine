@@ -1,5 +1,6 @@
 import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../src/consts';
 import ReloadedIframe, { iframeEnv, mainEnv } from './reloaded-iframe.feature';
+import { iframeInitializer } from '@wixc3/engine-core';
 
 ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
     const div = document.createElement('div');
@@ -21,8 +22,14 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
     document.body.append(div, echoButton, refreshIframeButton, timesRefreshed);
     const iframe = document.createElement('iframe');
     document.body.appendChild(iframe);
+
     run(async () => {
-        const envToken = await COM.manage(iframeEnv, iframe);
+        const envToken = await COM.startEnvironment(
+            iframeEnv,
+            iframeInitializer({
+                iframeElement: iframe
+            })
+        );
 
         echoButton.onclick = async () => {
             await echoService.get(envToken).echo();
