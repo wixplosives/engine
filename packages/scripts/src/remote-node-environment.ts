@@ -1,4 +1,5 @@
 import { fork } from 'child_process';
+import { once } from 'events';
 import { ForkedProcess } from './forked-process';
 import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from './types';
 
@@ -20,11 +21,9 @@ export async function startRemoteNodeEnvironment(
     // } catch {
     const execArgv = inspect ? ['--inspect'] : [];
     const childProc = fork(entryFilePath, ['remote', '-p', `${port}`], { execArgv });
-    await new Promise(res => {
-        childProc.once('message', res);
-    });
-    childProc.on('error', console.error);
-    // }
+    await once(childProc, 'message');
+    childProc.on('error', e => console.error(`error in forked process`, e));
+
     return new RemoteNodeEnvironment(new ForkedProcess(childProc));
 }
 
