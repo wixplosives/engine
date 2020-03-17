@@ -10,7 +10,7 @@ export interface IActiveEnvironment {
     onDisconnect?: (cb: () => void) => void;
 }
 
-export type EnvironmentInitializer = (communication: Communication, env: Environment) => IActiveEnvironment | Promise<IActiveEnvironment>
+export type EnvironmentInitializer<T> = (communication: Communication, env: Environment) => Promise<T>//IActiveEnvironment | Promise<IActiveEnvironment>
 export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'context';
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {

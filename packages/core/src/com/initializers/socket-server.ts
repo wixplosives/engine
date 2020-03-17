@@ -2,7 +2,13 @@ import { WsClientHost } from '../ws-client-host';
 import { ReadyMessage } from '../message-types';
 import { EnvironmentInitializer } from '../types';
 
-export function socketServerInitializer(): EnvironmentInitializer {
+type listenFn = (cb: () => void) => void;
+
+export function socketServerInitializer(): EnvironmentInitializer<{
+    id: string;
+    onDisconnect: listenFn;
+    onReconnect: listenFn;
+}> {
     return async (communication, { env }) => {
         const url = communication.topology[env];
         if (!url) {

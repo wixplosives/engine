@@ -6,10 +6,10 @@ export function initializeContextualEnv<MODE extends EnvironmentMode, TYPE exten
     env,
     environments
 }: SingleEndpointContextualEnvironment<string, Environment<string, TYPE, MODE>[]>) {
-    const envInitializers: { [envName: string]: EnvironmentInitializer } = {};
+    const envInitializers: { [envName: string]: EnvironmentInitializer<any> } = {};
 
     return {
-        initializer: async (communication: Communication) => {
+        initializer: (communication: Communication) => {
             const runtimeEnvironmentName = communication.resolvedContexts[env];
 
             const activeEnvironment = environments.find(contextualEnv => contextualEnv.env === runtimeEnvironmentName);
@@ -27,7 +27,7 @@ export function initializeContextualEnv<MODE extends EnvironmentMode, TYPE exten
 
             return communication.startEnvironment(activeEnvironment, envInitializer);
         },
-        setEnvironmentInitializer: ({ env }: Environment, initializer: EnvironmentInitializer) => {
+        setEnvironmentInitializer: ({ env }: Environment, initializer: EnvironmentInitializer<any>) => {
             if (envInitializers[env]) {
                 throw new Error(`cannot set initializer for ${env} because it was already setup`);
             }

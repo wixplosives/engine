@@ -184,7 +184,7 @@ describe('Node communication', () => {
 
         expect(onDisconnect).to.not.eq(undefined);
 
-        onDisconnect!(spy);
+        onDisconnect(spy);
         socketServer.close();
         await waitFor(
             () => {

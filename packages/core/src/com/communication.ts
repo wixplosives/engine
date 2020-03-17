@@ -121,7 +121,7 @@ export class Communication {
         return this.options.publicPath;
     }
 
-    public startEnvironment(env: Environment, initializer: EnvironmentInitializer) {
+    public startEnvironment<T>(env: Environment, initializer: EnvironmentInitializer<T>) {
         return initializer(this, env);
     }
 
