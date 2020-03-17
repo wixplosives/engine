@@ -5,12 +5,16 @@ import { Environment } from '../entities';
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;
 
+/**
+ * TODO: remove onReconnect and onDisconnect
+ */
 export interface IActiveEnvironment {
     id: string;
-    onDisconnect?: (cb: () => void) => void;
+    onDisconnect? :(cb: () => void) => void;
+    onReconnect? :(cb: () => void) => void;
 }
 
-export type EnvironmentInitializer<T> = (communication: Communication, env: Environment) => Promise<T>//IActiveEnvironment | Promise<IActiveEnvironment>
+export type EnvironmentInitializer<T extends IActiveEnvironment> = (communication: Communication, env: Environment) => Promise<T>
 export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'context';
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {

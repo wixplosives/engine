@@ -2,8 +2,8 @@ import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment
 
 export const mainEnv = new Environment('main', 'window', 'single');
 
-export const serverEnv = new Environment('server', 'node', 'single');
-export const workerEnv = new Environment('worker', 'worker', 'single');
+const workerEnv = new Environment('worker', 'worker', 'single');
+const serverEnv = new Environment('server', 'node', 'single');
 export const contextualEnv = new SingleEndpointContextualEnvironment('contextual', [workerEnv, serverEnv]);
 
 export interface IEchoContext {

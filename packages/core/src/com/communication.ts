@@ -30,7 +30,8 @@ import {
     UnknownFunction,
     AnyServiceMethodOptions,
     ServiceComConfig,
-    EnvironmentInitializer
+    EnvironmentInitializer,
+    IActiveEnvironment
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -121,7 +122,7 @@ export class Communication {
         return this.options.publicPath;
     }
 
-    public startEnvironment<T>(env: Environment, initializer: EnvironmentInitializer<T>) {
+    public startEnvironment<T extends IActiveEnvironment>(env: Environment, initializer: EnvironmentInitializer<T>) {
         return initializer(this, env);
     }
 
