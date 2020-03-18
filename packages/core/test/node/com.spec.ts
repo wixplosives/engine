@@ -3,7 +3,7 @@ import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
 
 import { SERVICE_CONFIG, multiTenantMethod, BaseHost, Communication } from '../../src';
-import { EventEmitterHost } from 'packages/core/src/com/hosts/event-emitter';
+import { EventEmitterHost } from '../../src';
 import { EventEmitter } from 'events';
 
 chai.use(sinonChai);
