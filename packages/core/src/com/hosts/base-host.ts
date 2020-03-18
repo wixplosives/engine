@@ -1,4 +1,4 @@
-import { Target } from './types';
+import { Target } from '../types';
 
 export class BaseHost implements Target {
     public name = 'base-host';

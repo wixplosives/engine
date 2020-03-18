@@ -1,4 +1,4 @@
-import { BaseHost } from './com/base-host';
+import { BaseHost } from './com/hosts/base-host';
 import { Communication, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
 import { Target } from './com/types';

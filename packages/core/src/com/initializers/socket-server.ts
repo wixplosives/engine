@@ -1,4 +1,4 @@
-import { WsClientHost } from '../ws-client-host';
+import { WsClientHost } from '../hosts/ws-client-host';
 import { ReadyMessage } from '../message-types';
 import { EnvironmentInitializer } from '../types';
 
