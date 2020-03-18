@@ -1,5 +1,5 @@
 # engine
-[![Build Status](https://travis-ci.com/wixplosives/engine.svg?token=JxepjChyzQB66ehAYhtG&branch=master)](https://travis-ci.com/wixplosives/engine)
+[![Build Status](https://github.com/wixplosives/engine/workflows/tests/badge.svg)](https://github.com/wixplosives/engine/actions)
 
 ### Packages
 

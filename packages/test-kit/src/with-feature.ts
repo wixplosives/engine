@@ -88,10 +88,10 @@ let executableApp: IExecutableApplication;
 
 if (typeof after !== 'undefined') {
     after('close puppeteer browser, if open', async () => {
-        if (browser) {
+        if (browser && browser.isConnected) {
             await browser.close();
-            browser = null;
         }
+        browser = null;
     });
 
     after('close engine server, if open', async function() {
@@ -144,7 +144,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             // to allow parallel testing, we set the viewport size via page.setViewport()
             browser = await puppeteer.launch({
                 ...withFeatureOptions,
-                defaultViewport: undefined
+                defaultViewport: undefined,
+                pipe: true
             });
         }
     });

@@ -5,7 +5,7 @@ export function createBrowserProvider(options?: LaunchOptions) {
     return {
         async loadPage(url: string) {
             if (!browser) {
-                browser = await launch(options);
+                browser = await launch({ ...options, pipe: true });
             }
             const page = await browser.newPage();
             await page.goto(url, { waitUntil: 'networkidle0' });
@@ -15,15 +15,15 @@ export function createBrowserProvider(options?: LaunchOptions) {
             if (browser) {
                 const pages = await browser.pages();
                 for (const page of pages) {
-                    await page.close({ runBeforeUnload: false });
+                    await page.close();
                 }
             }
         },
         async dispose() {
-            if (browser) {
+            if (browser && browser.isConnected) {
                 await browser.close();
-                browser = null;
             }
+            browser = null;
         }
     };
 }
