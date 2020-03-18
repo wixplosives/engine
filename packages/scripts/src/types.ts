@@ -219,10 +219,15 @@ export interface IFeatureDefinition extends IFeatureModule {
     isRoot: boolean;
     toJSON(): unknown;
 }
+export interface StaticConfig {
+    route: string;
+    directoryPath: string;
+}
 
 export interface EngineConfig {
     require?: string[];
     featuresDirectory?: string;
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
+    serveStatic?: StaticConfig[];
 }

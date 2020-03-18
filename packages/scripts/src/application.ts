@@ -97,7 +97,10 @@ export class Application {
         title,
         publicConfigsRoute
     }: IRunOptions = {}): Promise<webpack.Stats> {
-        await this.loadRequiredModulesFromEngineConfig();
+        const engineConfig = await this.getEngineConfig();
+        if (engineConfig && engineConfig.require) {
+            await this.importModules(engineConfig.require);
+        }
         const { features, configurations } = this.analyzeFeatures();
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
@@ -151,8 +154,10 @@ export class Application {
         nodeEnvironmentsMode,
         autoLaunch = true
     }: IRunOptions = {}) {
-        await this.loadRequiredModulesFromEngineConfig();
-
+        const engineConfig = await this.getEngineConfig();
+        if (engineConfig && engineConfig.require) {
+            await this.importModules(engineConfig.require);
+        }
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
             httpServerPort
@@ -201,6 +206,11 @@ export class Application {
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
         const overrideConfigsMap = new Map<string, OverrideConfig>();
+        if (engineConfig && engineConfig.serveStatic) {
+            for (const { route, directoryPath } of engineConfig.serveStatic) {
+                app.use(route, express.static(directoryPath));
+            }
+        }
 
         app.use(`/${publicConfigsRoute}`, [
             ensureTopLevelConfigMiddleware,
@@ -371,8 +381,10 @@ export class Application {
         if (!process.send) {
             throw new Error('"remote" command can only be used in a forked process');
         }
-
-        await this.loadRequiredModulesFromEngineConfig();
+        const engineConfig = await this.getEngineConfig();
+        if (engineConfig && engineConfig.require) {
+            await this.importModules(engineConfig.require);
+        }
         const { socketServer, close, port } = await this.launchHttpServer({
             httpServerPort: preferredPort
         });
@@ -413,21 +425,15 @@ export class Application {
                 throw new Error(`failed evaluating config file: ${engineConfigFilePath}`);
             }
         }
-        return null;
+        return undefined;
     }
 
-    private async loadRequiredModulesFromEngineConfig() {
-        const config = await this.getEngineConfig();
-
-        if (config) {
-            const { require: requiredModules = [] } = config;
-
-            for (const requiredModule of requiredModules) {
-                try {
-                    await import(requiredModule);
-                } catch (ex) {
-                    throw new Error(`failed requiring: ${requiredModule}`);
-                }
+    private async importModules(requiredModules: string[]) {
+        for (const requiredModule of requiredModules) {
+            try {
+                await import(requiredModule);
+            } catch (ex) {
+                throw new Error(`failed requiring: ${requiredModule} ${ex?.stack || ex}`);
             }
         }
     }
