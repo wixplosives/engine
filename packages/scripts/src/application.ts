@@ -151,7 +151,7 @@ export class Application {
         nodeEnvironmentsMode,
         autoLaunch = true
     }: IRunOptions = {}) {
-        await this.loadRequiredModulesFromEngineConfig();
+        const engineConfig = await this.loadRequiredModulesFromEngineConfig();
 
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
@@ -201,6 +201,11 @@ export class Application {
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
         const overrideConfigsMap = new Map<string, OverrideConfig>();
+        if (engineConfig?.flow?.start?.serveStatic) {
+            for (const staticConfig of engineConfig.flow.start.serveStatic) {
+                app.use(staticConfig.route, express.static(staticConfig.dir, staticConfig.options));
+            }
+        }
 
         app.use(`/${publicConfigsRoute}`, [
             ensureTopLevelConfigMiddleware,
@@ -405,7 +410,7 @@ export class Application {
     }
 
     private async getEngineConfig() {
-        const engineConfigFilePath = await fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
+        const engineConfigFilePath = fs.findClosestFileSync(this.basePath, ENGINE_CONFIG_FILE_NAME);
         if (engineConfigFilePath) {
             try {
                 return (await import(engineConfigFilePath)) as EngineConfig;
@@ -430,6 +435,7 @@ export class Application {
                 }
             }
         }
+        return config;
     }
 
     private async readConfigs(): Promise<SetMultiMap<string, TopLevelConfig>> {

@@ -1,4 +1,5 @@
 import { Environment, EnvironmentContext, EnvironmentTypes, TopLevelConfig, Feature } from '@wixc3/engine-core';
+import { ServeStaticOptions } from 'serve-static';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -219,10 +220,19 @@ export interface IFeatureDefinition extends IFeatureModule {
     isRoot: boolean;
     toJSON(): unknown;
 }
-
+export interface StaticConfig {
+    route: string;
+    dir: string;
+    options: ServeStaticOptions;
+}
 export interface EngineConfig {
     require?: string[];
     featuresDirectory?: string;
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
+    flow?: {
+        start?: {
+            serveStatic?: StaticConfig[];
+        };
+    };
 }
