@@ -23,7 +23,7 @@ export const NoEnvironments = new Environment('<None>', 'window', 'multi');
 export const globallyProvidingEnvironments = new Set([Universal.env, AllEnvironments.env]);
 export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
     NAME,
-    'context',
+    EnvironmentTypes,
     EnvironmentMode
 > {
     constructor(env: NAME, public environments: ENVS) {
