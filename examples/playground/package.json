@@ -1,6 +1,6 @@
 {
   "name": "@example/playground",
-  "version": "11.0.0",
+  "version": "11.0.3",
   "scripts": {
     "start": "engine start"
   },
