@@ -275,6 +275,10 @@ export class Communication {
         return this.rootEnvName;
     }
 
+    public getEnvironmentHost(envName: string) {
+        return this.environments[envName]?.host;
+    }
+
     private parseHandlerId(handlerId: string, prelude: string) {
         const [api, method] = handlerId.slice(prelude.length).split('@');
         return {
