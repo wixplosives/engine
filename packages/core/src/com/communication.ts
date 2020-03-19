@@ -39,8 +39,8 @@ import { SERVICE_CONFIG } from '../symbols';
 import { SetMultiMap } from '../helpers';
 import { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import { IDTag } from '../types';
-import { BaseHost } from './base-host';
-import { WsClientHost } from './ws-client-host';
+import { BaseHost } from './hosts/base-host';
+import { WsClientHost } from './hosts/ws-client-host';
 import { deferred } from 'promise-assist';
 
 export interface ICommunicationOptions {
