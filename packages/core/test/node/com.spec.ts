@@ -3,6 +3,8 @@ import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
 
 import { SERVICE_CONFIG, multiTenantMethod, BaseHost, Communication } from '../../src';
+import { EventEmitterHost } from '../../src';
+import { EventEmitter } from 'events';
 
 chai.use(sinonChai);
 
@@ -134,5 +136,56 @@ describe('Communication', () => {
 
         // we need to check that no message was received
         expect(handleMessageStub).to.have.not.been.called;
+    });
+});
+
+describe('Event Emitter communication', () => {
+    it('single communication', async () => {
+        const eventEmitter = new EventEmitter();
+        const host = new EventEmitterHost(eventEmitter);
+
+        const main = new Communication(host, 'main');
+
+        main.registerAPI(
+            { id: 'echoService' },
+            {
+                echo(s: string) {
+                    return s;
+                }
+            }
+        );
+
+        const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
+
+        const res = await proxy.echo('Yoo!');
+
+        expect(res).to.be.equal('Yoo!');
+    });
+
+    it('multi communication', async () => {
+        // const eventEmitter1 = new EventEmitter();
+        const host = new BaseHost();
+        const main = new Communication(host, 'main');
+
+        const eventEmitter2 = new EventEmitter();
+        const host2 = new EventEmitterHost(eventEmitter2);
+        const main2 = new Communication(host2, 'main2');
+
+        main.registerEnv('main2', host2);
+        main2.registerAPI(
+            { id: 'echoService' },
+            {
+                echo(s: string) {
+                    return s;
+                }
+            }
+        );
+        main2.registerEnv('main', host);
+
+        const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main2' }), { id: 'echoService' });
+
+        const res = await proxy.echo('Yoo!');
+
+        expect(res).to.be.equal('Yoo!');
     });
 });
