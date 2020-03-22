@@ -61,6 +61,7 @@ export async function runEngineApp({
     );
 
     return {
+        engine,
         async dispose() {
             for (const feature of allFeatures) {
                 await engine.dispose(feature, envName);
