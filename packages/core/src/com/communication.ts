@@ -59,7 +59,6 @@ export class Communication {
     private readonly callbackTimeout = 60_000 * 2; // 2 minutes
     private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
-    private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private pendingEnvs: SetMultiMap<string, UnknownFunction> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
     private handlers: Map<string, UnknownFunction[]> = new Map();
@@ -74,7 +73,8 @@ export class Communication {
         public topology: Record<string, string> = {},
         public resolvedContexts: Record<string, string> = {},
         public isServer = false,
-        options?: ICommunicationOptions
+        options?: ICommunicationOptions,
+        private environments: { [environmentId: string]: EnvironmentRecord } = {}
     ) {
         this.options = { warnOnSlow: false, publicPath: '', ...options };
         this.rootEnvId = id;
