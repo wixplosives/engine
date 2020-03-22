@@ -132,9 +132,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const capturedErrors: Error[] = [];
 
     const resolvedPort =
-        runningApplicationPort ?? process.env.ENGINE_APPLICATION_PORT
-            ? parseInt(process.env.ENGINE_APPLICATION_PORT!)
-            : undefined;
+        runningApplicationPort ??
+        (process.env.ENGINE_APPLICATION_PORT ? parseInt(process.env.ENGINE_APPLICATION_PORT) : undefined);
 
     executableApp = resolvedPort ? new AttachedApp(resolvedPort) : new DetachedApp(cliEntry, process.cwd());
 
