@@ -5,6 +5,7 @@ import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
 import { createDisposables } from './disposables';
 import { IExecutableApplication } from './types';
+import { hookPageConsole } from './hook-page-console';
 
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
@@ -238,6 +239,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
                 // Emitted when the page opens a new tab or window
                 page.on('popup', trackPage);
+                hookPageConsole(page);
             }
 
             const response = await featurePage.goto(featureUrl + search, {
