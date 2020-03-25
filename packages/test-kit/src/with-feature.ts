@@ -240,6 +240,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 // Emitted when the page opens a new tab or window
                 page.on('popup', trackPage);
                 hookPageConsole(page);
+
+                page.setDefaultNavigationTimeout(20_000);
+                page.setDefaultTimeout(10_000);
             }
 
             const response = await featurePage.goto(featureUrl + search, {
