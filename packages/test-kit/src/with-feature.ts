@@ -241,7 +241,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 page.on('popup', trackPage);
                 hookPageConsole(page);
 
-                page.setDefaultNavigationTimeout(20_000);
+                page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
             }
 
