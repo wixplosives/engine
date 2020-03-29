@@ -35,12 +35,15 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
 
     const webEnvs = new Map<string, string[]>();
     const workerEnvs = new Map<string, string[]>();
+    const electronRendererEnvs = new Map<string, string[]>();
     for (const env of enviroments) {
         const { type } = env;
         if (type === 'window' || type === 'iframe') {
             addEnv(webEnvs, env);
         } else if (type === 'worker') {
             addEnv(workerEnvs, env);
+        } else if (type === 'electron-renderer') {
+            addEnv(electronRendererEnvs, env);
         }
     }
     if (webEnvs.size) {
@@ -79,6 +82,18 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             })
         );
     }
+    if (electronRendererEnvs.size) {
+        configurations.push(
+            createWebpackConfig({
+                ...options,
+                baseConfig,
+                enviroments: electronRendererEnvs,
+                target: 'electron-renderer',
+                virtualModules,
+                plugins: [new VirtualModulesPlugin(virtualModules)]
+            })
+        );
+    }
 
     return configurations;
 }
@@ -93,7 +108,7 @@ interface ICreateWebpackConfigOptions {
     outputPath: string;
     enviroments: Map<string, string[]>;
     publicPath?: string;
-    target: 'web' | 'webworker';
+    target: 'web' | 'webworker' | 'electron-renderer';
     virtualModules: Record<string, string>;
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;

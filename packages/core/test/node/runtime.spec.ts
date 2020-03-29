@@ -640,15 +640,10 @@ describe('feature disposal', () => {
     });
 });
 
-
-
-describe('service with remove access environment visibility', ()=>{
-
+describe('service with remove access environment visibility', () => {
     it('local services in the same env uses the provided implementation', () => {
-
         const processing = new Environment('processing', 'worker', 'multi');
         const main = new Environment('main', 'worker', 'single');
-
 
         const echoFeature = new Feature({
             id: 'echoFeature',
@@ -660,10 +655,9 @@ describe('service with remove access environment visibility', ()=>{
             }
         });
 
-        echoFeature.setup(processing, ({echoService}) => {
-
+        echoFeature.setup(processing, ({ echoService }) => {
             // this is the proxy! because we did not defined the service yet.
-            expect(typeof echoService.get === 'function')
+            expect(typeof echoService.get === 'function');
 
             return {
                 echoService: {
@@ -674,13 +668,11 @@ describe('service with remove access environment visibility', ()=>{
             };
         });
 
-
-        echoFeature.setup(main, ({echoService}) => {
+        echoFeature.setup(main, ({ echoService }) => {
             // this is the proxy! because we are in different env.
-            expect(typeof echoService.get === 'function')
+            expect(typeof echoService.get === 'function');
             return null;
         });
-
 
         // const checks = [];
         const testFeature = new Feature({
@@ -689,21 +681,18 @@ describe('service with remove access environment visibility', ()=>{
             api: {}
         });
 
-        testFeature.setup(processing, ({  }, { echoFeature: { echoService } }) => {
-            
+        testFeature.setup(processing, ({}, { echoFeature: { echoService } }) => {
             // this is the real service since we are in the same env!.
-            expect(typeof echoService.echo === 'function')
+            expect(typeof echoService.echo === 'function');
             return null;
         });
 
-        
-        testFeature.setup(main, ({  }, { echoFeature: { echoService } }) => {
-
+        testFeature.setup(main, ({}, { echoFeature: { echoService } }) => {
             // this is the proxy! because we are in different env.
-            expect(typeof echoService.get === 'function')
+            expect(typeof echoService.get === 'function');
             return null;
         });
-        
+
         runEngine({
             entryFeature: testFeature,
             envName: 'processing'
@@ -713,14 +702,8 @@ describe('service with remove access environment visibility', ()=>{
             entryFeature: testFeature,
             envName: 'main'
         });
-
     });
-
-
-})
-
-
-
+});
 
 describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
