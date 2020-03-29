@@ -8,6 +8,7 @@ import { createDisposables } from '@wixc3/engine-test-kit/src';
 
 export async function runServerEnvironment(socketServer: Server, startEnvironmentOptions: StartEnvironmentOptions) {
     const disposeHandlers = createDisposables();
+    const { name } = startEnvironmentOptions;
     const socketServerNamespace = socketServer.of(name);
     const host = new WsServerHost(socketServerNamespace);
     disposeHandlers.add(() => host.dispose());
