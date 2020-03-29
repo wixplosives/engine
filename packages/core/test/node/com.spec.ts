@@ -168,19 +168,10 @@ describe('Event Emitter communication', () => {
         const eventEmitter = new EventEmitter();
         const host2 = new EventEmitterHost(eventEmitter);
 
-        const main = new Communication(host, 'main', undefined, undefined, undefined, undefined, {
-            main2: {
-                id: 'main2',
-                host: host2
-            }
-        });
-        const main2 = new Communication(host2, 'main2', undefined, undefined, undefined, undefined, {
-            main: {
-                id: 'main',
-                host
-            }
-        });
+        const main = new Communication(host, 'main');
+        const main2 = new Communication(host2, 'main2');
 
+        main.registerEnv('main2', host2);
         main2.registerAPI(
             { id: 'echoService' },
             {
@@ -190,6 +181,7 @@ describe('Event Emitter communication', () => {
             }
         );
 
+        main2.registerEnv('main', host);
         const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main2' }), { id: 'echoService' });
 
         const res = await proxy.echo('Yoo!');

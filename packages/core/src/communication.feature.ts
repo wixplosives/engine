@@ -1,7 +1,7 @@
 import { BaseHost } from './com/hosts/base-host';
 import { Communication, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
-import { Target, EnvironmentRecord } from './com/types';
+import { Target } from './com/types';
 import { Config } from './entities/config';
 import { AllEnvironments, Universal } from './entities/env';
 import { Feature } from './entities/feature';
@@ -19,7 +19,6 @@ export interface IComConfig {
     logToConsole?: boolean;
     maxLogMessages: number;
     publicPath?: string;
-    runningEnvironments: Record<string, Target>;
 }
 
 export default new Feature({
@@ -31,8 +30,7 @@ export default new Feature({
                 loggerSeverity: LogLevel.DEBUG,
                 maxLogMessages: 100,
                 topology: {},
-                resolvedContexts: {},
-                runningEnvironments: {}
+                resolvedContexts: {}
             },
             (a: IComConfig, b: Partial<IComConfig>) => ({
                 ...a,
@@ -55,17 +53,7 @@ export default new Feature({
 }).setup(
     Universal,
     ({
-        config: {
-            host,
-            id,
-            topology,
-            maxLogMessages,
-            loggerSeverity,
-            logToConsole,
-            resolvedContexts,
-            publicPath,
-            runningEnvironments
-        },
+        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts, publicPath },
         loggerTransports,
         [RUN_OPTIONS]: runOptions,
         runningEnvironmentName,
@@ -79,14 +67,6 @@ export default new Feature({
         // main frame might not have that configured, so we use 'main' fallback for it.
         const comId = id || (host && host.name) || (typeof self !== 'undefined' && self.name) || runningEnvironmentName;
 
-        const environments = Object.entries(runningEnvironments).reduce((prev, [id, host]) => {
-            prev[id] = {
-                id,
-                host
-            };
-            return prev;
-        }, {} as Record<string, EnvironmentRecord>);
-
         const comOptions: ICommunicationOptions = {
             warnOnSlow: runOptions.has('warnOnSlow'),
             publicPath
@@ -98,8 +78,7 @@ export default new Feature({
             topology,
             resolvedContexts,
             isNode,
-            comOptions,
-            environments
+            comOptions
         );
 
         const loggerService = new LoggerService(
