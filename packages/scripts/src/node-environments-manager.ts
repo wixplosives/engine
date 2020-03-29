@@ -5,8 +5,8 @@ import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
 import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
-import { startRemoteServerEnvironment } from './remote-node-environment';
-import { runServerEnvironment } from './run-node-environment';
+import { startRemoteNodeEnvironment } from './remote-node-environment';
+import { runWSEnvironment } from './ws-environment';
 import {
     IConfigDefinition,
     IEnvironment,
@@ -90,7 +90,7 @@ export class NodeEnvironmentsManager {
             const config: TopLevelConfig = [];
             config.push(COM.use({ config: { topology } }));
             config.push(...(await this.getConfig(originalConfigName)), ...overrideConfigs);
-            const { close, port } = await this.launchServerEnvironment({
+            const { close, port } = await this.launchEnvironment({
                 nodeEnv,
                 featureName,
                 config,
@@ -183,9 +183,9 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    private async launchServerEnvironment({ nodeEnv, featureName, config, options, mode }: ILaunchEnvironmentOptions) {
+    private async launchEnvironment({ nodeEnv, featureName, config, options, mode }: ILaunchEnvironmentOptions) {
         const { features, port, inspect } = this.options;
-        const serverEnvironmentOptions: StartEnvironmentOptions = {
+        const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
             config,
             featureName,
@@ -201,24 +201,24 @@ export class NodeEnvironmentsManager {
                     Launchihg environment ${nodeEnv.name} on remote process.`
                 );
             }
-            return this.runRemoteServerEnvironment(serverEnvironmentOptions);
+            return this.runRemoteNodeEnvironment(nodeEnvironmentOptions);
         }
 
         if (mode === 'new-server') {
-            return await this.runServerEnvironmentInNewServer(port, serverEnvironmentOptions);
+            return await this.runEnvironmentInNewServer(port, nodeEnvironmentOptions);
         }
 
-        const { close } = await runServerEnvironment(this.socketServer, serverEnvironmentOptions);
+        const { close } = await runWSEnvironment(this.socketServer, nodeEnvironmentOptions);
         return {
             close,
             port
         };
     }
 
-    private async runServerEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
+    private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
         const socketServer = io(httpServer);
-        const { close } = await runServerEnvironment(socketServer, serverEnvironmentOptions);
+        const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
         const captureConnections = (socket: Socket): void => {
             openSockets.add(socket);
@@ -266,8 +266,8 @@ export class NodeEnvironmentsManager {
         return config;
     }
 
-    private async runRemoteServerEnvironment(options: StartEnvironmentOptions) {
-        const remoteNodeEnvironment = await startRemoteServerEnvironment(cliEntry, {
+    private async runRemoteNodeEnvironment(options: StartEnvironmentOptions) {
+        const remoteNodeEnvironment = await startRemoteNodeEnvironment(cliEntry, {
             inspect: this.options.inspect,
             port: this.options.port
         });
