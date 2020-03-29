@@ -1,4 +1,4 @@
-import { Environment, EnvironmentContext, EnvironmentTypes, TopLevelConfig, Feature } from '@wixc3/engine-core';
+import { Environment, EnvironmentContext, EnvironmentTypes, TopLevelConfig, Feature, Target } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -9,12 +9,13 @@ export interface IFeatureTarget {
     overrideConfig?: TopLevelConfig;
 }
 
-export interface ServerEnvironmentOptions extends IEnvironment {
+export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
     features: Array<[string, IFeatureDefinition]>;
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
+    host?: Target;
 }
 export interface VirtualEntry {
     source: string;
@@ -150,7 +151,7 @@ export interface IEnvironmentMessage extends ICommunicationMessage {
 
 export interface IEnvironmentStartMessage extends IEnvironmentMessage {
     id: 'start';
-    data: ServerEnvironmentOptions;
+    data: StartEnvironmentOptions;
 }
 
 export interface RemoteProcess {

@@ -163,12 +163,11 @@ describe('Event Emitter communication', () => {
     });
 
     it('multi communication', async () => {
-        // const eventEmitter1 = new EventEmitter();
         const host = new BaseHost();
-        const main = new Communication(host, 'main');
+        const eventEmitter = new EventEmitter();
+        const host2 = new EventEmitterHost(eventEmitter);
 
-        const eventEmitter2 = new EventEmitter();
-        const host2 = new EventEmitterHost(eventEmitter2);
+        const main = new Communication(host, 'main');
         const main2 = new Communication(host2, 'main2');
 
         main.registerEnv('main2', host2);
@@ -180,8 +179,8 @@ describe('Event Emitter communication', () => {
                 }
             }
         );
-        main2.registerEnv('main', host);
 
+        main2.registerEnv('main', host);
         const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main2' }), { id: 'echoService' });
 
         const res = await proxy.echo('Yoo!');

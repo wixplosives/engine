@@ -1,18 +1,21 @@
-import { Server } from 'socket.io';
-
 import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
-import { WsServerHost } from '@wixc3/engine-core-node';
 
-import { IEnvironment, IFeatureDefinition, ServerEnvironmentOptions } from './types';
+import { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
-export async function runNodeEnvironment(
-    socketServer: Server,
-    { featureName, childEnvName, features, config = [], name, type, options }: ServerEnvironmentOptions
-) {
+export async function runNodeEnvironment({
+    featureName,
+    childEnvName,
+    features,
+    config = [],
+    name,
+    type,
+    options,
+    host
+}: StartEnvironmentOptions) {
+    if (!host) {
+        throw new Error('cannot start environment without a root host');
+    }
     const disposeHandlers = new Set<() => unknown>();
-    const socketServerNamespace = socketServer.of(name);
-    const localDevHost = new WsServerHost(socketServerNamespace);
-    disposeHandlers.add(() => localDevHost.dispose());
 
     const runningEngine = await runEngineApp({
         featureName,
@@ -25,7 +28,7 @@ export async function runNodeEnvironment(
             ...config,
             COM.use({
                 config: {
-                    host: localDevHost,
+                    host,
                     id: name
                 }
             })

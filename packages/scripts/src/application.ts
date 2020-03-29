@@ -35,6 +35,7 @@ import {
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 import { createFeaturesEngineRouter, generateConfigName } from './engine-router';
+import { filterEnvironments } from './utils/environments';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -239,7 +240,7 @@ export class Application {
             console.log('Main application URL: ', `${mainUrl}main.html`);
         }
 
-        const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations, nodeEnvironmentManager);
+        const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations);
 
         if (packages.length === 1) {
             // print links to features
@@ -388,8 +389,10 @@ export class Application {
         const { socketServer, close, port } = await this.launchHttpServer({
             httpServerPort: preferredPort
         });
+
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
+
         parentProcess.postMessage({ id: 'initiated' });
     }
 
@@ -554,8 +557,7 @@ export class Application {
 
     private getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
-        configurations: SetMultiMap<string, IConfigDefinition>,
-        nodeEnvironmentManager: NodeEnvironmentsManager
+        configurations: SetMultiMap<string, IConfigDefinition>
     ) {
         const rootFeatures = Array.from(features.values()).filter(({ isRoot }) => isRoot);
         const configNames = Array.from(configurations.keys());
@@ -568,7 +570,7 @@ export class Application {
             const [rootFeatureName] = scopedName.split('/');
             featureEnvDefinitions[scopedName] = {
                 configurations: configNames.filter(name => name.includes(rootFeatureName)),
-                hasServerEnvironments: nodeEnvironmentManager.getNodeEnvironments(scopedName).size > 0,
+                hasServerEnvironments: filterEnvironments(scopedName, features, 'node').size > 0,
                 featureName: scopedName
             };
         }

@@ -20,7 +20,9 @@ export async function startRemoteNodeEnvironment(
     // return new RemoteNodeEnvironment(new WorkerThreadsModule.Worker(entityFilePath, {}));
     // } catch {
     const execArgv = inspect ? ['--inspect'] : [];
-    const childProc = fork(entryFilePath, ['remote', '-p', `${port}`], { execArgv });
+    const childProc = fork(entryFilePath, ['remote', '-p', `${port}`], {
+        execArgv
+    });
     await once(childProc, 'message');
     childProc.on('error', e => console.error(`error in forked process`, e));
 

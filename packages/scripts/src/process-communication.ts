@@ -1,6 +1,6 @@
 import io from 'socket.io';
 
-import { runNodeEnvironment } from './run-node-environment';
+import { runWSEnvironment } from './ws-environment';
 import {
     ICommunicationMessage,
     IEnvironmentPortMessage,
@@ -26,7 +26,7 @@ export function createIPC(
         if (isEnvironmentPortMessage(message)) {
             remoteProcess.postMessage({ id: 'port-request', port } as IEnvironmentPortMessage);
         } else if (isEnvironmentStartMessage(message)) {
-            environments[message.envName] = await runNodeEnvironment(socketServer, message.data);
+            environments[message.envName] = await runWSEnvironment(socketServer, message.data);
             remoteProcess.postMessage({ id: 'start' });
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
             await environments[message.envName].close();

@@ -5,3 +5,6 @@ export * from './node-environments-manager';
 export * from './forked-process';
 export * from './types';
 export * from './utils';
+export * from './node-environment';
+export * from './ws-environment';
+export * from './ipc-environment';

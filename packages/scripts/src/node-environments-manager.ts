@@ -3,10 +3,10 @@ import { delimiter } from 'path';
 
 import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
-import { COM, flattenTree, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
+import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
-import { runNodeEnvironment } from './run-node-environment';
+import { runWSEnvironment } from './ws-environment';
 import {
     IConfigDefinition,
     IEnvironment,
@@ -14,9 +14,10 @@ import {
     IEnvironmentStartMessage,
     IFeatureDefinition,
     isEnvironmentStartMessage,
-    ServerEnvironmentOptions
+    StartEnvironmentOptions
 } from './types';
 import { OverrideConfig } from './config-middleware';
+import { filterEnvironments } from './utils/environments';
 
 type RunningEnvironments = Record<string, number>;
 
@@ -72,20 +73,12 @@ export class NodeEnvironmentsManager {
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
-        const overrideConfigs = [...this.options.overrideConfig];
-        if (configName) {
-            const currentOverrideConfig = overrideConfigsMap.get(configName);
-            if (currentOverrideConfig) {
-                const { overrideConfig, configName: originalConfigName } = currentOverrideConfig;
-                configName = originalConfigName;
-                overrideConfigs.push(...overrideConfig);
-            }
-        }
+        const { overrideConfigs, originalConfigName } = this.getOverrideConfig(overrideConfigsMap, configName);
 
         const topology: Record<string, string> = {};
         const runningEnvironments: Record<string, number> = {};
         const disposables: Array<() => unknown> = [];
-        const { defaultRuntimeOptions } = this.options;
+        const { defaultRuntimeOptions, features } = this.options;
 
         // checking if already has running environments for this feature
         const runningEnv = this.runningEnvironments.get(featureId);
@@ -93,10 +86,10 @@ export class NodeEnvironmentsManager {
             // adding the topology of the already running environments for this feature
             Object.assign(topology, this.getTopologyForRunningEnvironments(runningEnv.runningEnvironments));
         }
-        for (const nodeEnv of this.getNodeEnvironments(featureName)) {
+        for (const nodeEnv of filterEnvironments(featureName, features, 'node')) {
             const config: TopLevelConfig = [];
             config.push(COM.use({ config: { topology } }));
-            config.push(...(await this.getConfig(configName)), ...overrideConfigs);
+            config.push(...(await this.getConfig(originalConfigName)), ...overrideConfigs);
             const { close, port } = await this.launchEnvironment({
                 nodeEnv,
                 featureName,
@@ -129,6 +122,19 @@ export class NodeEnvironmentsManager {
             configName: runtimeConfigName,
             runningEnvironments
         };
+    }
+
+    private getOverrideConfig(overrideConfigsMap: Map<string, OverrideConfig>, configName?: string) {
+        const overrideConfigs = [...this.options.overrideConfig];
+        if (configName) {
+            const currentOverrideConfig = overrideConfigsMap.get(configName);
+            if (currentOverrideConfig) {
+                const { overrideConfig, configName: originalConfigName } = currentOverrideConfig;
+                overrideConfigs.push(...overrideConfig);
+                return { overrideConfigs, originalConfigName };
+            }
+        }
+        return { overrideConfigs, originalConfigName: configName };
     }
 
     private getTopologyForRunningEnvironments(runningEnvironments: RunningEnvironments) {
@@ -179,7 +185,7 @@ export class NodeEnvironmentsManager {
 
     private async launchEnvironment({ nodeEnv, featureName, config, options, mode }: ILaunchEnvironmentOptions) {
         const { features, port, inspect } = this.options;
-        const serverEnvironmentOptions: ServerEnvironmentOptions = {
+        const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
             config,
             featureName,
@@ -195,24 +201,24 @@ export class NodeEnvironmentsManager {
                     Launchihg environment ${nodeEnv.name} on remote process.`
                 );
             }
-            return this.runRemoteNodeEnvironment(serverEnvironmentOptions);
+            return this.runRemoteNodeEnvironment(nodeEnvironmentOptions);
         }
 
         if (mode === 'new-server') {
-            return await this.runInNewServer(port, serverEnvironmentOptions);
+            return await this.runEnvironmentInNewServer(port, nodeEnvironmentOptions);
         }
 
-        const { close } = await runNodeEnvironment(this.socketServer, serverEnvironmentOptions);
+        const { close } = await runWSEnvironment(this.socketServer, nodeEnvironmentOptions);
         return {
             close,
             port
         };
     }
 
-    private async runInNewServer(port: number, serverEnvironmentOptions: ServerEnvironmentOptions) {
+    private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
         const socketServer = io(httpServer);
-        const { close } = await runNodeEnvironment(socketServer, serverEnvironmentOptions);
+        const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
         const captureConnections = (socket: Socket): void => {
             openSockets.add(socket);
@@ -260,7 +266,7 @@ export class NodeEnvironmentsManager {
         return config;
     }
 
-    private async runRemoteNodeEnvironment(options: ServerEnvironmentOptions) {
+    private async runRemoteNodeEnvironment(options: StartEnvironmentOptions) {
         const remoteNodeEnvironment = await startRemoteNodeEnvironment(cliEntry, {
             inspect: this.options.inspect,
             port: this.options.port
@@ -295,32 +301,5 @@ export class NodeEnvironmentsManager {
             },
             port
         };
-    }
-
-    public getNodeEnvironments(featureName: string) {
-        const nodeEnvs = new Set<IEnvironment>();
-
-        const { features } = this.options;
-        const featureDefinition = features.get(featureName);
-        if (!featureDefinition) {
-            const featureNames = Array.from(features.keys());
-            throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
-        }
-        const { resolvedContexts } = featureDefinition;
-
-        const deepDefsForFeature = flattenTree(featureDefinition, f =>
-            f.dependencies.map(fName => features.get(fName)!)
-        );
-        for (const { exportedEnvs } of deepDefsForFeature) {
-            for (const exportedEnv of exportedEnvs) {
-                if (
-                    exportedEnv.type === 'node' &&
-                    (!exportedEnv.childEnvName || resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
-                ) {
-                    nodeEnvs.add(exportedEnv);
-                }
-            }
-        }
-        return nodeEnvs;
     }
 }

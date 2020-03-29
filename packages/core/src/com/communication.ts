@@ -59,7 +59,6 @@ export class Communication {
     private readonly callbackTimeout = 60_000 * 2; // 2 minutes
     private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
-    private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private pendingEnvs: SetMultiMap<string, UnknownFunction> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
     private handlers: Map<string, UnknownFunction[]> = new Map();
@@ -67,6 +66,7 @@ export class Communication {
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<ICommunicationOptions>;
+    private environments: { [environmentId: string]: EnvironmentRecord } = {};
 
     constructor(
         host: Target,
