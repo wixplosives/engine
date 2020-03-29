@@ -66,6 +66,7 @@ export class Communication {
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<ICommunicationOptions>;
+    private environments: { [environmentId: string]: EnvironmentRecord } = {};
 
     constructor(
         host: Target,
@@ -73,8 +74,7 @@ export class Communication {
         public topology: Record<string, string> = {},
         public resolvedContexts: Record<string, string> = {},
         public isServer = false,
-        options?: ICommunicationOptions,
-        private environments: { [environmentId: string]: EnvironmentRecord } = {}
+        options?: ICommunicationOptions
     ) {
         this.options = { warnOnSlow: false, publicPath: '', ...options };
         this.rootEnvId = id;
