@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wix Component Studio</title>
+</head>
+    
+    <script> 
+    const { normalize } = require('path');
+
+    if (__dirname.includes(normalize('/examples/electron-app'))) {
+        require('@ts-tools/node/r');
+        require('tsconfig-paths/register')
+    }
+    require('../src/main-entry');
+
+    </script>
+</html>
