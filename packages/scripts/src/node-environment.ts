@@ -1,44 +1,8 @@
-import { Server } from 'socket.io';
-
 import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
-import { WsServerHost, IPCHost } from '@wixc3/engine-core-node';
 
 import { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
-import { createDisposables } from '@wixc3/engine-test-kit/src';
 
-export async function runServerEnvironment(socketServer: Server, startEnvironmentOptions: StartEnvironmentOptions) {
-    const disposeHandlers = createDisposables();
-    const { name } = startEnvironmentOptions;
-    const socketServerNamespace = socketServer.of(name);
-    const host = new WsServerHost(socketServerNamespace);
-    disposeHandlers.add(() => host.dispose());
-
-    const { close } = await runEnvironment({ ...startEnvironmentOptions, host });
-    disposeHandlers.add(() => close());
-    return {
-        close: disposeHandlers.dispose
-    };
-}
-
-export async function runIPCEnvironment(optinos: StartEnvironmentOptions) {
-    const disposeHandlers = new Set<() => unknown>();
-    const host = new IPCHost(process);
-    disposeHandlers.add(() => host.dispose());
-    const { close } = await runEnvironment({
-        ...optinos,
-        host
-    });
-    disposeHandlers.add(() => close());
-    return {
-        close: async () => {
-            for (const disposeHandler of disposeHandlers) {
-                await disposeHandler();
-            }
-        }
-    };
-}
-
-export async function runEnvironment({
+export async function runNodeEnvironment({
     featureName,
     childEnvName,
     features,

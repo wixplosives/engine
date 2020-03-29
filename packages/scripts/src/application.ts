@@ -23,7 +23,7 @@ import {
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager, LaunchEnvironmentMode } from './node-environments-manager';
-import { createServerIPC } from './process-communication';
+import { createIPC } from './process-communication';
 import {
     EngineConfig,
     IConfigDefinition,
@@ -391,7 +391,7 @@ export class Application {
         });
 
         const parentProcess = new ForkedProcess(process);
-        createServerIPC(parentProcess, socketServer, { port, onClose: close });
+        createIPC(parentProcess, socketServer, { port, onClose: close });
 
         parentProcess.postMessage({ id: 'initiated' });
     }

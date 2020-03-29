@@ -163,7 +163,6 @@ describe('Event Emitter communication', () => {
     });
 
     it('multi communication', async () => {
-        // const eventEmitter1 = new EventEmitter();
         const host = new BaseHost();
         const eventEmitter = new EventEmitter();
         const host2 = new EventEmitterHost(eventEmitter);
