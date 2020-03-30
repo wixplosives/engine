@@ -8,7 +8,7 @@ export interface IStartRemoteNodeEnvironmentOptions {
     inspect?: boolean;
 }
 
-export async function startRemoteServerEnvironment(
+export async function startRemoteNodeEnvironment(
     entryFilePath: string,
     { inspect, port }: IStartRemoteNodeEnvironmentOptions
 ) {
