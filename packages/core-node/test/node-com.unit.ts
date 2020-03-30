@@ -8,7 +8,7 @@ import { waitFor } from 'promise-assist';
 
 import { Communication, WsClientHost, socketServerInitializer, BaseHost } from '@wixc3/engine-core';
 import { WsHost } from '@wixc3/engine-core-node';
-import { createDisposables } from '@wixc3/engine-test-kit';
+import { createDisposables } from '@wixc3/engine-core';
 import { fork } from 'child_process';
 import { join } from 'path';
 import { IPCHost } from '../src/ipc-host';

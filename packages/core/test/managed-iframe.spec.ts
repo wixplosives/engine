@@ -1,4 +1,4 @@
-import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
+import { createDisposables } from '../src';
 
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';

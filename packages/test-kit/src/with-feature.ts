@@ -1,9 +1,8 @@
-import { TopLevelConfig } from '@wixc3/engine-core/src';
+import { createDisposables, TopLevelConfig } from '@wixc3/engine-core';
 import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
-import { createDisposables } from './disposables';
 import { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 
