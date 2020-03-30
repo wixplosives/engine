@@ -258,11 +258,20 @@ describe('Communication', () => {
         );
 
         const spyFn = spy();
+        const spyFn2 = spy();
         await mockApiProxyFromAEnv.listen(spyFn);
+        await mockApiProxyFromAEnv.listen(spyFn2);
         await mockApiProxyFromAEnv.unsubscribe(spyFn);
 
         mockApi.invoke();
+
         expect(spyFn).to.have.callCount(0);
+        expect(spyFn2).to.have.callCount(1);
+        expect(mockApi.getListenersCount()).to.eq(1);
+        await mockApiProxyFromAEnv.unsubscribe(spyFn2);
+
+        mockApi.invoke();
+        expect(spyFn2).to.have.callCount(1);
         expect(mockApi.getListenersCount()).to.eq(0);
     });
 });
