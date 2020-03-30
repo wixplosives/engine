@@ -10,7 +10,8 @@ export const server = new Environment('server', 'node', 'single');
  */
 export interface IServerApi {
     echo(): string;
-    listenToTimer(cb: (times: number) => void): void;
+    subscribe(cb: (times: number) => void): void;
+    invokeListeners(): void;
 }
 
 /**
@@ -24,7 +25,7 @@ export default new Feature({
         echoService: Service.withType<IServerApi>()
             .defineEntity(server)
             .allowRemoteAccess({
-                listenToTimer: {
+                subscribe: {
                     emitOnly: true,
                     listener: true
                 }

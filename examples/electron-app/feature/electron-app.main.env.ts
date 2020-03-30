@@ -1,43 +1,36 @@
-import { BaseHost, Communication, Environment } from '@wixc3/engine-core';
-import { IpcRenderer, ipcRenderer } from 'electron';
-
 import ElectronAppFeature, { main, server } from './electron-app.feature';
 import { fork } from 'child_process';
-import { IPCHost } from '@wixc3/engine-core-node/src';
-
-class ElectronClientHost extends BaseHost {
-    constructor(private host: IpcRenderer) {
-        super();
-        this.host.on('message', (_, data) => {
-            this.emitMessageHandlers(data);
-        });
-    }
-
-    postMessage(message: any) {
-        this.host.send('message', message);
-    }
-}
-
-export const electronInitializer = async (com: Communication, { env }: Environment) => {
-    const host = new ElectronClientHost(ipcRenderer);
-    com.registerEnv(env, host);
-    com.registerMessageHandler(host);
-    return Promise.resolve({
-        id: env
-    });
-};
+import { IPCHost } from '@wixc3/engine-core-node';
 
 ElectronAppFeature.setup(main, ({ run }, { COM: { startEnvironment } }) => {
     run(async () => {
+        /**
+         * starting the server environment.
+         * Since we are on ipc-renderer enviroenmnt, we have all native node api's
+         */
         await startEnvironment(server, com => {
-            const serverProcess = fork('../src/processing-entry.ts', [], {
+            /**
+             * forking the server entry
+             */
+            const serverProcess = fork('../src/server-entry.ts', [], {
                 cwd: __dirname,
                 execArgv: ['-r', '@ts-tools/node/r'],
                 stdio: 'inherit'
             });
 
+            /**
+             * creating a host for communication between IPC and window
+             */
             const serverHost = new IPCHost(serverProcess);
+
+            /**
+             * registering the enviromnemt
+             */
             com.registerEnv('server', serverHost);
+
+            /**
+             * listening to messages coming from serverHost
+             */
             com.registerMessageHandler(serverHost);
 
             return Promise.resolve({
