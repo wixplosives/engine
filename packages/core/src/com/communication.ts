@@ -2,7 +2,6 @@ import {
     CALLBACK_TIMEOUT,
     DUPLICATE_REGISTER,
     MISSING_ENV,
-    MISSING_FORWARD_FOR_MESSAGE,
     REMOTE_CALL_FAILED,
     reportError,
     UNKNOWN_CALLBACK_ID
@@ -223,7 +222,18 @@ export class Communication {
             return;
         }
         if (env.id !== this.rootEnvId) {
-            await this.forwardMessage(message, env);
+            try {
+                await this.forwardMessage(message, env);
+            } catch (ex) {
+                this.sendTo(message.from, {
+                    from: this.rootEnvId,
+                    to: message.from,
+                    origin: this.rootEnvId,
+                    error: ex.message,
+                    type: 'callback',
+                    callbackId: message.callbackId
+                });
+            }
             return;
         }
         switch (message.type) {
@@ -354,8 +364,49 @@ export class Communication {
                 });
             }
         } else {
-            throw new Error(MISSING_FORWARD_FOR_MESSAGE(message));
+            await this.forwardRemoteMessage(message as ListenMessage);
         }
+    }
+
+    private async forwardRemoteMessage(message: ListenMessage): Promise<void> {
+        const callbackId = this.idsCounter.next('c');
+
+        const data = await new Promise((res, rej) => {
+            const handlerId = message.data.handlerId;
+            this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
+                this.sendTo(message.from, {
+                    to: message.from,
+                    from: message.to,
+                    type: 'event',
+                    data: args,
+                    handlerId,
+                    origin: message.from
+                });
+            };
+
+            this.addOrRemoveListener(
+                message.to,
+                message.data.api,
+                message.data.method,
+                callbackId,
+                message.origin,
+                { [message.data.method]: { listener: true } },
+                this.eventDispatchers[handlerId],
+                res,
+                rej
+            );
+        });
+
+        const replyCallback: Message = {
+            to: message.from,
+            type: 'callback',
+            callbackId: message.callbackId,
+            from: message.to,
+            origin: message.origin,
+            data
+        };
+
+        this.sendTo(message.from, replyCallback);
     }
 
     private apiCall(origin: string, api: string, method: string, args: unknown[]): unknown {
@@ -370,6 +421,7 @@ export class Communication {
         //   `unhandledMessage at ${this.rootEnv} message:\n${JSON.stringify(message, null, 2)}`
         // )
     }
+
     private addOrRemoveListener(
         envId: string,
         api: string,
@@ -609,14 +661,14 @@ export class Communication {
     }
 
     private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
-        const id = message.data.handlerId;
-        return (this.eventDispatchers[id] = (...args: SerializableArguments) => {
+        const handlerId = message.data.handlerId;
+        return (this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
             this.sendTo(envId, {
                 to: envId,
                 from: this.rootEnvId,
                 type: 'event',
                 data: args,
-                handlerId: message.data.handlerId,
+                handlerId,
                 origin: this.rootEnvId
             });
         });

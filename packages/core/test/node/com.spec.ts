@@ -1,12 +1,15 @@
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
-import { stub } from 'sinon';
+import chaiAsPromised from 'chai-as-promised';
+import { stub, spy } from 'sinon';
 
 import { SERVICE_CONFIG, multiTenantMethod, BaseHost, Communication } from '../../src';
 import { EventEmitterHost } from '../../src';
 import { EventEmitter } from 'events';
+import { createDisposables } from '@wixc3/engine-test-kit';
 
 chai.use(sinonChai);
+chai.use(chaiAsPromised);
 
 class EchoService {
     echo(s: string) {
@@ -15,6 +18,10 @@ class EchoService {
 }
 
 describe('Communication', () => {
+    const disposables = createDisposables();
+
+    afterEach(disposables.dispose);
+
     it('single communication', async () => {
         const host = new BaseHost();
 
@@ -137,6 +144,120 @@ describe('Communication', () => {
         // we need to check that no message was received
         expect(handleMessageStub).to.have.not.been.called;
     });
+
+    it('forwards listen calls', async () => {
+        const middlemanHost = new BaseHost();
+        const aHost = new BaseHost();
+        const bHost = new BaseHost();
+
+        const mainCom = disposables.add(new Communication(middlemanHost, 'middle'));
+        const bCom = disposables.add(new Communication(bHost, 'bEnv'));
+        const aCom = disposables.add(new Communication(aHost, 'aEnv'));
+
+        aCom.registerEnv('bEnv', middlemanHost);
+        aCom.registerEnv('middle', middlemanHost);
+
+        mainCom.registerEnv('aEnv', aHost);
+        mainCom.registerEnv('bEnv', bHost);
+
+        bCom.registerEnv('middle', middlemanHost);
+        bCom.registerEnv('aEnv', middlemanHost);
+
+        const mockApi = getMockApi();
+        bCom.registerAPI({ id: 'myApi' }, mockApi);
+
+        const mockApiProxyFromAEnv = aCom.apiProxy<typeof mockApi>(
+            { id: 'bEnv' },
+            { id: 'myApi' },
+            {
+                listen: {
+                    listener: true
+                }
+            }
+        );
+
+        const spyFn = spy();
+
+        await mockApiProxyFromAEnv.listen(spyFn);
+
+        const spyFn2 = spy();
+        await mockApiProxyFromAEnv.listen(spyFn2);
+        mockApi.invoke();
+
+        expect(spyFn).to.have.callCount(1);
+        expect(spyFn2).to.have.callCount(1);
+        expect(spyFn.calledWith(1)).to.eq(true);
+    });
+
+    it('forwards listen calls only if listener was configured', async () => {
+        const middlemanHost = new BaseHost();
+        const aHost = new BaseHost();
+        const bHost = new BaseHost();
+
+        const mainCom = disposables.add(new Communication(middlemanHost, 'middle'));
+        const bCom = disposables.add(new Communication(bHost, 'bEnv'));
+        const aCom = disposables.add(new Communication(aHost, 'aEnv'));
+
+        aCom.registerEnv('bEnv', middlemanHost);
+        aCom.registerEnv('middle', middlemanHost);
+
+        mainCom.registerEnv('aEnv', aHost);
+        mainCom.registerEnv('bEnv', bHost);
+
+        bCom.registerEnv('middle', middlemanHost);
+        bCom.registerEnv('aEnv', middlemanHost);
+
+        const mockApi = getMockApi();
+        bCom.registerAPI({ id: 'myApi' }, mockApi);
+        const mockApiProxyFromAEnv = aCom.apiProxy<typeof mockApi>({ id: 'bEnv' }, { id: 'myApi' });
+
+        const spyFn = spy();
+        await expect(mockApiProxyFromAEnv.listen(spyFn)).to.be.eventually.rejectedWith(
+            'cannot add listenr to unconfigured method myApi listen'
+        );
+    });
+
+    it('forwards unlisten calls', async () => {
+        const middlemanHost = new BaseHost();
+        const aHost = new BaseHost();
+        const bHost = new BaseHost();
+
+        const mainCom = disposables.add(new Communication(middlemanHost, 'middle'));
+        const bCom = disposables.add(new Communication(bHost, 'bEnv'));
+        const aCom = disposables.add(new Communication(aHost, 'aEnv'));
+
+        aCom.registerEnv('bEnv', middlemanHost);
+        aCom.registerEnv('middle', middlemanHost);
+
+        mainCom.registerEnv('aEnv', aHost);
+        mainCom.registerEnv('bEnv', bHost);
+
+        bCom.registerEnv('middle', middlemanHost);
+        bCom.registerEnv('aEnv', middlemanHost);
+
+        const mockApi = getMockApi();
+        bCom.registerAPI({ id: 'myApi' }, mockApi);
+
+        const mockApiProxyFromAEnv = aCom.apiProxy<typeof mockApi>(
+            { id: 'bEnv' },
+            { id: 'myApi' },
+            {
+                listen: {
+                    listener: true
+                },
+                unsubscribe: {
+                    removeListener: 'listen'
+                }
+            }
+        );
+
+        const spyFn = spy();
+        await mockApiProxyFromAEnv.listen(spyFn);
+        await mockApiProxyFromAEnv.unsubscribe(spyFn);
+
+        mockApi.invoke();
+        expect(spyFn).to.have.callCount(0);
+    });
 });
 
 describe('Event Emitter communication', () => {
@@ -188,3 +309,21 @@ describe('Event Emitter communication', () => {
         expect(res).to.be.equal('Yoo!');
     });
 });
+
+function getMockApi() {
+    const listeners = new Set<(number: number) => void>();
+    const mockApi = {
+        listen: function(cb: (number: number) => void) {
+            listeners.add(cb);
+        },
+        invoke() {
+            for (const listener of listeners) {
+                listener(1);
+            }
+        },
+        unsubscribe: function(cb: (number: number) => void) {
+            listeners.delete(cb);
+        }
+    };
+    return mockApi;
+}
