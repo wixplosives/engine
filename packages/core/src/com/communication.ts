@@ -2,7 +2,6 @@ import {
     CALLBACK_TIMEOUT,
     DUPLICATE_REGISTER,
     MISSING_ENV,
-    MISSING_FORWARD_FOR_MESSAGE,
     REMOTE_CALL_FAILED,
     reportError,
     UNKNOWN_CALLBACK_ID
@@ -353,9 +352,52 @@ export class Communication {
                     origin: message.to
                 });
             }
+        } else if (message.type === 'unlisten') {
+            await this.forwardUnlisten(message);
         } else {
-            throw new Error(MISSING_FORWARD_FOR_MESSAGE(message));
+            await this.forwardListenMessage(message as ListenMessage);
         }
+    }
+
+    private async forwardListenMessage(message: ListenMessage): Promise<void> {
+        const callbackId = this.idsCounter.next('c');
+
+        const data = await new Promise((res, rej) => {
+            const handlerId = message.data.handlerId;
+            this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
+                this.sendTo(message.from, {
+                    to: message.from,
+                    from: message.to,
+                    type: 'event',
+                    data: args,
+                    handlerId,
+                    origin: message.from
+                });
+            };
+
+            this.addOrRemoveListener(
+                message.to,
+                message.data.api,
+                message.data.method,
+                callbackId,
+                message.origin,
+                { [message.data.method]: { listener: true } },
+                this.eventDispatchers[handlerId],
+                res,
+                rej
+            );
+        });
+
+        const replyCallback: Message = {
+            to: message.from,
+            type: 'callback',
+            callbackId: message.callbackId,
+            from: message.to,
+            origin: message.origin,
+            data
+        };
+
+        this.sendTo(message.from, replyCallback);
     }
 
     private apiCall(origin: string, api: string, method: string, args: unknown[]): unknown {
@@ -370,6 +412,7 @@ export class Communication {
         //   `unhandledMessage at ${this.rootEnv} message:\n${JSON.stringify(message, null, 2)}`
         // )
     }
+
     private addOrRemoveListener(
         envId: string,
         api: string,
@@ -543,6 +586,43 @@ export class Communication {
             }
         }
     }
+
+    private async forwardUnlisten(message: UnListenMessage) {
+        const callbackId = this.idsCounter.next('c');
+        const handlerPrefix = `${message.from}__${message.to}_`;
+        const { method, api } = this.parseHandlerId(message.data.handlerId, handlerPrefix);
+
+        const data = await new Promise((res, rej) =>
+            this.addOrRemoveListener(
+                message.to,
+                api,
+                message.data.method,
+                callbackId,
+                message.origin,
+                {
+                    [message.data.method]: {
+                        removeListener: method
+                    }
+                },
+                this.eventDispatchers[message.data.handlerId],
+                res,
+                rej
+            )
+        );
+
+        delete this.eventDispatchers[message.data.handlerId];
+        if (message.callbackId) {
+            this.sendTo(message.from, {
+                to: message.from,
+                from: message.to,
+                type: 'callback',
+                data,
+                callbackId: message.callbackId,
+                origin: message.to
+            });
+        }
+    }
+
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
             const dispatcher =
@@ -609,14 +689,14 @@ export class Communication {
     }
 
     private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
-        const id = message.data.handlerId;
-        return (this.eventDispatchers[id] = (...args: SerializableArguments) => {
+        const handlerId = message.data.handlerId;
+        return (this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
             this.sendTo(envId, {
                 to: envId,
                 from: this.rootEnvId,
                 type: 'event',
                 data: args,
-                handlerId: message.data.handlerId,
+                handlerId,
                 origin: this.rootEnvId
             });
         });

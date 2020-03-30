@@ -1,7 +1,6 @@
-import { createDisposables } from '@wixc3/engine-test-kit/src/disposables';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { Communication, Environment, declareComEmitter, iframeInitializer } from '../src';
+import { createDisposables, Communication, Environment, declareComEmitter, iframeInitializer } from '../src';
 import {
     ITestServiceData,
     multiTanentServiceId,

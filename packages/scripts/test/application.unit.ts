@@ -1,6 +1,6 @@
 import fs from '@file-services/node';
-import { TopLevelConfig } from '@wixc3/engine-core';
-import { createBrowserProvider, createDisposables } from '@wixc3/engine-test-kit';
+import { TopLevelConfig, createDisposables } from '@wixc3/engine-core';
+import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import { Page } from 'puppeteer';
