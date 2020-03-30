@@ -3,10 +3,16 @@ import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 import { stub, spy } from 'sinon';
 
-import { SERVICE_CONFIG, multiTenantMethod, BaseHost, Communication } from '../../src';
-import { EventEmitterHost } from '../../src';
+import {
+    SERVICE_CONFIG,
+    multiTenantMethod,
+    BaseHost,
+    Communication,
+    EventEmitterHost,
+    createDisposables
+} from '../../src';
+
 import { EventEmitter } from 'events';
-import { createDisposables } from '@wixc3/engine-test-kit';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -257,6 +263,7 @@ describe('Communication', () => {
 
         mockApi.invoke();
         expect(spyFn).to.have.callCount(0);
+        expect(mockApi.getListenersCount()).to.eq(0);
     });
 });
 
@@ -323,6 +330,9 @@ function getMockApi() {
         },
         unsubscribe: function(cb: (number: number) => void) {
             listeners.delete(cb);
+        },
+        getListenersCount: function() {
+            return listeners.size;
         }
     };
     return mockApi;

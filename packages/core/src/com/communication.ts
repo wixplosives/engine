@@ -222,18 +222,7 @@ export class Communication {
             return;
         }
         if (env.id !== this.rootEnvId) {
-            try {
-                await this.forwardMessage(message, env);
-            } catch (ex) {
-                this.sendTo(message.from, {
-                    from: this.rootEnvId,
-                    to: message.from,
-                    origin: this.rootEnvId,
-                    error: ex.message,
-                    type: 'callback',
-                    callbackId: message.callbackId
-                });
-            }
+            await this.forwardMessage(message, env);
             return;
         }
         switch (message.type) {
@@ -363,12 +352,14 @@ export class Communication {
                     origin: message.to
                 });
             }
+        } else if (message.type === 'unlisten') {
+            await this.forwardUnlisten(message);
         } else {
-            await this.forwardRemoteMessage(message as ListenMessage);
+            await this.forwardListenMessage(message as ListenMessage);
         }
     }
 
-    private async forwardRemoteMessage(message: ListenMessage): Promise<void> {
+    private async forwardListenMessage(message: ListenMessage): Promise<void> {
         const callbackId = this.idsCounter.next('c');
 
         const data = await new Promise((res, rej) => {
@@ -595,6 +586,43 @@ export class Communication {
             }
         }
     }
+
+    private async forwardUnlisten(message: UnListenMessage) {
+        const callbackId = this.idsCounter.next('c');
+        const handlerPrefix = `${message.from}__${message.to}_`;
+        const { method, api } = this.parseHandlerId(message.data.handlerId, handlerPrefix);
+
+        const data = await new Promise((res, rej) =>
+            this.addOrRemoveListener(
+                message.to,
+                api,
+                message.data.method,
+                callbackId,
+                message.origin,
+                {
+                    [message.data.method]: {
+                        removeListener: method
+                    }
+                },
+                this.eventDispatchers[message.data.handlerId],
+                res,
+                rej
+            )
+        );
+
+        delete this.eventDispatchers[message.data.handlerId];
+        if (message.callbackId) {
+            this.sendTo(message.from, {
+                to: message.from,
+                from: message.to,
+                type: 'callback',
+                data,
+                callbackId: message.callbackId,
+                origin: message.to
+            });
+        }
+    }
+
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
             const dispatcher =
