@@ -9,7 +9,6 @@ const basePath = resolve('../');
 const packages = resolvePackages(basePath);
 const { features } = loadFeaturesFromPackages(packages, fs);
 
-// const { featureName } = parseCliArguments(process.argv.slice(2));
 export default function runEnv() {
     return runIPCEnvironment({
         featureName: 'electron-app/example',

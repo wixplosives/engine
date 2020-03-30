@@ -27,6 +27,7 @@ class ElectronClientHost extends BaseHost {
 const searchParams = new URLSearchParams(window.location.search.slice(1));
 
 const featureName = searchParams.get('feature');
+
 export default function runEnv() {
     return runNodeEnvironment({
         featureName: featureName as string,

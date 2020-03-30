@@ -1,8 +1,6 @@
 import { BaseHost, Communication, deferred } from '@wixc3/engine-core';
 import { WebContents, IpcMain, app, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
-import { fork } from 'child_process';
-import { IPCHost } from '@wixc3/engine-core-node';
 
 (async () => {
     class ElectronNodeHost extends BaseHost {
@@ -62,18 +60,10 @@ import { IPCHost } from '@wixc3/engine-core-node';
     });
 
     const com = new Communication(new BaseHost(), 'electron-main');
-    const serverProcess = fork('./processing-entry.ts', [], {
-        cwd: __dirname,
-        execArgv: ['-r', '@ts-tools/node/r'],
-        stdio: 'inherit'
-    });
-    const serverHost = new IPCHost(serverProcess);
-    com.registerEnv('server', serverHost);
+
     const mainWindow = await promise;
-    com.registerMessageHandler;
 
     const clientHost = new ElectronNodeHost(ipcMain, mainWindow.webContents);
     com.registerEnv('main', clientHost);
     com.registerMessageHandler(clientHost);
-    com.registerMessageHandler(serverHost);
 })().catch(console.error);

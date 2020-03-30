@@ -7,13 +7,18 @@ ElectronApp.setup(server, () => {
     /**
      * exposing the remoteFiles implementation of thje server side
      */
-    let timer = 0;
-    setInterval(() => ++timer, 500);
+    setTimeout(() => {
+        for (const listener of listeners) {
+            listener(1);
+        }
+    }, 1_000);
+
+    const listeners = new Set<(cb: any) => void>();
     return {
         echoService: {
             echo: () => 'from server',
             listenToTimer: cb => {
-                cb(timer);
+                listeners.add(cb);
             }
         }
     };
