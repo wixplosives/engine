@@ -1,10 +1,10 @@
-import { main } from '../feature/electron-app.feature';
+import { renderer } from '../feature/electron-app.feature';
 import TestFeature from './example.feature';
 
 /**
  * setting up the local main environment file
  */
-TestFeature.setup(main, ({ run }, { electronExample: { echoService } }) => {
+TestFeature.setup(renderer, ({ run }, { electronExample: { echoService } }) => {
     run(async () => {
         /**
          * invoking echo method from server

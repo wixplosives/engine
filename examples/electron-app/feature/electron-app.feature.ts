@@ -3,7 +3,7 @@ import { COM, Environment, Feature, Service } from '@wixc3/engine-core';
 /**
  * defining that this feature uses 2 environments - 'main' (browser) and LiveServer environment with the semantic name 'server'
  */
-export const main = new Environment('main', 'electron-renderer', 'single');
+export const renderer = new Environment('renderer', 'electron-renderer', 'single');
 export const server = new Environment('server', 'node', 'single');
 /**
  * defining the interface of the file system api which the server will implement
