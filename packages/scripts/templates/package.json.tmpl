@@ -6,7 +6,7 @@
     "clean": "rimraf npm",
     "prebuild": "yarn clean",
     "build": "yarn build:npm",
-    "build:npm": "ts-pack build",
+    "build:npm": "wcs-scripts build",
     "start": "engine start",
     "test": "yarn test:unit",
     "test:unit": "mocha-pup \"test/**/*.spec.ts?(x)\"",
