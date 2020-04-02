@@ -1,12 +1,14 @@
-import Module from 'module';
+import { createRequire } from 'module';
 import { join } from 'path';
 
-export function resolveFrom(fromDirectory: string, request: string): string | undefined {
-    const filename = join(fromDirectory, 'mocked.js');
-    const paths = Module._nodeModulePaths(fromDirectory);
-
+export function resolveFrom(
+    directoryPath: string,
+    request: string,
+    options?: { paths?: string[] }
+): string | undefined {
+    const require = createRequire(join(directoryPath, 'requesting-file.js'));
     try {
-        return Module._resolveFilename(request, { id: filename, filename, paths });
+        return require.resolve(request, options);
     } catch {
         return undefined;
     }
