@@ -25,7 +25,8 @@ export interface ICreateWebpackConfigsOptions {
 const engineDashboardEntry = require.resolve('./engine-dashboard');
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const { enviroments, mode = 'development', baseConfig = {}, publicPath = '' } = options;
+    const { enviroments, mode = 'development', baseConfig = {}, publicPath = '', featureName, features } = options;
+    const resolvedContexts = featureName ? features.get(featureName)?.resolvedContexts ?? {} : {};
     if (!baseConfig.output) {
         baseConfig.output = {};
     }
@@ -37,14 +38,15 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const workerEnvs = new Map<string, string[]>();
     const electronRendererEnvs = new Map<string, string[]>();
     for (const env of enviroments) {
-        const { type } = env;
-        if (type === 'window' || type === 'iframe') {
-            addEnv(webEnvs, env);
-        } else if (type === 'worker') {
-            addEnv(workerEnvs, env);
-        } else if (type === 'electron-renderer') {
-            addEnv(electronRendererEnvs, env);
-        }
+        const { type, name, childEnvName } = env;
+        if (!resolvedContexts[name] || resolvedContexts[name] === childEnvName)
+            if (type === 'window' || type === 'iframe') {
+                addEnv(webEnvs, env);
+            } else if (type === 'worker') {
+                addEnv(workerEnvs, env);
+            } else if (type === 'electron-renderer') {
+                addEnv(electronRendererEnvs, env);
+            }
     }
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
