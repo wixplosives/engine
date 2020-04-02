@@ -331,6 +331,8 @@ export class Application {
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true
         } = runOptions;
+        const engineConfig = await this.getEngineConfig();
+
         const disposables = new Set<() => unknown>();
         const configurations = await this.readConfigs();
 
@@ -349,6 +351,12 @@ export class Application {
             configurations
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
+
+        if (engineConfig && engineConfig.serveStatic) {
+            for (const { route, directoryPath } of engineConfig.serveStatic) {
+                app.use(route, express.static(directoryPath));
+            }
+        }
 
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, [
