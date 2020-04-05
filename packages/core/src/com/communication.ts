@@ -66,6 +66,7 @@ export class Communication {
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<ICommunicationOptions>;
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
+    private readyEnvs: string[] = [];
 
     constructor(
         host: Target,
@@ -327,6 +328,9 @@ export class Communication {
 
     public envReady(instanceId: string): Promise<void> {
         const { promise, resolve } = deferred();
+        if (this.readyEnvs.includes(instanceId)) {
+            resolve();
+        }
         this.pendingEnvs.add(instanceId, () => resolve());
         return promise;
     }
@@ -554,6 +558,7 @@ export class Communication {
     }
 
     public handleReady({ from }: ReadyMessage): void {
+        this.readyEnvs.push(from);
         const pendingEnvCb = this.pendingEnvs.get(from);
         if (pendingEnvCb) {
             this.pendingEnvs.deleteKey(from);

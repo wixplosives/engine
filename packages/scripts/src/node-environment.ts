@@ -12,8 +12,15 @@ export async function runNodeEnvironment({
     options,
     host,
 }: StartEnvironmentOptions) {
-    if (!host) {
-        throw new Error('cannot start environment without a root host');
+    if (host) {
+        config.push(
+            COM.use({
+                config: {
+                    host,
+                    id: name,
+                },
+            })
+        );
     }
     const disposeHandlers = new Set<() => unknown>();
 
@@ -24,15 +31,7 @@ export async function runNodeEnvironment({
             childEnvName,
             type,
         }),
-        config: [
-            ...config,
-            COM.use({
-                config: {
-                    host,
-                    id: name,
-                },
-            }),
-        ],
+        config,
         options: new Map(options),
         envName: name,
     });

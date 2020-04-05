@@ -55,14 +55,13 @@ async function useIframe(com: Communication, host: HTMLIFrameElement, instanceId
     }
 
     await changeLocation(win, host, instanceId, src);
+    com.registerEnv(instanceId, win);
+    await com.envReady(instanceId);
 
     const reload = () => com.reconnectHandlers(instanceId);
     host.addEventListener('load', () => {
         com.envReady(instanceId).then(reload).catch(reportError);
     });
-
-    com.registerEnv(instanceId, win);
-    await com.envReady(instanceId);
 }
 
 function changeLocation(win: Window, host: HTMLIFrameElement, rootComId: string, iframeSrc: string) {
