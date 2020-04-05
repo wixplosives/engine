@@ -2,7 +2,7 @@ import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
 
 import { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
-export async function runEnvironment({
+export async function runNodeEnvironment({
     featureName,
     childEnvName,
     features,
