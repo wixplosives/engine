@@ -18,13 +18,11 @@ export default new Feature({
     dependencies: [COM],
     api: {
         config: new Config<{ name: string }>({
-            name: 'test'
+            name: 'test',
         }),
-        echoService: Service.withType<IEchoService>()
-            .defineEntity(processingEnv)
-            .allowRemoteAccess()
+        echoService: Service.withType<IEchoService>().defineEntity(processingEnv).allowRemoteAccess(),
     },
     context: {
-        processingContext: processingEnv.withContext<INameProvider>()
-    }
+        processingContext: processingEnv.withContext<INameProvider>(),
+    },
 });

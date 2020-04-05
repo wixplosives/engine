@@ -35,15 +35,12 @@ export function parseConfigFileName(fileName: string) {
     return {
         fullConfigName,
         configName,
-        envName: envName.slice(1)
+        envName: envName.slice(1),
     };
 }
 
 export function parseEnvFileName(fileName: string) {
-    const [featureName, envName, childEnvName] = fileName
-        .split(ENV_FILENAME_HINT)
-        .shift()!
-        .split('.');
+    const [featureName, envName, childEnvName] = fileName.split(ENV_FILENAME_HINT).shift()!.split('.');
 
     if (!featureName || !envName) {
         throw new Error(`cannot parse env file: ${fileName}`);
@@ -53,10 +50,7 @@ export function parseEnvFileName(fileName: string) {
 }
 
 export function parseContextFileName(fileName: string) {
-    const [featureName, envName, childEnvName] = fileName
-        .split(CONTEXT_FILENAME_HINT)
-        .shift()!
-        .split('.');
+    const [featureName, envName, childEnvName] = fileName.split(CONTEXT_FILENAME_HINT).shift()!.split('.');
 
     if (!featureName || !envName || !childEnvName) {
         throw new Error(`cannot parse context file: ${fileName}`);

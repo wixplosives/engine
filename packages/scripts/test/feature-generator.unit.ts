@@ -6,7 +6,7 @@ import generateFeature, {
     writeDirectoryContentsSync,
     mapDirectory,
     enrichContext,
-    pathToFeaturesDirectory
+    pathToFeaturesDirectory,
 } from '../src/feature-generator';
 import { expectedDirContents, templatesDirContents, FEATURE_NAME } from './mocks/feature-generator.mocks';
 import { templateCompilerProvider } from '../src/utils';
@@ -29,12 +29,12 @@ describe('Feature Generator', () => {
         const dirContents = {
             'text1.txt': 'text1.txt content',
             folder: {
-                'text2.txt': 'text2.txt content'
-            }
+                'text2.txt': 'text2.txt content',
+            },
         };
         const mapper = (name: string, content?: string) => ({
             name: `map-${name}`,
-            content: `map-${content || ''}`
+            content: `map-${content || ''}`,
         });
 
         const mappedDirectory = mapDirectory(dirContents, mapper);
@@ -42,21 +42,21 @@ describe('Feature Generator', () => {
         expect(mappedDirectory).to.eql({
             'map-text1.txt': 'map-text1.txt content',
             'map-folder': {
-                'map-text2.txt': 'map-text2.txt content'
-            }
+                'map-text2.txt': 'map-text2.txt content',
+            },
         });
     });
 
     it('generates a feature directory from templates directory', () => {
         const memoryFs = createMemoryFs({
-            templates: templatesDirContents
+            templates: templatesDirContents,
         });
 
         generateFeature({
             fs: memoryFs,
             featureName: FEATURE_NAME,
             targetPath: '/packages',
-            templatesDirPath: '/templates'
+            templatesDirPath: '/templates',
         });
 
         const featureDir = readDirectoryContentsSync(memoryFs, '/packages');

@@ -6,14 +6,14 @@ export function workerInitializer(): EnvironmentInitializer<{ id: string }> {
         const instanceId = isSingleton ? env : communication.generateEnvInstanceID(env);
 
         const worker = new Worker(`${communication.getPublicPath()}${env}.webworker.js${location.search}`, {
-            name: instanceId
+            name: instanceId,
         });
 
         communication.registerMessageHandler(worker);
         communication.registerEnv(instanceId, worker);
         await communication.envReady(instanceId);
         return {
-            id: instanceId
+            id: instanceId,
         };
     };
 }

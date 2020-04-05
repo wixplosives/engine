@@ -13,7 +13,7 @@ ReloadedIframe.setup(iframeEnv, ({}, {}) => {
             },
             onEcho(handler) {
                 handlers.push(handler);
-            }
-        }
+            },
+        },
     };
 });

@@ -18,7 +18,7 @@ import {
     createLiveConfigsMiddleware,
     createCommunicationMiddleware,
     ensureTopLevelConfigMiddleware,
-    OverrideConfig
+    OverrideConfig,
 } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
@@ -30,7 +30,7 @@ import {
     IEnvironment,
     IFeatureDefinition,
     IFeatureTarget,
-    IFeatureMessagePayload
+    IFeatureMessagePayload,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
@@ -96,7 +96,7 @@ export class Application {
         mode = 'production',
         singleFeature,
         title,
-        publicConfigsRoute
+        publicConfigsRoute,
     }: IRunOptions = {}): Promise<webpack.Stats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -115,7 +115,7 @@ export class Application {
             title,
             configurations,
             staticBuild: true,
-            publicConfigsRoute
+            publicConfigsRoute,
         });
 
         const stats = await new Promise<webpack.Stats>((resolve, reject) =>
@@ -133,7 +133,7 @@ export class Application {
         await this.writeManifest({
             features,
             featureName,
-            configName
+            configName,
         });
 
         return stats;
@@ -153,7 +153,7 @@ export class Application {
         title,
         publicConfigsRoute = 'configs/',
         nodeEnvironmentsMode,
-        autoLaunch = true
+        autoLaunch = true,
     }: IRunOptions = {}) {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -161,7 +161,7 @@ export class Application {
         }
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await this.launchHttpServer({
-            httpServerPort
+            httpServerPort,
         });
         disposables.add(() => close());
 
@@ -178,7 +178,7 @@ export class Application {
             title,
             configurations,
             staticBuild: false,
-            publicConfigsRoute
+            publicConfigsRoute,
         });
 
         if (singleRun) {
@@ -191,7 +191,7 @@ export class Application {
                                 cb();
                             }
                         },
-                        invalidate: () => undefined
+                        invalidate: () => undefined,
                     };
                 };
             }
@@ -202,7 +202,7 @@ export class Application {
             defaultRuntimeOptions,
             port,
             inspect,
-            overrideConfig
+            overrideConfig,
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
@@ -217,19 +217,19 @@ export class Application {
             ensureTopLevelConfigMiddleware,
             createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
             createLiveConfigsMiddleware(configurations, this.basePath, overrideConfigsMap),
-            createConfigMiddleware(overrideConfig)
+            createConfigMiddleware(overrideConfig),
         ]);
 
         for (const childCompiler of compiler.compilers) {
             const devMiddleware = webpackDevMiddleware(childCompiler, {
                 publicPath: '/',
-                logLevel: 'silent'
+                logLevel: 'silent',
             });
-            disposables.add(() => new Promise(res => devMiddleware.close(res)));
+            disposables.add(() => new Promise((res) => devMiddleware.close(res)));
             app.use(devMiddleware);
         }
 
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
             compiler.hooks.done.tap('engine-scripts init', resolve);
         });
 
@@ -259,8 +259,8 @@ export class Application {
                 result: 'success',
                 data: {
                     features: featureEnvDefinitions,
-                    featuresWithRunningNodeEnvs: nodeEnvironmentManager.getFeaturesWithRunningEnvironments()
-                }
+                    featuresWithRunningNodeEnvs: nodeEnvironmentManager.getFeaturesWithRunningEnvironments(),
+                },
             });
         });
 
@@ -269,7 +269,7 @@ export class Application {
                 featureName,
                 configName,
                 overrideConfigsMap,
-                mode: nodeEnvironmentsMode
+                mode: nodeEnvironmentsMode,
             });
         }
 
@@ -286,7 +286,7 @@ export class Application {
                 featureName,
                 runtimeOptions = {},
                 configName,
-                overrideConfig
+                overrideConfig,
             }: IRunFeatureOptions) => {
                 if (overrideConfig) {
                     const generatedConfigName = generateConfigName(configName);
@@ -298,7 +298,7 @@ export class Application {
                     configName,
                     overrideConfigsMap,
                     runtimeOptions,
-                    mode: nodeEnvironmentsMode
+                    mode: nodeEnvironmentsMode,
                 });
             },
             closeFeature: ({ featureName, configName }: IFeatureMessagePayload) => {
@@ -307,10 +307,10 @@ export class Application {
                 }
                 return nodeEnvironmentManager.closeEnvironment({
                     featureName,
-                    configName
+                    configName,
                 });
             },
-            nodeEnvironmentManager
+            nodeEnvironmentManager,
         };
     }
 
@@ -329,7 +329,7 @@ export class Application {
             publicPath,
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
-            autoLaunch = true
+            autoLaunch = true,
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
@@ -337,7 +337,7 @@ export class Application {
         const configurations = await this.readConfigs();
 
         const { port, close, socketServer, app } = await this.launchHttpServer({
-            httpServerPort
+            httpServerPort,
         });
         const config: TopLevelConfig = [...userConfig];
         disposables.add(() => close());
@@ -348,7 +348,7 @@ export class Application {
             defaultRuntimeOptions,
             inspect,
             overrideConfig: config,
-            configurations
+            configurations,
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
@@ -362,14 +362,14 @@ export class Application {
             app.use(`/${publicConfigsRoute}`, [
                 ensureTopLevelConfigMiddleware,
                 createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
-                createConfigMiddleware(config)
+                createConfigMiddleware(config),
             ]);
         }
         if (autoLaunch && featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
-                mode: nodeEnvironmentsMode
+                mode: nodeEnvironmentsMode,
             });
         }
 
@@ -382,7 +382,7 @@ export class Application {
                     await dispose();
                 }
                 disposables.clear();
-            }
+            },
         };
     }
 
@@ -395,7 +395,7 @@ export class Application {
             await this.importModules(engineConfig.require);
         }
         const { socketServer, close, port } = await this.launchHttpServer({
-            httpServerPort: preferredPort
+            httpServerPort: preferredPort,
         });
 
         const parentProcess = new ForkedProcess(process);
@@ -423,7 +423,7 @@ export class Application {
             featureName,
             targetPath,
             templatesDirPath,
-            featureDirNameTemplate
+            featureDirNameTemplate,
         });
     }
 
@@ -459,7 +459,7 @@ export class Application {
                     const featureName = entity.name;
                     const featureConfigsDirectory = join(configsDirectoryPath, featureName);
                     const featureConfigsEntities = await fs.promises.readdir(featureConfigsDirectory, {
-                        withFileTypes: true
+                        withFileTypes: true,
                     });
                     for (const possibleConfigFile of featureConfigsEntities) {
                         const fileExtention = extname(possibleConfigFile.name);
@@ -484,7 +484,7 @@ export class Application {
     private async writeManifest({
         features,
         featureName,
-        configName
+        configName,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -493,7 +493,7 @@ export class Application {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()),
             defaultConfigName: configName,
-            defaultFeatureName: featureName
+            defaultFeatureName: featureName,
         };
 
         await fs.promises.ensureDirectory(this.outputPath);
@@ -509,7 +509,7 @@ export class Application {
         title,
         configurations,
         staticBuild,
-        publicConfigsRoute
+        publicConfigsRoute,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -546,7 +546,7 @@ export class Application {
             title,
             configurations,
             staticBuild,
-            publicConfigsRoute
+            publicConfigsRoute,
         });
 
         const compiler = webpack(webpackConfigs);
@@ -577,9 +577,9 @@ export class Application {
         for (const { scopedName } of rootFeatures) {
             const [rootFeatureName] = scopedName.split('/');
             featureEnvDefinitions[scopedName] = {
-                configurations: configNames.filter(name => name.includes(rootFeatureName)),
+                configurations: configNames.filter((name) => name.includes(rootFeatureName)),
                 hasServerEnvironments: filterEnvironments(scopedName, features, 'node').size > 0,
-                featureName: scopedName
+                featureName: scopedName,
             };
         }
 
@@ -591,7 +591,7 @@ export class Application {
         app.use(cors());
         const openSockets = new Set<Socket>();
         const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
-        httpServer.on('connection', socket => {
+        httpServer.on('connection', (socket) => {
             openSockets.add(socket);
             socket.once('close', () => openSockets.delete(socket));
         });
@@ -604,7 +604,7 @@ export class Application {
 
         return {
             close: async () => {
-                await new Promise(res => {
+                await new Promise((res) => {
                     for (const connection of openSockets) {
                         connection.destroy();
                     }
@@ -614,7 +614,7 @@ export class Application {
             },
             port,
             app,
-            socketServer
+            socketServer,
         };
     }
 

@@ -6,6 +6,6 @@ const com = new Communication(ipcHost, 'process');
 com.registerAPI(
     { id: 'myApi' },
     {
-        echo: () => 'yo'
+        echo: () => 'yo',
     }
 );

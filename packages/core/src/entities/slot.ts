@@ -37,7 +37,7 @@ export class Slot<Type extends Registry<any>, ProvidedFrom extends EnvVisibility
         return {
             defineEntity<E_ENV extends EnvVisibility>(env: E_ENV) {
                 return new Slot<Registry<T>, E_ENV>(env, env);
-            }
+            },
         };
     }
     public [CREATE_RUNTIME]() {

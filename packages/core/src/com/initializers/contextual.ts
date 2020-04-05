@@ -17,7 +17,7 @@ export function initializeContextualEnv<ENVS extends Environment[]>(
     return (communication: Communication) => {
         const runtimeEnvironmentName = communication.resolvedContexts[env];
 
-        const activeEnvironment = environments.find(contextualEnv => contextualEnv.env === runtimeEnvironmentName);
+        const activeEnvironment = environments.find((contextualEnv) => contextualEnv.env === runtimeEnvironmentName);
 
         if (!activeEnvironment) {
             throw new Error(`${runtimeEnvironmentName} cannot be found in definition of ${env} environment`);

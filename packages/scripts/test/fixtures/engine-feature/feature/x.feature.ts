@@ -6,7 +6,7 @@ export default new Feature({
     id: 'XTestFeature',
     api: {
         mySlot: Slot.withType<{}>().defineEntity('main'),
-        config: new Config<{ value?: number }>({})
+        config: new Config<{ value?: number }>({}),
     },
-    dependencies: []
+    dependencies: [],
 });

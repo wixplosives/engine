@@ -14,6 +14,6 @@ CodeEditor.setup(PROCESSING, ({ run, remoteCodeService, errorService }, {}) => {
     });
 
     return {
-        codeService
+        codeService,
     };
 });

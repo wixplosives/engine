@@ -12,14 +12,14 @@ ElectronApp.setup(server, () => {
     return {
         echoService: {
             echo: () => 'from server',
-            subscribe: cb => {
+            subscribe: (cb) => {
                 listeners.add(cb);
             },
             invokeListeners() {
                 for (const listener of listeners) {
                     listener(1);
                 }
-            }
-        }
+            },
+        },
     };
 });

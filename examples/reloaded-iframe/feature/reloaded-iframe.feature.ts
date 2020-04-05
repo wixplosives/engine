@@ -11,8 +11,6 @@ export default new Feature({
     id: 'iframeReload',
     dependencies: [COM],
     api: {
-        echoService: Service.withType<IEchoService>()
-            .defineEntity(iframeEnv)
-            .allowRemoteAccess()
-    }
+        echoService: Service.withType<IEchoService>().defineEntity(iframeEnv).allowRemoteAccess(),
+    },
 });

@@ -22,12 +22,12 @@ export default [
 ];
 `;
 
-describe('Application', function() {
+describe('Application', function () {
     this.timeout(15_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
-    afterEach(function() {
+    afterEach(function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
@@ -77,11 +77,11 @@ describe('Application', function() {
 
             const { myConfig, mySlot } = await page.evaluate(() => ({
                 mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
-                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!)
+                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!),
             }));
 
             expect(myConfig).to.eql({
-                tags: []
+                tags: [],
             });
             expect(mySlot).to.eql(['testing 1 2 3']);
         });
@@ -97,11 +97,11 @@ describe('Application', function() {
 
             const { myConfig, mySlot } = await page.evaluate(() => ({
                 mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
-                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!)
+                myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!),
             }));
 
             expect(myConfig).to.eql({
-                tags: ['variant', '2']
+                tags: ['variant', '2'],
             });
             expect(mySlot).to.eql(['testing 1 2 3']);
         });
@@ -109,7 +109,7 @@ describe('Application', function() {
         it(`runs node environments`, async () => {
             const app = new Application({ basePath: nodeFeatureFixturePath });
             const runningApp = await app.start({
-                featureName: 'engine-node/x'
+                featureName: 'engine-node/x',
             });
             disposables.add(() => runningApp.close());
 
@@ -123,7 +123,7 @@ describe('Application', function() {
         it('launches a feature with contextual environment with worker context', async () => {
             const app = new Application({ basePath: contextualFeatureFixturePath });
             const runningApp = await app.start({
-                featureName: 'contextual/some-feature'
+                featureName: 'contextual/some-feature',
             });
             disposables.add(() => runningApp.close());
 
@@ -137,7 +137,7 @@ describe('Application', function() {
         it('launches a feature with contextual environment with server context', async () => {
             const app = new Application({ basePath: contextualFeatureFixturePath });
             const runningApp = await app.start({
-                featureName: 'contextual/server-env'
+                featureName: 'contextual/server-env',
             });
             disposables.add(() => runningApp.close());
 
@@ -160,7 +160,7 @@ describe('Application', function() {
             const app = new Application({ basePath: useConfigsFeaturePath });
             const runningApp = await app.start({
                 featureName: 'configs/use-configs',
-                configName: 'configs/example'
+                configName: 'configs/example',
             });
             disposables.add(() => runningApp.close());
             disposables.add(() => fs.promises.unlink(configFilePathInRepo));
@@ -179,7 +179,7 @@ describe('Application', function() {
                 async () => {
                     // reload the page (to see if the config file was changed, without re-running the application)
                     await page.reload({
-                        waitUntil: 'networkidle2'
+                        waitUntil: 'networkidle2',
                     });
                     expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
                 },
@@ -187,13 +187,13 @@ describe('Application', function() {
             );
         });
 
-        it('runs node environments with inspect mode', async function() {
+        it('runs node environments with inspect mode', async function () {
             // these tests takes longer in CI
             this.timeout(25_000);
             const app = new Application({ basePath: nodeFeatureFixturePath });
             const runningApp = await app.start({
                 featureName: 'engine-node/x',
-                inspect: true
+                inspect: true,
             });
             disposables.add(() => runningApp.close());
 
@@ -206,12 +206,12 @@ describe('Application', function() {
 
         it('runs http server on different port', async () => {
             const app = new Application({
-                basePath: engineFeatureFixturePath
+                basePath: engineFeatureFixturePath,
             });
 
             const { port, close } = await app.start({
                 featureName: 'engine-single/x',
-                port: 8080
+                port: 8080,
             });
             disposables.add(() => close());
             expect(port, 'application is not created on port 8080').to.eq(8080);
@@ -220,12 +220,12 @@ describe('Application', function() {
         it('allows providing top level config', async () => {
             const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
-                basePath: engineFeatureFixturePath
+                basePath: engineFeatureFixturePath,
             });
 
             const { close, port } = await app.start({
                 featureName: 'engine-single/x',
-                overrideConfig
+                overrideConfig,
             });
             disposables.add(() => close());
 
@@ -245,13 +245,13 @@ describe('Application', function() {
         it('allows providing top level config with default config', async () => {
             const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
-                basePath: engineFeatureFixturePath
+                basePath: engineFeatureFixturePath,
             });
 
             const { close, port } = await app.start({
                 configName: 'engine-single/x',
                 featureName: 'engine-single/x',
-                overrideConfig
+                overrideConfig,
             });
             disposables.add(() => close());
 
@@ -270,7 +270,7 @@ describe('Application', function() {
 
         it('runs 2 node features simultaniously', async () => {
             const app = new Application({
-                basePath: nodeFeatureFixturePath
+                basePath: nodeFeatureFixturePath,
             });
 
             const { runFeature, closeFeature, port, close } = await app.start();
@@ -281,10 +281,10 @@ describe('Application', function() {
                     'XTestFeature',
                     {
                         config: {
-                            value: '1'
-                        }
-                    }
-                ]
+                            value: '1',
+                        },
+                    },
+                ],
             ];
 
             const configTwo: TopLevelConfig = [
@@ -292,19 +292,19 @@ describe('Application', function() {
                     'XTestFeature',
                     {
                         config: {
-                            value: '2'
-                        }
-                    }
-                ]
+                            value: '2',
+                        },
+                    },
+                ],
             ];
 
             const { configName: firstFeatureConfigName } = await runFeature({
                 featureName: 'engine-node/x',
-                overrideConfig: configOne
+                overrideConfig: configOne,
             });
             const { configName: secondFeatureConfigName } = await runFeature({
                 featureName: 'engine-node/x',
-                overrideConfig: configTwo
+                overrideConfig: configTwo,
             });
             expect(firstFeatureConfigName).to.not.equal(undefined);
             expect(secondFeatureConfigName).to.not.equal(undefined);
@@ -326,13 +326,13 @@ describe('Application', function() {
         });
     });
 
-    describe('run', function() {
+    describe('run', function () {
         // bundling may take a few seconds on ci machines
         this.timeout(15_000);
         it(`launches a built application with web environment`, async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build({
-                featureName: 'engine-single/x'
+                featureName: 'engine-single/x',
             });
             disposables.add(() => app.clean());
 
@@ -350,12 +350,12 @@ describe('Application', function() {
             const app = new Application({ basePath: nodeFeatureFixturePath });
             await app.build({
                 featureName: 'engine-node/x',
-                publicConfigsRoute: 'configs'
+                publicConfigsRoute: 'configs',
             });
             disposables.add(() => app.clean());
 
             const { close, port } = await app.run({
-                publicConfigsRoute: 'configs'
+                publicConfigsRoute: 'configs',
             });
             disposables.add(() => close());
 
@@ -369,11 +369,11 @@ describe('Application', function() {
         it(`launches a built application with a contextual environment`, async () => {
             const app = new Application({ basePath: contextualFeatureFixturePath });
             await app.build({
-                publicConfigsRoute: 'configs'
+                publicConfigsRoute: 'configs',
             });
             const { close: webWorkerServer, port: webWorkerAppPort } = await app.run({
                 featureName: 'contextual/some-feature',
-                publicConfigsRoute: 'configs'
+                publicConfigsRoute: 'configs',
             });
             disposables.add(() => app.clean());
             disposables.add(() => webWorkerServer());
@@ -388,7 +388,7 @@ describe('Application', function() {
 
             const { close: closeServer, port: serverAppPort } = await app.run({
                 featureName: 'contextual/server-env',
-                publicConfigsRoute: 'configs'
+                publicConfigsRoute: 'configs',
             });
             disposables.add(() => closeServer());
 
@@ -404,14 +404,14 @@ describe('Application', function() {
         it('allows providing top level config', async () => {
             const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
-                basePath: engineFeatureFixturePath
+                basePath: engineFeatureFixturePath,
             });
             await app.build();
             disposables.add(() => app.clean());
 
             const { close, port } = await app.run({
                 featureName: 'engine-single/x',
-                overrideConfig
+                overrideConfig,
             });
             disposables.add(() => close());
 
@@ -431,7 +431,7 @@ describe('Application', function() {
         it('allows providing top level config and config name', async () => {
             const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
-                basePath: engineFeatureFixturePath
+                basePath: engineFeatureFixturePath,
             });
             await app.build();
             disposables.add(() => app.clean());
@@ -439,7 +439,7 @@ describe('Application', function() {
             const { close, port } = await app.run({
                 configName: 'engine-single/x',
                 featureName: 'engine-single/x',
-                overrideConfig
+                overrideConfig,
             });
             disposables.add(() => close());
 
@@ -459,7 +459,7 @@ describe('Application', function() {
 
     it('allows adding routes to the engine router', async () => {
         const app = new Application({
-            basePath: engineFeatureFixturePath
+            basePath: engineFeatureFixturePath,
         });
 
         const { close, port, router } = await app.start();

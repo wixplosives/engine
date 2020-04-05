@@ -6,6 +6,6 @@ export default new Feature({
     dependencies: [_3rdParty],
     api: {
         mySlot: Slot.withType<string>().defineEntity(MAIN),
-        myConfig: new Config<{ tags: string[] }>({ tags: [] })
-    }
+        myConfig: new Config<{ tags: string[] }>({ tags: [] }),
+    },
 });

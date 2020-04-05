@@ -3,7 +3,7 @@ export class CodeService {
     private handlers: Array<() => void> = [];
     public setContent(c: string) {
         this.content = c;
-        this.handlers.forEach(fn => fn());
+        this.handlers.forEach((fn) => fn());
     }
     public getContent() {
         return this.content;

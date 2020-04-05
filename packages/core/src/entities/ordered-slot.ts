@@ -97,7 +97,7 @@ export class OrderedSlot<Type extends OrderedRegistry<any>, ProvidedFrom extends
         return {
             defineEntity<E_ENV extends EnvVisibility>(env: E_ENV) {
                 return new OrderedSlot<OrderedRegistry<T>, E_ENV>(env, env);
-            }
+            },
         };
     }
     public [CREATE_RUNTIME]() {

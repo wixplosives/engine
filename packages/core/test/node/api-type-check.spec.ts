@@ -13,10 +13,8 @@ const logger = new Feature({
     api: {
         config: Config.withType<{ time: number }>().defineEntity({ time: 1 }),
         transport: Slot.withType<{ transportName: string }>().defineEntity(MAIN),
-        sink: Service.withType<{ log: (message: string) => void }>()
-            .defineEntity(MAIN)
-            .allowRemoteAccess()
-    }
+        sink: Service.withType<{ log: (message: string) => void }>().defineEntity(MAIN).allowRemoteAccess(),
+    },
 });
 typeCheck(
     (
@@ -56,8 +54,8 @@ const gui = new Feature({
     dependencies: [logger],
     api: {
         panelSlot: Slot.withType<{ panelID: string }>().defineEntity([MAIN]),
-        guiService: Service.withType<{ someMethod(): void }>().defineEntity([MAIN, MAIN_1])
-    }
+        guiService: Service.withType<{ someMethod(): void }>().defineEntity([MAIN, MAIN_1]),
+    },
 });
 
 typeCheck(
@@ -91,8 +89,8 @@ const addPanel = new Feature({
         componentDescription: Slot.withType<ComponentDescription>().defineEntity(MAIN),
         service1: Service.withType<DataService>().defineEntity(MAIN),
         service2: Service.withType<DataService>().defineEntity(MAIN_1),
-        service3: Service.withType<DataService>().defineEntity(Universal)
-    }
+        service3: Service.withType<DataService>().defineEntity(Universal),
+    },
 });
 typeCheck(
     (
@@ -131,14 +129,13 @@ export function dontRun() {
         const dataPromise = fetch('./some-data');
 
         const service1 = {
-            setData: (data: unknown) => data
+            setData: (data: unknown) => data,
         };
 
         feature.run(async () => {
             service1.setData(await dataPromise);
         });
 
-        
         typeCheck(
             (
                 _featureTest: ExpectTrue<
@@ -171,7 +168,7 @@ export function dontRun() {
         );
 
         return {
-            service1
+            service1,
         };
     });
 

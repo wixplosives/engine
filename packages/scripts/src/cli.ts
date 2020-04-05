@@ -21,7 +21,7 @@ const preRequireParams: [string, string, typeof collectMultiple, string[]] = [
     '-r, --require <path>',
     'path to require before anything else',
     collectMultiple,
-    []
+    [],
 ];
 const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '/';
 
@@ -40,7 +40,7 @@ program
     .option(
         '--autoLaunch <autoLaunch>',
         'should auto launch node environments if feature name is provided',
-        param => param === 'true',
+        (param) => param === 'true',
         true
     )
     .option('--title <title>', 'application title to display in browser')
@@ -59,7 +59,7 @@ program
             mode,
             title,
             publicConfigsRoute,
-            autoLaunch
+            autoLaunch,
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -77,7 +77,7 @@ program
                 mode,
                 title,
                 publicConfigsRoute,
-                autoLaunch
+                autoLaunch,
             });
 
             if (process.send) {
@@ -132,7 +132,7 @@ program
             mode,
             singleFeature,
             title,
-            publicConfigsRoute
+            publicConfigsRoute,
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -146,7 +146,7 @@ program
                 mode,
                 singleFeature,
                 title,
-                publicConfigsRoute
+                publicConfigsRoute,
             });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
@@ -165,7 +165,7 @@ program
     .option(
         '--autoLaunch <autoLaunch>',
         'should auto launch node environments if feature name is provided',
-        param => param === 'true',
+        (param) => param === 'true',
         true
     )
     .allowUnknownOption(true)
@@ -177,7 +177,7 @@ program
             port: preferredPort,
             require: pathsToRequire,
             publicPath,
-            autoLaunch
+            autoLaunch,
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -190,7 +190,7 @@ program
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 port: preferredPort ? parseInt(preferredPort, 10) : undefined,
                 publicPath,
-                autoLaunch
+                autoLaunch,
             });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);

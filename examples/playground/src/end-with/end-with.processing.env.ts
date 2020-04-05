@@ -8,7 +8,7 @@ EndWith.setup(PROCESSING, ({}, { preview }) => {
         },
         matcher(_content: string) {
             return _content.includes('!');
-        }
+        },
     });
     return null;
 });

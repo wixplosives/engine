@@ -9,6 +9,6 @@ export interface IDefaultConfig {
 export default new Feature({
     id: 'withConfigs',
     api: {
-        config: new Config<IDefaultConfig>({ echoText: 'hello' })
-    }
+        config: new Config<IDefaultConfig>({ echoText: 'hello' }),
+    },
 });

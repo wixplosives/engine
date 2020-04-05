@@ -1,6 +1,6 @@
 import { loader as webpackLoader } from 'webpack';
 
-export default function(this: webpackLoader.LoaderContext) {
+export default function (this: webpackLoader.LoaderContext) {
     const params = new URLSearchParams(this.query.slice(1));
 
     const fileName = params.get('scopedName');
@@ -31,7 +31,7 @@ function walkChildModules(nodeJsModule: NodeModule, visitor: (module: NodeModule
     registryCache.add(nodeJsModule);
     visitor(nodeJsModule);
     if (nodeJsModule && nodeJsModule.children) {
-        nodeJsModule.children.forEach(cm => {
+        nodeJsModule.children.forEach((cm) => {
             walkChildModules(cm, visitor, registryCache);
         });
     }

@@ -8,7 +8,7 @@ sampleFeature.setup(mainEnv, ({ run, serverService }, { COM: { startEnvironment 
             contextualEnv,
             initializeContextualEnv(contextualEnv, {
                 server: socketServerInitializer(),
-                worker: workerInitializer()
+                worker: workerInitializer(),
             })
         );
 

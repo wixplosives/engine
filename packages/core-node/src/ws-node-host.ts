@@ -4,7 +4,7 @@ import io from 'socket.io';
 export class WsHost extends BaseHost {
     constructor(private socket: io.Socket) {
         super();
-        this.socket.on('message', message => {
+        this.socket.on('message', (message) => {
             this.emitMessageHandlers(message);
         });
     }
@@ -53,7 +53,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
     }
 
     private onConnection = (socket: io.Socket): void => {
-        const onMessage: (...args: any[]) => void = message => {
+        const onMessage: (...args: any[]) => void = (message) => {
             // this mapping should not be here because of forwarding of messages
             // maybe change message forwarding to have 'forward destination' and correct 'from'
             // also maybe we can put the init of the map on 'connection' event

@@ -14,7 +14,7 @@ export function evaluateModule(filePaths: string | string[]): Module {
     if (resolutionPaths) {
         entryModule.paths = resolutionPaths;
     }
-    const source = filePaths.map(filePath => `require(${JSON.stringify(filePath)});`).join('\n');
+    const source = filePaths.map((filePath) => `require(${JSON.stringify(filePath)});`).join('\n');
     const evalModule = new Function('module', 'exports', 'require', source);
     evalModule(entryModule, entryModule.exports, entryModule.require.bind(entryModule));
     return entryModule;

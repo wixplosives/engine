@@ -25,19 +25,19 @@ export function createFeaturesEngineRouter(
                 configName: providedConfigName,
                 featureName,
                 runtimeOptions: options,
-                overrideConfigsMap
+                overrideConfigsMap,
             });
             res.json({
                 id: 'feature-initialized',
                 payload: {
                     configName: providedConfigName,
-                    featureName
-                }
+                    featureName,
+                },
             } as IProcessMessage<IFeatureMessagePayload>);
         } catch (error) {
             res.status(404).json({
                 id: 'error',
-                error: error && error.message
+                error: error && error.message,
             });
         }
     });
@@ -51,13 +51,13 @@ export function createFeaturesEngineRouter(
                 id: 'feature-closed',
                 payload: {
                     featureName,
-                    configName
-                }
+                    configName,
+                },
             } as IProcessMessage<IFeatureMessagePayload>);
         } catch (error) {
             res.status(404).json({
                 result: 'error',
-                error: error && error.message
+                error: error && error.message,
             });
         }
     });
@@ -67,12 +67,12 @@ export function createFeaturesEngineRouter(
             const data = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
             res.json({
                 result: 'success',
-                data
+                data,
             });
         } catch (error) {
             res.status(404).json({
                 result: 'error',
-                error: error && error.message
+                error: error && error.message,
             });
         }
     });
@@ -84,7 +84,5 @@ export function generateConfigName(configName?: string) {
     return `${configName ?? ''}__${uniqueHash()}`;
 }
 export function uniqueHash() {
-    return Math.random()
-        .toString(16)
-        .slice(2);
+    return Math.random().toString(16).slice(2);
 }

@@ -1,4 +1,4 @@
-import React, {memo} from 'react';
+import React, { memo } from 'react';
 import { Toggle } from '../toggle/toggle';
 import { classes } from './actions-container.st.css';
 
@@ -11,37 +11,32 @@ export interface IActionsContainerProps {
     actionBtnClassName: string;
 }
 
-export const ActionsContainer = memo<IActionsContainerProps>(({
-    displayServerToggle,
-    isServerActive,
-    onToggleChange,
-    featureName,
-    configName,
-    actionBtnClassName
-}) => {
-    return (
-        <div className={classes.actionsContainer}>
-            {displayServerToggle ? (
-                <div className={classes.serverState}>
-                    <span>Server status</span>
-                    <span>
-                        <Toggle toggled={isServerActive} onChange={onToggleChange} />
-                    </span>
-                </div>
-            ) : null}
+export const ActionsContainer = memo<IActionsContainerProps>(
+    ({ displayServerToggle, isServerActive, onToggleChange, featureName, configName, actionBtnClassName }) => {
+        return (
+            <div className={classes.actionsContainer}>
+                {displayServerToggle ? (
+                    <div className={classes.serverState}>
+                        <span>Server status</span>
+                        <span>
+                            <Toggle toggled={isServerActive} onChange={onToggleChange} />
+                        </span>
+                    </div>
+                ) : null}
 
-            {featureName ? (
-                <a
-                    href={`main.html?feature=${featureName}&config=${configName}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={actionBtnClassName}
-                >
-                    Go to page
-                </a>
-            ) : null}
-        </div>
-    );
-});
+                {featureName ? (
+                    <a
+                        href={`main.html?feature=${featureName}&config=${configName}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={actionBtnClassName}
+                    >
+                        Go to page
+                    </a>
+                ) : null}
+            </div>
+        );
+    }
+);
 
-ActionsContainer.displayName = 'ActionsContainer'
+ActionsContainer.displayName = 'ActionsContainer';

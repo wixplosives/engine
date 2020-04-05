@@ -24,6 +24,6 @@ export function createBrowserProvider(options?: LaunchOptions) {
                 await browser.close();
             }
             browser = null;
-        }
+        },
     };
 }

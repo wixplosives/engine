@@ -31,6 +31,6 @@ FileServer.setup(server, ({ [RUN_OPTIONS]: runOptions }, {}) => {
 
     const projectPath = (typeof optionsProjectPath !== 'boolean' ? optionsProjectPath : undefined) || process.cwd();
     return {
-        remoteFiles: new RemoteFilesAPI(projectPath)
+        remoteFiles: new RemoteFilesAPI(projectPath),
     };
 });

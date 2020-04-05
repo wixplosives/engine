@@ -28,7 +28,7 @@ describe('Socket communication', () => {
 
     beforeEach(async () => {
         const getSocketAfterConnected = () =>
-            new Promise<io.Socket>(resolve => {
+            new Promise<io.Socket>((resolve) => {
                 const onConnection = (socket: io.Socket): void => {
                     disposables.add(() => {
                         socket.disconnect(true);
@@ -42,7 +42,7 @@ describe('Socket communication', () => {
         port = servingPort;
         socketServer = io(server);
         const connections = new Set<Socket>();
-        disposables.add(() => new Promise(res => socketServer.close(res)));
+        disposables.add(() => new Promise((res) => socketServer.close(res)));
         const onConnection = (connection: Socket): void => {
             connections.add(connection);
             disposables.add(() => {
@@ -66,7 +66,7 @@ describe('Socket communication', () => {
     it('Should activate a function from the client communication on the server communication and receive response', async () => {
         const COMMUNICATION_ID = 'node-com';
         const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`
+            'server-host': `http://localhost:${port}`,
         });
 
         const serverCom = new Communication(serverHost, 'server-host');
@@ -75,7 +75,7 @@ describe('Socket communication', () => {
             { id: COMMUNICATION_ID },
             {
                 sayHello: () => 'hello',
-                sayHelloWithDataAndParams: (name: string) => `hello ${name}`
+                sayHelloWithDataAndParams: (name: string) => `hello ${name}`,
             }
         );
 
@@ -86,7 +86,7 @@ describe('Socket communication', () => {
     it('Should activate a function with params from the client communication on the server communication and receive response', async () => {
         const COMMUNICATION_ID = 'node-com';
         const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`
+            'server-host': `http://localhost:${port}`,
         });
 
         const serverCom = new Communication(serverHost, 'server-host');
@@ -95,7 +95,7 @@ describe('Socket communication', () => {
             { id: COMMUNICATION_ID },
             {
                 sayHello: () => 'hello',
-                sayHelloWithDataAndParams: (name: string) => `hello ${name}`
+                sayHelloWithDataAndParams: (name: string) => `hello ${name}`,
             }
         );
 
@@ -107,7 +107,7 @@ describe('Socket communication', () => {
         const COMMUNICATION_ID = 'node-com';
         const clientCom = new Communication(clientHost, 'client-host', {
             'server-host': `http://localhost:${port}`,
-            'second-server-host': `http://localhost:${port}`
+            'second-server-host': `http://localhost:${port}`,
         });
 
         const serverCom = new Communication(serverHost, 'server-host');
@@ -117,7 +117,7 @@ describe('Socket communication', () => {
             { id: COMMUNICATION_ID },
             {
                 sayHello: () => 'hello',
-                sayHelloWithDataAndParams: (name: string) => `hello ${name}`
+                sayHelloWithDataAndParams: (name: string) => `hello ${name}`,
             }
         );
 
@@ -125,7 +125,7 @@ describe('Socket communication', () => {
             { id: COMMUNICATION_ID },
             {
                 sayHello: () => 'bye',
-                sayHelloWithDataAndParams: (name: string) => `bye ${name}`
+                sayHelloWithDataAndParams: (name: string) => `bye ${name}`,
             }
         );
 
@@ -145,11 +145,11 @@ describe('Socket communication', () => {
     it('Two clients should get messages from 1 server communication', async () => {
         const COMMUNICATION_ID = 'node-com';
         const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`
+            'server-host': `http://localhost:${port}`,
         });
 
         const clientCom2 = new Communication(clientHost, 'client2-host', {
-            'server-host': `http://localhost:${port}`
+            'server-host': `http://localhost:${port}`,
         });
 
         const serverCom = new Communication(serverHost, 'server-host');
@@ -158,7 +158,7 @@ describe('Socket communication', () => {
             { id: COMMUNICATION_ID },
             {
                 sayHello: () => 'hello',
-                sayHelloWithDataAndParams: (name: string) => `hello ${name}`
+                sayHelloWithDataAndParams: (name: string) => `hello ${name}`,
             }
         );
 
@@ -178,7 +178,7 @@ describe('Socket communication', () => {
     it('notifies if environment is disconnected', async () => {
         const spy = sinon.spy();
         const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`
+            'server-host': `http://localhost:${port}`,
         });
         const { onDisconnect } = await clientCom.startEnvironment(
             { env: 'server-host', endpointType: 'single', envType: 'node' },
@@ -194,7 +194,7 @@ describe('Socket communication', () => {
                 expect(spy.callCount).to.be.eq(1);
             },
             {
-                timeout: 2_000
+                timeout: 2_000,
             }
         );
     });
@@ -209,7 +209,7 @@ describe('IPC communication', () => {
         const communication = new Communication(mainHost, 'main');
         const forked = fork(join(__dirname, 'process-entry.ts'), [], {
             execArgv: '-r @ts-tools/node/r -r tsconfig-paths/register'.split(' '),
-            cwd: process.cwd()
+            cwd: process.cwd(),
         });
         disposables.add(() => forked.kill());
         const host = new IPCHost(forked);
@@ -217,7 +217,7 @@ describe('IPC communication', () => {
         communication.registerMessageHandler(host);
         const proxy = communication.apiProxy<{ echo(): string }>(
             {
-                id: 'process'
+                id: 'process',
             },
             { id: 'myApi' }
         );

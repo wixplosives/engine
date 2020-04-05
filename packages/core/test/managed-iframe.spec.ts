@@ -22,7 +22,7 @@ describe('Managed Iframe', () => {
         const managedIframe = new ManagedIframe(host.contentWindow);
         expect(await managedIframe.getHashParams()).to.eq(undefined);
         const hashParams = {
-            test: 'test'
+            test: 'test',
         };
 
         managedIframe.updateHashParams(hashParams);
@@ -41,7 +41,7 @@ describe('Managed Iframe', () => {
         managedIframe.onHashChange(onHashChange);
 
         managedIframe.updateHashParams({
-            test: 'test'
+            test: 'test',
         });
 
         await waitFor(async () => {

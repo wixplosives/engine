@@ -55,7 +55,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             plugins.push(
                 new HtmlWebpackPlugin({
                     filename: `index.html`,
-                    chunks: ['index']
+                    chunks: ['index'],
                 })
             );
             entry.index = engineDashboardEntry;
@@ -68,7 +68,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'web',
                 virtualModules,
                 plugins,
-                entry
+                entry,
             })
         );
     }
@@ -80,7 +80,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: workerEnvs,
                 target: 'webworker',
                 virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)]
+                plugins: [new VirtualModulesPlugin(virtualModules)],
             })
         );
     }
@@ -92,7 +92,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
                 virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)]
+                plugins: [new VirtualModulesPlugin(virtualModules)],
             })
         );
     }
@@ -145,7 +145,7 @@ function createWebpackConfig({
     title,
     configurations,
     staticBuild,
-    publicConfigsRoute
+    publicConfigsRoute,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -160,14 +160,14 @@ function createWebpackConfig({
             configurations,
             mode,
             staticBuild,
-            publicConfigsRoute
+            publicConfigsRoute,
         });
         if (target === 'web') {
             plugins.push(
                 new HtmlWebpackPlugin({
                     filename: `${envName}.html`,
                     chunks: [envName],
-                    title
+                    title,
                 })
             );
         }
@@ -185,8 +185,8 @@ function createWebpackConfig({
             ...baseConfig.output,
             path: outputPath,
             filename: `[name].${target}.js`,
-            chunkFilename: `[name].${target}.js`
+            chunkFilename: `[name].${target}.js`,
         },
-        plugins: [...basePlugins, ...plugins]
+        plugins: [...basePlugins, ...plugins],
     };
 }

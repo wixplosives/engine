@@ -11,11 +11,14 @@ export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'contex
  */
 export interface IActiveEnvironment {
     id: string;
-    onDisconnect? :(cb: () => void) => void;
-    onReconnect? :(cb: () => void) => void;
+    onDisconnect?: (cb: () => void) => void;
+    onReconnect?: (cb: () => void) => void;
 }
 
-export type EnvironmentInitializer<T extends IActiveEnvironment> = (communication: Communication, env: Environment) => Promise<T>
+export type EnvironmentInitializer<T extends IActiveEnvironment> = (
+    communication: Communication,
+    env: Environment
+) => Promise<T>;
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {
     name?: string;

@@ -40,7 +40,7 @@ export class SingleEndpointContextualEnvironment<NAME extends string, ENVS exten
 
     public withContext<I extends object>(): DisposableContext<I> {
         return {
-            type: runtimeType<I & { dispose(): unknown }>(this.env + ' context')
+            type: runtimeType<I & { dispose(): unknown }>(this.env + ' context'),
         };
     }
 
@@ -86,7 +86,7 @@ export function getEnvName(env: EnvironmentFilter): string {
 
 export function isProvidedFrom(envVisibility: EnvVisibility, envSet: Set<string>) {
     if (Array.isArray(envVisibility)) {
-        return envVisibility.some(e => envSet.has(e.env));
+        return envVisibility.some((e) => envSet.has(e.env));
     } else if (typeof envVisibility === 'string') {
         return envSet.has(envVisibility);
     } else {

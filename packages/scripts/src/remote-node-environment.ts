@@ -21,10 +21,10 @@ export async function startRemoteNodeEnvironment(
     // } catch {
     const execArgv = inspect ? ['--inspect'] : [];
     const childProc = fork(entryFilePath, ['remote', '-p', `${port}`], {
-        execArgv
+        execArgv,
     });
     await once(childProc, 'message');
-    childProc.on('error', e => console.error(`error in forked process`, e));
+    childProc.on('error', (e) => console.error(`error in forked process`, e));
 
     return new RemoteNodeEnvironment(new ForkedProcess(childProc));
 }
@@ -35,8 +35,8 @@ export class RemoteNodeEnvironment {
     constructor(private childEnv: RemoteProcess) {}
 
     public async getRemotePort(): Promise<number> {
-        return new Promise(resolve => {
-            this.subscribe(message => {
+        return new Promise((resolve) => {
+            this.subscribe((message) => {
                 if (isEnvironmentPortMessage(message)) {
                     resolve(message.port);
                 }

@@ -7,7 +7,7 @@ import {
     isEnvironmentCloseMessage,
     isEnvironmentPortMessage,
     isEnvironmentStartMessage,
-    RemoteProcess
+    RemoteProcess,
 } from './types';
 
 export interface ICreateCommunicationOptions {

@@ -9,7 +9,7 @@ import {
     BaseHost,
     Communication,
     EventEmitterHost,
-    createDisposables
+    createDisposables,
 } from '../../src';
 
 import { EventEmitter } from 'events';
@@ -38,7 +38,7 @@ describe('Communication', () => {
             {
                 echo(s: string) {
                     return s;
-                }
+                },
             }
         );
 
@@ -62,7 +62,7 @@ describe('Communication', () => {
             {
                 echo(s: string) {
                     return s;
-                }
+                },
             }
         );
 
@@ -91,7 +91,7 @@ describe('Communication', () => {
         // a class with a multitenant function
         class MultiEcho {
             [SERVICE_CONFIG] = {
-                echo: multiTenantMethod(this.echo)
+                echo: multiTenantMethod(this.echo),
             };
             echo(id: string, s: string) {
                 return `${id} echo ${s}`;
@@ -116,12 +116,12 @@ describe('Communication', () => {
     it('doesnt send callback message on a method that was defined not to send one', async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main', undefined, undefined, undefined, {
-            warnOnSlow: true
+            warnOnSlow: true,
         });
 
         const host2 = host.open();
         const child = new Communication(host2, 'child', undefined, undefined, undefined, {
-            warnOnSlow: true
+            warnOnSlow: true,
         });
 
         // handleMessage is called when message is recieved from remote
@@ -138,8 +138,8 @@ describe('Communication', () => {
             { id: 'echoService' },
             {
                 echo: {
-                    emitOnly: true
-                }
+                    emitOnly: true,
+                },
             }
         );
         await proxy.echo('Yo!');
@@ -177,8 +177,8 @@ describe('Communication', () => {
             { id: 'myApi' },
             {
                 listen: {
-                    listener: true
-                }
+                    listener: true,
+                },
             }
         );
 
@@ -249,11 +249,11 @@ describe('Communication', () => {
             { id: 'myApi' },
             {
                 listen: {
-                    listener: true
+                    listener: true,
                 },
                 unsubscribe: {
-                    removeListener: 'listen'
-                }
+                    removeListener: 'listen',
+                },
             }
         );
 
@@ -288,7 +288,7 @@ describe('Event Emitter communication', () => {
             {
                 echo(s: string) {
                     return s;
-                }
+                },
             }
         );
 
@@ -313,7 +313,7 @@ describe('Event Emitter communication', () => {
             {
                 echo(s: string) {
                     return s;
-                }
+                },
             }
         );
 
@@ -329,7 +329,7 @@ describe('Event Emitter communication', () => {
 function getMockApi() {
     const listeners = new Set<(number: number) => void>();
     const mockApi = {
-        listen: function(cb: (number: number) => void) {
+        listen: function (cb: (number: number) => void) {
             listeners.add(cb);
         },
         invoke() {
@@ -337,12 +337,12 @@ function getMockApi() {
                 listener(1);
             }
         },
-        unsubscribe: function(cb: (number: number) => void) {
+        unsubscribe: function (cb: (number: number) => void) {
             listeners.delete(cb);
         },
-        getListenersCount: function() {
+        getListenersCount: function () {
             return listeners.size;
-        }
+        },
     };
     return mockApi;
 }

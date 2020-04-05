@@ -5,7 +5,7 @@ import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../src/con
 
 describe('managed iframe environment', () => {
     const { getLoadedFeature } = withFeature({
-        featureName: 'reloaded-iframe'
+        featureName: 'reloaded-iframe',
     });
 
     it.skip('successfully reload iframe enviroenment when iframe refreshes', async () => {

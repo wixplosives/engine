@@ -9,15 +9,15 @@ describe('File Server Feature', () => {
         featureName: 'file-server/example',
         configName: 'file-server/run',
         runOptions: {
-            projectPath: join(__dirname, '..')
+            projectPath: join(__dirname, '..'),
         },
         config: [
             fileServerFeature.use({
                 config: {
-                    title: 'test-title'
-                }
-            })
-        ]
+                    title: 'test-title',
+                },
+            }),
+        ],
     });
 
     it('lists working directory contents in DOM', async () => {

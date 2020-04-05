@@ -16,7 +16,9 @@ export function filterEnvironments(
     }
     const { resolvedContexts } = featureDefinition;
 
-    const deepDefsForFeature = flattenTree(featureDefinition, f => f.dependencies.map(fName => features.get(fName)!));
+    const deepDefsForFeature = flattenTree(featureDefinition, (f) =>
+        f.dependencies.map((fName) => features.get(fName)!)
+    );
     for (const { exportedEnvs } of deepDefsForFeature) {
         for (const exportedEnv of exportedEnvs) {
             if (

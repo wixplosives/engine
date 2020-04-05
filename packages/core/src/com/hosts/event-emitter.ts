@@ -6,7 +6,7 @@ export class EventEmitterHost extends BaseHost {
     constructor(private host: EventEmitter) {
         super();
 
-        this.host.on('message', data => this.emitMessageHandlers(data));
+        this.host.on('message', (data) => this.emitMessageHandlers(data));
     }
 
     public postMessage(message: any) {

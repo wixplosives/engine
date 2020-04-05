@@ -39,11 +39,11 @@ export class AttachedApp implements IExecutableApplication {
                     path,
                     port: this.port,
                     headers: {
-                        'Content-type': 'application/json'
-                    }
+                        'Content-type': 'application/json',
+                    },
                 },
-                res => {
-                    res.on('data', chunk => {
+                (res) => {
+                    res.on('data', (chunk) => {
                         /* if the server had errors when launching, it will reject. if we received any data, it means the server launched */
                         responseChunks.push(chunk.toString());
                     });

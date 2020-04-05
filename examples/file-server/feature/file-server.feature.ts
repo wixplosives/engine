@@ -23,9 +23,7 @@ export default new Feature({
     id: 'fileServerExample',
     dependencies: [COM],
     api: {
-        remoteFiles: Service.withType<FileSystemAPI>()
-            .defineEntity(server)
-            .allowRemoteAccess(),
-        config: new Config<{ title?: string }>({})
-    }
+        remoteFiles: Service.withType<FileSystemAPI>().defineEntity(server).allowRemoteAccess(),
+        config: new Config<{ title?: string }>({}),
+    },
 });

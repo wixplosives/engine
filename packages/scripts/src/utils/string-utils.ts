@@ -8,8 +8,8 @@
 function getWordsFromDashedString(str: string) {
     return str
         .split('-')
-        .map(w => w.trim().toLowerCase())
-        .filter(w => w);
+        .map((w) => w.trim().toLowerCase())
+        .filter((w) => w);
 }
 
 /**

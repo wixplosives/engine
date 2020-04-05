@@ -6,30 +6,21 @@ import { ErrorService } from './error-service';
 export const MAIN = new Environment('main', 'window', 'single');
 export const PROCESSING = new Environment('processing', 'worker', 'single');
 
-const sidebarSlot = Slot.withType<{
+export interface SidebarItem {
     button: {
         text: string;
         icon: string;
     };
     panel: () => HTMLElement;
-}>().defineEntity(MAIN);
-
-const codeService = Service.withType<CodeService>().defineEntity([MAIN, PROCESSING]);
-const remoteCodeService = Service.withType<CodeService>()
-    .defineEntity(MAIN)
-    .allowRemoteAccess();
-
-const errorService = Service.withType<ErrorService>()
-    .defineEntity(MAIN)
-    .allowRemoteAccess();
+}
 
 export default new Feature({
     id: 'playgroundCodeEditor',
     dependencies: [COM],
     api: {
-        sidebarSlot,
-        codeService,
-        remoteCodeService,
-        errorService
-    }
+        sidebarSlot: Slot.withType<SidebarItem>().defineEntity(MAIN),
+        codeService: Service.withType<CodeService>().defineEntity([MAIN, PROCESSING]),
+        remoteCodeService: Service.withType<CodeService>().defineEntity(MAIN).allowRemoteAccess(),
+        errorService: Service.withType<ErrorService>().defineEntity(MAIN).allowRemoteAccess(),
+    },
 });

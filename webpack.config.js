@@ -7,30 +7,30 @@ module.exports = {
     devtool: 'source-map',
     resolve: {
         extensions: ['.ts', '.tsx', '.mjs', '.js', '.json'],
-        plugins: [new TsconfigPathsPlugin({ configFile: join(__dirname, 'tsconfig.json') })]
+        plugins: [new TsconfigPathsPlugin({ configFile: join(__dirname, 'tsconfig.json') })],
     },
     resolveLoader: {
-        extensions: ['.ts', '.mjs', '.js']
+        extensions: ['.ts', '.mjs', '.js'],
     },
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
-                loader: '@ts-tools/webpack-loader'
+                loader: '@ts-tools/webpack-loader',
             },
             {
                 test: /\.css$/,
                 exclude: /\.st\.css$/,
-                use: ['style-loader', 'css-loader']
+                use: ['style-loader', 'css-loader'],
             },
             {
                 test: /\.(png|jpg|gif|svg)$/i,
                 loader: 'url-loader',
                 options: {
-                    limit: 2048
-                }
-            }
-        ]
+                    limit: 2048,
+                },
+            },
+        ],
     },
-    plugins: [new StylableWebpackPlugin()]
+    plugins: [new StylableWebpackPlugin()],
 };

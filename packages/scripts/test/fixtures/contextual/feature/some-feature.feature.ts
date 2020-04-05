@@ -13,14 +13,12 @@ export interface IEchoContext {
 export default new Feature({
     id: 'multiEnv',
     api: {
-        serverService: Service.withType<{ echo: () => string }>()
-            .defineEntity(contextualEnv)
-            .allowRemoteAccess()
+        serverService: Service.withType<{ echo: () => string }>().defineEntity(contextualEnv).allowRemoteAccess(),
     },
     dependencies: [COM],
     context: {
-        echoContext: contextualEnv.withContext<IEchoContext>()
-    }
+        echoContext: contextualEnv.withContext<IEchoContext>(),
+    },
 });
 
 export const Context = contextualEnv.useContext('worker');

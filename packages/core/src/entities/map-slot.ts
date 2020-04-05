@@ -47,7 +47,7 @@ export class MapSlot<Type extends MapRegistry<any, any>, ProvidedFrom extends En
         return {
             defineEntity<E_ENV extends EnvVisibility>(env: E_ENV) {
                 return new MapSlot<MapRegistry<K, T>, E_ENV>(env, env);
-            }
+            },
         };
     }
     public [CREATE_RUNTIME]() {

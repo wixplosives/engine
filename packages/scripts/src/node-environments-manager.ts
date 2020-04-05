@@ -14,7 +14,7 @@ import {
     IEnvironmentStartMessage,
     IFeatureDefinition,
     isEnvironmentStartMessage,
-    StartEnvironmentOptions
+    StartEnvironmentOptions,
 } from './types';
 import { OverrideConfig } from './config-middleware';
 import { filterEnvironments } from './utils/environments';
@@ -69,7 +69,7 @@ export class NodeEnvironmentsManager {
         configName,
         runtimeOptions = {},
         overrideConfigsMap = new Map(),
-        mode = 'new-server'
+        mode = 'new-server',
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
@@ -96,9 +96,9 @@ export class NodeEnvironmentsManager {
                 config,
                 options: {
                     ...defaultRuntimeOptions,
-                    ...runtimeOptions
+                    ...runtimeOptions,
                 },
-                mode
+                mode,
             });
             disposables.push(() => close());
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
@@ -112,7 +112,7 @@ export class NodeEnvironmentsManager {
                 }
                 disposables.length = 0;
             },
-            runningEnvironments
+            runningEnvironments,
         };
 
         this.runningEnvironments.set(featureId, runningEnvironment);
@@ -120,7 +120,7 @@ export class NodeEnvironmentsManager {
         return {
             featureName,
             configName: runtimeConfigName,
-            runningEnvironments
+            runningEnvironments,
         };
     }
 
@@ -166,7 +166,7 @@ export class NodeEnvironmentsManager {
     }
 
     public getFeaturesWithRunningEnvironments() {
-        return Array.from(this.runningEnvironments.keys()).map(runningFeature => runningFeature.split(delimiter));
+        return Array.from(this.runningEnvironments.keys()).map((runningFeature) => runningFeature.split(delimiter));
     }
 
     public getTopology(featureName: string, configName?: string) {
@@ -191,7 +191,7 @@ export class NodeEnvironmentsManager {
             featureName,
             features: Array.from(features.entries()),
             options: Object.entries(options),
-            inspect
+            inspect,
         };
 
         if (inspect || mode === 'forked') {
@@ -211,7 +211,7 @@ export class NodeEnvironmentsManager {
         const { close } = await runWSEnvironment(this.socketServer, nodeEnvironmentOptions);
         return {
             close,
-            port
+            port,
         };
     }
 
@@ -236,7 +236,7 @@ export class NodeEnvironmentsManager {
                     socket.destroy();
                 }
                 await new Promise((res, rej) => socketServer.close((e?: Error) => (e ? rej(e) : res()) as any));
-            }
+            },
         };
     }
 
@@ -269,11 +269,11 @@ export class NodeEnvironmentsManager {
     private async runRemoteNodeEnvironment(options: StartEnvironmentOptions) {
         const remoteNodeEnvironment = await startRemoteNodeEnvironment(cliEntry, {
             inspect: this.options.inspect,
-            port: this.options.port
+            port: this.options.port,
         });
         const port = await remoteNodeEnvironment.getRemotePort();
-        const startMessage = new Promise(resolve => {
-            remoteNodeEnvironment.subscribe(message => {
+        const startMessage = new Promise((resolve) => {
+            remoteNodeEnvironment.subscribe((message) => {
                 if (isEnvironmentStartMessage(message)) {
                     resolve();
                 }
@@ -282,15 +282,15 @@ export class NodeEnvironmentsManager {
         remoteNodeEnvironment.postMessage({
             id: 'start',
             envName: options.name,
-            data: options
+            data: options,
         } as IEnvironmentStartMessage);
 
         await startMessage;
 
         return {
             close: async () => {
-                await new Promise<void>(resolve => {
-                    remoteNodeEnvironment.subscribe(message => {
+                await new Promise<void>((resolve) => {
+                    remoteNodeEnvironment.subscribe((message) => {
                         if (message.id === 'close') {
                             resolve();
                         }
@@ -299,7 +299,7 @@ export class NodeEnvironmentsManager {
                 });
                 return remoteNodeEnvironment.dispose();
             },
-            port
+            port,
         };
     }
 }

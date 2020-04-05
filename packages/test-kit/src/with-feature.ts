@@ -94,7 +94,7 @@ if (typeof after !== 'undefined') {
         browser = null;
     });
 
-    after('close engine server, if open', async function() {
+    after('close engine server, if open', async function () {
         this.timeout(60_000);
         if (featureUrl) {
             await executableApp.closeServer();
@@ -116,7 +116,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         allowErrors: suiteAllowErrors = false,
         queryParams: suiteQueryParams,
         runningApplicationPort,
-        config: suiteConfig
+        config: suiteConfig,
     } = withFeatureOptions;
 
     if (
@@ -137,19 +137,19 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     executableApp = resolvedPort ? new AttachedApp(resolvedPort) : new DetachedApp(cliEntry, process.cwd());
 
-    before('launch puppeteer', async function() {
+    before('launch puppeteer', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
             // to allow parallel testing, we set the viewport size via page.setViewport()
             browser = await puppeteer.launch({
                 ...withFeatureOptions,
                 defaultViewport: undefined,
-                pipe: true
+                pipe: true,
             });
         }
     });
 
-    before('engine start', async function() {
+    before('engine start', async function () {
         if (!featureUrl) {
             this.timeout(60_000 * 4); // 4 minutes
             const port = await executableApp.getServerPort();
@@ -189,7 +189,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams = suiteQueryParams,
                 allowErrors: targetAllowErrors = false,
                 config = suiteConfig,
-                defaultViewport = suiteDefaultViewport
+                defaultViewport = suiteDefaultViewport,
             }: IFeatureExecutionOptions = {},
             navigationOptions?: puppeteer.DirectNavigationOptions
         ) {
@@ -205,20 +205,20 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 featureName,
                 configName,
                 runtimeOptions: runOptions,
-                overrideConfig: config
+                overrideConfig: config,
             });
 
             disposeAfterEach.add(async () =>
                 executableApp.closeFeature({
                     featureName,
-                    configName: newConfigName
+                    configName: newConfigName,
                 })
             );
 
             const search = toSearchQuery({
                 featureName,
                 configName: newConfigName,
-                queryParams
+                queryParams,
             });
 
             const featurePage = await browser.newPage();
@@ -231,7 +231,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             function trackPage(page: puppeteer.Page) {
                 pages.add(page);
 
-                page.on('pageerror', e => {
+                page.on('pageerror', (e) => {
                     capturedErrors.push(e);
                     console.error(e);
                 });
@@ -246,11 +246,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const response = await featurePage.goto(featureUrl + search, {
                 waitUntil: 'networkidle0',
-                ...navigationOptions
+                ...navigationOptions,
             });
 
             return { page: featurePage, response };
-        }
+        },
     };
 }
 

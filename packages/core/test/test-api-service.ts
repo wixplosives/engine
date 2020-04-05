@@ -21,19 +21,19 @@ export class TestService {
 
 export class MultiTenantTestService {
     public [SERVICE_CONFIG] = {
-        multiTenantFunction: multiTenantMethod(this.multiTenantFunction)
+        multiTenantFunction: multiTenantMethod(this.multiTenantFunction),
     };
     public multiTenantFunction(id: string, anotherArg: string): { [key: string]: string } {
         return {
             id,
-            anotherArg
+            anotherArg,
         };
     }
 
     public singleTenantFunction(id: string, anotherArg: string): { [key: string]: string } {
         return {
             id,
-            anotherArg
+            anotherArg,
         };
     }
 }

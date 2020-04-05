@@ -22,7 +22,7 @@ import {
     Service,
     SingleEndpointContextualEnvironment,
     Slot,
-    Universal
+    Universal,
 } from '../../src';
 import { typeCheck } from '../type-check';
 
@@ -34,8 +34,8 @@ describe('Feature', () => {
         const entryFeature = new Feature({
             id: 'test',
             api: {
-                config: Config.withType<{ name: string }>().defineEntity({ name: 'test' })
-            }
+                config: Config.withType<{ name: string }>().defineEntity({ name: 'test' }),
+            },
         });
 
         expect(runEngine({ entryFeature }).get(entryFeature).api.config.name).to.be.equal('test');
@@ -45,19 +45,19 @@ describe('Feature', () => {
         const f1 = new Feature({
             id: 'test1',
             api: {
-                config: Config.withType<{ name: string }>().defineEntity({ name: 'test1' })
-            }
+                config: Config.withType<{ name: string }>().defineEntity({ name: 'test1' }),
+            },
         });
 
         const f2 = new Feature({
             id: 'test2',
             dependencies: [f1],
             api: {
-                config: Config.withType<{ name: string }>().defineEntity({ name: 'test2' })
-            }
+                config: Config.withType<{ name: string }>().defineEntity({ name: 'test2' }),
+            },
         });
         const engine = runEngine({
-            entryFeature: [f1, f2]
+            entryFeature: [f1, f2],
         });
 
         expect(engine.get(f1).api.config.name).to.equal('test1');
@@ -134,8 +134,8 @@ describe('Feature', () => {
             id: 'test',
             api: {
                 service1: Service.withType<{ echo(x: string): string }>().defineEntity(Universal),
-                service2: Service.withType<{ echo(x: string): string }>().defineEntity(MAIN1)
-            }
+                service2: Service.withType<{ echo(x: string): string }>().defineEntity(MAIN1),
+            },
         });
 
         f0.setup(Universal, () => {
@@ -143,8 +143,8 @@ describe('Feature', () => {
                 service1: {
                     echo(x: string) {
                         return x + '-main1';
-                    }
-                }
+                    },
+                },
             };
         });
 
@@ -153,8 +153,8 @@ describe('Feature', () => {
                 service2: {
                     echo(x: string) {
                         return x + '-main2';
-                    }
-                }
+                    },
+                },
             };
         });
         const { service1, service2 } = runEngine({ entryFeature: [f0], envName: 'main1' }).get(f0).api;
@@ -167,8 +167,8 @@ describe('Feature', () => {
             id: 'test',
             api: {
                 service1: Service.withType<{ echo(x: string): string }>().defineEntity('main1'),
-                service2: Service.withType<{ echo(x: string): string }>().defineEntity('main2')
-            }
+                service2: Service.withType<{ echo(x: string): string }>().defineEntity('main2'),
+            },
         });
         expect(() => {
             f0.setup('main1', () => {
@@ -176,8 +176,8 @@ describe('Feature', () => {
                     service1: {
                         echo(x: string) {
                             return x + '-main1';
-                        }
-                    }
+                        },
+                    },
                 };
             });
 
@@ -186,8 +186,8 @@ describe('Feature', () => {
                     service1: {
                         echo(x: string) {
                             return x + '-main2';
-                        }
-                    }
+                        },
+                    },
                 };
             });
         }).to.throw('Feature can only have single setup for each environment.');
@@ -201,16 +201,16 @@ describe('Feature', () => {
             api: {
                 slot1: Slot.withType<{ echo(x: string): string }>().defineEntity(Universal),
                 service1: Service.withType<{ echo(x: string): string }>().defineEntity(Universal),
-                service2: Service.withType<{ echo(x: string): string }>().defineEntity(env)
-            }
+                service2: Service.withType<{ echo(x: string): string }>().defineEntity(env),
+            },
         });
         f0.setup(Universal, ({ slot1 }) => {
             return {
                 service1: {
                     echo(x: string) {
                         return x + '-' + [...slot1].length;
-                    }
-                }
+                    },
+                },
             };
         });
         f0.setup(env, ({ service1, slot1 }) => {
@@ -218,8 +218,8 @@ describe('Feature', () => {
                 service2: {
                     echo(x: string) {
                         return service1.echo(x) + '-main2-' + [...slot1].length;
-                    }
-                }
+                    },
+                },
             };
         });
         const { slot1, service1, service2 } = runEngine({ entryFeature: [f0], envName: env.env }).get(f0).api;
@@ -236,27 +236,27 @@ describe('Feature', () => {
                     config: Config.withType<{ a: string; b: string; c: number[] }>().defineEntity({
                         a: '',
                         b: '',
-                        c: []
-                    })
-                }
+                        c: [],
+                    }),
+                },
             });
 
             const engine = runEngine({
                 entryFeature,
                 topLevelConfig: [
                     entryFeature.use({
-                        config: { a: 'a' }
+                        config: { a: 'a' },
                     }),
                     entryFeature.use({
-                        config: { b: 'b', c: [1] }
-                    })
-                ]
+                        config: { b: 'b', c: [1] },
+                    }),
+                ],
             });
 
             expect(engine.get(entryFeature).api.config).to.be.eql({
                 a: 'a',
                 b: 'b',
-                c: [1]
+                c: [1],
             });
         });
 
@@ -270,29 +270,29 @@ describe('Feature', () => {
                             return {
                                 a: a.a || b.a || '',
                                 b: a.b || b.b || '',
-                                c: a.c.concat(b.c || [])
+                                c: a.c.concat(b.c || []),
                             };
                         }
-                    )
-                }
+                    ),
+                },
             });
 
             const engine = runEngine({
                 entryFeature,
                 topLevelConfig: [
                     entryFeature.use({
-                        config: { a: 'a', c: [1] }
+                        config: { a: 'a', c: [1] },
                     }),
                     entryFeature.use({
-                        config: { b: 'b', c: [2] }
-                    })
-                ]
+                        config: { b: 'b', c: [2] },
+                    }),
+                ],
             });
 
             expect(engine.get(entryFeature).api.config).to.be.eql({
                 a: 'a',
                 b: 'b',
-                c: [1, 2]
+                c: [1, 2],
             });
         });
     });
@@ -303,15 +303,15 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity('main')
-                }
+                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity('main'),
+                },
             }).setup('main', ({ mapSlot }) => {
                 return {
                     retrieveService: {
                         getValue(key: string) {
                             return mapSlot.get(key);
-                        }
-                    }
+                        },
+                    },
                 };
             });
 
@@ -319,7 +319,7 @@ describe('Feature', () => {
             const entryFeature = new Feature({
                 id: 'testSlotsSecondFeature',
                 api: {},
-                dependencies: [maps]
+                dependencies: [maps],
             }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
@@ -336,22 +336,22 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity(envName)
-                }
+                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity(envName),
+                },
             }).setup(envName, ({ mapSlot }) => {
                 return {
                     retrieveService: {
                         getValue(key: string) {
                             return mapSlot.get(key);
-                        }
-                    }
+                        },
+                    },
                 };
             });
 
             const f1 = new Feature({
                 id: 'testSlotsFirstFeature',
                 api: {},
-                dependencies: [maps]
+                dependencies: [maps],
             }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
@@ -361,7 +361,7 @@ describe('Feature', () => {
             const f2 = new Feature({
                 id: 'testSlotsSecondFeature',
                 api: {},
-                dependencies: [maps]
+                dependencies: [maps],
             }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
                 return null;
@@ -378,22 +378,22 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(envName),
-                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity(envName)
-                }
+                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity(envName),
+                },
             }).setup(envName, ({ mapSlot }) => {
                 return {
                     retrieveService: {
                         getValue(key: string) {
                             return mapSlot.get(key);
-                        }
-                    }
+                        },
+                    },
                 };
             });
 
             const entryFeature = new Feature({
                 id: 'testSlotsFirstFeature',
                 api: {},
-                dependencies: [maps]
+                dependencies: [maps],
             }).setup(envName, ({}, {}) => {
                 return null;
             });
@@ -417,13 +417,13 @@ describe('Feature', () => {
             public [IDENTIFY_API](featureID: string, entityKey: string) {
                 this.identity = {
                     entityKey,
-                    featureID
+                    featureID,
                 };
             }
             public [CREATE_RUNTIME](_context: RuntimeEngine, featureID: string, entityKey: string) {
                 return {
                     featureID,
-                    entityKey
+                    entityKey,
                 };
             }
 
@@ -445,13 +445,13 @@ describe('Feature', () => {
             const ids = new Feature({
                 id: 'testIdentify',
                 api: {
-                    identifiable: new Identifiable()
-                }
+                    identifiable: new Identifiable(),
+                },
             });
 
             expect(ids.api.identifiable.getIdentity()).to.be.eql({
                 featureID: 'testIdentify',
-                entityKey: 'identifiable'
+                entityKey: 'identifiable',
             });
         });
     });
@@ -464,8 +464,8 @@ describe('feature interaction', () => {
             id: 'echoFeature',
             api: {
                 transformers: Slot.withType<(s: string) => string>().defineEntity(envName),
-                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(envName)
-            }
+                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(envName),
+            },
         }).setup(envName, ({ transformers }) => {
             return {
                 echoService: {
@@ -473,8 +473,8 @@ describe('feature interaction', () => {
                         return [...transformers].reduce((item, transformer) => {
                             return transformer(item);
                         }, s);
-                    }
-                }
+                    },
+                },
             };
         });
 
@@ -484,8 +484,8 @@ describe('feature interaction', () => {
             id: 'feature2',
             dependencies: [echoFeature],
             api: {
-                config: Config.withType<{ prefix: string; suffix: string }>().defineEntity({ prefix: '', suffix: '' })
-            }
+                config: Config.withType<{ prefix: string; suffix: string }>().defineEntity({ prefix: '', suffix: '' }),
+            },
         }).setup(envName, ({ config }, { echoFeature: { transformers } }) => {
             transformers.register((s: string) => {
                 return `${config.prefix}${s}${config.suffix}`;
@@ -497,13 +497,13 @@ describe('feature interaction', () => {
             entryFeature,
             topLevelConfig: [
                 entryFeature.use({
-                    config: { prefix: '!' }
+                    config: { prefix: '!' },
                 }),
                 entryFeature.use({
-                    config: { suffix: '?' }
-                })
+                    config: { suffix: '?' },
+                }),
             ],
-            envName
+            envName,
         });
 
         expect(engine.get(echoFeature).api.echoService.echo('yoo')).to.be.equal('!yoo?');
@@ -523,23 +523,23 @@ describe('Contextual environments', () => {
             id: 'echoFeature',
             dependencies: [COM],
             api: {
-                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(processing)
+                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(processing),
             },
             context: {
                 processingContext: processing.withContext<IProcessingContext>(),
-                processingContext2: processing.withContext<{ age: number }>()
-            }
+                processingContext2: processing.withContext<{ age: number }>(),
+            },
         });
 
         entryFeature.setupContext(processing, 'processingContext', () => {
             return {
-                name: 'test'
+                name: 'test',
             };
         });
 
         entryFeature.setupContext(processing, 'processingContext2', () => {
             return {
-                age: 1
+                age: 1,
             };
         });
 
@@ -548,8 +548,8 @@ describe('Contextual environments', () => {
                 echoService: {
                     echo(s: string) {
                         return `${s} ${name} ${age}`;
-                    }
-                }
+                    },
+                },
             };
         });
 
@@ -565,7 +565,7 @@ describe('feature disposal', () => {
         const mainEnv = new Environment(envName, 'window', 'single');
         const entryFeature = new Feature({
             id: 'test',
-            api: {}
+            api: {},
         });
         const dispose = spy(() => Promise.resolve());
         entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
@@ -575,7 +575,7 @@ describe('feature disposal', () => {
 
         const engine = runEngine({
             entryFeature,
-            envName
+            envName,
         });
 
         await engine.dispose(entryFeature, 'main');
@@ -588,7 +588,7 @@ describe('feature disposal', () => {
         const mainEnv = new Environment(envName, 'window', 'single');
         const entryFeature = new Feature({
             id: 'test',
-            api: {}
+            api: {},
         });
         const dispose = spy(() => Promise.resolve());
         const dispose2 = spy(() => Promise.resolve());
@@ -602,7 +602,7 @@ describe('feature disposal', () => {
 
         const engine = runEngine({
             entryFeature,
-            envName
+            envName,
         });
 
         await engine.dispose(entryFeature, 'main');
@@ -616,7 +616,7 @@ describe('feature disposal', () => {
         const mainEnv = new Environment(envName, 'window', 'single');
         const entryFeature = new Feature({
             id: 'test',
-            api: {}
+            api: {},
         });
         const disposeFirst = spy(() => Promise.resolve());
         const disposeSecond = spy(() => Promise.reject('err'));
@@ -630,7 +630,7 @@ describe('feature disposal', () => {
 
         const engine = runEngine({
             entryFeature,
-            envName
+            envName,
         });
 
         await expect(engine.dispose(entryFeature, 'main')).to.be.rejectedWith('err');
@@ -651,8 +651,8 @@ describe('service with remove access environment visibility', () => {
             api: {
                 echoService: Service.withType<{ echo(s: string): string }>()
                     .defineEntity(processing)
-                    .allowRemoteAccess()
-            }
+                    .allowRemoteAccess(),
+            },
         });
 
         echoFeature.setup(processing, ({ echoService }) => {
@@ -663,8 +663,8 @@ describe('service with remove access environment visibility', () => {
                 echoService: {
                     echo(s: string) {
                         return s;
-                    }
-                }
+                    },
+                },
             };
         });
 
@@ -678,7 +678,7 @@ describe('service with remove access environment visibility', () => {
         const testFeature = new Feature({
             id: 'test',
             dependencies: [echoFeature],
-            api: {}
+            api: {},
         });
 
         testFeature.setup(processing, ({}, { echoFeature: { echoService } }) => {
@@ -695,12 +695,12 @@ describe('service with remove access environment visibility', () => {
 
         runEngine({
             entryFeature: testFeature,
-            envName: 'processing'
+            envName: 'processing',
         });
 
         runEngine({
             entryFeature: testFeature,
-            envName: 'main'
+            envName: 'main',
         });
     });
 });
@@ -714,14 +714,14 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
             id: 'echoFeature',
             dependencies: [COM],
             api: {
-                slot: Slot.withType<{ name: string }>().defineEntity(main)
-            }
+                slot: Slot.withType<{ name: string }>().defineEntity(main),
+            },
         })
             .setup(main, ({ slot }) => {
                 slot.register({ name: 'test' });
                 return null;
             })
-            .setup(processing, x => {
+            .setup(processing, (x) => {
                 typeCheck(
                     (
                         _noSlot: EQUAL<
@@ -749,8 +749,8 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
             api: {
                 echoService: Service.withType<{ echo(s: string): string }>()
                     .defineEntity(processing)
-                    .allowRemoteAccess()
-            }
+                    .allowRemoteAccess(),
+            },
         });
 
         echoFeature.setup(processing, () => {
@@ -758,8 +758,8 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                 echoService: {
                     echo(s: string) {
                         return s;
-                    }
-                }
+                    },
+                },
             };
         });
 
@@ -767,7 +767,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
         const testFeature = new Feature({
             id: 'test',
             dependencies: [echoFeature],
-            api: {}
+            api: {},
         });
 
         testFeature.setup(processing, ({ run }, { echoFeature: { echoService } }) => {
@@ -798,8 +798,8 @@ describe.skip('Environments Type tests 1', () => {
                 // processing,
                 echoService: Service.withType<{ echo(s: string): string }>()
                     .defineEntity(processing)
-                    .allowRemoteAccess()
-            }
+                    .allowRemoteAccess(),
+            },
         });
 
         echoFeature.setup(processing, ({}, {}) => {
@@ -807,8 +807,8 @@ describe.skip('Environments Type tests 1', () => {
                 echoService: {
                     echo(s: string) {
                         return s;
-                    }
-                }
+                    },
+                },
             };
         });
     });
