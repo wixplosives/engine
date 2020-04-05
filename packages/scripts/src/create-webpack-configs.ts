@@ -2,9 +2,9 @@ import fs from '@file-services/node';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
+import { SetMultiMap } from '@wixc3/engine-core';
 import { createEntrypoint } from './create-entrypoint';
 import { IEnvironment, IFeatureDefinition, IConfigDefinition } from './types';
-import { SetMultiMap } from '@wixc3/engine-core/src';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;

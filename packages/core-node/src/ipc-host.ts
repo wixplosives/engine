@@ -4,10 +4,10 @@ import { ChildProcess } from 'child_process';
 export class IPCHost extends BaseHost implements IDisposable {
     private disposed = false;
 
-    constructor(private prcocess: NodeJS.Process | ChildProcess) {
+    constructor(private process: NodeJS.Process | ChildProcess) {
         super();
-        prcocess.on('message', this.onMessage);
-        prcocess.once('disconnect', () => prcocess.off('message', this.onMessage));
+        process.on('message', this.onMessage);
+        process.once('disconnect', () => process.off('message', this.onMessage));
     }
 
     private onMessage: (...args: any[]) => void = (message) => {
@@ -15,17 +15,15 @@ export class IPCHost extends BaseHost implements IDisposable {
     };
 
     public postMessage(data: any) {
-        if (!this.prcocess.send) {
+        if (!this.process.send) {
             throw new Error('this process is not forked. There is not to send message to');
         }
-        if (this.prcocess.send) {
-            this.prcocess.send(data);
-        }
+        this.process.send(data);
     }
 
     public dispose() {
         this.handlers.clear();
-        this.prcocess.removeAllListeners();
+        this.process.removeAllListeners();
         this.disposed = true;
     }
 

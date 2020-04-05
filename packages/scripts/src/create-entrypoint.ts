@@ -1,6 +1,6 @@
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import { IFeatureDefinition, IConfigDefinition } from './types';
-import { SetMultiMap } from '@wixc3/engine-core/src';
+import { SetMultiMap } from '@wixc3/engine-core';
 import { join } from 'path';
 
 const { stringify } = JSON;
