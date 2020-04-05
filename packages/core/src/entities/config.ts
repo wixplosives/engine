@@ -19,7 +19,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
                 visibleAt?: E_ENV
             ) {
                 return new Config(defaultValue, mergeConfig, visibleAt);
-            }
+            },
         };
     }
 

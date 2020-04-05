@@ -10,7 +10,7 @@ export class IPCHost extends BaseHost implements IDisposable {
         prcocess.once('disconnect', () => prcocess.off('message', this.onMessage));
     }
 
-    private onMessage: (...args: any[]) => void = message => {
+    private onMessage: (...args: any[]) => void = (message) => {
         this.emitMessageHandlers(message);
     };
 

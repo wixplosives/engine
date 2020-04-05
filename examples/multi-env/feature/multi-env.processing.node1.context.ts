@@ -5,6 +5,6 @@ MultiEnvFeature.setupContext(processingEnv, 'processingContext', () => {
 
     return {
         name: () => testName,
-        dispose: () => (testName = 'disposed')
+        dispose: () => (testName = 'disposed'),
     };
 });

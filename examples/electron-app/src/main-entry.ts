@@ -34,7 +34,7 @@ export default function runEnv() {
         features: [...features.entries()],
         name: 'main',
         type: 'electron-renderer',
-        host: new ElectronClientHost(ipcRenderer)
+        host: new ElectronClientHost(ipcRenderer),
     });
 }
 

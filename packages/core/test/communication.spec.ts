@@ -8,10 +8,10 @@ import {
     TestService,
     testServiceId,
     HashParamsRetriever,
-    hashParamsRetriever
+    hashParamsRetriever,
 } from './test-api-service';
 
-describe('Communication API', function() {
+describe('Communication API', function () {
     this.timeout(10_000);
 
     const disposables = createDisposables();
@@ -22,7 +22,7 @@ describe('Communication API', function() {
         height: '300px',
         bottom: '0px',
         right: '0px',
-        position: 'fixed'
+        position: 'fixed',
     };
     const createIframe = (): HTMLIFrameElement => {
         const iframe = document.createElement('iframe');
@@ -41,7 +41,7 @@ describe('Communication API', function() {
         const env = await com.startEnvironment(
             iframeEnv,
             iframeInitializer({
-                iframeElement: createIframe()
+                iframeElement: createIframe(),
             })
         );
 
@@ -57,13 +57,13 @@ describe('Communication API', function() {
         const env = await com.startEnvironment(
             iframeEnv,
             iframeInitializer({
-                iframeElement: createIframe()
+                iframeElement: createIframe(),
             })
         );
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId }, declareComEmitter('listen', '', ''));
         const capturedCalls: ITestServiceData[] = [];
-        await api.listen(data => capturedCalls.push(data));
+        await api.listen((data) => capturedCalls.push(data));
 
         await api.testApi(1, 2, 3);
         await api.testApi(3, 2, 1);
@@ -77,7 +77,7 @@ describe('Communication API', function() {
         const env = await com.startEnvironment(
             iframeEnv,
             iframeInitializer({
-                iframeElement: createIframe()
+                iframeElement: createIframe(),
             })
         );
 
@@ -87,7 +87,7 @@ describe('Communication API', function() {
 
         expect(result).to.eql({
             id: com.getEnvironmentId(),
-            anotherArg: 'test'
+            anotherArg: 'test',
         });
     });
 
@@ -97,7 +97,7 @@ describe('Communication API', function() {
         const env = await com.startEnvironment(
             iframeEnv,
             iframeInitializer({
-                iframeElement: createIframe()
+                iframeElement: createIframe(),
             })
         );
 
@@ -107,7 +107,7 @@ describe('Communication API', function() {
 
         expect(result).to.eql({
             id: 'id',
-            anotherArg: 'test'
+            anotherArg: 'test',
         });
     });
 
@@ -118,15 +118,15 @@ describe('Communication API', function() {
             com.startEnvironment(
                 iframeEnv,
                 iframeInitializer({
-                    iframeElement: createIframe()
+                    iframeElement: createIframe(),
                 })
             ),
             com.startEnvironment(
                 iframeEnv,
                 iframeInitializer({
-                    iframeElement: createIframe()
+                    iframeElement: createIframe(),
                 })
-            )
+            ),
         ]);
 
         const api1 = com.apiProxy<TestService>(env1, { id: testServiceId }, { listen: { listener: true } });
@@ -134,8 +134,8 @@ describe('Communication API', function() {
 
         const capturedCallsApi1: ITestServiceData[] = [];
         const capturedCallsApi2: ITestServiceData[] = [];
-        await api1.listen(data => capturedCallsApi1.push(data));
-        await api2.listen(data => capturedCallsApi2.push(data));
+        await api1.listen((data) => capturedCallsApi1.push(data));
+        await api2.listen((data) => capturedCallsApi2.push(data));
 
         await api1.testApi(1, 2, 3);
         await api1.testApi(3, 2, 1);
@@ -157,7 +157,7 @@ describe('Communication API', function() {
             delayedIframeEnv,
             iframeInitializer({
                 iframeElement: createIframe(),
-                managed: false
+                managed: false,
             })
         );
 
@@ -175,7 +175,7 @@ describe('Communication API', function() {
             iframeInitializer({
                 iframeElement: createIframe(),
                 hashParams: '#test',
-                managed: true
+                managed: true,
             })
         );
         const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });

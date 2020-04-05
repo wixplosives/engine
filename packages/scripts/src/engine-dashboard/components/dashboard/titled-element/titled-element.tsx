@@ -4,10 +4,10 @@ import { classes, style } from './titled-element.st.css';
 export interface IInputProps {
     className: string;
     title?: string;
-    children: React.ReactNode
+    children: React.ReactNode;
 }
 
-export const TitledElement= memo<IInputProps>(({ title, className, children }) => {
+export const TitledElement = memo<IInputProps>(({ title, className, children }) => {
     return (
         <div className={style(classes.root, className)}>
             <div className={classes.title}>{title}</div>

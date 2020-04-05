@@ -10,7 +10,7 @@ export async function runNodeEnvironment({
     name,
     type,
     options,
-    host
+    host,
 }: StartEnvironmentOptions) {
     if (!host) {
         throw new Error('cannot start environment without a root host');
@@ -22,19 +22,19 @@ export async function runNodeEnvironment({
         featureLoaders: createFeatureLoaders(new Map(features), {
             name,
             childEnvName,
-            type
+            type,
         }),
         config: [
             ...config,
             COM.use({
                 config: {
                     host,
-                    id: name
-                }
-            })
+                    id: name,
+                },
+            }),
         ],
         options: new Map(options),
-        envName: name
+        envName: name,
     });
     disposeHandlers.add(() => runningEngine.dispose());
 
@@ -43,7 +43,7 @@ export async function runNodeEnvironment({
             for (const disposeHandler of disposeHandlers) {
                 await disposeHandler();
             }
-        }
+        },
     };
 }
 
@@ -58,10 +58,10 @@ function createFeatureLoaders(
         dependencies,
         envFilePaths,
         contextFilePaths,
-        resolvedContexts
+        resolvedContexts,
     } of features.values()) {
         featureLoaders[scopedName] = {
-            load: async currentContext => {
+            load: async (currentContext) => {
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
                     if (contextFilePath) {
@@ -75,7 +75,7 @@ function createFeatureLoaders(
                 return (await import(filePath)).default;
             },
             depFeatures: dependencies,
-            resolvedContexts
+            resolvedContexts,
         };
     }
     return featureLoaders;

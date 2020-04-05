@@ -13,7 +13,7 @@ export function ipcInitializer(): EnvironmentInitializer<{ id: string }> {
         await communication.envReady(env);
 
         return {
-            id: instanceId
+            id: instanceId,
         };
     };
 }

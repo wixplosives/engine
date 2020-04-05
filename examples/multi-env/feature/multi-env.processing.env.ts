@@ -4,7 +4,7 @@ MultiEnvFeature.setup(processingEnv, ({ onDispose }, {}, { processingContext: { 
     const echoService: IEchoService = {
         echo: (s: string) => {
             return `${name()} says ${s}`;
-        }
+        },
     };
 
     onDispose(() => {

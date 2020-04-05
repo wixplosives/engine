@@ -16,6 +16,6 @@ export function createDisposables() {
                 disposables.add(() => (disposable as { dispose(): unknown }).dispose());
             }
             return disposable;
-        }
+        },
     };
 }

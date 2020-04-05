@@ -14,7 +14,7 @@ export default function runEnv() {
         featureName: 'electron-app/example',
         features: [...features.entries()],
         name: 'server',
-        type: 'node'
+        type: 'node',
     }).catch(console.error);
 }
 

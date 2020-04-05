@@ -27,7 +27,7 @@ export function socketServerInitializer(): EnvironmentInitializer<{
             },
             onReconnect: (cb: () => void) => {
                 host.subscribers.listeners.add('reconnect', cb);
-            }
+            },
         };
     };
 }

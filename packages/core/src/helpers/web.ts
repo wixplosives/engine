@@ -5,7 +5,7 @@ export function injectScript(win: Window, rootComId: string, scriptUrl: string) 
         const scriptEl = win.document.createElement('script');
         scriptEl.src = scriptUrl;
         scriptEl.onload = () => res(win);
-        scriptEl.onerror = e => rej(e);
+        scriptEl.onerror = (e) => rej(e);
         win.document.head.appendChild(scriptEl);
     });
 }

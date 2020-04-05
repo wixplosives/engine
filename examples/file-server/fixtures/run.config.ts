@@ -6,7 +6,7 @@ import FileServer from '../feature/file-server.feature';
 export default [
     FileServer.use({
         config: {
-            title: 'test'
-        }
-    })
+            title: 'test',
+        },
+    }),
 ];

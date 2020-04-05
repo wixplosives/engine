@@ -15,7 +15,7 @@ export function run({ entryFeature, topLevelConfig = [], envName = '', runOption
     return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature, envName);
 }
 
-export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, f => f.dependencies);
+export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies);
 
 export interface IFeatureLoader {
     load: (resolvedContexts: Record<string, string>) => Promise<Feature>;
@@ -38,7 +38,7 @@ export async function runEngineApp({
     config = [],
     options,
     envName,
-    publicPath
+    publicPath,
 }: IRunEngineAppOptions) {
     const featureNames = Object.keys(featureLoaders);
 
@@ -51,7 +51,7 @@ export async function runEngineApp({
 
     const allFeatures = await Promise.all([
         rootFeatureLoader.load(resolvedContexts),
-        ...rootFeatureLoader.depFeatures.map(depName => featureLoaders[depName].load(resolvedContexts))
+        ...rootFeatureLoader.depFeatures.map((depName) => featureLoaders[depName].load(resolvedContexts)),
     ]);
     const [runningFeature] = allFeatures;
 
@@ -66,7 +66,7 @@ export async function runEngineApp({
             for (const feature of allFeatures) {
                 await engine.dispose(feature, envName);
             }
-        }
+        },
     };
 }
 

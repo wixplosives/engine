@@ -80,9 +80,9 @@ export function createCommunicationMiddleware(
                         feature,
                         requestedConfig === 'undefined' ? undefined : requestedConfig
                     ),
-                    publicPath
-                }
-            })
+                    publicPath,
+                },
+            }),
         ]);
         next();
     };

@@ -19,7 +19,7 @@ export class FileActions {
     public getFileData(filePath: string): FileData {
         return {
             filePath,
-            fileName: this.fs.basename(filePath)
+            fileName: this.fs.basename(filePath),
         };
     }
 
@@ -38,7 +38,7 @@ export class FileActions {
         const directory: IDirectoryContents = {};
         const allDirectoryElements = this.fs.readdirSync(directoryPath);
         await Promise.all(
-            allDirectoryElements.map(async elementName => {
+            allDirectoryElements.map(async (elementName) => {
                 if (this.fs.lstatSync(this.fs.join(directoryPath, elementName)).isFile()) {
                     directory[elementName] = this.getFileData(this.fs.join(directoryPath, elementName));
                 } else {

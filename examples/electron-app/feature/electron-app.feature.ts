@@ -27,8 +27,8 @@ export default new Feature({
             .allowRemoteAccess({
                 subscribe: {
                     emitOnly: true,
-                    listener: true
-                }
-            })
-    }
+                    listener: true,
+                },
+            }),
+    },
 });

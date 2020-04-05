@@ -11,7 +11,7 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { startEnvironment } }) => 
     sidebarSlot.register({
         button: {
             text: 'Errors',
-            icon: 'icon.png'
+            icon: 'icon.png',
         },
         panel() {
             const panel = document.createElement('pre');
@@ -21,7 +21,7 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { startEnvironment } }) => 
             errorService.listen(update);
             update();
             return panel;
-        }
+        },
     });
 
     run(async () => {
@@ -43,7 +43,7 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { startEnvironment } }) => 
     return {
         errorService,
         codeService,
-        remoteCodeService: codeService
+        remoteCodeService: codeService,
     };
 });
 

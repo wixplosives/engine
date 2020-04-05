@@ -60,7 +60,7 @@ export class LoggerService extends EventEmitter<{ message: LogMessage }> {
             message: value,
             timestamp: Date.now(),
             level: severity,
-            metadata: { base: this.baseMetadata, ...metadata }
+            metadata: { base: this.baseMetadata, ...metadata },
         });
     }
 
@@ -75,7 +75,7 @@ export class LoggerService extends EventEmitter<{ message: LogMessage }> {
 
 function getValue(message: LogValue): LogValueData {
     const logValue: LogValueData = {
-        value: ''
+        value: '',
     };
 
     if (typeof message === 'function') {

@@ -38,7 +38,7 @@ describe('com emitter service', () => {
         main2.registerAPI(emitterServiceId, api);
 
         const proxy = main.apiProxy<EmitterService>(Promise.resolve({ id: 'main2' }), emitterServiceId, {
-            ...declareComEmitter<EmitterService>('on', 'off', 'removeAll')
+            ...declareComEmitter<EmitterService>('on', 'off', 'removeAll'),
         });
 
         const testListenerStub = stub();

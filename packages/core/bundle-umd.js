@@ -12,16 +12,16 @@ function getConfigForMode(mode) {
             libraryTarget: 'umd',
             path: path.join(__dirname, 'umd'),
             filename: mode === 'production' ? 'engine-core.min.js' : 'engine-core.js',
-            globalObject: 'globalThis'
+            globalObject: 'globalThis',
         },
         externals: {
             'socket.io-client': {
                 commonjs: 'socket.io-client',
                 commonjs2: 'socket.io-client',
                 amd: 'socket.io-client',
-                root: 'io'
-            }
-        }
+                root: 'io',
+            },
+        },
     };
 }
 

@@ -4,7 +4,7 @@ import {
     MultiTenantTestService,
     TestService,
     hashParamsRetriever,
-    HashParamsRetriever
+    HashParamsRetriever,
 } from './test-api-service';
 
 const com = new Communication(window, self.name);

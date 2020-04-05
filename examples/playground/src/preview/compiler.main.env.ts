@@ -5,7 +5,7 @@ Preview.setup('main', ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
     sidebarSlot.register({
         button: {
             text: 'Preview',
-            icon: 'preview-icon.png'
+            icon: 'preview-icon.png',
         },
         panel() {
             const panel = document.createElement('pre');
@@ -16,11 +16,11 @@ Preview.setup('main', ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
                 COM.startEnvironment(
                     PREVIEW,
                     iframeInitializer({
-                        iframeElement: iframe
+                        iframeElement: iframe,
                     })
                 );
             return panel;
-        }
+        },
     });
 
     return null;

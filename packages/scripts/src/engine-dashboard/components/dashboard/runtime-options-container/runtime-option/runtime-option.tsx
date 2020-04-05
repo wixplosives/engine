@@ -8,7 +8,7 @@ export interface IRuntimeOptionProps {
     index: number;
     runtimeArguments: Array<{ key: string; value: string }>;
     onChange: (runtimeArgiments: Array<{ key: string; value: string }>) => unknown;
-    className: string
+    className: string;
 }
 
 export const RuntimeOption = memo<IRuntimeOptionProps>(({ runtimeArguments, index, onChange, className }) => {
@@ -33,4 +33,4 @@ export const RuntimeOption = memo<IRuntimeOptionProps>(({ runtimeArguments, inde
     );
 });
 
-RuntimeOption.displayName = 'RuntimeOption'
+RuntimeOption.displayName = 'RuntimeOption';

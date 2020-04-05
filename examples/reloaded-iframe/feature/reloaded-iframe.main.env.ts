@@ -27,7 +27,7 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
         const envToken = await COM.startEnvironment(
             iframeEnv,
             iframeInitializer({
-                iframeElement: iframe
+                iframeElement: iframe,
             })
         );
 
@@ -43,7 +43,7 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        echoService.get(envToken).onEcho(times => {
+        echoService.get(envToken).onEcho((times) => {
             div.innerText = `document was called ${times} times`;
         });
     });

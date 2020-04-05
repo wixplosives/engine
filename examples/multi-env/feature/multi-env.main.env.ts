@@ -4,7 +4,7 @@ import { workerInitializer, socketServerInitializer, initializeContextualEnv } f
 MultiEnvFeature.setup(mainEnv, ({ echoService, run, config }, { COM: { startEnvironment } }) => {
     const initializer = initializeContextualEnv(processingEnv, {
         node1: socketServerInitializer(),
-        worker1: workerInitializer()
+        worker1: workerInitializer(),
     });
 
     run(async () => {
@@ -12,7 +12,7 @@ MultiEnvFeature.setup(mainEnv, ({ echoService, run, config }, { COM: { startEnvi
         const message = await echoService.echo('roman');
         document.body.innerHTML = JSON.stringify({
             message,
-            config
+            config,
         });
     });
 

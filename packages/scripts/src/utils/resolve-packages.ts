@@ -54,7 +54,7 @@ export function resolveWorkspacePackages(basePath: string, workspaces: string[])
 
     const globOptions: glob.IOptions = {
         cwd: basePath,
-        absolute: true
+        absolute: true,
     };
 
     for (const packageDirGlob of workspaces) {
@@ -64,7 +64,7 @@ export function resolveWorkspacePackages(basePath: string, workspaces: string[])
             foundPackages.push({
                 packageJsonPath,
                 packageJson: fs.readJsonFileSync(packageJsonPath) as IPackageJson,
-                directoryPath: path.dirname(packageJsonPath)
+                directoryPath: path.dirname(packageJsonPath),
             });
         }
     }

@@ -4,7 +4,7 @@ import MultiEnvFeature, { processingEnv } from '../feature/multi-env.feature';
 export default new Feature({
     id: 'use-worker-example',
     dependencies: [MultiEnvFeature],
-    api: {}
+    api: {},
 });
 
 export const Context = processingEnv.useContext('worker1');

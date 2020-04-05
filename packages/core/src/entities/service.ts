@@ -24,7 +24,7 @@ export class Service<
         return {
             defineEntity<E_ENV extends EnvVisibility>(providedFrom: E_ENV) {
                 return new Service<T, T, E_ENV, E_ENV, false>(providedFrom, providedFrom, false);
-            }
+            },
         };
     }
     private constructor(
@@ -84,7 +84,7 @@ export class Service<
             return {
                 get: (token: EnvironmentInstanceToken) => {
                     return communication.apiProxy<T>(token, { id: serviceKey }, this.options);
-                }
+                },
             };
         }
     }

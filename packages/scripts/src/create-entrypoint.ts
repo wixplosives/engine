@@ -58,7 +58,7 @@ export function createEntrypoint({
     configurations,
     mode,
     staticBuild,
-    publicConfigsRoute
+    publicConfigsRoute,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -145,7 +145,7 @@ function createConfigLoadersObject(configs: Record<string, IConfigFileMapping[]>
 
 function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
     return Object.keys(configs)
-        .map(scopedName => {
+        .map((scopedName) => {
             const importedConfigPaths = configs[scopedName].map(({ filePath, configEnvName }) =>
                 loadConfigFile(filePath, scopedName, configEnvName)
             );

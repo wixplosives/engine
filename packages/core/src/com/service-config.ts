@@ -13,7 +13,7 @@ export function multiTenantMethod<T extends AnyFunction>(method: T) {
         }
         return {
             getArgs,
-            proxyFunction
+            proxyFunction,
         };
     };
 }

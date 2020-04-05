@@ -14,7 +14,7 @@
     "test": "yarn test:unit",
     "test:unit": "lerna run test --stream --concurrency=1",
     "typecheck": "tsc --noEmit",
-    "prettify": "npx prettier \"packages/**/*.{js,ts,tsx}\" --write"
+    "prettify": "npx prettier \"./**/*.{js,ts,tsx}\" --write"
   },
   "devDependencies": {
     "@file-services/memory": "^2.2.0",

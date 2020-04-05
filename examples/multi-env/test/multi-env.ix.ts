@@ -4,7 +4,7 @@ import MultiEnv from '../feature/multi-env.feature';
 
 describe('Multi Environment', () => {
     const { getLoadedFeature } = withFeature({
-        featureName: 'multi-env/test-worker'
+        featureName: 'multi-env/test-worker',
     });
 
     it('allows providing custom top level config', async () => {
@@ -12,10 +12,10 @@ describe('Multi Environment', () => {
             config: [
                 MultiEnv.use({
                     config: {
-                        name: 'my-name'
-                    }
-                })
-            ]
+                        name: 'my-name',
+                    },
+                }),
+            ],
         });
 
         const content = await page.evaluate(() => document.body.textContent!.trim());

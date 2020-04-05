@@ -15,7 +15,7 @@ export function windowInitializer({ host }: WindowInitializerOptions): Environme
         }
         await injectScript(win, instanceId, `${communication.getPublicPath()}${env}.web.js${location.search}`);
         return {
-            id: instanceId
+            id: instanceId,
         };
     };
 }

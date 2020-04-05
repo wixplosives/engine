@@ -4,5 +4,5 @@ export const MAIN = new Environment('main', 'window', 'single');
 
 export default new Feature({
     id: 'a',
-    api: {}
+    api: {},
 });

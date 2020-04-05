@@ -11,7 +11,7 @@ chai.use(chaiAsPromised);
 const nodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'node-env');
 const runFeatureOptions = { featureName: 'engine-node/x' };
 
-describe('Node environments manager', function() {
+describe('Node environments manager', function () {
     this.timeout(10_000);
     const disposables = createDisposables();
 

@@ -4,7 +4,7 @@ import {
     MISSING_ENV,
     REMOTE_CALL_FAILED,
     reportError,
-    UNKNOWN_CALLBACK_ID
+    UNKNOWN_CALLBACK_ID,
 } from './errors';
 import { isWindow, isWorkerContext, MultiCounter } from './helpers';
 import {
@@ -14,7 +14,7 @@ import {
     ListenMessage,
     UnListenMessage,
     Message,
-    ReadyMessage
+    ReadyMessage,
 } from './message-types';
 import {
     APIService,
@@ -30,7 +30,7 @@ import {
     AnyServiceMethodOptions,
     ServiceComConfig,
     EnvironmentInitializer,
-    IActiveEnvironment
+    IActiveEnvironment,
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -155,7 +155,7 @@ export class Communication {
                     }
                     return runtimeMethod;
                 }
-            }
+            },
         });
     }
 
@@ -206,7 +206,7 @@ export class Communication {
                     type: 'call',
                     data: { api, method, args },
                     callbackId,
-                    origin
+                    origin,
                 };
                 this.callWithCallback(envId, message, callbackId, res, rej);
             }
@@ -283,7 +283,7 @@ export class Communication {
         return {
             api,
             method,
-            handlerId
+            handlerId,
         };
     }
 
@@ -295,7 +295,7 @@ export class Communication {
                 type: 'listen',
                 data,
                 callbackId: this.idsCounter.next('c'),
-                origin: this.rootEnvId
+                origin: this.rootEnvId,
             };
             this.createCallbackRecord(message, message.callbackId!, res, rej);
             this.sendTo(instanceId, message);
@@ -349,7 +349,7 @@ export class Communication {
                     to: message.from,
                     data: forwardResponse,
                     callbackId: message.callbackId,
-                    origin: message.to
+                    origin: message.to,
                 });
             }
         } else if (message.type === 'unlisten') {
@@ -371,7 +371,7 @@ export class Communication {
                     type: 'event',
                     data: args,
                     handlerId,
-                    origin: message.from
+                    origin: message.from,
                 });
             };
 
@@ -394,7 +394,7 @@ export class Communication {
             callbackId: message.callbackId,
             from: message.to,
             origin: message.origin,
-            data
+            data,
         };
 
         this.sendTo(message.from, replyCallback);
@@ -450,10 +450,10 @@ export class Communication {
                     data: {
                         api,
                         method,
-                        handlerId: listenerHandlerId
+                        handlerId: listenerHandlerId,
                     },
                     callbackId,
-                    origin
+                    origin,
                 };
 
                 this.callWithCallback(envId, message, callbackId, res, rej);
@@ -475,10 +475,10 @@ export class Communication {
                         data: {
                             api,
                             method,
-                            handlerId: this.createHandlerRecord(envId, api, method, fn)
+                            handlerId: this.createHandlerRecord(envId, api, method, fn),
                         },
                         callbackId,
-                        origin
+                        origin,
                     };
 
                     this.callWithCallback(envId, message, callbackId, res, rej);
@@ -581,7 +581,7 @@ export class Communication {
                     type: 'callback',
                     data,
                     callbackId: message.callbackId,
-                    origin: this.rootEnvId
+                    origin: this.rootEnvId,
                 });
             }
         }
@@ -601,8 +601,8 @@ export class Communication {
                 message.origin,
                 {
                     [message.data.method]: {
-                        removeListener: method
-                    }
+                        removeListener: method,
+                    },
                 },
                 this.eventDispatchers[message.data.handlerId],
                 res,
@@ -618,7 +618,7 @@ export class Communication {
                 type: 'callback',
                 data,
                 callbackId: message.callbackId,
-                origin: message.to
+                origin: message.to,
             });
         }
     }
@@ -636,7 +636,7 @@ export class Communication {
                     type: 'callback',
                     data,
                     callbackId: message.callbackId,
-                    origin: this.rootEnvId
+                    origin: this.rootEnvId,
                 });
             }
         } catch (error) {
@@ -646,7 +646,7 @@ export class Communication {
                 type: 'callback',
                 error: String(error),
                 callbackId: message.callbackId,
-                origin: this.rootEnvId
+                origin: this.rootEnvId,
             });
         }
     }
@@ -661,7 +661,7 @@ export class Communication {
                     type: 'callback',
                     data,
                     callbackId: message.callbackId,
-                    origin: this.rootEnvId
+                    origin: this.rootEnvId,
                 });
             }
         } catch (error) {
@@ -671,7 +671,7 @@ export class Communication {
                 type: 'callback',
                 error: String(error.stack),
                 callbackId: message.callbackId,
-                origin: this.rootEnvId
+                origin: this.rootEnvId,
             });
         }
     }
@@ -697,7 +697,7 @@ export class Communication {
                 type: 'event',
                 data: args,
                 handlerId,
-                origin: this.rootEnvId
+                origin: this.rootEnvId,
             });
         });
     }
@@ -749,7 +749,7 @@ export class Communication {
         this.callbacks[callbackId] = {
             timerId,
             resolve,
-            reject
+            reject,
         };
     }
 }
@@ -776,6 +776,6 @@ export function declareComEmitter<T>(
     return {
         [onMethod]: { listener: true },
         [offMethod]: { removeListener: onMethod },
-        ...(removeAll ? { [removeAll]: { removeAllListeners: onMethod } } : undefined)
+        ...(removeAll ? { [removeAll]: { removeAllListeners: onMethod } } : undefined),
     };
 }

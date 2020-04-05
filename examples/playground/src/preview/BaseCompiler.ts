@@ -10,16 +10,16 @@ export class BaseCompiler {
     constructor(private codeService: AsyncApi<CodeService>, private compilers: () => CompilerExtension[]) {}
     public async compile() {
         const content = await this.codeService.getContent();
-        const thing = this.compilers().filter(i => i.matcher(content));
+        const thing = this.compilers().filter((i) => i.matcher(content));
         if (thing.length) {
             return {
                 code: thing.reduce((c, t) => {
                     return t.compile(c);
-                }, content)
+                }, content),
             };
         }
         return {
-            code: content
+            code: content,
         };
     }
 }

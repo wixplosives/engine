@@ -19,6 +19,6 @@ export async function runWSEnvironment(socketServer: Server, startEnvironmentOpt
             for (const disposeHandler of [...disposeHandlers].reverse()) {
                 await disposeHandler();
             }
-        }
+        },
     };
 }

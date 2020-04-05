@@ -20,7 +20,7 @@ interface IFeatureSelectionProps {
     onSelected?: (featureName?: string, configName?: string) => unknown;
 }
 
-export const FeaturesSelection= memo<IFeatureSelectionProps>(({ features, onSelected }) => {
+export const FeaturesSelection = memo<IFeatureSelectionProps>(({ features, onSelected }) => {
     const [selectedFeatureConfigurations, setSelectedFeatureConfigurations] = useState<string[]>([]);
     const [selectedFeatureName, setSelectedFeatureName] = useState<string>('');
     const [selectedConfigName, setSelectedConfigName] = useState<string>();
@@ -29,7 +29,7 @@ export const FeaturesSelection= memo<IFeatureSelectionProps>(({ features, onSele
         () =>
             Object.entries(features).map(([featureName, featureDef]) => ({
                 label: featureName,
-                value: featureDef
+                value: featureDef,
             })),
         [features]
     );
@@ -53,9 +53,9 @@ export const FeaturesSelection= memo<IFeatureSelectionProps>(({ features, onSele
 
     const selectedConfigurationsOptions = useMemo(
         () =>
-            selectedFeatureConfigurations.map(config => ({
+            selectedFeatureConfigurations.map((config) => ({
                 value: config,
-                label: config
+                label: config,
             })),
         [selectedFeatureConfigurations]
     );
@@ -80,7 +80,7 @@ export const FeaturesSelection= memo<IFeatureSelectionProps>(({ features, onSele
                 <Select
                     isSearchable={true}
                     options={featuresOptions}
-                    onChange={selectedValue => onFeatureSelectedChange(selectedValue)}
+                    onChange={(selectedValue) => onFeatureSelectedChange(selectedValue)}
                     isMulti={false}
                     isClearable={true}
                 />
@@ -92,10 +92,10 @@ export const FeaturesSelection= memo<IFeatureSelectionProps>(({ features, onSele
                     isClearable={true}
                     options={selectedConfigurationsOptions}
                     isDisabled={selectedFeatureConfigurations.length === 0}
-                    onChange={selectedValue => onConfigurationSelect(selectedValue)}
+                    onChange={(selectedValue) => onConfigurationSelect(selectedValue)}
                     value={{
                         label: selectedConfigName,
-                        value: selectedConfigName
+                        value: selectedConfigName,
                     }}
                 />
             </TitledElement>

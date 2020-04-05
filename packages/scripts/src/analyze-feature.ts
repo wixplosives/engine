@@ -5,7 +5,7 @@ import {
     Feature,
     getFeaturesDeep,
     SingleEndpointContextualEnvironment,
-    SetMultiMap
+    SetMultiMap,
 } from '@wixc3/engine-core';
 import { basename } from 'path';
 
@@ -15,7 +15,7 @@ import {
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
-    parseFeatureFileName
+    parseFeatureFileName,
 } from './build-constants';
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
@@ -91,7 +91,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         } else {
             featureDirectories.push({
                 ...loadFeatureDirectory({ directoryPath, fs }),
-                configurations: []
+                configurations: [],
             });
         }
     }
@@ -109,7 +109,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         directoryToPackage.set(featureDirectoryPath, {
             simplifiedName: simplifyPackageName(name),
             directoryPath: fs.dirname(packageJsonPath),
-            name
+            name,
         });
     }
 
@@ -131,7 +131,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             foundConfigs.add(scopedConfigName, {
                 envName,
                 name: configName,
-                filePath: configFilePath
+                filePath: configFilePath,
             });
         }
 
@@ -159,9 +159,9 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
                         envFilePaths: this.envFilePaths,
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
-                        scopedName
+                        scopedName,
                     };
-                }
+                },
             });
             featureToScopedName.set(featureModule.exportedFeature, scopedName);
         }
@@ -198,7 +198,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         // compute dependencies
         const deps = getFeaturesDeep(exportedFeature);
         deps.delete(exportedFeature);
-        dependencies.push(...Array.from(deps).map(feature => featureToScopedName.get(feature)!));
+        dependencies.push(...Array.from(deps).map((feature) => featureToScopedName.get(feature)!));
     }
 
     return { features: foundFeatures, configurations: foundConfigs };
@@ -240,7 +240,7 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeModule
         name: parseFeatureFileName(basename(filePath)),
         exportedFeature,
         exportedEnvs: [],
-        usedContexts: {}
+        usedContexts: {},
     };
 
     if (typeof exports === 'object' && exports !== null) {
@@ -262,24 +262,24 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeModule
 
 const parseEnv = ({ env, envType }: InstanceType<typeof Environment>): IEnvironment => ({
     name: env,
-    type: envType
+    type: envType,
 });
 
 const parseContextualEnv = ({
     env,
-    environments
+    environments,
 }: InstanceType<typeof SingleEndpointContextualEnvironment>): IEnvironment[] =>
-    environments.map(childEnv => ({
+    environments.map((childEnv) => ({
         name: env,
         type: childEnv.envType,
-        childEnvName: childEnv.env
+        childEnvName: childEnv.env,
     }));
 
 export const getFeatureModules = (module: NodeModule) =>
     flattenTree(
         module,
-        m => m.children,
-        m => isFeatureFile(basename(m.filename))
+        (m) => m.children,
+        (m) => isFeatureFile(basename(m.filename))
     );
 
 export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
@@ -295,6 +295,6 @@ export function computeUsedContext(featureName: string, features: Map<string, IF
 
     return Array.from(getFeaturesDeep(feature.exportedFeature))
         .reverse()
-        .map(f => featureToDef.get(f)!)
+        .map((f) => featureToDef.get(f)!)
         .reduce((acc, { usedContexts }) => Object.assign(acc, usedContexts), {} as Record<string, string>);
 }

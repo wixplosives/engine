@@ -3,7 +3,7 @@ import {
     IPortMessage,
     isProcessMessage,
     ProcessMessageId,
-    IFeatureMessagePayload
+    IFeatureMessagePayload,
 } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
 import { IExecutableApplication } from './types';
@@ -18,12 +18,12 @@ export class DetachedApp implements IExecutableApplication {
         if (this.port) {
             throw new Error('The server is already running.');
         }
-        const execArgv = process.argv.some(arg => arg.startsWith('--inspect')) ? ['--inspect'] : [];
+        const execArgv = process.argv.some((arg) => arg.startsWith('--inspect')) ? ['--inspect'] : [];
 
         const engineStartProcess = fork(this.cliEntry, ['start', '--singleRun'], {
             stdio: 'inherit',
             cwd: this.basePath,
-            execArgv
+            execArgv,
         });
 
         this.engineStartProcess = engineStartProcess;
@@ -35,23 +35,23 @@ export class DetachedApp implements IExecutableApplication {
     }
 
     public async closeServer() {
-        await this.waitForProcessMessage('server-disconnected', p => {
+        await this.waitForProcessMessage('server-disconnected', (p) => {
             p.send({ id: 'server-disconnect' });
         });
         this.engineStartProcess = undefined;
     }
 
     public async runFeature(payload: IFeatureTarget) {
-        return (await this.waitForProcessMessage('feature-initialized', p => {
+        return (await this.waitForProcessMessage('feature-initialized', (p) => {
             p.send({
                 id: 'run-feature',
-                payload
+                payload,
             });
         })) as IFeatureMessagePayload;
     }
 
     public async closeFeature(payload: IFeatureTarget) {
-        await this.waitForProcessMessage('feature-closed', p => {
+        await this.waitForProcessMessage('feature-closed', (p) => {
             p.send({ id: 'close-feature', payload });
         });
     }

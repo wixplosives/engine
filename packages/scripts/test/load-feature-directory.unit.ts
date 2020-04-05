@@ -10,8 +10,8 @@ describe('loadFeatureDirectory', () => {
                 'my-thing.main.env.ts': ``,
                 'my-config.config.ts': ``,
                 'my-config2.config.ts': ``,
-                'main.test.context.ts': ``
-            }
+                'main.test.context.ts': ``,
+            },
         });
 
         const directoryPath = '/src';
@@ -22,7 +22,7 @@ describe('loadFeatureDirectory', () => {
             features: ['/src/my-thing.feature.ts'],
             configurations: ['/src/my-config.config.ts', '/src/my-config2.config.ts'],
             envs: ['/src/my-thing.main.env.ts'],
-            contexts: ['/src/main.test.context.ts']
+            contexts: ['/src/main.test.context.ts'],
         });
     });
 
@@ -33,9 +33,9 @@ describe('loadFeatureDirectory', () => {
                 'my-config.config.ts': ``,
                 'my-config2.config.ts': ``,
                 sub: {
-                    'my-config3.config.ts': ``
-                }
-            }
+                    'my-config3.config.ts': ``,
+                },
+            },
         });
 
         const directoryPath = '/src';
@@ -48,7 +48,7 @@ describe('loadFeatureDirectory', () => {
             'my-thing.feature.ts': ``,
             'my-thing2.feature.ts': ``,
             'my-config.config.ts': ``,
-            'my-config2.config.ts': ``
+            'my-config2.config.ts': ``,
         });
 
         const directoryPath = '/';
@@ -59,7 +59,7 @@ describe('loadFeatureDirectory', () => {
             features: ['/my-thing.feature.ts', '/my-thing2.feature.ts'],
             configurations: ['/my-config.config.ts', '/my-config2.config.ts'],
             envs: [],
-            contexts: []
+            contexts: [],
         });
     });
 });

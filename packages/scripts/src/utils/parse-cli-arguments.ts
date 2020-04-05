@@ -1,5 +1,5 @@
 export const kebabCaseToCamelCase = (value: string): string =>
-    value.replace(/[-]\S/g, match => match.slice(1).toUpperCase());
+    value.replace(/[-]\S/g, (match) => match.slice(1).toUpperCase());
 
 export function parseCliArguments(args: string[]) {
     const argumentQueue: string[] = [];

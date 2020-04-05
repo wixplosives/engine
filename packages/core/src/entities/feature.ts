@@ -10,7 +10,7 @@ import {
     MapToProxyType,
     PartialFeatureConfig,
     RunningFeatures,
-    SetupHandler
+    SetupHandler,
 } from '../types';
 import { Environment, testEnvironmentCollision, getEnvName, isGloballyProvided } from './env';
 import { SetMultiMap } from '../helpers';
@@ -147,7 +147,7 @@ export class Feature<
                 feature.addOnDisposeHandler(fn, envName);
             },
             [RUN_OPTIONS]: runningEngine.runOptions,
-            runningEnvironmentName: envName
+            runningEnvironmentName: envName,
         };
 
         const emptyDispose = { dispose: () => undefined };

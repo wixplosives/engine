@@ -4,12 +4,12 @@ import { toKebabCase, toCamelCase, toCapitalCase } from '../utils';
 
 // adds display options to each context value
 export function enrichContext(context: ITemplateContext): IEnrichedTemplateContext {
-    return walkRecordValues(context, value => {
+    return walkRecordValues(context, (value) => {
         const camel = toCamelCase(value);
         return Object.assign(new String(value), {
             camelCase: camel,
             dashCase: toKebabCase(value),
-            pascalCase: toCapitalCase(camel)
+            pascalCase: toCapitalCase(camel),
         });
     });
 }

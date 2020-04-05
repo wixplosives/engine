@@ -27,7 +27,7 @@ interface SelectedFeature {
 export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEnvironmentState }) => {
     const [serverState, setServerState] = useState<ServerState>({
         featuresWithRunningNodeEnvs: [],
-        features: {}
+        features: {},
     });
 
     const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>({});
@@ -35,8 +35,8 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
     const [runtimeArguments, setRuntimeArguments] = useState<Array<IRuntimeOption>>([
         {
             key: '',
-            value: ''
-        }
+            value: '',
+        },
     ]);
 
     const onServerEnvironmentStatusChange = useCallback(
@@ -63,7 +63,7 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
             setServerState(serverResponse.data);
         };
 
-        possibleFeaturesRequest().catch(error => {
+        possibleFeaturesRequest().catch((error) => {
             console.error(error);
         });
     }, [fetchServerState]);
@@ -85,11 +85,13 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
 
     const addRuntimeOption = useCallback(() => setRuntimeArguments([...runtimeArguments, { key: '', value: '' }]), [
         runtimeArguments,
-        setRuntimeArguments
+        setRuntimeArguments,
     ]);
 
     const isNodeEnvRunning = !!serverState.featuresWithRunningNodeEnvs.find(
-        ([featureName, configName]) => selectedFeature.featureName === featureName && ((!selectedFeature.configName && !configName) || (configName && selectedFeature.configName === configName))
+        ([featureName, configName]) =>
+            selectedFeature.featureName === featureName &&
+            ((!selectedFeature.configName && !configName) || (configName && selectedFeature.configName === configName))
     );
 
     return (

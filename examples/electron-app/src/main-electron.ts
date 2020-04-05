@@ -26,14 +26,14 @@ import { join } from 'path';
             webPreferences: {
                 nodeIntegration: true,
                 nodeIntegrationInSubFrames: true,
-                nodeIntegrationInWorker: true
-            }
+                nodeIntegrationInWorker: true,
+            },
         });
         mainWindow
             .loadFile(mainHtmlPath, {
                 query: {
-                    feature: 'electron-app/example'
-                }
+                    feature: 'electron-app/example',
+                },
             })
             .catch(console.error);
 

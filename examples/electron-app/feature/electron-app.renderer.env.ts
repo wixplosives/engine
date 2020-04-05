@@ -8,14 +8,14 @@ ElectronAppFeature.setup(renderer, ({ run }, { COM: { startEnvironment } }) => {
          * starting the server environment.
          * Since we are on ipc-renderer enviroenmnt, we have all native node api's
          */
-        await startEnvironment(server, com => {
+        await startEnvironment(server, (com) => {
             /**
              * forking the server entry
              */
             const serverProcess = fork('../src/server-entry.ts', [], {
                 cwd: __dirname,
                 execArgv: ['-r', '@ts-tools/node/r'],
-                stdio: 'inherit'
+                stdio: 'inherit',
             });
 
             /**
@@ -34,7 +34,7 @@ ElectronAppFeature.setup(renderer, ({ run }, { COM: { startEnvironment } }) => {
             com.registerMessageHandler(serverHost);
 
             return Promise.resolve({
-                id: server.env
+                id: server.env,
             });
         });
     });
