@@ -3,7 +3,7 @@ import { Server } from 'socket.io';
 import { WsServerHost } from '@wixc3/engine-core-node';
 
 import { StartEnvironmentOptions } from './types';
-import { runNodeEnvironment } from './node-environment';
+import { runEnvironment } from './node-environment';
 
 export async function runWSEnvironment(socketServer: Server, startEnvironmentOptions: StartEnvironmentOptions) {
     const disposeHandlers = new Set<() => unknown>();
@@ -12,13 +12,13 @@ export async function runWSEnvironment(socketServer: Server, startEnvironmentOpt
     const host = new WsServerHost(socketServerNamespace);
     disposeHandlers.add(() => host.dispose());
 
-    const { close } = await runNodeEnvironment({ ...startEnvironmentOptions, host });
+    const { close } = await runEnvironment({ ...startEnvironmentOptions, host });
     disposeHandlers.add(() => close());
     return {
         close: async () => {
             for (const disposeHandler of [...disposeHandlers].reverse()) {
                 await disposeHandler();
             }
-        }
+        },
     };
 }

@@ -30,26 +30,26 @@ export default new Feature({
                 loggerSeverity: LogLevel.DEBUG,
                 maxLogMessages: 100,
                 topology: {},
-                resolvedContexts: {}
+                resolvedContexts: {},
             },
             (a: IComConfig, b: Partial<IComConfig>) => ({
                 ...a,
                 ...b,
                 topology: {
                     ...a.topology,
-                    ...b.topology
+                    ...b.topology,
                 },
                 resolvedContexts: {
                     ...a.resolvedContexts,
-                    ...b.resolvedContexts
-                }
+                    ...b.resolvedContexts,
+                },
             })
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Service.withType<LoggerService>().defineEntity(Universal),
         startEnvironment: Service.withType<Communication['startEnvironment']>().defineEntity(AllEnvironments),
-        communication: Service.withType<Communication>().defineEntity(AllEnvironments)
-    }
+        communication: Service.withType<Communication>().defineEntity(AllEnvironments),
+    },
 }).setup(
     Universal,
     ({
@@ -57,10 +57,10 @@ export default new Feature({
         loggerTransports,
         [RUN_OPTIONS]: runOptions,
         runningEnvironmentName,
-        onDispose
+        onDispose,
     }) => {
         // TODO: find better way to detect node runtime
-        const isNode = typeof process !== 'undefined' && process.title !== 'browser';
+        const isNode = typeof process !== 'undefined' && process.title !== 'browser' && process.type !== 'renderer';
 
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.
@@ -69,7 +69,7 @@ export default new Feature({
 
         const comOptions: ICommunicationOptions = {
             warnOnSlow: runOptions.has('warnOnSlow'),
-            publicPath
+            publicPath,
         };
 
         const communication = new Communication(
@@ -91,7 +91,7 @@ export default new Feature({
         return {
             loggerService,
             communication,
-            startEnvironment: communication.startEnvironment.bind(communication)
+            startEnvironment: communication.startEnvironment.bind(communication),
         };
     }
 );

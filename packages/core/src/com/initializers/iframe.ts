@@ -15,7 +15,7 @@ export function iframeInitializer({
     hashParams,
     iframeElement,
     managed,
-    src
+    src,
 }: IIframeInitializerOptions): EnvironmentInitializer<{ id: string }> {
     return async (com, { env, endpointType }) => {
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
@@ -34,7 +34,7 @@ export function iframeInitializer({
             : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
 
         return {
-            id: instanceId
+            id: instanceId,
         };
     };
 }
@@ -55,16 +55,13 @@ async function useIframe(com: Communication, host: HTMLIFrameElement, instanceId
     }
 
     await changeLocation(win, host, instanceId, src);
+    com.registerEnv(instanceId, win);
+    await com.envReady(instanceId);
 
     const reload = () => com.reconnectHandlers(instanceId);
     host.addEventListener('load', () => {
-        com.envReady(instanceId)
-            .then(reload)
-            .catch(reportError);
+        com.envReady(instanceId).then(reload).catch(reportError);
     });
-
-    com.registerEnv(instanceId, win);
-    await com.envReady(instanceId);
 }
 
 function changeLocation(win: Window, host: HTMLIFrameElement, rootComId: string, iframeSrc: string) {

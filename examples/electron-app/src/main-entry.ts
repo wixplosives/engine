@@ -3,7 +3,7 @@ require('tsconfig-paths/register');
 
 import { resolve } from 'path';
 import fs from '@file-services/node';
-import { resolvePackages, loadFeaturesFromPackages, runNodeEnvironment } from '@wixc3/engine-scripts';
+import { resolvePackages, loadFeaturesFromPackages, runEnvironment } from '@wixc3/engine-scripts';
 import { BaseHost } from '@wixc3/engine-core';
 import { IpcRenderer, ipcRenderer } from 'electron';
 
@@ -29,12 +29,12 @@ const searchParams = new URLSearchParams(window.location.search.slice(1));
 const featureName = searchParams.get('feature');
 
 export default function runEnv() {
-    return runNodeEnvironment({
+    return runEnvironment({
         featureName: featureName as string,
         features: [...features.entries()],
         name: 'main',
         type: 'electron-renderer',
-        host: new ElectronClientHost(ipcRenderer)
+        host: new ElectronClientHost(ipcRenderer),
     });
 }
 

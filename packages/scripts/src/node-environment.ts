@@ -2,7 +2,7 @@ import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
 
 import { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
-export async function runNodeEnvironment({
+export async function runEnvironment({
     featureName,
     childEnvName,
     features,
@@ -10,10 +10,17 @@ export async function runNodeEnvironment({
     name,
     type,
     options,
-    host
+    host,
 }: StartEnvironmentOptions) {
-    if (!host) {
-        throw new Error('cannot start environment without a root host');
+    if (host) {
+        config.push(
+            COM.use({
+                config: {
+                    host,
+                    id: name,
+                },
+            })
+        );
     }
     const disposeHandlers = new Set<() => unknown>();
 
@@ -22,19 +29,11 @@ export async function runNodeEnvironment({
         featureLoaders: createFeatureLoaders(new Map(features), {
             name,
             childEnvName,
-            type
+            type,
         }),
-        config: [
-            ...config,
-            COM.use({
-                config: {
-                    host,
-                    id: name
-                }
-            })
-        ],
+        config,
         options: new Map(options),
-        envName: name
+        envName: name,
     });
     disposeHandlers.add(() => runningEngine.dispose());
 
@@ -43,7 +42,7 @@ export async function runNodeEnvironment({
             for (const disposeHandler of disposeHandlers) {
                 await disposeHandler();
             }
-        }
+        },
     };
 }
 
@@ -58,10 +57,10 @@ function createFeatureLoaders(
         dependencies,
         envFilePaths,
         contextFilePaths,
-        resolvedContexts
+        resolvedContexts,
     } of features.values()) {
         featureLoaders[scopedName] = {
-            load: async currentContext => {
+            load: async (currentContext) => {
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
                     if (contextFilePath) {
@@ -75,7 +74,7 @@ function createFeatureLoaders(
                 return (await import(filePath)).default;
             },
             depFeatures: dependencies,
-            resolvedContexts
+            resolvedContexts,
         };
     }
     return featureLoaders;
