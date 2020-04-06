@@ -327,14 +327,13 @@ export class Communication {
     }
 
     public envReady(instanceId: string): Promise<void> {
+        const { promise, resolve } = deferred();
         if (this.readyEnvs.includes(instanceId)) {
             if (this.pendingEnvs.hasKey(instanceId)) {
                 this.handleReady({ from: instanceId } as ReadyMessage);
             }
-            return Promise.resolve();
+            resolve();
         }
-
-        const { promise, resolve } = deferred();
 
         this.pendingEnvs.add(instanceId, () => resolve());
         return promise;
