@@ -328,6 +328,9 @@ export class Communication {
 
     public envReady(instanceId: string): Promise<void> {
         if (this.readyEnvs.includes(instanceId)) {
+            if (this.pendingEnvs.hasKey(instanceId)) {
+                this.handleReady({ from: instanceId } as ReadyMessage);
+            }
             return Promise.resolve();
         }
 
