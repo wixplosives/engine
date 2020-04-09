@@ -70,7 +70,7 @@ describe('Application', function () {
 
         it(`serves a fixture feature`, async () => {
             const app = new Application({ basePath: multiFeatureFixturePath });
-            const { close, port } = await app.start();
+            const { close, port } = await app.start({ singleRun: true });
             disposables.add(() => close());
 
             const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-multi/variant`);
@@ -88,7 +88,7 @@ describe('Application', function () {
 
         it(`allows specfiying a config`, async () => {
             const app = new Application({ basePath: multiFeatureFixturePath });
-            const { close, port } = await app.start();
+            const { close, port } = await app.start({ singleRun: true });
             disposables.add(() => close());
 
             const page = await loadPage(
@@ -273,7 +273,7 @@ describe('Application', function () {
                 basePath: nodeFeatureFixturePath,
             });
 
-            const { runFeature, closeFeature, port, close } = await app.start();
+            const { runFeature, closeFeature, port, close } = await app.start({ singleRun: true });
             disposables.add(() => close());
 
             const configOne: TopLevelConfig = [
@@ -462,7 +462,7 @@ describe('Application', function () {
             basePath: engineFeatureFixturePath,
         });
 
-        const { close, port, router } = await app.start();
+        const { close, port, router } = await app.start({ singleRun: true });
         disposables.add(() => close());
         router.get('/test/me', (_req, res) => {
             res.send('OK');
