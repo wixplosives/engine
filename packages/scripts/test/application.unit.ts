@@ -58,7 +58,7 @@ describe('Application', function () {
     describe('start', () => {
         it(`serves and allows running a feature`, async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
-            const { close, port } = await app.start({ featureName: 'engine-single/x' });
+            const { close, port } = await app.start({ featureName: 'engine-single/x', singleRun: true });
             disposables.add(() => close());
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
