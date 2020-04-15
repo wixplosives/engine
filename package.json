@@ -41,7 +41,7 @@
     "@types/sinon-chai": "^3.2.4",
     "@types/socket.io": "^2.1.4",
     "@types/socket.io-client": "^1.4.32",
-    "@types/webpack": "^4.41.10",
+    "@types/webpack": "^4.41.11",
     "@types/webpack-dev-middleware": "^3.7.0",
     "@types/webpack-sources": "^0.1.7",
     "@types/webpack-virtual-modules": "^0.1.0",
