@@ -28,6 +28,7 @@ const { hasOwnProperty } = Object.prototype;
 
 function mkCompare<T>(params: SlotOrdering<T>): Compare<T> {
     let func: Compare<T> = (_a: T, _b: T) => 0;
+    // eslint-disable-next-line @typescript-eslint/no-for-in-array
     for (const p in params) {
         if (hasOwnProperty.call(params, p)) {
             const [key, mode] = params[p];
