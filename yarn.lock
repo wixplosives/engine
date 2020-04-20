@@ -1119,19 +1119,19 @@
     lodash.upperfirst "^4.3.1"
     yargs "^15.3.1"
 
-"@stylable/core@^3.4.1":
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.4.1.tgz#c3ebfc2ad67da8b2fae3ebda6d890673bdc7e896"
-  integrity sha512-UyuHkzJU9ibESU1tgVJbCkJ1b3VQSuda4ma357Bcfc+POrWHPokT3yLXt5LsEaKQiePXL5kj/9BI6vi3STkAPw==
+"@stylable/core@^3.4.1", "@stylable/core@^3.4.2":
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.4.2.tgz#426574c206230ae12a9110ce7fc83d3ef186724a"
+  integrity sha512-6nk7J2zI8fZPS3oCKVsJBeuwjvA0PuxHZ8aMJ/lWgy6mNfS+GtURoOMtKlY7ZMp62MZ6lP5iHz5MmSxFubPG8g==
   dependencies:
     css-selector-tokenizer "^0.7.2"
     deindent "^0.1.0"
     enhanced-resolve "^4.1.1"
     is-vendor-prefixed "^3.3.1"
-    jest-docblock "^25.2.6"
+    jest-docblock "^25.3.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
-    murmurhash "^0.0.2"
+    murmurhash "^1.0.0"
     postcss "^7.0.27"
     postcss-js "^2.0.3"
     postcss-nested "^4.2.1"
@@ -5352,7 +5352,7 @@ isstream@~0.1.2:
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
   integrity sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=
 
-jest-docblock@^25.2.6:
+jest-docblock@^25.3.0:
   version "25.3.0"
   resolved "https://registry.yarnpkg.com/jest-docblock/-/jest-docblock-25.3.0.tgz#8b777a27e3477cd77a168c05290c471a575623ef"
   integrity sha512-aktF0kCar8+zxRHxQZwxMy70stc9R1mOmrLsT5VO3pIT0uzGRSDAXxSlz4NqQWpuLjPpuMhPRl7H+5FRsvIQAg==
@@ -6152,6 +6152,11 @@ murmurhash@^0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/murmurhash/-/murmurhash-0.0.2.tgz#6f07bd8a1105e709c26fc89420cb5930c24585fe"
   integrity sha1-bwe9ihEF5wnCb8iUIMtZMMJFhf4=
+
+murmurhash@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/murmurhash/-/murmurhash-1.0.0.tgz#d0e4556892317d984af632b6a88d5605beef26a7"
+  integrity sha512-u/NfpXS+viMWAupgU6IkwAVWkVnpvzS+D9bDxNuNRUoQ0BRMZ1DK/dPH6Qrknn7RxMHVQBpYBQQigUt7of6RiQ==
 
 mute-stream@0.0.7:
   version "0.0.7"
