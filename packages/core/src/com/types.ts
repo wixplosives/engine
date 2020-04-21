@@ -5,7 +5,14 @@ import { Environment } from '../entities';
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;
 
-export type EnvironmentTypes = 'window' | 'iframe' | 'worker' | 'node' | 'context' | 'electron-renderer';
+export type EnvironmentTypes =
+    | 'window'
+    | 'iframe'
+    | 'worker'
+    | 'node'
+    | 'context'
+    | 'electron-renderer'
+    | 'electron-main';
 /**
  * TODO: remove onReconnect and onDisconnect
  */
