@@ -37,6 +37,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const webEnvs = new Map<string, string[]>();
     const workerEnvs = new Map<string, string[]>();
     const electronRendererEnvs = new Map<string, string[]>();
+    const electronMainEnvs = new Map<string, string[]>();
     for (const env of enviroments) {
         const { type, name, childEnvName } = env;
         if (!resolvedContexts[name] || resolvedContexts[name] === childEnvName)
@@ -46,6 +47,8 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 addEnv(workerEnvs, env);
             } else if (type === 'electron-renderer') {
                 addEnv(electronRendererEnvs, env);
+            } else if (type === 'electron-main') {
+                addEnv(electronMainEnvs, env);
             }
     }
     if (webEnvs.size) {
@@ -97,6 +100,19 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         );
     }
 
+    if (electronMainEnvs.size) {
+        configurations.push(
+            createWebpackConfig({
+                ...options,
+                baseConfig,
+                enviroments: electronRendererEnvs,
+                target: 'electron-main',
+                virtualModules,
+                plugins: [new VirtualModulesPlugin(virtualModules)],
+            })
+        );
+    }
+
     return configurations;
 }
 
@@ -110,7 +126,7 @@ interface ICreateWebpackConfigOptions {
     outputPath: string;
     enviroments: Map<string, string[]>;
     publicPath?: string;
-    target: 'web' | 'webworker' | 'electron-renderer';
+    target: 'web' | 'webworker' | 'electron-renderer' | 'electron-main';
     virtualModules: Record<string, string>;
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;
@@ -162,7 +178,7 @@ function createWebpackConfig({
             staticBuild,
             publicConfigsRoute,
         });
-        if (target === 'web') {
+        if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 new HtmlWebpackPlugin({
                     filename: `${envName}.html`,
