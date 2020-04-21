@@ -105,7 +105,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: electronRendererEnvs,
+                enviroments: electronMainEnvs,
                 target: 'electron-main',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
