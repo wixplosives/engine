@@ -168,6 +168,7 @@ program
         (param) => param === 'true',
         true
     )
+    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -178,6 +179,7 @@ program
             require: pathsToRequire,
             publicPath,
             autoLaunch,
+            publicConfigsRoute,
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -191,6 +193,7 @@ program
                 port: preferredPort ? parseInt(preferredPort, 10) : undefined,
                 publicPath,
                 autoLaunch,
+                publicConfigsRoute,
             });
             console.log(`Listening:`);
             console.log(`http://localhost:${port}/main.html`);

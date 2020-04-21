@@ -42,6 +42,17 @@ function getFilePathInPackage(fs: IFileSystemSync, featurePackage: IPackageDescr
         .replace(/\\/g, '/');
 }
 
+function scopeFilePathsToPackage(
+    fs: IFileSystemSync,
+    featurePackage: IPackageDescriptor,
+    envFiles: Record<string, string>
+) {
+    return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
+        acc[envName] = getFilePathInPackage(fs, featurePackage, filePath);
+        return acc;
+    }, {});
+}
+
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync) {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
@@ -127,11 +138,10 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
         for (const filePath of configurations) {
             const { configName, envName } = parseConfigFileName(fs.basename(filePath));
             const scopedConfigName = scopeToPackage(featurePackage.simplifiedName, configName);
-            const configFilePath = getFilePathInPackage(fs, featurePackage, filePath);
             foundConfigs.add(scopedConfigName, {
                 envName,
                 name: configName,
-                filePath: configFilePath,
+                filePath,
             });
         }
 
@@ -150,13 +160,13 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
                 contextFilePaths: {},
                 resolvedContexts: {},
                 isRoot: ownFeatureFilePaths.has(featureFilePath),
-                filePath: getFilePathInPackage(fs, featurePackage, featureFilePath),
+                filePath: featureFilePath,
                 toJSON(this: IFeatureDefinition) {
                     return {
-                        contextFilePaths: this.contextFilePaths,
+                        contextFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.contextFilePaths),
                         dependencies: this.dependencies,
-                        filePath: this.filePath,
-                        envFilePaths: this.envFilePaths,
+                        filePath: getFilePathInPackage(fs, featurePackage, this.filePath),
+                        envFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.envFilePaths),
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         scopedName,
@@ -172,7 +182,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
                 const targetEnv = childEnvName ? `${envName}/${childEnvName}` : envName;
-                existingDefinition.envFilePaths[targetEnv] = getFilePathInPackage(fs, featurePackage, envFilePath);
+                existingDefinition.envFilePaths[targetEnv] = envFilePath;
             }
         }
 
@@ -182,11 +192,7 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const contextualName = `${envName}/${childEnvName}`;
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
-                existingDefinition.contextFilePaths[contextualName] = getFilePathInPackage(
-                    fs,
-                    featurePackage,
-                    contextFilePath
-                );
+                existingDefinition.contextFilePaths[contextualName] = contextFilePath;
             }
         }
     }
