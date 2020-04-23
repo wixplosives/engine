@@ -1,5 +1,6 @@
 import { EnvironmentInitializer, WindowHost } from '../types';
 import { Communication } from '../communication';
+import { reportError } from '../errors';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
 
@@ -61,22 +62,21 @@ async function useIframe(com: Communication, host: HTMLIFrameElement, instanceId
         await com.envReady(instanceId);
     }
 
-    const handleIframeReload = async () => {
-        await com.envReady(instanceId);
-        com.reconnectHandlers(instanceId);
+    const handleIframeReload = () => {
+        com.envReady(instanceId)
+            .then(() => com.reconnectHandlers(instanceId))
+            .catch(reportError);
     };
     const existingReloadHandler = iframeReloadHandlers.get(host);
     if (existingReloadHandler) {
         host.removeEventListener('load', existingReloadHandler);
     }
-    iframeReloadHandlers.set(host, handleIframeReload);
     host.addEventListener('load', handleIframeReload);
 }
 
 function willUrlChangeCauseReload(oldUrl: URL, newUrl: URL) {
     return (
-        oldUrl.origin + oldUrl.pathname + oldUrl.search !==
-        newUrl.origin + newUrl.pathname + newUrl.search ||
+        oldUrl.origin + oldUrl.pathname + oldUrl.search !== newUrl.origin + newUrl.pathname + newUrl.search ||
         !newUrl.hash
     );
 }
@@ -88,7 +88,7 @@ function changeLocation(win: Window, host: HTMLIFrameElement, rootComId: string,
     // This is the contract of the communication to get the root communication id
     win.name = rootComId;
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         const oldUrl = new URL(win.location.href);
         const newUrl = new URL(iframeSrc, window.location.href);
         if (willUrlChangeCauseReload(oldUrl, newUrl)) {
