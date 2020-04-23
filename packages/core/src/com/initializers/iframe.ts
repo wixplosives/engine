@@ -24,7 +24,7 @@ export function iframeInitializer({
             throw new Error('should provide a host provider function to the current iframe to initialize');
         }
         const publicPath = com.getPublicPath();
-        managed
+        const id = managed
             ? await useIframe(
                   com,
                   iframeElement,
@@ -34,11 +34,11 @@ export function iframeInitializer({
             : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
 
         return {
-            id: instanceId,
+            id,
         };
     };
 }
-async function useWindow(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<void> {
+async function useWindow(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<string> {
     const win = isIframe(host) ? host.contentWindow : host;
     if (!win) {
         throw new Error('cannot spawn detached iframe.');
@@ -46,32 +46,34 @@ async function useWindow(com: Communication, host: WindowHost, instanceId: strin
     com.registerEnv(instanceId, win);
     await injectScript(win, instanceId, src);
     await com.envReady(instanceId);
+    return instanceId;
 }
 
-const iframeReloadHandlers = new WeakMap<HTMLIFrameElement, () => void>();
-
-async function useIframe(com: Communication, host: HTMLIFrameElement, instanceId: string, src: string): Promise<void> {
+async function useIframe(
+    com: Communication,
+    host: HTMLIFrameElement,
+    instanceId: string,
+    src: string
+): Promise<string> {
     const win = host.contentWindow;
     if (!win) {
         throw new Error('cannot spawn detached iframe.');
     }
 
     const locationChanged = await changeLocation(win, host, instanceId, src);
-    com.registerEnv(instanceId, win);
     if (locationChanged) {
+        com.registerEnv(instanceId, win);
         await com.envReady(instanceId);
-    }
+        const handleIframeReload = () => {
+            com.envReady(instanceId)
+                .then(() => com.reconnectHandlers(instanceId))
+                .catch(reportError);
+        };
 
-    const handleIframeReload = () => {
-        com.envReady(instanceId)
-            .then(() => com.reconnectHandlers(instanceId))
-            .catch(reportError);
-    };
-    const existingReloadHandler = iframeReloadHandlers.get(host);
-    if (existingReloadHandler) {
-        host.removeEventListener('load', existingReloadHandler);
+        host.addEventListener('load', handleIframeReload);
+        return instanceId;
     }
-    host.addEventListener('load', handleIframeReload);
+    return win.name;
 }
 
 function willUrlChangeCauseReload(oldUrl: URL, newUrl: URL) {
