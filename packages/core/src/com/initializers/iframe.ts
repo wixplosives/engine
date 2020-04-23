@@ -60,6 +60,8 @@ async function useIframe(
         throw new Error('cannot spawn detached iframe.');
     }
 
+    const previousWindowName = win.name;
+
     const locationChanged = await changeLocation(win, host, instanceId, src);
     if (locationChanged) {
         com.registerEnv(instanceId, win);
@@ -73,7 +75,8 @@ async function useIframe(
         host.addEventListener('load', handleIframeReload);
         return instanceId;
     }
-    return win.name;
+    win.name = previousWindowName;
+    return previousWindowName;
 }
 
 function willUrlChangeCauseReload(oldUrl: URL, newUrl: URL) {
