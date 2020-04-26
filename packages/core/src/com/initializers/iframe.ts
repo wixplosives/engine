@@ -49,6 +49,8 @@ async function useWindow(com: Communication, host: WindowHost, instanceId: strin
     return instanceId;
 }
 
+const iframeReloadHandlers = new WeakMap<HTMLIFrameElement, () => void>();
+
 async function useIframe(
     com: Communication,
     host: HTMLIFrameElement,
@@ -76,7 +78,13 @@ async function useIframe(
                 .catch(reportError);
         };
 
+        const existingReloadHandler = iframeReloadHandlers.get(host);
+        if (existingReloadHandler) {
+            host.removeEventListener('load', existingReloadHandler);
+        }
+        iframeReloadHandlers.set(host, handleIframeReload);
         host.addEventListener('load', handleIframeReload);
+
         return instanceId;
     }
     win.name = previousWindowName;
