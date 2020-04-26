@@ -39,7 +39,7 @@
     "socket.io": "^2.3.0",
     "webpack": "^4.43.0",
     "webpack-dev-middleware": "^3.7.2",
-    "webpack-virtual-modules": "^0.2.1"
+    "webpack-virtual-modules": "^0.2.2"
   },
   "files": [
     "cjs",
