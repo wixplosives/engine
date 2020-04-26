@@ -338,6 +338,12 @@ export class Communication {
         return promise;
     }
 
+    public clearEnvironment(instanceId: string) {
+        this.readyEnvs.delete(instanceId);
+        this.pendingMessages.deleteKey(instanceId);
+        this.pendingEnvs.deleteKey(instanceId);
+    }
+
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
         if (message.type === 'call') {
             const forwardResponse = await this.callMethod(

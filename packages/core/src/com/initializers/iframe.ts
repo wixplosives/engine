@@ -24,7 +24,7 @@ export function iframeInitializer({
             throw new Error('should provide a host provider function to the current iframe to initialize');
         }
         const publicPath = com.getPublicPath();
-        managed
+        const id = managed
             ? await useIframe(
                   com,
                   iframeElement,
@@ -34,11 +34,11 @@ export function iframeInitializer({
             : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
 
         return {
-            id: instanceId,
+            id,
         };
     };
 }
-async function useWindow(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<void> {
+async function useWindow(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<string> {
     const win = isIframe(host) ? host.contentWindow : host;
     if (!win) {
         throw new Error('cannot spawn detached iframe.');
@@ -46,35 +46,75 @@ async function useWindow(com: Communication, host: WindowHost, instanceId: strin
     com.registerEnv(instanceId, win);
     await injectScript(win, instanceId, src);
     await com.envReady(instanceId);
+    return instanceId;
 }
 
-async function useIframe(com: Communication, host: HTMLIFrameElement, instanceId: string, src: string): Promise<void> {
+const iframeReloadHandlers = new WeakMap<HTMLIFrameElement, () => void>();
+
+async function useIframe(
+    com: Communication,
+    host: HTMLIFrameElement,
+    instanceId: string,
+    src: string
+): Promise<string> {
     const win = host.contentWindow;
     if (!win) {
         throw new Error('cannot spawn detached iframe.');
     }
 
-    await changeLocation(win, host, instanceId, src);
-    com.registerEnv(instanceId, win);
-    await com.envReady(instanceId);
+    const previousWindowName = win.name;
 
-    const reload = () => com.reconnectHandlers(instanceId);
-    host.addEventListener('load', () => {
-        com.envReady(instanceId).then(reload).catch(reportError);
-    });
+    const locationChanged = await changeLocation(win, host, instanceId, src);
+    if (locationChanged) {
+        com.registerEnv(instanceId, win);
+        await com.envReady(instanceId);
+        const handleIframeReload = () => {
+            /**
+             * when page is reloaded, it is necessary to clear the environment 'ready' state in order to be able to wait for the 'ready' event coming from the newly reloaded environment
+             */
+            com.clearEnvironment(instanceId);
+            com.envReady(instanceId)
+                .then(() => com.reconnectHandlers(instanceId))
+                .catch(reportError);
+        };
+
+        const existingReloadHandler = iframeReloadHandlers.get(host);
+        if (existingReloadHandler) {
+            host.removeEventListener('load', existingReloadHandler);
+        }
+        iframeReloadHandlers.set(host, handleIframeReload);
+        host.addEventListener('load', handleIframeReload);
+
+        return instanceId;
+    }
+    win.name = previousWindowName;
+    return previousWindowName;
 }
 
+function willUrlChangeCauseReload(oldUrl: URL, newUrl: URL) {
+    return (
+        oldUrl.origin + oldUrl.pathname + oldUrl.search !== newUrl.origin + newUrl.pathname + newUrl.search ||
+        !newUrl.hash
+    );
+}
+
+/**
+ * @returns true if navigation has occurred, false if only the hash was updated
+ **/
 function changeLocation(win: Window, host: HTMLIFrameElement, rootComId: string, iframeSrc: string) {
-    return new Promise<Window>((res, rej) => {
-        // This is the contract of the communication to get the root communication id
-        win.name = rootComId;
-        const loaded = () => {
-            host.removeEventListener('load', loaded);
-            res();
-        };
-        host.addEventListener('load', loaded);
-        host.addEventListener('error', () => rej());
-        win.location.href = iframeSrc;
+    // This is the contract of the communication to get the root communication id
+    win.name = rootComId;
+
+    return new Promise((resolve) => {
+        const oldUrl = new URL(win.location.href);
+        const newUrl = new URL(iframeSrc, window.location.href);
+        if (willUrlChangeCauseReload(oldUrl, newUrl)) {
+            host.addEventListener('load', () => resolve(true), { once: true });
+            win.location.href = newUrl.href;
+        } else {
+            win.location.href = newUrl.href;
+            resolve(false);
+        }
     });
 }
 
