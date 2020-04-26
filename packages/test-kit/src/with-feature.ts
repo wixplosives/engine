@@ -51,12 +51,6 @@ export interface IFeatureExecutionOptions {
     queryParams?: Record<string, string>;
 
     /**
-     * if value will be set to `true`, errors from the browser will not fail tests
-     * @default false
-     */
-    allowErrors?: boolean;
-
-    /**
      * runtime options that will be provided to the node environments
      */
     runOptions?: Record<string, string>;
@@ -113,7 +107,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         featureName: suiteFeatureName,
         configName: suiteConfigName,
         runOptions: suiteOptions = {},
-        allowErrors: suiteAllowErrors = false,
         queryParams: suiteQueryParams,
         runningApplicationPort,
         config: suiteConfig,
@@ -128,7 +121,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         );
     }
 
-    let allowErrors = suiteAllowErrors;
     const capturedErrors: Error[] = [];
 
     const resolvedPort =
@@ -172,12 +164,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         if (capturedErrors.length) {
             const errorsText = capturedErrors.join('\n');
             capturedErrors.length = 0;
-            if (!allowErrors) {
-                allowErrors = suiteAllowErrors;
-                throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
-            }
+            throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
         }
-        allowErrors = suiteAllowErrors;
     });
 
     return {
@@ -187,7 +175,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 configName = suiteConfigName,
                 runOptions = suiteOptions,
                 queryParams = suiteQueryParams,
-                allowErrors: targetAllowErrors = false,
                 config = suiteConfig,
                 defaultViewport = suiteDefaultViewport,
             }: IFeatureExecutionOptions = {},
@@ -200,7 +187,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            allowErrors = targetAllowErrors;
             const { configName: newConfigName } = await executableApp.runFeature({
                 featureName,
                 configName,
