@@ -67,6 +67,10 @@ async function useIframe(
         com.registerEnv(instanceId, win);
         await com.envReady(instanceId);
         const handleIframeReload = () => {
+            /**
+             * when page is reloaded, it is neccasery to clear the environment 'ready' state in order to be able to wait for the 'ready' event coming from the newly reloaded environment
+             */
+            com.clearEnvironment(instanceId);
             com.envReady(instanceId)
                 .then(() => com.reconnectHandlers(instanceId))
                 .catch(reportError);

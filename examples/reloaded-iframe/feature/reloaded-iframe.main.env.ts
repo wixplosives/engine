@@ -28,6 +28,7 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
             iframeEnv,
             iframeInitializer({
                 iframeElement: iframe,
+                managed: true,
             })
         );
 
