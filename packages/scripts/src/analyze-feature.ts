@@ -53,14 +53,14 @@ function scopeFilePathsToPackage(
     }, {});
 }
 
-export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync) {
+export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, rootOwnFeaturesDir = '.') {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
 
     // pick up own feature files in provided npm packages
     for (const { directoryPath } of npmPackages) {
         for (const rootName of featureRoots) {
-            const rootPath = fs.join(directoryPath, rootName);
+            const rootPath = fs.join(directoryPath, rootOwnFeaturesDir, rootName);
             if (!fs.directoryExistsSync(rootPath)) {
                 continue;
             }
