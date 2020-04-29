@@ -4,5 +4,4 @@ featureA.setup(MAIN, ({ run }) => {
     run(() => {
         document.body.innerHTML = `feature a is running`;
     });
-    return null;
 });

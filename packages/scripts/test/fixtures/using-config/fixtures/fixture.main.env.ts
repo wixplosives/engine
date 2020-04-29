@@ -5,5 +5,4 @@ MyFeature.setup(main, ({ run }) => {
     run(() => {
         document.body.innerText += `alternative`;
     });
-    return null;
 });

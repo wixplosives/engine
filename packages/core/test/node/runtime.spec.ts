@@ -73,14 +73,12 @@ describe('Feature', () => {
             run(() => {
                 calls.push('f0 run');
             });
-            return null;
         });
 
         entryFeature.setup(AllEnvironments, ({ run }) => {
             run(() => {
                 calls.push('f1 run');
             });
-            return null;
         });
 
         runEngine({ entryFeature });
@@ -98,7 +96,6 @@ describe('Feature', () => {
             run(() => {
                 calls.push('f0 run');
             });
-            return null;
         });
 
         f1.setup(AllEnvironments, ({ run }) => {
@@ -106,7 +103,6 @@ describe('Feature', () => {
             run(() => {
                 calls.push('f1 run');
             });
-            return null;
         });
 
         runEngine({ entryFeature: [f0, f1, f0, f1] });
@@ -303,7 +299,9 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity('main'),
+                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
+                        'main'
+                    ),
                 },
             }).setup('main', ({ mapSlot }) => {
                 return {
@@ -323,7 +321,6 @@ describe('Feature', () => {
             }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
-                return null;
             });
 
             const engine = runEngine({ entryFeature, envName });
@@ -336,7 +333,9 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity(envName),
+                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
+                        envName
+                    ),
                 },
             }).setup(envName, ({ mapSlot }) => {
                 return {
@@ -355,7 +354,6 @@ describe('Feature', () => {
             }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
-                return null;
             });
 
             const f2 = new Feature({
@@ -364,7 +362,6 @@ describe('Feature', () => {
                 dependencies: [maps],
             }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
-                return null;
             });
 
             const engine = runEngine({ entryFeature: [f1, f2], envName });
@@ -378,7 +375,9 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(envName),
-                    retrieveService: Service.withType<{ getValue(key: string): string | null }>().defineEntity(envName),
+                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
+                        envName
+                    ),
                 },
             }).setup(envName, ({ mapSlot }) => {
                 return {
@@ -394,13 +393,10 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps],
-            }).setup(envName, ({}, {}) => {
-                return null;
-            });
-
+            }).setup(envName, () => undefined);
             const engine = runEngine({ entryFeature, envName });
 
-            expect(engine.get(maps).api.retrieveService.getValue('1')).to.be.equal(null);
+            expect(engine.get(maps).api.retrieveService.getValue('1')).to.be.equal(undefined);
         });
     });
 
@@ -490,7 +486,6 @@ describe('feature interaction', () => {
             transformers.register((s: string) => {
                 return `${config.prefix}${s}${config.suffix}`;
             });
-            return null;
         });
 
         const engine = runEngine({
@@ -570,7 +565,6 @@ describe('feature disposal', () => {
         const dispose = spy(() => Promise.resolve());
         entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
-            return null;
         });
 
         const engine = runEngine({
@@ -596,8 +590,6 @@ describe('feature disposal', () => {
         entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
             onDispose(dispose2);
-
-            return null;
         });
 
         const engine = runEngine({
@@ -624,8 +616,6 @@ describe('feature disposal', () => {
         entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(disposeFirst);
             onDispose(disposeSecond);
-
-            return null;
         });
 
         const engine = runEngine({
@@ -671,7 +661,6 @@ describe('service with remove access environment visibility', () => {
         echoFeature.setup(main, ({ echoService }) => {
             // this is the proxy! because we are in different env.
             expect(typeof echoService.get === 'function');
-            return null;
         });
 
         // const checks = [];
@@ -684,13 +673,11 @@ describe('service with remove access environment visibility', () => {
         testFeature.setup(processing, ({}, { echoFeature: { echoService } }) => {
             // this is the real service since we are in the same env!.
             expect(typeof echoService.echo === 'function');
-            return null;
         });
 
         testFeature.setup(main, ({}, { echoFeature: { echoService } }) => {
             // this is the proxy! because we are in different env.
             expect(typeof echoService.get === 'function');
-            return null;
         });
 
         runEngine({
@@ -719,7 +706,6 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
         })
             .setup(main, ({ slot }) => {
                 slot.register({ name: 'test' });
-                return null;
             })
             .setup(processing, (x) => {
                 typeCheck(
@@ -735,7 +721,6 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                         >
                     ) => true
                 );
-                return null;
             });
     });
 
@@ -774,7 +759,6 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
             run(() => {
                 checks.push(echoService.echo('echo1'));
             });
-            return null;
         });
 
         testFeature.setup(main, ({ run }, { echoFeature: { echoService } }) => {
@@ -782,7 +766,6 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                 const val = await echoService.echo('echo2');
                 checks.push(val);
             });
-            return null;
         });
     });
 });

@@ -38,6 +38,4 @@ ElectronAppFeature.setup(renderer, ({ run }, { COM: { startEnvironment } }) => {
             });
         });
     });
-
-    return null;
 });

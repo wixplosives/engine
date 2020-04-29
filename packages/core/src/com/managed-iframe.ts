@@ -1,7 +1,7 @@
 import { Json } from './types';
 
 export class ManagedIframe {
-    constructor(private host: Window | null) {}
+    constructor(private host?: Window | null) {}
     public getHashParams() {
         const contentWindow = this.getContentWindow();
         return contentWindow.location.hash.length

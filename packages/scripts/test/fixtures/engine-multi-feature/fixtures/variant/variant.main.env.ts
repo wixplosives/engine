@@ -3,5 +3,4 @@ import Variant from './variant.feature';
 
 Variant.setup(MAIN, ({}, { MultiFeature: { mySlot } }) => {
     mySlot.register('testing 1 2 3');
-    return null;
 });

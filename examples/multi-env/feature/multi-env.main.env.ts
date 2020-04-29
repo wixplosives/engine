@@ -15,6 +15,4 @@ MultiEnvFeature.setup(mainEnv, ({ echoService, run, config }, { COM: { startEnvi
             config,
         });
     });
-
-    return null;
 });

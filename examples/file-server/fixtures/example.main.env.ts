@@ -16,6 +16,4 @@ TestFeature.setup(main, ({ run }, { fileServerExample: { remoteFiles } }) => {
          */
         document.body.innerHTML = `<div id='testdiv'>${JSON.stringify(dir, null, 4).replace(/\r\n/, '<br />')}</div>`;
     });
-
-    return null;
 });

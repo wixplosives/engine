@@ -24,7 +24,7 @@ export interface IFeatureLoader {
 }
 
 export interface IRunEngineAppOptions {
-    featureName?: string | null;
+    featureName?: string;
     featureLoaders: Record<string, IFeatureLoader>;
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;

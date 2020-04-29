@@ -27,7 +27,7 @@ export class FileActions {
      * will return the file contents given an absolute file path
      * @param filePath path to the file in the local file system
      */
-    public async getFileContents(filePath: string): Promise<string | null> {
+    public async getFileContents(filePath: string): Promise<string> {
         return this.fs.promises.readFile(filePath, 'utf8');
     }
     /**

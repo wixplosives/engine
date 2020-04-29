@@ -183,7 +183,7 @@ export type RegisteringFeature<
         ENV,
         'providedFrom'
     >
-> = keyof ProvidedOutputs extends never ? null : ProvidedOutputs;
+> = keyof ProvidedOutputs extends never ? undefined | void : ProvidedOutputs;
 
 export interface SetupHandlerEnvironmentContext<EnvironmentContext extends Record<string, Context<any>>> {
     context: EnvironmentContext;

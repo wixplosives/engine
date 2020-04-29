@@ -48,5 +48,4 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
             div.innerText = `document was called ${times} times`;
         });
     });
-    return null;
 });

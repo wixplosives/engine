@@ -10,5 +10,4 @@ EndWith.setup(PROCESSING, ({}, { preview }) => {
             return _content.includes('!');
         },
     });
-    return null;
 });
