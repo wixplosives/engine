@@ -85,9 +85,9 @@ export type ServiceComConfig<T> = {
 
 export type ValuePromise<R> = R extends Promise<unknown> ? R : Promise<R>;
 
-export type ServiceConfig<T extends any> = T[typeof SERVICE_CONFIG];
+export type ServiceConfig<T extends { [SERVICE_CONFIG]?: any }> = T[typeof SERVICE_CONFIG];
 
-export type MultiTanentProxyFunction<T extends any, K extends string> = ReturnType<
+export type MultiTanentProxyFunction<T extends { [SERVICE_CONFIG]?: any }, K extends string> = ReturnType<
     ServiceConfig<T>[K]
 >['proxyFunction'];
 
