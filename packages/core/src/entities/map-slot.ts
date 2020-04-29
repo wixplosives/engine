@@ -31,7 +31,7 @@ export class MapRegistry<K, T> {
     }
 
     public get(key: K) {
-        return this.items.get(key) || null;
+        return this.items.get(key);
     }
 
     public values() {

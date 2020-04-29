@@ -11,7 +11,7 @@ export class RemoteFilesAPI implements FileSystemAPI {
         return this.fileActions.getDirectoryTree(directoryPath);
     }
 
-    public async readFile(filePath: string): Promise<string | null> {
+    public async readFile(filePath: string): Promise<string> {
         return this.fileActions.getFileContents(filePath);
     }
 }

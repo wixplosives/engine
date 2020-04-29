@@ -22,6 +22,4 @@ Preview.setup('main', ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
             return panel;
         },
     });
-
-    return null;
 });

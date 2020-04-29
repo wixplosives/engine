@@ -12,7 +12,7 @@ export const server = new Environment('server', 'node', 'single');
  */
 export interface FileSystemAPI {
     readDir(filePath: string): Promise<IDirectoryContents>;
-    readFile(filePath: string): Promise<string | null>;
+    readFile(filePath: string): Promise<string>;
 }
 
 /**

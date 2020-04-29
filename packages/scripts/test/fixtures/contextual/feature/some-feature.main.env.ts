@@ -14,5 +14,4 @@ sampleFeature.setup(mainEnv, ({ run, serverService }, { COM: { startEnvironment 
 
         document.body.innerText = await serverService.echo();
     });
-    return null;
 });

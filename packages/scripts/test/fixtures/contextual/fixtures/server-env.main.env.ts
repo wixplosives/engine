@@ -5,5 +5,4 @@ ExampleFeature.setup(mainEnv, ({ run }, { multiEnv: { serverService } }) => {
     run(async () => {
         document.body.innerText = await serverService.echo();
     });
-    return null;
 });

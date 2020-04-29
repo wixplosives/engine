@@ -13,6 +13,4 @@ FileServer.setup('main', ({ run, config }, { COM: { startEnvironment } }) => {
         document.title = config.title ?? 'my title';
         await startEnvironment(server, socketServerInitializer());
     });
-
-    return null;
 });

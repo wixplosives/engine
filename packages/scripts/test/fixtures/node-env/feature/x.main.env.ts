@@ -7,5 +7,4 @@ sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { startEnvironment } 
         await startEnvironment(serverEnv, socketServerInitializer());
         document.body.textContent = await echoService.echo();
     });
-    return null;
 });

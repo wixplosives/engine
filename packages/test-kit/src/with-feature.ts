@@ -76,7 +76,7 @@ export interface IWithFeatureOptions extends IFeatureExecutionOptions, puppeteer
     defaultViewport?: puppeteer.Viewport;
 }
 
-let browser: puppeteer.Browser | null = null;
+let browser: puppeteer.Browser | undefined = undefined;
 let featureUrl = '';
 let executableApp: IExecutableApplication;
 
@@ -85,7 +85,7 @@ if (typeof after !== 'undefined') {
         if (browser && browser.isConnected) {
             await browser.close();
         }
-        browser = null;
+        browser = undefined;
     });
 
     after('close engine server, if open', async function () {

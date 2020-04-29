@@ -11,5 +11,4 @@ MyFeature.setup(MAIN, ({ run, myConfig, mySlot }) => {
           <pre id="mySlot">${JSON.stringify([...mySlot])}</pre>
         `;
     });
-    return null;
 });

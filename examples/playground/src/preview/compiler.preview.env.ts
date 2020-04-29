@@ -6,5 +6,4 @@ Preview.setup('preview', ({ run, compileService }, { playgroundCodeEditor: { rem
             document.body.innerHTML = (await compileService.compile()).code;
         });
     });
-    return null;
 });

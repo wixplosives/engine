@@ -2,7 +2,7 @@ import { Target } from '../types';
 
 export class BaseHost implements Target {
     public name = 'base-host';
-    public parent: BaseHost | null = null;
+    public parent: BaseHost | undefined = undefined;
     protected handlers = new Map<'message', Set<(e: { data: any }) => void>>();
     public addEventListener(name: 'message', handler: (e: { data: any }) => void, _capture?: boolean) {
         const handlers = this.handlers.get(name);

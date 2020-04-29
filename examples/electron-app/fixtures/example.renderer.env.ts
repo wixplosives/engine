@@ -27,6 +27,4 @@ TestFeature.setup(renderer, ({ run }, { electronExample: { echoService } }) => {
             echoService.invokeListeners().catch(console.error);
         }, 1_000);
     });
-
-    return null;
 });

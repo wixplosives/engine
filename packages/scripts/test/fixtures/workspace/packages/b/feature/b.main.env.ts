@@ -5,5 +5,4 @@ featureB.setup(MAIN, ({ run }) => {
     run(() => {
         document.body.style.backgroundColor = 'rgb(0, 128, 0)';
     });
-    return null;
 });

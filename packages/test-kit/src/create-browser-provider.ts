@@ -1,7 +1,7 @@
 import { Browser, launch, LaunchOptions } from 'puppeteer';
 
 export function createBrowserProvider(options?: LaunchOptions) {
-    let browser: Browser | null;
+    let browser: Browser | undefined;
     return {
         async loadPage(url: string) {
             if (!browser) {
@@ -23,7 +23,7 @@ export function createBrowserProvider(options?: LaunchOptions) {
             if (browser && browser.isConnected) {
                 await browser.close();
             }
-            browser = null;
+            browser = undefined;
         },
     };
 }
