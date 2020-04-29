@@ -80,7 +80,7 @@ export type EnvType<T extends EnvVisibility> = T extends []
     ? U1
     : T;
 
-type FilterENVKeys<T extends any, ENV extends string, Key extends 'visibleAt' | 'providedFrom'> = {
+type FilterENVKeys<T extends EntityRecord, ENV extends string, Key extends 'visibleAt' | 'providedFrom'> = {
     [P in keyof T]: ENV extends EnvType<T[P][Key]> ? P : never;
 }[keyof T];
 
