@@ -8,7 +8,7 @@
   "dependencies": {
     "@file-services/directory": "^2.2.0",
     "@file-services/node": "^2.2.0",
-    "electron": "^8.2.4"
+    "electron": "^8.2.5"
   },
   "license": "UNLICENSED",
   "private": true
