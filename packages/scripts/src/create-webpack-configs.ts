@@ -24,9 +24,32 @@ export interface ICreateWebpackConfigsOptions {
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
 
+function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
+    const allContexts = new SetMultiMap<string, string>();
+    [...features.entries()].map(([_, { resolvedContexts }]) =>
+        convertEnvRecordToSetMultiMap(resolvedContexts, allContexts)
+    );
+    return allContexts;
+}
+
+function convertEnvRecordToSetMultiMap(record: Record<string, string>, set = new SetMultiMap<string, string>()) {
+    for (const [env, resolvedContext] of Object.entries(record)) {
+        set.add(env, resolvedContext);
+    }
+    return set;
+}
+
+function getResolvedContexts(features: Map<string, IFeatureDefinition>, featureName?: string) {
+    return featureName
+        ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
+        : getAllResolvedContexts(features);
+}
+
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
     const { enviroments, mode = 'development', baseConfig = {}, publicPath = '', featureName, features } = options;
-    const resolvedContexts = featureName ? features.get(featureName)?.resolvedContexts ?? {} : {};
+
+    const resolvedContexts = getResolvedContexts(features, featureName);
+
     if (!baseConfig.output) {
         baseConfig.output = {};
     }
@@ -40,7 +63,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const electronMainEnvs = new Map<string, string[]>();
     for (const env of enviroments) {
         const { type, name, childEnvName } = env;
-        if (!resolvedContexts[name] || resolvedContexts[name] === childEnvName)
+        if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
             if (type === 'window' || type === 'iframe') {
                 addEnv(webEnvs, env);
             } else if (type === 'worker') {
