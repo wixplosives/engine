@@ -1119,25 +1119,25 @@
     lodash.upperfirst "^4.3.1"
     yargs "^15.3.1"
 
-"@stylable/core@^3.4.4":
-  version "3.4.4"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.4.4.tgz#4924d0499bea35c88416d662555bc8bf3f484e11"
-  integrity sha512-0ciF1gViSsWrcPC06eTtzKgwJuAU6v6w9u2utvq6AVEKzJKCZ62nFP0RfrZlH+bfwm+Jd2WQf8AXjx3IpFCgsw==
+"@stylable/core@^3.4.4", "@stylable/core@^3.4.5":
+  version "3.4.5"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.4.5.tgz#e7d3e9c35d5ff33d218e88704118d92c86429f22"
+  integrity sha512-PE+r6i8+xMzD7VaxLIDFFq2fOs93OgcQdO3kcM6huOtDyS5QrXG3JmCg1q+KovLwPGCs+uMSMdli+PWPUhflVQ==
   dependencies:
     css-selector-tokenizer "^0.7.2"
     deindent "^0.1.0"
     enhanced-resolve "^4.1.1"
     is-vendor-prefixed "^3.3.1"
-    jest-docblock "^25.3.0"
+    jest-docblock "^26.0.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
     murmurhash "^1.0.0"
-    postcss "^7.0.27"
+    postcss "^7.0.29"
     postcss-js "^2.0.3"
     postcss-nested "^4.2.1"
     postcss-safe-parser "^4.0.2"
     postcss-selector-matches "^4.0.0"
-    postcss-value-parser "^4.0.3"
+    postcss-value-parser "^4.1.0"
     url-regex "^5.0.0"
 
 "@stylable/module-utils@^3.4.4":
@@ -5356,10 +5356,10 @@ isstream@~0.1.2:
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
   integrity sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=
 
-jest-docblock@^25.3.0:
-  version "25.3.0"
-  resolved "https://registry.yarnpkg.com/jest-docblock/-/jest-docblock-25.3.0.tgz#8b777a27e3477cd77a168c05290c471a575623ef"
-  integrity sha512-aktF0kCar8+zxRHxQZwxMy70stc9R1mOmrLsT5VO3pIT0uzGRSDAXxSlz4NqQWpuLjPpuMhPRl7H+5FRsvIQAg==
+jest-docblock@^26.0.0:
+  version "26.0.0"
+  resolved "https://registry.yarnpkg.com/jest-docblock/-/jest-docblock-26.0.0.tgz#3e2fa20899fc928cb13bd0ff68bd3711a36889b5"
+  integrity sha512-RDZ4Iz3QbtRWycd8bUEPxQsTlYazfYn/h5R65Fc6gOfwozFhoImx+affzky/FFBuqISPTqjXomoIGJVKBWoo0w==
   dependencies:
     detect-newline "^3.0.0"
 
@@ -7039,12 +7039,12 @@ postcss-selector-parser@^6.0.0, postcss-selector-parser@^6.0.2:
     indexes-of "^1.0.1"
     uniq "^1.0.1"
 
-postcss-value-parser@^4.0.0, postcss-value-parser@^4.0.3:
+postcss-value-parser@^4.0.0, postcss-value-parser@^4.0.3, postcss-value-parser@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.1.0.tgz#443f6a20ced6481a2bda4fa8532a6e55d789a2cb"
   integrity sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
 
-postcss@^7.0.14, postcss@^7.0.16, postcss@^7.0.18, postcss@^7.0.2, postcss@^7.0.21, postcss@^7.0.26, postcss@^7.0.27, postcss@^7.0.5, postcss@^7.0.6:
+postcss@^7.0.14, postcss@^7.0.16, postcss@^7.0.18, postcss@^7.0.2, postcss@^7.0.21, postcss@^7.0.26, postcss@^7.0.27, postcss@^7.0.29, postcss@^7.0.5, postcss@^7.0.6:
   version "7.0.29"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.29.tgz#d3a903872bd52280b83bce38cdc83ce55c06129e"
   integrity sha512-ba0ApvR3LxGvRMMiUa9n0WR4HjzcYm7tS+ht4/2Nd0NLtHpPIH77fuB9Xh1/yJVz9O/E/95Y/dn8ygWsyffXtw==
