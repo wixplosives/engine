@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "13.0.1",
+  "version": "13.0.2",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
@@ -22,7 +22,7 @@
     "@file-services/node": "^2.2.0",
     "@file-services/types": "^2.2.0",
     "@wixc3/engine-core": "^13.0.0",
-    "@wixc3/engine-core-node": "^13.0.0",
+    "@wixc3/engine-core-node": "^13.0.2",
     "commander": "^5.1.0",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
