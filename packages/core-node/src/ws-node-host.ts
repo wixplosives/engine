@@ -29,9 +29,10 @@ export class WsServerHost extends BaseHost implements IDisposable {
         if (data.to !== '*') {
             if (this.socketToEnvId.has(data.to)) {
                 const { socket, clientID } = this.socketToEnvId.get(data.to)!;
+                const tenantId = data.to;
                 data.to = clientID;
                 if (data.type === 'event') {
-                    data.handlerId = data.handlerId.slice(0, data.handlerId.length - socket.id.length);
+                    data.handlerId = data.handlerId.slice(0, data.handlerId.length - tenantId.length);
                 }
                 socket.emit('message', data);
             } else {
@@ -58,14 +59,15 @@ export class WsServerHost extends BaseHost implements IDisposable {
             // maybe change message forwarding to have 'forward destination' and correct 'from'
             // also maybe we can put the init of the map on 'connection' event
             // maybe we can notify from client about the new connected id
+            const originId = `${socket.id}/${message.origin}`;
+            const fromId = `${socket.id}/${message.origin}`;
             if (message.type === 'listen') {
-                message.data.handlerId += socket.id;
+                message.data.handlerId += originId;
             }
-            const tenantId = `${socket.id}/${message.origin}`;
-            this.socketToEnvId.set(socket.id, { socket, clientID: message.from });
-            this.socketToEnvId.set(tenantId, { socket, clientID: message.origin });
+            this.socketToEnvId.set(fromId, { socket, clientID: message.from });
+            this.socketToEnvId.set(originId, { socket, clientID: message.origin });
             message.from = socket.id;
-            message.origin = tenantId;
+            message.origin = originId;
             this.emitMessageHandlers(message);
         };
         socket.on('message', onMessage);
