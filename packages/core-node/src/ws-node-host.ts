@@ -66,7 +66,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
             }
             this.socketToEnvId.set(fromId, { socket, clientID: message.from });
             this.socketToEnvId.set(originId, { socket, clientID: message.origin });
-            message.from = socket.id;
+            message.from = fromId;
             message.origin = originId;
             this.emitMessageHandlers(message);
         };
