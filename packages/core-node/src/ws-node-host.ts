@@ -60,7 +60,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
             // also maybe we can put the init of the map on 'connection' event
             // maybe we can notify from client about the new connected id
             const originId = `${socket.id}/${message.origin}`;
-            const fromId = `${socket.id}/${message.origin}`;
+            const fromId = `${socket.id}/${message.from}`;
             if (message.type === 'listen') {
                 message.data.handlerId += originId;
             }
