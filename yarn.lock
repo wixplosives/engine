@@ -1107,14 +1107,14 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/cli@^3.4.4":
-  version "3.4.4"
-  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-3.4.4.tgz#953746cb6086aeaf6a3d0db916dcc025c63378c6"
-  integrity sha512-bQpjZSwrnu/jjR7RIRNqYxrFcQ5Osolh6sIfXJ5lKjmFz3QiG3wd47NsCGU1aAIlzhvXouKmZsb020L9AW5dNQ==
+"@stylable/cli@^3.4.5":
+  version "3.4.5"
+  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-3.4.5.tgz#9708d95c4fd07a35f4e58821e642de959a951a19"
+  integrity sha512-31irEf2HSQMK+j1Hv+wEzcjU4LGxekB2oNJdVe3DYNTeSnaKk5yo+g7RTPFlaBGazGtaipx0dGtBXUu3Ni4cUQ==
   dependencies:
-    "@stylable/core" "^3.4.4"
-    "@stylable/node" "^3.4.4"
-    "@stylable/optimizer" "^3.4.4"
+    "@stylable/core" "^3.4.5"
+    "@stylable/node" "^3.4.5"
+    "@stylable/optimizer" "^3.4.5"
     lodash.camelcase "^4.3.0"
     lodash.upperfirst "^4.3.1"
     yargs "^15.3.1"
@@ -1147,24 +1147,31 @@
   dependencies:
     "@stylable/core" "^3.4.4"
 
-"@stylable/node@^3.4.4":
-  version "3.4.4"
-  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-3.4.4.tgz#b14802ae81355ae54e0f6a6806083396c8dc741a"
-  integrity sha512-KzHwPYqg2aOxgrDWpqR0gGKVh9PcEtgsy9ZInwh/OCtlJNnPsv8665Aen0cC9e6pu7975O50caGNYH97ZjMFuw==
+"@stylable/module-utils@^3.4.5":
+  version "3.4.5"
+  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-3.4.5.tgz#b4e4991c1d4f088bf7e6d9503b930f8ea56b0716"
+  integrity sha512-8t1GA/2pvnZRUFLyNV6I1Y1rEG8PLJnQP0Q+B42X53B6ZAbEDHpGOo+twk6F9S4eqIhFU14sPzm8NO3j2wt1jQ==
   dependencies:
-    "@stylable/core" "^3.4.4"
-    "@stylable/module-utils" "^3.4.4"
+    "@stylable/core" "^3.4.5"
+
+"@stylable/node@^3.4.4", "@stylable/node@^3.4.5":
+  version "3.4.5"
+  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-3.4.5.tgz#8e24bfc37d4d7322a76cd338864cd7940d0be277"
+  integrity sha512-YAJjjezjg1f3mKYDA/SpwoUkvw9rYPO2G8PKE29kl700r5+s3v1/6CLalgez6/cKlN43CL+4jdePMZa592f1Ow==
+  dependencies:
+    "@stylable/core" "^3.4.5"
+    "@stylable/module-utils" "^3.4.5"
     find-config "^1.0.0"
     murmurhash "^1.0.0"
 
-"@stylable/optimizer@^3.4.4":
-  version "3.4.4"
-  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-3.4.4.tgz#532190605f45dab3836825e470dea878a70e726d"
-  integrity sha512-LxZikJ3fsugGt7F9ZWeYL1CMKuUqlP4utLqPCdKcEFoGr77QKYOuYsZGNltr/cFVbSvZoFL7Y8XyzV7hbipPcg==
+"@stylable/optimizer@^3.4.4", "@stylable/optimizer@^3.4.5":
+  version "3.4.5"
+  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-3.4.5.tgz#53986bb1eb5de672c352029e65404910d6c9f16b"
+  integrity sha512-yJICVeufz9izBoYTbavYTW+U1NaI/Sn51PanMq/qandjKjLF7T7zH4NPpcRvZp5gEvwevg1vwNzyADoh2kkQuQ==
   dependencies:
-    "@stylable/core" "^3.4.4"
+    "@stylable/core" "^3.4.5"
     csso "^4.0.3"
-    postcss "^7.0.27"
+    postcss "^7.0.29"
 
 "@stylable/runtime@^3.4.4":
   version "3.4.4"
