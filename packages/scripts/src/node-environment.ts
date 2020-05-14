@@ -36,7 +36,7 @@ export async function runNodeEnvironment({
     });
 }
 
-function createFeatureLoaders(
+export function createFeatureLoaders(
     features: Map<string, IFeatureDefinition>,
     { name: envName, childEnvName }: IEnvironment
 ) {

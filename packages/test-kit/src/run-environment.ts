@@ -1,10 +1,6 @@
-import { TopLevelConfig, Environment } from '@wixc3/engine-core';
-import { readFeatures, evaluateConfig, runNodeEnvironment as launch } from '@wixc3/engine-scripts';
+import { TopLevelConfig, Environment, runEngineApp } from '@wixc3/engine-core';
+import { readFeatures, evaluateConfig, createFeatureLoaders } from '@wixc3/engine-scripts';
 import { IFileSystem } from '@file-services/types';
-
-interface IRuntimeEnvironment extends Environment {
-    childEnvName?: string;
-}
 
 export interface IRunNodeEnvironmentOptions {
     featureName: string;
@@ -12,7 +8,7 @@ export interface IRunNodeEnvironmentOptions {
     runtimeOptions?: Record<string, string | boolean>;
     config?: TopLevelConfig;
     basePath?: string;
-    env: IRuntimeEnvironment;
+    env: Environment;
     fs: IFileSystem;
 }
 
@@ -25,20 +21,26 @@ export async function runEngineEnvironment({
     basePath = process.cwd(),
     fs,
 }: IRunNodeEnvironmentOptions) {
-    const { env: name, envType: type, childEnvName } = env;
+    const { env: name, envType: type } = env;
 
     const { features, configurations } = await readFeatures(fs, basePath);
     if (configName) {
         config = [...evaluateConfig(configName, configurations, name), ...config];
     }
 
-    return launch({
-        featureName,
-        features: [...features],
-        config,
+    const feature = features.get(featureName);
+    const childEnvName = feature?.resolvedContexts[name];
+    const featureLoaders = createFeatureLoaders(features, {
         name,
-        type,
-        options: Object.entries(runtimeOptions),
         childEnvName,
+        type,
+    });
+
+    return runEngineApp({
+        envName: name,
+        featureLoaders,
+        config,
+        featureName,
+        options: new Map(Object.entries(runtimeOptions)),
     });
 }
