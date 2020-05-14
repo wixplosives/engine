@@ -1,4 +1,12 @@
-import { TopLevelConfig, Environment, runEngineApp } from '@wixc3/engine-core';
+import {
+    TopLevelConfig,
+    Environment,
+    runEngineApp,
+    Feature,
+    RuntimeEngine,
+    EntityRecord,
+    DisposableContext,
+} from '@wixc3/engine-core';
 import { readFeatures, evaluateConfig, createFeatureLoaders } from '@wixc3/engine-scripts';
 import { IFileSystem } from '@file-services/types';
 
@@ -12,6 +20,15 @@ export interface IRunNodeEnvironmentOptions {
     fs: IFileSystem;
 }
 
+export interface IGetRuinnnigFeatureOptions<
+    NAME extends string,
+    DEPS extends Feature[],
+    API extends EntityRecord,
+    CONTEXT extends Record<string, DisposableContext<any>>
+> extends IRunNodeEnvironmentOptions {
+    feature: Feature<NAME, DEPS, API, CONTEXT>;
+}
+
 export async function runEngineEnvironment({
     featureName,
     configName,
@@ -20,7 +37,10 @@ export async function runEngineEnvironment({
     env,
     basePath = process.cwd(),
     fs,
-}: IRunNodeEnvironmentOptions) {
+}: IRunNodeEnvironmentOptions): Promise<{
+    engine: RuntimeEngine;
+    dispose: () => Promise<void>;
+}> {
     const { env: name, envType: type } = env;
 
     const { features, configurations } = await readFeatures(fs, basePath);
@@ -28,19 +48,51 @@ export async function runEngineEnvironment({
         config = [...evaluateConfig(configName, configurations, name), ...config];
     }
 
-    const feature = features.get(featureName);
-    const childEnvName = feature?.resolvedContexts[name];
+    const featureDef = features.get(featureName);
+    const childEnvName = featureDef?.resolvedContexts[name];
     const featureLoaders = createFeatureLoaders(features, {
         name,
         childEnvName,
         type,
     });
 
-    return runEngineApp({
+    return await runEngineApp({
         envName: name,
         featureLoaders,
         config,
         featureName,
         options: new Map(Object.entries(runtimeOptions)),
     });
+}
+
+export async function getRunningFeature<
+    NAME extends string,
+    DEPS extends Feature[],
+    API extends EntityRecord,
+    CONTEXT extends Record<string, DisposableContext<any>>
+>({
+    featureName,
+    configName,
+    runtimeOptions = {},
+    config = [],
+    env,
+    basePath = process.cwd(),
+    fs,
+    feature,
+}: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT>) {
+    const { engine, dispose } = await runEngineEnvironment({
+        featureName,
+        config,
+        configName,
+        env,
+        runtimeOptions,
+        fs,
+        basePath,
+    });
+    const { api } = engine.get(feature);
+    return {
+        runningApi: api,
+        engine,
+        dispose,
+    };
 }

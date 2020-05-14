@@ -3,7 +3,9 @@
   "version": "13.0.0",
   "scripts": {
     "start": "engine start",
-    "test": "mocha \"test/**/*.ix.ts?(x)\""
+    "test": "yarn test:ix && yarn test:unit",
+    "test:ix": "mocha \"test/**/*.ix.ts?(x)\"",
+    "test:unit": "mocha \"test/**/*.unit.ts\""
   },
   "license": "UNLICENSED",
   "private": true
