@@ -1,4 +1,4 @@
-import { COM, IFeatureLoader, runEngineApp } from '@wixc3/engine-core';
+import { COM, IFeatureLoader, runEngineApp, RuntimeEngine } from '@wixc3/engine-core';
 
 import { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
@@ -11,7 +11,10 @@ export async function runNodeEnvironment({
     type,
     options,
     host,
-}: StartEnvironmentOptions) {
+}: StartEnvironmentOptions): Promise<{
+    dispose: () => Promise<void>;
+    engine: RuntimeEngine;
+}> {
     if (host) {
         config.push(
             COM.use({
