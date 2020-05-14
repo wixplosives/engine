@@ -7,11 +7,11 @@ export async function runIPCEnvironment(options: StartEnvironmentOptions) {
     const disposeHandlers = new Set<() => unknown>();
     const host = new IPCHost(process);
     disposeHandlers.add(() => host.dispose());
-    const { close } = await runNodeEnvironment({
+    const { dispose } = await runNodeEnvironment({
         ...options,
         host,
     });
-    disposeHandlers.add(() => close());
+    disposeHandlers.add(() => dispose());
     return {
         close: async () => {
             for (const disposeHandler of disposeHandlers) {
