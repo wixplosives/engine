@@ -6,6 +6,7 @@ import {
     RuntimeEngine,
     EntityRecord,
     DisposableContext,
+    MapToProxyType,
 } from '@wixc3/engine-core';
 import { readFeatures, evaluateConfig, createFeatureLoaders } from '@wixc3/engine-scripts';
 import { IFileSystem } from '@file-services/types';
@@ -79,7 +80,11 @@ export async function getRunningFeature<
     basePath = process.cwd(),
     fs,
     feature,
-}: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT>) {
+}: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT>): Promise<{
+    dispose: () => Promise<void>;
+    runningApi: MapToProxyType<API>;
+    engine: RuntimeEngine;
+}> {
     const { engine, dispose } = await runEngineEnvironment({
         featureName,
         config,
