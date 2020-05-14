@@ -8,3 +8,4 @@ export * from './utils';
 export * from './node-environment';
 export * from './ws-environment';
 export * from './ipc-environment';
+export * from './load-node-environment';

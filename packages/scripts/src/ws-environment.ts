@@ -12,8 +12,8 @@ export async function runWSEnvironment(socketServer: Server, startEnvironmentOpt
     const host = new WsServerHost(socketServerNamespace);
     disposeHandlers.add(() => host.dispose());
 
-    const { close } = await runNodeEnvironment({ ...startEnvironmentOptions, host });
-    disposeHandlers.add(() => close());
+    const { dispose } = await runNodeEnvironment({ ...startEnvironmentOptions, host });
+    disposeHandlers.add(() => dispose());
     return {
         close: async () => {
             for (const disposeHandler of [...disposeHandlers].reverse()) {

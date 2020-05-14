@@ -22,9 +22,8 @@ export async function runNodeEnvironment({
             })
         );
     }
-    const disposeHandlers = new Set<() => unknown>();
 
-    const runningEngine = await runEngineApp({
+    return runEngineApp({
         featureName,
         featureLoaders: createFeatureLoaders(new Map(features), {
             name,
@@ -35,15 +34,6 @@ export async function runNodeEnvironment({
         options: new Map(options),
         envName: name,
     });
-    disposeHandlers.add(() => runningEngine.dispose());
-
-    return {
-        close: async () => {
-            for (const disposeHandler of disposeHandlers) {
-                await disposeHandler();
-            }
-        },
-    };
 }
 
 function createFeatureLoaders(
