@@ -4,48 +4,45 @@
         "es2020": true,
         "node": true
     },
-    "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking",
-        "plugin:react/recommended",
-        "prettier",
-        "prettier/@typescript-eslint",
-        "prettier/react"
-    ],
+    "extends": ["eslint:recommended", "plugin:react/recommended", "prettier", "prettier/react"],
     "plugins": ["react-hooks", "no-only-tests"],
     "settings": {
         "react": {
             "version": "detect"
         }
     },
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "project": "./tsconfig.json"
-    },
     "rules": {
-        "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/interface-name-prefix": "off",
-        "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-floating-promises": "error",
-        "@typescript-eslint/no-non-null-assertion": "off",
-        "@typescript-eslint/no-use-before-define": "off",
-        "@typescript-eslint/no-unused-vars": "off",
-        "@typescript-eslint/unbound-method": "off",
-        "@typescript-eslint/require-await": "off",
-        "no-empty-pattern": "off",
-        "no-only-tests/no-only-tests": "error",
         "react/prop-types": "off",
         "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "warn",
-        "require-atomic-updates": "off"
+        "react-hooks/exhaustive-deps": "error",
+        "no-only-tests/no-only-tests": "error",
+        "no-empty-pattern": "off"
     },
     "overrides": [
         {
-            "files": ["*.js"],
+            "files": ["*.ts", "*.tsx"],
+            "parserOptions": {
+                "project": "./tsconfig.json",
+                "warnOnUnsupportedTypeScriptVersion": false
+            },
+            "extends": [
+                "plugin:@typescript-eslint/recommended",
+                "plugin:@typescript-eslint/recommended-requiring-type-checking",
+                "prettier/@typescript-eslint"
+            ],
             "rules": {
-                "@typescript-eslint/no-var-requires": "off"
+                "@typescript-eslint/no-floating-promises": "error",
+                "@typescript-eslint/explicit-module-boundary-types": "off",
+                "@typescript-eslint/ban-types": "off",
+                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/no-non-null-assertion": "off",
+                "@typescript-eslint/no-use-before-define": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+                "@typescript-eslint/no-unused-vars": "off",
+                "@typescript-eslint/unbound-method": "off"
             }
         }
     ]

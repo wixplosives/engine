@@ -20,6 +20,6 @@ export class MultiCounter {
     private ids: Record<string, number> = {};
     public next(ns: string) {
         this.ids[ns] = this.ids[ns] || 0;
-        return ns + this.ids[ns]++;
+        return `${ns}${this.ids[ns]++}`;
     }
 }

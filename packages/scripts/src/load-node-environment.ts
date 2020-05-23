@@ -2,7 +2,7 @@ import { resolvePackages, loadFeaturesFromPackages, IConfigDefinition } from '@w
 import { IFileSystem } from '@file-services/types';
 import { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 
-export async function readFeatures(fs: IFileSystem, basePath: string, featuresDirectory?: string) {
+export function readFeatures(fs: IFileSystem, basePath: string, featuresDirectory?: string) {
     const packages = resolvePackages(basePath);
 
     return loadFeaturesFromPackages(packages, fs, featuresDirectory);

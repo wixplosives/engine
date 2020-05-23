@@ -14,8 +14,8 @@ export default function (this: webpackLoader.LoaderContext) {
     });
     const importedString = JSON.stringify(imported);
 
-    const configFileName = envName ? fileName + '.' + envName : fileName;
-    const configPath = 'configs/' + configFileName + '.json';
+    const configFileName = envName ? `${fileName!}.${envName}` : fileName;
+    const configPath = `configs/${configFileName!}.json`;
 
     this.emitFile(configPath, importedString, false);
 

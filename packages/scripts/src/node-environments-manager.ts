@@ -159,7 +159,7 @@ export class NodeEnvironmentsManager {
         const runningEnvironment = this.runningEnvironments.get(featureId);
 
         if (!runningEnvironment) {
-            throw new Error(`there are no node environments running for ${featureName} and config ${configName}`);
+            throw new Error(`there are no node environments running for ${featureName} and config ${configName!}`);
         }
         this.runningEnvironments.delete(featureId);
         await runningEnvironment.close();

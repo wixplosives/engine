@@ -17,7 +17,7 @@ TestFeature.setup(renderer, ({ run }, { electronExample: { echoService } }) => {
          * subscribing to an event from the server
          */
         await echoService.subscribe((t) => {
-            document.body.innerText = `received event ` + t;
+            document.body.innerText = `received event ${t}`;
         });
 
         /**

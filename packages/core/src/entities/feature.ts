@@ -201,8 +201,9 @@ export class Feature<
 function validateNoDuplicateEnvRegistration(env: EnvironmentFilter, featureId: string, registered: Set<string>) {
     const hasCollision = testEnvironmentCollision(env, registered);
     if (hasCollision.length) {
+        const collisions = hasCollision.join(', ');
         throw new Error(
-            `Feature can only have single setup for each environment. ${featureId} Feature already implements: ${hasCollision}`
+            `Feature can only have single setup for each environment. ${featureId} Feature already implements: ${collisions}`
         );
     }
 }
@@ -217,7 +218,7 @@ function validateNoDuplicateContextRegistration(
         throw new Error(
             `Feature can only have single setupContext for each context id. ${featureId} Feature already implements: ${String(
                 environmentContext
-            )}\n${registeredContext}`
+            )}`
         );
     }
 }

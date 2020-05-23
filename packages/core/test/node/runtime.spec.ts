@@ -204,7 +204,7 @@ describe('Feature', () => {
             return {
                 service1: {
                     echo(x: string) {
-                        return x + '-' + [...slot1].length;
+                        return `${x}-${[...slot1].length}`;
                     },
                 },
             };
@@ -213,7 +213,7 @@ describe('Feature', () => {
             return {
                 service2: {
                     echo(x: string) {
-                        return service1.echo(x) + '-main2-' + [...slot1].length;
+                        return `${service1.echo(x)}-main2-${[...slot1].length}`;
                     },
                 },
             };

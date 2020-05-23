@@ -119,7 +119,7 @@ export function dontRun() {
         feature.componentDescription.register({ component: '', description: '' });
         feature.componentDescription.register({ component: '', description: '' });
 
-        engine.logger.transport.register({ transportName: 'test' + engine.logger.config.time });
+        engine.logger.transport.register({ transportName: `test${engine.logger.config.time}` });
 
         engine.gui.panelSlot.register({ panelID: 'panel1' });
         engine.gui.panelSlot.register({ panelID: 'panel2' });

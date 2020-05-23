@@ -44,7 +44,7 @@ export async function runEngineApp({
 
     const rootFeatureLoader = featureName && featureLoaders[featureName];
     if (!rootFeatureLoader) {
-        throw new Error(`cannot find feature "${featureName}". available features: ${featureNames.join(', ')}`);
+        throw new Error(`cannot find feature "${featureName!}". available features: ${featureNames.join(', ')}`);
     }
 
     const { resolvedContexts } = rootFeatureLoader;
