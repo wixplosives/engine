@@ -444,7 +444,7 @@ export class Application {
             try {
                 await import(requiredModule);
             } catch (ex) {
-                throw new Error(`failed requiring: ${requiredModule} ${ex?.stack || ex}`);
+                throw new Error(`failed requiring: ${requiredModule} ${(ex as Error)?.stack || String(ex)}`);
             }
         }
     }
@@ -638,7 +638,7 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
 };
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
-    console.log(`Bundling ${target} using webpack...`);
+    console.log(`Bundling ${target as string} using webpack...`);
 
 function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);

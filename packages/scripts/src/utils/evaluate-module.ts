@@ -15,6 +15,7 @@ export function evaluateModule(filePaths: string | string[]): Module {
         entryModule.paths = resolutionPaths;
     }
     const source = filePaths.map((filePath) => `require(${JSON.stringify(filePath)});`).join('\n');
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
     const evalModule = new Function('module', 'exports', 'require', source);
     evalModule(entryModule, entryModule.exports, entryModule.require.bind(entryModule));
     return entryModule;

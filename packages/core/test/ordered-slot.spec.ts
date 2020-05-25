@@ -36,7 +36,7 @@ describe('ordered-slot', () => {
     ];
 
     const slotToString = (slot: OrderedRegistry<{ name: string; age: number }>) =>
-        [...slot].map((item) => item.name + ':' + item.age).join(', ');
+        [...slot].map((item) => `${item.name}:${item.age}`).join(', ');
 
     it('should not sort items without specifying order', () => {
         const slot = new OrderedRegistry<{ name: string; age: number }>();

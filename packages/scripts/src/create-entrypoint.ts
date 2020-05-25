@@ -133,7 +133,7 @@ main().catch(console.error);
 
 function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
     return `import(/* webpackChunkName: "${filePath}" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-        join(__dirname, 'top-level-config-loader') + `?scopedName=${scopedName}&envName=${configEnvName}!` + filePath
+        join(__dirname, 'top-level-config-loader') + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
     )})`;
 }
 
@@ -157,7 +157,7 @@ function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
 function fetchConfigs(publicConfigsRoute: string, envName: string) {
     return `config.push(...await (await fetch('${normalizeRoute(
         publicConfigsRoute
-    )}' + configName + '?env=${envName}&feature=' + featureName)).json());`;
+    )!}' + configName + '?env=${envName}&feature=' + featureName)).json());`;
 }
 
 function importStaticConfigs() {

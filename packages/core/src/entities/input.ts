@@ -11,7 +11,7 @@ export abstract class FeatureInput<
     public mode = 'input' as const;
     public type = runtimeType<Type>();
     public proxyType = runtimeType<Type>();
-    public remoteAccess = false as false;
+    public remoteAccess = false as const;
     protected constructor(public providedFrom: ProvidedFrom, public visibleAt: VisibleAt) {}
     public abstract [CREATE_RUNTIME](context: RuntimeEngine, featureID: string, entityKey: string): Type | void;
     public [REGISTER_VALUE](

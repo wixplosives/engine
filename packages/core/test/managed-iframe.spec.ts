@@ -44,7 +44,7 @@ describe('Managed Iframe', () => {
             test: 'test',
         });
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(onHashChange.callCount).to.eq(1);
         });
     });

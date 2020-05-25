@@ -54,7 +54,12 @@ export class WsServerHost extends BaseHost implements IDisposable {
     }
 
     private onConnection = (socket: io.Socket): void => {
-        const onMessage: (...args: any[]) => void = (message) => {
+        const onMessage = (message: {
+            origin: string;
+            type: string;
+            from: string;
+            data: { handlerId: string };
+        }): void => {
             // this mapping should not be here because of forwarding of messages
             // maybe change message forwarding to have 'forward destination' and correct 'from'
             // also maybe we can put the init of the map on 'connection' event

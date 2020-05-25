@@ -320,11 +320,11 @@ describe('Application', function () {
             disposables.add(() => closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName! }));
 
             const pageOne = await loadPage(
-                `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName}`
+                `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName!}`
             );
 
             const pageTwo = await loadPage(
-                `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName}`
+                `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName!}`
             );
 
             await waitFor(async () => {

@@ -43,8 +43,8 @@ export async function runEngineEnvironment({
     dispose: () => Promise<void>;
 }> {
     const { env: name, envType: type } = env;
+    const { features, configurations } = readFeatures(fs, basePath);
 
-    const { features, configurations } = await readFeatures(fs, basePath);
     if (configName) {
         config = [...evaluateConfig(configName, configurations, name), ...config];
     }
