@@ -1126,27 +1126,6 @@
     lodash.upperfirst "^4.3.1"
     yargs "^15.3.1"
 
-"@stylable/core@^3.5.2", "@stylable/core@^3.6.0":
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.6.0.tgz#c15fe18a6c1d0432ff555a12cedb0d71f745fd65"
-  integrity sha512-7ja239r0H9OR9DjKfukTRx5uKZNoJnOLoOUUystpYwvE9wrLxWKHwQd1WlY4FVWZjf8dMH4hX0xNsbInpzQprA==
-  dependencies:
-    css-selector-tokenizer "^0.7.2"
-    deindent "^0.1.0"
-    enhanced-resolve "^4.1.1"
-    is-vendor-prefixed "^3.3.1"
-    jest-docblock "^26.0.0"
-    lodash.clonedeep "^4.5.0"
-    lodash.clonedeepwith "^4.5.0"
-    murmurhash "^1.0.0"
-    postcss "^7.0.30"
-    postcss-js "^2.0.3"
-    postcss-nested "^4.2.1"
-    postcss-safe-parser "^4.0.2"
-    postcss-selector-matches "^4.0.0"
-    postcss-value-parser "^4.1.0"
-    url-regex "^5.0.0"
-
 "@stylable/core@^3.6.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.6.0.tgz#c15fe18a6c1d0432ff555a12cedb0d71f745fd65"
@@ -1175,7 +1154,7 @@
   dependencies:
     "@stylable/core" "^3.6.0"
 
-"@stylable/node@^3.5.2", "@stylable/node@^3.6.0":
+"@stylable/node@^3.6.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@stylable/node/-/node-3.6.0.tgz#8156fd0b45471cc9a73abfb34be42ef5914e01e1"
   integrity sha512-6hLJl1XC4Bfqk6g7GuF6wJBs7U5olGjj7PuRghLdbABsXuA/dNDFSm7qEPyR2jXr5/xal8dcR5Sxju31cvOXKA==
@@ -1184,7 +1163,7 @@
     "@stylable/module-utils" "^3.6.0"
     find-config "^1.0.0"
 
-"@stylable/optimizer@^3.5.2", "@stylable/optimizer@^3.6.0":
+"@stylable/optimizer@^3.6.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-3.6.0.tgz#2d518f75916eac0d1d4ccaa4a4f38531c89e7b07"
   integrity sha512-dcR7/izIT6vrjq4Y5Gnvl4YGKMJsddfViTHhCtDwrrO56WwMk8oxJbCzrLwfU4WbMc2dQxlkKwu7cTGibYNsTQ==
