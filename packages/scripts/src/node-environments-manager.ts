@@ -217,7 +217,9 @@ export class NodeEnvironmentsManager {
 
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
-        const socketServer = io(httpServer);
+        const socketServer = io(httpServer, {
+            pingTimeout: 15_000,
+        });
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
         const captureConnections = (socket: Socket): void => {
