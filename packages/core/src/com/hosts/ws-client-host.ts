@@ -7,13 +7,13 @@ export class WsClientHost extends BaseHost {
     private socketClient: SocketIOClient.Socket;
     public subscribers = new EventEmitter<{ disconnect: void; reconnect: void }>();
 
-    constructor(url: string) {
+    constructor(url: string, options?: SocketIOClient.ConnectOpts) {
         super();
 
         const { promise, resolve } = deferred();
         this.connected = promise;
 
-        this.socketClient = io.connect(url);
+        this.socketClient = io.connect(url, options);
 
         this.socketClient.on('connect', () => {
             resolve();
