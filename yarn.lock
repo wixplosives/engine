@@ -1147,12 +1147,26 @@
     postcss-value-parser "^4.1.0"
     url-regex "^5.0.0"
 
-"@stylable/module-utils@^3.5.2":
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-3.5.2.tgz#f415894ee5509e5956e05cb78aea9989d418cd8f"
-  integrity sha512-Q6748AyCaxQcB1kZ5HKGohvwe7VbwfpKkrFtgtXaJRWs0PCQ5bp/DJfGzWxDVyZtJqOLR2K5ErQvrsKiBwzBAw==
+"@stylable/core@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.6.0.tgz#c15fe18a6c1d0432ff555a12cedb0d71f745fd65"
+  integrity sha512-7ja239r0H9OR9DjKfukTRx5uKZNoJnOLoOUUystpYwvE9wrLxWKHwQd1WlY4FVWZjf8dMH4hX0xNsbInpzQprA==
   dependencies:
-    "@stylable/core" "^3.5.2"
+    css-selector-tokenizer "^0.7.2"
+    deindent "^0.1.0"
+    enhanced-resolve "^4.1.1"
+    is-vendor-prefixed "^3.3.1"
+    jest-docblock "^26.0.0"
+    lodash.clonedeep "^4.5.0"
+    lodash.clonedeepwith "^4.5.0"
+    murmurhash "^1.0.0"
+    postcss "^7.0.30"
+    postcss-js "^2.0.3"
+    postcss-nested "^4.2.1"
+    postcss-safe-parser "^4.0.2"
+    postcss-selector-matches "^4.0.0"
+    postcss-value-parser "^4.1.0"
+    url-regex "^5.0.0"
 
 "@stylable/module-utils@^3.6.0":
   version "3.6.0"
@@ -1179,20 +1193,20 @@
     csso "^4.0.3"
     postcss "^7.0.30"
 
-"@stylable/runtime@^3.5.2":
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-3.5.2.tgz#0bda512ef825a4b3af186d97a8480ffa3432f6ca"
-  integrity sha512-86O/D8a700kZR8vRJgA+f/FUWwvMQtDXQOZhcsBPWk5fNISDmIigkhphdOtT7GFLa6OGZQ26Ili6omDyLA3UNw==
+"@stylable/runtime@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-3.6.0.tgz#33536c959b4bc37724ec90b59540447076ba8f87"
+  integrity sha512-MUWrhLydYyoGk1Y5Ep/3dVG8Qjy9hW4aq1R3GTMB6+Oo5q5PB15TfhI9CzdO0WexzdizQ0Zzbho9Wm/6xpFINg==
 
-"@stylable/webpack-plugin@^3.5.2":
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/@stylable/webpack-plugin/-/webpack-plugin-3.5.2.tgz#294fd2cf2c7c81c77cd00357345869b3efcfb6e3"
-  integrity sha512-DQLt2OA7JDhhxbu8/wVJXT2Rwe9jQpBb+EoCgFG+NoMbmoNjAeaFfw1ccQ1S8sujilzN2L+SUjmKQ20YW6p6qw==
+"@stylable/webpack-plugin@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@stylable/webpack-plugin/-/webpack-plugin-3.6.0.tgz#eb61096f883b1f15b989058f0020def3a5fe11e1"
+  integrity sha512-NWMN8Tk5zEmSgtTig6bs/qOwQMF71DNKuXMKRldXNO5ujbsY8q8vwwT2M2kkmEh92AxWZZw4pFnrKdP9Vktxeg==
   dependencies:
-    "@stylable/module-utils" "^3.5.2"
-    "@stylable/node" "^3.5.2"
-    "@stylable/optimizer" "^3.5.2"
-    "@stylable/runtime" "^3.5.2"
+    "@stylable/module-utils" "^3.6.0"
+    "@stylable/node" "^3.6.0"
+    "@stylable/optimizer" "^3.6.0"
+    "@stylable/runtime" "^3.6.0"
     find-config "^1.0.0"
     webpack-sources "^1.4.3"
 
