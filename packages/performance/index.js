@@ -58,20 +58,26 @@ module.exports = {
             defaultMark: currentTime,
         });
 
-        measures.set(measureName, {
+        const measure = measures.get(measureName);
+        const measurement = {
             duration: endTime - startTime,
             startTime,
             entryType: 'measure',
             name: measureName,
             toJSON,
-        });
+        };
+        if (!measure) {
+            measures.set(measureName, [measurement]);
+        } else {
+            measure.push(measurement);
+        }
     },
     getEntriesByType: (type) => {
         switch (type) {
             case 'mark':
-                return [...marks.values()];
+                return [].concat(...[...marks.values()]);
             case 'measure':
-                return [...measures.values()];
+                return [].concat(...[...measures.values()]);
             default:
                 return [];
         }
