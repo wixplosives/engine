@@ -1,6 +1,7 @@
-import { FileSystemAPI } from '../feature/file-server.feature';
+import { FileSystemAPI, SERVER_MARK } from '../feature/file-server.feature';
 import { IDirectoryContents } from './types';
 import { FileActions } from './file-actions';
+import performance from '@wixc3/cross-performance';
 
 export class RemoteFilesAPI implements FileSystemAPI {
     private fileActions: FileActions;
@@ -8,6 +9,7 @@ export class RemoteFilesAPI implements FileSystemAPI {
         this.fileActions = new FileActions(basePath);
     }
     public async readDir(directoryPath: string): Promise<IDirectoryContents> {
+        performance.mark(SERVER_MARK);
         return this.fileActions.getDirectoryTree(directoryPath);
     }
 

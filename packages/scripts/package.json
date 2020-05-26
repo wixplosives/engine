@@ -39,7 +39,9 @@
     "socket.io": "^2.3.0",
     "webpack": "^4.43.0",
     "webpack-dev-middleware": "^3.7.2",
-    "webpack-virtual-modules": "^0.2.2"
+    "webpack-virtual-modules": "^0.2.2",
+    "@wixc3/cross-performance": "^14.0.4"
+    
   },
   "files": [
     "cjs",

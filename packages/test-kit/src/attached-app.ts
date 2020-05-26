@@ -1,6 +1,7 @@
-import { IFeatureTarget, IProcessMessage, IFeatureMessagePayload } from '@wixc3/engine-scripts';
+import { IFeatureTarget, IProcessMessage, IFeatureMessagePayload, PerformanceMetrics } from '@wixc3/engine-scripts';
 import { request } from 'http';
 import { IExecutableApplication } from './types';
+import { join } from 'path';
 
 const NODE_ENV_PATH = '/engine-feature';
 
@@ -18,7 +19,7 @@ export class AttachedApp implements IExecutableApplication {
     }
 
     public async runFeature(featureTarget: IFeatureTarget) {
-        return this.makeEnvironmentHttpCall({ featureTarget, method: 'PUT' });
+        return this.makeEnvironmentHttpCall<IFeatureMessagePayload>({ featureTarget, method: 'PUT' });
     }
 
     public async closeFeature(featureTarget: IFeatureTarget) {
@@ -29,8 +30,25 @@ export class AttachedApp implements IExecutableApplication {
         /* We don't close the running app */
     }
 
-    private makeEnvironmentHttpCall({ method, path = NODE_ENV_PATH, featureTarget }: IEnvironmentHttpCall) {
-        return new Promise<IFeatureMessagePayload>((resolve, reject) => {
+    public async getMetrics() {
+        const metrics = await this.makeEnvironmentHttpCall<PerformanceMetrics>({
+            method: 'GET',
+            path: join(NODE_ENV_PATH, 'metrics'),
+        });
+
+        // for some reason, nested objects are not being parsed properly, causing the array object inside the marks array to be a string instead of an object
+        return {
+            marks: metrics.marks.map((m) => JSON.parse((m as unknown) as string)),
+            measures: metrics.measures.map((m) => JSON.parse((m as unknown) as string)),
+        };
+    }
+
+    private makeEnvironmentHttpCall<ResponseType>({
+        method,
+        path = NODE_ENV_PATH,
+        featureTarget,
+    }: IEnvironmentHttpCall) {
+        return new Promise<ResponseType>((resolve, reject) => {
             const responseChunks: Array<string> = [];
             const req = request(
                 {
@@ -48,10 +66,8 @@ export class AttachedApp implements IExecutableApplication {
                         responseChunks.push(chunk.toString());
                     });
                     res.on('end', () => {
-                        if (path === NODE_ENV_PATH) {
-                            const response = JSON.parse(responseChunks.join()) as IProcessMessage<
-                                IFeatureMessagePayload
-                            >;
+                        if (path.includes(NODE_ENV_PATH)) {
+                            const response = JSON.parse(responseChunks.join()) as IProcessMessage<ResponseType>;
                             resolve(response.payload);
                         } else {
                             resolve();

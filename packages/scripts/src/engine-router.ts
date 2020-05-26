@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import bodyParser from 'body-parser';
+import performance from '@wixc3/cross-performance';
 
 import { OverrideConfig } from './config-middleware';
 import { NodeEnvironmentsManager } from './node-environments-manager';
@@ -21,6 +22,9 @@ export function createFeaturesEngineRouter(
                 overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
                 providedConfigName = generatedConfigName;
             }
+            // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
+            performance.clearMarks();
+            performance.clearMeasures();
             await nodeEnvironmentManager.runServerEnvironments({
                 configName: providedConfigName,
                 featureName,
@@ -47,6 +51,8 @@ export function createFeaturesEngineRouter(
         overrideConfigsMap.delete(configName);
         try {
             await nodeEnvironmentManager.closeEnvironment({ featureName, configName });
+            performance.clearMarks();
+            performance.clearMeasures();
             res.json({
                 id: 'feature-closed',
                 payload: {
@@ -68,6 +74,23 @@ export function createFeaturesEngineRouter(
             res.json({
                 result: 'success',
                 data,
+            });
+        } catch (error) {
+            res.status(404).json({
+                result: 'error',
+                error: error && error.message,
+            });
+        }
+    });
+
+    router.get('/metrics', (_req, res) => {
+        try {
+            res.json({
+                result: 'success',
+                payload: {
+                    marks: performance.getEntriesByType('mark'),
+                    measures: performance.getEntriesByType('measure'),
+                },
             });
         } catch (error) {
             res.status(404).json({

@@ -38,7 +38,7 @@ export class RemoteNodeEnvironment {
         return new Promise((resolve) => {
             this.subscribe((message) => {
                 if (isEnvironmentPortMessage(message)) {
-                    resolve(message.port);
+                    resolve(message.payload.port);
                 }
             });
             this.postMessage({ id: 'port-request' });

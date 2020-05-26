@@ -65,7 +65,7 @@ program
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const app = new Application({ basePath });
-            const { close: closeServer, port, runFeature, closeFeature } = await app.start({
+            const { close: closeServer, port, runFeature, closeFeature, getMetrics } = await app.start({
                 featureName,
                 configName,
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
@@ -94,12 +94,18 @@ program
                     }
                     if (id === 'close-feature') {
                         await closeFeature(payload as IFeatureMessagePayload);
-                        process.send({ id: 'feature-closed' } as IProcessMessage<IFeatureMessagePayload>);
+                        process.send({ id: 'feature-closed' });
                     }
                     if (id === 'server-disconnect') {
                         await closeServer();
                         process.off('message', processListener);
-                        process.send({ id: 'server-disconnected' } as IProcessMessage<unknown>);
+                        process.send({ id: 'server-disconnected' });
+                    }
+                    if (id === 'metrics-request') {
+                        process.send({
+                            id: 'metrics-response',
+                            payload: getMetrics(),
+                        });
                     }
                 }
             };

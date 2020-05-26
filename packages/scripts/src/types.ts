@@ -105,7 +105,9 @@ export type ProcessMessageId =
     | 'server-disconnect'
     | 'server-disconnected'
     | 'port-request'
-    | 'error';
+    | 'error'
+    | 'metrics-request'
+    | 'metrics-response';
 
 export interface IProcessMessage<T> {
     id: ProcessMessageId;
@@ -141,7 +143,21 @@ export interface ICommunicationMessage {
 
 export interface IEnvironmentPortMessage extends ICommunicationMessage {
     id: 'port-request';
-    port: number;
+    payload: { port: number };
+}
+
+export interface IEnvironmentMetricsRequest extends ICommunicationMessage {
+    id: 'metrics-request';
+}
+
+export type PerformanceMetrics = {
+    marks: PerformanceEntry[];
+    measures: PerformanceEntry[];
+};
+
+export interface IEnvironmentMetricsResponse extends ICommunicationMessage {
+    id: 'metrics-response';
+    payload: PerformanceMetrics;
 }
 
 export interface IEnvironmentMessage extends ICommunicationMessage {
@@ -204,6 +220,14 @@ export const isEnvironmentCloseMessage = (message: ICommunicationMessage): messa
 
 export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
     message.id === 'port-request';
+
+export const isEnvironmentMetricsRequestMessage = (
+    message: ICommunicationMessage
+): message is IEnvironmentMetricsRequest => message.id === 'metrics-request';
+
+export const isEnvironmentMetricsResponseMessage = (
+    message: ICommunicationMessage
+): message is IEnvironmentMetricsResponse => message.id === 'metrics-response';
 
 export interface IConfigDefinition {
     name: string;
