@@ -4,6 +4,7 @@ import {
     isProcessMessage,
     ProcessMessageId,
     IFeatureMessagePayload,
+    PerformanceMetrics,
 } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
 import { IExecutableApplication } from './types';
@@ -27,7 +28,9 @@ export class DetachedApp implements IExecutableApplication {
         });
 
         this.engineStartProcess = engineStartProcess;
-        const { port } = (await this.waitForProcessMessage('port-request')) as IPortMessage;
+        const { port } = await this.waitForProcessMessage<IPortMessage>('port-request', (p) =>
+            p.send({ id: 'port-request' })
+        );
 
         this.port = port;
 
@@ -42,12 +45,12 @@ export class DetachedApp implements IExecutableApplication {
     }
 
     public async runFeature(payload: IFeatureTarget) {
-        return (await this.waitForProcessMessage('feature-initialized', (p) => {
+        return this.waitForProcessMessage<IFeatureMessagePayload>('feature-initialized', (p) => {
             p.send({
                 id: 'run-feature',
                 payload,
             });
-        })) as IFeatureMessagePayload;
+        });
     }
 
     public async closeFeature(payload: IFeatureTarget) {
@@ -56,21 +59,27 @@ export class DetachedApp implements IExecutableApplication {
         });
     }
 
-    private async waitForProcessMessage(
+    public async getMetrics() {
+        return this.waitForProcessMessage<PerformanceMetrics>('metrics-response', (p) => {
+            p.send({ id: 'metrics-request' });
+        });
+    }
+
+    private async waitForProcessMessage<T>(
         messageId: ProcessMessageId,
         action?: (appProcess: ChildProcess) => void
-    ): Promise<unknown> {
+    ): Promise<T> {
         const { engineStartProcess } = this;
         if (!engineStartProcess) {
             throw new Error('Engine is not started yet');
         }
-        return new Promise<unknown>((resolve, reject) => {
+        return new Promise<T>((resolve, reject) => {
             const onMessage = (message: unknown) => {
                 if (isProcessMessage(message) && message.id === messageId) {
                     engineStartProcess.off('message', onMessage);
                     engineStartProcess.off('exit', reject);
                     engineStartProcess.off('error', reject);
-                    resolve(message.payload);
+                    resolve(message.payload as T);
                 }
             };
             engineStartProcess.on('message', onMessage);

@@ -15,6 +15,9 @@ export interface FileSystemAPI {
     readFile(filePath: string): Promise<string>;
 }
 
+export const MAIN_MARK = 'main';
+export const SERVER_MARK = 'server';
+
 /**
  * exporting new feature that exposes an api record
  * remoteFiles - a service that will be implemented in the server environment file and will implement the FileSystemAPI interface, and defining it as 'allow remote access' so that other environments could acces this service

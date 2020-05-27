@@ -9,7 +9,9 @@ import io from 'socket.io';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import fs from '@file-services/node';
+
 import { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
+import performance from '@wixc3/cross-performance';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -293,6 +295,9 @@ export class Application {
                     overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
                     configName = generatedConfigName;
                 }
+                // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
+                performance.clearMeasures();
+                performance.clearMarks();
                 return nodeEnvironmentManager.runServerEnvironments({
                     featureName,
                     configName,
@@ -305,10 +310,18 @@ export class Application {
                 if (configName) {
                     overrideConfigsMap.delete(configName);
                 }
+                performance.clearMeasures();
+                performance.clearMarks();
                 return nodeEnvironmentManager.closeEnvironment({
                     featureName,
                     configName,
                 });
+            },
+            getMetrics: () => {
+                return {
+                    marks: performance.getEntriesByType('mark'),
+                    measures: performance.getEntriesByType('measure'),
+                };
             },
             nodeEnvironmentManager,
         };
