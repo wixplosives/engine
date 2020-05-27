@@ -1,1 +1,1 @@
-module.exports = window.performance;
+module.exports = globalThis.performance || require('./index');
