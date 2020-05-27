@@ -1,6 +1,5 @@
 import { EnvironmentInitializer, WindowHost } from '../types';
 import { Communication } from '../communication';
-import { reportError } from '../errors';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
 
@@ -19,10 +18,6 @@ export function iframeInitializer({
 }: IIframeInitializerOptions): EnvironmentInitializer<{ id: string }> {
     return async (com, { env, endpointType }) => {
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
-
-        if (!iframeElement) {
-            throw new Error('should provide a host provider function to the current iframe to initialize');
-        }
         const publicPath = com.getPublicPath();
         const id = managed
             ? await useIframe(
@@ -33,11 +28,10 @@ export function iframeInitializer({
               )
             : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
 
-        return {
-            id,
-        };
+        return { id };
     };
 }
+
 async function useWindow(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<string> {
     const win = isIframe(host) ? host.contentWindow : host;
     if (!win) {
@@ -49,74 +43,74 @@ async function useWindow(com: Communication, host: WindowHost, instanceId: strin
     return instanceId;
 }
 
-const iframeReloadHandlers = new WeakMap<HTMLIFrameElement, () => void>();
+const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
 async function useIframe(
     com: Communication,
-    host: HTMLIFrameElement,
+    iframe: HTMLIFrameElement,
     instanceId: string,
     src: string
 ): Promise<string> {
-    const win = host.contentWindow;
-    if (!win) {
-        throw new Error('cannot spawn detached iframe.');
+    if (!iframe.contentWindow) {
+        throw new Error('Cannot initialize environment in a detached iframe');
     }
 
-    const previousWindowName = win.name;
+    cancellationTriggers.get(iframe)?.();
 
-    const locationChanged = await changeLocation(win, host, instanceId, src);
-    if (locationChanged) {
-        com.registerEnv(instanceId, win);
-        await com.envReady(instanceId);
-        const handleIframeReload = () => {
-            /**
-             * when page is reloaded, it is necessary to clear the environment 'ready' state in order to be able to wait for the 'ready' event coming from the newly reloaded environment
-             */
-            com.clearEnvironment(instanceId);
-            com.envReady(instanceId)
-                .then(() => com.reconnectHandlers(instanceId))
-                .catch(reportError);
-        };
-
-        const existingReloadHandler = iframeReloadHandlers.get(host);
-        if (existingReloadHandler) {
-            host.removeEventListener('load', existingReloadHandler);
-        }
-        iframeReloadHandlers.set(host, handleIframeReload);
-        host.addEventListener('load', handleIframeReload);
-
-        return instanceId;
-    }
-    win.name = previousWindowName;
-    return previousWindowName;
-}
-
-function willUrlChangeCauseReload(oldUrl: URL, newUrl: URL) {
-    return (
-        oldUrl.origin + oldUrl.pathname + oldUrl.search !== newUrl.origin + newUrl.pathname + newUrl.search ||
-        !newUrl.hash
-    );
-}
-
-/**
- * @returns true if navigation has occurred, false if only the hash was updated
- **/
-function changeLocation(win: Window, host: HTMLIFrameElement, rootComId: string, iframeSrc: string) {
-    // This is the contract of the communication to get the root communication id
-    win.name = rootComId;
-
-    return new Promise((resolve) => {
-        const oldUrl = new URL(win.location.href);
-        const newUrl = new URL(iframeSrc, window.location.href);
-        if (willUrlChangeCauseReload(oldUrl, newUrl)) {
-            host.addEventListener('load', () => resolve(true), { once: true });
-            win.location.href = newUrl.href;
-        } else {
-            win.location.href = newUrl.href;
-            resolve(false);
-        }
+    const waitForCancel = new Promise((_, reject) => {
+        cancellationTriggers.set(iframe, () => {
+            reject('Cancelled environment initialization in an iframe');
+        });
     });
+
+    // If the iframe already has a page loaded into it, that page doesn't immediately
+    // get disposed on URL change, and its scripts keep running. Changing `window.name`
+    // before the old page has unloaded could cause it to incorrectly use the new
+    // environment's ID as its own. To prevent any kinds of race conditions we wait
+    // for the old page to fully unload before initializing the new one.
+    //
+    // The consumers might be listening to the iframe's URL changes to detect when
+    // the iframe's contents were lost after it had been moved in the DOM. Changing
+    // the URL to 'about:blank' would inadvertently trigger that detection, to avoid
+    // this we add an unused URL param '?not-blank'.
+
+    if (!iframe.contentWindow.location.href.startsWith('about:blank')) {
+        iframe.contentWindow.location.href = 'about:blank?not-blank';
+        await Promise.race([waitForCancel, waitForLoad(iframe)]);
+    }
+
+    if (!iframe.contentWindow.location.href.startsWith('about:blank')) {
+        throw new Error('Iframe location has changed during environment initialization');
+    }
+
+    const cleanup = () => com.clearEnvironment(instanceId);
+
+    try {
+        const href = new URL(src, window.location.href).href;
+        const contentWindow = iframe.contentWindow;
+        contentWindow.name = instanceId;
+        com.registerEnv(instanceId, contentWindow);
+        contentWindow.location.href = href;
+
+        await Promise.race([waitForCancel, waitForLoad(iframe)]);
+
+        if (iframe.contentWindow !== contentWindow || iframe.contentWindow.location.href !== href) {
+            throw new Error('Iframe location has changed during environment initialization');
+        }
+
+        contentWindow.addEventListener('unload', cleanup);
+        await Promise.race([waitForCancel, com.envReady(instanceId)]);
+
+        cancellationTriggers.delete(iframe);
+        return instanceId;
+    } catch (e) {
+        cleanup();
+        throw e;
+    }
 }
+
+const waitForLoad = (elem: HTMLElement) =>
+    new Promise((resolve) => elem.addEventListener('load', resolve, { once: true }));
 
 const defaultHtmlSourceFactory = (envName: string, publicPath = '', hashParams?: string) => {
     return `${publicPath}${envName}.html${location.search}${hashParams ?? ''}`;

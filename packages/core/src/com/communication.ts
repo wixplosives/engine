@@ -342,6 +342,7 @@ export class Communication {
         this.readyEnvs.delete(instanceId);
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
+        delete this.environments[instanceId];
     }
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
