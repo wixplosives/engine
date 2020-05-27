@@ -235,7 +235,21 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 ...navigationOptions,
             });
 
-            return { page: featurePage, response };
+            async function getMetrics() {
+                const nodeEntries = await executableApp.getMetrics();
+                const browserEntries = await featurePage.evaluate(() => {
+                    return {
+                        marks: JSON.stringify(window.performance.getEntriesByType('mark')),
+                        measures: JSON.stringify(window.performance.getEntriesByType('measure')),
+                    };
+                });
+                return {
+                    marks: [...nodeEntries.marks, ...(JSON.parse(browserEntries.marks) as PerformanceEntry[])],
+                    measures: [...nodeEntries.measures, ...(JSON.parse(browserEntries.measures) as PerformanceEntry[])],
+                };
+            }
+
+            return { page: featurePage, response, getMetrics };
         },
     };
 }
