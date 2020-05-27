@@ -236,7 +236,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 ...navigationOptions,
             });
 
-            async function getMetrics(): PerformanceMetrics {
+            async function getMetrics(): Promise<PerformanceMetrics> {
                 const measures = await executableApp.getMetrics();
                 for (const worker of featurePage.workers()) {
                     const workerEntries = await worker.evaluate(() => {
