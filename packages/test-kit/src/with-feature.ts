@@ -5,6 +5,7 @@ import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
 import { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
+import type { PerformanceMetrics } from '@wixc3/engine-scripts';
 
 const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
@@ -235,7 +236,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 ...navigationOptions,
             });
 
-            async function getMetrics() {
+            async function getMetrics(): PerformanceMetrics {
                 const measures = await executableApp.getMetrics();
                 for (const worker of featurePage.workers()) {
                     const workerEntries = await worker.evaluate(() => {
