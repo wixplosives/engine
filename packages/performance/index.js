@@ -6,7 +6,7 @@ const initMark = {
     entryType: 'mark',
     name: initMarkName,
     startTime: initialStartTime,
-    toJSON: () => JSON.stringify({ name: initMarkName, initialStartTime }),
+    toJSON: () => ({ name: initMarkName, initialStartTime }),
 };
 const marks = new Map();
 
