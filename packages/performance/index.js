@@ -21,11 +21,12 @@ function getMarkTime({ defaultMark, markName }) {
 }
 
 function toJSON() {
-    return JSON.stringify({
+    return {
         name: this.name,
         startTime: this.startTime,
         duration: this.duration,
-    });
+        entryType: this.type
+    };
 }
 
 module.exports = {

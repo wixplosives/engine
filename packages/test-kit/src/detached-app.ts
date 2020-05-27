@@ -60,14 +60,9 @@ export class DetachedApp implements IExecutableApplication {
     }
 
     public async getMetrics() {
-        const metrics = await this.waitForProcessMessage<PerformanceMetrics>('metrics-response', (p) => {
+        return this.waitForProcessMessage<PerformanceMetrics>('metrics-response', (p) => {
             p.send({ id: 'metrics-request' });
         });
-        // for some reason, nested objects are not being parsed properly, causing the array object inside the marks array to be a string instead of an object
-        return {
-            marks: metrics.marks.map((mark) => JSON.parse((mark as unknown) as string)),
-            measures: metrics.measures.map((measure) => JSON.parse((measure as unknown) as string)),
-        };
     }
 
     private async waitForProcessMessage<T>(

@@ -31,16 +31,10 @@ export class AttachedApp implements IExecutableApplication {
     }
 
     public async getMetrics() {
-        const metrics = await this.makeEnvironmentHttpCall<PerformanceMetrics>({
+        return this.makeEnvironmentHttpCall<PerformanceMetrics>({
             method: 'GET',
             path: join(NODE_ENV_PATH, 'metrics'),
         });
-
-        // for some reason, nested objects are not being parsed properly, causing the array object inside the marks array to be a string instead of an object
-        return {
-            marks: metrics.marks.map((m) => JSON.parse((m as unknown) as string)),
-            measures: metrics.measures.map((m) => JSON.parse((m as unknown) as string)),
-        };
     }
 
     private makeEnvironmentHttpCall<ResponseType>({
