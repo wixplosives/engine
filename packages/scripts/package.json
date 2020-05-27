@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "14.0.4",
+  "version": "14.1.0",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
@@ -21,6 +21,7 @@
   "dependencies": {
     "@file-services/node": "^2.2.0",
     "@file-services/types": "^2.2.0",
+    "@wixc3/cross-performance": "^14.1.0",
     "@wixc3/engine-core": "^14.0.4",
     "@wixc3/engine-core-node": "^14.0.4",
     "commander": "^5.1.0",
@@ -39,9 +40,7 @@
     "socket.io": "^2.3.0",
     "webpack": "^4.43.0",
     "webpack-dev-middleware": "^3.7.2",
-    "webpack-virtual-modules": "^0.2.2",
-    "@wixc3/cross-performance": "^14.0.4"
-    
+    "webpack-virtual-modules": "^0.2.2"
   },
   "files": [
     "cjs",

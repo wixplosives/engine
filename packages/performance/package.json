@@ -1,8 +1,8 @@
 {
   "name": "@wixc3/cross-performance",
-  "version": "14.0.4",
+  "version": "14.1.0",
   "main": "./index.js",
-  "browser": "./browser.js" ,
+  "browser": "./browser.js",
   "types": "./index.d.ts",
   "license": "MIT",
   "publishConfig": {
