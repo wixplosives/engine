@@ -244,8 +244,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     };
                 });
                 return {
-                    marks: [...nodeEntries.marks, ...JSON.parse(browserEntries.marks)],
-                    measures: [...nodeEntries.measures, ...JSON.parse(browserEntries.measures)],
+                    marks: [...nodeEntries.marks, ...(JSON.parse(browserEntries.marks) as PerformanceEntry[])],
+                    measures: [...nodeEntries.measures, ...(JSON.parse(browserEntries.measures) as PerformanceEntry[])],
                 };
             }
 
