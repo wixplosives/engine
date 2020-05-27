@@ -237,15 +237,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             async function getMetrics() {
                 const measures = await executableApp.getMetrics();
-                const browserEntries = await featurePage.evaluate(() => {
-                    return {
-                        marks: JSON.stringify(window.performance.getEntriesByType('mark')),
-                        measures: JSON.stringify(window.performance.getEntriesByType('measure')),
-                    };
-                });
-                measures.marks.push(...(JSON.parse(browserEntries.marks) as PerformanceEntry[]));
-                measures.measures.push(...(JSON.parse(browserEntries.measures) as PerformanceEntry[]));
-
                 for (const worker of featurePage.workers()) {
                     const workerEntries = await worker.evaluate(() => {
                         return {
@@ -258,16 +249,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     measures.measures.push(...(JSON.parse(workerEntries.measures) as PerformanceEntry[]));
                 }
 
-                for (const iframe of featurePage.frames()) {
-                    const iframeEntries = await iframe.evaluate(() => {
+                for (const frame of featurePage.frames()) {
+                    const frameEntries = await frame.evaluate(() => {
                         return {
                             marks: JSON.stringify(globalThis.performance.getEntriesByType('mark')),
                             measures: JSON.stringify(globalThis.performance.getEntriesByType('measure')),
                         };
                     });
 
-                    measures.marks.push(...(JSON.parse(iframeEntries.marks) as PerformanceEntry[]));
-                    measures.measures.push(...(JSON.parse(iframeEntries.measures) as PerformanceEntry[]));
+                    measures.marks.push(...(JSON.parse(frameEntries.marks) as PerformanceEntry[]));
+                    measures.measures.push(...(JSON.parse(frameEntries.measures) as PerformanceEntry[]));
                 }
                 return measures;
             }
