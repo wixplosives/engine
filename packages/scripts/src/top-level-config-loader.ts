@@ -48,6 +48,7 @@ function requireDeepHack(resourcePath: string, rootContext: string) {
             delete require.cache[filename];
         }
     });
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const imported = require(resourcePath) as { default?: any };
     for (const [key, nodeModule] of Object.entries(previousCache)) {
         require.cache[key] = nodeModule;

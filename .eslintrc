@@ -12,18 +12,17 @@
         }
     },
     "rules": {
-        "react/prop-types": "off",
+        "no-only-tests/no-only-tests": "error",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "error",
-        "no-only-tests/no-only-tests": "error",
+        "react/prop-types": "off",
         "no-empty-pattern": "off"
     },
     "overrides": [
         {
             "files": ["*.ts", "*.tsx"],
             "parserOptions": {
-                "project": "./tsconfig.json",
-                "warnOnUnsupportedTypeScriptVersion": false
+                "project": "./tsconfig.json"
             },
             "extends": [
                 "plugin:@typescript-eslint/recommended",
@@ -31,7 +30,6 @@
                 "prettier/@typescript-eslint"
             ],
             "rules": {
-                "@typescript-eslint/no-floating-promises": "error",
                 "@typescript-eslint/explicit-module-boundary-types": "off",
                 "@typescript-eslint/ban-types": "off",
                 "@typescript-eslint/no-explicit-any": "off",
