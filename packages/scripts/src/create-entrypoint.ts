@@ -83,7 +83,7 @@ ${Array.from(features.values())
         const envFilePath = envFilePaths[envName];
         if (envFilePath) {
             loadStatements.push(
-                `                await import(/* webpackChunkName: "${name}" */ ${stringify(envFilePath)});`
+                `                await import(/* webpackChunkName: "[${envName}]${name}" */ ${stringify(envFilePath)});`
             );
         }
 
@@ -91,7 +91,7 @@ ${Array.from(features.values())
             async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {${
             loadStatements.length ? '\n' + loadStatements.join('\n') : ''
         }
-                return (await import(/* webpackChunkName: "${name}" */ ${stringify(filePath)})).default;
+                return (await import(/* webpackChunkName: "[feature]${name}" */ ${stringify(filePath)})).default;
             },
             depFeatures: ${stringify(dependencies)},
             resolvedContexts: ${stringify(resolvedContexts)},
