@@ -1133,10 +1133,10 @@
     lodash.upperfirst "^4.3.1"
     yargs "^15.3.1"
 
-"@stylable/core@^3.6.2":
-  version "3.6.2"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.6.2.tgz#1d87f32ec2d42d9aa091d070afadbeb7f9359fd6"
-  integrity sha512-Yq+Grbw8aZh/2FlLLPzGlmiDHYvV1o9C1fbrof3ZuvQohP5PSCqlQDwfY644aJJMI1g3TqGNwJS8o8ZWtqHX3Q==
+"@stylable/core@^3.6.2", "@stylable/core@^3.6.3":
+  version "3.6.3"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-3.6.3.tgz#29641a532477fecd4137ab047ae0af48120c0500"
+  integrity sha512-+9D6ECpESIy9klukHKLy77xNQeP2K8UqhQFLIduQmbRcXezR2bnue2YoNlEMGhbMWEqx6HOr0L8LWCUk7YvREw==
   dependencies:
     css-selector-tokenizer "^0.7.2"
     deindent "^0.1.0"
