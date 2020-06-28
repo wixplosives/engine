@@ -1,4 +1,4 @@
-import { SerializableArguments } from './types';
+import type { SerializableArguments } from './types';
 
 export interface RemoteCallAddress {
     api: string;

@@ -2,7 +2,7 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { spy } from 'sinon';
 import sinonChai from 'sinon-chai';
-import { EQUAL } from 'typescript-type-utils';
+import type { EQUAL } from 'typescript-type-utils';
 import {
     AllEnvironments,
     COM,

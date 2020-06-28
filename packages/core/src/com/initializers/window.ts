@@ -1,4 +1,4 @@
-import { EnvironmentInitializer, WindowHost } from '../types';
+import type { EnvironmentInitializer, WindowHost } from '../types';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
 

@@ -3,7 +3,7 @@ import isCI from 'is-ci';
 import puppeteer from 'puppeteer';
 import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
-import { IExecutableApplication } from './types';
+import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 import type { PerformanceMetrics } from '@wixc3/engine-scripts';
 

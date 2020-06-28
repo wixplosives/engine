@@ -1,6 +1,6 @@
 import { SERVICE_CONFIG } from '../symbols';
 import type { Communication } from './communication';
-import { Environment } from '../entities';
+import type { Environment } from '../entities';
 
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;

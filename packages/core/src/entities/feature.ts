@@ -1,6 +1,6 @@
-import { RuntimeEngine } from '../runtime-engine';
+import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, DISPOSE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
-import {
+import type {
     ContextHandler,
     DisposableContext,
     DisposeFunction,

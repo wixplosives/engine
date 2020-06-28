@@ -1,4 +1,4 @@
-import { Json } from './types';
+import type { Json } from './types';
 
 export class ManagedIframe {
     constructor(private host?: Window | null) {}

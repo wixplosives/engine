@@ -1,6 +1,6 @@
 import { WsClientHost } from '../hosts/ws-client-host';
-import { ReadyMessage } from '../message-types';
-import { EnvironmentInitializer } from '../types';
+import type { ReadyMessage } from '../message-types';
+import type { EnvironmentInitializer } from '../types';
 type listenFn = (cb: () => void) => void;
 
 export function socketServerInitializer(

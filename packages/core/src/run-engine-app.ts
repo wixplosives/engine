@@ -1,7 +1,7 @@
 import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
-import { IRunOptions, TopLevelConfig } from './types';
-import { Feature } from './entities';
+import type { IRunOptions, TopLevelConfig } from './types';
+import type { Feature } from './entities';
 import { flattenTree } from './helpers';
 
 export interface IRunEngineOptions {

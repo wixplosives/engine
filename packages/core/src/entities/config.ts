@@ -1,6 +1,6 @@
-import { RuntimeEngine } from '../runtime-engine';
+import type { RuntimeEngine } from '../runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import { EnvVisibility } from '../types';
+import type { EnvVisibility } from '../types';
 import { AllEnvironments, Environment } from './env';
 import { FeatureInput } from './input';
 

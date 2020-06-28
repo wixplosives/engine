@@ -1,4 +1,4 @@
-import io from 'socket.io';
+import type io from 'socket.io';
 import performance from '@wixc3/cross-performance';
 performance.clearMeasures;
 import { runWSEnvironment } from './ws-environment';

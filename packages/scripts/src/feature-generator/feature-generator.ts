@@ -1,5 +1,5 @@
-import { IFileSystem } from '@file-services/types';
-import { IGeneratorOptions } from './types';
+import type { IFileSystem } from '@file-services/types';
+import type { IGeneratorOptions } from './types';
 import { mapDirectory, writeDirectoryContentsSync, enrichContext, readDirectoryContentsSync } from './utils';
 import { templateCompilerProvider } from '../utils';
 

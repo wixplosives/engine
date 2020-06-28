@@ -1,6 +1,6 @@
 import { IPCHost } from '@wixc3/engine-core-node';
 
-import { StartEnvironmentOptions } from './types';
+import type { StartEnvironmentOptions } from './types';
 import { runNodeEnvironment } from './node-environment';
 
 export async function runIPCEnvironment(options: StartEnvironmentOptions) {

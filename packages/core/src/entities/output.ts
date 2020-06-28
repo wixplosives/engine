@@ -1,7 +1,7 @@
 import { runtimeType } from '../entity-helpers';
-import { RuntimeEngine } from '../runtime-engine';
+import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import { Entity, EnvVisibility } from '../types';
+import type { Entity, EnvVisibility } from '../types';
 
 export abstract class FeatureOutput<
     Type,

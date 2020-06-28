@@ -1,4 +1,4 @@
-import { IFeatureMessagePayload, IProcessMessage, ErrorResponse } from './types';
+import type { IFeatureMessagePayload, IProcessMessage, ErrorResponse } from './types';
 
 export interface ServerResponse<T> extends IProcessMessage<T> {
     id: 'error' | 'feature-initialized' | 'feature-closed';

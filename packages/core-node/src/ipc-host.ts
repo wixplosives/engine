@@ -1,5 +1,5 @@
 import { BaseHost, IDisposable } from '@wixc3/engine-core';
-import { ChildProcess } from 'child_process';
+import type { ChildProcess } from 'child_process';
 
 export class IPCHost extends BaseHost implements IDisposable {
     private disposed = false;

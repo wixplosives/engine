@@ -1,5 +1,5 @@
 import { promisify } from 'util';
-import { Socket } from 'net';
+import type { Socket } from 'net';
 
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
@@ -26,7 +26,7 @@ import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager, LaunchEnvironmentMode } from './node-environments-manager';
 import { createIPC } from './process-communication';
-import {
+import type {
     EngineConfig,
     IConfigDefinition,
     IEnvironment,

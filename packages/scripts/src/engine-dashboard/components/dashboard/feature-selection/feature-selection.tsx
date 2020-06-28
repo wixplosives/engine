@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import Select from 'react-select';
-import { ServerFeatureDef } from '../../../../server-types';
+import type { ServerFeatureDef } from '../../../../server-types';
 import { classes } from './feature-selection.st.css';
 import { TitledElement } from '../titled-element';
 

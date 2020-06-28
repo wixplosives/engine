@@ -1,6 +1,6 @@
 import { COM, IFeatureLoader, runEngineApp, RuntimeEngine } from '@wixc3/engine-core';
 
-import { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
+import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
 export async function runNodeEnvironment({
     featureName,

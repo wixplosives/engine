@@ -7,7 +7,7 @@ import {
     PerformanceMetrics,
 } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
-import { IExecutableApplication } from './types';
+import type { IExecutableApplication } from './types';
 
 export class DetachedApp implements IExecutableApplication {
     private engineStartProcess: ChildProcess | undefined;
