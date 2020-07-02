@@ -1106,13 +1106,13 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/cli@^3.7.0":
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-3.7.0.tgz#1852a06df382d41cf7d2bf6636b9ff98454d7844"
-  integrity sha512-6MMzjTNCET5jD3lmxN1A1MsUwYuIwZS5/+qXzzHAz5FEPf9gOxcSrFu51LF0s0AF7YFIX/+fHDjgYgC4HIzH2w==
+"@stylable/cli@^3.7.1":
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-3.7.1.tgz#9920cb3d9aee1041bdd3555c7e4cd99ea5196b21"
+  integrity sha512-NV3wrSP+SyvuZVac6HYyVCToHbwZefkJNlN9Jc0IU79D0CDrWWE03aOFTsATPhjWTV6jKajiPjIFOorC2y3pNw==
   dependencies:
     "@stylable/core" "^3.7.0"
-    "@stylable/node" "^3.7.0"
+    "@stylable/node" "^3.7.1"
     "@stylable/optimizer" "^3.7.0"
     lodash.camelcase "^4.3.0"
     lodash.upperfirst "^4.3.1"
@@ -1146,10 +1146,10 @@
   dependencies:
     "@stylable/core" "^3.7.0"
 
-"@stylable/node@^3.7.0":
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-3.7.0.tgz#87a5a5839c075d8338102b9ba70329f9de0585da"
-  integrity sha512-EfyjbOTryBIulq0/TZ7dtk3pke/oAl00ecb2NXfOrLRuJY5YkqSZ8FRkswocvFofYfy2Dr1yMefYYxP94bLl0w==
+"@stylable/node@^3.7.0", "@stylable/node@^3.7.1":
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-3.7.1.tgz#527e927cfe8a3649b796b3242dc15a1d27e1e24f"
+  integrity sha512-ofheT/ZRJo9+O/0Sce16OHSDFByyZ1Aj47/yTsvisu5Bs5Oqenda2+326ERJEQhwjj9OYD1wwMVCg+ohAuqPfw==
   dependencies:
     "@stylable/core" "^3.7.0"
     "@stylable/module-utils" "^3.7.0"
