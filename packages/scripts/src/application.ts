@@ -599,7 +599,7 @@ export class Application {
         return featureEnvDefinitions;
     }
 
-    private async launchHttpServer({ httpServerPort = DEFAULT_PORT }: { httpServerPort?: number }) {
+    public async launchHttpServer({ httpServerPort = DEFAULT_PORT }: { httpServerPort?: number }) {
         const app = express();
         app.use(cors());
         const openSockets = new Set<Socket>();
