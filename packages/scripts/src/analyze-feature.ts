@@ -230,7 +230,7 @@ export function simplifyPackageName(name: string) {
     return name;
 }
 
-export function analyzeFeatureModule({ filename: filePath, exports }: NodeModule): IFeatureModule {
+export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {
     if (typeof exports !== 'object' || exports === null) {
         throw new Error(`${filePath} does not export an object.`);
     }
@@ -281,7 +281,7 @@ const parseContextualEnv = ({
         childEnvName: childEnv.env,
     }));
 
-export const getFeatureModules = (module: NodeModule) =>
+export const getFeatureModules = (module: NodeJS.Module) =>
     flattenTree(
         module,
         (m) => m.children,

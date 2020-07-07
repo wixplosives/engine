@@ -124,10 +124,10 @@ export class Application {
             compiler.run((e, s) => {
                 if (e) {
                     reject(e);
-                } else if (s.hasErrors()) {
-                    reject(new Error(s.toString('errors-warnings')));
+                } else if ((s as unknown as webpack.Stats).hasErrors()) {
+                    reject(new Error((s as unknown as webpack.Stats).toString('errors-warnings')));
                 } else {
-                    resolve(s);
+                    resolve(s as unknown as webpack.Stats);
                 }
             })
         );
