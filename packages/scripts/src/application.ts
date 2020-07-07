@@ -99,7 +99,7 @@ export class Application {
         singleFeature,
         title,
         publicConfigsRoute,
-    }: IRunOptions = {}): Promise<webpack.Stats> {
+    }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
             await this.importModules(engineConfig.require);
@@ -120,14 +120,14 @@ export class Application {
             publicConfigsRoute,
         });
 
-        const stats = await new Promise<webpack.Stats>((resolve, reject) =>
+        const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
             compiler.run((e, s) => {
                 if (e) {
                     reject(e);
-                } else if ((s as unknown as webpack.Stats).hasErrors()) {
-                    reject(new Error((s as unknown as webpack.Stats).toString('errors-warnings')));
+                } else if (s.hasErrors()) {
+                    reject(new Error(s.toString('errors-warnings')));
                 } else {
-                    resolve(s as unknown as webpack.Stats);
+                    resolve(s);
                 }
             })
         );
