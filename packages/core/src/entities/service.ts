@@ -1,7 +1,7 @@
-import { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComConfig } from '../com/types';
-import { RuntimeEngine } from '../runtime-engine';
+import type { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComConfig } from '../com/types';
+import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import { EnvVisibility } from '../types';
+import type { EnvVisibility } from '../types';
 import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
 import { FeatureOutput } from './output';
 

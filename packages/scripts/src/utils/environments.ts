@@ -1,5 +1,5 @@
 import { flattenTree, EnvironmentTypes } from '@wixc3/engine-core';
-import { IEnvironment, IFeatureDefinition } from '../types';
+import type { IEnvironment, IFeatureDefinition } from '../types';
 
 export function filterEnvironments(
     featureName: string,

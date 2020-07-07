@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+import type { Page } from 'puppeteer';
 
 export class FileServerDriver {
     public static async getFromRoot(root: Page) {

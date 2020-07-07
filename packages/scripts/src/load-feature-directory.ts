@@ -1,4 +1,4 @@
-import { IFileSystemSync } from '@file-services/types';
+import type { IFileSystemSync } from '@file-services/types';
 import { isConfigFile, isContextFile, isEnvFile, isFeatureFile } from './build-constants';
 
 export interface IFeatureDirectory {

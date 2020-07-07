@@ -1,4 +1,4 @@
-import { Socket } from 'net';
+import type { Socket } from 'net';
 import { safeListeningHttpServer } from 'create-listening-server';
 import io from 'socket.io';
 

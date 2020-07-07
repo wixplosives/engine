@@ -1,6 +1,6 @@
 {
   "name": "@example/electron-app",
-  "version": "14.2.0",
+  "version": "14.2.1",
   "main": "index.js",
   "scripts": {
     "start": "electron ."
@@ -8,7 +8,7 @@
   "dependencies": {
     "@file-services/directory": "^2.2.0",
     "@file-services/node": "^2.2.0",
-    "electron": "^9.0.4"
+    "electron": "^9.1.0"
   },
   "license": "UNLICENSED",
   "private": true

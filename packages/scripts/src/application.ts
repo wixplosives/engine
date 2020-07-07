@@ -1,5 +1,5 @@
 import { promisify } from 'util';
-import { Socket } from 'net';
+import type { Socket } from 'net';
 
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
@@ -26,7 +26,7 @@ import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager, LaunchEnvironmentMode } from './node-environments-manager';
 import { createIPC } from './process-communication';
-import {
+import type {
     EngineConfig,
     IConfigDefinition,
     IEnvironment,
@@ -124,10 +124,10 @@ export class Application {
             compiler.run((e, s) => {
                 if (e) {
                     reject(e);
-                } else if (s.hasErrors()) {
-                    reject(new Error(s.toString('errors-warnings')));
+                } else if ((s as unknown as webpack.Stats).hasErrors()) {
+                    reject(new Error((s as unknown as webpack.Stats).toString('errors-warnings')));
                 } else {
-                    resolve(s);
+                    resolve(s as unknown as webpack.Stats);
                 }
             })
         );

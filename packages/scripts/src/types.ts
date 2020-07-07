@@ -1,4 +1,11 @@
-import { Environment, EnvironmentContext, EnvironmentTypes, TopLevelConfig, Feature, Target } from '@wixc3/engine-core';
+import type {
+    Environment,
+    EnvironmentContext,
+    EnvironmentTypes,
+    TopLevelConfig,
+    Feature,
+    Target,
+} from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 

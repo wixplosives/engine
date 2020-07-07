@@ -1,7 +1,7 @@
 import { BaseHost } from './com/hosts/base-host';
 import { Communication, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
-import { Target } from './com/types';
+import type { Target } from './com/types';
 import { Config } from './entities/config';
 import { AllEnvironments, Universal } from './entities/env';
 import { Feature } from './entities/feature';

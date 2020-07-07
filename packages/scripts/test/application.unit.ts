@@ -3,7 +3,7 @@ import { TopLevelConfig, createDisposables } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { Page } from 'puppeteer';
+import type { Page } from 'puppeteer';
 import { Application } from '../src/application';
 
 function getBodyContent(page: Page) {

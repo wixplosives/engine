@@ -1,7 +1,7 @@
 import { createDirectoryFs } from '@file-services/directory';
 import nodeFs from '@file-services/node';
-import { IFileSystem } from '@file-services/types';
-import { FileData, IDirectoryContents } from './types';
+import type { IFileSystem } from '@file-services/types';
+import type { FileData, IDirectoryContents } from './types';
 
 /**
  * Class that uses nodeFs to list files and read file data for each file

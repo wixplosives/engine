@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseHost } from './base-host';
-import { EventEmitter } from 'events';
+import type { EventEmitter } from 'events';
 
 export class EventEmitterHost extends BaseHost {
     constructor(private host: EventEmitter) {

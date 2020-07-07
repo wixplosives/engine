@@ -1,4 +1,4 @@
-import { loader as webpackLoader } from 'webpack';
+import type { loader as webpackLoader } from 'webpack';
 
 export default function (this: webpackLoader.LoaderContext) {
     const params = new URLSearchParams(this.query.slice(1));

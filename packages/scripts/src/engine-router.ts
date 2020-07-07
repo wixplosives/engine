@@ -2,9 +2,9 @@ import { Router } from 'express';
 import bodyParser from 'body-parser';
 import performance from '@wixc3/cross-performance';
 
-import { OverrideConfig } from './config-middleware';
-import { NodeEnvironmentsManager } from './node-environments-manager';
-import { IProcessMessage, IFeatureMessagePayload, IFeatureTarget } from './types';
+import type { OverrideConfig } from './config-middleware';
+import type { NodeEnvironmentsManager } from './node-environments-manager';
+import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget } from './types';
 
 export function createFeaturesEngineRouter(
     overrideConfigsMap: Map<string, OverrideConfig>,
