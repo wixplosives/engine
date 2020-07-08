@@ -56,11 +56,12 @@ export async function runEngineApp({
     const [runningFeature] = allFeatures;
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    await engine.run(runningFeature, envName);
-
+    const runningPromise = engine.run(runningFeature, envName);
+    
     return {
         engine,
         async dispose() {
+            await runningPromise;
             for (const feature of allFeatures) {
                 await engine.dispose(feature, envName);
             }
