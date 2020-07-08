@@ -20,7 +20,7 @@ export class RuntimeEngine {
         }
     }
 
-    public run(features: Feature | Feature[], envName: string): RuntimeEngine {
+    public async run(features: Feature | Feature[], envName: string): Promise<this> {
         if (this.running) {
             throw new Error('Engine already running!');
         }
@@ -31,9 +31,11 @@ export class RuntimeEngine {
         for (const feature of features) {
             this.initFeature(feature, envName);
         }
+        const runPromises: Array<Promise<void>> = [];
         for (const feature of features) {
-            this.runFeature(feature, envName);
+            runPromises.push(this.runFeature(feature, envName));
         }
+        await Promise.all(runPromises);
         return this;
     }
 
@@ -45,12 +47,12 @@ export class RuntimeEngine {
         return instance;
     }
 
-    public runFeature(feature: Feature, envName: string) {
+    public async runFeature(feature: Feature, envName: string): Promise<void> {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
         }
-        featureInstance[RUN](this, envName);
+        await featureInstance[RUN](this, envName);
     }
 
     public async dispose(feature: Feature, envName: string) {

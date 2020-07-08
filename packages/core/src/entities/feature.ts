@@ -23,7 +23,7 @@ export class RuntimeFeature<
     API extends EntityRecord = EntityRecord
 > {
     private running = false;
-    private runHandlers = new SetMultiMap<string, () => void>();
+    private runHandlers = new SetMultiMap<string, () => unknown>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
 
     constructor(
@@ -32,24 +32,26 @@ export class RuntimeFeature<
         public dependencies: RunningFeatures<Deps, string>
     ) {}
 
-    public addRunHandler(fn: () => void, envName: string) {
+    public addRunHandler(fn: () => unknown, envName: string) {
         this.runHandlers.add(envName, fn);
     }
     public addOnDisposeHandler(fn: DisposeFunction, envName: string) {
         this.disposeHandlers.add(envName, fn);
     }
-    public [RUN](context: RuntimeEngine, envName: string) {
+    public async [RUN](context: RuntimeEngine, envName: string): Promise<void> {
         if (this.running) {
             return;
         }
         this.running = true;
+        const runPromises: Array<unknown> = [];
         for (const dep of this.feature.dependencies) {
-            context.runFeature(dep, envName);
+            runPromises.push(context.runFeature(dep, envName));
         }
         const envRunHandlers = this.runHandlers.get(envName) || [];
         for (const handler of envRunHandlers) {
-            handler();
+            runPromises.push(handler());
         }
+        await Promise.all(runPromises)
     }
 
     public async [DISPOSE](context: RuntimeEngine, envName: string) {
