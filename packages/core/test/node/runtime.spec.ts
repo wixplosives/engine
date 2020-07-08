@@ -25,6 +25,7 @@ import {
     Universal,
 } from '../../src';
 import { typeCheck } from '../type-check';
+import { waitFor } from 'promise-assist';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -84,6 +85,23 @@ describe('Feature', () => {
         runEngine({ entryFeature });
 
         expect(calls).to.eql(['f0 run', 'f1 run']);
+    });
+
+    it('feature run stage finished indication', async () => {
+        const f0 = new Feature({ id: 'test', api: {} });
+        const entryFeature = new Feature({ id: 'test', api: {}, dependencies: [f0] });
+
+        f0.setup(AllEnvironments, ({ run }) => {
+            run(() => {
+                return new Promise((res) => setTimeout(res, 500));
+            });
+        });
+
+        const engine = runEngine({ entryFeature });
+
+        expect(engine.get(f0).didFinishRunStage()).to.eq(false);
+
+        await waitFor(() => expect(engine.get(f0).didFinishRunStage()).to.eq(true));
     });
 
     it('feature setup/run stage should not happen twice', () => {

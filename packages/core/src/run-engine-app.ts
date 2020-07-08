@@ -67,6 +67,9 @@ export async function runEngineApp({
                 await engine.dispose(feature, envName);
             }
         },
+        finishedRunStage() {
+            return allFeatures.find((feature) => !engine.get(feature).didFinishRunStage()) ? false : true;
+        },
     };
 }
 

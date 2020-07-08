@@ -38,10 +38,7 @@ export async function runEngineEnvironment({
     env,
     basePath = process.cwd(),
     fs,
-}: IRunNodeEnvironmentOptions): Promise<{
-    engine: RuntimeEngine;
-    dispose: () => Promise<void>;
-}> {
+}: IRunNodeEnvironmentOptions): ReturnType<typeof runEngineApp> {
     const { env: name, envType: type } = env;
     const { features, configurations } = readFeatures(fs, basePath);
 
@@ -57,7 +54,7 @@ export async function runEngineEnvironment({
         type,
     });
 
-    return await runEngineApp({
+    return runEngineApp({
         envName: name,
         featureLoaders,
         config,
@@ -84,8 +81,9 @@ export async function getRunningFeature<
     dispose: () => Promise<void>;
     runningApi: MapToProxyType<API>;
     engine: RuntimeEngine;
+    finishedRunStage: () => boolean;
 }> {
-    const { engine, dispose } = await runEngineEnvironment({
+    const { engine, dispose, finishedRunStage } = await runEngineEnvironment({
         featureName,
         config,
         configName,
@@ -99,5 +97,6 @@ export async function getRunningFeature<
         runningApi: api,
         engine,
         dispose,
+        finishedRunStage,
     };
 }
