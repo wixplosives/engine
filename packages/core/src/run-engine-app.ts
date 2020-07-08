@@ -11,7 +11,7 @@ export interface IRunEngineOptions {
     runOptions?: IRunOptions;
 }
 
-export function run({ entryFeature, topLevelConfig = [], envName = '', runOptions }: IRunEngineOptions): RuntimeEngine {
+export function run({ entryFeature, topLevelConfig = [], envName = '', runOptions }: IRunEngineOptions) {
     return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature, envName);
 }
 
@@ -55,14 +55,13 @@ export async function runEngineApp({
     ]);
     const [runningFeature] = allFeatures;
 
-    const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options).run(
-        runningFeature,
-        envName
-    );
-
+    const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
+    const runningPromise = engine.run(runningFeature, envName);
+    
     return {
         engine,
         async dispose() {
+            await runningPromise;
             for (const feature of allFeatures) {
                 await engine.dispose(feature, envName);
             }

@@ -114,7 +114,7 @@ typeCheck(
 );
 
 /*************** EXAMPLE SETUP FILES ***************/
-export function dontRun() {
+export async function dontRun() {
     addPanel.setup(MAIN, (feature, engine) => {
         feature.componentDescription.register({ component: '', description: '' });
         feature.componentDescription.register({ component: '', description: '' });
@@ -172,5 +172,5 @@ export function dontRun() {
         };
     });
 
-    new RuntimeEngine([]).run(addPanel, 'main');
+    await new RuntimeEngine([]).run(addPanel, 'main');
 }
