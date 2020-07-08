@@ -7,6 +7,9 @@ _wcs
 # OSX indexing
 .DS_Store
 
+# IDEs
+.idea
+
 # Logs
 logs
 *.log

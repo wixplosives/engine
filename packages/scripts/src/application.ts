@@ -1,11 +1,6 @@
 import { promisify } from 'util';
-import type { Socket } from 'net';
-
-import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
-import cors from 'cors';
 import rimrafCb from 'rimraf';
-import io from 'socket.io';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import fs from '@file-services/node';
@@ -38,10 +33,10 @@ import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 import { createFeaturesEngineRouter, generateConfigName } from './engine-router';
 import { filterEnvironments } from './utils/environments';
+import { launchHttpServer } from './launch-http-server';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
-export const DEFAULT_PORT = 3000;
 
 export interface IRunFeatureOptions extends IFeatureTarget {
     featureName: string;
@@ -162,7 +157,8 @@ export class Application {
             await this.importModules(engineConfig.require);
         }
         const disposables = new Set<() => unknown>();
-        const { port, app, close, socketServer } = await this.launchHttpServer({
+        const { port, app, close, socketServer } = await launchHttpServer({
+            staticDirPath: this.outputPath,
             httpServerPort,
         });
         disposables.add(() => close());
@@ -349,7 +345,8 @@ export class Application {
         const disposables = new Set<() => unknown>();
         const configurations = await this.readConfigs();
 
-        const { port, close, socketServer, app } = await this.launchHttpServer({
+        const { port, close, socketServer, app } = await launchHttpServer({
+            staticDirPath: this.outputPath,
             httpServerPort,
         });
         const config: TopLevelConfig = [...userConfig];
@@ -407,7 +404,8 @@ export class Application {
         if (engineConfig && engineConfig.require) {
             await this.importModules(engineConfig.require);
         }
-        const { socketServer, close, port } = await this.launchHttpServer({
+        const { socketServer, close, port } = await launchHttpServer({
+            staticDirPath: this.outputPath,
             httpServerPort: preferredPort,
         });
 
@@ -599,38 +597,6 @@ export class Application {
         return featureEnvDefinitions;
     }
 
-    private async launchHttpServer({ httpServerPort = DEFAULT_PORT }: { httpServerPort?: number }) {
-        const app = express();
-        app.use(cors());
-        const openSockets = new Set<Socket>();
-        const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
-        httpServer.on('connection', (socket) => {
-            openSockets.add(socket);
-            socket.once('close', () => openSockets.delete(socket));
-        });
-
-        app.use('/', express.static(this.outputPath));
-
-        app.use('/favicon.ico', noContentHandler);
-
-        const socketServer = io(httpServer);
-
-        return {
-            close: async () => {
-                await new Promise((res) => {
-                    for (const connection of openSockets) {
-                        connection.destroy();
-                    }
-                    openSockets.clear();
-                    socketServer.close(res);
-                });
-            },
-            port,
-            app,
-            socketServer,
-        };
-    }
-
     private filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
         const foundFeature = features.get(featureName);
         if (!foundFeature) {
@@ -644,11 +610,6 @@ export class Application {
         }
     }
 }
-
-const noContentHandler: express.RequestHandler = (_req, res) => {
-    res.status(204); // No Content
-    res.end();
-};
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
