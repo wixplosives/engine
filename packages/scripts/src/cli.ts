@@ -11,7 +11,7 @@ import open from 'open';
 
 import { version } from '../package.json';
 import { Application } from './application';
-import { IFeatureMessagePayload, IPortMessage, IProcessMessage, IFeatureTarget } from './types';
+import type { IFeatureMessagePayload, IPortMessage, IProcessMessage, IFeatureTarget } from './types';
 import { resolveFrom, parseCliArguments } from './utils';
 
 program.version(version);

@@ -1,7 +1,7 @@
 import COM from './communication.feature';
-import { RuntimeFeature, Feature } from './entities';
+import type { RuntimeFeature, Feature } from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
-import { IRunOptions, TopLevelConfig } from './types';
+import type { IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine {
     public features = new Map<Feature, RuntimeFeature>();

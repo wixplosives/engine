@@ -1,6 +1,6 @@
 import { resolvePackages, loadFeaturesFromPackages, IConfigDefinition } from '@wixc3/engine-scripts';
-import { IFileSystem } from '@file-services/types';
-import { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { IFileSystem } from '@file-services/types';
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 
 export function readFeatures(fs: IFileSystem, basePath: string, featuresDirectory?: string) {
     const packages = resolvePackages(basePath);

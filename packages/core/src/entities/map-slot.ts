@@ -1,5 +1,5 @@
 import { CREATE_RUNTIME } from '../symbols';
-import { EnvVisibility } from '../types';
+import type { EnvVisibility } from '../types';
 import { FeatureInput } from './input';
 
 export class MapRegistry<K, T> {

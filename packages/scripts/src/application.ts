@@ -21,7 +21,7 @@ import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager, LaunchEnvironmentMode } from './node-environments-manager';
 import { createIPC } from './process-communication';
-import {
+import type {
     EngineConfig,
     IConfigDefinition,
     IEnvironment,
@@ -37,7 +37,6 @@ import { launchHttpServer } from './launch-http-server';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
-export const DEFAULT_PORT = 3000;
 
 export interface IRunFeatureOptions extends IFeatureTarget {
     featureName: string;
@@ -95,7 +94,7 @@ export class Application {
         singleFeature,
         title,
         publicConfigsRoute,
-    }: IRunOptions = {}): Promise<webpack.Stats> {
+    }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
             await this.importModules(engineConfig.require);
@@ -116,7 +115,7 @@ export class Application {
             publicConfigsRoute,
         });
 
-        const stats = await new Promise<webpack.Stats>((resolve, reject) =>
+        const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
             compiler.run((e, s) => {
                 if (e) {
                     reject(e);

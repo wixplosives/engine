@@ -7,7 +7,7 @@ import {
     UNKNOWN_CALLBACK_ID,
 } from './errors';
 import { isWindow, isWorkerContext, MultiCounter } from './helpers';
-import {
+import type {
     CallbackMessage,
     CallMessage,
     EventMessage,
@@ -16,7 +16,7 @@ import {
     Message,
     ReadyMessage,
 } from './message-types';
-import {
+import type {
     APIService,
     AsyncApi,
     CallbackRecord,
@@ -36,8 +36,8 @@ import {
 import { SERVICE_CONFIG } from '../symbols';
 
 import { SetMultiMap } from '../helpers';
-import { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
-import { IDTag } from '../types';
+import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
+import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
 import { deferred } from 'promise-assist';

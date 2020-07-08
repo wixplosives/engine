@@ -1,7 +1,7 @@
-import { EnvironmentInitializer } from '../types';
-import { SingleEndpointContextualEnvironment, Environment } from '../../entities';
-import { Communication } from '../communication';
-import { MapBy } from '../../types';
+import type { EnvironmentInitializer } from '../types';
+import type { SingleEndpointContextualEnvironment, Environment } from '../../entities';
+import type { Communication } from '../communication';
+import type { MapBy } from '../../types';
 
 export type EnvironmentInitializers<ENVS extends Environment[]> = {
     [K in keyof MapBy<ENVS, 'env'>]: EnvironmentInitializer<any>;

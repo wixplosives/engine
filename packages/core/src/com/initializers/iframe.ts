@@ -1,5 +1,5 @@
-import { EnvironmentInitializer, WindowHost } from '../types';
-import { Communication } from '../communication';
+import type { EnvironmentInitializer, WindowHost } from '../types';
+import type { Communication } from '../communication';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
 

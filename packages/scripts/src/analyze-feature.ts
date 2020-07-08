@@ -1,4 +1,4 @@
-import { IFileSystemSync } from '@file-services/types';
+import type { IFileSystemSync } from '@file-services/types';
 import {
     Environment,
     EnvironmentContext,
@@ -18,10 +18,10 @@ import {
     parseFeatureFileName,
 } from './build-constants';
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
-import { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
+import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import { INpmPackage, IPackageJson } from './utils/resolve-packages';
+import type { INpmPackage, IPackageJson } from './utils/resolve-packages';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -230,7 +230,7 @@ export function simplifyPackageName(name: string) {
     return name;
 }
 
-export function analyzeFeatureModule({ filename: filePath, exports }: NodeModule): IFeatureModule {
+export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {
     if (typeof exports !== 'object' || exports === null) {
         throw new Error(`${filePath} does not export an object.`);
     }
@@ -281,7 +281,7 @@ const parseContextualEnv = ({
         childEnvName: childEnv.env,
     }));
 
-export const getFeatureModules = (module: NodeModule) =>
+export const getFeatureModules = (module: NodeJS.Module) =>
     flattenTree(
         module,
         (m) => m.children,

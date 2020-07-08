@@ -9,7 +9,7 @@ import {
     MapToProxyType,
 } from '@wixc3/engine-core';
 import { readFeatures, evaluateConfig, createFeatureLoaders } from '@wixc3/engine-scripts';
-import { IFileSystem } from '@file-services/types';
+import type { IFileSystem } from '@file-services/types';
 
 export interface IRunNodeEnvironmentOptions {
     featureName: string;

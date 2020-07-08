@@ -1,5 +1,5 @@
-import { ChildProcess } from 'child_process';
-import { ICommunicationMessage, RemoteProcess } from './types';
+import type { ChildProcess } from 'child_process';
+import type { ICommunicationMessage, RemoteProcess } from './types';
 
 export class ForkedProcess implements RemoteProcess {
     constructor(private proc: NodeJS.Process | ChildProcess) {}

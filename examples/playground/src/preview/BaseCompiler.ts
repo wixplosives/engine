@@ -1,5 +1,5 @@
-import { AsyncApi } from '@wixc3/engine-core';
-import { CodeService } from '../code-editor/code-service';
+import type { AsyncApi } from '@wixc3/engine-core';
+import type { CodeService } from '../code-editor/code-service';
 
 export interface CompilerExtension {
     matcher: (s: string) => boolean;

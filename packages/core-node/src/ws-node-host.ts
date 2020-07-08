@@ -1,5 +1,5 @@
 import { BaseHost, IDisposable } from '@wixc3/engine-core';
-import io from 'socket.io';
+import type io from 'socket.io';
 
 export class WsHost extends BaseHost {
     constructor(private socket: io.Socket) {

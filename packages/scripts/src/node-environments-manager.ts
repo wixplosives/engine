@@ -1,4 +1,4 @@
-import { Socket } from 'net';
+import type { Socket } from 'net';
 import { delimiter } from 'path';
 
 import io from 'socket.io';
@@ -16,7 +16,7 @@ import {
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
 } from './types';
-import { OverrideConfig } from './config-middleware';
+import type { OverrideConfig } from './config-middleware';
 import { filterEnvironments } from './utils/environments';
 
 type RunningEnvironments = Record<string, number>;

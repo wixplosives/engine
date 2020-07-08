@@ -1,5 +1,5 @@
-import { DirectoryContentMapper, ITemplateContext, IEnrichedTemplateContext } from './types';
-import { IDirectoryContents, IFileSystem } from '@file-services/types';
+import type { DirectoryContentMapper, ITemplateContext, IEnrichedTemplateContext } from './types';
+import type { IDirectoryContents, IFileSystem } from '@file-services/types';
 import { toKebabCase, toCamelCase, toCapitalCase } from '../utils';
 
 // adds display options to each context value

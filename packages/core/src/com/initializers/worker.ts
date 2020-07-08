@@ -1,4 +1,4 @@
-import { EnvironmentInitializer } from '../types';
+import type { EnvironmentInitializer } from '../types';
 
 export function workerInitializer(): EnvironmentInitializer<{ id: string }> {
     return async (communication, { env, endpointType }) => {

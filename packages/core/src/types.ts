@@ -1,8 +1,8 @@
-import { TupleToUnion } from 'typescript-type-utils';
-import { LogMessage } from './common-types';
-import { Universal } from './entities/env';
-import { Feature } from './entities/feature';
-import { RuntimeEngine } from './runtime-engine';
+import type { TupleToUnion } from 'typescript-type-utils';
+import type { LogMessage } from './common-types';
+import type { Universal } from './entities/env';
+import type { Feature } from './entities/feature';
+import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
 /*************** HELPER TYPES  ***************/

@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import { Socket } from 'net';
 import { safeListeningHttpServer } from 'create-listening-server';
 import io from 'socket.io';
-import { DEFAULT_PORT } from './application';
+import type { Socket } from 'net';
+
+export const DEFAULT_PORT = 3000;
 
 const noContentHandler: express.RequestHandler = (_req, res) => {
     res.status(204); // No Content

@@ -1,11 +1,11 @@
-import Module from 'module';
+import { Module } from 'module';
 
 /**
  * Evaluate modules and return a root module.
  *
  * @param filePaths list of modules files to evaluate
  */
-export function evaluateModule(filePaths: string | string[]): Module {
+export function evaluateModule(filePaths: string | string[]): NodeJS.Module {
     filePaths = typeof filePaths === 'string' ? [filePaths] : filePaths;
     const entryModule = new Module('entry-module');
     entryModule.filename = 'entry-module.js';
