@@ -63,12 +63,10 @@ export async function runEngineApp({
     return {
         engine,
         async dispose() {
+            await engine.allReady();
             for (const feature of allFeatures) {
                 await engine.dispose(feature, envName);
             }
-        },
-        finishedRunStage() {
-            return allFeatures.find((feature) => !engine.get(feature).didFinishRunStage()) ? false : true;
         },
     };
 }

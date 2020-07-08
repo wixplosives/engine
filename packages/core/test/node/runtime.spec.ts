@@ -25,7 +25,6 @@ import {
     Universal,
 } from '../../src';
 import { typeCheck } from '../type-check';
-import { waitFor } from 'promise-assist';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -98,10 +97,7 @@ describe('Feature', () => {
         });
 
         const engine = runEngine({ entryFeature });
-
-        expect(engine.get(f0).didFinishRunStage()).to.eq(false);
-
-        await waitFor(() => expect(engine.get(f0).didFinishRunStage()).to.eq(true));
+        await expect(engine.get(f0).finishedRun()).eventually.to.be.fulfilled;
     });
 
     it('feature setup/run stage should not happen twice', () => {

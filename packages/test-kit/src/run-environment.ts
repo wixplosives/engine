@@ -81,9 +81,8 @@ export async function getRunningFeature<
     dispose: () => Promise<void>;
     runningApi: MapToProxyType<API>;
     engine: RuntimeEngine;
-    finishedRunStage: () => boolean;
 }> {
-    const { engine, dispose, finishedRunStage } = await runEngineEnvironment({
+    const { engine, dispose } = await runEngineEnvironment({
         featureName,
         config,
         configName,
@@ -92,11 +91,14 @@ export async function getRunningFeature<
         fs,
         basePath,
     });
+
+    await engine.allReady();
+
     const { api } = engine.get(feature);
+
     return {
         runningApi: api,
         engine,
         dispose,
-        finishedRunStage,
     };
 }

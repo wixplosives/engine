@@ -1,5 +1,5 @@
-import { waitFor, sleep } from 'promise-assist';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 
 import fs from '@file-services/node';
 import { createDisposables } from '@wixc3/engine-core';
@@ -7,6 +7,8 @@ import { getRunningFeature } from '@wixc3/engine-test-kit';
 
 import Feature, { server } from '../feature/file-server.feature';
 import OtherExampleFeature from '../fixtures/other-example.feature';
+
+chai.use(chaiAsPromised);
 
 describe('Processing env test', () => {
     const disposables = createDisposables();
@@ -34,7 +36,7 @@ describe('Processing env test', () => {
     });
 
     it('waits for feature to finish running', async () => {
-        const { dispose, finishedRunStage } = await getRunningFeature({
+        const { dispose, engine } = await getRunningFeature({
             featureName: `file-server/other-example`,
             env: server,
             runtimeOptions: {
@@ -45,15 +47,6 @@ describe('Processing env test', () => {
         });
         disposables.add(() => dispose());
 
-        expect(finishedRunStage()).to.eq(false);
-
-        /**
-         * test feature sets timeout for 2 second. sleeping for a 1.5 seconds to validate that finishedRun is still false
-         */
-        await sleep(1_500);
-
-        expect(finishedRunStage()).to.eq(false);
-
-        await waitFor(() => expect(finishedRunStage()).to.eq(true));
+        await expect(engine.allReady()).to.eventually.be.fulfilled;
     });
 });

@@ -23,9 +23,9 @@ export class RuntimeFeature<
     API extends EntityRecord = EntityRecord
 > {
     private running = false;
-    private finishedRun = false;
     private runHandlers = new SetMultiMap<string, () => void | Promise<void>>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
+    private runHandlerPromises: Array<void | Promise<void>> = [];
 
     constructor(
         public feature: T,
@@ -48,20 +48,13 @@ export class RuntimeFeature<
             context.runFeature(dep, envName);
         }
         const envRunHandlers = this.runHandlers.get(envName) || [];
-        const handlerPromises: Array<void | Promise<void>> = [];
         for (const handler of envRunHandlers) {
-            const promise = handler();
-            handlerPromises.push(promise);
+            this.runHandlerPromises.push(handler());
         }
-        Promise.all(handlerPromises)
-            .then(() => {
-                this.finishedRun = true;
-            })
-            .catch(console.error);
     }
 
-    public didFinishRunStage() {
-        return this.finishedRun;
+    public finishedRun() {
+        return Promise.all(this.runHandlerPromises);
     }
 
     public async [DISPOSE](context: RuntimeEngine, envName: string) {

@@ -37,6 +37,15 @@ export class RuntimeEngine {
         return this;
     }
 
+    public allReady() {
+        const readyPromises: Promise<void[]>[] = [];
+        for (const [, runtimeFeature] of this.features) {
+            readyPromises.push(runtimeFeature.finishedRun());
+        }
+
+        return Promise.all(readyPromises);
+    }
+
     public initFeature<T extends Feature>(feature: T, envName: string) {
         let instance = this.features.get(feature);
         if (!instance) {
