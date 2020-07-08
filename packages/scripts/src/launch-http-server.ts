@@ -11,13 +11,12 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
     res.end();
 };
 
-export async function launchHttpServer({
-   outputPath,
-   httpServerPort = DEFAULT_PORT,
-}: {
-    outputPath: string,
-    httpServerPort?: number,
-}) {
+interface ILaunchHttpServerOptions {
+    staticDirPath: string;
+    httpServerPort?: number;
+}
+
+export async function launchHttpServer({ staticDirPath, httpServerPort = DEFAULT_PORT, }: ILaunchHttpServerOptions) {
     const app = express();
     app.use(cors());
     const openSockets = new Set<Socket>();
@@ -27,7 +26,7 @@ export async function launchHttpServer({
         socket.once('close', () => openSockets.delete(socket));
     });
 
-    app.use('/', express.static(outputPath));
+    app.use('/', express.static(staticDirPath));
 
     app.use('/favicon.ico', noContentHandler);
 

@@ -158,7 +158,7 @@ export class Application {
         }
         const disposables = new Set<() => unknown>();
         const { port, app, close, socketServer } = await launchHttpServer({
-            outputPath: this.outputPath,
+            staticDirPath: this.outputPath,
             httpServerPort,
         });
         disposables.add(() => close());
@@ -346,7 +346,7 @@ export class Application {
         const configurations = await this.readConfigs();
 
         const { port, close, socketServer, app } = await launchHttpServer({
-            outputPath: this.outputPath,
+            staticDirPath: this.outputPath,
             httpServerPort,
         });
         const config: TopLevelConfig = [...userConfig];
@@ -405,7 +405,7 @@ export class Application {
             await this.importModules(engineConfig.require);
         }
         const { socketServer, close, port } = await launchHttpServer({
-            outputPath: this.outputPath,
+            staticDirPath: this.outputPath,
             httpServerPort: preferredPort,
         });
 
