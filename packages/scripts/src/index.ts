@@ -9,3 +9,4 @@ export * from './node-environment';
 export * from './ws-environment';
 export * from './ipc-environment';
 export * from './load-node-environment';
+export * from './launch-http-server';
