@@ -213,50 +213,50 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@file-services/directory@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-2.2.0.tgz#df57a466b31fabb07f742164962f9149bc1ef530"
-  integrity sha512-znSdkysZ0lMoM8Mocvd1dzY2n7EwU9dj5NvV7KEmG3dHQi5Z4zLeyh7xwzpcY+gFYA3lQL7I9nNFWryST39Ydg==
+"@file-services/directory@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-3.0.0.tgz#255060a5aed5cba7b40cabf18ae5589104e318f5"
+  integrity sha512-3faeif/58vBjppuJqeR8EaOthe2U17jaPMVlyj7AEjNqQ+KN5u6uRyL8xfXVaUy+45j3Yy5TQBkUnSO02W4KpQ==
   dependencies:
-    "@file-services/path" "^2.2.0"
-    "@file-services/types" "^2.2.0"
-    "@file-services/utils" "^2.2.0"
+    "@file-services/path" "^3.0.0"
+    "@file-services/types" "^3.0.0"
+    "@file-services/utils" "^3.0.0"
 
-"@file-services/memory@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-2.2.0.tgz#a8d47bec1a230e5288a9573cd2e22e3adc876708"
-  integrity sha512-UV1//6taKy3uDEihbrB2zrZ4QE4BYaJvKlO8LcBFy6v9NiIPI6yJkU4BUPrc9ecBNFjQ6eH+yT36Mw0Q1tYnNg==
+"@file-services/memory@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-3.0.0.tgz#7145d43b70ed3d54bcfdd744f5c0e65d6467091e"
+  integrity sha512-UYvzgTmDFgBSd0LlseO+kwpLQ5TpEZsMTdgs//8z2j6alcOlFptfqtUuLs4nbYfdpx/71W3TpYh7XUpNdlTIJA==
   dependencies:
-    "@file-services/path" "^2.2.0"
-    "@file-services/types" "^2.2.0"
-    "@file-services/utils" "^2.2.0"
+    "@file-services/path" "^3.0.0"
+    "@file-services/types" "^3.0.0"
+    "@file-services/utils" "^3.0.0"
 
-"@file-services/node@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-2.2.0.tgz#63b0e9c45a3cd4e5b7c0bbab6fe24ae1f447bcf9"
-  integrity sha512-cjhGnU+sT1/AGoYbq9HdPbCRfEclNU2kzEBYuBN/Kw4k60Dcc4Ql5CXIj69IA6vkV5JzUNMOKzHK9cmHpmMcWw==
+"@file-services/node@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-3.0.0.tgz#38f234f14a5a1a03453bec698162d785c96af4da"
+  integrity sha512-I252tmHbahFpv3EHaC9rNc2UZAcSLSN6/pMC1yJ3Ue3mSKw7aZoYCGsKnFwg1dZRAEkk76aeMhqtZ/3Zdi8e+w==
   dependencies:
-    "@file-services/types" "^2.2.0"
-    "@file-services/utils" "^2.2.0"
+    "@file-services/types" "^3.0.0"
+    "@file-services/utils" "^3.0.0"
 
-"@file-services/path@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@file-services/path/-/path-2.2.0.tgz#96e9563c53ea6e0f5742c97223c7934df7957d3b"
-  integrity sha512-9IcuKbAw8EfOS0hlrP+llfUERoRxKw1c7oFlMHlTq6hAgSZKAaGLGHwFbQaX8gedcLDjcBkzZKYatALSEPAatQ==
+"@file-services/path@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@file-services/path/-/path-3.0.0.tgz#0bb13201d535d6ee77400f4aa1ba1d98baa304a9"
+  integrity sha512-YriSd9xbB01NS3hkHTQ8fKVFiMXNWK9kMKkfNOc6jchixYtHS2L2PIXBwFAJkqT4SU4wNUul4WH3bD9hkD6inA==
   dependencies:
-    "@file-services/types" "^2.2.0"
+    "@file-services/types" "^3.0.0"
 
-"@file-services/types@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-2.2.0.tgz#c98430fc65040a0d30451ef621c2acb649d43051"
-  integrity sha512-vvQ7yJdaJJwB+NVCd13IXxJK9tpMb38TtumpupTxk9EDr4BjVU2WtI7yhKA6dqKmlLRf9vPKgcR8V3tELYbX/Q==
+"@file-services/types@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-3.0.0.tgz#ac4ce1ef2e2331dabfbf65baf5d74a7058b4b9ae"
+  integrity sha512-8chbWzWWgpM1k7mUHErw2XqvOgPrsmG/yYxzkBHitm5363jxF/ChWBpsQuhJWe5MQxXVUL59ZM8hqbrQ3VNO7w==
 
-"@file-services/utils@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-2.2.0.tgz#85017baaeee4b14986591e027a6001ce41400332"
-  integrity sha512-n+usslpQSz5UgmEg2QWs4Z8/Ii2tsm9D3MMKgx+uilXeSvLuLQBHofSersHilB0DtKkwmrTt5ZjmlR2kPLcMwQ==
+"@file-services/utils@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-3.0.0.tgz#6053a06760254f9bdf026f4ede1749b1c978cf8e"
+  integrity sha512-vEp5l7roagqnvnzjQ0+VuZAGJ0YxDxE6g73uQKr9DeSsZpwDIMtG4+aSwAi2O9nnO2jMggYtKAXchkHKWVIZpQ==
   dependencies:
-    "@file-services/types" "^2.2.0"
+    "@file-services/types" "^3.0.0"
 
 "@lerna/add@3.21.0":
   version "3.21.0"

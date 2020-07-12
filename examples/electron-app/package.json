@@ -6,8 +6,8 @@
     "start": "electron ."
   },
   "dependencies": {
-    "@file-services/directory": "^2.2.0",
-    "@file-services/node": "^2.2.0",
+    "@file-services/directory": "^3.0.0",
+    "@file-services/node": "^3.0.0",
     "electron": "^9.1.0"
   },
   "license": "UNLICENSED",
