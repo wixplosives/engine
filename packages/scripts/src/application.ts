@@ -74,7 +74,7 @@ export interface IApplicationOptions {
 
 export class Application {
     public outputPath: string;
-    private basePath: string;
+    protected basePath: string;
 
     constructor({ basePath = process.cwd(), outputPath = fs.join(basePath, 'dist') }: IApplicationOptions) {
         this.basePath = basePath;
@@ -438,7 +438,7 @@ export class Application {
         });
     }
 
-    private async getEngineConfig() {
+    protected async getEngineConfig() {
         const engineConfigFilePath = await fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
         if (engineConfigFilePath) {
             try {
@@ -450,7 +450,7 @@ export class Application {
         return undefined;
     }
 
-    private async importModules(requiredModules: string[]) {
+    protected async importModules(requiredModules: string[]) {
         for (const requiredModule of requiredModules) {
             try {
                 await import(requiredModule);
@@ -460,7 +460,7 @@ export class Application {
         }
     }
 
-    private async readConfigs(): Promise<SetMultiMap<string, TopLevelConfig>> {
+    protected async readConfigs(): Promise<SetMultiMap<string, TopLevelConfig>> {
         const configurations = new SetMultiMap<string, TopLevelConfig>();
         const configsDirectoryPath = join(this.outputPath, 'configs');
         if (await fs.promises.exists(configsDirectoryPath)) {
@@ -492,7 +492,7 @@ export class Application {
         return configurations;
     }
 
-    private async writeManifest({
+    protected async writeManifest({
         features,
         featureName,
         configName,
@@ -511,7 +511,7 @@ export class Application {
         await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
     }
 
-    private createCompiler({
+    protected createCompiler({
         features,
         featureName,
         configName,
@@ -565,7 +565,7 @@ export class Application {
         return compiler;
     }
 
-    private analyzeFeatures() {
+    protected analyzeFeatures() {
         const { basePath } = this;
         console.time(`Analyzing Features.`);
         const packages = resolvePackages(basePath);
@@ -574,7 +574,7 @@ export class Application {
         return { ...featuresAndConfigs, packages };
     }
 
-    private getFeatureEnvDefinitions(
+    protected getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
         configurations: SetMultiMap<string, IConfigDefinition>
     ) {
@@ -597,7 +597,7 @@ export class Application {
         return featureEnvDefinitions;
     }
 
-    private filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+    protected filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
         const foundFeature = features.get(featureName);
         if (!foundFeature) {
             throw new Error(`cannot find feature: ${featureName}`);
