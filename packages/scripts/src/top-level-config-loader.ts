@@ -1,6 +1,6 @@
 import type { loader as webpackLoader } from 'webpack';
 
-export default function (this: webpackLoader.LoaderContext) {
+export default function topLevelConfigLoader(this: webpackLoader.LoaderContext) {
     const params = new URLSearchParams(this.query.slice(1));
 
     const fileName = params.get('scopedName');
