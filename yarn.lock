@@ -246,10 +246,10 @@
   dependencies:
     "@file-services/types" "^3.1.0"
 
-"@file-services/types@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-3.1.0.tgz#22751386c4fe7f557c581eb612e37bbf7b1c6504"
-  integrity sha512-roFIjx50SCbumY8PXZUJsj9Dqg005iatU0153RBEwk0CcnP0tPxBvr8XQZMpvAsDMsFvVkxmOvGt8nQz4jFODg==
+"@file-services/types@^3.1.0", "@file-services/types@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-3.1.1.tgz#58431f309fc1a1b2354cf55ef06dc02d844b8062"
+  integrity sha512-N2yMnmEsh3gvzCNmVPfM4f7MYwrbf1HBCjyCOqqjxn6FRVKs5RQlSO9e63M1Wq+mdO3rAZhUQlEIICFJpIPvNQ==
 
 "@file-services/utils@^3.1.0":
   version "3.1.0"
