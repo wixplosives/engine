@@ -222,14 +222,14 @@
     "@file-services/types" "^3.1.0"
     "@file-services/utils" "^3.1.0"
 
-"@file-services/memory@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-3.1.0.tgz#e5d36a3d59a49b67105a2fd5b4483cc3d2150dc8"
-  integrity sha512-uJisQuhUMWX6MfFUQorLREeurfHVnUEEeebfKjelo7mSga/0cijvnXFwafFAVlbyJ+vJ48uGmFjW0eIg/mcKzQ==
+"@file-services/memory@^3.1.2":
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-3.1.2.tgz#5d0705c8b1e928800ba465984ce487354ae0a5e2"
+  integrity sha512-lwkpzxlRzPMqqI1EY2Cz6fAoPd09lBrYuG9gLJC0CohcQniGtUBUk/pQS0P0FkF3qM+KQ8UZLAEO/8gbINiO2g==
   dependencies:
-    "@file-services/path" "^3.1.0"
-    "@file-services/types" "^3.1.0"
-    "@file-services/utils" "^3.1.0"
+    "@file-services/path" "^3.1.1"
+    "@file-services/types" "^3.1.1"
+    "@file-services/utils" "^3.1.1"
 
 "@file-services/node@^3.1.0":
   version "3.1.0"
@@ -239,24 +239,24 @@
     "@file-services/types" "^3.1.0"
     "@file-services/utils" "^3.1.0"
 
-"@file-services/path@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/path/-/path-3.1.0.tgz#0c10f33df60510faa1768b4371d73a501727f029"
-  integrity sha512-DuImLq6yBoquM+/MOHjuhFL3GOFH4RaBM04z0RSIV1kOvJ+mMyzkVkWAPlmtH7jQybxyJzKy6krOwkZLboYqNA==
+"@file-services/path@^3.1.0", "@file-services/path@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/path/-/path-3.1.1.tgz#84d00548f378b8bc10fd4527dcb88e538b9e2ae3"
+  integrity sha512-obE7qsBce2slNnk3aRbyW0lrhBvBmHesKWf6/lUTrA1KjNU3JMyea8HMtE9MlzrT6SB+LIXn1PrniuaP5vNnYQ==
   dependencies:
-    "@file-services/types" "^3.1.0"
+    "@file-services/types" "^3.1.1"
 
-"@file-services/types@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-3.1.0.tgz#22751386c4fe7f557c581eb612e37bbf7b1c6504"
-  integrity sha512-roFIjx50SCbumY8PXZUJsj9Dqg005iatU0153RBEwk0CcnP0tPxBvr8XQZMpvAsDMsFvVkxmOvGt8nQz4jFODg==
+"@file-services/types@^3.1.0", "@file-services/types@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-3.1.1.tgz#58431f309fc1a1b2354cf55ef06dc02d844b8062"
+  integrity sha512-N2yMnmEsh3gvzCNmVPfM4f7MYwrbf1HBCjyCOqqjxn6FRVKs5RQlSO9e63M1Wq+mdO3rAZhUQlEIICFJpIPvNQ==
 
-"@file-services/utils@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-3.1.0.tgz#ded0f20126329dc6196a06111d4cce1c8adb4d8f"
-  integrity sha512-03lSNPb56jhFosopWlgiB30EMPUYT5HyfpeWXdN+kSML0vEtA/xyMvZtXOIRmfEW0nbIVlVHLV7zZfhelWeVQg==
+"@file-services/utils@^3.1.0", "@file-services/utils@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-3.1.1.tgz#07361b0723e0a4023f44056d9e1dc2f5ef61c23b"
+  integrity sha512-hTmZYwCjGusdYV9VcA8v3+DUHJKMv65uPcGvn+1WGaPomsJnGz447jcdvM+XRx9m9VHqSmdL+K19sLdI6uL+9Q==
   dependencies:
-    "@file-services/types" "^3.1.0"
+    "@file-services/types" "^3.1.1"
 
 "@lerna/add@3.21.0":
   version "3.21.0"
