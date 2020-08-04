@@ -254,9 +254,6 @@ program.parse(process.argv);
 function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
         const resolvedRequest = require.resolve(request, { paths: [basePath] });
-        if (!resolvedRequest) {
-            throw new Error(`cannot resolve required module: "${request}"`);
-        }
         require(resolvedRequest);
     }
 }
