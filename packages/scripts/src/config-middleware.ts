@@ -2,7 +2,6 @@ import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 import type express from 'express';
 import importFresh from 'import-fresh';
 import type { IConfigDefinition } from './types';
-import { resolveFrom } from './utils';
 import type { NodeEnvironmentsManager } from './node-environments-manager';
 
 export interface OverrideConfig {
@@ -41,19 +40,15 @@ export function createLiveConfigsMiddleware(
                         } else {
                             const { filePath, envName } = configDefinition;
                             if (envName === reqEnv || !envName) {
-                                const resolvedPath = resolveFrom(basePath, filePath);
-                                if (resolvedPath) {
-                                    try {
-                                        const { default: configValue } = importFresh(resolvedPath) as {
-                                            default: TopLevelConfig;
-                                        };
-                                        config.push(...configValue);
-                                    } catch (e) {
-                                        console.error(`Failed evaluating config file: ${filePath}`);
-                                        console.error(e);
-                                    }
-                                } else {
-                                    throw new Error(`cannot find ${filePath}`);
+                                const resolvedPath = require.resolve(filePath, { paths: [basePath] });
+                                try {
+                                    const { default: configValue } = importFresh(resolvedPath) as {
+                                        default: TopLevelConfig;
+                                    };
+                                    config.push(...configValue);
+                                } catch (e) {
+                                    console.error(`Failed evaluating config file: ${filePath}`);
+                                    console.error(e);
                                 }
                             }
                         }

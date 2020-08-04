@@ -12,7 +12,7 @@ import open from 'open';
 import { version } from '../package.json';
 import { Application } from './application';
 import type { IFeatureMessagePayload, IPortMessage, IProcessMessage, IFeatureTarget } from './types';
-import { resolveFrom, parseCliArguments } from './utils';
+import { parseCliArguments } from './utils';
 
 program.version(version);
 
@@ -253,7 +253,7 @@ program.parse(process.argv);
 
 function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
-        const resolvedRequest = resolveFrom(basePath, request);
+        const resolvedRequest = require.resolve(request, { paths: [basePath] });
         if (!resolvedRequest) {
             throw new Error(`cannot resolve required module: "${request}"`);
         }
