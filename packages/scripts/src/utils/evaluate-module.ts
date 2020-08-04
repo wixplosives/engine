@@ -10,9 +10,12 @@ export function evaluateModule(filePaths: string | string[]): NodeJS.Module {
     const entryModule = new Module('entry-module');
     entryModule.filename = 'entry-module.js';
     // we want node to be able to resolve package requests. we use first module to calculate lookup locations
-    const resolutionPaths = require.resolve.paths(filePaths[0]);
-    if (resolutionPaths) {
-        entryModule.paths = resolutionPaths;
+    const [firstModulePath] = filePaths;
+    if (firstModulePath) {
+        const resolutionPaths = require.resolve.paths(firstModulePath);
+        if (resolutionPaths) {
+            entryModule.paths = resolutionPaths;
+        }
     }
     const source = filePaths.map((filePath) => `require(${JSON.stringify(filePath)});`).join('\n');
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
