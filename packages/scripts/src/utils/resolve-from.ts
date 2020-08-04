@@ -1,6 +1,9 @@
 import { createRequire } from 'module';
 import { join } from 'path';
 
+/**
+ * @deprecated use `require.resolve(request, {paths: [directoryPath]})` instead.
+ */
 export function resolveFrom(
     directoryPath: string,
     request: string,
