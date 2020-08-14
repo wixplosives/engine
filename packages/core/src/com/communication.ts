@@ -35,12 +35,11 @@ import type {
 
 import { SERVICE_CONFIG } from '../symbols';
 
-import { SetMultiMap } from '../helpers';
+import { SetMultiMap, deferred } from '../helpers';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
-import { deferred } from 'promise-assist';
 
 export interface ICommunicationOptions {
     warnOnSlow?: boolean;
