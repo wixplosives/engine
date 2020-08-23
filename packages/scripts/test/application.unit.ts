@@ -258,7 +258,7 @@ describe('Application', function () {
             const { close, port } = await app.start({
                 featureName: 'engine-single/x',
                 singleRun: true,
-                configMap: {
+                envInjectedConfig: {
                     main: mainConfig,
                 },
             });

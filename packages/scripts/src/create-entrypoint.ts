@@ -16,7 +16,7 @@ export interface ICreateEntrypointsOptions {
     staticBuild: boolean;
     mode: 'production' | 'development';
     publicConfigsRoute?: string;
-    configMap: Record<string, TopLevelConfig>;
+    envInjectedConfig: Record<string, TopLevelConfig>;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -60,7 +60,7 @@ export function createEntrypoint({
     mode,
     staticBuild,
     publicConfigsRoute,
-    configMap,
+    envInjectedConfig,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -121,7 +121,7 @@ async function main() {
     
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
     
-    ${configMap[envName] ? `config.push(...${JSON.stringify(configMap)})` : ``}
+    ${envInjectedConfig[envName] ? `config.push(...${JSON.stringify(envInjectedConfig)})` : ``}
     
     const runtimeEngine = await runEngineApp(
         { featureName, configName, featureLoaders, config, options, envName: '${envName}', publicPath }

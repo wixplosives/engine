@@ -53,7 +53,10 @@ export interface IRunOptions extends IFeatureTarget {
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
-    configMap?: Record<string, TopLevelConfig>;
+    /**
+     * an object that holds per environment name, a top level config which will be injected in runtime.
+     */
+    envInjectedConfig?: Record<string, TopLevelConfig>;
 }
 
 export interface IBuildManifest {
@@ -95,7 +98,7 @@ export class Application {
         singleFeature,
         title,
         publicConfigsRoute,
-        configMap,
+        envInjectedConfig,
     }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -115,7 +118,7 @@ export class Application {
             configurations,
             staticBuild: true,
             publicConfigsRoute,
-            configMap,
+            envInjectedConfig,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -154,7 +157,7 @@ export class Application {
         publicConfigsRoute = 'configs/',
         nodeEnvironmentsMode,
         autoLaunch = true,
-        configMap,
+        envInjectedConfig,
     }: IRunOptions = {}) {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -181,7 +184,7 @@ export class Application {
             configurations,
             staticBuild: false,
             publicConfigsRoute,
-            configMap,
+            envInjectedConfig,
         });
 
         if (singleRun) {
@@ -526,7 +529,7 @@ export class Application {
         configurations,
         staticBuild,
         publicConfigsRoute,
-        configMap,
+        envInjectedConfig,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -537,7 +540,7 @@ export class Application {
         configurations: SetMultiMap<string, IConfigDefinition>;
         staticBuild: boolean;
         publicConfigsRoute?: string;
-        configMap?: Record<string, TopLevelConfig>;
+        envInjectedConfig?: Record<string, TopLevelConfig>;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -565,7 +568,7 @@ export class Application {
             configurations,
             staticBuild,
             publicConfigsRoute,
-            configMap,
+            envInjectedConfig,
         });
 
         const compiler = webpack(webpackConfigs);
