@@ -53,6 +53,7 @@ export interface IRunOptions extends IFeatureTarget {
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
+    configMap?: Record<string, TopLevelConfig>;
 }
 
 export interface IBuildManifest {
@@ -94,7 +95,7 @@ export class Application {
         singleFeature,
         title,
         publicConfigsRoute,
-        overrideConfig,
+        configMap,
     }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -114,7 +115,7 @@ export class Application {
             configurations,
             staticBuild: true,
             publicConfigsRoute,
-            config: overrideConfig,
+            configMap,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -153,6 +154,7 @@ export class Application {
         publicConfigsRoute = 'configs/',
         nodeEnvironmentsMode,
         autoLaunch = true,
+        configMap,
     }: IRunOptions = {}) {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -179,7 +181,7 @@ export class Application {
             configurations,
             staticBuild: false,
             publicConfigsRoute,
-            config: overrideConfig,
+            configMap,
         });
 
         if (singleRun) {
@@ -218,7 +220,7 @@ export class Application {
             ensureTopLevelConfigMiddleware,
             createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
             createLiveConfigsMiddleware(configurations, this.basePath, overrideConfigsMap),
-            createConfigMiddleware(),
+            createConfigMiddleware(overrideConfig),
         ]);
 
         for (const childCompiler of compiler.compilers) {
@@ -524,7 +526,7 @@ export class Application {
         configurations,
         staticBuild,
         publicConfigsRoute,
-        config,
+        configMap,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -535,7 +537,7 @@ export class Application {
         configurations: SetMultiMap<string, IConfigDefinition>;
         staticBuild: boolean;
         publicConfigsRoute?: string;
-        config?: TopLevelConfig;
+        configMap?: Record<string, TopLevelConfig>;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -563,7 +565,7 @@ export class Application {
             configurations,
             staticBuild,
             publicConfigsRoute,
-            config,
+            configMap,
         });
 
         const compiler = webpack(webpackConfigs);

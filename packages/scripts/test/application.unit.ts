@@ -233,8 +233,34 @@ describe('Application', function () {
                 featureName: 'engine-single/x',
                 overrideConfig,
                 singleRun: true,
-                nodeEnvironmentsMode: 'forked',
-                mode: 'development',
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
+                }
+            });
+        });
+
+        it('allows providing top level config through the config map', async () => {
+            const mainConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const app = new Application({
+                basePath: engineFeatureFixturePath,
+            });
+
+            const { close, port } = await app.start({
+                featureName: 'engine-single/x',
+                singleRun: true,
+                configMap: {
+                    main: mainConfig,
+                },
             });
             disposables.add(() => close());
 

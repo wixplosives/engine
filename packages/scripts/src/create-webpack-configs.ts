@@ -20,7 +20,7 @@ export interface ICreateWebpackConfigsOptions {
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
-    config?: TopLevelConfig;
+    configMap?: Record<string, TopLevelConfig>;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
@@ -54,7 +54,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         publicPath = '',
         featureName,
         features,
-        config,
+        configMap,
     } = options;
 
     const resolvedContexts = getResolvedContexts(features, featureName);
@@ -104,7 +104,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
-                config,
+                configMap,
             })
         );
     }
@@ -117,7 +117,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                config,
+                configMap,
             })
         );
     }
@@ -130,7 +130,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                config,
+                configMap,
             })
         );
     }
@@ -144,7 +144,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-main',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                config,
+                configMap,
             })
         );
     }
@@ -170,7 +170,7 @@ interface ICreateWebpackConfigOptions {
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
-    config?: TopLevelConfig;
+    configMap?: Record<string, TopLevelConfig>;
 }
 
 function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
@@ -199,7 +199,7 @@ function createWebpackConfig({
     configurations,
     staticBuild,
     publicConfigsRoute,
-    config = [],
+    configMap = {},
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -215,7 +215,7 @@ function createWebpackConfig({
             mode,
             staticBuild,
             publicConfigsRoute,
-            config,
+            configMap,
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
