@@ -1,6 +1,6 @@
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition, IConfigDefinition } from './types';
-import type { SetMultiMap } from '@wixc3/engine-core';
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import { join } from 'path';
 
 const { stringify } = JSON;
@@ -16,6 +16,7 @@ export interface ICreateEntrypointsOptions {
     staticBuild: boolean;
     mode: 'production' | 'development';
     publicConfigsRoute?: string;
+    config: TopLevelConfig;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -59,6 +60,7 @@ export function createEntrypoint({
     mode,
     staticBuild,
     publicConfigsRoute,
+    config,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -119,6 +121,7 @@ async function main() {
     
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
     
+    config.push(...${JSON.stringify(config)})
     
     const runtimeEngine = await runEngineApp(
         { featureName, configName, featureLoaders, config, options, envName: '${envName}', publicPath }

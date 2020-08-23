@@ -94,6 +94,7 @@ export class Application {
         singleFeature,
         title,
         publicConfigsRoute,
+        overrideConfig,
     }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -113,6 +114,7 @@ export class Application {
             configurations,
             staticBuild: true,
             publicConfigsRoute,
+            config: overrideConfig,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -177,6 +179,7 @@ export class Application {
             configurations,
             staticBuild: false,
             publicConfigsRoute,
+            config: overrideConfig,
         });
 
         if (singleRun) {
@@ -215,7 +218,7 @@ export class Application {
             ensureTopLevelConfigMiddleware,
             createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
             createLiveConfigsMiddleware(configurations, this.basePath, overrideConfigsMap),
-            createConfigMiddleware(overrideConfig),
+            createConfigMiddleware(),
         ]);
 
         for (const childCompiler of compiler.compilers) {
@@ -521,6 +524,7 @@ export class Application {
         configurations,
         staticBuild,
         publicConfigsRoute,
+        config,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -531,6 +535,7 @@ export class Application {
         configurations: SetMultiMap<string, IConfigDefinition>;
         staticBuild: boolean;
         publicConfigsRoute?: string;
+        config?: TopLevelConfig;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -558,6 +563,7 @@ export class Application {
             configurations,
             staticBuild,
             publicConfigsRoute,
+            config,
         });
 
         const compiler = webpack(webpackConfigs);

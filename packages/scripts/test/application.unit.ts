@@ -233,6 +233,8 @@ describe('Application', function () {
                 featureName: 'engine-single/x',
                 overrideConfig,
                 singleRun: true,
+                nodeEnvironmentsMode: 'forked',
+                mode: 'development',
             });
             disposables.add(() => close());
 

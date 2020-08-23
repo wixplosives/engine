@@ -2,7 +2,7 @@ import fs from '@file-services/node';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import type webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import { SetMultiMap } from '@wixc3/engine-core';
+import { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import { createEntrypoint } from './create-entrypoint';
 import type { IEnvironment, IFeatureDefinition, IConfigDefinition } from './types';
 
@@ -20,6 +20,7 @@ export interface ICreateWebpackConfigsOptions {
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
+    config?: TopLevelConfig;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
@@ -46,7 +47,15 @@ function getResolvedContexts(features: Map<string, IFeatureDefinition>, featureN
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const { enviroments, mode = 'development', baseConfig = {}, publicPath = '', featureName, features } = options;
+    const {
+        enviroments,
+        mode = 'development',
+        baseConfig = {},
+        publicPath = '',
+        featureName,
+        features,
+        config,
+    } = options;
 
     const resolvedContexts = getResolvedContexts(features, featureName);
 
@@ -95,6 +104,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
+                config,
             })
         );
     }
@@ -107,6 +117,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
+                config,
             })
         );
     }
@@ -119,6 +130,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
+                config,
             })
         );
     }
@@ -132,6 +144,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-main',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
+                config,
             })
         );
     }
@@ -157,6 +170,7 @@ interface ICreateWebpackConfigOptions {
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
+    config?: TopLevelConfig;
 }
 
 function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
@@ -185,6 +199,7 @@ function createWebpackConfig({
     configurations,
     staticBuild,
     publicConfigsRoute,
+    config = [],
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -200,6 +215,7 @@ function createWebpackConfig({
             mode,
             staticBuild,
             publicConfigsRoute,
+            config,
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
