@@ -2,9 +2,9 @@ import fs from '@file-services/node';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import type webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import { SetMultiMap } from '@wixc3/engine-core';
+import { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import { createEntrypoint } from './create-entrypoint';
-import type { IEnvironment, IFeatureDefinition, IConfigDefinition } from './types';
+import type { IEnvironment, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -20,6 +20,7 @@ export interface ICreateWebpackConfigsOptions {
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
@@ -157,6 +158,7 @@ interface ICreateWebpackConfigOptions {
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
 function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
@@ -185,9 +187,11 @@ function createWebpackConfig({
     configurations,
     staticBuild,
     publicConfigsRoute,
+    overrideConfig,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
+        const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
         virtualModules[entryPath] = createEntrypoint({
             features,
@@ -200,6 +204,7 @@ function createWebpackConfig({
             mode,
             staticBuild,
             publicConfigsRoute,
+            config,
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(

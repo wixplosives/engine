@@ -17,7 +17,7 @@ export function createFeaturesEngineRouter(
         const { configName, featureName, runtimeOptions: options, overrideConfig }: Required<IFeatureTarget> = req.body;
         try {
             let providedConfigName = configName;
-            if (overrideConfig) {
+            if (overrideConfig && Array.isArray(overrideConfig)) {
                 const generatedConfigName = generateConfigName(configName);
                 overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
                 providedConfigName = generatedConfigName;
