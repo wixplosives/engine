@@ -249,7 +249,7 @@ describe('Application', function () {
             });
         });
 
-        it('allows providing top level config through the config map', async () => {
+        it('allows providing top level config through the override config', async () => {
             const mainConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
                 basePath: engineFeatureFixturePath,
@@ -398,6 +398,37 @@ describe('Application', function () {
             const text = await getBodyContent(page);
 
             expect(text).to.equal('Hello');
+        });
+
+        it('allows providing top level config through the override config on build', async () => {
+            const mainConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
+            const app = new Application({
+                basePath: engineFeatureFixturePath,
+            });
+
+            await app.build({
+                featureName: 'engine-single/x',
+                singleRun: true,
+                overrideConfig: () => mainConfig,
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                featureName: 'engine-single/x',
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
+                }
+            });
         });
 
         it(`launches a built application with a contextual environment`, async () => {
