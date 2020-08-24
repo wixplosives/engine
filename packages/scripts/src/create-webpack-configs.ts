@@ -4,7 +4,7 @@ import type webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import { createEntrypoint } from './create-entrypoint';
-import type { IEnvironment, IFeatureDefinition, IConfigDefinition } from './types';
+import type { IEnvironment, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -20,7 +20,7 @@ export interface ICreateWebpackConfigsOptions {
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
-    envInjectedConfig?: Record<string, TopLevelConfig>;
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
 const engineDashboardEntry = require.resolve('./engine-dashboard');
@@ -47,15 +47,7 @@ function getResolvedContexts(features: Map<string, IFeatureDefinition>, featureN
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const {
-        enviroments,
-        mode = 'development',
-        baseConfig = {},
-        publicPath = '',
-        featureName,
-        features,
-        envInjectedConfig,
-    } = options;
+    const { enviroments, mode = 'development', baseConfig = {}, publicPath = '', featureName, features } = options;
 
     const resolvedContexts = getResolvedContexts(features, featureName);
 
@@ -104,7 +96,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
-                envInjectedConfig,
             })
         );
     }
@@ -117,7 +108,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                envInjectedConfig,
             })
         );
     }
@@ -130,7 +120,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                envInjectedConfig,
             })
         );
     }
@@ -144,7 +133,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-main',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                envInjectedConfig,
             })
         );
     }
@@ -170,7 +158,7 @@ interface ICreateWebpackConfigOptions {
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
-    envInjectedConfig?: Record<string, TopLevelConfig>;
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
 function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
@@ -199,10 +187,11 @@ function createWebpackConfig({
     configurations,
     staticBuild,
     publicConfigsRoute,
-    envInjectedConfig = {},
+    overrideConfig,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
+        const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
         virtualModules[entryPath] = createEntrypoint({
             features,
@@ -215,7 +204,7 @@ function createWebpackConfig({
             mode,
             staticBuild,
             publicConfigsRoute,
-            envInjectedConfig,
+            config,
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(

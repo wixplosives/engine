@@ -28,6 +28,7 @@ import type {
     IFeatureDefinition,
     IFeatureTarget,
     IFeatureMessagePayload,
+    TopLevelConfigProvider,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
@@ -53,10 +54,6 @@ export interface IRunOptions extends IFeatureTarget {
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
-    /**
-     * an object that holds per environment name, a top level config which will be injected in runtime.
-     */
-    envInjectedConfig?: Record<string, TopLevelConfig>;
 }
 
 export interface IBuildManifest {
@@ -98,7 +95,7 @@ export class Application {
         singleFeature,
         title,
         publicConfigsRoute,
-        envInjectedConfig,
+        overrideConfig,
     }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -118,7 +115,7 @@ export class Application {
             configurations,
             staticBuild: true,
             publicConfigsRoute,
-            envInjectedConfig,
+            overrideConfig,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -157,7 +154,6 @@ export class Application {
         publicConfigsRoute = 'configs/',
         nodeEnvironmentsMode,
         autoLaunch = true,
-        envInjectedConfig,
     }: IRunOptions = {}) {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -184,7 +180,7 @@ export class Application {
             configurations,
             staticBuild: false,
             publicConfigsRoute,
-            envInjectedConfig,
+            overrideConfig,
         });
 
         if (singleRun) {
@@ -296,7 +292,10 @@ export class Application {
             }: IRunFeatureOptions) => {
                 if (overrideConfig) {
                     const generatedConfigName = generateConfigName(configName);
-                    overrideConfigsMap.set(generatedConfigName, { overrideConfig, configName });
+                    overrideConfigsMap.set(generatedConfigName, {
+                        overrideConfig: Array.isArray(overrideConfig) ? overrideConfig : [],
+                        configName,
+                    });
                     configName = generatedConfigName;
                 }
                 // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
@@ -357,7 +356,7 @@ export class Application {
             staticDirPath: this.outputPath,
             httpServerPort,
         });
-        const config: TopLevelConfig = [...userConfig];
+        const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
         disposables.add(() => close());
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
@@ -529,7 +528,7 @@ export class Application {
         configurations,
         staticBuild,
         publicConfigsRoute,
-        envInjectedConfig,
+        overrideConfig,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -540,7 +539,7 @@ export class Application {
         configurations: SetMultiMap<string, IConfigDefinition>;
         staticBuild: boolean;
         publicConfigsRoute?: string;
-        envInjectedConfig?: Record<string, TopLevelConfig>;
+        overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -568,7 +567,7 @@ export class Application {
             configurations,
             staticBuild,
             publicConfigsRoute,
-            envInjectedConfig,
+            overrideConfig,
         });
 
         const compiler = webpack(webpackConfigs);

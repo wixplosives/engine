@@ -258,9 +258,7 @@ describe('Application', function () {
             const { close, port } = await app.start({
                 featureName: 'engine-single/x',
                 singleRun: true,
-                envInjectedConfig: {
-                    main: mainConfig,
-                },
+                overrideConfig: () => mainConfig,
             });
             disposables.add(() => close());
 
