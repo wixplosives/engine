@@ -140,8 +140,8 @@ export class NodeEnvironmentsManager {
         if (configName) {
             const currentOverrideConfig = overrideConfigsMap.get(configName);
             if (currentOverrideConfig) {
-                const { overrideConfig, configName: originalConfigName } = currentOverrideConfig;
-                overrideConfigs.push(...overrideConfig);
+                const { overrideConfig: topLevelConfig, configName: originalConfigName } = currentOverrideConfig;
+                overrideConfigs.push(...topLevelConfig);
                 return { overrideConfigs, originalConfigName };
             }
         }
