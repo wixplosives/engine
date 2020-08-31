@@ -15,6 +15,7 @@ import {
     IFeatureDefinition,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
+    TopLevelConfigProvider,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
 import { filterEnvironments } from './utils/environments';
@@ -42,7 +43,7 @@ export interface INodeEnvironmentsManagerOptions {
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
-    overrideConfig: TopLevelConfig;
+    overrideConfig: TopLevelConfig | TopLevelConfigProvider;
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -73,7 +74,6 @@ export class NodeEnvironmentsManager {
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
-        const { overrideConfigs, originalConfigName } = this.getOverrideConfig(overrideConfigsMap, configName);
 
         const topology: Record<string, string> = {};
         const runningEnvironments: Record<string, number> = {};
@@ -87,6 +87,11 @@ export class NodeEnvironmentsManager {
             Object.assign(topology, this.getTopologyForRunningEnvironments(runningEnv.runningEnvironments));
         }
         for (const nodeEnv of filterEnvironments(featureName, features, 'node')) {
+            const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
+                overrideConfigsMap,
+                configName,
+                nodeEnv.name
+            );
             const config: TopLevelConfig = [];
             config.push(COM.use({ config: { topology } }));
             config.push(...(await this.getConfig(originalConfigName)), ...overrideConfigs);
@@ -124,13 +129,19 @@ export class NodeEnvironmentsManager {
         };
     }
 
-    private getOverrideConfig(overrideConfigsMap: Map<string, OverrideConfig>, configName?: string) {
-        const overrideConfigs = [...this.options.overrideConfig];
+    private getOverrideConfig(overrideConfigsMap: Map<string, OverrideConfig>, configName?: string, envName?: string) {
+        const { overrideConfig: overrideConfigProvider } = this.options;
+        const overrideConfig = Array.isArray(overrideConfigProvider)
+            ? overrideConfigProvider
+            : envName
+            ? overrideConfigProvider(envName)
+            : [];
+        const overrideConfigs = [...overrideConfig];
         if (configName) {
             const currentOverrideConfig = overrideConfigsMap.get(configName);
             if (currentOverrideConfig) {
-                const { overrideConfig, configName: originalConfigName } = currentOverrideConfig;
-                overrideConfigs.push(...overrideConfig);
+                const { overrideConfig: topLevelConfig, configName: originalConfigName } = currentOverrideConfig;
+                overrideConfigs.push(...topLevelConfig);
                 return { overrideConfigs, originalConfigName };
             }
         }

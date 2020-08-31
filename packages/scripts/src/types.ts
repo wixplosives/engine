@@ -9,11 +9,13 @@ import type {
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
+export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
+
 export interface IFeatureTarget {
     featureName?: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
-    overrideConfig?: TopLevelConfig;
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
 export interface StartEnvironmentOptions extends IEnvironment {

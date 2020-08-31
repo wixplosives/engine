@@ -1,7 +1,7 @@
 import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 import type express from 'express';
 import importFresh from 'import-fresh';
-import type { IConfigDefinition } from './types';
+import type { IConfigDefinition, TopLevelConfigProvider } from './types';
 import type { NodeEnvironmentsManager } from './node-environments-manager';
 
 export interface OverrideConfig {
@@ -87,10 +87,15 @@ export function createCommunicationMiddleware(
     };
 }
 
-export const createConfigMiddleware: (overrideConfig?: TopLevelConfig) => express.RequestHandler = (
-    overrideConfig = []
-) => (_req, res) => {
-    res.send(res.locals.topLevelConfig.concat(overrideConfig));
+export const createConfigMiddleware: (
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider
+) => express.RequestHandler = (overrideConfig = []) => (req, res) => {
+    const { env: reqEnv } = req.query;
+    res.send(
+        res.locals.topLevelConfig.concat(
+            Array.isArray(overrideConfig) ? overrideConfig : reqEnv ? overrideConfig(reqEnv as string) : []
+        )
+    );
 };
 
 export const ensureTopLevelConfigMiddleware: express.RequestHandler = (_, res, next) => {
