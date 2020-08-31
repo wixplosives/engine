@@ -10,6 +10,7 @@ export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
     featureName?: string;
     configName?: string;
+    singleFeature?: boolean;
     features: Map<string, IFeatureDefinition>;
     context: string;
     mode?: 'production' | 'development';
@@ -27,9 +28,9 @@ const engineDashboardEntry = require.resolve('./engine-dashboard');
 
 function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
     const allContexts = new SetMultiMap<string, string>();
-    [...features.entries()].map(([_, { resolvedContexts }]) =>
-        convertEnvRecordToSetMultiMap(resolvedContexts, allContexts)
-    );
+    for (const { resolvedContexts } of features.values()) {
+        convertEnvRecordToSetMultiMap(resolvedContexts, allContexts);
+    }
     return allContexts;
 }
 
@@ -40,16 +41,21 @@ function convertEnvRecordToSetMultiMap(record: Record<string, string>, set = new
     return set;
 }
 
-function getResolvedContexts(features: Map<string, IFeatureDefinition>, featureName?: string) {
-    return featureName
-        ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
-        : getAllResolvedContexts(features);
-}
-
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const { enviroments, mode = 'development', baseConfig = {}, publicPath = '', featureName, features } = options;
+    const {
+        enviroments,
+        mode = 'development',
+        baseConfig = {},
+        publicPath = '',
+        featureName,
+        features,
+        singleFeature,
+    } = options;
 
-    const resolvedContexts = getResolvedContexts(features, featureName);
+    const resolvedContexts =
+        featureName && singleFeature
+            ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
+            : getAllResolvedContexts(features);
 
     if (!baseConfig.output) {
         baseConfig.output = {};

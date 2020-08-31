@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "14.4.1",
+  "version": "14.4.2",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
