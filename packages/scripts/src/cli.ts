@@ -16,21 +16,16 @@ import { parseCliArguments } from './utils';
 
 program.version(version);
 
+const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
-const preRequireParams: [string, string, typeof collectMultiple, string[]] = [
-    '-r, --require <path>',
-    'path to require before anything else',
-    collectMultiple,
-    [],
-];
 const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '/';
 
 program
     .command('start [path]')
-    .option(...preRequireParams)
+    .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
     .option('-f, --feature <feature>')
     .option('-c, --config <config>')
-    .option('--mode <mode>', 'mode passed to webpack', 'development')
+    .option('--mode <production|development>', 'mode passed to webpack', 'development')
     .option('--inspect')
     .option('-p ,--port <port>')
     .option('--singleRun', 'when enabled, webpack will not watch files', false)
@@ -38,9 +33,9 @@ program
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--open <open>')
     .option(
-        '--autoLaunch <autoLaunch>',
+        '--autoLaunch [autoLaunch]',
         'should auto launch node environments if feature name is provided',
-        (param) => param === 'true',
+        parseBoolean,
         true
     )
     .option('--title <title>', 'application title to display in browser')
@@ -118,13 +113,13 @@ program
 
 program
     .command('build [path]')
-    .option(...preRequireParams)
+    .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
-    .option('--mode <mode>', 'mode passed to webpack', 'production')
+    .option('--mode <production|development>', 'mode passed to webpack', 'production')
     .option('--outDir <outDir>')
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
-    .option('--singleFeature', 'build only the feature set by --feature', true)
+    .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .allowUnknownOption(true)
@@ -162,7 +157,7 @@ program
 
 program
     .command('run [path]')
-    .option(...preRequireParams)
+    .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
     .option('-c ,--config <config>')
     .option('-f ,--feature <feature>')
     .option('--outDir <outDir>')
