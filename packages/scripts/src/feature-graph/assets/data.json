@@ -1,0 +1,674 @@
+{
+  "nodes": [
+    {
+      "name": "gui",
+      "id": "gui"
+    },
+    {
+      "name": "reactRenderer",
+      "id": "reactRenderer"
+    },
+    {
+      "name": "storage",
+      "id": "storage"
+    },
+    {
+      "name": "project",
+      "id": "project"
+    },
+    {
+      "name": "COM",
+      "id": "COM"
+    },
+    {
+      "name": "Resources",
+      "id": "Resources"
+    },
+    {
+      "name": "codeEditor",
+      "id": "codeEditor"
+    },
+    {
+      "name": "projectUI",
+      "id": "projectUI"
+    },
+    {
+      "name": "compilation",
+      "id": "compilation"
+    },
+    {
+      "name": "componentsPanel",
+      "id": "componentsPanel"
+    },
+    {
+      "name": "fileComponents",
+      "id": "fileComponents"
+    },
+    {
+      "name": "projectAnalyzer",
+      "id": "projectAnalyzer"
+    },
+    {
+      "name": "typescript",
+      "id": "typescript"
+    },
+    {
+      "name": "codeLanguages",
+      "id": "codeLanguages"
+    },
+    {
+      "name": "codeExecution",
+      "id": "codeExecution"
+    },
+    {
+      "name": "symbolSchemaExtract",
+      "id": "symbolSchemaExtract"
+    },
+    {
+      "name": "gitRevision",
+      "id": "gitRevision"
+    },
+    {
+      "name": "gitCommands",
+      "id": "gitCommands"
+    },
+    {
+      "name": "simulation",
+      "id": "simulation"
+    },
+    {
+      "name": "componentTab",
+      "id": "componentTab"
+    },
+    {
+      "name": "simulationCapabilities",
+      "id": "simulationCapabilities"
+    },
+    {
+      "name": "simpleAST",
+      "id": "simpleAST"
+    },
+    {
+      "name": "simulationPreview",
+      "id": "simulationPreview"
+    },
+    {
+      "name": "filePreview",
+      "id": "filePreview"
+    },
+    {
+      "name": "markdownPreview",
+      "id": "markdownPreview"
+    },
+    {
+      "name": "simulationCodeEditor",
+      "id": "simulationCodeEditor"
+    },
+    {
+      "name": "simulationLog",
+      "id": "simulationLog"
+    },
+    {
+      "name": "simulationPropsEditor",
+      "id": "simulationPropsEditor"
+    },
+    {
+      "name": "autodocs",
+      "id": "autodocs"
+    },
+    {
+      "name": "codeViews",
+      "id": "codeViews"
+    },
+    {
+      "name": "simulationEnvEditor",
+      "id": "simulationEnvEditor"
+    },
+    {
+      "name": "stylable",
+      "id": "stylable"
+    },
+    {
+      "name": "webpackCompiler",
+      "id": "webpackCompiler"
+    },
+    {
+      "name": "componentCodeEditor",
+      "id": "componentCodeEditor"
+    },
+    {
+      "name": "buildScripts",
+      "id": "buildScripts"
+    },
+    {
+      "name": "componentStudio",
+      "id": "componentStudio"
+    }
+  ],
+  "links": [
+    {
+      "source": "componentStudio",
+      "target": "gui"
+    },
+    {
+      "source": "gui",
+      "target": "reactRenderer"
+    },
+    {
+      "source": "gui",
+      "target": "storage"
+    },
+    {
+      "source": "componentStudio",
+      "target": "project"
+    },
+    {
+      "source": "project",
+      "target": "COM"
+    },
+    {
+      "source": "project",
+      "target": "gui"
+    },
+    {
+      "source": "project",
+      "target": "Resources"
+    },
+    {
+      "source": "Resources",
+      "target": "COM"
+    },
+    {
+      "source": "componentStudio",
+      "target": "codeEditor"
+    },
+    {
+      "source": "codeEditor",
+      "target": "gui"
+    },
+    {
+      "source": "codeEditor",
+      "target": "project"
+    },
+    {
+      "source": "codeEditor",
+      "target": "projectUI"
+    },
+    {
+      "source": "projectUI",
+      "target": "project"
+    },
+    {
+      "source": "projectUI",
+      "target": "gui"
+    },
+    {
+      "source": "projectUI",
+      "target": "storage"
+    },
+    {
+      "source": "componentStudio",
+      "target": "compilation"
+    },
+    {
+      "source": "compilation",
+      "target": "gui"
+    },
+    {
+      "source": "compilation",
+      "target": "project"
+    },
+    {
+      "source": "compilation",
+      "target": "Resources"
+    },
+    {
+      "source": "componentStudio",
+      "target": "componentsPanel"
+    },
+    {
+      "source": "componentsPanel",
+      "target": "project"
+    },
+    {
+      "source": "componentsPanel",
+      "target": "fileComponents"
+    },
+    {
+      "source": "fileComponents",
+      "target": "project"
+    },
+    {
+      "source": "fileComponents",
+      "target": "projectAnalyzer"
+    },
+    {
+      "source": "projectAnalyzer",
+      "target": "project"
+    },
+    {
+      "source": "projectAnalyzer",
+      "target": "typescript"
+    },
+    {
+      "source": "typescript",
+      "target": "project"
+    },
+    {
+      "source": "typescript",
+      "target": "codeLanguages"
+    },
+    {
+      "source": "codeLanguages",
+      "target": "gui"
+    },
+    {
+      "source": "codeLanguages",
+      "target": "projectUI"
+    },
+    {
+      "source": "codeLanguages",
+      "target": "codeEditor"
+    },
+    {
+      "source": "typescript",
+      "target": "compilation"
+    },
+    {
+      "source": "typescript",
+      "target": "codeExecution"
+    },
+    {
+      "source": "codeExecution",
+      "target": "project"
+    },
+    {
+      "source": "codeExecution",
+      "target": "compilation"
+    },
+    {
+      "source": "projectAnalyzer",
+      "target": "Resources"
+    },
+    {
+      "source": "fileComponents",
+      "target": "symbolSchemaExtract"
+    },
+    {
+      "source": "symbolSchemaExtract",
+      "target": "project"
+    },
+    {
+      "source": "symbolSchemaExtract",
+      "target": "typescript"
+    },
+    {
+      "source": "componentsPanel",
+      "target": "gitRevision"
+    },
+    {
+      "source": "gitRevision",
+      "target": "project"
+    },
+    {
+      "source": "gitRevision",
+      "target": "gitCommands"
+    },
+    {
+      "source": "gitCommands",
+      "target": "project"
+    },
+    {
+      "source": "componentsPanel",
+      "target": "gui"
+    },
+    {
+      "source": "componentsPanel",
+      "target": "simulation"
+    },
+    {
+      "source": "simulation",
+      "target": "codeEditor"
+    },
+    {
+      "source": "simulation",
+      "target": "componentTab"
+    },
+    {
+      "source": "componentTab",
+      "target": "gui"
+    },
+    {
+      "source": "componentTab",
+      "target": "fileComponents"
+    },
+    {
+      "source": "componentTab",
+      "target": "project"
+    },
+    {
+      "source": "simulation",
+      "target": "fileComponents"
+    },
+    {
+      "source": "simulation",
+      "target": "gui"
+    },
+    {
+      "source": "simulation",
+      "target": "project"
+    },
+    {
+      "source": "simulation",
+      "target": "symbolSchemaExtract"
+    },
+    {
+      "source": "simulation",
+      "target": "simulationCapabilities"
+    },
+    {
+      "source": "simulationCapabilities",
+      "target": "project"
+    },
+    {
+      "source": "simulationCapabilities",
+      "target": "projectAnalyzer"
+    },
+    {
+      "source": "simulationCapabilities",
+      "target": "gitRevision"
+    },
+    {
+      "source": "simulationCapabilities",
+      "target": "storage"
+    },
+    {
+      "source": "simulationCapabilities",
+      "target": "fileComponents"
+    },
+    {
+      "source": "simulationCapabilities",
+      "target": "simpleAST"
+    },
+    {
+      "source": "simpleAST",
+      "target": "project"
+    },
+    {
+      "source": "simpleAST",
+      "target": "typescript"
+    },
+    {
+      "source": "simpleAST",
+      "target": "COM"
+    },
+    {
+      "source": "simulation",
+      "target": "simulationPreview"
+    },
+    {
+      "source": "simulationPreview",
+      "target": "codeExecution"
+    },
+    {
+      "source": "simulationPreview",
+      "target": "COM"
+    },
+    {
+      "source": "simulationPreview",
+      "target": "gui"
+    },
+    {
+      "source": "simulationPreview",
+      "target": "project"
+    },
+    {
+      "source": "simulationPreview",
+      "target": "compilation"
+    },
+    {
+      "source": "simulationPreview",
+      "target": "Resources"
+    },
+    {
+      "source": "simulationPreview",
+      "target": "simulationCapabilities"
+    },
+    {
+      "source": "componentsPanel",
+      "target": "simulationCapabilities"
+    },
+    {
+      "source": "componentStudio",
+      "target": "fileComponents"
+    },
+    {
+      "source": "componentStudio",
+      "target": "filePreview"
+    },
+    {
+      "source": "filePreview",
+      "target": "gui"
+    },
+    {
+      "source": "filePreview",
+      "target": "project"
+    },
+    {
+      "source": "filePreview",
+      "target": "projectUI"
+    },
+    {
+      "source": "componentStudio",
+      "target": "markdownPreview"
+    },
+    {
+      "source": "markdownPreview",
+      "target": "filePreview"
+    },
+    {
+      "source": "markdownPreview",
+      "target": "project"
+    },
+    {
+      "source": "componentStudio",
+      "target": "simulationCodeEditor"
+    },
+    {
+      "source": "simulationCodeEditor",
+      "target": "simulation"
+    },
+    {
+      "source": "simulationCodeEditor",
+      "target": "codeExecution"
+    },
+    {
+      "source": "simulationCodeEditor",
+      "target": "codeEditor"
+    },
+    {
+      "source": "simulationCodeEditor",
+      "target": "symbolSchemaExtract"
+    },
+    {
+      "source": "simulationCodeEditor",
+      "target": "gui"
+    },
+    {
+      "source": "simulationCodeEditor",
+      "target": "project"
+    },
+    {
+      "source": "componentStudio",
+      "target": "simulationLog"
+    },
+    {
+      "source": "simulationLog",
+      "target": "simulation"
+    },
+    {
+      "source": "simulationLog",
+      "target": "simulationPreview"
+    },
+    {
+      "source": "componentStudio",
+      "target": "simulation"
+    },
+    {
+      "source": "componentStudio",
+      "target": "simulationPreview"
+    },
+    {
+      "source": "componentStudio",
+      "target": "simulationPropsEditor"
+    },
+    {
+      "source": "simulationPropsEditor",
+      "target": "autodocs"
+    },
+    {
+      "source": "autodocs",
+      "target": "gui"
+    },
+    {
+      "source": "autodocs",
+      "target": "project"
+    },
+    {
+      "source": "autodocs",
+      "target": "projectUI"
+    },
+    {
+      "source": "autodocs",
+      "target": "componentTab"
+    },
+    {
+      "source": "autodocs",
+      "target": "symbolSchemaExtract"
+    },
+    {
+      "source": "simulationPropsEditor",
+      "target": "codeViews"
+    },
+    {
+      "source": "codeViews",
+      "target": "project"
+    },
+    {
+      "source": "codeViews",
+      "target": "typescript"
+    },
+    {
+      "source": "codeViews",
+      "target": "COM"
+    },
+    {
+      "source": "simulationPropsEditor",
+      "target": "simulation"
+    },
+    {
+      "source": "simulationPropsEditor",
+      "target": "simulationCapabilities"
+    },
+    {
+      "source": "simulationPropsEditor",
+      "target": "storage"
+    },
+    {
+      "source": "simulationPropsEditor",
+      "target": "gui"
+    },
+    {
+      "source": "simulationPropsEditor",
+      "target": "simpleAST"
+    },
+    {
+      "source": "simulationPropsEditor",
+      "target": "symbolSchemaExtract"
+    },
+    {
+      "source": "componentStudio",
+      "target": "simulationEnvEditor"
+    },
+    {
+      "source": "simulationEnvEditor",
+      "target": "simulation"
+    },
+    {
+      "source": "componentStudio",
+      "target": "stylable"
+    },
+    {
+      "source": "stylable",
+      "target": "project"
+    },
+    {
+      "source": "stylable",
+      "target": "codeLanguages"
+    },
+    {
+      "source": "stylable",
+      "target": "compilation"
+    },
+    {
+      "source": "componentStudio",
+      "target": "typescript"
+    },
+    {
+      "source": "componentStudio",
+      "target": "webpackCompiler"
+    },
+    {
+      "source": "webpackCompiler",
+      "target": "COM"
+    },
+    {
+      "source": "webpackCompiler",
+      "target": "project"
+    },
+    {
+      "source": "webpackCompiler",
+      "target": "simulationPreview"
+    },
+    {
+      "source": "webpackCompiler",
+      "target": "simulationCapabilities"
+    },
+    {
+      "source": "componentStudio",
+      "target": "componentCodeEditor"
+    },
+    {
+      "source": "componentCodeEditor",
+      "target": "gui"
+    },
+    {
+      "source": "componentCodeEditor",
+      "target": "codeEditor"
+    },
+    {
+      "source": "componentCodeEditor",
+      "target": "componentTab"
+    },
+    {
+      "source": "componentStudio",
+      "target": "storage"
+    },
+    {
+      "source": "componentStudio",
+      "target": "buildScripts"
+    },
+    {
+      "source": "buildScripts",
+      "target": "project"
+    },
+    {
+      "source": "buildScripts",
+      "target": "gui"
+    },
+    {
+      "source": "buildScripts",
+      "target": "projectUI"
+    }
+  ]
+}
