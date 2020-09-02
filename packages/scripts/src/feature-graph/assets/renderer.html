@@ -45,8 +45,8 @@
     <script>
         // set the dimensions and margins of the graph
         var margin = { top: 10, right: 30, bottom: 30, left: 40 },
-            width = 5000 - margin.left - margin.right,
-            height = 5000 - margin.top - margin.bottom;
+            width = 1000 - margin.left - margin.right,
+            height = 1000 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
         var svg = d3
@@ -57,11 +57,35 @@
             .append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+        d3.select('svg')
+            .insert('defs', 'g')
+            .append('marker')
+            .attr('id', 'triangle')
+            .attr('viewBox', '0 0 10 10')
+            .attr('refX', '1')
+            .attr('refY', '5')
+            .attr('markerUnits', 'strokeWidth')
+            .attr('markerWidth', '10')
+            .attr('markerHeight', '10')
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M 0 0 L 10 5 L 0 10 z')
+            .attr('fill', '#aaa');
+
         var div = d3.select('body').append('div').attr('class', 'tooltip').style('opacity', 0);
+
+        const scale = d3.scaleOrdinal(d3.schemeCategory10);
+        const color = (d) => scale(d.group);
 
         d3.json('data.json', function (data) {
             // Initialize the links
-            var link = svg.selectAll('line').data(data.links).enter().append('line').style('stroke', '#aaa');
+            var link = svg
+                .selectAll('line')
+                .data(data.links)
+                .enter()
+                .append('line')
+                .style('stroke', '#aaa')
+                .attr('marker-end', 'url(#triangle)');
 
             // Initialize the nodes
             var node = svg
@@ -70,7 +94,8 @@
                 .enter()
                 .append('circle')
                 .attr('r', 20)
-                .style('fill', '#69b3a2')
+                .style('fill', color)
+                .style('stroke', (d) => (d.group === 0 ? 'black' : 'transparent'))
                 .on('mouseover', function (d) {
                     div.transition().duration(200).style('opacity', 0.9);
                     div.html(d.name)

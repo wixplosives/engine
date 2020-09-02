@@ -5,10 +5,16 @@ import fs from 'fs';
 import type { Feature } from '@wixc3/engine-core/src';
 
 const ASSETS_PATH = 'packages/scripts/src/feature-graph/assets';
+import template from './assets/template';
+import { App } from './assets/App';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
+import { features } from 'process';
 
 export interface Node {
     id: string;
     name: string;
+    level: number;
 }
 
 export interface Link {
@@ -17,30 +23,38 @@ export interface Link {
 }
 
 const getFeatureLinks = (
-    topLevelFeaturesMap: Map<string, IFeatureDefinition>,
-    feature: string,
-    visitedFeatures: Array<string>
+    feature: Feature,
+    visitedFeatures: { [propName: string]: number },
+    level: number
 ): Array<Link> => {
     const res = [] as Array<Link>;
-    const deps = topLevelFeaturesMap.get(feature)?.dependencies || [];
+    const deps = feature.dependencies;
     for (const dep of deps) {
-        res.push({ source: feature, target: dep });
-        if (visitedFeatures.indexOf(feature) === -1) {
-            visitedFeatures.push(dep);
-            getFeatureLinks(topLevelFeaturesMap, dep, visitedFeatures);
+        res.push({ source: feature.id, target: dep.id });
+        if (!(dep.id in visitedFeatures)) {
+            visitedFeatures[dep.id] = level + 1;
+            res.push(...getFeatureLinks(dep, visitedFeatures, level++));
         }
     }
     return res;
 };
 
-const getFeatureLinks2 = (feature: Feature, visitedFeatures: Array<string>): Array<Link> => {
+const bfsFeatureLinks = (
+    entry: Feature,
+    visitedFeatures: { [propName: string]: number },
+    level: number
+): Array<Link> => {
     const res = [] as Array<Link>;
-    const deps = feature.dependencies;
+    const deps = entry.dependencies;
     for (const dep of deps) {
-        res.push({ source: feature.id, target: dep.id });
-        if (visitedFeatures.indexOf(dep.id) === -1) {
-            visitedFeatures.push(dep.id);
-            res.push(...getFeatureLinks2(dep, visitedFeatures));
+        res.push({ source: entry.id, target: dep.id });
+        if (!(dep.id in visitedFeatures)) {
+            visitedFeatures[dep.id] = level + 1;
+        }
+    }
+    for (const dep of deps) {
+        if (visitedFeatures[dep.id] === level + 1) {
+            res.push(...bfsFeatureLinks(dep, visitedFeatures, level + 1));
         }
     }
     return res;
@@ -56,42 +70,70 @@ export const startServer = (features: Map<string, IFeatureDefinition>, featureNa
 
     server.use(express.static(ASSETS_PATH));
 
-    server.get('/all', (req, res) => {
+    server.get('/old', (req, res) => {
         const keys = [] as Array<string>;
         for (const key of features.keys()) {
             keys.push(key);
         }
+
         res.send(`
-            <!DOCTYPE html>
-            <html>
-                <body>
+        <!DOCTYPE html>
+        <html>
+            <body style="display: flex; width: 100vw; height: 100vh">
+                <aside>
                     <ul>
-                    ${keys.map((key) => `<li><a href="/feature?feature-name=${key}">${key}</a></li>`).join('')}
+                        ${keys.map((key) => `<li><a href="/feature?feature-name=${key}">${key}</a></li>`).join('')}
                     </ul>
-                </body>
-            </html>
+                </aside>
+                <main style="flex: 1"><iframe src="renderer.html" width="100%" height="100%"></iframe></main>
+            </body>
+        </html>
         `);
     });
 
-    server.get('/feature', (req, res) => {
-        const visitedFeatures = [] as Array<string>;
-        const featureName = req.query['feature-name'] as string;
-        const links = getFeatureLinks2(features.get(featureName)!.exportedFeature, visitedFeatures);
+    const discoveredFeatures = [] as Array<string>;
+    for (const key of features.keys()) {
+        discoveredFeatures.push(key);
+    }
 
-        fs.writeFileSync(
-            `${ASSETS_PATH}/data.json`,
-            JSON.stringify(
-                {
-                    nodes: visitedFeatures
-                        .concat(features.get(featureName)!.exportedFeature.id)
-                        .map((name) => ({ name, id: name })),
-                    links,
-                },
-                null,
-                2
-            )
+    server.get('/react', (req, res) => {
+        const featureName = req.query['feature-name'] as string;
+        if (featureName) {
+            const visitedFeatures = {} as { [propName: string]: number };
+
+            const links = bfsFeatureLinks(features.get(featureName)!.exportedFeature, visitedFeatures, 0);
+
+            fs.writeFileSync(
+                `${ASSETS_PATH}/data.json`,
+                JSON.stringify(
+                    {
+                        nodes: Object.keys(visitedFeatures)
+                            .map((name) => ({ name, id: name, group: visitedFeatures[name] }))
+                            .concat({
+                                name: features.get(featureName)!.exportedFeature.id,
+                                id: features.get(featureName)!.exportedFeature.id,
+                                group: 0,
+                            }),
+                        links,
+                    },
+                    null,
+                    2
+                )
+            );
+        }
+
+        const appString = renderToString(<App features={discoveredFeatures} />);
+
+        res.send(
+            template({
+                body: appString,
+                title: featureName,
+            })
         );
-        res.redirect(`/index.html`);
+    });
+
+    server.get('/feature', (req, res) => {
+        res.redirect(`/`);
     });
 
     server.listen(8080, () => {
