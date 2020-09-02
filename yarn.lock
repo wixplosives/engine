@@ -139,14 +139,20 @@
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.2.5.tgz#8eed982e2ee6f7f4e44c253e12962980791efd46"
   integrity sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==
 
-"@eslint/eslintrc@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@eslint/eslintrc/-/eslintrc-0.1.0.tgz#3d1f19fb797d42fb1c85458c1c73541eeb1d9e76"
-  integrity sha512-bfL5365QSCmH6cPeFT7Ywclj8C7LiF7sO6mUGzZhtAMV7iID1Euq6740u/SRi4C80NOnVz/CEfK8/HO+nCAPJg==
+"@eslint/eslintrc@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@eslint/eslintrc/-/eslintrc-0.1.3.tgz#7d1a2b2358552cc04834c0979bd4275362e37085"
+  integrity sha512-4YVwPkANLeNtRjMekzux1ci8hIaH5eGKktGqR0d3LWsKNn5B2X/1Z6Trxy7jQXl9EBGE6Yj02O+t09FMeRllaA==
   dependencies:
     ajv "^6.12.4"
     debug "^4.1.1"
+    espree "^7.3.0"
+    globals "^12.1.0"
+    ignore "^4.0.6"
     import-fresh "^3.2.1"
+    js-yaml "^3.13.1"
+    lodash "^4.17.19"
+    minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
 "@evocateur/libnpmaccess@^3.1.2":
@@ -1306,18 +1312,18 @@
     "@types/node" "*"
 
 "@types/express-serve-static-core@*":
-  version "4.17.9"
-  resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-4.17.9.tgz#2d7b34dcfd25ec663c25c85d76608f8b249667f1"
-  integrity sha512-DG0BYg6yO+ePW+XoDENYz8zhNGC3jDDEpComMYn7WJc4mY1Us8Rw9ax2YhJXxpyk2SF47PQAoQ0YyVT1a0bEkA==
+  version "4.17.12"
+  resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-4.17.12.tgz#9a487da757425e4f267e7d1c5720226af7f89591"
+  integrity sha512-EaEdY+Dty1jEU7U6J4CUWwxL+hyEGMkO5jan5gplfegUgCUsIUWqXxqw47uGjimeT4Qgkz/XUfwoau08+fgvKA==
   dependencies:
     "@types/node" "*"
     "@types/qs" "*"
     "@types/range-parser" "*"
 
-"@types/express@*", "@types/express@^4.17.7":
-  version "4.17.7"
-  resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.7.tgz#42045be6475636d9801369cd4418ef65cdb0dd59"
-  integrity sha512-dCOT5lcmV/uC2J9k0rPafATeeyz+99xTt54ReX11/LObZgfzJqZNcW27zGhYyX+9iSEGXGt5qLPwRSvBZcLvtQ==
+"@types/express@*", "@types/express@^4.17.8":
+  version "4.17.8"
+  resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.8.tgz#3df4293293317e61c60137d273a2e96cd8d5f27a"
+  integrity sha512-wLhcKh3PMlyA2cNAB9sjM1BntnhPMiM0JOBwPBqttjHev2428MLEB4AYVN+d8s2iyCVZac+o41Pflm/ZH5vLXQ==
   dependencies:
     "@types/body-parser" "*"
     "@types/express-serve-static-core" "*"
@@ -3646,10 +3652,10 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
-electron@^10.1.0:
-  version "10.1.0"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-10.1.0.tgz#3559182545dc76e20d9764d183d555415d55c250"
-  integrity sha512-DyS6WhQ59+ZXQsI1EkpsYkOXFt0Xbp+mbxPTJS9A7O21r3JDzaTC+1Jxz7g6J+Sbi9Y7UFdRs0tn/vqhHJx2gA==
+electron@^10.1.1:
+  version "10.1.1"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-10.1.1.tgz#44ff9207afc9df253d3b5ea40c7e6513c5dc08d8"
+  integrity sha512-ZJtZHMr17AvvBosuA6XUmpehwAlGM4/n46Mw9BcyD8tpgdI6IQd0X5OU9meE3X3M8Y6Ja2Kr2udTMgtjvot2hA==
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^12.0.12"
@@ -3958,13 +3964,13 @@ eslint-visitor-keys@^2.0.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-2.0.0.tgz#21fdc8fbcd9c795cc0321f0563702095751511a8"
   integrity sha512-QudtT6av5WXels9WjIM7qz1XD1cWGvX4gGXvp/zBn9nXG02D0utdU3Em2m/QjTnrsk6bBjmCygl3rmj118msQQ==
 
-eslint@^7.8.0:
-  version "7.8.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.8.0.tgz#9a3e2e6e4d0a3f8c42686073c25ebf2e91443e8a"
-  integrity sha512-qgtVyLZqKd2ZXWnLQA4NtVbOyH56zivOAdBFWE54RFkSZjokzNrcP4Z0eVWsZ+84ByXv+jL9k/wE1ENYe8xRFw==
+eslint@^7.8.1:
+  version "7.8.1"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.8.1.tgz#e59de3573fb6a5be8ff526c791571646d124a8fa"
+  integrity sha512-/2rX2pfhyUG0y+A123d0ccXtMm7DV7sH1m3lk9nk2DZ2LReq39FXHueR9xZwshE5MdfSf0xunSaMWRqyIA6M1w==
   dependencies:
     "@babel/code-frame" "^7.0.0"
-    "@eslint/eslintrc" "^0.1.0"
+    "@eslint/eslintrc" "^0.1.3"
     ajv "^6.10.0"
     chalk "^4.0.0"
     cross-spawn "^7.0.2"
