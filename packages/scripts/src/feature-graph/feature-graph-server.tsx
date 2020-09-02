@@ -6,6 +6,7 @@ import type { Feature } from '@wixc3/engine-core/src';
 
 const ASSETS_PATH = 'packages/scripts/src/feature-graph/assets';
 import template from './assets/template';
+import rendererTemplate from './assets/renderer';
 import { App } from './assets/App';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
@@ -96,33 +97,9 @@ export const startServer = (features: Map<string, IFeatureDefinition>, featureNa
         discoveredFeatures.push(key);
     }
 
-    server.get('/react', (req, res) => {
+    server.get('/', (req, res) => {
         const featureName = req.query['feature-name'] as string;
-        if (featureName) {
-            const visitedFeatures = {} as { [propName: string]: number };
-
-            const links = bfsFeatureLinks(features.get(featureName)!.exportedFeature, visitedFeatures, 0);
-
-            fs.writeFileSync(
-                `${ASSETS_PATH}/data.json`,
-                JSON.stringify(
-                    {
-                        nodes: Object.keys(visitedFeatures)
-                            .map((name) => ({ name, id: name, group: visitedFeatures[name] }))
-                            .concat({
-                                name: features.get(featureName)!.exportedFeature.id,
-                                id: features.get(featureName)!.exportedFeature.id,
-                                group: 0,
-                            }),
-                        links,
-                    },
-                    null,
-                    2
-                )
-            );
-        }
-
-        const appString = renderToString(<App features={discoveredFeatures} />);
+        const appString = renderToString(<App features={discoveredFeatures} currentFeature={featureName} />);
 
         res.send(
             template({
@@ -132,8 +109,24 @@ export const startServer = (features: Map<string, IFeatureDefinition>, featureNa
         );
     });
 
-    server.get('/feature', (req, res) => {
-        res.redirect(`/`);
+    server.get('/renderer', (req, res) => {
+        const featureName = req.query['feature-name'] as string;
+
+        const visitedFeatures = {} as { [propName: string]: number };
+
+        const links = bfsFeatureLinks(features.get(featureName)!.exportedFeature, visitedFeatures, 0);
+
+        const graph = {
+            nodes: Object.keys(visitedFeatures)
+                .map((name) => ({ name, id: name, group: visitedFeatures[name] }))
+                .concat({
+                    name: features.get(featureName)!.exportedFeature.id,
+                    id: features.get(featureName)!.exportedFeature.id,
+                    group: 0,
+                }),
+            links,
+        };
+        res.send(rendererTemplate(graph));
     });
 
     server.listen(8080, () => {

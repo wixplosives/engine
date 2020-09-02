@@ -1,7 +1,6 @@
 import React from 'react';
-import { features } from 'process';
 
-export const App = ({ features }: { features: Array<string> }) => {
+export const App = ({ features, currentFeature }: { features: Array<string>; currentFeature: string }) => {
     return (
         <div
             style={{
@@ -10,15 +9,23 @@ export const App = ({ features }: { features: Array<string> }) => {
                 width: '100vw',
             }}
         >
-            <aside>
-                {features.map((feature: string) => (
-                    <li key={feature}>
-                        <a href={`/react?feature-name=${feature}`}>{feature}</a>/
-                    </li>
-                ))}
+            <aside style={{ overflow: 'auto' }}>
+                <ul>
+                    {' '}
+                    <h2>Detected features</h2>
+                    {features.map((feature: string) => (
+                        <li key={feature}>
+                            <a href={`/?feature-name=${feature}`}>{feature}</a>/
+                        </li>
+                    ))}
+                </ul>
             </aside>
+
             <main style={{ flex: '1' }}>
-                <iframe src="renderer.html" width="100%" height="100%"></iframe>
+                <h2>{currentFeature ? `Selected feature is ${currentFeature}` : 'No feature selected'}</h2>
+                {currentFeature && (
+                    <iframe src={`/renderer?feature-name=${currentFeature}`} width="100%" height="100%"></iframe>
+                )}
             </main>
         </div>
     );

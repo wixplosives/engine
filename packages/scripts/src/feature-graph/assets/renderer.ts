@@ -1,5 +1,9 @@
-<!DOCTYPE html>
+export default function template(data: any) {
+    return `<!DOCTYPE html><html>
 <head>
+    <script>
+        data = ${JSON.stringify(data)};
+    </script>
     <meta charset="utf-8" />
 
     <!-- Load d3.js -->
@@ -77,8 +81,7 @@
         const scale = d3.scaleOrdinal(d3.schemeCategory10);
         const color = (d) => scale(d.group);
 
-        d3.json('data.json', function (data) {
-            // Initialize the links
+        // Initialize the links
             var link = svg
                 .selectAll('line')
                 .data(data.links)
@@ -142,6 +145,6 @@
                     return d.y - 6;
                 });
             }
-        });
     </script>
-</body>
+</body></html>`;
+}

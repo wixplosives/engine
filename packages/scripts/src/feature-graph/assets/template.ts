@@ -10,8 +10,6 @@ export default ({ body, title }: { body: string; title: string }) => {
         <body>
           <div id="root">${body}</div>
         </body>
-        
-        <script src="/assets/bundle.js"></script>
       </html>
     `;
 };
