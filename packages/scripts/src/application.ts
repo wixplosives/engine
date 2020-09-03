@@ -598,7 +598,7 @@ export class Application {
         return compiler;
     }
 
-    public analyzeFeatures() {
+    protected analyzeFeatures() {
         const { basePath } = this;
         console.time(`Analyzing Features.`);
         const packages = resolvePackages(basePath);
