@@ -13,7 +13,6 @@ import { version } from '../package.json';
 import { Application } from './application';
 import type { IFeatureMessagePayload, IPortMessage, IProcessMessage, IFeatureTarget } from './types';
 import { parseCliArguments } from './utils';
-import { startServer } from './feature-graph/feature-graph-server';
 
 program.version(version);
 
@@ -245,23 +244,6 @@ program
             const basePath = resolve(path);
             const app = new Application({ basePath });
             await app.create({ featureName, templatesDir, featuresDir });
-        } catch (e) {
-            printErrorAndExit(e);
-        }
-    });
-
-program
-    .command('analyze [path]')
-    .option(...preRequireParams)
-    .option('-f ,--feature <feature>')
-    .action((path = process.cwd(), cmd: Record<string, any>) => {
-        try {
-            const { feature: featureName, require: pathsToRequire } = cmd;
-            const basePath = resolve(path);
-            preRequire(pathsToRequire, basePath);
-            const app = new Application({ basePath });
-            const { features } = app.analyzeFeatures();
-            startServer(features, featureName);
         } catch (e) {
             printErrorAndExit(e);
         }
