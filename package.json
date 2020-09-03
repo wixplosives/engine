@@ -50,7 +50,6 @@
     "@typescript-eslint/parser": "^4.0.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "d3": "^6.1.0",
     "eslint": "^7.8.1",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-no-only-tests": "^2.4.0",

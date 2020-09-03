@@ -21,7 +21,7 @@ TestFeature.setup(renderer, ({ run }, { electronExample: { echoService } }) => {
         });
 
         /**
-         * invoking Pers after a minute
+         * invoking listeners after a minute
          */
         setTimeout(() => {
             echoService.invokeListeners().catch(console.error);
