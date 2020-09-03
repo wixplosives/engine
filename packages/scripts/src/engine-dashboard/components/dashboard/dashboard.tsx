@@ -113,6 +113,15 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
                 displayServerToggle={hasNodeEnvironments}
                 actionBtnClassName={classes.actionButton}
             />
+            {selectedFeature?.featureName && (
+                <div className={classes.graphContainer}>
+                    <iframe
+                        src={`/render-graph?feature-name=${selectedFeature.featureName}`}
+                        width="100%"
+                        height="100%"
+                    />
+                </div>
+            )}
         </div>
     );
 });

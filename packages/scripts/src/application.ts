@@ -35,6 +35,7 @@ import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
 import { createFeaturesEngineRouter, generateConfigName } from './engine-router';
 import { filterEnvironments } from './utils/environments';
 import { launchHttpServer } from './launch-http-server';
+import { buildFeatureLinks, template as graphTemplate } from './feature-dependency-graph';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -265,6 +266,28 @@ export class Application {
                 },
             });
         });
+
+        if (mode === 'development') {
+            app.get('/render-graph', (req, res) => {
+                const featureName = req.query['feature-name'] as string;
+
+                const visitedFeatures = {} as { [propName: string]: number };
+
+                const links = buildFeatureLinks(features.get(featureName)!.exportedFeature, visitedFeatures, 0);
+
+                const graph = {
+                    nodes: Object.keys(visitedFeatures)
+                        .map((name) => ({ name, id: name, group: visitedFeatures[name] }))
+                        .concat({
+                            name: features.get(featureName)!.exportedFeature.id,
+                            id: features.get(featureName)!.exportedFeature.id,
+                            group: 0,
+                        }),
+                    links,
+                };
+                res.send(graphTemplate(graph));
+            });
+        }
 
         if (autoLaunch && featureName) {
             await nodeEnvironmentManager.runServerEnvironments({

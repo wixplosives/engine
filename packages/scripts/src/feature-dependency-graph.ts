@@ -1,4 +1,32 @@
-export default function template(data: any) {
+import type { Feature } from '@wixc3/engine-core/src';
+
+export interface Link {
+    source: string;
+    target: string;
+}
+
+export const buildFeatureLinks = (
+    entry: Feature,
+    visitedFeatures: { [propName: string]: number },
+    level: number
+): Array<Link> => {
+    const res = [] as Array<Link>;
+    const deps = entry.dependencies;
+    for (const dep of deps) {
+        res.push({ source: entry.id, target: dep.id });
+        if (!(dep.id in visitedFeatures)) {
+            visitedFeatures[dep.id] = level + 1;
+        }
+    }
+    for (const dep of deps) {
+        if (visitedFeatures[dep.id] === level + 1) {
+            res.push(...buildFeatureLinks(dep, visitedFeatures, level + 1));
+        }
+    }
+    return res;
+};
+
+export function template(data: any) {
     return `<!DOCTYPE html><html>
 <head>
     <script>
@@ -97,8 +125,9 @@ export default function template(data: any) {
                 .enter()
                 .append('circle')
                 .attr('r', 20)
-                .style('fill', (d) => d.group === 0 ? 'white' : color(d))
+                .style('fill', color)
                 .style('stroke', (d) => (d.group === 0 ? 'black' : 'transparent'))
+                .style('stroke-width', (d) => d.group === 0 ? '5px' : '0')
                 .on('mouseover', function (d) {
                     div.transition().duration(200).style('opacity', 0.9);
                     div.html(d.name)

@@ -4,13 +4,11 @@ import type { IFeatureDefinition } from '../types';
 import fs from 'fs';
 import type { Feature } from '@wixc3/engine-core/src';
 
-const ASSETS_PATH = 'packages/scripts/src/feature-graph/assets';
 import template from './assets/template';
 import rendererTemplate from './assets/renderer';
 import { App } from './assets/App';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { features } from 'process';
 
 export interface Node {
     id: string;
@@ -68,29 +66,6 @@ export const startServer = (features: Map<string, IFeatureDefinition>, featureNa
     // }
 
     const server = express();
-
-    server.use(express.static(ASSETS_PATH));
-
-    server.get('/old', (req, res) => {
-        const keys = [] as Array<string>;
-        for (const key of features.keys()) {
-            keys.push(key);
-        }
-
-        res.send(`
-        <!DOCTYPE html>
-        <html>
-            <body style="display: flex; width: 100vw; height: 100vh">
-                <aside>
-                    <ul>
-                        ${keys.map((key) => `<li><a href="/feature?feature-name=${key}">${key}</a></li>`).join('')}
-                    </ul>
-                </aside>
-                <main style="flex: 1"><iframe src="renderer.html" width="100%" height="100%"></iframe></main>
-            </body>
-        </html>
-        `);
-    });
 
     const discoveredFeatures = [] as Array<string>;
     for (const key of features.keys()) {
