@@ -20,7 +20,11 @@ export default new Feature({
     api: {
         sidebarSlot: Slot.withType<SidebarItem>().defineEntity(MAIN),
         codeService: Service.withType<CodeService>().defineEntity([MAIN, PROCESSING]),
-        remoteCodeService: Service.withType<CodeService>().defineEntity(MAIN).allowRemoteAccess(),
+        remoteCodeService: Service.withType<CodeService>().defineEntity(MAIN).allowRemoteAccess({
+            listen: {
+                listener: true
+            }
+        }),
         errorService: Service.withType<ErrorService>().defineEntity(MAIN).allowRemoteAccess(),
     },
 });

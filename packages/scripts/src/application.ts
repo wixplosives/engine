@@ -117,6 +117,7 @@ export class Application {
             staticBuild: true,
             publicConfigsRoute,
             overrideConfig,
+            singleFeature,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -182,6 +183,7 @@ export class Application {
             staticBuild: false,
             publicConfigsRoute,
             overrideConfig,
+            singleFeature,
         });
 
         if (singleRun) {
@@ -552,6 +554,7 @@ export class Application {
         staticBuild,
         publicConfigsRoute,
         overrideConfig,
+        singleFeature,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
@@ -563,6 +566,7 @@ export class Application {
         staticBuild: boolean;
         publicConfigsRoute?: string;
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
+        singleFeature?: boolean;
     }) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -591,6 +595,7 @@ export class Application {
             staticBuild,
             publicConfigsRoute,
             overrideConfig,
+            singleFeature,
         });
 
         const compiler = webpack(webpackConfigs);
