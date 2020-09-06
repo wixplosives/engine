@@ -1,10 +1,9 @@
 import { Feature, Environment, COM } from '@wixc3/engine-core/src';
 import buildFeature from './build.feature';
-
 export const mainDashboardEnv = new Environment('main-dashboard', 'window', 'single');
 
 export default new Feature({
     id: 'dashboard-gui',
-    dependencies: [COM, buildFeature],
+    dependencies: [buildFeature, COM],
     api: {},
 });

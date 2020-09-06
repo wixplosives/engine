@@ -13,6 +13,9 @@ import { version } from '../package.json';
 import { Application } from './application';
 import type { IFeatureMessagePayload, IPortMessage, IProcessMessage, IFeatureTarget } from './types';
 import { parseCliArguments } from './utils';
+import { resolvePackages, loadFeaturesFromPackages, runNodeEnvironment } from '@wixc3/engine-scripts';
+import { BaseHost } from '@wixc3/engine-core/src';
+import fs from '@file-services/node';
 
 program.version(version);
 
@@ -133,71 +136,29 @@ program
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
-        const {
-            feature: featureName,
-            config: configName,
-            port: httpServerPort,
-            singleRun,
-            singleFeature,
-            open: openBrowser = 'true',
-            require: pathsToRequire,
-            publicPath = defaultPublicPath,
-            mode,
-            title,
-            publicConfigsRoute,
-            autoLaunch,
-        } = cmd;
+        // const {
+        //     feature: featureName,
+        //     config: configName,
+        //     port: httpServerPort,
+        //     singleRun,
+        //     singleFeature,
+        //     open: openBrowser = 'true',
+        //     require: pathsToRequire,
+        //     publicPath = defaultPublicPath,
+        //     mode,
+        //     title,
+        //     publicConfigsRoute,
+        //     autoLaunch,
+        // } = cmd;
         try {
             const basePath = resolve(__dirname, '../../engineer');
-            preRequire(pathsToRequire, basePath);
-            const app = new Application({ basePath });
-
-            const { close: closeServer, port, runFeature, closeFeature, getMetrics } = await app.start({
-                featureName,
-                configName,
-                runtimeOptions: parseCliArguments(process.argv.slice(3)),
-                inspect: cmd.inspect ? true : false,
-                port: httpServerPort ? Number(httpServerPort) : undefined,
-                singleRun,
-                singleFeature,
-                publicPath,
-                mode,
-                title,
-                publicConfigsRoute,
-                autoLaunch,
+            await runNodeEnvironment({
+                featureName: 'engineer',
+                features: [...loadFeaturesFromPackages(resolvePackages(basePath), fs).features],
+                name: 'build',
+                type: 'node',
+                host: new BaseHost(),
             });
-
-            if (process.send) {
-                process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
-            } else if (featureName && configName && openBrowser === 'true') {
-                await open(`http://localhost:${port}/main.html`);
-            }
-
-            const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
-                if (process.send) {
-                    if (id === 'run-feature') {
-                        const responsePayload = await runFeature(payload as Required<IFeatureTarget>);
-                        process.send({ id: 'feature-initialized', payload: responsePayload });
-                    }
-                    if (id === 'close-feature') {
-                        await closeFeature(payload as IFeatureMessagePayload);
-                        process.send({ id: 'feature-closed' });
-                    }
-                    if (id === 'server-disconnect') {
-                        await closeServer();
-                        process.off('message', processListener);
-                        process.send({ id: 'server-disconnected' });
-                    }
-                    if (id === 'metrics-request') {
-                        process.send({
-                            id: 'metrics-response',
-                            payload: getMetrics(),
-                        });
-                    }
-                }
-            };
-
-            process.on('message', processListener);
         } catch (e) {
             printErrorAndExit(e);
         }

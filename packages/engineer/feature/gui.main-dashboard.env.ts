@@ -6,7 +6,7 @@ guiFeature.setup(mainDashboardEnv, ({ run }, { COM: { startEnvironment }, buildF
     run(async () => {
         await startEnvironment(buildEnv, socketServerInitializer());
         const div = document.createElement('div');
-        div.textContent = (await application.getApp()).outputPath;
+        div.textContent = await application.test();
         document.body.appendChild(div);
     });
 });
