@@ -10,6 +10,10 @@ export class ApplicationProxyService extends Application {
         return super.analyzeFeatures();
     }
 
+    public getFeatureString() {
+        return [...this.analyzeFeatures().features.keys()];
+    }
+
     public filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
         return super.filterByFeatureName(features, featureName);
     }
@@ -17,6 +21,8 @@ export class ApplicationProxyService extends Application {
     public importModules(requiredModules: string[]) {
         return super.importModules(requiredModules);
     }
+
+    public echo = () => 'sadasd';
 
     public createCompiler(compilerArgs: {
         features: Map<string, IFeatureDefinition>;

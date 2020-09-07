@@ -16,6 +16,7 @@ import { parseCliArguments } from './utils';
 import { resolvePackages, loadFeaturesFromPackages, runNodeEnvironment } from '@wixc3/engine-scripts';
 import { BaseHost } from '@wixc3/engine-core/src';
 import fs from '@file-services/node';
+import buildFeature from 'packages/engineer/feature/build.feature';
 
 program.version(version);
 
@@ -136,28 +137,46 @@ program
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
-        // const {
-        //     feature: featureName,
-        //     config: configName,
-        //     port: httpServerPort,
-        //     singleRun,
-        //     singleFeature,
-        //     open: openBrowser = 'true',
-        //     require: pathsToRequire,
-        //     publicPath = defaultPublicPath,
-        //     mode,
-        //     title,
-        //     publicConfigsRoute,
-        //     autoLaunch,
-        // } = cmd;
+        const {
+            feature: featureName,
+            config: configName,
+            port: httpServerPort,
+            singleRun,
+            singleFeature,
+            open: openBrowser = 'true',
+            require: pathsToRequire,
+            publicPath = defaultPublicPath,
+            mode,
+            title,
+            publicConfigsRoute,
+            autoLaunch,
+        } = cmd;
         try {
             const basePath = resolve(__dirname, '../../engineer');
+            preRequire(pathsToRequire, basePath);
             await runNodeEnvironment({
                 featureName: 'engineer',
                 features: [...loadFeaturesFromPackages(resolvePackages(basePath), fs).features],
                 name: 'build',
                 type: 'node',
                 host: new BaseHost(),
+                config: [
+                    buildFeature.use({
+                        devServerConfig: {
+                            httpServerPort,
+                            featureName,
+                            singleRun,
+                            singleFeature,
+                            //autoLaunch: openBrowser,
+                            publicPath,
+                            mode,
+                            configName,
+                            title,
+                            publicConfigsRoute,
+                            autoLaunch,
+                        },
+                    }),
+                ],
             });
         } catch (e) {
             printErrorAndExit(e);
