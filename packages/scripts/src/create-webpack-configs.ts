@@ -42,15 +42,7 @@ function convertEnvRecordToSetMultiMap(record: Record<string, string>, set = new
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const {
-        enviroments,
-        mode = 'development',
-        baseConfig = {},
-        publicPath = '',
-        featureName,
-        features,
-        singleFeature,
-    } = options;
+    const { enviroments, baseConfig = {}, publicPath = '', featureName, features, singleFeature } = options;
 
     const resolvedContexts =
         featureName && singleFeature
