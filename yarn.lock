@@ -9338,10 +9338,10 @@ webpack-sources@^1.4.0, webpack-sources@^1.4.1, webpack-sources@^1.4.3:
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack-virtual-modules@^0.2.2:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/webpack-virtual-modules/-/webpack-virtual-modules-0.2.2.tgz#20863dc3cb6bb2104729fff951fbe14b18bd0299"
-  integrity sha512-kDUmfm3BZrei0y+1NTHJInejzxfhtU8eDj2M7OKb2IWrPFAeO1SOH2KuQ68MSZu9IGEHcxbkKKR1v18FrUSOmA==
+webpack-virtual-modules@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/webpack-virtual-modules/-/webpack-virtual-modules-0.3.0.tgz#5cf7b27b7085bf54c9e7272a70e6dac17e7afffa"
+  integrity sha512-Hjlu0bZiojnQmwR+bPUZlqCcE1DG1ETk74lZFtuFBrcj7HKSNgXxHX68gZPkLfnQ3FCkqWFp3OfS0g6syYh3Zw==
   dependencies:
     debug "^3.0.0"
 
