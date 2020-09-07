@@ -1,7 +1,6 @@
 import guiFeature from './gui.feature';
 import { buildEnv } from './build.feature';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
 import fs from '@file-services/node';
 import type webpack from 'webpack';
 
@@ -27,17 +26,10 @@ guiFeature.setup(
         const dashboardConfig: webpack.Configuration = {
             ...baseConfig,
             entry: {
-                engineer: engineDashboardEntry,
+                index: engineDashboardEntry,
             },
             target: 'web',
-            plugins: [
-                ...basePlugins,
-                new VirtualModulesPlugin(virtualModules),
-                new HtmlWebpackPlugin({
-                    filename: `index.html`,
-                    chunks: ['engineer'],
-                }),
-            ],
+            plugins: [...basePlugins, new VirtualModulesPlugin(virtualModules)],
             mode: 'development',
             devtool: 'source-map',
             output: {
