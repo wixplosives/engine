@@ -63,13 +63,17 @@ export function createLiveConfigsMiddleware(
 
 export function createCommunicationMiddleware(
     nodeEnvironmentsManager: NodeEnvironmentsManager,
-    publicPath?: string
+    publicPath?: string,
+    topologyOverrides?: (featureName: string) => Record<string, string> | undefined
 ): express.RequestHandler {
     return (req, res, next) => {
         const { feature } = req.query;
         const requestedConfig: string | undefined = req.path.slice(1);
         const topology =
-            typeof feature === 'string'
+            // I hate this hack and need to understand how to truely subscribe to the topology
+            topologyOverrides
+                ? topologyOverrides(feature as string)
+                : typeof feature === 'string'
                 ? nodeEnvironmentsManager.getTopology(
                       feature,
                       requestedConfig === 'undefined' ? undefined : requestedConfig
