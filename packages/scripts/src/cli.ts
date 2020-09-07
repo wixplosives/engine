@@ -182,7 +182,7 @@ program
 
             if (featureName && openBrowser === 'true') {
                 await open(
-                    `http://localhost:${httpServerPort}/main.html?feature=${featureName as string}&config=${
+                    `http://localhost:${httpServerPort as string}/main.html?feature=${featureName as string}&config=${
                         configName as string
                     }`
                 );

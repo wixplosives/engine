@@ -24,8 +24,6 @@ export interface ICreateWebpackConfigsOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
-const engineDashboardEntry = require.resolve('./engine-dashboard');
-
 function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
     const allContexts = new SetMultiMap<string, string>();
     for (const { resolvedContexts } of features.values()) {
