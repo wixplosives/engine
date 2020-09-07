@@ -135,12 +135,13 @@ program
     )
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+    .option('--engineerMode <gui|build>', 'interactive mode for engineer', 'build')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
             feature: featureName,
             config: configName,
-            port: httpServerPort,
+            port: httpServerPort = 3000,
             singleRun,
             singleFeature,
             open: openBrowser = 'true',
@@ -148,14 +149,15 @@ program
             publicPath = defaultPublicPath,
             mode,
             title,
-            publicConfigsRoute,
+            publicConfigsRoute = 'configs/',
             autoLaunch,
+            engineerMode,
         } = cmd;
         try {
             const basePath = resolve(__dirname, '../../engineer');
             preRequire(pathsToRequire, basePath);
             await runNodeEnvironment({
-                featureName: 'engineer',
+                featureName: `engineer/${engineerMode as string}`,
                 features: [...loadFeaturesFromPackages(resolvePackages(basePath), fs).features],
                 name: 'build',
                 type: 'node',
@@ -167,7 +169,6 @@ program
                             featureName,
                             singleRun,
                             singleFeature,
-                            //autoLaunch: openBrowser,
                             publicPath,
                             mode,
                             configName,
@@ -178,6 +179,14 @@ program
                     }),
                 ],
             });
+
+            if (featureName && openBrowser === 'true') {
+                await open(
+                    `http://localhost:${httpServerPort}/main.html?feature=${featureName as string}&config=${
+                        configName as string
+                    }`
+                );
+            }
         } catch (e) {
             printErrorAndExit(e);
         }

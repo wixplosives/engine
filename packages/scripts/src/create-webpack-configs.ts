@@ -84,15 +84,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
-        if (mode === 'development') {
-            plugins.push(
-                new HtmlWebpackPlugin({
-                    filename: `index.html`,
-                    chunks: ['index'],
-                })
-            );
-            entry.index = engineDashboardEntry;
-        }
         configurations.push(
             createWebpackConfig({
                 ...options,

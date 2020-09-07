@@ -1,12 +1,13 @@
-import { Feature, Service, Environment, COM, Config, TopLevelConfig } from '@wixc3/engine-core/src';
+import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core/src';
 import type { ApplicationProxyService } from '../src/application-proxy-service';
 import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts/src';
 import { cwd } from 'process';
+import type webpack from 'webpack';
 
 export const buildEnv = new Environment('build', 'node', 'single');
 
 export interface DevServerConfig {
-    httpServerPort?: number;
+    httpServerPort: number;
     featureName?: string;
     singleFeature?: boolean;
     configName?: string;
@@ -31,7 +32,6 @@ export default new Feature({
         devServerConfig: new Config<DevServerConfig>({
             httpServerPort: 3000,
             singleFeature: false,
-            publicConfigsRoute: 'configs/',
             singleRun: false,
             inspect: false,
             autoLaunch: false,
@@ -40,6 +40,8 @@ export default new Feature({
             mode: 'development',
             overrideConfig: [],
             defaultRuntimeOptions: {},
+            publicConfigsRoute: 'configs/',
         }),
+        engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(buildEnv),
     },
 });

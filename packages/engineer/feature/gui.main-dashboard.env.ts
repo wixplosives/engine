@@ -1,7 +1,6 @@
 import guiFeature, { mainDashboardEnv } from './gui.feature';
 import { buildEnv } from './build.feature';
 import { socketServerInitializer } from '@wixc3/engine-core/src';
-import type { IFeatureDefinition } from '@wixc3/engine-scripts/src';
 
 guiFeature.setup(mainDashboardEnv, ({ run }, { COM: { startEnvironment }, buildFeature: { application } }) => {
     run(async () => {

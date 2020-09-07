@@ -1,13 +1,6 @@
 import buildFeature, { buildEnv } from './build.feature';
-import {
-    launchHttpServer,
-    TopLevelConfigProvider,
-    NodeEnvironmentsManager,
-    LaunchEnvironmentMode,
-} from '@wixc3/engine-scripts/src';
+import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts/src';
 import { ApplicationProxyService } from '../src/application-proxy-service';
-import { cwd } from 'process';
-import type { TopLevelConfig } from '@wixc3/engine-core/src';
 import express from 'express';
 import {
     ensureTopLevelConfigMiddleware,
@@ -18,13 +11,9 @@ import {
 } from '@wixc3/engine-scripts/src/config-middleware';
 import WebpackDevMiddleware from 'webpack-dev-middleware';
 import { createFeaturesEngineRouter } from '@wixc3/engine-scripts/src/engine-router';
-import path from 'path';
-import VirtualModulesPlugin from 'webpack-virtual-modules';
-import type webpack from 'webpack';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import fs from '@file-services/node';
+import webpack from 'webpack';
+
 import { WsServerHost } from '@wixc3/engine-core-node/src';
-import { mainDashboardEnv } from './gui.feature';
 
 buildFeature.setup(
     buildEnv,
@@ -48,6 +37,7 @@ buildFeature.setup(
                 overrideConfig,
                 defaultRuntimeOptions,
             },
+            engineerWebpackConfigs,
         },
         { COM: { communication } }
     ) => {
@@ -97,7 +87,7 @@ buildFeature.setup(
                 singleFeature,
             });
 
-            // Cold run, not sure I want this here
+            // Somehow this turns off webpack dev server watch mode
             if (singleRun) {
                 for (const childCompiler of compiler.compilers) {
                     childCompiler.watch = function watch(_watchOptions, handler) {
@@ -167,16 +157,9 @@ buildFeature.setup(
                 compiler.hooks.done.tap('engine-scripts init', resolve);
             });
 
-            // This doesn't belong here, it should be part of the dashboard feature
-            const mainUrl = `http://localhost:${port}/`;
-            console.log(`Listening:`);
-            console.log('Dashboard URL: ', mainUrl);
-            if (featureName) {
-                console.log('Main application URL: ', `${mainUrl}main.html`);
-            }
-
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
+            const mainUrl = `http://localhost:${httpServerPort}/`;
             if (packages.length === 1) {
                 // print links to features
                 console.log('Available Configurations:');
@@ -200,7 +183,6 @@ buildFeature.setup(
             });
 
             if (autoLaunch && featureName) {
-                console.log(autoLaunch);
                 await nodeEnvironmentManager.runServerEnvironments({
                     featureName,
                     configName,
@@ -209,29 +191,15 @@ buildFeature.setup(
                 });
             }
 
-            // const engineDashboardEntry = require.resolve('packages/scripts/src/engine-dashboard');
-            // const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
-            // const plugins: webpack.Plugin[] = [new VirtualModulesPlugin()];
-            // const entry: webpack.Entry = {};
-            // plugins.push(
-            //     new HtmlWebpackPlugin({
-            //         filename: `index.html`,
-            //         chunks: ['index'],
-            //     })
-            // );
-            // const webpackConfig = [];
-            // entry.index = engineDashboardEntry;
-            // configurations.push(
-            //     createWebpackConfig({
-            //         ...options,
-            //         baseConfig,
-            //         enviroments: webEnvs,
-            //         target: 'web',
-            //         virtualModules,
-            //         plugins,
-            //         entry,
-            //     })
-            // );
+            const engineerCompilers = webpack([...engineerWebpackConfigs]);
+            for (const childCompiler of engineerCompilers.compilers) {
+                const devMiddleware = WebpackDevMiddleware(childCompiler, {
+                    publicPath: '/',
+                    logLevel: 'silent',
+                });
+                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                app.use(devMiddleware);
+            }
         });
         return { application };
     }

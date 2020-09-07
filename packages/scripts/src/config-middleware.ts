@@ -71,7 +71,7 @@ export function createCommunicationMiddleware(
         const requestedConfig: string | undefined = req.path.slice(1);
         const topology =
             // I hate this hack and need to understand how to truely subscribe to the topology
-            topologyOverrides
+            topologyOverrides && topologyOverrides(feature as string)
                 ? topologyOverrides(feature as string)
                 : typeof feature === 'string'
                 ? nodeEnvironmentsManager.getTopology(
