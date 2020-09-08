@@ -1,6 +1,6 @@
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core/src';
 import type { ApplicationProxyService } from '../src/application-proxy-service';
-import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts/src';
+import type { NodeEnvironmentsManager } from '@wixc3/engine-scripts/src';
 import { cwd } from 'process';
 import type webpack from 'webpack';
 
@@ -24,6 +24,10 @@ export interface DevServerConfig {
     defaultRuntimeOptions: Record<string, string | boolean>;
 }
 
+export interface BuildHooks {
+    serverReady?: () => Promise<void>;
+}
+
 export default new Feature({
     id: 'buildFeature',
     dependencies: [COM],
@@ -42,6 +46,8 @@ export default new Feature({
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
         }),
+        buildHooksSlot: Slot.withType<() => Promise<void>>().defineEntity(buildEnv),
         engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(buildEnv),
+        nodeEnvironmentManager: Service.withType<NodeEnvironmentsManager>().defineEntity(buildEnv),
     },
 });

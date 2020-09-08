@@ -116,7 +116,7 @@ program
     });
 
 program
-    .command('start-dashboard [path]')
+    .command('dashboard [path]')
     .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
     .option('-f, --feature <feature>')
     .option('-c, --config <config>')
@@ -180,13 +180,39 @@ program
                 ],
             });
 
-            if (featureName && openBrowser === 'true') {
-                await open(
-                    `http://localhost:${httpServerPort as string}/main.html?feature=${featureName as string}&config=${
-                        configName as string
-                    }`
-                );
+            console.log('in cli', process.pid);
+            if (process.send) {
+                process.send({ id: 'port-request', payload: { port: httpServerPort } } as IProcessMessage<
+                    IPortMessage
+                >);
+            } else if (featureName && configName && openBrowser === 'true') {
+                await open(`http://localhost:${httpServerPort as string}/main.html`);
             }
+            const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
+                if (process.send) {
+                    if (id === 'run-feature') {
+                        const responsePayload = await runFeature(payload as Required<IFeatureTarget>);
+                        process.send({ id: 'feature-initialized', payload: responsePayload });
+                    }
+                    if (id === 'close-feature') {
+                        await closeFeature(payload as IFeatureMessagePayload);
+                        process.send({ id: 'feature-closed' });
+                    }
+                    if (id === 'server-disconnect') {
+                        await closeServer();
+                        process.off('message', processListener);
+                        process.send({ id: 'server-disconnected' });
+                    }
+                    if (id === 'metrics-request') {
+                        process.send({
+                            id: 'metrics-response',
+                            payload: getMetrics(),
+                        });
+                    }
+                }
+            };
+
+            process.on('message', processListener);
         } catch (e) {
             printErrorAndExit(e);
         }

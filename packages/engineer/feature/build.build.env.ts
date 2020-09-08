@@ -38,9 +38,11 @@ buildFeature.setup(
                 defaultRuntimeOptions,
             },
             engineerWebpackConfigs,
+            buildHooksSlot,
         },
         { COM: { communication } }
     ) => {
+        console.log('In feature', process.pid);
         const application = new ApplicationProxyService({ basePath });
 
         // Currently we rely on mode === 'development' within the createCompiler funciton
@@ -124,7 +126,7 @@ buildFeature.setup(
             }
 
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
-                featureName === 'engineer/gui'
+                featureName.indexOf('engineer/') === 0
                     ? {
                           [buildEnv.env]: `http://localhost:${port}/${buildEnv.env}`,
                       }
@@ -199,6 +201,10 @@ buildFeature.setup(
                 });
                 disposables.add(() => new Promise((res) => devMiddleware.close(res)));
                 app.use(devMiddleware);
+            }
+
+            for (const hooks of buildHooksSlot) {
+                await hooks.serverReady?.();
             }
         });
         return { application };
