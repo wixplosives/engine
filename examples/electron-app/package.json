@@ -1,6 +1,6 @@
 {
   "name": "@example/electron-app",
-  "version": "14.4.3",
+  "version": "14.4.4",
   "main": "index.js",
   "scripts": {
     "start": "electron ."
