@@ -485,7 +485,8 @@ export class Application {
     protected async importModules(requiredModules: string[]) {
         for (const requiredModule of requiredModules) {
             try {
-                await import(requiredModule);
+                // This is cool, but it should be a separate PR! It's here just so people can play around with the feature branch
+                await import(require.resolve(requiredModule, { paths: [this.basePath] }));
             } catch (ex) {
                 throw new Error(`failed requiring: ${requiredModule} ${(ex as Error)?.stack || String(ex)}`);
             }
