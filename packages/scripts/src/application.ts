@@ -462,7 +462,7 @@ export class Application {
     protected async importModules(requiredModules: string[]) {
         for (const requiredModule of requiredModules) {
             try {
-                await import(requiredModule);
+                await import(require.resolve(requiredModule, { paths: [this.basePath] }));
             } catch (ex) {
                 throw new Error(`failed requiring: ${requiredModule} ${(ex as Error)?.stack || String(ex)}`);
             }
