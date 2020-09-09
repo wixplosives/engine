@@ -1,12 +1,12 @@
 import managedFeature from './managed.feature';
-import { buildEnv } from './build.feature';
+import { devServerEnv } from './dev-server.feature';
 import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts/src';
 import type { IRunFeatureOptions } from '@wixc3/engine-scripts/src/application';
 import { generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
 import performance from '@wixc3/cross-performance';
 
 managedFeature.setup(
-    buildEnv,
+    devServerEnv,
     (
         _,
         {

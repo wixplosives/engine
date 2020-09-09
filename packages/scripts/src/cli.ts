@@ -16,7 +16,7 @@ import { parseCliArguments } from './utils';
 import { resolvePackages, loadFeaturesFromPackages, runNodeEnvironment } from '@wixc3/engine-scripts';
 import { BaseHost } from '@wixc3/engine-core/src';
 import fs from '@file-services/node';
-import buildFeature from 'packages/engineer/feature/build.feature';
+import devServerFeature, { devServerEnv } from 'packages/engineer/feature/dev-server.feature';
 
 program.version(version);
 
@@ -135,7 +135,7 @@ program
     )
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
-    .option('--engineerMode <gui|build>', 'interactive mode for engineer', 'build')
+    .option('--engineerMode <gui|build>', 'interactive mode for engineer', 'dev-server')
     .allowUnknownOption(true)
     .action(async (_ = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -159,11 +159,11 @@ program
             await runNodeEnvironment({
                 featureName: `engineer/${engineerMode as string}`,
                 features: [...loadFeaturesFromPackages(resolvePackages(basePath), fs).features],
-                name: 'build',
+                name: devServerEnv.env,
                 type: 'node',
                 host: new BaseHost(),
                 config: [
-                    buildFeature.use({
+                    devServerFeature.use({
                         devServerConfig: {
                             httpServerPort,
                             featureName,

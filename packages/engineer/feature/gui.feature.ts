@@ -1,5 +1,5 @@
 import { Feature, Environment, COM } from '@wixc3/engine-core/src';
-import buildFeature from './build.feature';
+import buildFeature from './dev-server.feature';
 export const mainDashboardEnv = new Environment('main-dashboard', 'window', 'single');
 
 export default new Feature({

@@ -1,4 +1,4 @@
-import buildFeature, { buildEnv } from './build.feature';
+import devServerFeature, { devServerEnv } from './dev-server.feature';
 import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import { ApplicationProxyService } from '../src/application-proxy-service';
 import express from 'express';
@@ -15,8 +15,8 @@ import webpack from 'webpack';
 
 import { WsServerHost } from '@wixc3/engine-core-node/src';
 
-buildFeature.setup(
-    buildEnv,
+devServerFeature.setup(
+    devServerEnv,
     (
         {
             run,
@@ -71,9 +71,9 @@ buildFeature.setup(
 
             const host = new WsServerHost(socketServer.of('/build'));
 
-            communication.clearEnvironment(buildEnv.env);
+            communication.clearEnvironment(devServerEnv.env);
             communication.registerMessageHandler(host);
-            communication.registerEnv(buildEnv.env, host);
+            communication.registerEnv(devServerEnv.env, host);
 
             const { features, configurations, packages } = application.analyzeFeatures();
             if (singleFeature && featureName) {
@@ -134,7 +134,7 @@ buildFeature.setup(
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
-                          [buildEnv.env]: `http://localhost:${port}/${buildEnv.env}`,
+                          [devServerEnv.env]: `http://localhost:${port}/${devServerEnv.env}`,
                       }
                     : undefined;
 

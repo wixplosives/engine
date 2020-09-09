@@ -1,8 +1,8 @@
 import { Feature } from '@wixc3/engine-core/src';
-import buildFeature from './build.feature';
+import devServer from './dev-server.feature';
 
 export default new Feature({
     id: 'managedFeature',
-    dependencies: [buildFeature.asEntity],
+    dependencies: [devServer.asEntity],
     api: {},
 });

@@ -5,7 +5,7 @@ import { cwd } from 'process';
 import type webpack from 'webpack';
 import type { OverrideConfig } from '@wixc3/engine-scripts/src/config-middleware';
 
-export const buildEnv = new Environment('build', 'node', 'single');
+export const devServerEnv = new Environment('dev-server', 'node', 'single');
 
 export interface DevServerConfig {
     httpServerPort: number;
@@ -35,7 +35,7 @@ export default new Feature({
     id: 'buildFeature',
     dependencies: [COM],
     api: {
-        application: Service.withType<ApplicationProxyService>().defineEntity(buildEnv).allowRemoteAccess(),
+        application: Service.withType<ApplicationProxyService>().defineEntity(devServerEnv).allowRemoteAccess(),
         devServerConfig: new Config<DevServerConfig>({
             httpServerPort: 3000,
             singleFeature: false,
@@ -49,11 +49,11 @@ export default new Feature({
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
         }),
-        buildHooksSlot: Slot.withType<BuildHooks>().defineEntity(buildEnv),
-        serverListeningHandlerSlot: Slot.withType<ServerListeningHandler>().defineEntity(buildEnv),
-        engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(buildEnv),
-        getNodeEnvManager: Service.withType<() => NodeEnvironmentsManager | null>().defineEntity(buildEnv),
-        overrideConfigsMap: Service.withType<Map<string, OverrideConfig>>().defineEntity(buildEnv),
-        close: Service.withType<() => Promise<void>>().defineEntity(buildEnv),
+        buildHooksSlot: Slot.withType<BuildHooks>().defineEntity(devServerEnv),
+        serverListeningHandlerSlot: Slot.withType<ServerListeningHandler>().defineEntity(devServerEnv),
+        engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(devServerEnv),
+        getNodeEnvManager: Service.withType<() => NodeEnvironmentsManager | null>().defineEntity(devServerEnv),
+        overrideConfigsMap: Service.withType<Map<string, OverrideConfig>>().defineEntity(devServerEnv),
+        close: Service.withType<() => Promise<void>>().defineEntity(devServerEnv),
     },
 });

@@ -1,11 +1,11 @@
 import guiFeature from './gui.feature';
-import { buildEnv } from './build.feature';
+import { devServerEnv } from './dev-server.feature';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import fs from '@file-services/node';
 import type webpack from 'webpack';
 
 guiFeature.setup(
-    buildEnv,
+    devServerEnv,
     (
         { run },
         {
