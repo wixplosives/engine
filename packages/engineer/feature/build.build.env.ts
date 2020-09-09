@@ -42,22 +42,26 @@ buildFeature.setup(
         },
         { COM: { communication } }
     ) => {
-        console.log('In feature', process.pid);
         const application = new ApplicationProxyService({ basePath });
+        const overrideConfigsMap = new Map<string, OverrideConfig>();
+        const disposables = new Set<() => unknown>();
 
-        // Currently we rely on mode === 'development' within the createCompiler funciton
-        // To push the dashboard into the bundeld scripts
-        // We want to push it via a slot, so we will start will pushing it into the compiler before
-        // running it, thus decoupling it from the flag and making it customizable from the outside
-        // Eventually via the gui feature which will pass the entry point via a slot,
-        // Maybe someday in the future it will just be compiled once and served, without the devserver
+        const close = async () => {
+            for (const dispose of disposables) {
+                await dispose();
+            }
+            disposables.clear();
+        };
+
+        let nodeEnvironmentManager: NodeEnvironmentsManager | null = null;
+
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
             const engineConfig = await application.getEngineConfig();
             if (engineConfig && engineConfig.require) {
                 await application.importModules(engineConfig.require);
             }
-            const disposables = new Set<() => unknown>();
+
             const { port, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
@@ -108,7 +112,7 @@ buildFeature.setup(
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependants can rely on them in the topology
-            const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
+            nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
                 configurations,
                 features,
                 defaultRuntimeOptions,
@@ -116,9 +120,8 @@ buildFeature.setup(
                 inspect,
                 overrideConfig,
             });
-            disposables.add(() => nodeEnvironmentManager.closeAll());
+            disposables.add(() => nodeEnvironmentManager?.closeAll());
 
-            const overrideConfigsMap = new Map<string, OverrideConfig>();
             if (engineConfig && engineConfig.serveStatic) {
                 for (const { route, directoryPath } of engineConfig.serveStatic) {
                     app.use(route, express.static(directoryPath));
@@ -179,7 +182,7 @@ buildFeature.setup(
                     result: 'success',
                     data: {
                         features: featureEnvDefinitions,
-                        featuresWithRunningNodeEnvs: nodeEnvironmentManager.getFeaturesWithRunningEnvironments(),
+                        featuresWithRunningNodeEnvs: nodeEnvironmentManager?.getFeaturesWithRunningEnvironments(),
                     },
                 });
             });
@@ -207,6 +210,6 @@ buildFeature.setup(
                 await hooks.serverReady?.();
             }
         });
-        return { application };
+        return { application, nodeEnvironmentManager, overrideConfigsMap, close };
     }
 );

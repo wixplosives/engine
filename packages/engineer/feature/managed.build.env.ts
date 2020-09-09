@@ -1,7 +1,8 @@
 import managedFeature from './managed.feature';
-import { buildEnv, BuildHooks } from './build.feature';
-import type { IProcessMessage } from '@wixc3/engine-scripts/src';
+import { buildEnv } from './build.feature';
+import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget } from '@wixc3/engine-scripts/src';
 import type { IRunFeatureOptions } from '@wixc3/engine-scripts/src/application';
+import { generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
 
 managedFeature.setup(
     buildEnv,
@@ -11,7 +12,9 @@ managedFeature.setup(
             buildFeature: {
                 buildHooksSlot,
                 nodeEnvironmentManager,
+                overrideConfigsMap,
                 devServerConfig: { nodeEnvironmentsMode },
+                close: closeServer,
             },
         }
     ) => {
@@ -32,7 +35,7 @@ managedFeature.setup(
             // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
             performance.clearMeasures();
             performance.clearMarks();
-            return nodeEnvironmentManager.runServerEnvironments({
+            return nodeEnvironmentManager!.runServerEnvironments({
                 featureName,
                 configName,
                 overrideConfigsMap,
@@ -47,7 +50,7 @@ managedFeature.setup(
             }
             performance.clearMeasures();
             performance.clearMarks();
-            return nodeEnvironmentManager.closeEnvironment({
+            return nodeEnvironmentManager!.closeEnvironment({
                 featureName,
                 configName,
             });
@@ -72,6 +75,7 @@ managedFeature.setup(
                     }
                     if (id === 'server-disconnect') {
                         await closeServer();
+                        // eslint-disable-next-line @typescript-eslint/no-misused-promises
                         process.off('message', processListener);
                         process.send({ id: 'server-disconnected' });
                     }
@@ -84,8 +88,9 @@ managedFeature.setup(
                 }
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             process.on('message', processListener);
         };
-        buildHooksSlot.register(serverReady);
+        buildHooksSlot.register({ serverReady });
     }
 );
