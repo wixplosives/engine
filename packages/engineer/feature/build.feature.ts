@@ -29,6 +29,8 @@ export interface BuildHooks {
     serverReady?: (() => Promise<void>) | (() => void);
 }
 
+export type ServerListeningHandler = (() => void) | (() => Promise<void>);
+
 export default new Feature({
     id: 'buildFeature',
     dependencies: [COM],
@@ -48,8 +50,9 @@ export default new Feature({
             publicConfigsRoute: 'configs/',
         }),
         buildHooksSlot: Slot.withType<BuildHooks>().defineEntity(buildEnv),
+        serverListeningHandlerSlot: Slot.withType<ServerListeningHandler>().defineEntity(buildEnv),
         engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(buildEnv),
-        nodeEnvironmentManager: Service.withType<NodeEnvironmentsManager | null>().defineEntity(buildEnv),
+        getNodeEnvManager: Service.withType<() => NodeEnvironmentsManager | null>().defineEntity(buildEnv),
         overrideConfigsMap: Service.withType<Map<string, OverrideConfig>>().defineEntity(buildEnv),
         close: Service.withType<() => Promise<void>>().defineEntity(buildEnv),
     },

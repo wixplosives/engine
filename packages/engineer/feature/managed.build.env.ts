@@ -1,8 +1,9 @@
 import managedFeature from './managed.feature';
 import { buildEnv } from './build.feature';
-import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget } from '@wixc3/engine-scripts/src';
+import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts/src';
 import type { IRunFeatureOptions } from '@wixc3/engine-scripts/src/application';
 import { generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
+import performance from '@wixc3/cross-performance';
 
 managedFeature.setup(
     buildEnv,
@@ -10,10 +11,10 @@ managedFeature.setup(
         _,
         {
             buildFeature: {
-                buildHooksSlot,
-                nodeEnvironmentManager,
+                serverListeningHandlerSlot,
+                getNodeEnvManager,
                 overrideConfigsMap,
-                devServerConfig: { nodeEnvironmentsMode },
+                devServerConfig: { nodeEnvironmentsMode, httpServerPort },
                 close: closeServer,
             },
         }
@@ -35,7 +36,7 @@ managedFeature.setup(
             // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
             performance.clearMeasures();
             performance.clearMarks();
-            return nodeEnvironmentManager!.runServerEnvironments({
+            return getNodeEnvManager()!.runServerEnvironments({
                 featureName,
                 configName,
                 overrideConfigsMap,
@@ -50,7 +51,7 @@ managedFeature.setup(
             }
             performance.clearMeasures();
             performance.clearMarks();
-            return nodeEnvironmentManager!.closeEnvironment({
+            return getNodeEnvManager()!.closeEnvironment({
                 featureName,
                 configName,
             });
@@ -62,35 +63,40 @@ managedFeature.setup(
             };
         };
 
-        const serverReady = () => {
-            const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
-                if (process.send) {
-                    if (id === 'run-feature') {
-                        const responsePayload = await runFeature(payload as Required<IFeatureTarget>);
-                        process.send({ id: 'feature-initialized', payload: responsePayload });
-                    }
-                    if (id === 'close-feature') {
-                        await closeFeature(payload as IFeatureMessagePayload);
-                        process.send({ id: 'feature-closed' });
-                    }
-                    if (id === 'server-disconnect') {
-                        await closeServer();
-                        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                        process.off('message', processListener);
-                        process.send({ id: 'server-disconnected' });
-                    }
-                    if (id === 'metrics-request') {
-                        process.send({
-                            id: 'metrics-response',
-                            payload: getMetrics(),
-                        });
-                    }
+        const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
+            if (process.send) {
+                if (id === 'run-feature') {
+                    const responsePayload = await runFeature(payload as Required<IFeatureTarget>);
+                    process.send({ id: 'feature-initialized', payload: responsePayload });
                 }
-            };
-
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            process.on('message', processListener);
+                if (id === 'close-feature') {
+                    await closeFeature(payload as IFeatureMessagePayload);
+                    process.send({ id: 'feature-closed' });
+                }
+                if (id === 'server-disconnect') {
+                    await closeServer();
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                    process.off('message', processListener);
+                    process.send({ id: 'server-disconnected' });
+                }
+                if (id === 'metrics-request') {
+                    process.send({
+                        id: 'metrics-response',
+                        payload: getMetrics(),
+                    });
+                }
+            }
         };
-        buildHooksSlot.register({ serverReady });
+
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        process.on('message', processListener);
+
+        serverListeningHandlerSlot.register(() => {
+            if (process.send) {
+                process.send({ id: 'port-request', payload: { port: httpServerPort } } as IProcessMessage<
+                    IPortMessage
+                >);
+            }
+        });
     }
 );

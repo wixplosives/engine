@@ -81,7 +81,7 @@ program
 
             if (process.send) {
                 process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
-            } else if (featureName && configName && openBrowser === 'true') {
+            } else if (!process.send && featureName && configName && openBrowser === 'true') {
                 await open(`http://localhost:${port}/main.html`);
             }
 
@@ -180,11 +180,7 @@ program
                 ],
             });
 
-            if (process.send) {
-                process.send({ id: 'port-request', payload: { port: httpServerPort } } as IProcessMessage<
-                    IPortMessage
-                >);
-            } else if (featureName && configName && openBrowser === 'true') {
+            if (!process.send && featureName && configName && openBrowser === 'true') {
                 await open(`http://localhost:${httpServerPort as string}/main.html`);
             }
         } catch (e) {

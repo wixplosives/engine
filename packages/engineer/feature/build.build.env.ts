@@ -1,5 +1,5 @@
 import buildFeature, { buildEnv } from './build.feature';
-import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts/src';
+import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import { ApplicationProxyService } from '../src/application-proxy-service';
 import express from 'express';
 import {
@@ -38,13 +38,16 @@ buildFeature.setup(
                 defaultRuntimeOptions,
             },
             engineerWebpackConfigs,
-            buildHooksSlot,
+            serverListeningHandlerSlot,
         },
         { COM: { communication } }
     ) => {
         const application = new ApplicationProxyService({ basePath });
         const overrideConfigsMap = new Map<string, OverrideConfig>();
         const disposables = new Set<() => unknown>();
+        let nodeEnvManager: NodeEnvironmentsManager | null = null;
+
+        const getNodeEnvManager = () => nodeEnvManager;
 
         const close = async () => {
             for (const dispose of disposables) {
@@ -52,8 +55,6 @@ buildFeature.setup(
             }
             disposables.clear();
         };
-
-        let nodeEnvironmentManager: NodeEnvironmentsManager | null = null;
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
@@ -93,7 +94,8 @@ buildFeature.setup(
                 singleFeature,
             });
 
-            // Somehow this turns off webpack dev server watch mode
+            // This hack is to squeeze some more performance, because we can server the output in memory
+            // It was once a crash, which is no longer relevant
             if (singleRun) {
                 for (const childCompiler of compiler.compilers) {
                     childCompiler.watch = function watch(_watchOptions, handler) {
@@ -112,7 +114,7 @@ buildFeature.setup(
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependants can rely on them in the topology
-            nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
+            const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
                 configurations,
                 features,
                 defaultRuntimeOptions,
@@ -120,6 +122,7 @@ buildFeature.setup(
                 inspect,
                 overrideConfig,
             });
+            nodeEnvManager = nodeEnvironmentManager;
             disposables.add(() => nodeEnvironmentManager?.closeAll());
 
             if (engineConfig && engineConfig.serveStatic) {
@@ -206,10 +209,10 @@ buildFeature.setup(
                 app.use(devMiddleware);
             }
 
-            for (const hooks of buildHooksSlot) {
-                await hooks.serverReady?.();
+            for (const handler of serverListeningHandlerSlot) {
+                await handler();
             }
         });
-        return { application, nodeEnvironmentManager, overrideConfigsMap, close };
+        return { application, getNodeEnvManager, overrideConfigsMap, close };
     }
 );
