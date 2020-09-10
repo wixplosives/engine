@@ -16,7 +16,7 @@ guiFeature.setup(
             },
         }
     ) => {
-        const engineDashboardEntry = require.resolve('packages/scripts/src/engine-dashboard');
+        const engineDashboardEntry = require.resolve('../engine-dashboard/components/app.tsx');
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig: webpack.Configuration = typeof baseConfigPath === 'string' ? require(baseConfigPath) : {};
         const virtualModules: Record<string, string> = {};
