@@ -13,7 +13,7 @@ import WebpackDevMiddleware from 'webpack-dev-middleware';
 import { createFeaturesEngineRouter } from '@wixc3/engine-scripts/src/engine-router';
 import webpack from 'webpack';
 
-import { WsServerHost } from '@wixc3/engine-core-node/src';
+import { WsServerHost } from '@wixc3/engine-core-node';
 
 devServerFeature.setup(
     devServerEnv,
@@ -69,7 +69,7 @@ devServerFeature.setup(
             });
             disposables.add(() => close());
 
-            const host = new WsServerHost(socketServer.of('/build'));
+            const host = new WsServerHost(socketServer.of(`/${devServerEnv.env}`));
 
             communication.clearEnvironment(devServerEnv.env);
             communication.registerMessageHandler(host);
@@ -123,6 +123,7 @@ devServerFeature.setup(
                 overrideConfig,
             });
             nodeEnvManager = nodeEnvironmentManager;
+
             disposables.add(() => nodeEnvironmentManager?.closeAll());
 
             if (engineConfig && engineConfig.serveStatic) {
