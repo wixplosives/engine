@@ -4,8 +4,7 @@
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
-    "engine": "./cli.js",
-    "engineer": "./cli.js"
+    "engine": "./cli.js"
   },
   "scripts": {
     "clean": "rimraf cjs",

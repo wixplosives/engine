@@ -1,9 +1,34 @@
 {
   "name": "@wixc3/engineer",
   "version": "1.0.0",
-  "main": "index.js",
   "license": "MIT",
+  "main": "cjs/index.js",
+  "types": "cjs/index.d.ts",
+  "bin": {
+    "engineer": "./cli.js"
+  },
   "scripts": {
-    "start": ""
+    "clean": "rimraf cjs",
+    "prebuild": "yarn clean",
+    "build": "yarn build:typescript && yarn build:stylable",
+    "build:stylable": "stc --srcDir src --outDir cjs --stcss",
+    "build:typescript": "ts-build src --cjs",
+    "test": "mocha \"test/**/*.unit.ts?(x)\"",
+    "prepack": "yarn build"
+  },
+  "files": [
+    "cjs",
+    "src",
+    "cli.js"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@file-services/node": "^4.0.0",
+    "@wixc3/engine-core": "^14.4.0",
+    "@wixc3/engine-core-node": "^14.4.0",
+    "commander": "^6.1.0",
+    "open": "^7.2.1"
   }
 }
