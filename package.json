@@ -9,7 +9,7 @@
     "clean": "lerna run clean --stream --parallel",
     "build": "lerna run build --stream --parallel",
     "lint": "eslint . -f codeframe",
-    "start": "engine start",
+    "start": "engineer start",
     "pretest": "yarn typecheck && yarn lint",
     "test": "yarn test:unit",
     "test:unit": "lerna run test --stream --concurrency=1",
