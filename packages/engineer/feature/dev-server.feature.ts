@@ -49,7 +49,6 @@ export default new Feature({
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
         }),
-        buildHooksSlot: Slot.withType<BuildHooks>().defineEntity(devServerEnv),
         serverListeningHandlerSlot: Slot.withType<ServerListeningHandler>().defineEntity(devServerEnv),
         engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(devServerEnv),
         getNodeEnvManager: Service.withType<() => NodeEnvironmentsManager | null>().defineEntity(devServerEnv),
