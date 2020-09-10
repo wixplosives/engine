@@ -135,9 +135,9 @@ program
     )
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
-    .option('--engineerMode <gui|build>', 'interactive mode for engineer', 'dev-server')
+    .option('--engineerMode <gui|build>', 'interactive mode for engineer', 'gui')
     .allowUnknownOption(true)
-    .action(async (_ = process.cwd(), cmd: Record<string, any>) => {
+    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
             feature: featureName,
             config: configName,
@@ -175,6 +175,7 @@ program
                             title,
                             publicConfigsRoute,
                             autoLaunch,
+                            basePath: path,
                         },
                     }),
                 ],
