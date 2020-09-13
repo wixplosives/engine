@@ -4,7 +4,7 @@ import {
     NodeEnvironmentsManager,
     IRunFeatureOptions,
     IFeatureMessagePayload,
-} from '@wixc3/engine-scripts';
+} from '@wixc3/engine-scripts/src/';
 import { ApplicationProxyService } from '../src/application-proxy-service';
 import express from 'express';
 import {

@@ -28,6 +28,7 @@
     "@file-services/node": "^4.0.0",
     "@wixc3/engine-core": "^14.4.0",
     "@wixc3/engine-core-node": "^14.4.0",
+    "@wixc3/engine-scripts": "^14.4.4",
     "commander": "^6.1.0",
     "open": "^7.2.1"
   }

@@ -6,7 +6,7 @@ import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { createEntrypoint } from '@wixc3/engine-scripts/src/create-entrypoint';
 import { SetMultiMap } from '@wixc3/engine-core/src';
-import type { IConfigDefinition, IFeatureDefinition } from '@wixc3/engine-scripts/src';
+import type { IConfigDefinition } from '@wixc3/engine-scripts/src';
 
 guiFeature.setup(
     devServerEnv,
@@ -22,7 +22,6 @@ guiFeature.setup(
             },
         }
     ) => {
-        const engineDashboardEntry = require.resolve('./gui.main-dashboard.env.tsx');
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig: webpack.Configuration = typeof baseConfigPath === 'string' ? require(baseConfigPath) : {};
         const virtualModules: Record<string, string> = {};

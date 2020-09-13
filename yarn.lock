@@ -1806,6 +1806,34 @@
     "@webassemblyjs/wast-parser" "1.9.0"
     "@xtuc/long" "4.2.2"
 
+"@wixc3/engine-scripts@^14.4.4":
+  version "14.4.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/engine-scripts/-/engine-scripts-14.4.4.tgz#7285e75ae9ddcba3fffb601ce05ccce4f7ecc8d3"
+  integrity sha512-Zf8lEIctlxGtQaccurKTVswDNnDQ8XK/rPTUw5kKzRUvpuetGG6JOtuL4b57W9vUOxfbq4CpL7yykORH9Hc5xA==
+  dependencies:
+    "@file-services/node" "^4.0.0"
+    "@file-services/types" "^4.0.0"
+    "@wixc3/cross-performance" "^14.3.1"
+    "@wixc3/engine-core" "^14.4.0"
+    "@wixc3/engine-core-node" "^14.4.0"
+    commander "^6.1.0"
+    cors "^2.8.5"
+    create-listening-server "^1.0.0"
+    express "^4.17.1"
+    glob "^7.1.6"
+    html-webpack-plugin "^4.4.1"
+    import-fresh "^3.2.1"
+    open "^7.2.1"
+    prop-types "^15.7.2"
+    react "^16.13.1"
+    react-dom "^16.13.1"
+    react-select "^3.1.0"
+    rimraf "^3.0.2"
+    socket.io "^2.3.0"
+    webpack "^4.44.1"
+    webpack-dev-middleware "^3.7.2"
+    webpack-virtual-modules "^0.3.0"
+
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz#eef014a3145ae477a1cbc00cd1e552336dceb790"
@@ -9362,6 +9390,13 @@ webpack-virtual-modules@^0.2.2:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/webpack-virtual-modules/-/webpack-virtual-modules-0.2.2.tgz#20863dc3cb6bb2104729fff951fbe14b18bd0299"
   integrity sha512-kDUmfm3BZrei0y+1NTHJInejzxfhtU8eDj2M7OKb2IWrPFAeO1SOH2KuQ68MSZu9IGEHcxbkKKR1v18FrUSOmA==
+  dependencies:
+    debug "^3.0.0"
+
+webpack-virtual-modules@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/webpack-virtual-modules/-/webpack-virtual-modules-0.3.0.tgz#5cf7b27b7085bf54c9e7272a70e6dac17e7afffa"
+  integrity sha512-Hjlu0bZiojnQmwR+bPUZlqCcE1DG1ETk74lZFtuFBrcj7HKSNgXxHX68gZPkLfnQ3FCkqWFp3OfS0g6syYh3Zw==
   dependencies:
     debug "^3.0.0"
 

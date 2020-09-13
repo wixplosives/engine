@@ -14,7 +14,6 @@ import { resolvePackages, loadFeaturesFromPackages, runNodeEnvironment } from '@
 import { BaseHost } from '@wixc3/engine-core';
 import fs from '@file-services/node';
 import devServerFeature, { devServerEnv } from 'packages/engineer/feature/dev-server.feature';
-import { features } from 'process';
 
 program.version(version);
 
