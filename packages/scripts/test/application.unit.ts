@@ -208,7 +208,7 @@ describe('Application', function () {
             basePath: engineFeatureFixturePath,
         });
 
-        const { close, port, router } = await app.start({ singleRun: true });
+        const { close, port, router } = await app.run({ singleRun: true });
         disposables.add(() => close());
         router.get('/test/me', (_req, res) => {
             res.send('OK');

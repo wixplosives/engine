@@ -6,7 +6,7 @@ import { join } from 'path';
 const { stringify } = JSON;
 
 export interface ICreateEntrypointsOptions {
-    features: Map<string, IFeatureDefinition>;
+    features: Map<string, IFeatureDefinition> | Readonly<Map<string, IFeatureDefinition>>;
     envName: string;
     childEnvs: string[];
     featureName?: string;

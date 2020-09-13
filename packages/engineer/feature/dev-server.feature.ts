@@ -5,6 +5,7 @@ import type {
     TopLevelConfigProvider,
     IRunFeatureOptions,
     IFeatureMessagePayload,
+    IFeatureDefinition,
 } from '@wixc3/engine-scripts/src';
 import { cwd } from 'process';
 import type webpack from 'webpack';
@@ -29,6 +30,10 @@ export interface DevServerConfig {
     defaultRuntimeOptions: Record<string, string | boolean>;
 }
 
+export interface EngineerConfig {
+    features: Map<string, IFeatureDefinition>;
+}
+
 export interface DevServerActions {
     runFeature: (
         options: IRunFeatureOptions
@@ -45,11 +50,14 @@ export interface DevServerActions {
     close: () => Promise<void>;
 }
 
-export interface BuildHooks {
-    serverReady?: (() => Promise<void>) | (() => void);
+export interface ServerListeningParams {
+    port: number;
+    host: string;
 }
 
-export type ServerListeningHandler = (() => void) | (() => Promise<void>);
+export type ServerListeningHandler =
+    | ((params: ServerListeningParams) => void)
+    | ((params: ServerListeningParams) => Promise<void>);
 
 export default new Feature({
     id: 'buildFeature',
@@ -68,6 +76,7 @@ export default new Feature({
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
         }),
+        engineerConfig: new Config<EngineerConfig>({ features: new Map<string, IFeatureDefinition>() }),
         serverListeningHandlerSlot: Slot.withType<ServerListeningHandler>().defineEntity(devServerEnv),
         engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(devServerEnv),
         devServerActions: Service.withType<DevServerActions>().defineEntity(devServerEnv),

@@ -14,6 +14,7 @@ import { resolvePackages, loadFeaturesFromPackages, runNodeEnvironment } from '@
 import { BaseHost } from '@wixc3/engine-core';
 import fs from '@file-services/node';
 import devServerFeature, { devServerEnv } from 'packages/engineer/feature/dev-server.feature';
+import { features } from 'process';
 
 program.version(version);
 
@@ -63,9 +64,11 @@ program
             const basePath = resolve(__dirname, '../../engineer');
             preRequire(pathsToRequire, basePath);
 
+            const features = loadFeaturesFromPackages(resolvePackages(basePath), fs).features;
+
             await runNodeEnvironment({
                 featureName: `engineer/${engineerMode as string}`,
-                features: [...loadFeaturesFromPackages(resolvePackages(basePath), fs).features],
+                features: [...features],
                 name: devServerEnv.env,
                 type: 'node',
                 host: new BaseHost(),
@@ -83,6 +86,9 @@ program
                             publicConfigsRoute,
                             autoLaunch,
                             basePath: path,
+                        },
+                        engineerConfig: {
+                            features,
                         },
                     }),
                 ],

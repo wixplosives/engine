@@ -1,9 +1,6 @@
 import managedFeature from './managed.feature';
-import { devServerEnv } from './dev-server.feature';
+import { devServerEnv, ServerListeningParams } from './dev-server.feature';
 import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts/src';
-import type { IRunFeatureOptions } from '@wixc3/engine-scripts/src/application';
-import { generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
-import performance from '@wixc3/cross-performance';
 
 managedFeature.setup(
     devServerEnv,
@@ -12,7 +9,6 @@ managedFeature.setup(
         {
             buildFeature: {
                 serverListeningHandlerSlot,
-                devServerConfig: { httpServerPort },
                 devServerActions: { runFeature, closeFeature, getMetrics, close: closeServer },
             },
         }
@@ -45,11 +41,9 @@ managedFeature.setup(
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         process.on('message', processListener);
 
-        serverListeningHandlerSlot.register(() => {
+        serverListeningHandlerSlot.register(({ port }: ServerListeningParams) => {
             if (process.send) {
-                process.send({ id: 'port-request', payload: { port: httpServerPort } } as IProcessMessage<
-                    IPortMessage
-                >);
+                process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
             }
         });
     }

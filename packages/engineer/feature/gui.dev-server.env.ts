@@ -1,54 +1,77 @@
-import guiFeature from './gui.feature';
+import guiFeature, { mainDashboardEnv } from './gui.feature';
 import { devServerEnv } from './dev-server.feature';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import fs from '@file-services/node';
 import type webpack from 'webpack';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { createEntrypoint } from '@wixc3/engine-scripts/src/create-entrypoint';
+import { SetMultiMap } from '@wixc3/engine-core/src';
+import type { IConfigDefinition, IFeatureDefinition } from '@wixc3/engine-scripts/src';
 
 guiFeature.setup(
     devServerEnv,
     (
-        { run },
+        _,
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { basePath, httpServerPort, featureName },
+                devServerConfig: { basePath, title, publicConfigsRoute },
+                serverListeningHandlerSlot,
                 application,
+                engineerConfig: { features },
             },
         }
     ) => {
-        const engineDashboardEntry = require.resolve('../engine-dashboard/components/app.tsx');
+        const engineDashboardEntry = require.resolve('./gui.main-dashboard.env.tsx');
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig: webpack.Configuration = typeof baseConfigPath === 'string' ? require(baseConfigPath) : {};
         const virtualModules: Record<string, string> = {};
 
         const { plugins: basePlugins = [] } = baseConfig;
+        const entryPath = 'main-dashboard-web-entry.js';
+        const configurations = new SetMultiMap<string, IConfigDefinition>();
+
+        virtualModules[entryPath] = createEntrypoint({
+            features,
+            childEnvs: [],
+            envName: mainDashboardEnv.env,
+            mode: 'development',
+            publicConfigsRoute,
+            staticBuild: false,
+            configurations,
+        });
 
         const dashboardConfig: webpack.Configuration = {
             ...baseConfig,
             entry: {
-                index: engineDashboardEntry,
+                index: entryPath,
             },
             target: 'web',
-            plugins: [...basePlugins, new VirtualModulesPlugin(virtualModules)],
+            plugins: [
+                ...basePlugins,
+                new HtmlWebpackPlugin({
+                    filename: `${mainDashboardEnv.env}.html`,
+                    chunks: ['index'],
+                    title,
+                }),
+                new VirtualModulesPlugin(virtualModules),
+            ],
             mode: 'development',
             devtool: 'source-map',
             output: {
                 ...baseConfig.output,
                 path: application.outputPath,
-                filename: `[name].dashboard.js`,
-                chunkFilename: `[name].dashboard.js`,
+                filename: `[name].web.js`,
+                chunkFilename: `[name].web.js`,
             },
         };
 
         engineerWebpackConfigs.register(dashboardConfig);
 
-        run(() => {
-            const mainUrl = `http://localhost:${httpServerPort}/`;
-            console.log(`Listening:`);
-            console.log('Dashboard URL: ', mainUrl);
-            if (featureName) {
-                console.log('Main application URL: ', `${mainUrl}main.html`);
-            }
+        serverListeningHandlerSlot.register(({ port, host }) => {
+            const mainUrl = `http://${host}:${port}/`;
+            console.log(`Dashboard Listening:`);
+            console.log('Dashboard URL: ', mainUrl + `${mainDashboardEnv.env}.html`);
         });
     }
 );

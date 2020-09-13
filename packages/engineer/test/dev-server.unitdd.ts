@@ -1,8 +1,8 @@
-import { getRunningFeature, createBrowserProvider } from '@wixc3/engine-test-kit';
+import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 //import { expect } from 'chai';
 import fs from '@file-services/node';
-import { createDisposables, BaseHost, Feature, RuntimeFeature, TopLevelConfig } from '@wixc3/engine-core/src';
+import { createDisposables, BaseHost, RuntimeFeature, TopLevelConfig } from '@wixc3/engine-core/src';
 import type { Page } from 'puppeteer';
 import { expect } from 'chai';
 import {
@@ -24,7 +24,7 @@ function getBodyContent(page: Page) {
 }
 
 describe('engineer:dev-server', function () {
-    this.timeout(50_000);
+    this.timeout(5_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 

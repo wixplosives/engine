@@ -266,7 +266,11 @@ devServerFeature.setup(
             application.serverListening = true;
 
             for (const handler of serverListeningHandlerSlot) {
-                await handler();
+                await handler({ port: httpServerPort, host: 'localhost' });
+            }
+
+            if (featureName) {
+                console.log('Main application URL:', `${mainUrl}main.html`);
             }
         });
         return {
