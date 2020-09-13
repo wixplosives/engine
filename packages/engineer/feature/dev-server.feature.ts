@@ -1,7 +1,6 @@
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core/src';
 import type { ApplicationProxyService } from '../src/application-proxy-service';
 import type {
-    NodeEnvironmentsManager,
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
     IRunFeatureOptions,
@@ -9,7 +8,6 @@ import type {
 } from '@wixc3/engine-scripts/src';
 import { cwd } from 'process';
 import type webpack from 'webpack';
-import type { OverrideConfig } from '@wixc3/engine-scripts/src/config-middleware';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
 
@@ -24,7 +22,7 @@ export interface DevServerConfig {
     singleRun: boolean;
     inspect: boolean;
     autoLaunch: boolean;
-    nodeEnvironmentsMode: LaunchEnvironmentMode;
+    nodeEnvironmentsMode?: LaunchEnvironmentMode;
     basePath: string;
     mode: 'production' | 'development';
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
@@ -64,7 +62,6 @@ export default new Feature({
             singleRun: false,
             inspect: false,
             autoLaunch: true,
-            nodeEnvironmentsMode: 'same-server',
             basePath: cwd(),
             mode: 'development',
             overrideConfig: [],

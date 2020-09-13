@@ -271,9 +271,7 @@ devServerFeature.setup(
         });
         return {
             application,
-            getNodeEnvManager,
             overrideConfigsMap,
-            close,
             devServerActions: { runFeature, closeFeature, getMetrics, close },
         };
     }

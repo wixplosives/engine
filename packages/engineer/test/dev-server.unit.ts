@@ -24,7 +24,7 @@ function getBodyContent(page: Page) {
 }
 
 describe('engineer:dev-server', function () {
-    this.timeout(5_000);
+    this.timeout(50_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
@@ -69,7 +69,7 @@ describe('engineer:dev-server', function () {
 
         const runtimeFeature: RuntimeFeature | undefined = engine.features.get(devServerFeature);
         runtimeFeature?.addOnDisposeHandler(async () => {
-            await runtimeFeature.api.close();
+            await runtimeFeature.api.devServerActions.close();
         }, devServerEnv.env);
 
         await waitFor(
@@ -322,6 +322,63 @@ describe('engineer:dev-server', function () {
                     expect(parsedBodyConfig.value).to.eq(1);
                 }
             }
+        });
+    });
+
+    it('runs 2 node features simultaniously', async () => {
+        const {
+            config: { port },
+            runtimeFeature,
+        } = await setup({ basePath: nodeFeatureFixturePath });
+
+        const { runFeature, closeFeature } = runtimeFeature?.api.devServerActions;
+
+        const configOne: TopLevelConfig = [
+            [
+                'XTestFeature',
+                {
+                    config: {
+                        value: '1',
+                    },
+                },
+            ],
+        ];
+
+        const configTwo: TopLevelConfig = [
+            [
+                'XTestFeature',
+                {
+                    config: {
+                        value: '2',
+                    },
+                },
+            ],
+        ];
+
+        const { configName: firstFeatureConfigName } = await runFeature({
+            featureName: 'engine-node/x',
+            overrideConfig: configOne,
+        });
+        const { configName: secondFeatureConfigName } = await runFeature({
+            featureName: 'engine-node/x',
+            overrideConfig: configTwo,
+        });
+        expect(firstFeatureConfigName).to.not.equal(undefined);
+        expect(secondFeatureConfigName).to.not.equal(undefined);
+        disposables.add(() => closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName }));
+        disposables.add(() => closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName }));
+
+        const pageOne = await loadPage(
+            `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName as string}`
+        );
+
+        const pageTwo = await loadPage(
+            `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName as string}`
+        );
+
+        await waitFor(async () => {
+            expect(await getBodyContent(pageOne)).to.equal('1');
+            expect(await getBodyContent(pageTwo)).to.equal('2');
         });
     });
 });
