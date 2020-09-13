@@ -41,7 +41,7 @@ export default new Feature({
             singleFeature: false,
             singleRun: false,
             inspect: false,
-            autoLaunch: false,
+            autoLaunch: true,
             nodeEnvironmentsMode: 'same-server',
             basePath: cwd(),
             mode: 'development',

@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/configs",
+  "version": "14.3.1",
+  "scripts": {
+    "start": "engine start"
+  },
+  "private": true
+}

@@ -2,6 +2,8 @@ import { Application, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvi
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core/src';
 
 export class ApplicationProxyService extends Application {
+    public serverListening = false;
+
     public getEngineConfig() {
         return super.getEngineConfig();
     }
@@ -22,7 +24,7 @@ export class ApplicationProxyService extends Application {
         return super.importModules(requiredModules);
     }
 
-    public echo = () => 'sadasd';
+    public isServerRunning = () => this.serverListening;
 
     public createCompiler(compilerArgs: {
         features: Map<string, IFeatureDefinition>;
