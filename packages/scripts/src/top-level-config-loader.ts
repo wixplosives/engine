@@ -6,8 +6,10 @@ export default function topLevelConfigLoader(this: webpackLoader.LoaderContext) 
     const fileName = params.get('scopedName');
     const envName = params.get('envName');
 
+    const cachedModule = require.cache[this.resourcePath];
+
     const imported = requireDeepHack(this.resourcePath, this.rootContext);
-    walkChildModules(require.cache[this.resourcePath], ({ filename }) => {
+    walkChildModules(cachedModule, ({ filename }) => {
         if (!filename.includes('node_modules') && filename.includes(this.rootContext)) {
             this.addDependency(filename);
         }

@@ -207,7 +207,8 @@ describe('Application', function () {
         const app = new Application({
             basePath: engineFeatureFixturePath,
         });
-
+        await app.build();
+        disposables.add(() => app.clean());
         const { close, port, router } = await app.run({ singleRun: true });
         disposables.add(() => close());
         router.get('/test/me', (_req, res) => {
