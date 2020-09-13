@@ -12,57 +12,11 @@ managedFeature.setup(
         {
             buildFeature: {
                 serverListeningHandlerSlot,
-                getNodeEnvManager,
-                overrideConfigsMap,
-                devServerConfig: { nodeEnvironmentsMode, httpServerPort },
-                close: closeServer,
+                devServerConfig: { httpServerPort },
+                devServerActions: { runFeature, closeFeature, getMetrics, close: closeServer },
             },
         }
     ) => {
-        const runFeature = async ({
-            featureName,
-            runtimeOptions = {},
-            configName,
-            overrideConfig,
-        }: IRunFeatureOptions) => {
-            if (overrideConfig) {
-                const generatedConfigName = generateConfigName(configName);
-                overrideConfigsMap.set(generatedConfigName, {
-                    overrideConfig: Array.isArray(overrideConfig) ? overrideConfig : [],
-                    configName,
-                });
-                configName = generatedConfigName;
-            }
-            // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
-            performance.clearMeasures();
-            performance.clearMarks();
-            return getNodeEnvManager()!.runServerEnvironments({
-                featureName,
-                configName,
-                overrideConfigsMap,
-                runtimeOptions,
-                mode: nodeEnvironmentsMode,
-            });
-        };
-
-        const closeFeature = ({ featureName, configName }: IFeatureMessagePayload) => {
-            if (configName) {
-                overrideConfigsMap.delete(configName);
-            }
-            performance.clearMeasures();
-            performance.clearMarks();
-            return getNodeEnvManager()!.closeEnvironment({
-                featureName,
-                configName,
-            });
-        };
-        const getMetrics = () => {
-            return {
-                marks: performance.getEntriesByType('mark'),
-                measures: performance.getEntriesByType('measure'),
-            };
-        };
-
         const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
             if (process.send) {
                 if (id === 'run-feature') {

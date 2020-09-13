@@ -1,6 +1,12 @@
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core/src';
 import type { ApplicationProxyService } from '../src/application-proxy-service';
-import type { NodeEnvironmentsManager, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts/src';
+import type {
+    NodeEnvironmentsManager,
+    LaunchEnvironmentMode,
+    TopLevelConfigProvider,
+    IRunFeatureOptions,
+    IFeatureMessagePayload,
+} from '@wixc3/engine-scripts/src';
 import { cwd } from 'process';
 import type webpack from 'webpack';
 import type { OverrideConfig } from '@wixc3/engine-scripts/src/config-middleware';
@@ -23,6 +29,22 @@ export interface DevServerConfig {
     mode: 'production' | 'development';
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
     defaultRuntimeOptions: Record<string, string | boolean>;
+}
+
+export interface DevServerActions {
+    runFeature: (
+        options: IRunFeatureOptions
+    ) => Promise<{
+        featureName: string;
+        configName: string | undefined;
+        runningEnvironments: Record<string, number>;
+    }>;
+    closeFeature: ({ featureName, configName }: IFeatureMessagePayload) => Promise<void>;
+    getMetrics: () => {
+        marks: PerformanceMeasure[];
+        measures: PerformanceMeasure[];
+    };
+    close: () => Promise<void>;
 }
 
 export interface BuildHooks {
@@ -51,8 +73,6 @@ export default new Feature({
         }),
         serverListeningHandlerSlot: Slot.withType<ServerListeningHandler>().defineEntity(devServerEnv),
         engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(devServerEnv),
-        getNodeEnvManager: Service.withType<() => NodeEnvironmentsManager | null>().defineEntity(devServerEnv),
-        overrideConfigsMap: Service.withType<Map<string, OverrideConfig>>().defineEntity(devServerEnv),
-        close: Service.withType<() => Promise<void>>().defineEntity(devServerEnv),
+        devServerActions: Service.withType<DevServerActions>().defineEntity(devServerEnv),
     },
 });

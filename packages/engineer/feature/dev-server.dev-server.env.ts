@@ -1,5 +1,10 @@
 import devServerFeature, { devServerEnv } from './dev-server.feature';
-import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
+import {
+    launchHttpServer,
+    NodeEnvironmentsManager,
+    IRunFeatureOptions,
+    IFeatureMessagePayload,
+} from '@wixc3/engine-scripts';
 import { ApplicationProxyService } from '../src/application-proxy-service';
 import express from 'express';
 import {
@@ -14,6 +19,9 @@ import { createFeaturesEngineRouter } from '@wixc3/engine-scripts/src/engine-rou
 import webpack from 'webpack';
 
 import { WsServerHost } from '@wixc3/engine-core-node';
+
+import { generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
+import performance from '@wixc3/cross-performance';
 
 devServerFeature.setup(
     devServerEnv,
@@ -48,6 +56,51 @@ devServerFeature.setup(
         let nodeEnvManager: NodeEnvironmentsManager | null = null;
 
         const getNodeEnvManager = () => nodeEnvManager;
+
+        // Extract these into a service
+        const runFeature = async ({
+            featureName,
+            runtimeOptions = {},
+            configName,
+            overrideConfig,
+        }: IRunFeatureOptions) => {
+            if (overrideConfig) {
+                const generatedConfigName = generateConfigName(configName);
+                overrideConfigsMap.set(generatedConfigName, {
+                    overrideConfig: Array.isArray(overrideConfig) ? overrideConfig : [],
+                    configName,
+                });
+                configName = generatedConfigName;
+            }
+            // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
+            performance.clearMeasures();
+            performance.clearMarks();
+            return getNodeEnvManager()!.runServerEnvironments({
+                featureName,
+                configName,
+                overrideConfigsMap,
+                runtimeOptions,
+                mode: nodeEnvironmentsMode,
+            });
+        };
+
+        const closeFeature = ({ featureName, configName }: IFeatureMessagePayload) => {
+            if (configName) {
+                overrideConfigsMap.delete(configName);
+            }
+            performance.clearMeasures();
+            performance.clearMarks();
+            return getNodeEnvManager()!.closeEnvironment({
+                featureName,
+                configName,
+            });
+        };
+        const getMetrics = () => {
+            return {
+                marks: performance.getEntriesByType('mark'),
+                measures: performance.getEntriesByType('measure'),
+            };
+        };
 
         const close = async () => {
             for (const dispose of disposables) {
@@ -216,6 +269,12 @@ devServerFeature.setup(
                 await handler();
             }
         });
-        return { application, getNodeEnvManager, overrideConfigsMap, close };
+        return {
+            application,
+            getNodeEnvManager,
+            overrideConfigsMap,
+            close,
+            devServerActions: { runFeature, closeFeature, getMetrics, close },
+        };
     }
 );
