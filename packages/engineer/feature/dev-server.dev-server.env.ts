@@ -1,5 +1,5 @@
 import devServerFeature, { devServerEnv } from './dev-server.feature';
-import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts/src/';
+import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import { ApplicationProxyService } from '../src/application-proxy-service';
 import express from 'express';
 import {
@@ -7,9 +7,9 @@ import {
     createCommunicationMiddleware,
     createLiveConfigsMiddleware,
     createConfigMiddleware,
-} from '@wixc3/engine-scripts/src/config-middleware';
+} from '@wixc3/engine-scripts';
 import WebpackDevMiddleware from 'webpack-dev-middleware';
-import { createFeaturesEngineRouter } from '@wixc3/engine-scripts/src/engine-router';
+import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 

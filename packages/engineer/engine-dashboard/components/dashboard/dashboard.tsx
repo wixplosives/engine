@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, memo } from 'react';
 import { FeaturesSelection } from './feature-selection';
-import { ServerState, isServerResponseMessage } from '@wixc3/engine-scripts/src/server-types';
+import { ServerState, isServerResponseMessage } from '@wixc3/engine-scripts';
 import { classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';

@@ -10,8 +10,8 @@ import {
     IFeatureMessagePayload,
 } from '@wixc3/engine-scripts';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
-import type { OverrideConfig } from '@wixc3/engine-scripts/src/config-middleware';
+import { generateConfigName } from '@wixc3/engine-scripts';
+import type { OverrideConfig } from '@wixc3/engine-scripts';
 import performance from '@wixc3/cross-performance';
 
 export interface IApplicationProxyOptions extends IApplicationOptions {
