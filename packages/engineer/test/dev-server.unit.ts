@@ -71,9 +71,13 @@ describe('engineer:dev-server', function () {
             await runtimeFeature.api.devServerActions.close();
         }, devServerEnv.env);
 
+        let serverListening = false;
+        runtimeFeature?.api.serverListeningHandlerSlot.register(() => {
+            serverListening = true;
+        });
         await waitFor(
             () => {
-                expect(runtimeFeature?.api.application.isServerRunning()).to.eql(true);
+                expect(serverListening).to.eql(true);
             },
             {
                 timeout: 5000,
