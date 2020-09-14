@@ -136,14 +136,9 @@ devServerFeature.setup(
                     : undefined;
 
             app.use(`/${publicConfigsRoute}`, [
-                // WTF need to look into
                 ensureTopLevelConfigMiddleware,
-                // I think this is irrelevant, apps should handle their own communication, I shouldn't do it for them
                 createCommunicationMiddleware(application.getNodeEnvManager()!, publicPath, topologyOverrides),
-                // WTF?
                 createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
-
-                // WTF?
                 createConfigMiddleware(overrideConfig),
             ]);
 
