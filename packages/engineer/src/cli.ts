@@ -42,7 +42,7 @@ program
     )
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
-    .option('--engineerMode <gui|build>', 'interactive mode for engineer', 'gui')
+    .option('--engineerEntry <engineerEntry>', 'interactive mode for engineer', 'engineer/gui')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -58,7 +58,7 @@ program
             title,
             publicConfigsRoute = 'configs/',
             autoLaunch,
-            engineerMode,
+            engineerEntry,
         } = cmd;
         try {
             const basePath = resolve(__dirname, '../../engineer');
@@ -67,7 +67,7 @@ program
             const features = loadFeaturesFromPackages(resolvePackages(basePath), fs).features;
 
             await runNodeEnvironment({
-                featureName: `engineer/${engineerMode as string}`,
+                featureName: engineerEntry,
                 features: [...features],
                 name: devServerEnv.env,
                 type: 'node',
