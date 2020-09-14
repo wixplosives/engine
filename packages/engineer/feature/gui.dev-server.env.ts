@@ -43,7 +43,7 @@ guiFeature.setup(
         const dashboardConfig: webpack.Configuration = {
             ...baseConfig,
             entry: {
-                index: entryPath,
+                index: `./${entryPath}`,
             },
             target: 'web',
             plugins: [
