@@ -19,7 +19,6 @@ export interface IApplicationProxyOptions extends IApplicationOptions {
 }
 
 export class ApplicationProxyService extends Application {
-    public serverListening = false;
     public nodeEnvironmentsMode?: LaunchEnvironmentMode;
     private nodeEnvManager: NodeEnvironmentsManager | null = null;
     private overrideConfigsMap: Map<string, OverrideConfig> = new Map<string, OverrideConfig>();
@@ -48,8 +47,6 @@ export class ApplicationProxyService extends Application {
     public importModules(requiredModules: string[]) {
         return super.importModules(requiredModules);
     }
-
-    public isServerRunning = () => this.serverListening;
 
     public createCompiler(compilerArgs: {
         features: Map<string, IFeatureDefinition>;

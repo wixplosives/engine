@@ -198,8 +198,6 @@ devServerFeature.setup(
                 app.use(devMiddleware);
             }
 
-            application.serverListening = true;
-
             for (const handler of serverListeningHandlerSlot) {
                 await handler({ port: httpServerPort, host: 'localhost' });
             }

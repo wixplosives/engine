@@ -45,9 +45,13 @@ describe('engineer:gui', function () {
             await devServerRuntime.api.devServerActions.close();
         }, devServerEnv.env);
 
+        let serverListening = false;
+        devServerRuntime.api.serverListeningHandlerSlot.register(() => {
+            serverListening = true;
+        });
         await waitFor(
             () => {
-                expect(devServerRuntime.api.application.isServerRunning()).to.eql(true);
+                expect(serverListening).to.eql(true);
             },
             {
                 timeout: 5000,
