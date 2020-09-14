@@ -41,7 +41,13 @@ export default new Feature({
     id: 'buildFeature',
     dependencies: [COM],
     api: {
+        /**
+         * service providing application level behavior and info, such as node env management, feature detection etc
+         */
         application: Service.withType<ApplicationProxyService>().defineEntity(devServerEnv).allowRemoteAccess(),
+        /**
+         * Dev server configuration, will usually be passed in from the cli params
+         */
         devServerConfig: new Config<DevServerConfig>({
             httpServerPort: 3000,
             singleFeature: false,
@@ -54,8 +60,17 @@ export default new Feature({
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
         }),
+        /**
+         * a slot for registering callback that will be called when the devserver is listening
+         */
         serverListeningHandlerSlot: Slot.withType<ServerListeningHandler>().defineEntity(devServerEnv),
+        /**
+         * A slot from registering webpack configs for different dashboards
+         */
         engineerWebpackConfigs: Slot.withType<webpack.Configuration>().defineEntity(devServerEnv),
+        /**
+         * Actions that can be performed on the dev server, currently only close
+         */
         devServerActions: Service.withType<DevServerActions>().defineEntity(devServerEnv),
     },
 });

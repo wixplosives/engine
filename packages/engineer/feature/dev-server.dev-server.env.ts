@@ -188,6 +188,12 @@ devServerFeature.setup(
                 });
             }
 
+            /* I create new compilers for the engineering config for 2 reasons
+             *  1. I don't want to couple the engineering build and the users application build
+             *  For example it's very likely that later down the line we will never watch here
+             *  but we will keep on watching on the users applicatino
+             *  2. I the createCompiler function, which I can't extend with more configs with the current API
+             */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             for (const childCompiler of engineerCompilers.compilers) {
                 const devMiddleware = WebpackDevMiddleware(childCompiler, {
