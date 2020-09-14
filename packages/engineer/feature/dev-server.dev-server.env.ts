@@ -37,7 +37,6 @@ devServerFeature.setup(
             featureName,
             singleFeature,
             publicConfigsRoute,
-            title,
             publicPath,
             configName,
             singleRun,
@@ -45,7 +44,6 @@ devServerFeature.setup(
             autoLaunch,
             nodeEnvironmentsMode,
             basePath = cwd(),
-            mode,
             overrideConfig,
             defaultRuntimeOptions,
         } = devServerConfig;
