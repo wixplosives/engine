@@ -7,6 +7,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { createEntrypoint } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-scripts';
+import { cwd } from 'process';
 
 const createDashboardConfig = ({
     baseConfig,
@@ -54,13 +55,13 @@ guiFeature.setup(
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { basePath, title, publicConfigsRoute },
+                devServerConfig: { title, publicConfigsRoute },
                 serverListeningHandlerSlot,
                 application,
             },
         }
     ) => {
-        const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
+        const baseConfigPath = fs.findClosestFileSync(__dirname, 'webpack.config.js');
         const baseConfig: webpack.Configuration = typeof baseConfigPath === 'string' ? require(baseConfigPath) : {};
         const virtualModules: Record<string, string> = {};
 

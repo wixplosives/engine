@@ -13,6 +13,7 @@ import WebpackDevMiddleware from 'webpack-dev-middleware';
 import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
+import { cwd } from 'process';
 
 function optimizedWebpackWatchFunction(compiler: webpack.Compiler) {
     return function watch(_: any, handler: webpack.ICompiler.Handler) {
@@ -45,7 +46,7 @@ devServerFeature.setup(
                 inspect,
                 autoLaunch,
                 nodeEnvironmentsMode,
-                basePath,
+                basePath = cwd(),
                 mode,
                 overrideConfig,
                 defaultRuntimeOptions,
