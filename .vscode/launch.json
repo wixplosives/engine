@@ -36,16 +36,6 @@
       "runtimeArgs": ["--inspect"],
       "outputCapture": "std",
       "autoAttachChildProcesses": true
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Engine start-dashboard",
-      "program": "${workspaceFolder}/node_modules/@wixc3/engine-scripts/cli.js",
-      "args": ["start-dashboard"],
-      "runtimeArgs": ["--inspect"],
-      "outputCapture": "std",
-      "autoAttachChildProcesses": true
     }
   ]
 }
