@@ -11,6 +11,9 @@ export default new Feature({
     id: 'dashboard-gui',
     dependencies: [buildFeature, COM],
     api: {
+        /**
+         * configuration for building and runnign the dashboard
+         */
         engineerConfig: new Config<EngineerConfig>({ features: new Map<string, IFeatureDefinition>() }),
     },
 });

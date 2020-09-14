@@ -20,7 +20,7 @@ export interface IApplicationProxyOptions extends IApplicationOptions {
 
 export class ApplicationProxyService extends Application {
     public nodeEnvironmentsMode?: LaunchEnvironmentMode;
-    private nodeEnvManager: NodeEnvironmentsManager | null = null;
+    private nodeEnvManager?: NodeEnvironmentsManager;
     private overrideConfigsMap: Map<string, OverrideConfig> = new Map<string, OverrideConfig>();
 
     constructor(opts: IApplicationProxyOptions) {
@@ -71,7 +71,7 @@ export class ApplicationProxyService extends Application {
         return super.getFeatureEnvDefinitions(features, configurations);
     }
 
-    public setNodeEnvManager(nem: NodeEnvironmentsManager | null) {
+    public setNodeEnvManager(nem: NodeEnvironmentsManager) {
         this.nodeEnvManager = nem;
     }
 
