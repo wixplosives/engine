@@ -1,4 +1,5 @@
-import devServerFeature, { devServerEnv } from './dev-server.feature';
+import devServerFeature from './dev-server.feature';
+import { devServerEnv } from './dev-server.feature';
 import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import { ApplicationProxyService } from '../src/application-proxy-service';
 import express from 'express';
@@ -12,6 +13,20 @@ import WebpackDevMiddleware from 'webpack-dev-middleware';
 import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
+
+function optimizedWebpackWatchFunction(compiler: webpack.Compiler) {
+    return function watch(_: any, handler: webpack.ICompiler.Handler) {
+        compiler.run(handler);
+        return {
+            close(cb: any) {
+                if (cb) {
+                    cb();
+                }
+            },
+            invalidate: () => undefined,
+        };
+    };
+}
 
 devServerFeature.setup(
     devServerEnv,
@@ -93,17 +108,7 @@ devServerFeature.setup(
             // It was once a crash, which is no longer relevant
             if (singleRun) {
                 for (const childCompiler of compiler.compilers) {
-                    childCompiler.watch = function watch(_watchOptions, handler) {
-                        childCompiler.run(handler);
-                        return {
-                            close(cb) {
-                                if (cb) {
-                                    cb();
-                                }
-                            },
-                            invalidate: () => undefined,
-                        };
-                    };
+                    childCompiler.watch = optimizedWebpackWatchFunction(childCompiler);
                 }
             }
 
