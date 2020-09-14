@@ -7,7 +7,6 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { createEntrypoint } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-scripts';
-import { cwd } from 'process';
 
 const createDashboardConfig = ({
     baseConfig,
