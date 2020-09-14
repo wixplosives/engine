@@ -218,17 +218,6 @@ devServerFeature.setup(
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
-            const mainUrl = `http://localhost:${httpServerPort}/`;
-            if (packages.length === 1) {
-                // print links to features
-                console.log('Available Configurations:');
-                for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
-                    for (const runningConfigName of configurations) {
-                        console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
-                    }
-                }
-            }
-
             app.use('/engine-feature', createFeaturesEngineRouter(overrideConfigsMap, nodeEnvironmentManager));
 
             app.get('/engine-state', (_req, res) => {
@@ -266,8 +255,19 @@ devServerFeature.setup(
                 await handler({ port: httpServerPort, host: 'localhost' });
             }
 
+            const mainUrl = `http://localhost:${httpServerPort}/`;
             if (featureName) {
                 console.log('Main application URL:', `${mainUrl}main.html`);
+            }
+
+            if (packages.length === 1) {
+                // print links to features
+                console.log('Available Configurations:');
+                for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
+                    for (const runningConfigName of configurations) {
+                        console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
+                    }
+                }
             }
         });
         return {
