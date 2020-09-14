@@ -25,7 +25,7 @@ const createDashboardConfig = ({
 }): webpack.Configuration => ({
     ...baseConfig,
     entry: {
-        index: `./${entryPath}`,
+        index: entryPath,
     },
     target: 'web',
     plugins: [
@@ -65,7 +65,7 @@ guiFeature.setup(
         const virtualModules: Record<string, string> = {};
 
         const { plugins: basePlugins = [] } = baseConfig;
-        const entryPath = 'main-dashboard-web-entry.js';
+        const entryPath = fs.join(__dirname, 'main-dashboard-web-entry.js');
         const configurations = new SetMultiMap<string, IConfigDefinition>();
 
         virtualModules[entryPath] = createEntrypoint({
