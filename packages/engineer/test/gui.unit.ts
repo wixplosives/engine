@@ -13,7 +13,7 @@ function getBodyContent(page: Page) {
 }
 
 describe('engineer:gui', function () {
-    this.timeout(5_000);
+    this.timeout(15_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
