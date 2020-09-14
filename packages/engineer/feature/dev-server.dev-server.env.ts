@@ -31,31 +31,24 @@ function optimizedWebpackWatchFunction(compiler: webpack.Compiler) {
 
 devServerFeature.setup(
     devServerEnv,
-    (
-        {
-            run,
-            devServerConfig: {
-                httpServerPort,
-                featureName,
-                singleFeature,
-                publicConfigsRoute,
-                title,
-                publicPath,
-                configName,
-                singleRun,
-                inspect,
-                autoLaunch,
-                nodeEnvironmentsMode,
-                basePath = cwd(),
-                mode,
-                overrideConfig,
-                defaultRuntimeOptions,
-            },
-            engineerWebpackConfigs,
-            serverListeningHandlerSlot,
-        },
-        { COM: { communication } }
-    ) => {
+    ({ run, devServerConfig, engineerWebpackConfigs, serverListeningHandlerSlot }, { COM: { communication } }) => {
+        const {
+            httpServerPort,
+            featureName,
+            singleFeature,
+            publicConfigsRoute,
+            title,
+            publicPath,
+            configName,
+            singleRun,
+            inspect,
+            autoLaunch,
+            nodeEnvironmentsMode,
+            basePath = cwd(),
+            mode,
+            overrideConfig,
+            defaultRuntimeOptions,
+        } = devServerConfig;
         const application = new ApplicationProxyService({ basePath, nodeEnvironmentsMode });
         const disposables = new Set<() => unknown>();
 
@@ -124,17 +117,10 @@ devServerFeature.setup(
 
             // Write middleware for each of the apps
             const compiler = application.createCompiler({
-                mode,
+                ...devServerConfig,
                 features,
-                featureName,
-                configName,
-                publicPath,
-                title,
-                configurations,
                 staticBuild: false,
-                publicConfigsRoute,
-                overrideConfig,
-                singleFeature,
+                configurations,
             });
             for (const childCompiler of compiler.compilers) {
                 if (singleRun) {
