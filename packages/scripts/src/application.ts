@@ -2,20 +2,16 @@ import { promisify } from 'util';
 import express from 'express';
 import rimrafCb from 'rimraf';
 import webpack from 'webpack';
-import webpackDevMiddleware from 'webpack-dev-middleware';
 import fs from '@file-services/node';
 
 import { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
-import performance from '@wixc3/cross-performance';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import {
     createConfigMiddleware,
-    createLiveConfigsMiddleware,
     createCommunicationMiddleware,
     ensureTopLevelConfigMiddleware,
-    OverrideConfig,
 } from './config-middleware';
 import { createWebpackConfigs } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
@@ -27,12 +23,10 @@ import type {
     IEnvironment,
     IFeatureDefinition,
     IFeatureTarget,
-    IFeatureMessagePayload,
     TopLevelConfigProvider,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
-import { createFeaturesEngineRouter, generateConfigName } from './engine-router';
 import { filterEnvironments } from './utils/environments';
 import { launchHttpServer } from './launch-http-server';
 
@@ -138,198 +132,6 @@ export class Application {
         });
 
         return stats;
-    }
-
-    public async start({
-        featureName,
-        configName,
-        runtimeOptions: defaultRuntimeOptions = {},
-        inspect = false,
-        port: httpServerPort,
-        singleRun,
-        overrideConfig = [],
-        publicPath,
-        mode = 'development',
-        singleFeature,
-        title,
-        publicConfigsRoute = 'configs/',
-        nodeEnvironmentsMode,
-        autoLaunch = true,
-    }: IRunOptions = {}) {
-        const engineConfig = await this.getEngineConfig();
-        if (engineConfig && engineConfig.require) {
-            await this.importModules(engineConfig.require);
-        }
-        const disposables = new Set<() => unknown>();
-        const { port, app, close, socketServer } = await launchHttpServer({
-            staticDirPath: this.outputPath,
-            httpServerPort,
-        });
-        disposables.add(() => close());
-
-        const { features, configurations, packages } = this.analyzeFeatures();
-        if (singleFeature && featureName) {
-            this.filterByFeatureName(features, featureName);
-        }
-        const compiler = this.createCompiler({
-            mode,
-            features,
-            featureName,
-            configName,
-            publicPath,
-            title,
-            configurations,
-            staticBuild: false,
-            publicConfigsRoute,
-            overrideConfig,
-            singleFeature,
-        });
-
-        if (singleRun) {
-            for (const childCompiler of compiler.compilers) {
-                childCompiler.watch = function watch(_watchOptions, handler) {
-                    childCompiler.run(handler);
-                    return {
-                        close(cb) {
-                            if (cb) {
-                                cb();
-                            }
-                        },
-                        invalidate: () => undefined,
-                    };
-                };
-            }
-        }
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
-            configurations,
-            features,
-            defaultRuntimeOptions,
-            port,
-            inspect,
-            overrideConfig,
-        });
-        disposables.add(() => nodeEnvironmentManager.closeAll());
-
-        const overrideConfigsMap = new Map<string, OverrideConfig>();
-        if (engineConfig && engineConfig.serveStatic) {
-            for (const { route, directoryPath } of engineConfig.serveStatic) {
-                app.use(route, express.static(directoryPath));
-            }
-        }
-
-        app.use(`/${publicConfigsRoute}`, [
-            ensureTopLevelConfigMiddleware,
-            createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
-            createLiveConfigsMiddleware(configurations, this.basePath, overrideConfigsMap),
-            createConfigMiddleware(overrideConfig),
-        ]);
-
-        for (const childCompiler of compiler.compilers) {
-            const devMiddleware = webpackDevMiddleware(childCompiler, {
-                publicPath: '/',
-                logLevel: 'silent',
-            });
-            disposables.add(() => new Promise((res) => devMiddleware.close(res)));
-            app.use(devMiddleware);
-        }
-
-        await new Promise((resolve) => {
-            compiler.hooks.done.tap('engine-scripts init', resolve);
-        });
-
-        const mainUrl = `http://localhost:${port}/`;
-        console.log(`Listening:`);
-        console.log('Dashboard URL: ', mainUrl);
-        if (featureName) {
-            console.log('Main application URL: ', `${mainUrl}main.html`);
-        }
-
-        const featureEnvDefinitions = this.getFeatureEnvDefinitions(features, configurations);
-
-        if (packages.length === 1) {
-            // print links to features
-            console.log('Available Configurations:');
-            for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
-                for (const runningConfigName of configurations) {
-                    console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
-                }
-            }
-        }
-
-        app.use('/engine-feature', createFeaturesEngineRouter(overrideConfigsMap, nodeEnvironmentManager));
-
-        app.get('/engine-state', (_req, res) => {
-            res.json({
-                result: 'success',
-                data: {
-                    features: featureEnvDefinitions,
-                    featuresWithRunningNodeEnvs: nodeEnvironmentManager.getFeaturesWithRunningEnvironments(),
-                },
-            });
-        });
-
-        if (autoLaunch && featureName) {
-            await nodeEnvironmentManager.runServerEnvironments({
-                featureName,
-                configName,
-                overrideConfigsMap,
-                mode: nodeEnvironmentsMode,
-            });
-        }
-
-        return {
-            port,
-            router: app,
-            async close() {
-                for (const dispose of disposables) {
-                    await dispose();
-                }
-                disposables.clear();
-            },
-            runFeature: async ({
-                featureName,
-                runtimeOptions = {},
-                configName,
-                overrideConfig,
-            }: IRunFeatureOptions) => {
-                if (overrideConfig) {
-                    const generatedConfigName = generateConfigName(configName);
-                    overrideConfigsMap.set(generatedConfigName, {
-                        overrideConfig: Array.isArray(overrideConfig) ? overrideConfig : [],
-                        configName,
-                    });
-                    configName = generatedConfigName;
-                }
-                // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
-                performance.clearMeasures();
-                performance.clearMarks();
-                return nodeEnvironmentManager.runServerEnvironments({
-                    featureName,
-                    configName,
-                    overrideConfigsMap,
-                    runtimeOptions,
-                    mode: nodeEnvironmentsMode,
-                });
-            },
-            closeFeature: ({ featureName, configName }: IFeatureMessagePayload) => {
-                if (configName) {
-                    overrideConfigsMap.delete(configName);
-                }
-                performance.clearMeasures();
-                performance.clearMarks();
-                return nodeEnvironmentManager.closeEnvironment({
-                    featureName,
-                    configName,
-                });
-            },
-            getMetrics: () => {
-                return {
-                    marks: performance.getEntriesByType('mark'),
-                    measures: performance.getEntriesByType('measure'),
-                };
-            },
-            nodeEnvironmentManager,
-        };
     }
 
     public async run(runOptions: IRunOptions = {}) {

@@ -19,7 +19,9 @@ describe('Node environments manager', function () {
 
     it('launches a new node environment', async () => {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
-        const { close, nodeEnvironmentManager } = await app.start({ singleRun: true });
+        await app.build();
+        disposables.add(() => app.clean());
+        const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
         disposables.add(() => close());
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
@@ -32,7 +34,9 @@ describe('Node environments manager', function () {
 
     it('lists only open environments', async () => {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
-        const { close, nodeEnvironmentManager } = await app.start({ singleRun: true });
+        await app.build();
+        disposables.add(() => app.clean());
+        const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
         disposables.add(() => close());
 
         const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
@@ -49,7 +53,9 @@ describe('Node environments manager', function () {
 
     it('fails to launch if wrong config name or feature name are provided', async () => {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
-        const { close, nodeEnvironmentManager } = await app.start({ singleRun: true });
+        await app.build();
+        disposables.add(() => app.clean());
+        const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
         disposables.add(() => close());
 
         await expect(
@@ -61,7 +67,9 @@ describe('Node environments manager', function () {
 
     it('closes open environments', async () => {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
-        const { close, nodeEnvironmentManager } = await app.start({ singleRun: true });
+        await app.build();
+        disposables.add(() => app.clean());
+        const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
         disposables.add(() => close());
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
