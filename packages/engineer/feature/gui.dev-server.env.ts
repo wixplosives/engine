@@ -8,6 +8,45 @@ import { createEntrypoint } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-scripts';
 
+const createDashboardConfig = ({
+    baseConfig,
+    entryPath,
+    basePlugins,
+    virtualModules,
+    title,
+    outputPath,
+}: {
+    baseConfig: webpack.Configuration;
+    entryPath: string;
+    basePlugins: webpack.Plugin[];
+    virtualModules: Record<string, string>;
+    title?: string;
+    outputPath: string;
+}): webpack.Configuration => ({
+    ...baseConfig,
+    entry: {
+        index: `./${entryPath}`,
+    },
+    target: 'web',
+    plugins: [
+        ...basePlugins,
+        new HtmlWebpackPlugin({
+            filename: `${mainDashboardEnv.env}.html`,
+            chunks: ['index'],
+            title,
+        }),
+        new VirtualModulesPlugin(virtualModules),
+    ],
+    mode: 'development',
+    devtool: 'source-map',
+    output: {
+        ...baseConfig.output,
+        path: outputPath,
+        filename: `[name].web.js`,
+        chunkFilename: `[name].web.js`,
+    },
+});
+
 guiFeature.setup(
     devServerEnv,
     (
@@ -39,32 +78,16 @@ guiFeature.setup(
             configurations,
         });
 
-        const dashboardConfig: webpack.Configuration = {
-            ...baseConfig,
-            entry: {
-                index: `./${entryPath}`,
-            },
-            target: 'web',
-            plugins: [
-                ...basePlugins,
-                new HtmlWebpackPlugin({
-                    filename: `${mainDashboardEnv.env}.html`,
-                    chunks: ['index'],
-                    title,
-                }),
-                new VirtualModulesPlugin(virtualModules),
-            ],
-            mode: 'development',
-            devtool: 'source-map',
-            output: {
-                ...baseConfig.output,
-                path: application.outputPath,
-                filename: `[name].web.js`,
-                chunkFilename: `[name].web.js`,
-            },
-        };
-
-        engineerWebpackConfigs.register(dashboardConfig);
+        engineerWebpackConfigs.register(
+            createDashboardConfig({
+                baseConfig,
+                entryPath,
+                basePlugins,
+                virtualModules,
+                title,
+                outputPath: application.outputPath,
+            })
+        );
 
         serverListeningHandlerSlot.register(({ port, host }) => {
             const mainUrl = `http://${host}:${port}/`;
