@@ -1,11 +1,6 @@
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
 import type { ApplicationProxyService } from '../src/application-proxy-service';
-import type {
-    LaunchEnvironmentMode,
-    TopLevelConfigProvider,
-    IRunFeatureOptions,
-    IFeatureMessagePayload,
-} from '@wixc3/engine-scripts';
+import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { cwd } from 'process';
 import type webpack from 'webpack';
 
@@ -30,18 +25,6 @@ export interface DevServerConfig {
 }
 
 export interface DevServerActions {
-    runFeature: (
-        options: IRunFeatureOptions
-    ) => Promise<{
-        featureName: string;
-        configName: string | undefined;
-        runningEnvironments: Record<string, number>;
-    }>;
-    closeFeature: ({ featureName, configName }: IFeatureMessagePayload) => Promise<void>;
-    getMetrics: () => {
-        marks: PerformanceMeasure[];
-        measures: PerformanceMeasure[];
-    };
     close: () => Promise<void>;
 }
 

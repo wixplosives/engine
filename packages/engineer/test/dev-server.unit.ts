@@ -330,7 +330,7 @@ describe('engineer:dev-server', function () {
             runtimeFeature,
         } = await setup({ basePath: nodeFeatureFixturePath });
 
-        const { runFeature, closeFeature } = runtimeFeature?.api.devServerActions;
+        const application = runtimeFeature?.api.application;
 
         const configOne: TopLevelConfig = [
             [
@@ -354,18 +354,22 @@ describe('engineer:dev-server', function () {
             ],
         ];
 
-        const { configName: firstFeatureConfigName } = await runFeature({
+        const { configName: firstFeatureConfigName } = await application.runFeature({
             featureName: 'engine-node/x',
             overrideConfig: configOne,
         });
-        const { configName: secondFeatureConfigName } = await runFeature({
+        const { configName: secondFeatureConfigName } = await application.runFeature({
             featureName: 'engine-node/x',
             overrideConfig: configTwo,
         });
         expect(firstFeatureConfigName).to.not.equal(undefined);
         expect(secondFeatureConfigName).to.not.equal(undefined);
-        disposables.add(() => closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName }));
-        disposables.add(() => closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName }));
+        disposables.add(() =>
+            application.closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName })
+        );
+        disposables.add(() =>
+            application.closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName })
+        );
 
         const pageOne = await loadPage(
             `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName as string}`

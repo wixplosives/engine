@@ -1,10 +1,5 @@
 import devServerFeature, { devServerEnv } from './dev-server.feature';
-import {
-    launchHttpServer,
-    NodeEnvironmentsManager,
-    IRunFeatureOptions,
-    IFeatureMessagePayload,
-} from '@wixc3/engine-scripts/src/';
+import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts/src/';
 import { ApplicationProxyService } from '../src/application-proxy-service';
 import express from 'express';
 import {
@@ -12,13 +7,11 @@ import {
     createCommunicationMiddleware,
     createLiveConfigsMiddleware,
     createConfigMiddleware,
-    OverrideConfig,
 } from '@wixc3/engine-scripts/src/config-middleware';
 import WebpackDevMiddleware from 'webpack-dev-middleware';
-import { createFeaturesEngineRouter, generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
+import { createFeaturesEngineRouter } from '@wixc3/engine-scripts/src/engine-router';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
-import performance from '@wixc3/cross-performance';
 
 devServerFeature.setup(
     devServerEnv,
@@ -47,58 +40,10 @@ devServerFeature.setup(
         },
         { COM: { communication } }
     ) => {
-        const application = new ApplicationProxyService({ basePath });
-        const overrideConfigsMap = new Map<string, OverrideConfig>();
+        const application = new ApplicationProxyService({ basePath, nodeEnvironmentsMode });
         const disposables = new Set<() => unknown>();
-        let nodeEnvManager: NodeEnvironmentsManager | null = null;
-
-        const getNodeEnvManager = () => nodeEnvManager;
 
         // Extract these into a service
-        const runFeature = async ({
-            featureName,
-            runtimeOptions = {},
-            configName,
-            overrideConfig,
-        }: IRunFeatureOptions) => {
-            if (overrideConfig) {
-                const generatedConfigName = generateConfigName(configName);
-                overrideConfigsMap.set(generatedConfigName, {
-                    overrideConfig: Array.isArray(overrideConfig) ? overrideConfig : [],
-                    configName,
-                });
-                configName = generatedConfigName;
-            }
-            // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
-            performance.clearMeasures();
-            performance.clearMarks();
-            return getNodeEnvManager()!.runServerEnvironments({
-                featureName,
-                configName,
-                overrideConfigsMap,
-                runtimeOptions,
-                mode: nodeEnvironmentsMode,
-            });
-        };
-
-        const closeFeature = ({ featureName, configName }: IFeatureMessagePayload) => {
-            if (configName) {
-                overrideConfigsMap.delete(configName);
-            }
-            performance.clearMeasures();
-            performance.clearMarks();
-            return getNodeEnvManager()!.closeEnvironment({
-                featureName,
-                configName,
-            });
-        };
-        const getMetrics = () => {
-            return {
-                marks: performance.getEntriesByType('mark'),
-                measures: performance.getEntriesByType('measure'),
-            };
-        };
-
         const close = async () => {
             for (const dispose of disposables) {
                 await dispose();
@@ -164,17 +109,18 @@ devServerFeature.setup(
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependants can rely on them in the topology
-            const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
-                configurations,
-                features,
-                defaultRuntimeOptions,
-                port,
-                inspect,
-                overrideConfig,
-            });
-            nodeEnvManager = nodeEnvironmentManager;
+            application.setNodeEnvManager(
+                new NodeEnvironmentsManager(socketServer, {
+                    configurations,
+                    features,
+                    defaultRuntimeOptions,
+                    port,
+                    inspect,
+                    overrideConfig,
+                })
+            );
 
-            disposables.add(() => nodeEnvironmentManager?.closeAll());
+            disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
             if (engineConfig && engineConfig.serveStatic) {
                 for (const { route, directoryPath } of engineConfig.serveStatic) {
@@ -193,9 +139,9 @@ devServerFeature.setup(
                 // WTF need to look into
                 ensureTopLevelConfigMiddleware,
                 // I think this is irrelevant, apps should handle their own communication, I shouldn't do it for them
-                createCommunicationMiddleware(nodeEnvironmentManager, publicPath, topologyOverrides),
+                createCommunicationMiddleware(application.getNodeEnvManager()!, publicPath, topologyOverrides),
                 // WTF?
-                createLiveConfigsMiddleware(configurations, basePath, overrideConfigsMap),
+                createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
 
                 // WTF?
                 createConfigMiddleware(overrideConfig),
@@ -218,24 +164,27 @@ devServerFeature.setup(
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
-            app.use('/engine-feature', createFeaturesEngineRouter(overrideConfigsMap, nodeEnvironmentManager));
+            app.use(
+                '/engine-feature',
+                createFeaturesEngineRouter(application.getOverrideConfigsMap(), application.getNodeEnvManager()!)
+            );
 
             app.get('/engine-state', (_req, res) => {
                 res.json({
                     result: 'success',
                     data: {
                         features: featureEnvDefinitions,
-                        featuresWithRunningNodeEnvs: nodeEnvironmentManager?.getFeaturesWithRunningEnvironments(),
+                        featuresWithRunningNodeEnvs: application
+                            .getNodeEnvManager()
+                            ?.getFeaturesWithRunningEnvironments(),
                     },
                 });
             });
 
             if (autoLaunch && featureName) {
-                await nodeEnvironmentManager.runServerEnvironments({
+                await application.runFeature({
                     featureName,
                     configName,
-                    overrideConfigsMap,
-                    mode: nodeEnvironmentsMode,
                 });
             }
 
@@ -272,8 +221,7 @@ devServerFeature.setup(
         });
         return {
             application,
-            overrideConfigsMap,
-            devServerActions: { runFeature, closeFeature, getMetrics, close },
+            devServerActions: { close },
         };
     }
 );
