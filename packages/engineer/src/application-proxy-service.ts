@@ -1,5 +1,5 @@
-import { Application, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-scripts/src';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core/src';
+import { Application, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 
 export class ApplicationProxyService extends Application {
     public serverListening = false;

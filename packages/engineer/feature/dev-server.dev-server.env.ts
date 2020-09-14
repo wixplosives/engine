@@ -15,12 +15,9 @@ import {
     OverrideConfig,
 } from '@wixc3/engine-scripts/src/config-middleware';
 import WebpackDevMiddleware from 'webpack-dev-middleware';
-import { createFeaturesEngineRouter } from '@wixc3/engine-scripts/src/engine-router';
+import { createFeaturesEngineRouter, generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
 import webpack from 'webpack';
-
 import { WsServerHost } from '@wixc3/engine-core-node';
-
-import { generateConfigName } from '@wixc3/engine-scripts/src/engine-router';
 import performance from '@wixc3/cross-performance';
 
 devServerFeature.setup(

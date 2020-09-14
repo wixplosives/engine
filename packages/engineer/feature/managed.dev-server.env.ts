@@ -1,6 +1,6 @@
 import managedFeature from './managed.feature';
 import { devServerEnv, ServerListeningParams } from './dev-server.feature';
-import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts/src';
+import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts';
 
 managedFeature.setup(
     devServerEnv,

@@ -1,8 +1,7 @@
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
-//import { expect } from 'chai';
 import fs from '@file-services/node';
-import { createDisposables, BaseHost, RuntimeFeature, TopLevelConfig } from '@wixc3/engine-core/src';
+import { createDisposables, BaseHost, RuntimeFeature, TopLevelConfig } from '@wixc3/engine-core';
 import type { Page } from 'puppeteer';
 import { expect } from 'chai';
 import {
@@ -10,7 +9,7 @@ import {
     loadFeaturesFromPackages,
     resolvePackages,
     TopLevelConfigProvider,
-} from '@wixc3/engine-scripts/src';
+} from '@wixc3/engine-scripts';
 
 const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
 const multiFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-multi-feature');

@@ -1,4 +1,4 @@
-import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core/src';
+import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
 import type { ApplicationProxyService } from '../src/application-proxy-service';
 import type {
     LaunchEnvironmentMode,
@@ -6,7 +6,7 @@ import type {
     IRunFeatureOptions,
     IFeatureMessagePayload,
     IFeatureDefinition,
-} from '@wixc3/engine-scripts/src';
+} from '@wixc3/engine-scripts';
 import { cwd } from 'process';
 import type webpack from 'webpack';
 
