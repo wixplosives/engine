@@ -32,8 +32,12 @@ export class ApplicationProxyService extends Application {
         return super.getEngineConfig();
     }
 
-    public analyzeFeatures() {
-        return super.analyzeFeatures();
+    public getFeatures(singleFeature?: boolean, featureName?: string) {
+        const { features, configurations, packages } = super.analyzeFeatures();
+        if (singleFeature && featureName) {
+            this.filterByFeatureName(features, featureName);
+        }
+        return { features, configurations, packages };
     }
 
     public getFeatureString() {

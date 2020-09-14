@@ -86,33 +86,7 @@ devServerFeature.setup(
             communication.registerMessageHandler(host);
             communication.registerEnv(devServerEnv.env, host);
 
-            const { features, configurations, packages } = application.analyzeFeatures();
-            if (singleFeature && featureName) {
-                application.filterByFeatureName(features, featureName);
-            }
-
-            const compiler = application.createCompiler({
-                mode,
-                features,
-                featureName,
-                configName,
-                publicPath,
-                title,
-                configurations,
-                staticBuild: false,
-                publicConfigsRoute,
-                overrideConfig,
-                singleFeature,
-            });
-
-            // This hack is to squeeze some more performance, because we can server the output in memory
-            // It was once a crash, which is no longer relevant
-            if (singleRun) {
-                for (const childCompiler of compiler.compilers) {
-                    childCompiler.watch = optimizedWebpackWatchFunction(childCompiler);
-                }
-            }
-
+            const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependants can rely on them in the topology
             application.setNodeEnvManager(
@@ -149,7 +123,25 @@ devServerFeature.setup(
             ]);
 
             // Write middleware for each of the apps
+            const compiler = application.createCompiler({
+                mode,
+                features,
+                featureName,
+                configName,
+                publicPath,
+                title,
+                configurations,
+                staticBuild: false,
+                publicConfigsRoute,
+                overrideConfig,
+                singleFeature,
+            });
             for (const childCompiler of compiler.compilers) {
+                if (singleRun) {
+                    // This hack is to squeeze some more performance, because we can server the output in memory
+                    // It was once a crash, which is no longer relevant
+                    childCompiler.watch = optimizedWebpackWatchFunction(childCompiler);
+                }
                 const devMiddleware = WebpackDevMiddleware(childCompiler, {
                     publicPath: '/',
                     logLevel: 'silent',
@@ -158,7 +150,6 @@ devServerFeature.setup(
                 app.use(devMiddleware);
             }
 
-            // Why would I run this script when the compiler is done?
             await new Promise((resolve) => {
                 compiler.hooks.done.tap('engine-scripts init', resolve);
             });
