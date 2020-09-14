@@ -30,6 +30,8 @@ describe('engineer:gui', function () {
                     devServerConfig: {
                         basePath,
                     },
+                }),
+                guiFeature.use({
                     engineerConfig: {
                         features,
                     },

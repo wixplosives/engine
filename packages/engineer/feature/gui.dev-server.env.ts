@@ -11,14 +11,13 @@ import type { IConfigDefinition } from '@wixc3/engine-scripts';
 guiFeature.setup(
     devServerEnv,
     (
-        _,
+        { engineerConfig: { features } },
         {
             buildFeature: {
                 engineerWebpackConfigs,
                 devServerConfig: { basePath, title, publicConfigsRoute },
                 serverListeningHandlerSlot,
                 application,
-                engineerConfig: { features },
             },
         }
     ) => {

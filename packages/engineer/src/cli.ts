@@ -14,6 +14,7 @@ import { resolvePackages, loadFeaturesFromPackages, runNodeEnvironment } from '@
 import { BaseHost } from '@wixc3/engine-core';
 import fs from '@file-services/node';
 import devServerFeature, { devServerEnv } from 'packages/engineer/feature/dev-server.feature';
+import guiFeature from '../feature/gui.feature';
 
 program.version(version);
 
@@ -86,6 +87,8 @@ program
                             autoLaunch,
                             basePath: path,
                         },
+                    }),
+                    guiFeature.use({
                         engineerConfig: {
                             features,
                         },
