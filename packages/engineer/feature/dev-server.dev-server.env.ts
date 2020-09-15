@@ -29,12 +29,12 @@ function optimizedWebpackWatchFunction(compiler: webpack.Compiler) {
     };
 }
 
-const switchHost = (socketServer: SocketIO.Server, namespace: string, communication: Communication) => {
-    const host = new WsServerHost(socketServer.of(`/${namespace}`));
+const switchHost = (socketServer: SocketIO.Server, env: string, communication: Communication) => {
+    const host = new WsServerHost(socketServer.of(`/${env}`));
 
-    communication.clearEnvironment(devServerEnv.env);
+    communication.clearEnvironment(env);
     communication.registerMessageHandler(host);
-    communication.registerEnv(devServerEnv.env, host);
+    communication.registerEnv(env, host);
 };
 
 devServerFeature.setup(
