@@ -1,4 +1,4 @@
-import type { IFeatureMessagePayload, IProcessMessage, ErrorResponse } from '@wixc3/engine-scripts/src/types';
+import type { IFeatureMessagePayload, IProcessMessage, ErrorResponse } from '@wixc3/engine-scripts';
 
 export interface ServerResponse<T> extends IProcessMessage<T> {
     id: 'error' | 'feature-initialized' | 'feature-closed';
