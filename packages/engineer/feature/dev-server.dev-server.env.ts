@@ -13,6 +13,7 @@ import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { cwd } from 'process';
+import type { Communication } from '@wixc3/engine-core';
 
 function optimizedWebpackWatchFunction(compiler: webpack.Compiler) {
     return function watch(_: any, handler: webpack.ICompiler.Handler) {
@@ -27,6 +28,14 @@ function optimizedWebpackWatchFunction(compiler: webpack.Compiler) {
         };
     };
 }
+
+const switchHost = (socketServer: SocketIO.Server, namespace: string, communication: Communication) => {
+    const host = new WsServerHost(socketServer.of(`/${namespace}`));
+
+    communication.clearEnvironment(devServerEnv.env);
+    communication.registerMessageHandler(host);
+    communication.registerEnv(devServerEnv.env, host);
+};
 
 devServerFeature.setup(
     devServerEnv,
@@ -70,11 +79,9 @@ devServerFeature.setup(
             });
             disposables.add(() => close());
 
-            const host = new WsServerHost(socketServer.of(`/${devServerEnv.env}`));
-
-            communication.clearEnvironment(devServerEnv.env);
-            communication.registerMessageHandler(host);
-            communication.registerEnv(devServerEnv.env, host);
+            // we need to switch hosts because we can only attach a WS host after we have a socket server
+            // So we launch with a basehost and upgrade to a wshost
+            switchHost(socketServer, devServerEnv.env, communication);
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
@@ -92,7 +99,7 @@ devServerFeature.setup(
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
-            if (engineConfig && engineConfig.serveStatic) {
+            if (engineConfig?.serveStatic) {
                 for (const { route, directoryPath } of engineConfig.serveStatic) {
                     app.use(route, express.static(directoryPath));
                 }
