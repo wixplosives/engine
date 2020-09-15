@@ -1,5 +1,4 @@
-import devServerFeature from './dev-server.feature';
-import { devServerEnv } from './dev-server.feature';
+import devServerFeature, { devServerEnv } from './dev-server.feature';
 import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import { ApplicationProxyService } from '../src/application-proxy-service';
 import express from 'express';
