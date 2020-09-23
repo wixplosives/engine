@@ -70,14 +70,13 @@ export function createCommunicationMiddleware(
         const { feature } = req.query;
         const requestedConfig: string | undefined = req.path.slice(1);
         const topology =
-            // I hate this hack and need to understand how to truely subscribe to the topology
-            topologyOverrides && topologyOverrides(feature as string)
-                ? topologyOverrides(feature as string)
-                : typeof feature === 'string'
-                ? nodeEnvironmentsManager.getTopology(
-                      feature,
-                      requestedConfig === 'undefined' ? undefined : requestedConfig
-                  )
+            typeof feature === 'string'
+                ? topologyOverrides && topologyOverrides(feature)
+                    ? topologyOverrides(feature)
+                    : nodeEnvironmentsManager.getTopology(
+                          feature,
+                          requestedConfig === 'undefined' ? undefined : requestedConfig
+                      )
                 : undefined;
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
             COM.use({

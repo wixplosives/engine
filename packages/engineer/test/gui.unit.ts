@@ -1,6 +1,6 @@
-import { createDisposables, RuntimeFeature, BaseHost } from '@wixc3/engine-core/src';
-import { createBrowserProvider } from '@wixc3/engine-test-kit/src';
-import { runNodeEnvironment, loadFeaturesFromPackages, resolvePackages } from '@wixc3/engine-scripts/src';
+import { createDisposables, RuntimeFeature, BaseHost } from '@wixc3/engine-core';
+import { createBrowserProvider } from '@wixc3/engine-test-kit';
+import { runNodeEnvironment, loadFeaturesFromPackages, resolvePackages } from '@wixc3/engine-scripts';
 import fs from '@file-services/node';
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
