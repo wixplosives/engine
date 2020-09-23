@@ -12,14 +12,15 @@ import WebpackDevMiddleware from 'webpack-dev-middleware';
 import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
-import { cwd } from 'process';
 import type { Communication } from '@wixc3/engine-core';
 
-function optimizedWebpackWatchFunction(compiler: webpack.Compiler) {
-    return function watch(_: any, handler: webpack.ICompiler.Handler) {
+function singleRunWatchFunction(compiler: webpack.Compiler) {
+    // This custom watch optimization only compiles once, but allows us to use webpack dev server
+    // and serve the output from memory
+    return function watch(_: unkown, handler: webpack.ICompiler.Handler) {
         compiler.run(handler);
         return {
-            close(cb: any) {
+            close(cb?: () => void) {
                 if (cb) {
                     cb();
                 }
@@ -29,12 +30,12 @@ function optimizedWebpackWatchFunction(compiler: webpack.Compiler) {
     };
 }
 
-const switchHost = (socketServer: SocketIO.Server, env: string, communication: Communication) => {
-    const host = new WsServerHost(socketServer.of(`/${env}`));
+const attachWSHost = (socketServer: SocketIO.Server, envName: string, communication: Communication) => {
+    const host = new WsServerHost(socketServer.of(`/${envName}`));
 
-    communication.clearEnvironment(env);
+    communication.clearEnvironment(envName);
     communication.registerMessageHandler(host);
-    communication.registerEnv(env, host);
+    communication.registerEnv(envName, host);
 };
 
 devServerFeature.setup(
@@ -51,7 +52,7 @@ devServerFeature.setup(
             inspect,
             autoLaunch,
             nodeEnvironmentsMode,
-            basePath = cwd(),
+            basePath = process.cwd(),
             overrideConfig,
             defaultRuntimeOptions,
         } = devServerConfig;
@@ -60,9 +61,12 @@ devServerFeature.setup(
 
         // Extract these into a service
         const close = async () => {
-            for (const dispose of disposables) {
-                await dispose();
-            }
+            // Using map instead of foreach so I could await each dispose
+            await Promise.resolve(
+                [...disposables].reverse().map(async (dispose) => {
+                    await dispose();
+                })
+            );
             disposables.clear();
         };
 
@@ -81,7 +85,7 @@ devServerFeature.setup(
 
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost
-            switchHost(socketServer, devServerEnv.env, communication);
+            attachWSHost(socketServer, devServerEnv.env, communication);
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
@@ -130,7 +134,7 @@ devServerFeature.setup(
                 if (singleRun) {
                     // This hack is to squeeze some more performance, because we can server the output in memory
                     // It was once a crash, which is no longer relevant
-                    childCompiler.watch = optimizedWebpackWatchFunction(childCompiler);
+                    childCompiler.watch = singleRunWatchFunction(childCompiler);
                 }
                 const devMiddleware = WebpackDevMiddleware(childCompiler, {
                     publicPath: '/',
