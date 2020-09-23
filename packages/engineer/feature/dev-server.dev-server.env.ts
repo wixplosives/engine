@@ -145,7 +145,7 @@ devServerFeature.setup(
             }
 
             await new Promise((resolve) => {
-                compiler.hooks.done.tap('engine-scripts init', resolve);
+                compiler.hooks.done.tap('compiled', resolve);
             });
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
