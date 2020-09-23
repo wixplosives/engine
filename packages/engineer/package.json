@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engineer",
-  "version": "1.0.0",
+  "version": "14.4.4",
   "license": "MIT",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
@@ -23,7 +23,14 @@
     "@wixc3/engine-core-node": "^14.4.0",
     "@wixc3/engine-scripts": "^14.4.4",
     "commander": "^6.1.0",
-    "open": "^7.2.1"
+    "open": "^7.2.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-select": "^3.1.0",
+    "socket.io": "^2.3.0",
+    "webpack": "^4.44.1",
+    "webpack-dev-middleware": "^3.7.2",
+    "webpack-virtual-modules": "^0.3.1"
   },
   "files": [
     "cjs",
