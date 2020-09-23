@@ -32,9 +32,7 @@ export interface ServerListeningParams {
     host: string;
 }
 
-export type ServerListeningHandler =
-    | ((params: ServerListeningParams) => void)
-    | ((params: ServerListeningParams) => Promise<void>);
+export type ServerListeningHandler = (params: ServerListeningParams) => void | Promise<void>;
 
 export default new Feature({
     id: 'buildFeature',

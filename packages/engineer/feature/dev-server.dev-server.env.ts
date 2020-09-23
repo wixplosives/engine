@@ -17,7 +17,7 @@ import type { Communication } from '@wixc3/engine-core';
 function singleRunWatchFunction(compiler: webpack.Compiler) {
     // This custom watch optimization only compiles once, but allows us to use webpack dev server
     // and serve the output from memory
-    return function watch(_: unkown, handler: webpack.ICompiler.Handler) {
+    return function watch(_: unknown, handler: webpack.ICompiler.Handler) {
         compiler.run(handler);
         return {
             close(cb?: () => void) {

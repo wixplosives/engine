@@ -8,45 +8,6 @@ import { createEntrypoint } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-scripts';
 
-const createDashboardConfig = ({
-    baseConfig,
-    entryPath,
-    basePlugins,
-    virtualModules,
-    title,
-    outputPath,
-}: {
-    baseConfig: webpack.Configuration;
-    entryPath: string;
-    basePlugins: webpack.Plugin[];
-    virtualModules: Record<string, string>;
-    title?: string;
-    outputPath: string;
-}): webpack.Configuration => ({
-    ...baseConfig,
-    entry: {
-        index: entryPath,
-    },
-    target: 'web',
-    plugins: [
-        ...basePlugins,
-        new HtmlWebpackPlugin({
-            filename: `${mainDashboardEnv.env}.html`,
-            chunks: ['index'],
-            title,
-        }),
-        new VirtualModulesPlugin(virtualModules),
-    ],
-    mode: 'development',
-    devtool: 'source-map',
-    output: {
-        ...baseConfig.output,
-        path: outputPath,
-        filename: `[name].web.js`,
-        chunkFilename: `[name].web.js`,
-    },
-});
-
 guiFeature.setup(
     devServerEnv,
     (
@@ -90,9 +51,49 @@ guiFeature.setup(
         );
 
         serverListeningHandlerSlot.register(({ port, host }) => {
-            const mainUrl = `http://${host}:${port}/`;
             console.log(`Dashboard Listening:`);
-            console.log('Dashboard URL: ', mainUrl + `${mainDashboardEnv.env}.html`);
+            console.log(`Dashboard URL: http://${host}:${port}/${mainDashboardEnv.env}.html`);
         });
     }
 );
+
+function createDashboardConfig({
+    baseConfig,
+    entryPath,
+    basePlugins,
+    virtualModules,
+    title,
+    outputPath,
+}: {
+    baseConfig: webpack.Configuration;
+    entryPath: string;
+    basePlugins: webpack.Plugin[];
+    virtualModules: Record<string, string>;
+    title?: string;
+    outputPath: string;
+}): webpack.Configuration {
+    return {
+        ...baseConfig,
+        entry: {
+            index: entryPath,
+        },
+        target: 'web',
+        plugins: [
+            ...basePlugins,
+            new HtmlWebpackPlugin({
+                filename: `${mainDashboardEnv.env}.html`,
+                chunks: ['index'],
+                title,
+            }),
+            new VirtualModulesPlugin(virtualModules),
+        ],
+        mode: 'development',
+        devtool: 'source-map',
+        output: {
+            ...baseConfig.output,
+            path: outputPath,
+            filename: `[name].web.js`,
+            chunkFilename: `[name].web.js`,
+        },
+    };
+}

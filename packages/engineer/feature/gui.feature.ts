@@ -12,7 +12,7 @@ export default new Feature({
     dependencies: [buildFeature, COM],
     api: {
         /**
-         * configuration for building and runnign the dashboard
+         * configuration for building and running the dashboard
          */
         engineerConfig: new Config<EngineerConfig>({ features: new Map<string, IFeatureDefinition>() }),
     },

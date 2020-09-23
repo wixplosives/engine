@@ -101,7 +101,8 @@ program
                 await open(`http://localhost:${httpServerPort as string}/main.html`);
             }
         } catch (e) {
-            printErrorAndExit(e);
+            console.error(e.message);
+            process.exitCode = 1;
         }
     });
 
@@ -112,9 +113,4 @@ function preRequire(pathsToRequire: string[], basePath: string) {
         const resolvedRequest = require.resolve(request, { paths: [basePath] });
         require(resolvedRequest);
     }
-}
-
-function printErrorAndExit(message: unknown) {
-    console.error(message);
-    process.exit(1);
 }

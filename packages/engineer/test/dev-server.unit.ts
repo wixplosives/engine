@@ -71,18 +71,11 @@ describe('engineer:dev-server', function () {
             await runtimeFeature.api.devServerActions.close();
         }, devServerEnv.env);
 
-        let serverListening = false;
-        runtimeFeature?.api.serverListeningHandlerSlot.register(() => {
-            serverListening = true;
+        await new Promise((resolve) => {
+            runtimeFeature?.api.serverListeningHandlerSlot.register(() => {
+                resolve();
+            });
         });
-        await waitFor(
-            () => {
-                expect(serverListening).to.eql(true);
-            },
-            {
-                timeout: 5000,
-            }
-        );
 
         disposables.add(() => dispose());
 
