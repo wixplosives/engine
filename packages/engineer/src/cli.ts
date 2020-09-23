@@ -15,6 +15,7 @@ import { BaseHost } from '@wixc3/engine-core';
 import fs from '@file-services/node';
 import devServerFeature, { devServerEnv } from 'packages/engineer/feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
+import { Application, parseCliArguments } from '@wixc3/engine-scripts';
 
 program.version(version);
 program.exitOverride();
@@ -101,8 +102,140 @@ program
                 await open(`http://localhost:${httpServerPort as string}/main.html`);
             }
         } catch (e) {
-            console.error(e.message);
-            process.exitCode = 1;
+            printErrorAndExit(e);
+        }
+    });
+
+program
+    .command('build [path]')
+    .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
+    .option('-f ,--feature <feature>')
+    .option('-c ,--config <config>')
+    .option('--mode <production|development>', 'mode passed to webpack', 'production')
+    .option('--outDir <outDir>')
+    .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
+    .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
+    .option('--title <title>', 'application title to display in browser')
+    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+    .allowUnknownOption(true)
+    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
+        const {
+            feature: featureName,
+            config: configName,
+            outDir = 'dist',
+            require: pathsToRequire,
+            publicPath,
+            mode,
+            singleFeature,
+            title,
+            publicConfigsRoute,
+        } = cmd;
+        try {
+            const basePath = resolve(path);
+            preRequire(pathsToRequire, basePath);
+            const outputPath = resolve(outDir);
+            const app = new Application({ basePath, outputPath });
+            const stats = await app.build({
+                featureName,
+                configName,
+                publicPath,
+                mode,
+                singleFeature,
+                title,
+                publicConfigsRoute,
+            });
+            console.log(stats.toString('errors-warnings'));
+        } catch (e) {
+            printErrorAndExit(e);
+        }
+    });
+
+program
+    .command('run [path]')
+    .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
+    .option('-c ,--config <config>')
+    .option('-f ,--feature <feature>')
+    .option('--outDir <outDir>')
+    .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
+    .option('-p ,--port <port>')
+    .option(
+        '--autoLaunch <autoLaunch>',
+        'should auto launch node environments if feature name is provided',
+        (param) => param === 'true',
+        true
+    )
+    .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+    .allowUnknownOption(true)
+    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
+        const {
+            config: configName,
+            outDir = 'dist',
+            feature: featureName,
+            port: preferredPort,
+            require: pathsToRequire,
+            publicPath,
+            autoLaunch,
+            publicConfigsRoute,
+        } = cmd;
+        try {
+            const basePath = resolve(path);
+            preRequire(pathsToRequire, basePath);
+            const outputPath = resolve(outDir);
+            const app = new Application({ basePath, outputPath });
+            const { port } = await app.run({
+                configName,
+                featureName,
+                runtimeOptions: parseCliArguments(process.argv.slice(3)),
+                port: preferredPort ? parseInt(preferredPort, 10) : undefined,
+                publicPath,
+                autoLaunch,
+                publicConfigsRoute,
+            });
+            console.log(`Listening:`);
+            console.log(`http://localhost:${port}/main.html`);
+        } catch (e) {
+            printErrorAndExit(e);
+        }
+    });
+
+program.command('clean [path]').action(async (path = process.cwd()) => {
+    try {
+        const basePath = resolve(path);
+        const app = new Application({ basePath });
+        console.log(`Removing: ${app.outputPath}`);
+        await app.clean();
+    } catch (e) {
+        printErrorAndExit(e);
+    }
+});
+
+program
+    .command('remote [path]')
+    .option('-p --port <port>')
+    .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
+        const { port: preferredPort } = cmd;
+        try {
+            const basePath = resolve(path);
+            const app = new Application({ basePath });
+            const port = preferredPort ? parseInt(preferredPort, 10) : undefined;
+            await app.remote({ port });
+        } catch (e) {
+            printErrorAndExit(e);
+        }
+    });
+
+program
+    .command('create [featureName]')
+    .option('--path <path>')
+    .option('--featuresDir <featuresDir>', 'path to the features directory in the project (optional)')
+    .option('--templatesDir <templatesDir>', 'path to a customized templates folder (optional)')
+    .action(async (featureName, { path = process.cwd(), templatesDir, featuresDir }) => {
+        try {
+            const basePath = resolve(path);
+            const app = new Application({ basePath });
+            await app.create({ featureName, templatesDir, featuresDir });
+        } catch (e) {
+            printErrorAndExit(e);
         }
     });
 
@@ -113,4 +246,9 @@ function preRequire(pathsToRequire: string[], basePath: string) {
         const resolvedRequest = require.resolve(request, { paths: [basePath] });
         require(resolvedRequest);
     }
+}
+
+function printErrorAndExit(message: unknown) {
+    console.error(message);
+    process.exitCode = 1;
 }
