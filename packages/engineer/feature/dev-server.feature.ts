@@ -1,5 +1,5 @@
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
-import type { ApplicationProxyService } from '../src/application-proxy-service';
+import type { TargetApplication } from '../src/application-proxy-service';
 import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import type webpack from 'webpack';
 
@@ -43,7 +43,7 @@ export default new Feature({
         /**
          * service providing application level behavior and info, such as node env management, feature detection etc
          */
-        application: Service.withType<ApplicationProxyService>().defineEntity(devServerEnv).allowRemoteAccess(),
+        application: Service.withType<TargetApplication>().defineEntity(devServerEnv).allowRemoteAccess(),
         /**
          * Dev server configuration, will usually be passed in from the cli params
          */

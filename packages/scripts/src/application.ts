@@ -67,6 +67,20 @@ export interface IApplicationOptions {
     outputPath?: string;
 }
 
+export interface ICompilerOptions {
+    features: Map<string, IFeatureDefinition>;
+    featureName?: string;
+    configName?: string;
+    publicPath?: string;
+    mode?: 'production' | 'development';
+    title?: string;
+    configurations: SetMultiMap<string, IConfigDefinition>;
+    staticBuild: boolean;
+    publicConfigsRoute?: string;
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
+    singleFeature?: boolean;
+}
+
 export class Application {
     public outputPath: string;
     protected basePath: string;
@@ -334,19 +348,7 @@ export class Application {
         publicConfigsRoute,
         overrideConfig,
         singleFeature,
-    }: {
-        features: Map<string, IFeatureDefinition>;
-        featureName?: string;
-        configName?: string;
-        publicPath?: string;
-        mode?: 'production' | 'development';
-        title?: string;
-        configurations: SetMultiMap<string, IConfigDefinition>;
-        staticBuild: boolean;
-        publicConfigsRoute?: string;
-        overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-        singleFeature?: boolean;
-    }) {
+    }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig: webpack.Configuration = typeof baseConfigPath === 'string' ? require(baseConfigPath) : {};

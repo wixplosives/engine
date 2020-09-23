@@ -2,15 +2,15 @@ import {
     Application,
     IFeatureDefinition,
     IConfigDefinition,
-    TopLevelConfigProvider,
     NodeEnvironmentsManager,
     IRunFeatureOptions,
     IApplicationOptions,
     LaunchEnvironmentMode,
     IFeatureMessagePayload,
+    generateConfigName,
+    ICompilerOptions,
 } from '@wixc3/engine-scripts';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { generateConfigName } from '@wixc3/engine-scripts';
+import type { SetMultiMap } from '@wixc3/engine-core';
 import type { OverrideConfig } from '@wixc3/engine-scripts';
 import performance from '@wixc3/cross-performance';
 
@@ -18,7 +18,7 @@ export interface IApplicationProxyOptions extends IApplicationOptions {
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
 }
 
-export class ApplicationProxyService extends Application {
+export class TargetApplication extends Application {
     public nodeEnvironmentsMode?: LaunchEnvironmentMode;
     private nodeEnvManager?: NodeEnvironmentsManager;
     private overrideConfigsMap: Map<string, OverrideConfig> = new Map<string, OverrideConfig>();
@@ -40,10 +40,6 @@ export class ApplicationProxyService extends Application {
         return { features, configurations, packages };
     }
 
-    public getFeatureString() {
-        return [...this.analyzeFeatures().features.keys()];
-    }
-
     public filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
         return super.filterByFeatureName(features, featureName);
     }
@@ -52,19 +48,7 @@ export class ApplicationProxyService extends Application {
         return super.importModules(requiredModules);
     }
 
-    public createCompiler(compilerArgs: {
-        features: Map<string, IFeatureDefinition>;
-        featureName?: string;
-        configName?: string;
-        publicPath?: string;
-        mode?: 'production' | 'development';
-        title?: string;
-        configurations: SetMultiMap<string, IConfigDefinition>;
-        staticBuild: boolean;
-        publicConfigsRoute?: string;
-        overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-        singleFeature?: boolean;
-    }) {
+    public createCompiler(compilerArgs: ICompilerOptions) {
         return super.createCompiler(compilerArgs);
     }
 

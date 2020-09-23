@@ -1,6 +1,6 @@
 import devServerFeature, { devServerEnv } from './dev-server.feature';
 import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
-import { ApplicationProxyService } from '../src/application-proxy-service';
+import { TargetApplication } from '../src/application-proxy-service';
 import express from 'express';
 import {
     ensureTopLevelConfigMiddleware,
@@ -56,7 +56,7 @@ devServerFeature.setup(
             overrideConfig,
             defaultRuntimeOptions,
         } = devServerConfig;
-        const application = new ApplicationProxyService({ basePath, nodeEnvironmentsMode });
+        const application = new TargetApplication({ basePath, nodeEnvironmentsMode });
         const disposables = new Set<() => unknown>();
 
         // Extract these into a service

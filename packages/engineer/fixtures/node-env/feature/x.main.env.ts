@@ -1,6 +1,5 @@
 import { socketServerInitializer } from '@wixc3/engine-core';
-import { mainEnv, serverEnv } from './x.feature';
-import sampleFeature from './x.feature';
+import sampleFeature, { mainEnv, serverEnv } from './x.feature';
 
 sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { startEnvironment } }) => {
     run(async () => {
