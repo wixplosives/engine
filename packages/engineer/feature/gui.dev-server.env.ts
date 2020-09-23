@@ -4,9 +4,8 @@ import VirtualModulesPlugin from 'webpack-virtual-modules';
 import fs from '@file-services/node';
 import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import { createEntrypoint } from '@wixc3/engine-scripts';
+import { createEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/engine-core';
-import type { IConfigDefinition } from '@wixc3/engine-scripts';
 
 guiFeature.setup(
     devServerEnv,
