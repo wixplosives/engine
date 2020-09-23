@@ -17,6 +17,7 @@ import devServerFeature, { devServerEnv } from 'packages/engineer/feature/dev-se
 import guiFeature from '../feature/gui.feature';
 
 program.version(version);
+program.exitOverride();
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];

@@ -13,7 +13,6 @@ import { Application } from './application';
 import { parseCliArguments } from './utils';
 
 program.version(version);
-program.exitOverride();
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];

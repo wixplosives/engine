@@ -3,9 +3,6 @@
   "version": "14.4.4",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
-  "bin": {
-    "engine": "./cli.js"
-  },
   "scripts": {
     "clean": "rimraf cjs",
     "prebuild": "yarn clean",
