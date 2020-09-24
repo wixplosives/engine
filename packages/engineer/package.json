@@ -5,8 +5,7 @@
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "bin": {
-    "engine": "./cli.js",
-    "engineer": "./cli.js"
+    "engineer": "./bin/engineer.js"
   },
   "scripts": {
     "clean": "rimraf cjs",
@@ -33,9 +32,9 @@
     "webpack-virtual-modules": "^0.3.1"
   },
   "files": [
+    "bin",
     "cjs",
-    "src",
-    "cli.js"
+    "src"
   ],
   "publishConfig": {
     "access": "public"
