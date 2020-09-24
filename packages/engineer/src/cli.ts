@@ -5,20 +5,24 @@
  * This configuration can (and should) be written as a `.ts` file.
  */
 
-import program from 'commander';
 import { resolve } from 'path';
+import program from 'commander';
 import open from 'open';
-
-import { version } from '../package.json';
-import { resolvePackages, loadFeaturesFromPackages, runNodeEnvironment } from '@wixc3/engine-scripts';
-import { BaseHost } from '@wixc3/engine-core';
 import fs from '@file-services/node';
-import devServerFeature, { devServerEnv } from 'packages/engineer/feature/dev-server.feature';
+import { BaseHost } from '@wixc3/engine-core';
+import {
+    resolvePackages,
+    loadFeaturesFromPackages,
+    runNodeEnvironment,
+    Application,
+    parseCliArguments,
+} from '@wixc3/engine-scripts';
+
+import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
-import { Application, parseCliArguments } from '@wixc3/engine-scripts';
+import { version } from '../package.json';
 
 program.version(version);
-program.exitOverride();
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
