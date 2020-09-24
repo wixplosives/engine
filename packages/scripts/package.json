@@ -19,7 +19,7 @@
     "typescript": ">=3.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^4.0.0",
+    "@file-services/node": "^4.1.0",
     "@file-services/types": "^4.0.0",
     "@wixc3/cross-performance": "^14.3.1",
     "@wixc3/engine-core": "^14.4.5",

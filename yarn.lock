@@ -247,13 +247,13 @@
     "@file-services/types" "^4.0.0"
     "@file-services/utils" "^4.0.0"
 
-"@file-services/node@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-4.0.0.tgz#517a88760b069e1f5bac4b713e292a707ff640d4"
-  integrity sha512-fI/J4jPprbJlAvtj8tavJ9qGs4T7wJSzYBsJB3PBvlujopwJmT92MOQPlp+3ffMWYzHxpKb68Whd4Bdm8RX08A==
+"@file-services/node@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-4.1.0.tgz#49da339ec67cea267fcf14ed8ee8c5b88b5e743d"
+  integrity sha512-H8CPhA7qYftxaHV+GnZrQpYaPF0Rp7m0iJ6u8DUwM/k01QCJ2aXxN0l1lLdsn8GGD3qcEixNdEulU5rqrJmSdA==
   dependencies:
-    "@file-services/types" "^4.0.0"
-    "@file-services/utils" "^4.0.0"
+    "@file-services/types" "^4.1.0"
+    "@file-services/utils" "^4.1.0"
 
 "@file-services/path@^4.0.0":
   version "4.0.0"
@@ -262,17 +262,17 @@
   dependencies:
     "@file-services/types" "^4.0.0"
 
-"@file-services/types@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-4.0.0.tgz#68653f7dfa6aa47301009cc6e0ee2f40e31a9f6b"
-  integrity sha512-S6qgRbfIjN9M7PmJejbbrxSPFUAikOBKCwV0u1okfHrl5y6cpTjySxCLlL0nstmCdNDRXQb2KcuB8X2DclwRWQ==
+"@file-services/types@^4.0.0", "@file-services/types@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-4.1.0.tgz#aa01881aa6b839ca7d94c0f8a7f18b4841f78b36"
+  integrity sha512-kx/DHfkNK7cd3ubkU/89T4HpmWPuNHYrhzlhoQb49y3vz/e+mkKecwMOWxEcs2frySlH/hxWNKGfDh6FFn7C/g==
 
-"@file-services/utils@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-4.0.0.tgz#81ce299ffe9dc315cd7c60efd35f25bafad36df2"
-  integrity sha512-Si5C3E56wIKMMhkfKhb7PTgZx5CVZo0J2JXkxVlCyL0XSp6PHn1pHKEEuwPfcQk6rTfkmD2BYr9bOzjdmGOsEQ==
+"@file-services/utils@^4.0.0", "@file-services/utils@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-4.1.0.tgz#7719eb90513f8aa8d3999ef2d02f69c2101cc35d"
+  integrity sha512-1mKlC6GjWFo+ywsnvmqt1I6ykrQATyv6l6D8lrQ/lTbRUf6F7WZxx1sk4smm7z25EBN8vlyxWlbByBLBq9Cj/w==
   dependencies:
-    "@file-services/types" "^4.0.0"
+    "@file-services/types" "^4.1.0"
 
 "@lerna/add@3.21.0":
   version "3.21.0"
