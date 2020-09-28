@@ -17,7 +17,7 @@
     "prettify": "npx prettier \"./**/*.{js,ts,tsx}\" --write"
   },
   "devDependencies": {
-    "@file-services/memory": "^4.1.0",
+    "@file-services/memory": "^4.1.1",
     "@file-services/types": "^4.1.0",
     "@stylable/cli": "^3.11.1",
     "@stylable/core": "^3.11.1",

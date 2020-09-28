@@ -238,10 +238,10 @@
     "@file-services/types" "^4.1.0"
     "@file-services/utils" "^4.1.0"
 
-"@file-services/memory@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-4.1.0.tgz#da136c9ade8b251c177d91f45c887b39a898a6fe"
-  integrity sha512-H31J2h+qRkjxhJnmUZaYt4iyHo2OlclV2khjMPVd28B2N4ar1SGLN4fsjcX061+ATBkx037NrBqQLnt41W3E6g==
+"@file-services/memory@^4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-4.1.1.tgz#b3993791822f79dc23b20a8a27566816325db5e5"
+  integrity sha512-Ib3pXlITF7XyniUq/Lo+c4pz+uccJzZ7+epJ4Qk+L6ytETh9LcFhMfFPXPHJRFqbFnwnRcF+Hlih9XSkWlMwXg==
   dependencies:
     "@file-services/path" "^4.1.0"
     "@file-services/types" "^4.1.0"
