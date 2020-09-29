@@ -11,11 +11,11 @@ import open from 'open';
 import fs from '@file-services/node';
 import { BaseHost } from '@wixc3/engine-core';
 import {
-    resolvePackages,
-    loadFeaturesFromPackages,
     runNodeEnvironment,
     Application,
     parseCliArguments,
+    loadFeaturesFromPaths,
+    isFeatureFile,
 } from '@wixc3/engine-scripts';
 
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
@@ -68,10 +68,13 @@ program
             engineerEntry,
         } = cmd;
         try {
-            const basePath = resolve(__dirname, '../');
+            const basePath = resolve(__dirname, '../feature');
+            const featurePaths = fs.findFilesSync(basePath, {
+                filterFile: ({ name }) => isFeatureFile(name),
+            });
             preRequire(pathsToRequire, basePath);
 
-            const features = loadFeaturesFromPackages(resolvePackages(basePath), fs).features;
+            const features = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs).features;
 
             await runNodeEnvironment({
                 featureName: engineerEntry,
