@@ -9,9 +9,11 @@ import {
     IFeatureMessagePayload,
     generateConfigName,
     ICompilerOptions,
+    OverrideConfig,
+    INpmPackage,
+    EngineConfig,
 } from '@wixc3/engine-scripts';
 import type { SetMultiMap } from '@wixc3/engine-core';
-import type { OverrideConfig } from '@wixc3/engine-scripts';
 import performance from '@wixc3/cross-performance';
 
 export interface IApplicationProxyOptions extends IApplicationOptions {
@@ -28,11 +30,18 @@ export class TargetApplication extends Application {
         this.nodeEnvironmentsMode = opts.nodeEnvironmentsMode;
     }
 
-    public getEngineConfig() {
+    public getEngineConfig(): Promise<EngineConfig | undefined> {
         return super.getEngineConfig();
     }
 
-    public getFeatures(singleFeature?: boolean, featureName?: string) {
+    public getFeatures(
+        singleFeature?: boolean,
+        featureName?: string
+    ): {
+        packages: INpmPackage[];
+        features: Map<string, IFeatureDefinition>;
+        configurations: SetMultiMap<string, IConfigDefinition>;
+    } {
         const { features, configurations, packages } = super.analyzeFeatures();
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
