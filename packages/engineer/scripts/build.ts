@@ -1,16 +1,16 @@
-import { dirname } from 'path';
 import ts from 'typescript';
 import { build } from '@ts-tools/build';
 import nodeFs from '@file-services/node';
 
-const { writeFileSync, statSync, mkdirSync, resolve } = nodeFs;
+const { writeFileSync, resolve, dirname, ensureDirectorySync } = nodeFs;
+
+const outDir = 'cjs';
+const rootDir = process.cwd();
+const buildDirectories = ['engine-dashboard', 'src', 'feature'];
 
 try {
-    const outDir = 'cjs';
-    const rootDir = process.cwd();
     // Build ts files
-    const buildDirectories = ['engine-dashboard', 'src', 'feature'];
-    buildDirectories.forEach((dir) => {
+    for (const dir of buildDirectories) {
         const targetFiles = build({
             srcDirectoryPath: resolve(rootDir, dir),
             outputDirectoryPath: resolve(rootDir, outDir),
@@ -33,7 +33,7 @@ try {
             ensureDirectorySync(dirname(name));
             writeFileSync(name, text);
         }
-    });
+    }
 } catch (e) {
     printErrorAndExit(e);
 }
@@ -42,26 +42,4 @@ function printErrorAndExit(message: unknown) {
     // eslint-disable-next-line no-console
     console.error(message);
     process.exitCode = 1;
-}
-
-function ensureDirectorySync(directoryPath: string): void {
-    try {
-        if (statSync(directoryPath).isDirectory()) {
-            return;
-        }
-    } catch {
-        /**/
-    }
-    try {
-        mkdirSync(directoryPath);
-    } catch (e) {
-        if ((e as NodeJS.ErrnoException).code !== 'EEXIST') {
-            const parentPath = dirname(directoryPath);
-            if (parentPath === directoryPath) {
-                throw e;
-            }
-            ensureDirectorySync(parentPath);
-            mkdirSync(directoryPath);
-        }
-    }
 }
