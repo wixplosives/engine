@@ -13,5 +13,5 @@ if (__dirname.endsWith(normalize('/packages/engineer/bin'))) {
     require('tsconfig-paths/register');
     require('../src/cli');
 } else {
-    require('../src/cli');
+    require('../cjs/src/cli');
 }

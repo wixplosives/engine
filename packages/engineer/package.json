@@ -30,9 +30,11 @@
     "webpack-virtual-modules": "^0.3.1"
   },
   "files": [
-    "bin",
     "cjs",
-    "src"
+    "bin",
+    "engine-dashboard",
+    "src",
+    "feature"
   ],
   "publishConfig": {
     "access": "public"

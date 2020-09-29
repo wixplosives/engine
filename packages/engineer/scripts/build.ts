@@ -1,16 +1,15 @@
-import { writeFileSync, statSync, mkdirSync, copyFileSync } from 'fs';
-import { dirname, resolve } from 'path';
+import { dirname } from 'path';
 import ts from 'typescript';
 import { build } from '@ts-tools/build';
-
 import nodeFs from '@file-services/node';
-const { findFilesSync, readFileSync, populateDirectorySync } = nodeFs;
 
+const { findFilesSync, readFileSync, populateDirectorySync, writeFileSync, statSync, mkdirSync, resolve } = nodeFs;
 const outDir = 'cjs';
 const rootDir = process.cwd();
 
-const buildDirectories = ['engine-dashboard', 'src', 'feature'];
 try {
+    // Build ts files
+    const buildDirectories = ['engine-dashboard', 'src', 'feature'];
     buildDirectories.forEach((dir) => {
         const targetFiles = build({
             srcDirectoryPath: resolve(rootDir, dir),
@@ -35,11 +34,20 @@ try {
             writeFileSync(name, text);
         }
     });
-    copySourcesToFolder(nodeFs.resolve(rootDir, 'engine-dashboard'), resolve(rootDir, outDir, 'engine-dashboard'), [
+
+    // Copy styleable files - once we ship the dashboard prebuilt we will need to remove this
+    copySourcesToFolder(resolve(rootDir, 'engine-dashboard'), resolve(rootDir, outDir, 'engine-dashboard'), [
         '.st.css',
     ]);
-    copySourcesToFolder(nodeFs.resolve(rootDir, 'bin'), resolve(rootDir, outDir, 'bin'));
-    copyFileSync(nodeFs.resolve(rootDir, 'package.json'), nodeFs.resolve(rootDir, outDir, 'package.json'));
+
+    /**
+     * Create a new package.json for the sake of feature definition
+     * engine looks for some speicific locations from the nearest package.json
+     * This is something we probably want to change in the future
+     */
+    const packageJson = JSON.parse(readFileSync(resolve(rootDir, 'package.json')).toString());
+    delete packageJson.files;
+    writeFileSync(resolve(rootDir, outDir, 'package.json'), JSON.stringify(packageJson, null, 2));
 } catch (e) {
     printErrorAndExit(e);
 }
