@@ -10,7 +10,9 @@
   "scripts": {
     "clean": "rimraf cjs",
     "prebuild": "yarn clean",
-    "build": "node build.js",
+    "build": "yarn build:typescript && yarn build:stylable",
+    "build:typescript": "node build.js",
+    "build:stylable": "stc --srcDir=\".\" --outDir=\"cjs\" --stcss --cjs=false",
     "test": "mocha \"test/**/*.unit.ts?(x)\"",
     "prepack": "yarn build"
   },

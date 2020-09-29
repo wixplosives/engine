@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { build } from '@ts-tools/build';
 import nodeFs from '@file-services/node';
 
-const { findFilesSync, readFileSync, populateDirectorySync, writeFileSync, statSync, mkdirSync, resolve } = nodeFs;
+const { writeFileSync, statSync, mkdirSync, resolve } = nodeFs;
 
 try {
     const outDir = 'cjs';
@@ -34,11 +34,6 @@ try {
             writeFileSync(name, text);
         }
     });
-
-    // Copy styleable files - once we ship the dashboard prebuilt we will need to remove this
-    copySourcesToFolder(resolve(rootDir, 'engine-dashboard'), resolve(rootDir, outDir, 'engine-dashboard'), [
-        '.st.css',
-    ]);
 } catch (e) {
     printErrorAndExit(e);
 }
@@ -69,18 +64,4 @@ function ensureDirectorySync(directoryPath: string): void {
             mkdirSync(directoryPath);
         }
     }
-}
-
-function copySourcesToFolder(srcDir: string, targetDir: string, includeExtentions?: string[]) {
-    const directoryPaths = findFilesSync(srcDir, {
-        filterFile: ({ name }) => {
-            return !includeExtentions || !!includeExtentions.find((ext) => name.endsWith(ext));
-        },
-    });
-    const directoryContents = directoryPaths.reduce((contents, filePath) => {
-        const relativeFilePath = filePath.substr(srcDir.length);
-        contents[relativeFilePath] = readFileSync(filePath, 'utf8');
-        return contents;
-    }, {} as Record<string, string>);
-    populateDirectorySync(targetDir, directoryContents);
 }
