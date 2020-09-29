@@ -85,7 +85,14 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             }
         }
     }
+    return loadFeaturesFromPaths(ownFeatureFilePaths, ownFeatureDirectoryPaths, fs);
+}
 
+export function loadFeaturesFromPaths(
+    ownFeatureFilePaths: Set<string>,
+    ownFeatureDirectoryPaths: Set<string>,
+    fs: IFileSystemSync
+) {
     // find all require()'ed feature files from initial ones
     const featureModules = getFeatureModules(evaluateModule(Array.from(ownFeatureFilePaths)));
     const featureDirectoryPaths = new Set<string>(ownFeatureDirectoryPaths);
