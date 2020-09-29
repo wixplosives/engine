@@ -20,7 +20,8 @@ import {
 
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
-import { version } from '../package.json';
+
+const { version } = JSON.parse(fs.readFileSync(fs.findClosestFileSync(__dirname, 'package.json') as string).toString());
 
 program.version(version);
 
@@ -67,7 +68,7 @@ program
             engineerEntry,
         } = cmd;
         try {
-            const basePath = resolve(__dirname, '../../engineer');
+            const basePath = resolve(__dirname, '../');
             preRequire(pathsToRequire, basePath);
 
             const features = loadFeaturesFromPackages(resolvePackages(basePath), fs).features;
