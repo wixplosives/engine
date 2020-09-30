@@ -20,7 +20,7 @@
     "@file-services/memory": "^4.1.1",
     "@file-services/types": "^4.1.0",
     "@stylable/cli": "^3.11.1",
-    "@stylable/core": "^3.11.1",
+    "@stylable/core": "^3.11.2",
     "@stylable/webpack-plugin": "^3.11.1",
     "@ts-tools/build": "^2.1.1",
     "@ts-tools/node": "^2.1.1",
