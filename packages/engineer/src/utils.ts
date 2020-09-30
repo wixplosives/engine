@@ -1,25 +1,31 @@
 import { resolve } from 'path';
 import fs from '@file-services/node';
-import { isFeatureFile, loadFeaturesFromPaths, runNodeEnvironment } from '@wixc3/engine-scripts';
-import { RuntimeEngine, BaseHost } from '@wixc3/engine-core';
+import {
+    isFeatureFile,
+    loadFeaturesFromPaths,
+    runNodeEnvironment,
+    TopLevelConfigProvider,
+} from '@wixc3/engine-scripts';
+import { RuntimeEngine, BaseHost, TopLevelConfig } from '@wixc3/engine-core';
 
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
 
 export interface IStartOptions {
+    outputPath: string;
+    targetApplicationPath: string;
     featureName?: string;
     configName?: string;
-    httpServerPort: number;
+    httpServerPort?: number;
     singleRun?: boolean;
     singleFeature?: boolean;
-    pathsToRequire: string[];
-    publicPath: string;
-    mode: 'development' | 'production';
+    pathsToRequire?: string[];
+    mode?: 'development' | 'production';
     title?: string;
-    publicConfigsRoute: string;
+    publicConfigsRoute?: string;
     autoLaunch?: boolean;
-    engineerEntry: string;
-    targetApplicationPath: string;
+    engineerEntry?: string;
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
 export function startDevServer({
@@ -29,13 +35,14 @@ export function startDevServer({
     singleRun,
     singleFeature,
     pathsToRequire = [],
-    publicPath,
+    outputPath,
     mode = 'development',
     title,
     publicConfigsRoute = 'configs/',
     autoLaunch,
     targetApplicationPath,
     engineerEntry = 'engineer/gui',
+    overrideConfig,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -61,13 +68,14 @@ export function startDevServer({
                     featureName,
                     singleRun,
                     singleFeature,
-                    publicPath,
+                    publicPath: outputPath,
                     mode,
                     configName,
                     title,
                     publicConfigsRoute,
                     autoLaunch,
                     basePath: targetApplicationPath,
+                    overrideConfig,
                 },
             }),
             guiFeature.use({
