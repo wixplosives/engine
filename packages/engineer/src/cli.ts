@@ -9,17 +9,9 @@ import { resolve } from 'path';
 import program from 'commander';
 import open from 'open';
 import fs from '@file-services/node';
-import { BaseHost } from '@wixc3/engine-core';
-import {
-    runNodeEnvironment,
-    Application,
-    parseCliArguments,
-    loadFeaturesFromPaths,
-    isFeatureFile,
-} from '@wixc3/engine-scripts';
+import { Application, parseCliArguments } from '@wixc3/engine-scripts';
 
-import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
-import guiFeature from '../feature/gui.feature';
+import { startDevServer } from './utils';
 
 const { version } = JSON.parse(fs.readFileSync(fs.findClosestFileSync(__dirname, 'package.json') as string).toString());
 
@@ -63,47 +55,25 @@ program
             publicPath = defaultPublicPath,
             mode,
             title,
-            publicConfigsRoute = 'configs/',
+            publicConfigsRoute,
             autoLaunch,
             engineerEntry,
         } = cmd;
         try {
-            const basePath = resolve(__dirname, '../feature');
-            const featurePaths = fs.findFilesSync(basePath, {
-                filterFile: ({ name }) => isFeatureFile(name),
-            });
-            preRequire(pathsToRequire, basePath);
-
-            const features = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs).features;
-
-            await runNodeEnvironment({
-                featureName: engineerEntry,
-                features: [...features],
-                name: devServerEnv.env,
-                type: 'node',
-                host: new BaseHost(),
-                config: [
-                    devServerFeature.use({
-                        devServerConfig: {
-                            httpServerPort,
-                            featureName,
-                            singleRun,
-                            singleFeature,
-                            publicPath,
-                            mode,
-                            configName,
-                            title,
-                            publicConfigsRoute,
-                            autoLaunch,
-                            basePath: path,
-                        },
-                    }),
-                    guiFeature.use({
-                        engineerConfig: {
-                            features,
-                        },
-                    }),
-                ],
+            await startDevServer({
+                featureName,
+                configName,
+                httpServerPort,
+                singleRun,
+                singleFeature,
+                pathsToRequire,
+                publicPath,
+                mode,
+                title,
+                publicConfigsRoute,
+                autoLaunch,
+                engineerEntry,
+                targetApplicationPath: path,
             });
 
             if (!process.send && featureName && configName && openBrowser === 'true') {
