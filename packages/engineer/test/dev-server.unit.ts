@@ -426,8 +426,8 @@ describe('engineer:dev-server', function () {
 
         const someArbFileFromTheOutputPath = await loadPage(`http://localhost:${port}/package.json`);
 
-        const responseText = await getBodyContent(someArbFileFromTheOutputPath);
-        const fileContent = fs.readFileSync(packageFile).toString().trim();
+        const responseText = JSON.stringify(await getBodyContent(someArbFileFromTheOutputPath));
+        const fileContent = JSON.stringify(fs.readFileSync(packageFile).toString().trim());
 
         expect(responseText).to.eq(fileContent);
     });
