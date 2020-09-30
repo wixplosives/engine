@@ -409,15 +409,30 @@ describe('engineer:dev-server', function () {
     });
 
     it('can run from arbitrary output dirs', async () => {
+        const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
         const {
             config: { port },
-        } = await setup({ featureName: 'engine-single/x', basePath: engineFeatureFixturePath, outputPath: __dirname });
+        } = await setup({
+            featureName: 'engine-single/x',
+            basePath: engineFeatureFixturePath,
+            outputPath: fs.dirname(packageFile),
+        });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
         const text = await getBodyContent(page);
 
         expect(text).to.include('App is running');
+
+        const someArbFileFromTheOutputPath = await loadPage(`http://localhost:${port}/package.json`);
+
+        // const responseText = JSON.stringify(JSON.parse(await getBodyContent(someArbFileFromTheOutputPath)));
+        // const fileContent = JSON.stringify(JSON.parse(fs.readFileSync(packageFile).toString()));
+
+        const responseText = await getBodyContent(someArbFileFromTheOutputPath);
+        const fileContent = fs.readFileSync(packageFile).toString().trim();
+
+        expect(responseText).to.eq(fileContent);
     });
 });
 
