@@ -77,7 +77,7 @@ devServerFeature.setup(
                 await application.importModules(engineConfig.require);
             }
 
-            const { port, app, close, socketServer } = await launchHttpServer({
+            const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
             });
@@ -95,7 +95,7 @@ devServerFeature.setup(
                     configurations,
                     features,
                     defaultRuntimeOptions,
-                    port,
+                    port: actualPort,
                     inspect,
                     overrideConfig,
                 })
@@ -112,7 +112,7 @@ devServerFeature.setup(
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
-                          [devServerEnv.env]: `http://localhost:${port}/${devServerEnv.env}`,
+                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
                       }
                     : undefined;
 
@@ -191,10 +191,10 @@ devServerFeature.setup(
             }
 
             for (const handler of serverListeningHandlerSlot) {
-                await handler({ port: httpServerPort, host: 'localhost' });
+                await handler({ port: actualPort, host: 'localhost' });
             }
 
-            const mainUrl = `http://localhost:${httpServerPort}/`;
+            const mainUrl = `http://localhost:${actualPort}/`;
             if (featureName) {
                 console.log('Main application URL:', `${mainUrl}main.html`);
             }
