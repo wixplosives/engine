@@ -2,8 +2,8 @@
   "name": "@wixc3/engineer",
   "version": "15.0.0-rc.3",
   "license": "MIT",
-  "main": "cjs/index.js",
-  "types": "cjs/index.d.ts",
+  "main": "cjs/src/index.js",
+  "types": "cjs/src/index.d.ts",
   "bin": {
     "engineer": "./bin/engineer.js"
   },
