@@ -4,7 +4,6 @@ import { runNodeEnvironment, loadFeaturesFromPackages, resolvePackages } from '@
 import fs from '@file-services/node';
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
-import { waitFor } from 'promise-assist';
 import { expect } from 'chai';
 import type { Page } from 'puppeteer';
 
@@ -45,18 +44,11 @@ describe('engineer:gui', function () {
             await devServerRuntime.api.devServerActions.close();
         }, devServerEnv.env);
 
-        let serverListening = false;
-        devServerRuntime.api.serverListeningHandlerSlot.register(() => {
-            serverListening = true;
+        const runningPort: number = await new Promise((resolve) => {
+            devServerRuntime.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
+                resolve(port);
+            });
         });
-        await waitFor(
-            () => {
-                expect(serverListening).to.eql(true);
-            },
-            {
-                timeout: 5000,
-            }
-        );
 
         disposables.add(() => dispose());
 
@@ -64,7 +56,7 @@ describe('engineer:gui', function () {
             dispose,
             engine,
             runtimeFeature,
-            config: { featureName, port: devServerRuntime.api.devServerConfig.httpServerPort },
+            config: { featureName, port: runningPort },
         };
     };
 
@@ -86,7 +78,7 @@ describe('engineer:gui', function () {
             config: { port },
         } = await setup({ basePath: engineFeatureFixturePath });
 
-        const page = await loadPage(`http://localhost:${port as string}/main-dashboard.html?feature=engineer/gui`);
+        const page = await loadPage(`http://localhost:${port}/main-dashboard.html?feature=engineer/gui`);
 
         const text = await getBodyContent(page);
 

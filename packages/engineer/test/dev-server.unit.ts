@@ -1,7 +1,7 @@
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import fs from '@file-services/node';
-import { createDisposables, BaseHost, RuntimeFeature, TopLevelConfig } from '@wixc3/engine-core';
+import { createDisposables, BaseHost, RuntimeFeature, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
 import type { Page } from 'puppeteer';
 import { expect } from 'chai';
 import {
@@ -35,6 +35,7 @@ describe('engineer:dev-server', function () {
         configName,
         inspect = false,
         overrideConfig = [],
+        outputPath,
     }: {
         featureName?: string;
         port?: number;
@@ -43,7 +44,13 @@ describe('engineer:dev-server', function () {
         configName?: string;
         inspect?: boolean;
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    }) => {
+        outputPath?: string;
+    }): Promise<{
+        dispose: () => Promise<void>;
+        engine: RuntimeEngine;
+        runtimeFeature: RuntimeFeature | undefined;
+        config: { featureName: string | undefined; port: number };
+    }> => {
         const { dispose, engine } = await runNodeEnvironment({
             featureName: 'engineer/dev-server',
             features: [...loadFeaturesFromPackages(resolvePackages('../'), fs).features],
@@ -61,6 +68,7 @@ describe('engineer:dev-server', function () {
                         configName,
                         inspect,
                         overrideConfig,
+                        outputPath,
                     },
                 }),
             ],
@@ -71,15 +79,15 @@ describe('engineer:dev-server', function () {
             await runtimeFeature.api.devServerActions.close();
         }, devServerEnv.env);
 
-        await new Promise((resolve) => {
-            runtimeFeature?.api.serverListeningHandlerSlot.register(() => {
-                resolve();
+        const runningPort: number = await new Promise((resolve) => {
+            runtimeFeature!.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
+                resolve(port);
             });
         });
 
         disposables.add(() => dispose());
 
-        return { dispose, engine, runtimeFeature, config: { featureName, port } };
+        return { dispose, engine, runtimeFeature, config: { featureName, port: runningPort } };
     };
 
     const loadPage = async (url: string) => {
@@ -380,6 +388,36 @@ describe('engineer:dev-server', function () {
             expect(await getBodyContent(pageOne)).to.equal('1');
             expect(await getBodyContent(pageTwo)).to.equal('2');
         });
+    });
+
+    it('runs 2 apps simultaniously', async () => {
+        const {
+            config: { port: app1Port },
+        } = await setup({ featureName: 'engine-single/x', basePath: engineFeatureFixturePath });
+
+        const {
+            config: { port: app2Port },
+        } = await setup({ featureName: 'engine-single/x', basePath: engineFeatureFixturePath });
+
+        const page1 = await loadPage(`http://localhost:${app1Port}/main.html`);
+        const text1 = await getBodyContent(page1);
+        expect(text1).to.include('App is running');
+
+        const page2 = await loadPage(`http://localhost:${app2Port}/main.html`);
+        const text2 = await getBodyContent(page2);
+        expect(text2).to.include('App is running');
+    });
+
+    it('can run from arbitrary output dirs', async () => {
+        const {
+            config: { port },
+        } = await setup({ featureName: 'engine-single/x', basePath: engineFeatureFixturePath, outputPath: __dirname });
+
+        const page = await loadPage(`http://localhost:${port}/main.html`);
+
+        const text = await getBodyContent(page);
+
+        expect(text).to.include('App is running');
     });
 });
 
