@@ -16,7 +16,7 @@
     "typescript": ">=3.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^4.1.0",
+    "@file-services/node": "^4.1.2",
     "@file-services/types": "^4.1.0",
     "@wixc3/cross-performance": "^14.3.1",
     "@wixc3/engine-core": "^15.0.0-rc.1",
@@ -28,7 +28,7 @@
     "glob": "^7.1.6",
     "html-webpack-plugin": "^4.5.0",
     "import-fresh": "^3.2.1",
-    "open": "^7.2.1",
+    "open": "^7.3.0",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
