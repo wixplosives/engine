@@ -21,6 +21,7 @@ export interface DevServerConfig {
     mode: 'production' | 'development';
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
     defaultRuntimeOptions: Record<string, string | boolean>;
+    outputPath?: string;
 }
 
 export interface DevServerActions {

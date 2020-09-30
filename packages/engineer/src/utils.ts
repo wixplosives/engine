@@ -14,6 +14,7 @@ import guiFeature from '../feature/gui.feature';
 export interface IStartOptions {
     publicPath: string;
     targetApplicationPath: string;
+    outputPath?: string;
     featureName?: string;
     configName?: string;
     httpServerPort?: number;
@@ -43,6 +44,7 @@ export function startDevServer({
     targetApplicationPath,
     engineerEntry = 'engineer/gui',
     overrideConfig = [],
+    outputPath,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -76,6 +78,7 @@ export function startDevServer({
                     autoLaunch,
                     basePath: targetApplicationPath,
                     overrideConfig,
+                    outputPath,
                 },
             }),
             guiFeature.use({

@@ -55,8 +55,14 @@ devServerFeature.setup(
             basePath = process.cwd(),
             overrideConfig,
             defaultRuntimeOptions,
+            outputPath,
         } = devServerConfig;
-        const application = new TargetApplication({ basePath, nodeEnvironmentsMode });
+
+        const appStartArgs = outputPath
+            ? { basePath, nodeEnvironmentsMode, outputPath }
+            : { basePath, nodeEnvironmentsMode };
+
+        const application = new TargetApplication(appStartArgs);
         const disposables = new Set<() => unknown>();
 
         // Extract these into a service
