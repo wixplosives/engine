@@ -12,7 +12,7 @@ import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
 
 export interface IStartOptions {
-    outputPath: string;
+    publicPath: string;
     targetApplicationPath: string;
     featureName?: string;
     configName?: string;
@@ -35,7 +35,7 @@ export function startDevServer({
     singleRun,
     singleFeature,
     pathsToRequire = [],
-    outputPath,
+    publicPath,
     mode = 'development',
     title,
     publicConfigsRoute = 'configs/',
@@ -68,7 +68,7 @@ export function startDevServer({
                     featureName,
                     singleRun,
                     singleFeature,
-                    publicPath: outputPath,
+                    publicPath,
                     mode,
                     configName,
                     title,

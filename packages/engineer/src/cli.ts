@@ -67,7 +67,7 @@ program
                 singleRun,
                 singleFeature,
                 pathsToRequire,
-                outputPath: publicPath,
+                publicPath,
                 mode,
                 title,
                 publicConfigsRoute,
