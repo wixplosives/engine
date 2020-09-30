@@ -42,7 +42,7 @@ export function startDevServer({
     autoLaunch,
     targetApplicationPath,
     engineerEntry = 'engineer/gui',
-    overrideConfig,
+    overrideConfig = [],
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
