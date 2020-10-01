@@ -24,8 +24,6 @@ export interface ICreateWebpackConfigsOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
-const engineDashboardEntry = require.resolve('./engine-dashboard');
-
 function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
     const allContexts = new SetMultiMap<string, string>();
     for (const { resolvedContexts } of features.values()) {
@@ -42,15 +40,7 @@ function convertEnvRecordToSetMultiMap(record: Record<string, string>, set = new
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const {
-        enviroments,
-        mode = 'development',
-        baseConfig = {},
-        publicPath = '',
-        featureName,
-        features,
-        singleFeature,
-    } = options;
+    const { enviroments, baseConfig = {}, publicPath = '', featureName, features, singleFeature } = options;
 
     const resolvedContexts =
         featureName && singleFeature
@@ -84,15 +74,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
-        if (mode === 'development') {
-            plugins.push(
-                new HtmlWebpackPlugin({
-                    filename: `index.html`,
-                    chunks: ['index'],
-                })
-            );
-            entry.index = engineDashboardEntry;
-        }
         configurations.push(
             createWebpackConfig({
                 ...options,

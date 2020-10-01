@@ -8,7 +8,7 @@ import { hookPageConsole } from './hook-page-console';
 import type { PerformanceMetrics } from '@wixc3/engine-scripts';
 
 const [execDriverLetter] = process.argv0;
-const cliEntry = require.resolve('@wixc3/engine-scripts/cli');
+const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
 export interface IFeatureExecutionOptions {
     /**

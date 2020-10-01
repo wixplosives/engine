@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 const { normalize, dirname } = require('path');
 if (__dirname.endsWith(normalize('/packages/scripts'))) {
     const configFilePath = require.resolve('../../tsconfig.json');
@@ -11,6 +10,7 @@ if (__dirname.endsWith(normalize('/packages/scripts'))) {
     const { options: tsconfigPathsOptions } = require('tsconfig-paths/lib/options');
     tsconfigPathsOptions.cwd = dirname(configFilePath);
     require('tsconfig-paths/register');
+
     require('./src/cli');
 } else {
     require('./cjs/cli');

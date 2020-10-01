@@ -63,17 +63,20 @@ export function createLiveConfigsMiddleware(
 
 export function createCommunicationMiddleware(
     nodeEnvironmentsManager: NodeEnvironmentsManager,
-    publicPath?: string
+    publicPath?: string,
+    topologyOverrides?: (featureName: string) => Record<string, string> | undefined
 ): express.RequestHandler {
     return (req, res, next) => {
         const { feature } = req.query;
         const requestedConfig: string | undefined = req.path.slice(1);
         const topology =
             typeof feature === 'string'
-                ? nodeEnvironmentsManager.getTopology(
-                      feature,
-                      requestedConfig === 'undefined' ? undefined : requestedConfig
-                  )
+                ? topologyOverrides && topologyOverrides(feature)
+                    ? topologyOverrides(feature)
+                    : nodeEnvironmentsManager.getTopology(
+                          feature,
+                          requestedConfig === 'undefined' ? undefined : requestedConfig
+                      )
                 : undefined;
         res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
             COM.use({

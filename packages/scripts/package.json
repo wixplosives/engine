@@ -1,11 +1,8 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "14.4.5",
+  "version": "15.0.0-rc.7",
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
-  "bin": {
-    "engine": "./cli.js"
-  },
   "scripts": {
     "clean": "rimraf cjs",
     "prebuild": "yarn clean",
@@ -22,8 +19,8 @@
     "@file-services/node": "^4.1.2",
     "@file-services/types": "^4.1.0",
     "@wixc3/cross-performance": "^14.3.1",
-    "@wixc3/engine-core": "^14.4.5",
-    "@wixc3/engine-core-node": "^14.4.5",
+    "@wixc3/engine-core": "^15.0.0-rc.1",
+    "@wixc3/engine-core-node": "^15.0.0-rc.1",
     "commander": "^6.1.0",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
