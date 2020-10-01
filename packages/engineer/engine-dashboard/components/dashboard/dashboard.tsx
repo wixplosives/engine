@@ -15,7 +15,7 @@ export interface IDashboardProps {
         configName: string,
         isNodeEnvActive: boolean,
         runtimeOptions: Array<IRuntimeOption>
-    ) => Promise<any>;
+    ) => Promise<unknown>;
 }
 
 interface SelectedFeature {
@@ -41,6 +41,7 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
 
     const onServerEnvironmentStatusChange = useCallback(
         async (isNodeEnvActive: boolean) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const serverResponse = await changeNodeEnvironmentState(
                 selectedFeature.featureName!,
                 selectedFeature.configName!,

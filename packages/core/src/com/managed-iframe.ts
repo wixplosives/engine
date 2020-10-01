@@ -9,7 +9,7 @@ export class ManagedIframe {
             : undefined;
     }
 
-    public decode = (hash: string) => JSON.parse(hash);
+    public decode = (hash: string) => JSON.parse(hash) as unknown;
     public encode = (hashParams: Json) => JSON.stringify(hashParams);
 
     public createHashParams = (hashParams: Json) => `#${this.encode(hashParams)}`;

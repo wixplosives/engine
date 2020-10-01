@@ -15,7 +15,7 @@ export function run({ entryFeature, topLevelConfig = [], envName = '', runOption
     return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature, envName);
 }
 
-export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies);
+export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
 
 export interface IFeatureLoader {
     load: (resolvedContexts: Record<string, string>) => Promise<Feature>;
@@ -57,7 +57,7 @@ export async function runEngineApp({
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
     const runningPromise = engine.run(runningFeature, envName);
-    
+
     return {
         engine,
         async dispose() {

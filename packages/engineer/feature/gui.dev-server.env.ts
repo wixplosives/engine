@@ -21,7 +21,7 @@ guiFeature.setup(
         }
     ) => {
         const baseConfigPath = fs.findClosestFileSync(__dirname, 'webpack.config.js');
-        const baseConfig: webpack.Configuration = typeof baseConfigPath === 'string' ? require(baseConfigPath) : {};
+        const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
         const virtualModules: Record<string, string> = {};
 
         const { plugins: basePlugins = [] } = baseConfig;

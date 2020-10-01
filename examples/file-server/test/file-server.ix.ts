@@ -24,7 +24,7 @@ describe('File Server Feature', () => {
         const { page, getMetrics } = await getLoadedFeature();
         const fileServerDriver = await FileServerDriver.getFromRoot(page);
         const preview = await fileServerDriver.getTestContentDiv(page);
-        const parsedData = JSON.parse(preview);
+        const parsedData = JSON.parse(preview) as { fixtures: Record<string, string[]> };
         expect(parsedData).to.be.an('object');
         expect(parsedData.fixtures).to.be.an('object');
         expect(parsedData.fixtures['example.feature.ts']).to.have.keys('filePath', 'fileName');

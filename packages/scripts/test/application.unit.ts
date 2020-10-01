@@ -105,7 +105,7 @@ describe('Application', function () {
                 if (bodyContent) {
                     const [, bodyConfig] = bodyContent.split(': ');
                     if (bodyConfig) {
-                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
                         expect(parsedBodyConfig.value).to.eq(1);
                     }
                 }
@@ -167,7 +167,7 @@ describe('Application', function () {
                 if (bodyContent) {
                     const [, bodyConfig] = bodyContent.split(': ');
                     if (bodyConfig) {
-                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
                         expect(parsedBodyConfig.value).to.eq(1);
                     }
                 }
@@ -195,7 +195,7 @@ describe('Application', function () {
                 if (bodyContent) {
                     const [, bodyConfig] = bodyContent.split(': ');
                     if (bodyConfig) {
-                        const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
                         expect(parsedBodyConfig.value).to.eq(1);
                     }
                 }

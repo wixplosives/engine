@@ -1,4 +1,4 @@
-import { COM, IFeatureLoader, runEngineApp, RuntimeEngine } from '@wixc3/engine-core';
+import { COM, Feature, IFeatureLoader, runEngineApp, RuntimeEngine } from '@wixc3/engine-core';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
@@ -64,7 +64,7 @@ export function createFeatureLoaders(
                 if (envFilePath) {
                     await import(envFilePath);
                 }
-                return (await import(filePath)).default;
+                return ((await import(filePath)) as { default: Feature }).default;
             },
             depFeatures: dependencies,
             resolvedContexts,

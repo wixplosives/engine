@@ -22,7 +22,7 @@ export function evaluateConfig(
     for (const { filePath, envName: configEnvName } of configs) {
         if (!configEnvName || configEnvName === envName) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
-            config.push(...require(filePath).default);
+            config.push(...(require(filePath) as { default: TopLevelConfig }).default);
         }
     }
 

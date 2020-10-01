@@ -1,17 +1,20 @@
 import { expect } from 'chai';
 import type { Page } from 'puppeteer';
-import { createBrowserProvider } from '@wixc3/engine-test-kit';
+import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
-import { createDisposables, RuntimeFeature, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
+
+import { createBrowserProvider } from '@wixc3/engine-test-kit';
+import { createDisposables, RuntimeFeature, TopLevelConfig, RuntimeEngine, Registry } from '@wixc3/engine-core';
 import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '../src/utils';
+import type { TargetApplication } from '../src';
+import type { ServerListeningHandler } from '../feature/dev-server.feature';
 
 const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
 const multiFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-multi-feature');
 const nodeFeatureFixturePath = fs.join(__dirname, '../fixtures/node-env');
 const contextualFeatureFixturePath = fs.join(__dirname, '../fixtures/contextual');
 const useConfigsFeaturePath = fs.join(__dirname, '../fixtures/using-config');
-import { waitFor } from 'promise-assist';
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -59,10 +62,12 @@ describe('engineer:dev-server', function () {
             singleRun: true,
         });
 
-        const runningPort: number = await new Promise((resolve) => {
-            devServerFeature.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
-                resolve(port);
-            });
+        const runningPort = await new Promise<number>((resolve) => {
+            (devServerFeature.api.serverListeningHandlerSlot as Registry<ServerListeningHandler>).register(
+                ({ port }: { port: number }) => {
+                    resolve(port);
+                }
+            );
         });
 
         disposables.add(() => dispose());
@@ -101,8 +106,8 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-multi/variant`);
         const { myConfig, mySlot } = await page.evaluate(() => ({
-            mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
-            myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!),
+            mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!) as string[],
+            myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!) as { tags: string[] },
         }));
 
         expect(myConfig).to.eql({
@@ -145,8 +150,8 @@ describe('engineer:dev-server', function () {
         );
 
         const { myConfig, mySlot } = await page.evaluate(() => ({
-            mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!),
-            myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!),
+            mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!) as string[],
+            myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!) as { tags: string[] },
         }));
 
         expect(myConfig).to.eql({
@@ -255,7 +260,7 @@ describe('engineer:dev-server', function () {
             if (bodyContent) {
                 const [, bodyConfig] = bodyContent.split(': ');
                 if (bodyConfig) {
-                    const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                    const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
                     expect(parsedBodyConfig.value).to.eq(1);
                 }
             }
@@ -278,7 +283,7 @@ describe('engineer:dev-server', function () {
             if (bodyContent) {
                 const [, bodyConfig] = bodyContent.split(': ');
                 if (bodyConfig) {
-                    const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                    const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
                     expect(parsedBodyConfig.value).to.eq(1);
                 }
             }
@@ -302,7 +307,7 @@ describe('engineer:dev-server', function () {
             if (bodyContent) {
                 const [, bodyConfig] = bodyContent.split(': ');
                 if (bodyConfig) {
-                    const parsedBodyConfig = JSON.parse(bodyConfig.trim());
+                    const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
                     expect(parsedBodyConfig.value).to.eq(1);
                 }
             }
@@ -315,7 +320,7 @@ describe('engineer:dev-server', function () {
             runtimeFeature,
         } = await setup({ basePath: nodeFeatureFixturePath });
 
-        const application = runtimeFeature?.api.application;
+        const application = runtimeFeature?.api.application as TargetApplication;
 
         const configOne: TopLevelConfig = [
             [
@@ -350,18 +355,18 @@ describe('engineer:dev-server', function () {
         expect(firstFeatureConfigName).to.not.equal(undefined);
         expect(secondFeatureConfigName).to.not.equal(undefined);
         disposables.add(() =>
-            application.closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName })
+            application.closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName! })
         );
         disposables.add(() =>
-            application.closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName })
+            application.closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName! })
         );
 
         const pageOne = await loadPage(
-            `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName as string}`
+            `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName!}`
         );
 
         const pageTwo = await loadPage(
-            `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName as string}`
+            `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName!}`
         );
 
         await waitFor(async () => {
