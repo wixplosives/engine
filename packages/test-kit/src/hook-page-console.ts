@@ -61,6 +61,8 @@ const messageTypeToConsoleFn: { [key in puppeteer.ConsoleMessageType]?: ((...arg
 
 // workaround to get hidden description
 // jsonValue() on errors returns {}
-function extractErrorMessage(arg: any): string | undefined {
-    return arg?._remoteObject?.subtype === 'error' ? arg._remoteObject.description : undefined;
+function extractErrorMessage(arg: unknown): string | undefined {
+    return (arg as { _remoteObject?: { subtype?: string } })?._remoteObject?.subtype === 'error'
+        ? (arg as { _remoteObject: { description?: string } })._remoteObject.description
+        : undefined;
 }

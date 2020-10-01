@@ -4,16 +4,12 @@ import type { ServerFeatureDef } from '../../../server-types';
 import { classes } from './feature-selection.st.css';
 import { TitledElement } from '../titled-element';
 
-type SelectedValue<T> =
-    | {
-          label?: string;
-          value?: T;
-      }
-    | readonly {
-          label?: string;
-          value?: T;
-      }[]
-    | null;
+interface SelectionValue<T> {
+    label?: string;
+    value?: T;
+}
+
+type SelectedValue<T> = SelectionValue<T> | readonly SelectionValue<T>[] | null;
 
 interface IFeatureSelectionProps {
     features: Record<string, ServerFeatureDef>;
@@ -22,8 +18,8 @@ interface IFeatureSelectionProps {
 
 export const FeaturesSelection = memo<IFeatureSelectionProps>(({ features, onSelected }) => {
     const [selectedFeatureConfigurations, setSelectedFeatureConfigurations] = useState<string[]>([]);
-    const [selectedFeatureName, setSelectedFeatureName] = useState<string>('');
-    const [selectedConfigName, setSelectedConfigName] = useState<string>();
+    const [selectedFeatureName, setSelectedFeatureName] = useState<string | undefined>('');
+    const [selectedConfigName, setSelectedConfigName] = useState<string | undefined>();
 
     const featuresOptions = useMemo(
         () =>
@@ -42,9 +38,11 @@ export const FeaturesSelection = memo<IFeatureSelectionProps>(({ features, onSel
                 onSelected(undefined, undefined);
             }
         } else {
-            const featureValue = Array.isArray(selectedValue) ? selectedValue[0] : selectedValue;
+            const featureValue = Array.isArray(selectedValue)
+                ? (selectedValue as readonly SelectionValue<ServerFeatureDef>[])[0]
+                : (selectedValue as SelectionValue<ServerFeatureDef>);
             setSelectedFeatureName(featureValue.label);
-            setSelectedFeatureConfigurations(featureValue.value.configurations);
+            setSelectedFeatureConfigurations(featureValue.value!.configurations);
             if (onSelected) {
                 onSelected(featureValue.label, selectedConfigName);
             }
@@ -64,11 +62,14 @@ export const FeaturesSelection = memo<IFeatureSelectionProps>(({ features, onSel
         (selectedValue?: SelectedValue<string>) => {
             const configName = !selectedValue
                 ? selectedValue
-                : (Array.isArray(selectedValue) ? selectedValue[0] : selectedValue).label;
+                : (Array.isArray(selectedValue)
+                      ? (selectedValue as readonly SelectionValue<string>[])[0]
+                      : (selectedValue as SelectionValue<string>)
+                  ).label;
 
-            setSelectedConfigName(configName === null ? undefined : configName);
+            setSelectedConfigName(configName ?? undefined);
             if (onSelected) {
-                onSelected(selectedFeatureName, configName);
+                onSelected(selectedFeatureName, configName ?? undefined);
             }
         },
         [setSelectedConfigName, onSelected, selectedFeatureName]

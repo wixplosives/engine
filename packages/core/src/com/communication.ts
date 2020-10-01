@@ -59,7 +59,7 @@ export class Communication {
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private pendingEnvs: SetMultiMap<string, UnknownFunction> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
-    private handlers: Map<string, UnknownFunction[]> = new Map();
+    private handlers = new Map<string, UnknownFunction[]>();
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
@@ -137,9 +137,11 @@ export class Communication {
         { id: api }: IDTag,
         serviceComConfig: ServiceComConfig<T> = {}
     ): AsyncApi<T> {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return new Proxy(Object.create(null), {
             get: (obj, method) => {
                 if (typeof method === 'string') {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     let runtimeMethod = obj[method];
                     if (!runtimeMethod) {
                         runtimeMethod = async (...args: unknown[]) =>
@@ -151,8 +153,10 @@ export class Communication {
                                 this.rootEnvId,
                                 serviceComConfig as Record<string, AnyServiceMethodOptions>
                             );
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         obj[method] = runtimeMethod;
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return runtimeMethod;
                 }
             },
@@ -553,7 +557,7 @@ export class Communication {
     }
 
     private getPostEndpoint(target: Target): Window | Worker {
-        return isWindow(target) ? target.opener || target.parent : target;
+        return isWindow(target) ? (target.opener as Window | null) || target.parent : (target as Worker);
     }
 
     private handleEventMessage(message: EventMessage): void {
@@ -683,7 +687,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                error: String(error.stack),
+                error: String((error as Error).stack),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
             });

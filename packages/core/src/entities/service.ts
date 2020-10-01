@@ -64,6 +64,7 @@ export class Service<
                 return providedValue;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return inputValue || this.getApiProxy(runtimeEngine, serviceKey);
         }
         return providedValue;
@@ -71,6 +72,7 @@ export class Service<
 
     public [CREATE_RUNTIME](context: RuntimeEngine, featureID: string, entityKey: string) {
         if (this.remoteAccess) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.getApiProxy(context, context.entityID(featureID, entityKey));
         }
     }
@@ -90,12 +92,16 @@ export class Service<
     }
 }
 
-function getSingleInstanceId(providedFrom: any): string | void {
+function getSingleInstanceId(providedFrom: unknown): string | void {
     if (isSingleInstance(providedFrom)) {
         return providedFrom.env;
     }
 }
 
-function isSingleInstance(providedFrom: any) {
-    return providedFrom && providedFrom.endpointType && providedFrom.endpointType === 'single';
+function isSingleInstance(providedFrom: unknown): providedFrom is Environment<string, EnvironmentTypes, 'single'> {
+    return (
+        providedFrom &&
+        (providedFrom as Environment).endpointType &&
+        (providedFrom as Environment).endpointType === 'single'
+    );
 }

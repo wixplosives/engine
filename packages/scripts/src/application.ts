@@ -351,7 +351,7 @@ export class Application {
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
-        const baseConfig: webpack.Configuration = typeof baseConfigPath === 'string' ? require(baseConfigPath) : {};
+        const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
         const enviroments = new Set<IEnvironment>();
         for (const { exportedEnvs } of features.values()) {

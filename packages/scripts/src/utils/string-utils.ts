@@ -48,7 +48,8 @@ export const toCamelCase = (str: string) =>
  * getIn({ a: { b: 'c' } }, ['a', 'b'])
  * // => c
  */
-function getIn(obj: Record<string, any>, path: string[]): any {
+function getIn(obj: Record<string, any>, path: string[]): unknown {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return path.reduce((value, key) => value?.[key], obj);
 }
 
@@ -64,7 +65,7 @@ export function templateCompilerProvider(context: Record<string, any>) {
     return function templateCompiler(template: string) {
         return template.replace(templateReg, (match, templateExpression: string) => {
             const pathInContext = templateExpression.trim().split('.');
-            const valueInContext = getIn(context, pathInContext);
+            const valueInContext = getIn(context, pathInContext) as string;
             return valueInContext !== undefined ? valueInContext : match;
         });
     };

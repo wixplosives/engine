@@ -56,7 +56,9 @@ export function createLiveConfigsMiddleware(
                 }
             }
         }
-        res.locals.topLevelConfig = res.locals.topLevelConfig.concat(config, overrideConfig);
+        (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (res.locals as {
+            topLevelConfig: TopLevelConfig[];
+        }).topLevelConfig.concat(config, overrideConfig);
         next();
     };
 }
@@ -78,7 +80,9 @@ export function createCommunicationMiddleware(
                           requestedConfig === 'undefined' ? undefined : requestedConfig
                       )
                 : undefined;
-        res.locals.topLevelConfig = res.locals.topLevelConfig.concat([
+        (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (res.locals as {
+            topLevelConfig: TopLevelConfig[];
+        }).topLevelConfig.concat([
             COM.use({
                 config: {
                     topology,
@@ -95,7 +99,7 @@ export const createConfigMiddleware: (
 ) => express.RequestHandler = (overrideConfig = []) => (req, res) => {
     const { env: reqEnv } = req.query;
     res.send(
-        res.locals.topLevelConfig.concat(
+        (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig.concat(
             Array.isArray(overrideConfig) ? overrideConfig : reqEnv ? overrideConfig(reqEnv as string) : []
         )
     );

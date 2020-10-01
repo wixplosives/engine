@@ -19,7 +19,7 @@ describe('Multi Environment', () => {
         });
 
         const content = await page.evaluate(() => document.body.textContent!.trim());
-        const { config } = JSON.parse(content);
+        const { config } = JSON.parse(content) as { config: { name: string } };
         expect(config.name).to.eq('my-name');
     });
 });

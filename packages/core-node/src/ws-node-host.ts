@@ -1,4 +1,4 @@
-import { BaseHost, IDisposable } from '@wixc3/engine-core';
+import { BaseHost, IDisposable, Message } from '@wixc3/engine-core';
 import type io from 'socket.io';
 
 export class WsHost extends BaseHost {
@@ -25,7 +25,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
         this.server.on('connection', this.onConnection);
     }
 
-    public postMessage(data: any) {
+    public postMessage(data: Message) {
         if (data.to !== '*') {
             if (this.socketToEnvId.has(data.to)) {
                 const { socket, clientID } = this.socketToEnvId.get(data.to)!;
@@ -54,12 +54,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
     }
 
     private onConnection = (socket: io.Socket): void => {
-        const onMessage = (message: {
-            origin: string;
-            type: string;
-            from: string;
-            data: { handlerId: string };
-        }): void => {
+        const onMessage = (message: Message): void => {
             // this mapping should not be here because of forwarding of messages
             // maybe change message forwarding to have 'forward destination' and correct 'from'
             // also maybe we can put the init of the map on 'connection' event

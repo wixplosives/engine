@@ -10,7 +10,7 @@ const changeNodeEnvironmentState = async (
     isNodeEnvActive: boolean,
     runtimeOptions: Array<{ key: string; value: string }> = []
 ) =>
-    await (
+    (await (
         await fetch(`engine-feature`, {
             method: isNodeEnvActive ? 'POST' : 'PUT',
             body: JSON.stringify({
@@ -25,7 +25,7 @@ const changeNodeEnvironmentState = async (
                 'Content-type': 'application/json',
             },
         })
-    ).json();
+    ).json()) as unknown;
 
 export const App: React.FC = () => {
     return (
