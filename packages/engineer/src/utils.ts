@@ -12,7 +12,7 @@ import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
 
 export interface IStartOptions {
-    publicPath: string;
+    publicPath?: string;
     targetApplicationPath: string;
     outputPath?: string;
     featureName?: string;
@@ -37,7 +37,7 @@ export async function startDevServer({
     singleRun,
     singleFeature,
     pathsToRequire = [],
-    publicPath,
+    publicPath = '/',
     mode = 'development',
     title,
     publicConfigsRoute = 'configs/',
@@ -50,7 +50,7 @@ export async function startDevServer({
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
-    engineerEntry: RuntimeFeature;
+    devServerFeature: RuntimeFeature;
 }> {
     const basePath = resolve(__dirname, '../feature');
     const featurePaths = fs.findFilesSync(basePath, {
@@ -96,7 +96,7 @@ export async function startDevServer({
     return {
         engine,
         dispose,
-        engineerEntry: engine.features.get(features.get(engineerEntry).exportedFeature) as RuntimeFeature,
+        devServerFeature: engine.features.get(features.get('engineer/dev-server')!.exportedFeature) as RuntimeFeature,
     };
 }
 
