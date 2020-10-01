@@ -15,7 +15,7 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "socket.io-client": "^2.3.0",
+    "socket.io-client": "^2.3.1",
     "typescript-type-utils": "^0.1.0"
   },
   "files": [
