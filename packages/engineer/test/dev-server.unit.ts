@@ -1,10 +1,10 @@
+import { expect } from 'chai';
+import type { Page } from 'puppeteer';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import { startDevServer } from '../src/utils';
-import devServerFeature from '../feature/dev-server.feature';
 import fs from '@file-services/node';
 import { createDisposables, RuntimeFeature, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
-import type { Page } from 'puppeteer';
-import { expect } from 'chai';
+import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import { startDevServer } from '../src/utils';
 
 const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
 const multiFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-multi-feature');
