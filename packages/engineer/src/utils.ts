@@ -6,13 +6,13 @@ import {
     runNodeEnvironment,
     TopLevelConfigProvider,
 } from '@wixc3/engine-scripts';
-import { RuntimeEngine, BaseHost, TopLevelConfig } from '@wixc3/engine-core';
+import { RuntimeEngine, BaseHost, TopLevelConfig, RuntimeFeature } from '@wixc3/engine-core';
 
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
 
 export interface IStartOptions {
-    publicPath: string;
+    publicPath?: string;
     targetApplicationPath: string;
     outputPath?: string;
     featureName?: string;
@@ -27,16 +27,17 @@ export interface IStartOptions {
     autoLaunch?: boolean;
     engineerEntry?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
+    inspect?: boolean;
 }
 
-export function startDevServer({
+export async function startDevServer({
     featureName,
     configName,
     httpServerPort = 3000,
     singleRun,
     singleFeature,
     pathsToRequire = [],
-    publicPath,
+    publicPath = '/',
     mode = 'development',
     title,
     publicConfigsRoute = 'configs/',
@@ -45,9 +46,11 @@ export function startDevServer({
     engineerEntry = 'engineer/gui',
     overrideConfig = [],
     outputPath,
+    inspect,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
+    devServerFeature: RuntimeFeature;
 }> {
     const basePath = resolve(__dirname, '../feature');
     const featurePaths = fs.findFilesSync(basePath, {
@@ -57,7 +60,7 @@ export function startDevServer({
 
     const features = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs).features;
 
-    return runNodeEnvironment({
+    const { engine, dispose } = await runNodeEnvironment({
         featureName: engineerEntry,
         features: [...features],
         name: devServerEnv.env,
@@ -79,6 +82,7 @@ export function startDevServer({
                     basePath: targetApplicationPath,
                     overrideConfig,
                     outputPath,
+                    inspect,
                 },
             }),
             guiFeature.use({
@@ -88,6 +92,12 @@ export function startDevServer({
             }),
         ],
     });
+
+    return {
+        engine,
+        dispose,
+        devServerFeature: engine.features.get(features.get('engineer/dev-server')!.exportedFeature) as RuntimeFeature,
+    };
 }
 
 function preRequire(pathsToRequire: string[], basePath: string) {

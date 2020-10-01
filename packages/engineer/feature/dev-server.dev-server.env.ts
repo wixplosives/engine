@@ -40,7 +40,10 @@ const attachWSHost = (socketServer: SocketIO.Server, envName: string, communicat
 
 devServerFeature.setup(
     devServerEnv,
-    ({ run, devServerConfig, engineerWebpackConfigs, serverListeningHandlerSlot }, { COM: { communication } }) => {
+    (
+        { run, devServerConfig, engineerWebpackConfigs, serverListeningHandlerSlot, onDispose },
+        { COM: { communication } }
+    ) => {
         const {
             httpServerPort,
             featureName,
@@ -57,12 +60,7 @@ devServerFeature.setup(
             defaultRuntimeOptions,
             outputPath,
         } = devServerConfig;
-
-        const appStartArgs = outputPath
-            ? { basePath, nodeEnvironmentsMode, outputPath }
-            : { basePath, nodeEnvironmentsMode };
-
-        const application = new TargetApplication(appStartArgs);
+        const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath });
         const disposables = new Set<() => unknown>();
 
         // Extract these into a service
@@ -75,6 +73,8 @@ devServerFeature.setup(
             );
             disposables.clear();
         };
+
+        onDispose(close);
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
