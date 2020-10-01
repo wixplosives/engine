@@ -1,15 +1,10 @@
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
+import { startDevServer } from '../src/utils';
+import devServerFeature from '../feature/dev-server.feature';
 import fs from '@file-services/node';
-import { createDisposables, BaseHost, RuntimeFeature, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
+import { createDisposables, RuntimeFeature, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
 import type { Page } from 'puppeteer';
 import { expect } from 'chai';
-import {
-    runNodeEnvironment,
-    loadFeaturesFromPackages,
-    resolvePackages,
-    TopLevelConfigProvider,
-} from '@wixc3/engine-scripts';
 
 const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
 const multiFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-multi-feature');
@@ -51,43 +46,28 @@ describe('engineer:dev-server', function () {
         runtimeFeature: RuntimeFeature | undefined;
         config: { featureName: string | undefined; port: number };
     }> => {
-        const { dispose, engine } = await runNodeEnvironment({
-            featureName: 'engineer/dev-server',
-            features: [...loadFeaturesFromPackages(resolvePackages('../'), fs).features],
-            name: devServerEnv.env,
-            type: 'node',
-            host: new BaseHost(),
-            config: [
-                devServerFeature.use({
-                    devServerConfig: {
-                        basePath,
-                        httpServerPort: port,
-                        singleRun: true,
-                        featureName,
-                        autoLaunch,
-                        configName,
-                        inspect,
-                        overrideConfig,
-                        outputPath,
-                    },
-                }),
-            ],
+        const { dispose, engine, devServerFeature } = await startDevServer({
+            engineerEntry: 'engineer/dev-server',
+            targetApplicationPath: basePath,
+            httpServerPort: port,
+            featureName,
+            autoLaunch,
+            configName,
+            inspect,
+            overrideConfig,
+            outputPath,
+            singleRun: true,
         });
 
-        const runtimeFeature: RuntimeFeature | undefined = engine.features.get(devServerFeature);
-        runtimeFeature?.addOnDisposeHandler(async () => {
-            await runtimeFeature.api.devServerActions.close();
-        }, devServerEnv.env);
-
         const runningPort: number = await new Promise((resolve) => {
-            runtimeFeature!.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
+            devServerFeature.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
                 resolve(port);
             });
         });
 
         disposables.add(() => dispose());
 
-        return { dispose, engine, runtimeFeature, config: { featureName, port: runningPort } };
+        return { dispose, engine, runtimeFeature: devServerFeature, config: { featureName, port: runningPort } };
     };
 
     const loadPage = async (url: string) => {

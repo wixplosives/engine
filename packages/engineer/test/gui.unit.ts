@@ -6,6 +6,7 @@ import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
 import { expect } from 'chai';
 import type { Page } from 'puppeteer';
+import { startDevServer } from '../src';
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -17,35 +18,15 @@ describe('engineer:gui', function () {
     const browserProvider = createBrowserProvider();
 
     const setup = async ({ featureName, basePath }: { featureName?: string; basePath: string }) => {
-        const features = loadFeaturesFromPackages(resolvePackages(__dirname + '../'), fs).features;
-        const { dispose, engine } = await runNodeEnvironment({
-            featureName: 'engineer/gui',
-            features: [...features],
-            name: devServerEnv.env,
-            type: 'node',
-            host: new BaseHost(),
-            config: [
-                devServerFeature.use({
-                    devServerConfig: {
-                        basePath,
-                    },
-                }),
-                guiFeature.use({
-                    engineerConfig: {
-                        features,
-                    },
-                }),
-            ],
+        const { dispose, engine, devServerFeature } = await startDevServer({
+            engineerEntry: 'engineer/gui',
+            targetApplicationPath: basePath,
         });
 
         const runtimeFeature = engine.features.get(guiFeature) as RuntimeFeature;
-        const devServerRuntime = engine.features.get(devServerFeature) as RuntimeFeature;
-        runtimeFeature.addOnDisposeHandler(async () => {
-            await devServerRuntime.api.devServerActions.close();
-        }, devServerEnv.env);
 
         const runningPort: number = await new Promise((resolve) => {
-            devServerRuntime.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
+            devServerFeature.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
                 resolve(port);
             });
         });
