@@ -23,7 +23,7 @@ const collectMultiple = (val: string, prev: string[]) => [...prev, val];
 const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '/';
 
 program
-    .command('start [path]')
+    .command('start')
     .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
     .option('-f, --feature <feature>')
     .option('-c, --config <config>')
@@ -43,9 +43,11 @@ program
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .option('--engineerEntry <featureName>', 'entry feature for engineer', 'engineer/gui')
+    .option('--application-path <path>', 'pato target application', process.cwd())
     .allowUnknownOption(true)
-    .action(async (path = process.cwd(), cmd: Record<string, any>) => {
+    .action(async (cmd: Record<string, any>) => {
         const {
+            applicationPath,
             feature: featureName,
             config: configName,
             port: httpServerPort = 3000,
@@ -74,7 +76,8 @@ program
                 publicConfigsRoute,
                 autoLaunch,
                 engineerEntry,
-                targetApplicationPath: path,
+                targetApplicationPath: resolve(applicationPath),
+                runtimeOptions: parseCliArguments(process.argv.slice(3)),
             });
 
             if (!process.send && featureName && configName && openBrowser === 'true') {

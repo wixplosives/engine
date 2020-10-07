@@ -28,6 +28,7 @@ export interface IStartOptions {
     engineerEntry?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     inspect?: boolean;
+    runtimeOptions?: Record<string, string | boolean>;
 }
 
 export async function startDevServer({
@@ -47,6 +48,7 @@ export async function startDevServer({
     overrideConfig = [],
     outputPath,
     inspect,
+    runtimeOptions = {},
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -83,6 +85,7 @@ export async function startDevServer({
                     overrideConfig,
                     outputPath,
                     inspect,
+                    defaultRuntimeOptions: runtimeOptions,
                 },
             }),
             guiFeature.use({
