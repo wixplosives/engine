@@ -23,6 +23,6 @@ jobs:
           path: |
             node_modules
             */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/yarn.lock') }}
       - run: yarn --frozen-lockfile
       - run: yarn test
