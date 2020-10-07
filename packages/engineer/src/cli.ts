@@ -61,7 +61,7 @@ program
             engineerEntry,
         } = cmd;
         try {
-            await startDevServer({
+            const { devServerFeature } = await startDevServer({
                 featureName,
                 configName,
                 httpServerPort,
@@ -76,6 +76,10 @@ program
                 engineerEntry,
                 targetApplicationPath: nodeFs.existsSync(path) ? resolve(path) : process.cwd(),
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
+            });
+
+            await new Promise((resolve) => {
+                devServerFeature.serverListeningHandlerSlot.register(resolve);
             });
 
             if (!process.send && featureName && configName && openBrowser === 'true') {
