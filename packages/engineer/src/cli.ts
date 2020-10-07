@@ -78,12 +78,12 @@ program
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
             });
 
-            await new Promise((resolve) => {
+            const { port } = await new Promise((resolve) => {
                 devServerFeature.serverListeningHandlerSlot.register(resolve);
             });
 
             if (!process.send && featureName && configName && openBrowser === 'true') {
-                await open(`http://localhost:${httpServerPort as string}/main.html`);
+                await open(`http://localhost:${port as string}/main.html`);
             }
         } catch (e) {
             printErrorAndExit(e);
