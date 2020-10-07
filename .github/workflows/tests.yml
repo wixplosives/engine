@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm i -g yarn@1
-      - name: restore lerna
+      - name: modules cache
         uses: actions/cache@v2
         with:
           path: |
