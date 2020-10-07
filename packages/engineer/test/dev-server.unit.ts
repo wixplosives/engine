@@ -4,13 +4,13 @@ import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import { createDisposables, RuntimeFeature, TopLevelConfig, RuntimeEngine, Registry } from '@wixc3/engine-core';
+import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
 import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '../src/utils';
 import type { TargetApplication } from '../src';
-import type { ServerListeningHandler } from '../feature/dev-server.feature';
 
 const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
+const engineRuntimeFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-run-options');
 const multiFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-multi-feature');
 const nodeFeatureFixturePath = fs.join(__dirname, '../fixtures/node-env');
 const contextualFeatureFixturePath = fs.join(__dirname, '../fixtures/contextual');
@@ -34,6 +34,7 @@ describe('engineer:dev-server', function () {
         inspect = false,
         overrideConfig = [],
         outputPath,
+        runtimeOptions = {},
     }: {
         featureName?: string;
         port?: number;
@@ -43,10 +44,11 @@ describe('engineer:dev-server', function () {
         inspect?: boolean;
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
         outputPath?: string;
+        runtimeOptions?: Record<string, string | boolean>;
     }): Promise<{
         dispose: () => Promise<void>;
         engine: RuntimeEngine;
-        runtimeFeature: RuntimeFeature | undefined;
+        runtimeFeature: typeof devServerFeature;
         config: { featureName: string | undefined; port: number };
     }> => {
         const { dispose, engine, devServerFeature } = await startDevServer({
@@ -60,14 +62,13 @@ describe('engineer:dev-server', function () {
             overrideConfig,
             outputPath,
             singleRun: true,
+            runtimeOptions,
         });
 
         const runningPort = await new Promise<number>((resolve) => {
-            (devServerFeature.api.serverListeningHandlerSlot as Registry<ServerListeningHandler>).register(
-                ({ port }: { port: number }) => {
-                    resolve(port);
-                }
-            );
+            devServerFeature.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
+                resolve(port);
+            });
         });
 
         disposables.add(() => dispose());
@@ -415,6 +416,22 @@ describe('engineer:dev-server', function () {
         const fileContent = JSON.stringify(JSON.parse(fs.readFileSync(packageFile).toString().trim()));
 
         expect(responseText).to.eq(fileContent);
+    });
+
+    it('can run runtime configs', async () => {
+        const {
+            config: { port },
+        } = await setup({
+            featureName: 'engine-run-options/x',
+            basePath: engineRuntimeFeatureFixturePath,
+            runtimeOptions: { foo: 'bar' },
+        });
+
+        const page = await loadPage(`http://localhost:${port}/main.html`);
+
+        const text = await getBodyContent(page);
+
+        expect(text).to.include('{"foo":"bar"}');
     });
 });
 
