@@ -6,7 +6,7 @@ import {
     runNodeEnvironment,
     TopLevelConfigProvider,
 } from '@wixc3/engine-scripts';
-import { RuntimeEngine, BaseHost, TopLevelConfig, RuntimeFeature } from '@wixc3/engine-core';
+import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/engine-core';
 
 import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
 import guiFeature from '../feature/gui.feature';
@@ -52,7 +52,7 @@ export async function startDevServer({
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
-    devServerFeature: RuntimeFeature;
+    devServerFeature: MapToProxyType<typeof devServerFeature['api']>;
 }> {
     const basePath = resolve(__dirname, '../feature');
     const featurePaths = fs.findFilesSync(basePath, {
@@ -95,11 +95,10 @@ export async function startDevServer({
             }),
         ],
     });
-
     return {
         engine,
         dispose,
-        devServerFeature: engine.features.get(features.get('engineer/dev-server')!.exportedFeature) as RuntimeFeature,
+        devServerFeature: engine.get(devServerFeature).api,
     };
 }
 

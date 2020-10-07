@@ -7,7 +7,6 @@ import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
 import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '../src/utils';
-import type { TargetApplication } from '../src';
 
 const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
 const engineRuntimeFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-run-options');
@@ -64,11 +63,8 @@ describe('engineer:dev-server', function () {
             singleRun: true,
             runtimeOptions,
         });
-
         const runningPort = await new Promise<number>((resolve) => {
-            devServerFeature.api.serverListeningHandlerSlot.register(({ port }: { port: number }) => {
-                resolve(port);
-            });
+            devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
         });
 
         disposables.add(() => dispose());
@@ -318,10 +314,8 @@ describe('engineer:dev-server', function () {
     it('runs 2 node features simultaniously', async () => {
         const {
             config: { port },
-            runtimeFeature,
+            runtimeFeature: { application },
         } = await setup({ basePath: nodeFeatureFixturePath });
-
-        const application = runtimeFeature?.api.application as TargetApplication;
 
         const configOne: TopLevelConfig = [
             [
