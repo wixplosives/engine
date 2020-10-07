@@ -4,11 +4,9 @@ import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import { createDisposables, RuntimeFeature, TopLevelConfig, RuntimeEngine, Registry } from '@wixc3/engine-core';
+import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
 import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '../src/utils';
-import type { TargetApplication } from '../src';
-import type { ServerListeningHandler } from '../feature/dev-server.feature';
 
 const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
 const multiFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-multi-feature');
@@ -46,7 +44,7 @@ describe('engineer:dev-server', function () {
     }): Promise<{
         dispose: () => Promise<void>;
         engine: RuntimeEngine;
-        runtimeFeature: RuntimeFeature | undefined;
+        runtimeFeature: typeof devServerFeature;
         config: { featureName: string | undefined; port: number };
     }> => {
         const { dispose, engine, devServerFeature } = await startDevServer({
@@ -61,13 +59,8 @@ describe('engineer:dev-server', function () {
             outputPath,
             singleRun: true,
         });
-
         const runningPort = await new Promise<number>((resolve) => {
-            (devServerFeature.api.serverListeningHandlerSlot as Registry<ServerListeningHandler>).register(
-                ({ port }: { port: number }) => {
-                    resolve(port);
-                }
-            );
+            devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
         });
 
         disposables.add(() => dispose());
@@ -317,10 +310,8 @@ describe('engineer:dev-server', function () {
     it('runs 2 node features simultaniously', async () => {
         const {
             config: { port },
-            runtimeFeature,
+            runtimeFeature: { application },
         } = await setup({ basePath: nodeFeatureFixturePath });
-
-        const application = runtimeFeature?.api.application as TargetApplication;
 
         const configOne: TopLevelConfig = [
             [

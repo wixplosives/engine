@@ -1,11 +1,10 @@
-import { createDisposables, Registry, RuntimeFeature } from '@wixc3/engine-core';
+import { createDisposables, RuntimeFeature } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import fs from '@file-services/node';
 import guiFeature from '../feature/gui.feature';
 import { expect } from 'chai';
 import type { Page } from 'puppeteer';
 import { startDevServer } from '../src';
-import type { ServerListeningHandler } from '../feature/dev-server.feature';
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -25,11 +24,9 @@ describe('engineer:gui', function () {
         const runtimeFeature = engine.features.get(guiFeature) as RuntimeFeature;
 
         const runningPort = await new Promise<number>((resolve) => {
-            (devServerFeature.api.serverListeningHandlerSlot as Registry<ServerListeningHandler>).register(
-                ({ port }) => {
-                    resolve(port);
-                }
-            );
+            devServerFeature.serverListeningHandlerSlot.register(({ port }) => {
+                resolve(port);
+            });
         });
 
         disposables.add(() => dispose());
