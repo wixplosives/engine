@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engineer",
-  "version": "15.1.1",
+  "version": "15.1.2",
   "license": "MIT",
   "main": "cjs/src/index.js",
   "types": "cjs/src/index.d.ts",
