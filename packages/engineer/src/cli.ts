@@ -61,7 +61,7 @@ program
             engineerEntry,
         } = cmd;
         try {
-            await startDevServer({
+            const { devServerFeature } = await startDevServer({
                 featureName,
                 configName,
                 httpServerPort,
@@ -74,11 +74,16 @@ program
                 publicConfigsRoute,
                 autoLaunch,
                 engineerEntry,
-                targetApplicationPath: path,
+                targetApplicationPath: fs.existsSync(path) ? fs.resolve(path) : process.cwd(),
+                runtimeOptions: parseCliArguments(process.argv.slice(3)),
+            });
+
+            const { port } = await new Promise((resolve) => {
+                devServerFeature.serverListeningHandlerSlot.register(resolve);
             });
 
             if (!process.send && featureName && configName && openBrowser === 'true') {
-                await open(`http://localhost:${httpServerPort as string}/main.html`);
+                await open(`http://localhost:${port as string}/main.html`);
             }
         } catch (e) {
             printErrorAndExit(e);

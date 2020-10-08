@@ -36,6 +36,7 @@ guiFeature.setup(
             publicConfigsRoute,
             staticBuild: false,
             configurations,
+            featureName: 'engineer/gui',
         });
 
         engineerWebpackConfigs.register(
