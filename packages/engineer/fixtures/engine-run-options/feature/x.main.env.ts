@@ -1,5 +1,5 @@
 import sampleFeature, { MAIN, PROC } from './x.feature';
-import { socketServerInitializer } from '@wixc3/engine-core/src';
+import { socketServerInitializer } from '@wixc3/engine-core';
 
 sampleFeature.setup(MAIN, ({ run, passedOptions }, { COM: { startEnvironment } }) => {
     run(async () => {
