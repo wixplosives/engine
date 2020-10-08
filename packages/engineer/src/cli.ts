@@ -9,7 +9,7 @@
 import { resolve } from 'path';
 import program from 'commander';
 import open from 'open';
-import fs, { nodeFs } from '@file-services/node';
+import fs from '@file-services/node';
 import { Application, parseCliArguments } from '@wixc3/engine-scripts';
 
 import { startDevServer } from './utils';
@@ -74,7 +74,7 @@ program
                 publicConfigsRoute,
                 autoLaunch,
                 engineerEntry,
-                targetApplicationPath: nodeFs.existsSync(path) ? resolve(path) : process.cwd(),
+                targetApplicationPath: fs.existsSync(path) ? fs.resolve(path) : process.cwd(),
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
             });
 
