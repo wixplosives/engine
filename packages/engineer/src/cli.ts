@@ -59,6 +59,7 @@ program
             publicConfigsRoute,
             autoLaunch,
             engineerEntry,
+            inspect,
         } = cmd;
         try {
             const { devServerFeature } = await startDevServer({
@@ -76,6 +77,7 @@ program
                 engineerEntry,
                 targetApplicationPath: fs.existsSync(path) ? fs.resolve(path) : process.cwd(),
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
+                inspect,
             });
 
             const { port } = await new Promise((resolve) => {
