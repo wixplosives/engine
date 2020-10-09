@@ -25,6 +25,7 @@ try {
                     },
                 },
             ],
+            configName: 'tsconfig.build.json',
         });
 
         // eslint-disable-next-line no-console
