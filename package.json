@@ -6,7 +6,7 @@
     "packages/scripts/test/fixtures/*"
   ],
   "scripts": {
-    "clean": "rimraf ./packages/*/dist",
+    "clean": "rimraf ./packages/*/dist ./examples/dist",
     "build": "yarn build:typescript && yarn build:stylable",
     "build:typescript": "tsc --build",
     "build:stylable": "yarn workspace @wixc3/engine-dashboard build:stylable",
