@@ -6,7 +6,7 @@ import { templateCompilerProvider } from '../utils';
 export const TEMPLATE_EXTENSION = '.tmpl';
 export const DEFAULT_FEATURE_DIR_NAME_TEMPLATE = '${featureName.dashCase}';
 
-export default function generateFeature({
+export function generateFeature({
     fs,
     featureName,
     targetPath,

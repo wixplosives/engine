@@ -1,4 +1,3 @@
-import { resolve } from 'path';
 import fs from '@file-services/node';
 import {
     isFeatureFile,
@@ -8,8 +7,10 @@ import {
 } from '@wixc3/engine-scripts';
 import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/engine-core';
 
-import devServerFeature, { devServerEnv } from '../feature/dev-server.feature';
-import guiFeature from '../feature/gui.feature';
+import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
+import guiFeature from './feature/gui.feature';
+
+const basePath = fs.join(__dirname, './feature');
 
 export interface IStartOptions {
     publicPath?: string;
@@ -54,7 +55,6 @@ export async function startDevServer({
     engine: RuntimeEngine;
     devServerFeature: MapToProxyType<typeof devServerFeature['api']>;
 }> {
-    const basePath = resolve(__dirname, '../feature');
     const featurePaths = fs.findFilesSync(basePath, {
         filterFile: ({ name }) => isFeatureFile(name),
     });

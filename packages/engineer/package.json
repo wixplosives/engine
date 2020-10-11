@@ -2,24 +2,19 @@
   "name": "@wixc3/engineer",
   "version": "15.1.3",
   "license": "MIT",
-  "main": "cjs/src/index.js",
-  "types": "cjs/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "engineer": "./bin/engineer.js"
   },
   "scripts": {
-    "clean": "rimraf cjs",
-    "prebuild": "yarn clean",
-    "build": "yarn build:typescript && yarn build:stylable",
-    "build:typescript": "node build.js",
-    "build:stylable": "stc --srcDir=\".\" --outDir=\"cjs\" --stcss --cjs=false",
-    "test": "mocha \"test/**/*.unit.ts?(x)\"",
-    "prepack": "yarn build"
+    "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
     "@file-services/node": "^4.1.2",
     "@wixc3/engine-core": "^15.1.3",
     "@wixc3/engine-core-node": "^15.1.3",
+    "@wixc3/engine-dashboard": "^15.1.3",
     "@wixc3/engine-scripts": "^15.1.3",
     "commander": "^6.1.0",
     "open": "^7.3.0",
@@ -32,11 +27,11 @@
     "webpack-virtual-modules": "^0.3.1"
   },
   "files": [
-    "cjs",
     "bin",
-    "engine-dashboard",
+    "dist",
+    "!dist/test",
     "src",
-    "feature"
+    "!*/tsconfig.{json,tsbuildinfo}"
   ],
   "publishConfig": {
     "access": "public"

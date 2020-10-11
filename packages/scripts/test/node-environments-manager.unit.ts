@@ -1,10 +1,8 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { join } from 'path';
-
 import { createDisposables } from '@wixc3/engine-core';
-
-import { Application } from '../src';
+import { Application } from '@wixc3/engine-scripts';
 
 chai.use(chaiAsPromised);
 

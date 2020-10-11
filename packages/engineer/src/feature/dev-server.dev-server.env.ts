@@ -1,6 +1,6 @@
 import devServerFeature, { devServerEnv } from './dev-server.feature';
 import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
-import { TargetApplication } from '../src/application-proxy-service';
+import { TargetApplication } from '../application-proxy-service';
 import express from 'express';
 import {
     ensureTopLevelConfigMiddleware,

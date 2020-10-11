@@ -1,5 +1,4 @@
 require('@ts-tools/node/r');
-require('tsconfig-paths/register');
 
 import { resolve } from 'path';
 import fs from '@file-services/node';

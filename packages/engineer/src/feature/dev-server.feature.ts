@@ -1,7 +1,7 @@
-import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
-import type { TargetApplication } from '../src/application-proxy-service';
-import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import type webpack from 'webpack';
+import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
+import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import type { TargetApplication } from '../application-proxy-service';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
 

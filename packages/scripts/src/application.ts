@@ -26,12 +26,14 @@ import type {
     TopLevelConfigProvider,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
-import generateFeature, { pathToFeaturesDirectory } from './feature-generator';
+import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import { filterEnvironments } from './utils/environments';
 import { launchHttpServer } from './launch-http-server';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
+
+const builtinTemplatesPath = fs.join(__dirname, '../templates');
 
 export interface IRunFeatureOptions extends IFeatureTarget {
     featureName: string;
@@ -252,7 +254,7 @@ export class Application {
         const userTemplatesDirPath = config?.featureTemplatesFolder || templatesDir;
         const templatesDirPath = userTemplatesDirPath
             ? fs.join(this.basePath, userTemplatesDirPath)
-            : fs.join(__dirname, '../templates');
+            : builtinTemplatesPath;
 
         generateFeature({
             fs,

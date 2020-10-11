@@ -1,4 +1,4 @@
-import { Communication } from '../src';
+import { Communication } from '@wixc3/engine-core';
 import {
     multiTanentServiceId,
     MultiTenantTestService,

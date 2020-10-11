@@ -114,7 +114,7 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string) {
+    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string): RuntimeFeature<this, Deps, API> {
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};
@@ -145,11 +145,9 @@ export class Feature<
             ...inputApi,
             id: this.id,
             run(fn: () => void) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 feature.addRunHandler(fn, envName);
             },
             onDispose(fn: DisposeFunction) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 feature.addOnDisposeHandler(fn, envName);
             },
             [RUN_OPTIONS]: runningEngine.runOptions,
@@ -191,7 +189,6 @@ export class Feature<
             }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return feature;
     }
 

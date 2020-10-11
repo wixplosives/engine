@@ -14,9 +14,8 @@ import { Application, parseCliArguments } from '@wixc3/engine-scripts';
 
 import { startDevServer } from './utils';
 
-const { version } = JSON.parse(fs.readFileSync(fs.findClosestFileSync(__dirname, 'package.json') as string).toString());
-
-program.version(version);
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+program.version((require('../package.json') as { version: string }).version);
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];

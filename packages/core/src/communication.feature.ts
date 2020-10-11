@@ -60,7 +60,10 @@ export default new Feature({
         onDispose,
     }) => {
         // TODO: find better way to detect node runtime
-        const isNode = typeof process !== 'undefined' && process.title !== 'browser' && process.type !== 'renderer';
+        const isNode =
+            typeof process !== 'undefined' &&
+            process.title !== 'browser' &&
+            (process as { type?: string }).type !== 'renderer';
 
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.

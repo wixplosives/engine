@@ -1,3 +1,5 @@
+import { EventEmitter } from 'events';
+
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -10,9 +12,7 @@ import {
     Communication,
     EventEmitterHost,
     createDisposables,
-} from '../../src';
-
-import { EventEmitter } from 'events';
+} from '@wixc3/engine-core';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

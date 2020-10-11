@@ -3,7 +3,7 @@ import { devServerEnv } from './dev-server.feature';
 import { socketServerInitializer } from '@wixc3/engine-core';
 import React from 'react';
 import { render } from 'react-dom';
-import { App } from '../engine-dashboard/components/app';
+import { App } from '@wixc3/engine-dashboard';
 
 guiFeature.setup(mainDashboardEnv, ({ run }, { COM: { startEnvironment } }) => {
     run(async () => {

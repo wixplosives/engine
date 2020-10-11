@@ -1,7 +1,5 @@
-import chai, { expect } from 'chai';
-import sinonChai from 'sinon-chai';
-import { OrderedRegistry } from '../src/entities/ordered-slot';
-chai.use(sinonChai);
+import { expect } from 'chai';
+import { OrderedRegistry } from '@wixc3/engine-core';
 
 describe('ordered-slot', () => {
     const MENU_FILE = 'File';

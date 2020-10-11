@@ -1,14 +1,10 @@
+import { expect } from 'chai';
+import fs from '@file-services/node';
 import { createDisposables, RuntimeFeature } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import fs from '@file-services/node';
-import guiFeature from '../feature/gui.feature';
-import { expect } from 'chai';
-import type { Page } from 'puppeteer';
-import { startDevServer } from '../src';
+import { guiFeature, startDevServer } from '@wixc3/engineer';
 
-function getBodyContent(page: Page) {
-    return page.evaluate(() => document.body.textContent!.trim());
-}
+const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
 
 describe('engineer:gui', function () {
     this.timeout(15_000);
@@ -52,14 +48,13 @@ describe('engineer:gui', function () {
     after(() => browserProvider.dispose());
 
     it('should allow visit of dashboard gui', async () => {
-        const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
         const {
             config: { port },
         } = await setup({ basePath: engineFeatureFixturePath });
 
         const page = await loadPage(`http://localhost:${port}/main-dashboard.html?feature=engineer/gui`);
 
-        const text = await getBodyContent(page);
+        const text = await page.evaluate(() => document.body.textContent!.trim());
 
         expect(text).to.include('Feature');
         expect(text).to.include('Config');

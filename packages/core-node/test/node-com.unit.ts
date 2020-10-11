@@ -1,3 +1,5 @@
+import { fork } from 'child_process';
+import { join } from 'path';
 import type { Socket } from 'net';
 import { safeListeningHttpServer } from 'create-listening-server';
 import io from 'socket.io';
@@ -6,12 +8,8 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { waitFor } from 'promise-assist';
 
-import { Communication, WsClientHost, socketServerInitializer, BaseHost } from '@wixc3/engine-core';
-import { WsHost } from '@wixc3/engine-core-node';
-import { createDisposables } from '@wixc3/engine-core';
-import { fork } from 'child_process';
-import { join } from 'path';
-import { IPCHost } from '../src/ipc-host';
+import { Communication, WsClientHost, socketServerInitializer, BaseHost, createDisposables } from '@wixc3/engine-core';
+import { WsHost, IPCHost } from '@wixc3/engine-core-node';
 
 interface ICommunicationTestApi {
     sayHello: () => string;
@@ -208,7 +206,7 @@ describe('IPC communication', () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
         const forked = fork(join(__dirname, 'process-entry.ts'), [], {
-            execArgv: '-r @ts-tools/node/r -r tsconfig-paths/register'.split(' '),
+            execArgv: '-r @ts-tools/node/r'.split(' '),
             cwd: process.cwd(),
         });
         disposables.add(() => forked.kill());
