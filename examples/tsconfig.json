@@ -1,19 +1,18 @@
 {
-    "extends": "../tsconfig.base.json",
-    "compilerOptions": {
-      "outDir": "./dist",
-      "noEmit": true,
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "noEmit": true
+  },
+  "references": [
+    {
+      "path": "../packages/core/src"
     },
-    "references": [
-      {
-        "path": "../packages/core/src"
-      },
-      {
-        "path": "../packages/core-node/src"
-      },
-      {
-        "path": "../packages/test-kit/src"
-      }
-    ]
-  }
-  
+    {
+      "path": "../packages/core-node/src"
+    },
+    {
+      "path": "../packages/test-kit/src"
+    }
+  ]
+}
