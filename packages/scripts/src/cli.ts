@@ -12,8 +12,8 @@ import { resolve } from 'path';
 import { Application } from './application';
 import { parseCliArguments } from './utils';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires
-program.version((require('../package.json')).version);
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+program.version((require('../package.json') as { version: string }).version);
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
