@@ -22,15 +22,11 @@
     "glob": "^7.1.6",
     "html-webpack-plugin": "^4.5.0",
     "import-fresh": "^3.2.1",
-    "open": "^7.3.0",
-    "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-select": "^3.1.0",
     "rimraf": "^3.0.2",
     "socket.io": "^2.3.0",
     "webpack": "^4.44.2",
-    "webpack-dev-middleware": "^3.7.2",
     "webpack-virtual-modules": "^0.3.1"
   },
   "files": [
