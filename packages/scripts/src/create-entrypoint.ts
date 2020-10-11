@@ -1,9 +1,9 @@
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition, IConfigDefinition } from './types';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { join } from 'path';
 
 const { stringify } = JSON;
+const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
 
 export interface ICreateEntrypointsOptions {
     features: ReadonlyMap<string, IFeatureDefinition>;
@@ -139,7 +139,7 @@ function addOverrideConfig(config: TopLevelConfig) {
 
 function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
     return `import(/* webpackChunkName: "${filePath}" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-        join(__dirname, 'top-level-config-loader') + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
+        topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
     )})`;
 }
 
