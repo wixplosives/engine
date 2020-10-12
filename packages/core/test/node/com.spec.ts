@@ -1,5 +1,3 @@
-import { EventEmitter } from 'events';
-
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -12,6 +10,8 @@ import {
     Communication,
     EventEmitterHost,
     createDisposables,
+    EventEmitter,
+    Message,
 } from '@wixc3/engine-core';
 
 chai.use(sinonChai);
@@ -278,7 +278,7 @@ describe('Communication', () => {
 
 describe('Event Emitter communication', () => {
     it('single communication', async () => {
-        const eventEmitter = new EventEmitter();
+        const eventEmitter = new EventEmitter<{ message: Message }>();
         const host = new EventEmitterHost(eventEmitter);
 
         const main = new Communication(host, 'main');
@@ -301,7 +301,7 @@ describe('Event Emitter communication', () => {
 
     it('multi communication', async () => {
         const host = new BaseHost();
-        const eventEmitter = new EventEmitter();
+        const eventEmitter = new EventEmitter<{ message: Message }>();
         const host2 = new EventEmitterHost(eventEmitter);
 
         const main = new Communication(host, 'main');

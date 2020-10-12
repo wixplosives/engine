@@ -1,4 +1,4 @@
-import { createRequire } from 'module';
+import Module from 'module';
 import { join } from 'path';
 
 /**
@@ -9,7 +9,7 @@ export function resolveFrom(
     request: string,
     options?: { paths?: string[] }
 ): string | undefined {
-    const require = createRequire(join(directoryPath, 'requesting-file.js'));
+    const require = Module.createRequire(join(directoryPath, 'requesting-file.js'));
     try {
         return require.resolve(request, options);
     } catch {
