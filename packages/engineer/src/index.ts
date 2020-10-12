@@ -1,4 +1,4 @@
-import guiFeature from './feature/dev-server.feature';
+import guiFeature from './feature/gui.feature';
 
 export { guiFeature };
 export * from './application-proxy-service';
