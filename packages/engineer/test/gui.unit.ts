@@ -2,7 +2,8 @@ import { expect } from 'chai';
 import fs from '@file-services/node';
 import { createDisposables, RuntimeFeature } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import { guiFeature, startDevServer } from '@wixc3/engineer';
+import { startDevServer } from '@wixc3/engineer';
+import guiFeature from '@wixc3/engineer/gui-feature';
 
 const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
 

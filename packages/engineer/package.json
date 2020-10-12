@@ -30,7 +30,9 @@
     "dist",
     "!dist/test",
     "src",
-    "!*/tsconfig.{json,tsbuildinfo}"
+    "!*/tsconfig.{json,tsbuildinfo}",
+    "gui-feature.js",
+    "gui-feature.d.ts"
   ],
   "publishConfig": {
     "access": "public"
