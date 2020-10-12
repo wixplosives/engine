@@ -6,12 +6,12 @@
     "packages/scripts/test/fixtures/*"
   ],
   "scripts": {
-    "clean": "rimraf ./packages/*/dist ./examples/dist",
+    "clean": "rimraf ./packages/*/dist ./examples/*/dist",
     "build": "yarn build:typescript && yarn build:stylable",
     "build:typescript": "tsc --build",
     "build:stylable": "yarn workspace @wixc3/engine-dashboard build:stylable",
     "lint": "eslint . -f codeframe",
-    "start": "engine start",
+    "start": "engineer start",
     "pretest": "yarn build && yarn lint",
     "test": "yarn test:unit",
     "test:unit": "lerna run test --stream --concurrency=1",

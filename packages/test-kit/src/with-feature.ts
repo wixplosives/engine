@@ -69,7 +69,7 @@ export interface IFeatureExecutionOptions {
 export interface IWithFeatureOptions extends IFeatureExecutionOptions, puppeteer.LaunchOptions {
     /**
      * If we want to test the engine against a running application, proveide the port of the application.
-     * It can be extracted from the log printed after 'engine start' or 'engine run'
+     * It can be extracted from the log printed after 'engineer start' or 'engine run'
      */
     runningApplicationPort?: number;
 
@@ -142,7 +142,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    before('engine start', async function () {
+    before('engineer start', async function () {
         if (!featureUrl) {
             this.timeout(60_000 * 4); // 4 minutes
             const port = await executableApp.getServerPort();
