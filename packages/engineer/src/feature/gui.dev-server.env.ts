@@ -3,10 +3,10 @@ import { devServerEnv } from './dev-server.feature';
 
 import fs from '@file-services/node';
 import type webpack from 'webpack';
+import VirtualModulesPlugin from 'webpack-virtual-modules';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { createEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/engine-core';
-import VirtualModulesPlugin from 'webpack-virtual-modules';
 
 guiFeature.setup(
     devServerEnv,
