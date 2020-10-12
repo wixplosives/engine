@@ -23,7 +23,7 @@ import {
     SingleEndpointContextualEnvironment,
     Slot,
     Universal,
-} from '../../src';
+} from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
 chai.use(sinonChai);

@@ -4,7 +4,9 @@ import { join } from 'path';
 import { FileServerDriver } from './file-server-driver';
 import fileServerFeature, { SERVER_MARK, MAIN_MARK } from '../feature/file-server.feature';
 
-describe('File Server Feature', () => {
+describe('File Server Feature', function () {
+    this.timeout(20_000);
+
     const { getLoadedFeature } = withFeature({
         featureName: 'file-server/example',
         configName: 'file-server/run',

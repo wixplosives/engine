@@ -6,14 +6,14 @@ import fs from '@file-services/node';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
 import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
-import { startDevServer } from '../src/utils';
+import { startDevServer } from '@wixc3/engineer';
 
-const engineFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-feature');
-const engineRuntimeFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-run-options');
-const multiFeatureFixturePath = fs.join(__dirname, '../fixtures/engine-multi-feature');
-const nodeFeatureFixturePath = fs.join(__dirname, '../fixtures/node-env');
-const contextualFeatureFixturePath = fs.join(__dirname, '../fixtures/contextual');
-const useConfigsFeaturePath = fs.join(__dirname, '../fixtures/using-config');
+const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
+const engineRuntimeFeatureFixturePath = fs.join(__dirname, './fixtures/engine-run-options');
+const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
+const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
+const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
+const useConfigsFeaturePath = fs.join(__dirname, './fixtures/using-config');
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());

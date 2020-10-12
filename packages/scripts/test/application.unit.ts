@@ -4,7 +4,7 @@ import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import type { Page } from 'puppeteer';
-import { Application } from '../src/application';
+import { Application } from '@wixc3/engine-scripts';
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());

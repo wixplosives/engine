@@ -1,5 +1,3 @@
-const { join } = require('path');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
 
 /** @type {import('webpack').Configuration} */
@@ -8,7 +6,6 @@ module.exports = {
     devtool: 'source-map',
     resolve: {
         extensions: ['.ts', '.tsx', '.mjs', '.js', '.json'],
-        plugins: [new TsconfigPathsPlugin({ configFile: join(__dirname, 'tsconfig.json') })],
     },
     module: {
         rules: [
