@@ -57,7 +57,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const webEnvs = new Map<string, string[]>();
     const workerEnvs = new Map<string, string[]>();
     const electronRendererEnvs = new Map<string, string[]>();
-    const electronMainEnvs = new Map<string, string[]>();
     for (const env of enviroments) {
         const { type, name, childEnvName } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
@@ -67,8 +66,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 addEnv(workerEnvs, env);
             } else if (type === 'electron-renderer') {
                 addEnv(electronRendererEnvs, env);
-            } else if (type === 'electron-main') {
-                addEnv(electronMainEnvs, env);
             }
     }
     if (webEnvs.size) {
@@ -105,19 +102,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)],
-            })
-        );
-    }
-
-    if (electronMainEnvs.size) {
-        configurations.push(
-            createWebpackConfig({
-                ...options,
-                baseConfig,
-                enviroments: electronMainEnvs,
-                target: 'electron-main',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
             })
