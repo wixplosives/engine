@@ -66,6 +66,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.2.0",
     "sinon-chai": "^3.5.0",
+    "source-map-loader": "^1.1.1",
     "typescript": "~4.0.3",
     "webpack": "^4.44.2"
   },
