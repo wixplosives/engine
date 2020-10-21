@@ -72,7 +72,7 @@ export class RuntimeEngine {
             feature.dependencies.map(
                 (dep) =>
                     new Promise((resolve) =>
-                        this.features.has(feature) ? resolve() : this.pendingFeatures.add(dep, resolve)
+                        this.features.has(dep) ? resolve() : this.pendingFeatures.add(dep, resolve)
                     )
             )
         );
