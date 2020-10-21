@@ -1,5 +1,6 @@
 import COM from './communication.feature';
 import type { RuntimeFeature, Feature } from './entities';
+import { SetMultiMap } from './helpers';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
 
@@ -7,6 +8,7 @@ export class RuntimeEngine {
     public features = new Map<Feature, RuntimeFeature>();
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
+    private pendingFeatures = new SetMultiMap<Feature, () => void>();
     constructor(topLevelConfig: TopLevelConfig = [], public runOptions: IRunOptions = new Map()) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
     }
@@ -43,6 +45,13 @@ export class RuntimeEngine {
         let instance = this.features.get(feature);
         if (!instance) {
             instance = feature[CREATE_RUNTIME](this, envName);
+            const pendingFeatures = this.pendingFeatures.get(feature);
+            if (pendingFeatures) {
+                for (const cb of pendingFeatures) {
+                    cb();
+                }
+            }
+            this.pendingFeatures.deleteKey(feature);
         }
         return instance;
     }
@@ -53,6 +62,22 @@ export class RuntimeEngine {
             throw new Error('Could not find running feature: ' + feature.id);
         }
         await featureInstance[RUN](this, envName);
+    }
+
+    public async loadFeature(feature: Feature, envName: string) {
+        if (!this.running) {
+            throw new Error('cannot load features to a non running engine');
+        }
+        await Promise.all(
+            feature.dependencies.map(
+                (dep) =>
+                    new Promise((resolve) =>
+                        this.features.has(feature) ? resolve() : this.pendingFeatures.add(dep, resolve)
+                    )
+            )
+        );
+        this.initFeature(feature, envName);
+        return this.runFeature(feature, envName);
     }
 
     public async dispose(feature: Feature, envName: string) {

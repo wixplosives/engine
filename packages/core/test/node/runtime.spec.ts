@@ -632,6 +632,76 @@ describe('feature disposal', () => {
         expect(disposeFirst).to.have.have.callCount(1);
         expect(disposeSecond).to.have.have.callCount(1);
     });
+
+    it('loads features after engine is running', async () => {
+        const envName = 'main';
+        const mainEnv = new Environment(envName, 'window', 'single');
+        const entryFeature = new Feature({
+            id: 'test',
+            api: {},
+        });
+        const externalFeature = new Feature({
+            id: 'external',
+            dependencies: [entryFeature],
+            api: {},
+        });
+        const setup = spy();
+
+        externalFeature.setup(mainEnv, () => {
+            setup();
+        });
+
+        const engine = await runEngine({
+            entryFeature,
+            envName,
+        });
+
+        await engine.loadFeature(externalFeature, envName);
+        expect(setup).to.have.callCount(1);
+    });
+
+    it('loads features after engine is running only when their dependencies are loaded', async () => {
+        const envName = 'main';
+        const mainEnv = new Environment(envName, 'window', 'single');
+        const entryFeature = new Feature({
+            id: 'test',
+            api: {},
+        });
+        const depFeature = new Feature({
+            id: 'test2',
+            api: {
+                service: Service.withType<() => void>().defineEntity(envName),
+            },
+        });
+        const externalFeature = new Feature({
+            id: 'external',
+            dependencies: [depFeature],
+            api: {},
+        });
+        const setup = spy();
+        const service = spy();
+
+        externalFeature.setup(mainEnv, ({}, { test2 }) => {
+            setup();
+            test2.service();
+        });
+
+        depFeature.setup(mainEnv, () => ({ service }));
+
+        const engine = await runEngine({
+            entryFeature,
+            envName,
+        });
+
+        const loadedFeature = engine.loadFeature(externalFeature, envName);
+        expect(setup).to.have.callCount(0);
+        const loadedDep = engine.loadFeature(depFeature, envName);
+        expect(service).to.have.callCount(0);
+        await loadedDep;
+        await expect(loadedFeature).to.eventually.not.be.rejectedWith();
+        expect(setup).to.have.callCount(1);
+        expect(service).to.have.callCount(1);
+    });
 });
 
 describe('service with remove access environment visibility', () => {
