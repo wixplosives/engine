@@ -23,6 +23,16 @@ interface IConfigFileMapping {
     configEnvName?: string;
 }
 
+export interface WebpackFeatureLoaderArguments extends IFeatureDefinition {
+    childEnvs: string[];
+    envName: string;
+}
+
+export type LoadStatement = Pick<
+    WebpackFeatureLoaderArguments,
+    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name'
+>;
+
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
     const configNameToFiles: Record<string, IConfigFileMapping[]> = {};
 
@@ -48,6 +58,12 @@ const getConfigLoaders = (
     }
     return [...configurations.entries()];
 };
+
+export function createExternalFeatureEntrypoint(args: WebpackFeatureLoaderArguments) {
+    return `
+        const plugin = ${createLoaderInterface(args)};
+    `;
+}
 
 export function createEntrypoint({
     features,
@@ -111,31 +127,13 @@ function createFeatureLoaders(features: Iterable<IFeatureDefinition>, envName: s
         .join(',\n');
 }
 
-export interface WebpackFeatureLoader {
-    childEnvs: string[];
-    contextFilePaths: Record<string, string>;
-    envName: string;
-    name: string;
-    envFilePaths: Record<string, string>;
-    scopedName: string;
-    filePath: string;
-    dependencies: string[];
-    resolvedContexts: Record<string, string>;
+function webpackFeatureLoader(args: WebpackFeatureLoaderArguments) {
+    return `    '${args.scopedName}': ${createLoaderInterface(args)}`;
 }
 
-function webpackFeatureLoader({
-    childEnvs,
-    dependencies,
-    name,
-    contextFilePaths,
-    envFilePaths,
-    envName,
-    scopedName,
-    filePath,
-    resolvedContexts,
-}: WebpackFeatureLoader) {
-    const loadStatements: string[] = [];
+function loadEnvAndContextFiles({ childEnvs, contextFilePaths, envName, name, envFilePaths }: LoadStatement) {
     let usesResolvedContexts = false;
+    const loadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
         const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
         if (contextFilePath) {
@@ -149,11 +147,15 @@ function webpackFeatureLoader({
     if (envFilePath) {
         loadStatements.push(webpackImportStatement(`[${envName}]${name}`, envFilePath));
     }
+    return { usesResolvedContexts, loadStatements };
+}
 
-    return `    '${scopedName}': {
-                    async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {${
-        loadStatements.length ? '\n' + loadStatements.join('\n') : ''
-    }
+function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
+    const { name, filePath, dependencies, resolvedContexts } = args;
+    const { loadStatements, usesResolvedContexts } = loadEnvAndContextFiles(args);
+    return `{
+                    async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
+                        ${loadStatements.length ? '\n' + loadStatements.join('\n') : ''}
                         const featureModule = ${webpackImportStatement(`[feature]${name}`, filePath)};
                         return featureModule.default;
                     },
