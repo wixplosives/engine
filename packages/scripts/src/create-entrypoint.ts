@@ -67,40 +67,8 @@ export function createEntrypoint({
 import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
 
 const featureLoaders = {
-${Array.from(features.values())
-    .map(({ scopedName, name, filePath, envFilePaths, contextFilePaths, dependencies, resolvedContexts }) => {
-        const loadStatements: string[] = [];
-        let usesResolvedContexts = false;
-        for (const childEnvName of childEnvs) {
-            const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
-            if (contextFilePath) {
-                usesResolvedContexts = true;
-                loadStatements.push(
-                    `                if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
-                   await import(/* webpackChunkName: "${name}" */ ${stringify(contextFilePath)});
-                }`
-                );
-            }
-        }
-        const envFilePath = envFilePaths[envName];
-        if (envFilePath) {
-            loadStatements.push(
-                `                await import(/* webpackChunkName: "[${envName}]${name}" */ ${stringify(envFilePath)});`
-            );
-        }
-
-        return `    '${scopedName}': {
-            async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {${
-            loadStatements.length ? '\n' + loadStatements.join('\n') : ''
-        }
-                return (await import(/* webpackChunkName: "[feature]${name}" */ ${stringify(filePath)})).default;
-            },
-            depFeatures: ${stringify(dependencies)},
-            resolvedContexts: ${stringify(resolvedContexts)},
-        }`;
-    })
-    .join(',\n')}
-};
+    ${createFeatureLoaders(features.values(), envName, childEnvs)}
+}
 
 
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
@@ -131,6 +99,67 @@ async function main() {
 
 main().catch(console.error);
 `;
+}
+
+function webpackImportStatement(moduleIdentifier: string, filePath: string) {
+    return `await import(/* webpackChunkName: "${moduleIdentifier}" */ ${stringify(filePath)});`;
+}
+
+function createFeatureLoaders(features: Iterable<IFeatureDefinition>, envName: string, childEnvs: string[]) {
+    return Array.from(features)
+        .map((args) => webpackFeatureLoader({ ...args, envName, childEnvs }))
+        .join(',\n');
+}
+
+export interface WebpackFeatureLoader {
+    childEnvs: string[];
+    contextFilePaths: Record<string, string>;
+    envName: string;
+    name: string;
+    envFilePaths: Record<string, string>;
+    scopedName: string;
+    filePath: string;
+    dependencies: string[];
+    resolvedContexts: Record<string, string>;
+}
+
+function webpackFeatureLoader({
+    childEnvs,
+    dependencies,
+    name,
+    contextFilePaths,
+    envFilePaths,
+    envName,
+    scopedName,
+    filePath,
+    resolvedContexts,
+}: WebpackFeatureLoader) {
+    const loadStatements: string[] = [];
+    let usesResolvedContexts = false;
+    for (const childEnvName of childEnvs) {
+        const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
+        if (contextFilePath) {
+            usesResolvedContexts = true;
+            loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
+                ${webpackImportStatement(name, contextFilePath)};
+            }`);
+        }
+    }
+    const envFilePath = envFilePaths[envName];
+    if (envFilePath) {
+        loadStatements.push(webpackImportStatement(`[${envName}]${name}`, envFilePath));
+    }
+
+    return `    '${scopedName}': {
+                    async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {${
+        loadStatements.length ? '\n' + loadStatements.join('\n') : ''
+    }
+                        const featureModule = ${webpackImportStatement(`[feature]${name}`, filePath)};
+                        return featureModule.default;
+                    },
+                    depFeatures: ${stringify(dependencies)},
+                    resolvedContexts: ${stringify(resolvedContexts)},
+                }`;
 }
 
 function addOverrideConfig(config: TopLevelConfig) {
