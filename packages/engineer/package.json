@@ -10,6 +10,11 @@
   "scripts": {
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
+  "peerDependencies": {
+    "react": ">=16",
+    "react-dom": ">=16",
+    "webpack": ">=4"
+  },
   "dependencies": {
     "@file-services/node": "^4.1.2",
     "@wixc3/cross-performance": "^15.2.0",
@@ -19,9 +24,6 @@
     "@wixc3/engine-scripts": "^15.2.1",
     "commander": "^6.1.0",
     "open": "^7.3.0",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0",
-    "webpack": "^4.44.2",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-virtual-modules": "^0.3.2"
   },

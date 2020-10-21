@@ -7,7 +7,9 @@
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "peerDependencies": {
-    "typescript": ">=3.0.0"
+    "react": ">=16",
+    "react-dom": ">=16",
+    "webpack": ">=4"
   },
   "dependencies": {
     "@file-services/node": "^4.1.2",
@@ -22,11 +24,8 @@
     "glob": "^7.1.6",
     "html-webpack-plugin": "^4.5.0",
     "import-fresh": "^3.2.1",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0",
     "rimraf": "^3.0.2",
     "socket.io": "^2.3.0",
-    "webpack": "^4.44.2",
     "webpack-virtual-modules": "^0.3.2"
   },
   "files": [
