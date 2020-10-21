@@ -66,7 +66,10 @@ export class RuntimeEngine {
 
     public async loadFeature(feature: Feature, envName: string) {
         if (!this.running) {
-            throw new Error('cannot load features to a non running engine');
+            throw new Error(`cannot load feature ${feature.id} to a non running engine`);
+        }
+        if (this.features.has(feature)) {
+            throw new Error(`cannot load feature ${feature.id} that is already loaded`);
         }
         await Promise.all(
             feature.dependencies.map(
