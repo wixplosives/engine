@@ -17,6 +17,7 @@ export interface ICreateEntrypointsOptions {
     mode: 'production' | 'development';
     publicConfigsRoute?: string;
     config?: TopLevelConfig;
+    target: 'webworker' | 'web';
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -26,6 +27,7 @@ interface IConfigFileMapping {
 export interface WebpackFeatureLoaderArguments extends IFeatureDefinition {
     childEnvs: string[];
     envName: string;
+    publicPath?: string;
 }
 
 export type LoadStatement = Pick<
@@ -61,7 +63,12 @@ const getConfigLoaders = (
 
 export function createExternalFeatureEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
-        const plugin = ${createLoaderInterface(args)};
+    const publicPath = ${
+        typeof args.publicPath === 'string' ? JSON.stringify(args.publicPath) : '__webpack_public_path__'
+    };
+    __webpack_public_path__= publicPath;
+    self.runtimeFeatureLoader.register('${args.scopedName}', ${createLoaderInterface(args)});
+    ;
     `;
 }
 
@@ -77,18 +84,38 @@ export function createEntrypoint({
     staticBuild,
     publicConfigsRoute,
     config,
+    target,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
-import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
+import { runEngineApp, getTopWindow, runtimeFeatureLoader } from '@wixc3/engine-core';
+
+
+self.runtimeFeatureLoader = runtimeFeatureLoader();
+
+async function loadFeature(engine, featureName, envName) {
+    const { depFeatures, load } = self.runtimeFeatureLoader.get(featureName);
+    for(const depFeature of depFeatures) {
+        await loadFeature(engine, depFeature, envName)
+    }
+    await self.runtimeFeatureLoader.load(engine, featureName, envName);
+}
 
 const featureLoaders = {
     ${createFeatureLoaders(features.values(), envName, childEnvs)}
 }
 
+for (const [scopedName, loader] of Object.entries(featureLoaders)) {
+    self.runtimeFeatureLoader.register(scopedName, loader)
+}
 
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
+    if(!self.EngineCore) {
+        self.EngineCore = await import('@wixc3/engine-core');
+    }
+    ${target === 'web' ? documentImportScripts() : ''}
+    const envName = '${envName}';
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
 
@@ -105,10 +132,21 @@ async function main() {
     ${staticBuild && config ? addOverrideConfig(config) : ''}
     
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
+
     
     const runtimeEngine = await runEngineApp(
-        { featureName, configName, featureLoaders, config, options, envName: '${envName}', publicPath }
-    );
+        { featureName, configName, featureLoaders, config, options, envName, publicPath }
+        );
+    
+    const externalFeatures = ${fetchExternalFeatures('external/')};
+    const entryPaths = externalFeatures.map(({name, envEntries}) => (envEntries[envName])).filter(path => path !== undefined);
+
+    await importScripts(entryPaths);
+
+    for(const { name } of externalFeatures) {
+        loadFeature(runtimeEngine.engine, name, envName).catch(err => console.error('failed to load the plugin', name, err));
+    }
+
 
     return runtimeEngine;
 }
@@ -157,6 +195,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                     async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                         ${loadStatements.length ? '\n' + loadStatements.join('\n') : ''}
                         const featureModule = ${webpackImportStatement(`[feature]${name}`, filePath)};
+                        self[featureModule.default.id] = featureModule;
                         return featureModule.default;
                     },
                     depFeatures: ${stringify(dependencies)},
@@ -197,6 +236,10 @@ function fetchConfigs(publicConfigsRoute: string, envName: string) {
     )!}' + configName + '?env=${envName}&feature=' + featureName)).json());`;
 }
 
+function fetchExternalFeatures(externalFeaturesRoute: string) {
+    return `await (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json();`;
+}
+
 function importStaticConfigs() {
     return `
     if(configName) {
@@ -214,4 +257,20 @@ function normalizeRoute(route?: string) {
     }
 
     return route;
+}
+
+function documentImportScripts() {
+    return `function importScripts(...scripts) {
+        const loadScript = (src) =>
+            new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => resolve();
+                script.onerror = reject;
+                script.crossOrigin = 'anonymous';
+                document.head.appendChild(script);
+            });
+
+        return Promise.all(scripts.map(loadScript))
+    }`;
 }

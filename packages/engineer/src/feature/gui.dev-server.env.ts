@@ -38,6 +38,7 @@ guiFeature.setup(
             staticBuild: false,
             configurations,
             featureName: 'engineer/gui',
+            target: 'web',
         });
 
         engineerWebpackConfigs.register(

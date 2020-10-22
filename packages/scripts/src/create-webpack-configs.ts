@@ -3,8 +3,9 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import type webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { createEntrypoint } from './create-entrypoint';
+import { createEntrypoint, createExternalFeatureEntrypoint } from './create-entrypoint';
 import type { IEnvironment, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
+import { join } from 'path';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -22,6 +23,7 @@ export interface ICreateWebpackConfigsOptions {
     staticBuild: boolean;
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
+    createWebpackConfig: typeof createWebpackConfig;
 }
 
 function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
@@ -72,7 +74,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
         configurations.push(
-            createWebpackConfig({
+            options.createWebpackConfig({
                 ...options,
                 baseConfig,
                 enviroments: webEnvs,
@@ -85,7 +87,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     }
     if (workerEnvs.size) {
         configurations.push(
-            createWebpackConfig({
+            options.createWebpackConfig({
                 ...options,
                 baseConfig,
                 enviroments: workerEnvs,
@@ -97,7 +99,79 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     }
     if (electronRendererEnvs.size) {
         configurations.push(
-            createWebpackConfig({
+            options.createWebpackConfig({
+                ...options,
+                baseConfig,
+                enviroments: electronRendererEnvs,
+                target: 'electron-renderer',
+                virtualModules,
+                plugins: [new VirtualModulesPlugin(virtualModules)],
+            })
+        );
+    }
+
+    return configurations;
+}
+
+export function createExternalFeaturesWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
+    const { enviroments, baseConfig = {}, publicPath = '', featureName, features, singleFeature } = options;
+
+    const resolvedContexts =
+        featureName && singleFeature
+            ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
+            : getAllResolvedContexts(features);
+
+    if (!baseConfig.output) {
+        baseConfig.output = {};
+    }
+    baseConfig.output.publicPath = publicPath;
+    const configurations: webpack.Configuration[] = [];
+    const virtualModules: Record<string, string> = {};
+
+    const webEnvs = new Map<string, string[]>();
+    const workerEnvs = new Map<string, string[]>();
+    const electronRendererEnvs = new Map<string, string[]>();
+    for (const env of enviroments) {
+        const { type, name, childEnvName } = env;
+        if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
+            if (type === 'window' || type === 'iframe') {
+                addEnv(webEnvs, env);
+            } else if (type === 'worker') {
+                addEnv(workerEnvs, env);
+            } else if (type === 'electron-renderer') {
+                addEnv(electronRendererEnvs, env);
+            }
+    }
+    if (webEnvs.size) {
+        const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
+        const entry: webpack.Entry = {};
+        configurations.push(
+            createWebpackConfigForExteranlFeature({
+                ...options,
+                baseConfig,
+                enviroments: webEnvs,
+                target: 'web',
+                virtualModules,
+                plugins,
+                entry,
+            })
+        );
+    }
+    if (workerEnvs.size) {
+        configurations.push(
+            createWebpackConfigForExteranlFeature({
+                ...options,
+                baseConfig,
+                enviroments: workerEnvs,
+                target: 'webworker',
+                virtualModules,
+                plugins: [new VirtualModulesPlugin(virtualModules)],
+            })
+        );
+    }
+    if (electronRendererEnvs.size) {
+        configurations.push(
+            createWebpackConfigForExteranlFeature({
                 ...options,
                 baseConfig,
                 enviroments: electronRendererEnvs,
@@ -121,7 +195,7 @@ interface ICreateWebpackConfigOptions {
     outputPath: string;
     enviroments: Map<string, string[]>;
     publicPath?: string;
-    target: 'web' | 'webworker' | 'electron-renderer' | 'electron-main';
+    target: 'web' | 'webworker' | 'electron-renderer';
     virtualModules: Record<string, string>;
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;
@@ -140,7 +214,7 @@ function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironmen
     envs.set(name, childEnvs);
 }
 
-function createWebpackConfig({
+export function createWebpackConfig({
     baseConfig,
     target,
     enviroments,
@@ -176,6 +250,7 @@ function createWebpackConfig({
             staticBuild,
             publicConfigsRoute,
             config,
+            target: target === 'webworker' ? target : 'web',
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
@@ -185,6 +260,52 @@ function createWebpackConfig({
                     title,
                 })
             );
+        }
+    }
+    const { plugins: basePlugins = [] } = baseConfig;
+
+    return {
+        ...baseConfig,
+        target,
+        entry,
+        mode,
+        devtool: mode === 'development' ? 'source-map' : false,
+        context,
+        output: {
+            ...baseConfig.output,
+            path: outputPath,
+            filename: `[name].${target}.js`,
+            chunkFilename: `[name].${target}.js`,
+        },
+        plugins: [...basePlugins, ...plugins],
+    };
+}
+
+export function createWebpackConfigForExteranlFeature({
+    baseConfig,
+    target,
+    enviroments,
+    virtualModules,
+    features,
+    context,
+    mode = 'development',
+    outputPath,
+    plugins = [],
+    entry = {},
+}: ICreateWebpackConfigOptions): webpack.Configuration {
+    for (const feature of [...features.values()]) {
+        if (feature.isRoot) {
+            console.log(feature.scopedName);
+            for (const [envName, childEnvs] of enviroments) {
+                const entryPath = fs.join(context, `${envName}.js`);
+                entry[envName] = entryPath;
+                virtualModules[entryPath] = createExternalFeatureEntrypoint({
+                    childEnvs,
+                    envName,
+                    ...feature,
+                    publicPath: join('plugins', feature.name, 'dist/'),
+                });
+            }
         }
     }
     const { plugins: basePlugins = [] } = baseConfig;

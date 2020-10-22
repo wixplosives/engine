@@ -13,7 +13,11 @@ import {
     createCommunicationMiddleware,
     ensureTopLevelConfigMiddleware,
 } from './config-middleware';
-import { createWebpackConfigs } from './create-webpack-configs';
+import {
+    createWebpackConfig,
+    createWebpackConfigForExteranlFeature,
+    createWebpackConfigs,
+} from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
 import { NodeEnvironmentsManager, LaunchEnvironmentMode } from './node-environments-manager';
 import { createIPC } from './process-communication';
@@ -50,6 +54,7 @@ export interface IRunOptions extends IFeatureTarget {
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
+    external?: boolean;
 }
 
 export interface IBuildManifest {
@@ -81,6 +86,7 @@ export interface ICompilerOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     singleFeature?: boolean;
+    externalFeature: boolean;
 }
 
 export class Application {
@@ -106,6 +112,7 @@ export class Application {
         title,
         publicConfigsRoute,
         overrideConfig,
+        external = true,
     }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -115,7 +122,7 @@ export class Application {
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
         }
-        const compiler = this.createCompiler({
+        const { compiler } = this.createCompiler({
             mode,
             features,
             featureName,
@@ -127,6 +134,7 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
+            externalFeature: external,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -350,6 +358,7 @@ export class Application {
         publicConfigsRoute,
         overrideConfig,
         singleFeature,
+        externalFeature,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -379,11 +388,12 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
+            createWebpackConfig: externalFeature ? createWebpackConfigForExteranlFeature : createWebpackConfig,
         });
 
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
-        return compiler;
+        return { compiler, webEnvironments: enviroments };
     }
 
     protected analyzeFeatures() {

@@ -22,6 +22,7 @@ export interface DevServerConfig {
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
     defaultRuntimeOptions: Record<string, string | boolean>;
     outputPath?: string;
+    plugins: string[];
 }
 
 export interface DevServerActions {
@@ -56,6 +57,7 @@ export default new Feature({
             overrideConfig: [],
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
+            plugins: [],
         }),
         /**
          * a slot for registering callback that will be called when the devserver is listening

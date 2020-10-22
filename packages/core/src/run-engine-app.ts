@@ -69,6 +69,30 @@ export async function runEngineApp({
     };
 }
 
+export function runtimeFeatureLoader(resolvedContexts: Record<string, string>) {
+    const featureMapping = new Map<string, IFeatureLoader>();
+    return {
+        register(name: string, featureLoader: IFeatureLoader) {
+            featureMapping.set(name, featureLoader);
+        },
+        async load(engine: RuntimeEngine, featureName: string, envName: string) {
+            const featureLoader = featureMapping.get(featureName);
+            if (!featureLoader) {
+                throw new Error('cannot load unregistered feature');
+            }
+            const feature = await featureLoader.load(resolvedContexts);
+            const runtimeFeature = engine.features.get(feature);
+            if (runtimeFeature) {
+                return runtimeFeature;
+            }
+            engine.initFeature(feature, envName);
+            return engine.runFeature(feature, envName);
+        },
+        get(featureName: string) {
+            return featureMapping.get(featureName);
+        },
+    };
+}
 export function getTopWindow(win: Window): Window {
     while (win.parent && win.parent !== win && canAccessWindow(win.parent)) {
         win = win.parent;

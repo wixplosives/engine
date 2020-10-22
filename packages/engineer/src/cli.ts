@@ -41,7 +41,8 @@ program
     )
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
-    .option('--engineerEntry <featureName>', 'entry feature for engineer', 'engineer/gui')
+    .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
+    .option('--plugins <plugins...>', 'list of plugins')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -59,6 +60,7 @@ program
             autoLaunch,
             engineerEntry,
             inspect,
+            plugins,
         } = cmd;
         try {
             const { devServerFeature } = await startDevServer({
@@ -77,6 +79,7 @@ program
                 targetApplicationPath: fs.existsSync(path) ? fs.resolve(path) : process.cwd(),
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect,
+                plugins,
             });
 
             const { port } = await new Promise((resolve) => {

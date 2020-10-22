@@ -1,5 +1,18 @@
 const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
 
+function createExternalPackages(...featureFilePaths) {
+    return (context, request, callback) => {
+        if(request === '@wixc3/engine-core') {
+            return callback(null, 'EngineCore');
+        }
+        if(featureFilePaths.includes(request)) {
+            const feature = require(request).default;
+            return callback(null, feature.id);
+        }
+        callback()
+    }
+}
+
 /** @type {import('webpack').Configuration} */
 module.exports = {
     context: __dirname,
@@ -36,9 +49,5 @@ module.exports = {
     output: {
         libraryTarget: 'umd',
     },
-    externals: {
-        '@wixc3/engine-core': 'EngineCore',
-        '@example/playground/src/code-editor/code-editor.feature': 'CodeEditor',
-        '@example/playground/src/preview/compiler.feature': 'Compiler',
-    },
+    externals: [createExternalPackages('@example/playground/src/code-editor/code-editor.feature', '@example/playground/src/preview/compiler.feature')],
 };

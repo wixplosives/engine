@@ -13,6 +13,7 @@ import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import type { Communication } from '@wixc3/engine-core';
+import { join } from 'path';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
     // This custom watch optimization only compiles once, but allows us to use webpack dev server
@@ -59,6 +60,7 @@ devServerFeature.setup(
             overrideConfig,
             defaultRuntimeOptions,
             outputPath,
+            plugins,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath });
         const disposables = new Set<() => unknown>();
@@ -130,12 +132,14 @@ devServerFeature.setup(
             ]);
 
             // Write middleware for each of the apps
-            const compiler = application.createCompiler({
+            const { compiler, webEnvironments } = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
                 configurations,
+                externalFeature: false,
             });
+
             for (const childCompiler of compiler.compilers) {
                 if (singleRun) {
                     // This hack is to squeeze some more performance, because we can server the output in memory
@@ -152,6 +156,27 @@ devServerFeature.setup(
 
             await new Promise((resolve) => {
                 compiler.hooks.done.tap('compiled', resolve);
+            });
+
+            const nodeModulesBasePath = join(basePath, 'node_modules');
+            console.log(`serving ${nodeModulesBasePath}`);
+            app.use('/plugins', express.static(nodeModulesBasePath));
+            const extranalPlugins = plugins.map((pluginName) => {
+                return {
+                    name: pluginName,
+                    envEntries: [...webEnvironments].reduce<Record<string, string>>((acc, { name: envName, type }) => {
+                        acc[envName] = join(
+                            'plugins',
+                            pluginName,
+                            'dist',
+                            `${envName}.${type === 'worker' ? 'webworker' : 'web'}.js`
+                        );
+                        return acc;
+                    }, {} as Record<string, string>),
+                };
+            });
+            app.use('/external', (_, res) => {
+                res.json(extranalPlugins);
             });
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
