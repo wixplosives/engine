@@ -213,9 +213,7 @@ export function loadFeaturesFromPaths(
         Object.assign(resolvedContexts, computeUsedContext(featureName, foundFeatures));
 
         // compute dependencies
-        const deps = getFeaturesDeep(exportedFeature);
-        deps.delete(exportedFeature);
-        dependencies.push(...Array.from(deps).map((feature) => featureToScopedName.get(feature)!));
+        dependencies.push(...exportedFeature.dependencies.map((feature) => featureToScopedName.get(feature)!));
     }
 
     return { features: foundFeatures, configurations: foundConfigs };
