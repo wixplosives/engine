@@ -1,8 +1,8 @@
 {
   "name": "@example/playground",
-  "version": "14.4.3",
+  "version": "15.2.0",
   "scripts": {
-    "start": "engine start"
+    "start": "engineer start"
   },
   "license": "UNLICENSED",
   "private": true

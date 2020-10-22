@@ -1,5 +1,5 @@
 export class SetMultiMap<K, V> implements Iterable<[K, V]> {
-    private map: Map<K, Set<V>> = new Map();
+    private map = new Map<K, Set<V>>();
 
     public get size(): number {
         return Array.from(this.map.values())

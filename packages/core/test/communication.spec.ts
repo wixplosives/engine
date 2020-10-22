@@ -1,6 +1,12 @@
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { createDisposables, Communication, Environment, declareComEmitter, iframeInitializer } from '../src';
+import {
+    createDisposables,
+    Communication,
+    Environment,
+    declareComEmitter,
+    iframeInitializer,
+} from '@wixc3/engine-core';
 import {
     ITestServiceData,
     multiTanentServiceId,

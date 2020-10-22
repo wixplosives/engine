@@ -24,8 +24,6 @@ export interface ICreateWebpackConfigsOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
-const engineDashboardEntry = require.resolve('./engine-dashboard');
-
 function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
     const allContexts = new SetMultiMap<string, string>();
     for (const { resolvedContexts } of features.values()) {
@@ -42,15 +40,7 @@ function convertEnvRecordToSetMultiMap(record: Record<string, string>, set = new
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const {
-        enviroments,
-        mode = 'development',
-        baseConfig = {},
-        publicPath = '',
-        featureName,
-        features,
-        singleFeature,
-    } = options;
+    const { enviroments, baseConfig = {}, publicPath = '', featureName, features, singleFeature } = options;
 
     const resolvedContexts =
         featureName && singleFeature
@@ -67,7 +57,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const webEnvs = new Map<string, string[]>();
     const workerEnvs = new Map<string, string[]>();
     const electronRendererEnvs = new Map<string, string[]>();
-    const electronMainEnvs = new Map<string, string[]>();
     for (const env of enviroments) {
         const { type, name, childEnvName } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
@@ -77,22 +66,11 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 addEnv(workerEnvs, env);
             } else if (type === 'electron-renderer') {
                 addEnv(electronRendererEnvs, env);
-            } else if (type === 'electron-main') {
-                addEnv(electronMainEnvs, env);
             }
     }
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
-        if (mode === 'development') {
-            plugins.push(
-                new HtmlWebpackPlugin({
-                    filename: `index.html`,
-                    chunks: ['index'],
-                })
-            );
-            entry.index = engineDashboardEntry;
-        }
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -124,19 +102,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)],
-            })
-        );
-    }
-
-    if (electronMainEnvs.size) {
-        configurations.push(
-            createWebpackConfig({
-                ...options,
-                baseConfig,
-                enviroments: electronMainEnvs,
-                target: 'electron-main',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
             })

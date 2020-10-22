@@ -1,6 +1,6 @@
+import { IPCHost } from '@wixc3/engine-core-node';
 import ElectronAppFeature, { renderer, server } from './electron-app.feature';
 import { fork } from 'child_process';
-import { IPCHost } from '@wixc3/engine-core-node';
 
 ElectronAppFeature.setup(renderer, ({ run }, { COM: { startEnvironment } }) => {
     run(async () => {

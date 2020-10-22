@@ -62,7 +62,7 @@ export class AttachedApp implements IExecutableApplication {
                 (res) => {
                     res.on('data', (chunk) => {
                         /* if the server had errors when launching, it will reject. if we received any data, it means the server launched */
-                        responseChunks.push(chunk.toString());
+                        responseChunks.push((chunk as Buffer).toString());
                     });
                     res.on('end', () => {
                         if (path.includes(NODE_ENV_PATH)) {

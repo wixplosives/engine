@@ -23,7 +23,7 @@ import {
     SingleEndpointContextualEnvironment,
     Slot,
     Universal,
-} from '../../src';
+} from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
 chai.use(sinonChai);
@@ -433,6 +433,7 @@ describe('Feature', () => {
                 _featureID: string,
                 _entityKey: string
             ) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return inputValue;
             }
 

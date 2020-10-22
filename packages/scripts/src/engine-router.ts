@@ -14,7 +14,9 @@ export function createFeaturesEngineRouter(
     router.use(bodyParser.json());
 
     router.put('/', async (req, res) => {
-        const { configName, featureName, runtimeOptions: options, overrideConfig }: Required<IFeatureTarget> = req.body;
+        const { configName, featureName, runtimeOptions: options, overrideConfig } = req.body as Required<
+            IFeatureTarget
+        >;
         try {
             let providedConfigName = configName;
             if (overrideConfig && Array.isArray(overrideConfig)) {
@@ -41,13 +43,13 @@ export function createFeaturesEngineRouter(
         } catch (error) {
             res.status(404).json({
                 id: 'error',
-                error: error && error.message,
+                error: error && (error as Error).message,
             });
         }
     });
 
     router.post('/', async (req, res) => {
-        const { featureName, configName }: Required<IFeatureTarget> = req.body;
+        const { featureName, configName } = req.body as Required<IFeatureTarget>;
         overrideConfigsMap.delete(configName);
         try {
             await nodeEnvironmentManager.closeEnvironment({ featureName, configName });
@@ -63,7 +65,7 @@ export function createFeaturesEngineRouter(
         } catch (error) {
             res.status(404).json({
                 result: 'error',
-                error: error && error.message,
+                error: error && (error as Error).message,
             });
         }
     });
@@ -78,7 +80,7 @@ export function createFeaturesEngineRouter(
         } catch (error) {
             res.status(404).json({
                 result: 'error',
-                error: error && error.message,
+                error: error && (error as Error).message,
             });
         }
     });
@@ -95,7 +97,7 @@ export function createFeaturesEngineRouter(
         } catch (error) {
             res.status(404).json({
                 result: 'error',
-                error: error && error.message,
+                error: error && (error as Error).message,
             });
         }
     });

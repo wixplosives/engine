@@ -10,9 +10,9 @@ import {
     Communication,
     EventEmitterHost,
     createDisposables,
-} from '../../src';
-
-import { EventEmitter } from 'events';
+    EventEmitter,
+    Message,
+} from '@wixc3/engine-core';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -278,7 +278,7 @@ describe('Communication', () => {
 
 describe('Event Emitter communication', () => {
     it('single communication', async () => {
-        const eventEmitter = new EventEmitter();
+        const eventEmitter = new EventEmitter<{ message: Message }>();
         const host = new EventEmitterHost(eventEmitter);
 
         const main = new Communication(host, 'main');
@@ -301,7 +301,7 @@ describe('Event Emitter communication', () => {
 
     it('multi communication', async () => {
         const host = new BaseHost();
-        const eventEmitter = new EventEmitter();
+        const eventEmitter = new EventEmitter<{ message: Message }>();
         const host2 = new EventEmitterHost(eventEmitter);
 
         const main = new Communication(host, 'main');

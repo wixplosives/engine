@@ -2,7 +2,7 @@ import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
 
-import { BaseHost, Communication, declareComEmitter } from '../../src';
+import { BaseHost, Communication, declareComEmitter } from '@wixc3/engine-core';
 
 chai.use(sinonChai);
 

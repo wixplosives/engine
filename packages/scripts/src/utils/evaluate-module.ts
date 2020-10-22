@@ -1,4 +1,4 @@
-import { Module } from 'module';
+import Module from 'module';
 
 /**
  * Evaluate modules and return a root module.

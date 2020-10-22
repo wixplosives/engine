@@ -1,8 +1,8 @@
 {
   "name": "@example/multi-env",
-  "version": "14.3.1",
+  "version": "15.2.0",
   "scripts": {
-    "start": "engine start",
+    "start": "engineer start",
     "test": "yarn test:ix && yarn test:unit",
     "test:ix": "mocha \"test/**/*.ix.ts?(x)\"",
     "test:unit": "mocha \"test/**/*.unit.ts\""

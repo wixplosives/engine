@@ -4,7 +4,9 @@ import { join } from 'path';
 import { FileServerDriver } from './file-server-driver';
 import fileServerFeature, { SERVER_MARK, MAIN_MARK } from '../feature/file-server.feature';
 
-describe('File Server Feature', () => {
+describe('File Server Feature', function () {
+    this.timeout(20_000);
+
     const { getLoadedFeature } = withFeature({
         featureName: 'file-server/example',
         configName: 'file-server/run',
@@ -24,7 +26,7 @@ describe('File Server Feature', () => {
         const { page, getMetrics } = await getLoadedFeature();
         const fileServerDriver = await FileServerDriver.getFromRoot(page);
         const preview = await fileServerDriver.getTestContentDiv(page);
-        const parsedData = JSON.parse(preview);
+        const parsedData = JSON.parse(preview) as { fixtures: Record<string, string[]> };
         expect(parsedData).to.be.an('object');
         expect(parsedData.fixtures).to.be.an('object');
         expect(parsedData.fixtures['example.feature.ts']).to.have.keys('filePath', 'fileName');

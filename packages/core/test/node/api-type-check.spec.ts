@@ -1,6 +1,20 @@
 import type { EQUAL, ExpectTrue } from 'typescript-type-utils';
-import { DisposeFunction, Environment, IRunOptions, RUN_OPTIONS, Universal, AsyncApi } from '../../src';
-import { Config, Feature, Registry, Running, RunningFeatures, RuntimeEngine, Service, Slot } from '../../src';
+import {
+    DisposeFunction,
+    Environment,
+    IRunOptions,
+    RUN_OPTIONS,
+    Universal,
+    AsyncApi,
+    Config,
+    Feature,
+    Registry,
+    Running,
+    RunningFeatures,
+    RuntimeEngine,
+    Service,
+    Slot,
+} from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/

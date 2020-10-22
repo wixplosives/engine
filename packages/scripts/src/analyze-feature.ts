@@ -85,11 +85,20 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             }
         }
     }
+    return loadFeaturesFromPaths(ownFeatureFilePaths, ownFeatureDirectoryPaths, fs);
+}
 
+export function loadFeaturesFromPaths(
+    ownFeatureFilePaths: Set<string>,
+    ownFeatureDirectoryPaths: Set<string>,
+    fs: IFileSystemSync
+) {
+    const foundFeatureFilePaths = new Set<string>(ownFeatureFilePaths);
     // find all require()'ed feature files from initial ones
     const featureModules = getFeatureModules(evaluateModule(Array.from(ownFeatureFilePaths)));
     const featureDirectoryPaths = new Set<string>(ownFeatureDirectoryPaths);
     for (const { filename } of featureModules) {
+        foundFeatureFilePaths.add(filename);
         featureDirectoryPaths.add(fs.dirname(filename));
     }
 
@@ -150,7 +159,9 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             const [evaluatedFeature] = evaluateModule(featureFilePath).children;
             const featureModule = analyzeFeatureModule(evaluatedFeature);
             const featureName = featureModule.name;
-
+            if (!foundFeatureFilePaths.has(featureFilePath)) {
+                continue;
+            }
             const scopedName = scopeToPackage(featurePackage.simplifiedName, featureName);
             foundFeatures.set(scopedName, {
                 ...featureModule,

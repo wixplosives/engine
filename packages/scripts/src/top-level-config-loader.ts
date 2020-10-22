@@ -1,13 +1,15 @@
 import type { loader as webpackLoader } from 'webpack';
 
 export default function topLevelConfigLoader(this: webpackLoader.LoaderContext) {
-    const params = new URLSearchParams(this.query.slice(1));
+    const params = new URLSearchParams((this.query as string).slice(1));
 
     const fileName = params.get('scopedName');
     const envName = params.get('envName');
 
+    const cachedModule = require.cache[this.resourcePath];
+
     const imported = requireDeepHack(this.resourcePath, this.rootContext);
-    walkChildModules(require.cache[this.resourcePath], ({ filename }) => {
+    walkChildModules(cachedModule, ({ filename }) => {
         if (!filename.includes('node_modules') && filename.includes(this.rootContext)) {
             this.addDependency(filename);
         }
@@ -40,7 +42,7 @@ function walkChildModules(nodeJsModule: NodeModule, visitor: (module: NodeModule
 /**
  * This all method is a hack that allows fresh requiring modules
  */
-function requireDeepHack(resourcePath: string, rootContext: string) {
+function requireDeepHack(resourcePath: string, rootContext: string): unknown {
     const previousCache: Record<string, NodeModule> = {};
     walkChildModules(require.cache[resourcePath], ({ filename }) => {
         if (!filename.includes('node_modules') && filename.includes(rootContext)) {

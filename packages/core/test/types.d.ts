@@ -1,5 +1,5 @@
 import { EQUAL } from 'typescript-type-utils';
-import { EnvType, Running, Entity } from '../src';
+import { EnvType, Running, Entity } from '@wixc3/engine-core';
 
 export type FromString = EQUAL<EnvType<'main'>, 'main'>;
 export type FromEnvArray = EQUAL<EnvType<[{ env: 'main' }]>, 'main'>;

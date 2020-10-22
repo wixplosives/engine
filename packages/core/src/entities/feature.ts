@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, DISPOSE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import type {
@@ -51,7 +53,7 @@ export class RuntimeFeature<
         for (const handler of envRunHandlers) {
             runPromises.push(handler());
         }
-        await Promise.all(runPromises)
+        await Promise.all(runPromises);
     }
 
     public async [DISPOSE](context: RuntimeEngine, envName: string) {
@@ -112,7 +114,7 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string) {
+    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string): RuntimeFeature<this, Deps, API> {
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};

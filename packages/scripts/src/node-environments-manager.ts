@@ -35,7 +35,7 @@ export interface RunEnvironmentOptions {
     mode?: LaunchEnvironmentMode;
 }
 
-const cliEntry = require.resolve('../cli');
+const cliEntry = require.resolve('./cli');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
@@ -69,7 +69,7 @@ export class NodeEnvironmentsManager {
         featureName,
         configName,
         runtimeOptions = {},
-        overrideConfigsMap = new Map(),
+        overrideConfigsMap = new Map<string, OverrideConfig>(),
         mode = 'new-server',
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
@@ -248,7 +248,7 @@ export class NodeEnvironmentsManager {
                 for (const socket of openSockets) {
                     socket.destroy();
                 }
-                await new Promise((res, rej) => socketServer.close((e?: Error) => (e ? rej(e) : res()) as any));
+                await new Promise<void>((res, rej) => socketServer.close((e?: Error) => (e ? rej(e) : res())));
             },
         };
     }
@@ -269,7 +269,7 @@ export class NodeEnvironmentsManager {
                     if (Array.isArray(definition)) {
                         config.push(...definition);
                     } else {
-                        config.push(...(await import(definition.filePath)).default);
+                        config.push(...((await import(definition.filePath)) as { default: TopLevelConfig }).default);
                     }
                 } catch (e) {
                     console.error(e);

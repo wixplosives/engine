@@ -1,9 +1,7 @@
-import { createDisposables } from '../src';
-
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import { spy } from 'sinon';
-import { ManagedIframe } from '../src/com/managed-iframe';
+import { ManagedIframe, createDisposables } from '@wixc3/engine-core';
 
 describe('Managed Iframe', () => {
     const disposables = createDisposables();
