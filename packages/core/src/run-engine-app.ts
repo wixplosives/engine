@@ -48,14 +48,19 @@ export async function runEngineApp({
     }
 
     const { resolvedContexts } = rootFeatureLoader;
-
-    const allFeatures = await Promise.all([
-        rootFeatureLoader.load(resolvedContexts),
-        ...rootFeatureLoader.depFeatures.map((depName) => featureLoaders[depName].load(resolvedContexts)),
-    ]);
-    const [runningFeature] = allFeatures;
+    const loadedFeatures: Promise<Feature>[] = [];
+    const visitedDeps = new Set<string>();
+    for (const depName of getFeatureDependencies(featureName!, featureLoaders)) {
+        if (!visitedDeps.has(depName)) {
+            visitedDeps.add(depName);
+            loadedFeatures.push(featureLoaders[depName].load(resolvedContexts));
+        }
+    }
+    const allFeatures = await Promise.all(loadedFeatures);
+    const runningFeature = allFeatures[allFeatures.length - 1];
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
+
     const runningPromise = engine.run(runningFeature, envName);
 
     return {
@@ -67,6 +72,17 @@ export async function runEngineApp({
             }
         },
     };
+}
+
+export function* getFeatureDependencies(
+    featureName: string,
+    featureLoaders: Record<string, IFeatureLoader>
+): Generator<string> {
+    const { depFeatures } = featureLoaders[featureName];
+    for (const depFeature of depFeatures) {
+        yield* getFeatureDependencies(depFeature, featureLoaders);
+    }
+    yield featureName;
 }
 
 export function getTopWindow(win: Window): Window {
