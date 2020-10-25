@@ -30,150 +30,202 @@ export function template(data: any) {
     return `<!DOCTYPE html><html>
 <head>
     <script>
-        data = ${JSON.stringify(data)};
+        graph = ${JSON.stringify(data)};
     </script>
     <meta charset="utf-8" />
 
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v4.js"></script>
     <style>
-        /* set the CSS */
 
-        body {
-            font: 12px Arial;
-        }
-
-        path {
-            stroke: steelblue;
-            stroke-width: 2;
-            fill: none;
-        }
-
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: grey;
-            stroke-width: 1;
-            shape-rendering: crispEdges;
-        }
-
-        div.tooltip {
-            position: absolute;
-            text-align: center;
-            width: 60px;
-            height: 28px;
-            padding: 2px;
-            font: 12px sans-serif;
-            background: lightsteelblue;
-            border: 0px;
-            border-radius: 8px;
-            pointer-events: none;
-        }
+    svg {
+      font: 10px sans-serif;
+    }
+    
+    path {
+      fill: none;
+      stroke: #999;
+      stroke-opacity: 0.6;
+      stroke-width: 1.5px;
+    }
+    
+    .node circle {
+      fill: #d62333;
+      stroke: #fff;
+      stroke-width: 1px;
+    }
+    
     </style>
+    
 </head>
 <body>
     <!-- Create a div where the graph will take place -->
-    <div id="my_dataviz"></div>
+    <svg></svg>
     <script>
-        // set the dimensions and margins of the graph
-        var margin = { top: 10, right: 30, bottom: 30, left: 40 },
-            width = 1000 - margin.left - margin.right,
-            height = 1000 - margin.top - margin.bottom;
-
-        // append the svg object to the body of the page
-        var svg = d3
-            .select('#my_dataviz')
-            .append('svg')
-            .attr('width', width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom)
-            .append('g')
-            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-        d3.select('svg')
-            .insert('defs', 'g')
-            .append('marker')
-            .attr('id', 'triangle')
-            .attr('viewBox', '0 0 10 10')
-            .attr('refX', '1')
-            .attr('refY', '5')
-            .attr('markerUnits', 'strokeWidth')
-            .attr('markerWidth', '10')
-            .attr('markerHeight', '10')
-            .attr('orient', 'auto')
-            .append('path')
-            .attr('d', 'M 0 0 L 10 5 L 0 10 z')
-            .attr('fill', '#aaa');
-
-        var div = d3.select('body').append('div').attr('class', 'tooltip').style('opacity', 0);
-
-        const scale = d3.scaleOrdinal(d3.schemeCategory10);
-        const color = (d) => scale(d.group);
-
-        // Initialize the links
-            var link = svg
-                .selectAll('line')
-                .data(data.links)
-                .enter()
-                .append('line')
-                .style('stroke', '#aaa')
-                .attr('marker-end', 'url(#triangle)');
-
-            // Initialize the nodes
-            var node = svg
-                .selectAll('circle')
-                .data(data.nodes)
-                .enter()
-                .append('circle')
-                .attr('r', 20)
-                .style('fill', color)
-                .style('stroke', (d) => (d.group === 0 ? 'black' : 'transparent'))
-                .style('stroke-width', (d) => d.group === 0 ? '5px' : '0')
-                .on('mouseover', function (d) {
-                    div.transition().duration(200).style('opacity', 0.9);
-                    div.html(d.name)
-                        .style('left', d3.event.pageX + 'px')
-                        .style('top', d3.event.pageY - 28 + 'px');
-                })
-                .on('mouseout', function (d) {
-                    div.transition().duration(500).style('opacity', 0);
-                });
-            // Let's list the force we wanna apply on the network
-            var simulation = d3
-                .forceSimulation(data.nodes) // Force algorithm is applied to data.nodes
-                .force(
-                    'link',
-                    d3
-                        .forceLink() // This force provides links between nodes
-                        .id(function (d) {
-                            return d.id;
-                        }) // This provide  the id of a node
-                        .links(data.links) // and this the list of links
-                )
-                .force('charge', d3.forceManyBody().strength(-400)) // This adds repulsion between nodes. Play with the -400 for the repulsion strength
-                .force('center', d3.forceCenter(width / 2, height / 2)) // This force attracts nodes to the center of the svg area
-                .on('end', ticked);
-
-            // This function is run at each iteration of the force algorithm, updating the nodes position.
-            function ticked() {
-                link.attr('x1', function (d) {
-                    return d.source.x;
-                })
-                    .attr('y1', function (d) {
-                        return d.source.y;
-                    })
-                    .attr('x2', function (d) {
-                        return d.target.x;
-                    })
-                    .attr('y2', function (d) {
-                        return d.target.y;
-                    });
-
-                node.attr('cx', function (d) {
-                    return d.x + 6;
-                }).attr('cy', function (d) {
-                    return d.y - 6;
-                });
-            }
+    var diameter = 600;
+    var radius = diameter / 2;
+    var innerRadius = radius - 70;
+    
+    var cluster = d3.cluster()
+      .size([360, innerRadius])
+      .separation(function(a, b) { return (a.parent == b.parent ? 1 : a.parent.parent == b.parent.parent ? 2 : 4); });
+    
+    var line = d3.line()
+      .x(xAccessor)
+      .y(yAccessor)
+      .curve(d3.curveBundle.beta(0.7));
+    
+    var svg = d3.select('svg')
+      .attr('width', diameter)
+      .attr('height', diameter)
+      .append('g')
+      .attr('transform', 'translate(' + radius + ',' + radius + ')');
+    
+    
+      var idToNode = {};
+    
+      graph.nodes.forEach(function (n) {
+        idToNode[n.id] = n;
+      });
+    
+      graph.links.forEach(function (e) {
+        e.source = idToNode[e.source];
+        e.target = idToNode[e.target];
+      });
+    
+      // Find first appearance (volume, book, chapter)
+      graph.nodes.forEach(function (n) {
+        n.firstChapter = n.group;
+      });
+    
+      var tree = cluster(d3.hierarchy(chapterHierarchy(graph.nodes)).sort());
+    
+      var leaves = tree.leaves();
+    
+      var paths = graph.links.map(function (l) {
+        var source = leaves.filter(function (d) { return d.data === l.source; })[0];
+        var target = leaves.filter(function (d) { return d.data === l.target; })[0];
+        return source.path(target);
+      });
+    
+      var link = svg.selectAll('.link')
+        .data(paths)
+        .enter().append('path')
+        .attr('class', 'link')
+        .attr('d', function (d) { return line(d) })
+        .on('mouseover', function (l) {
+          link
+            .style('stroke', null)
+            .style('stroke-opacity', null);
+          d3.select(this)
+            .style('stroke', '#d62333')
+            .style('stroke-opacity', 1);
+          node.selectAll('circle')
+            .style('fill', null);
+          node.filter(function (n) { return n === l[0] || n === l[l.length - 1]; })
+            .selectAll('circle')
+            .style('fill', 'black');
+        })
+        .on('mouseout', function (d) {
+          link
+            .style('stroke', null)
+            .style('stroke-opacity', null);
+          node.selectAll('circle')
+            .style('fill', null);
+        });
+    
+      var node = svg.selectAll('.node')
+        .data(tree.leaves())
+        .enter().append('g')
+        .attr('class', 'node')
+        .attr('transform', function (d) { return 'translate(' + xAccessor(d) + ',' + yAccessor(d) + ')'; })
+        .on('mouseover', function (d) {
+          node.style('fill', null);
+          d3.select(this).selectAll('circle').style('fill', 'black');
+          var nodesToHighlight = paths.map(function (e) { return e[0] === d ? e[e.length-1] : e[e.length-1] === d ? e[0] : 0})
+            .filter(function (d) { return d; });
+          node.filter(function (d) { return nodesToHighlight.indexOf(d) >= 0; })
+            .selectAll('circle')
+            .style('fill', '#555');
+          link
+            .style('stroke-opacity', function (link_d) {
+              return link_d[0] === d | link_d[link_d.length - 1] === d ? 1 : null;
+            })
+            .style('stroke', function (link_d) {
+              return link_d[0] === d | link_d[link_d.length - 1] === d ? '#d62333' : null;
+            });
+        })
+        .on('mouseout', function (d) {
+          link
+            .style('stroke-opacity', null)
+            .style('stroke', null);
+          node.selectAll('circle')
+            .style('fill', null);
+        });
+    
+      node.append('circle').attr('r', 4)
+        .append('title')
+        .text(function (d) { return d.data.name; });
+    
+      node.append('text')
+        .attr('dy', '0.32em')
+        .attr('x', function (d) { return d.x < 180 ? 6 : -6; })
+        .style('text-anchor', function (d) { return d.x < 180 ? 'start' : 'end'; })
+        .attr('transform', function (d) { return 'rotate(' + (d.x < 180 ? d.x - 90 : d.x + 90) + ')'; })
+        .text(function (d) { return d.data.firstChapter + ' - ' + d.data.id; });
+    
+      function chapterCompare (aChaps, bChaps) {
+        if (aChaps[0] != bChaps[0])
+          return bChaps[0] - aChaps[0];
+        else if (aChaps[1] != bChaps[0])
+          return bChaps[1] - aChaps[1];
+        else if (aChaps[2] != bChaps[2])
+          return bChaps[2] - aChaps[2];
+        return 0;
+      }
+    
+    function chapterHierarchy (characters) {
+      var hierarchy = {
+        root: {name: 'root', children: []}
+      };
+    
+      characters.forEach(function (c) {
+        var chapter = c.firstChapter;
+        var book = 0;
+        var volume = 0;
+    
+        if (!hierarchy[volume]) {
+          hierarchy[volume] = {name: volume, children: [], parent: hierarchy['root']};
+          hierarchy['root'].children.push(hierarchy[volume]);
+        }
+    
+        if (!hierarchy[book]) {
+          hierarchy[book] = {name: book, children: [], parent: hierarchy[volume]};
+          hierarchy[volume].children.push(hierarchy[book]);
+        }
+    
+        if (!hierarchy[chapter]) {
+          hierarchy[chapter] = {name: chapter, children: [], parent: hierarchy[book]};
+          hierarchy[book].children.push(hierarchy[chapter]);
+        }
+    
+        c.parent = hierarchy[chapter];
+        hierarchy[chapter].children.push(c);
+      });
+    
+      return hierarchy['root'];
+    }
+    
+    function xAccessor (d) {
+      var angle = (d.x - 90) / 180 * Math.PI, radius = d.y;
+      return radius * Math.cos(angle);
+    }
+    
+    function yAccessor (d) {
+      var angle = (d.x - 90) / 180 * Math.PI, radius = d.y;
+      return radius * Math.sin(angle);
+    }
+    
     </script>
 </body></html>`;
 }
