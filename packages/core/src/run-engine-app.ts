@@ -48,8 +48,9 @@ export async function runEngineApp({
     }
     const { resolvedContexts = {} } = rootFeatureLoader || {};
 
+    const visitedDeps = new Set<string>();
+
     async function* loadFeature(featureName: string): AsyncGenerator<Feature> {
-        const visitedDeps = new Set<string>();
         for await (const depName of getFeatureDependencies(featureName, featureLoader)) {
             if (!visitedDeps.has(depName)) {
                 visitedDeps.add(depName);
