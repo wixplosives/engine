@@ -47,7 +47,6 @@ export function runEngineApp({
 
     return {
         engine,
-        resolvedContexts,
         async dispose() {
             await runningPromise;
             for (const feature of features) {
