@@ -100,10 +100,20 @@ async function main() {
     ${staticBuild && config ? addOverrideConfig(config) : ''}
     
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
+    const rootFeatureLoader = featureLoaders.get(featureName);
+    if(!rootFeatureLoader) {
+        throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
+    }
+    const { resolvedContexts = {} } = rootFeatureLoader;
+    const featureLoader = new RuntimeFeatureLoader(featureLoaders, resolvedContexts);
 
-    
-    const runtimeEngine = await runEngineApp(
-        { featureName, configName, config, options, envName, publicPath, featureLoader: new RuntimeFeatureLoader(featureLoaders)  }
+    const features = [];
+    for await (const loadedFeature of featureLoader.loadFeature(featureName)) {
+        features.push(loadedFeature);
+    }
+
+    const runtimeEngine = runEngineApp(
+        { config, options, envName, publicPath, features, resolvedContexts }
     );
     
 
