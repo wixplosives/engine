@@ -88,22 +88,11 @@ export function createEntrypoint({
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
-import { runEngineApp, getTopWindow, runtimeFeatureLoader } from '@wixc3/engine-core';
+import { getTopWindow, RuntimeFeatureLoader, runEngineApp } from '@wixc3/engine-core';
 
-
-self.runtimeFeatureLoader = runtimeFeatureLoader();
-
-async function loadFeature(engine, featureName, envName) {
-    const { depFeatures, load } = self.runtimeFeatureLoader.get(featureName);
-    for(const depFeature of depFeatures) {
-        await loadFeature(engine, depFeature, envName)
-    }
-    await self.runtimeFeatureLoader.load(engine, featureName, envName);
-}
-
-const featureLoaders = {
+const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), envName, childEnvs)}
-}
+}));
 
 for (const [scopedName, loader] of Object.entries(featureLoaders)) {
     self.runtimeFeatureLoader.register(scopedName, loader)
@@ -135,7 +124,7 @@ async function main() {
 
     
     const runtimeEngine = await runEngineApp(
-        { featureName, configName, featureLoaders, config, options, envName, publicPath }
+        { featureName, configName, config, options, envName, publicPath, featureLoader: self.runtimeFeatureLoader }
         );
     
     const externalFeatures = ${fetchExternalFeatures('external/')};

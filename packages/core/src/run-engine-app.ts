@@ -2,7 +2,7 @@ import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
 import type { Feature } from './entities';
-import { flattenTree } from './helpers';
+import { flattenTree, SetMultiMap } from './helpers';
 
 export interface IRunEngineOptions {
     entryFeature: Feature | Feature[];
@@ -25,86 +25,98 @@ export interface IFeatureLoader {
 
 export interface IRunEngineAppOptions {
     featureName?: string;
-    featureLoaders: Record<string, IFeatureLoader>;
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;
     envName: string;
     publicPath?: string;
+    featureLoader?: RuntimeFeatureLoader;
 }
 
 export async function runEngineApp({
     featureName,
-    featureLoaders,
     config = [],
     options,
     envName,
     publicPath,
+    featureLoader = new RuntimeFeatureLoader(),
 }: IRunEngineAppOptions) {
-    const featureNames = Object.keys(featureLoaders);
-
-    const rootFeatureLoader = featureName && featureLoaders[featureName];
+    const rootFeatureLoader = featureName && (await featureLoader.get(featureName));
     if (!rootFeatureLoader) {
-        throw new Error(`cannot find feature "${featureName!}". available features: ${featureNames.join(', ')}`);
+        throw new Error(
+            `cannot find feature "${featureName!}". available features: ${featureLoader.getRunning().join(', ')}`
+        );
     }
-
     const { resolvedContexts } = rootFeatureLoader;
-    const loadedFeatures: Promise<Feature>[] = [];
-    const visitedDeps = new Set<string>();
-    for (const depName of getFeatureDependencies(featureName!, featureLoaders)) {
-        if (!visitedDeps.has(depName)) {
-            visitedDeps.add(depName);
-            loadedFeatures.push(featureLoaders[depName].load(resolvedContexts));
+
+    async function* loadFeature(featureName: string): AsyncGenerator<Feature> {
+        const visitedDeps = new Set<string>();
+        for await (const depName of getFeatureDependencies(featureName, featureLoader)) {
+            if (!visitedDeps.has(depName)) {
+                visitedDeps.add(depName);
+                const loader = await featureLoader.get(depName);
+                yield loader.load(resolvedContexts);
+            }
         }
     }
-    const allFeatures = await Promise.all(loadedFeatures);
+
+    const allFeatures: Feature[] = [];
+
+    for await (const feature of loadFeature(featureName!)) {
+        allFeatures.push(feature);
+    }
+
     const runningFeature = allFeatures[allFeatures.length - 1];
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-
     const runningPromise = engine.run(runningFeature, envName);
 
     return {
         engine,
+        resolvedContexts,
         async dispose() {
             await runningPromise;
             for (const feature of allFeatures) {
                 await engine.dispose(feature, envName);
             }
         },
+        loadFeature,
     };
 }
 
-export function runtimeFeatureLoader(resolvedContexts: Record<string, string>) {
-    const featureMapping = new Map<string, IFeatureLoader>();
-    return {
-        register(name: string, featureLoader: IFeatureLoader) {
-            featureMapping.set(name, featureLoader);
-        },
-        async load(engine: RuntimeEngine, featureName: string, envName: string) {
-            const featureLoader = featureMapping.get(featureName);
-            if (!featureLoader) {
-                throw new Error('cannot load unregistered feature');
-            }
-            const feature = await featureLoader.load(resolvedContexts);
-            const runtimeFeature = engine.features.get(feature);
-            if (runtimeFeature) {
-                return runtimeFeature;
-            }
-            engine.initFeature(feature, envName);
-            return engine.runFeature(feature, envName);
-        },
-        get(featureName: string) {
-            return featureMapping.get(featureName);
-        },
-    };
+export interface RuntimeFeatureLoader {
+    register(featureName: string, loader: IFeatureLoader): void;
+    get(featureName: string): Promise<IFeatureLoader>;
 }
-export function* getFeatureDependencies(
+
+export class RuntimeFeatureLoader {
+    private pendingFeatures = new SetMultiMap<string, (featueLoader: IFeatureLoader) => unknown>();
+    constructor(private featureMapping = new Map<string, IFeatureLoader>()) {}
+    register(name: string, featureLoader: IFeatureLoader) {
+        this.featureMapping.set(name, featureLoader);
+        const pendingCallbacks = this.pendingFeatures.get(name) ?? [];
+        for (const cb of pendingCallbacks) {
+            cb(featureLoader);
+        }
+    }
+    get(featureName: string): Promise<IFeatureLoader> {
+        const featureLoader = this.featureMapping.get(featureName);
+        if (featureLoader) {
+            return Promise.resolve(featureLoader);
+        }
+        return new Promise((resolve) => this.pendingFeatures.add(featureName, resolve));
+    }
+    getRunning() {
+        return [...this.featureMapping.keys()];
+    }
+}
+
+export async function* getFeatureDependencies(
     featureName: string,
-    featureLoaders: Record<string, IFeatureLoader>
-): Generator<string> {
-    const { depFeatures } = featureLoaders[featureName];
+    featureLoader: RuntimeFeatureLoader
+): AsyncGenerator<string> {
+    const { depFeatures } = await featureLoader.get(featureName);
     for (const depFeature of depFeatures) {
-        yield* getFeatureDependencies(depFeature, featureLoaders);
+        yield* getFeatureDependencies(depFeature, featureLoader);
     }
     yield featureName;
 }

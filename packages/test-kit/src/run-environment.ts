@@ -7,6 +7,7 @@ import {
     EntityRecord,
     DisposableContext,
     MapToProxyType,
+    RuntimeFeatureLoader,
 } from '@wixc3/engine-core';
 import { readFeatures, evaluateConfig, createFeatureLoaders } from '@wixc3/engine-scripts';
 import type { IFileSystem } from '@file-services/types';
@@ -57,12 +58,12 @@ export async function runEngineEnvironment({
         type,
     });
 
-    return await runEngineApp({
+    return runEngineApp({
         envName: name,
-        featureLoaders,
         config,
         featureName,
         options: new Map(Object.entries(runtimeOptions)),
+        featureLoader: new RuntimeFeatureLoader(new Map(Object.entries(featureLoaders))),
     });
 }
 
