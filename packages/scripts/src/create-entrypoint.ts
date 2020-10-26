@@ -23,6 +23,17 @@ interface IConfigFileMapping {
     configEnvName?: string;
 }
 
+export interface WebpackFeatureLoaderArguments extends IFeatureDefinition {
+    childEnvs: string[];
+    envName: string;
+    publicPath?: string;
+}
+
+export type LoadStatement = Pick<
+    WebpackFeatureLoaderArguments,
+    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name'
+>;
+
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
     const configNameToFiles: Record<string, IConfigFileMapping[]> = {};
 
