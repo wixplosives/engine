@@ -13,6 +13,7 @@ import {
     IEnvironmentMessage,
     IEnvironmentStartMessage,
     IFeatureDefinition,
+    IPlugin,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
     TopLevelConfigProvider,
@@ -33,6 +34,7 @@ export interface RunEnvironmentOptions {
     runtimeOptions?: Record<string, string | boolean>;
     overrideConfigsMap?: Map<string, OverrideConfig>;
     mode?: LaunchEnvironmentMode;
+    plugins: IPlugin[];
 }
 
 const cliEntry = require.resolve('./cli');
@@ -58,6 +60,7 @@ export interface ILaunchEnvironmentOptions {
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
+    plugins: IPlugin[];
 }
 
 export class NodeEnvironmentsManager {
@@ -71,6 +74,7 @@ export class NodeEnvironmentsManager {
         runtimeOptions = {},
         overrideConfigsMap = new Map<string, OverrideConfig>(),
         mode = 'new-server',
+        plugins,
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
@@ -104,6 +108,7 @@ export class NodeEnvironmentsManager {
                     ...runtimeOptions,
                 },
                 mode,
+                plugins,
             });
             disposables.push(() => close());
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
@@ -164,7 +169,10 @@ export class NodeEnvironmentsManager {
         return runningFeatures;
     }
 
-    public async closeEnvironment({ featureName, configName }: RunEnvironmentOptions) {
+    public async closeEnvironment({
+        featureName,
+        configName,
+    }: Pick<RunEnvironmentOptions, 'featureName' | 'configName'>) {
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
 
         const runningEnvironment = this.runningEnvironments.get(featureId);
@@ -194,7 +202,14 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    private async launchEnvironment({ nodeEnv, featureName, config, options, mode }: ILaunchEnvironmentOptions) {
+    private async launchEnvironment({
+        nodeEnv,
+        featureName,
+        config,
+        options,
+        mode,
+        plugins,
+    }: ILaunchEnvironmentOptions) {
         const { features, port, inspect } = this.options;
         const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
@@ -203,6 +218,7 @@ export class NodeEnvironmentsManager {
             features: Array.from(features.entries()),
             options: Object.entries(options),
             inspect,
+            plugins,
         };
 
         if (inspect || mode === 'forked') {

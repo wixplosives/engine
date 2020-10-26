@@ -18,6 +18,11 @@ export interface IFeatureTarget {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
+export interface IPlugin {
+    name: string;
+    envEntries: Record<string, string>;
+}
+
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
@@ -25,6 +30,7 @@ export interface StartEnvironmentOptions extends IEnvironment {
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: Target;
+    plugins: IPlugin[];
 }
 export interface VirtualEntry {
     source: string;

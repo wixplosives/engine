@@ -94,16 +94,9 @@ const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), envName, childEnvs)}
 }));
 
-for (const [scopedName, loader] of Object.entries(featureLoaders)) {
-    self.runtimeFeatureLoader.register(scopedName, loader)
-}
-
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
-    if(!self.EngineCore) {
-        self.EngineCore = await import('@wixc3/engine-core');
-    }
-    ${target === 'web' ? documentImportScripts() : ''}
+    self.runtimeFeatureLoader = new RuntimeFeatureLoader(featureLoaders);
     const envName = '${envName}';
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
@@ -122,26 +115,40 @@ async function main() {
     
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
 
-    
     const runtimeEngine = await runEngineApp(
         { featureName, configName, config, options, envName, publicPath, featureLoader: self.runtimeFeatureLoader }
-        );
+    );
+    const { engine, resolvedContexts, loadFeature } = runtimeEngine;
+    ${loadExternalFeatures(target)}
     
-    const externalFeatures = ${fetchExternalFeatures('external/')};
-    const entryPaths = externalFeatures.map(({name, envEntries}) => (envEntries[envName])).filter(path => path !== undefined);
-
-    await importScripts(entryPaths);
-
-    for(const { name } of externalFeatures) {
-        loadFeature(runtimeEngine.engine, name, envName).catch(err => console.error('failed to load the plugin', name, err));
-    }
-
-
     return runtimeEngine;
 }
 
 main().catch(console.error);
 `;
+}
+
+function loadExternalFeatures(target: 'web' | 'webworker') {
+    return `
+        const externalFeatures = ${fetchExternalFeatures('external/')};
+        if(externalFeatures.length) {
+            if(!self.EngineCore) {
+                self.EngineCore = await import('@wixc3/engine-core');
+            }
+            const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName])).filter(path => !!path);
+            await ${target === 'web' ? loadScriptTags() : importScripts()}(entryPaths)
+
+            for (const { name } of externalFeatures) {
+                for await (const loadedFeature of loadFeature(name)) {
+                    engine.initFeature(loadedFeature, envName);
+                    engine.runFeature(loadedFeature, envName).catch(console.error);
+                }
+            }
+        }`;
+}
+
+function importScripts() {
+    return 'importScripts';
 }
 
 function webpackImportStatement(moduleIdentifier: string, filePath: string) {
@@ -248,8 +255,8 @@ function normalizeRoute(route?: string) {
     return route;
 }
 
-function documentImportScripts() {
-    return `function importScripts(...scripts) {
+function loadScriptTags() {
+    return `(function fetchScripts(...scripts) {
         const loadScript = (src) =>
             new Promise((resolve, reject) => {
                 const script = document.createElement('script');
@@ -261,5 +268,5 @@ function documentImportScripts() {
             });
 
         return Promise.all(scripts.map(loadScript))
-    }`;
+    })`;
 }
