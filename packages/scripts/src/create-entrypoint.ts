@@ -201,19 +201,3 @@ function normalizeRoute(route?: string) {
 
     return route;
 }
-
-function documentImportScripts() {
-    return `function importScripts(...scripts) {
-        const loadScript = (src) =>
-            new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = () => resolve();
-                script.onerror = reject;
-                script.crossOrigin = 'anonymous';
-                document.head.appendChild(script);
-            });
-
-        return Promise.all(scripts.map(loadScript))
-    }`;
-}
