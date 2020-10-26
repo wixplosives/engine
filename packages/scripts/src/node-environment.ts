@@ -1,4 +1,4 @@
-import { COM, Feature, IFeatureLoader, runEngineApp, RuntimeEngine } from '@wixc3/engine-core';
+import { COM, Feature, IFeatureLoader, runEngineApp, RuntimeEngine, RuntimeFeatureLoader } from '@wixc3/engine-core';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
@@ -28,14 +28,20 @@ export async function runNodeEnvironment({
 
     return runEngineApp({
         featureName,
-        featureLoaders: createFeatureLoaders(new Map(features), {
-            name,
-            childEnvName,
-            type,
-        }),
         config,
         options: new Map(options),
         envName: name,
+        featureLoader: new RuntimeFeatureLoader(
+            new Map(
+                Object.entries(
+                    createFeatureLoaders(new Map(features), {
+                        name,
+                        childEnvName,
+                        type,
+                    })
+                )
+            )
+        ),
     });
 }
 
