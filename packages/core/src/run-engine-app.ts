@@ -40,7 +40,7 @@ export async function runEngineApp({
     publicPath,
     featureLoader = new RuntimeFeatureLoader(),
 }: IRunEngineAppOptions) {
-    const rootFeatureLoader = featureName && (await featureLoader.get(featureName));
+    const rootFeatureLoader = featureName && (await featureLoader.get(featureName, false));
     if (featureName && !rootFeatureLoader) {
         throw new Error(
             `cannot find feature "${featureName}". available features: ${featureLoader.getRunning().join(', ')}`
@@ -94,12 +94,17 @@ export class RuntimeFeatureLoader {
             cb(featureLoader);
         }
     }
-    get(featureName: string): Promise<IFeatureLoader> {
+    get(featureName: string, waitForLoad?: true): Promise<IFeatureLoader>;
+    get(featureName: string, waitForLoad?: false): Promise<IFeatureLoader | false>;
+    get(featureName: string, waitForLoad = true): Promise<IFeatureLoader | false> {
         const featureLoader = this.featureMapping.get(featureName);
         if (featureLoader) {
             return Promise.resolve(featureLoader);
         }
-        return new Promise((resolve) => this.pendingFeatures.add(featureName, resolve));
+        if (waitForLoad) {
+            return new Promise((resolve) => this.pendingFeatures.add(featureName, resolve));
+        }
+        return Promise.resolve(false);
     }
     getRunning() {
         return [...this.featureMapping.keys()];
