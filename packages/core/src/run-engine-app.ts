@@ -94,6 +94,7 @@ export class RuntimeFeatureLoader {
         for (const cb of pendingCallbacks) {
             cb(featureLoader);
         }
+        this.pendingFeatures.deleteKey(name);
     }
     get(featureName: string, waitForLoad?: true): Promise<IFeatureLoader>;
     get(featureName: string, waitForLoad?: false): Promise<IFeatureLoader | false>;
