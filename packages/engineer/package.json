@@ -22,7 +22,7 @@
     "@wixc3/engine-core-node": "^15.2.0",
     "@wixc3/engine-dashboard": "^15.2.1",
     "@wixc3/engine-scripts": "^15.2.1",
-    "commander": "^6.1.0",
+    "commander": "^6.2.0",
     "open": "^7.3.0",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-virtual-modules": "^0.3.2"
