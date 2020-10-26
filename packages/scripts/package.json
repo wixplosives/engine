@@ -17,7 +17,7 @@
     "@wixc3/cross-performance": "^15.2.0",
     "@wixc3/engine-core": "^15.2.0",
     "@wixc3/engine-core-node": "^15.2.0",
-    "commander": "^6.1.0",
+    "commander": "^6.2.0",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
     "express": "^4.17.1",
