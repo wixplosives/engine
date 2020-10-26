@@ -41,12 +41,12 @@ export async function runEngineApp({
     featureLoader = new RuntimeFeatureLoader(),
 }: IRunEngineAppOptions) {
     const rootFeatureLoader = featureName && (await featureLoader.get(featureName));
-    if (!rootFeatureLoader) {
+    if (featureName && !rootFeatureLoader) {
         throw new Error(
-            `cannot find feature "${featureName!}". available features: ${featureLoader.getRunning().join(', ')}`
+            `cannot find feature "${featureName}". available features: ${featureLoader.getRunning().join(', ')}`
         );
     }
-    const { resolvedContexts } = rootFeatureLoader;
+    const { resolvedContexts = {} } = rootFeatureLoader || {};
 
     async function* loadFeature(featureName: string): AsyncGenerator<Feature> {
         const visitedDeps = new Set<string>();
@@ -61,11 +61,12 @@ export async function runEngineApp({
 
     const allFeatures: Feature[] = [];
 
-    for await (const feature of loadFeature(featureName!)) {
-        allFeatures.push(feature);
+    if (featureName) {
+        for await (const feature of loadFeature(featureName)) {
+            allFeatures.push(feature);
+        }
     }
-
-    const runningFeature = allFeatures[allFeatures.length - 1];
+    const runningFeature = allFeatures.length ? allFeatures[allFeatures.length - 1] : [];
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
     const runningPromise = engine.run(runningFeature, envName);
