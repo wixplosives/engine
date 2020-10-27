@@ -24,48 +24,23 @@ export interface IFeatureLoader {
 }
 
 export interface IRunEngineAppOptions {
-    featureName?: string;
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;
     envName: string;
     publicPath?: string;
-    featureLoader?: RuntimeFeatureLoader;
+    features?: Feature[];
+    resolvedContexts: Record<string, string>;
 }
 
-export async function runEngineApp({
-    featureName,
+export function runEngineApp({
     config = [],
     options,
     envName,
     publicPath,
-    featureLoader = new RuntimeFeatureLoader(),
+    features = [],
+    resolvedContexts = {},
 }: IRunEngineAppOptions) {
-    const rootFeatureLoader = featureName && (await featureLoader.get(featureName));
-    if (!rootFeatureLoader) {
-        throw new Error(
-            `cannot find feature "${featureName!}". available features: ${featureLoader.getRunning().join(', ')}`
-        );
-    }
-    const { resolvedContexts } = rootFeatureLoader;
-
-    async function* loadFeature(featureName: string): AsyncGenerator<Feature> {
-        const visitedDeps = new Set<string>();
-        for await (const depName of getFeatureDependencies(featureName, featureLoader)) {
-            if (!visitedDeps.has(depName)) {
-                visitedDeps.add(depName);
-                const loader = await featureLoader.get(depName);
-                yield loader.load(resolvedContexts);
-            }
-        }
-    }
-
-    const allFeatures: Feature[] = [];
-
-    for await (const feature of loadFeature(featureName!)) {
-        allFeatures.push(feature);
-    }
-
-    const runningFeature = allFeatures[allFeatures.length - 1];
+    const runningFeature = features.length ? features[features.length - 1] : [];
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
     const runningPromise = engine.run(runningFeature, envName);
@@ -75,28 +50,27 @@ export async function runEngineApp({
         resolvedContexts,
         async dispose() {
             await runningPromise;
-            for (const feature of allFeatures) {
+            for (const feature of features) {
                 await engine.dispose(feature, envName);
             }
         },
-        loadFeature,
     };
-}
-
-export interface RuntimeFeatureLoader {
-    register(featureName: string, loader: IFeatureLoader): void;
-    get(featureName: string): Promise<IFeatureLoader>;
 }
 
 export class RuntimeFeatureLoader {
     private pendingFeatures = new SetMultiMap<string, (featueLoader: IFeatureLoader) => unknown>();
-    constructor(private featureMapping = new Map<string, IFeatureLoader>()) {}
+    private loadedFeatures = new Set<string>();
+    constructor(
+        private featureMapping = new Map<string, IFeatureLoader>(),
+        private resolvedContexts: Record<string, string> = {}
+    ) {}
     register(name: string, featureLoader: IFeatureLoader) {
         this.featureMapping.set(name, featureLoader);
         const pendingCallbacks = this.pendingFeatures.get(name) ?? [];
         for (const cb of pendingCallbacks) {
             cb(featureLoader);
         }
+        this.pendingFeatures.deleteKey(name);
     }
     get(featureName: string): Promise<IFeatureLoader> {
         const featureLoader = this.featureMapping.get(featureName);
@@ -108,17 +82,22 @@ export class RuntimeFeatureLoader {
     getRunning() {
         return [...this.featureMapping.keys()];
     }
-}
-
-export async function* getFeatureDependencies(
-    featureName: string,
-    featureLoader: RuntimeFeatureLoader
-): AsyncGenerator<string> {
-    const { depFeatures } = await featureLoader.get(featureName);
-    for (const depFeature of depFeatures) {
-        yield* getFeatureDependencies(depFeature, featureLoader);
+    async *loadFeature(featureName: string): AsyncGenerator<Feature> {
+        for await (const depName of this.getFeatureDependencies(featureName)) {
+            if (!this.loadedFeatures.has(depName)) {
+                this.loadedFeatures.add(depName);
+                const loader = await this.get(depName);
+                yield loader.load(this.resolvedContexts);
+            }
+        }
     }
-    yield featureName;
+    async *getFeatureDependencies(featureName: string): AsyncGenerator<string> {
+        const { depFeatures } = await this.get(featureName);
+        for (const depFeature of depFeatures) {
+            yield* this.getFeatureDependencies(depFeature);
+        }
+        yield featureName;
+    }
 }
 
 export function getTopWindow(win: Window): Window {

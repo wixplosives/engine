@@ -26,22 +26,30 @@ export async function runNodeEnvironment({
         );
     }
 
+    const featureLoaders = createFeatureLoaders(new Map(features), {
+        name,
+        childEnvName,
+        type,
+    });
+    const rootFeatureLoader = featureLoaders[featureName];
+    const { resolvedContexts = {} } = rootFeatureLoader;
+    if (!rootFeatureLoader) {
+        throw new Error(
+            "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
+        );
+    }
+    const featureLoader = new RuntimeFeatureLoader(new Map(Object.entries(featureLoaders)), resolvedContexts);
+    const loadedFeatures: Feature[] = [];
+    for await (const loadedFeature of featureLoader.loadFeature(featureName)) {
+        loadedFeatures.push(loadedFeature);
+    }
+
     return runEngineApp({
-        featureName,
         config,
         options: new Map(options),
         envName: name,
-        featureLoader: new RuntimeFeatureLoader(
-            new Map(
-                Object.entries(
-                    createFeatureLoaders(new Map(features), {
-                        name,
-                        childEnvName,
-                        type,
-                    })
-                )
-            )
-        ),
+        features: loadedFeatures,
+        resolvedContexts,
     });
 }
 

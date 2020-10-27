@@ -96,7 +96,6 @@ const featureLoaders = new Map(Object.entries({
 
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
-    self.runtimeFeatureLoader = new RuntimeFeatureLoader(featureLoaders);
     const envName = '${envName}';
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
@@ -114,13 +113,25 @@ async function main() {
     ${staticBuild && config ? addOverrideConfig(config) : ''}
     
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
+    const rootFeatureLoader = featureLoaders.get(featureName);
+    if(!rootFeatureLoader) {
+        throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
+    }
+    const { resolvedContexts = {} } = rootFeatureLoader;
+    const featureLoader = new RuntimeFeatureLoader(featureLoaders, resolvedContexts);
+    self.runtimeFeatureLoader = featureLoader;
+    const features = [];
+    for await (const loadedFeature of featureLoader.loadFeature(featureName)) {
+        features.push(loadedFeature);
+    }
 
-    const runtimeEngine = await runEngineApp(
-        { featureName, configName, config, options, envName, publicPath, featureLoader: self.runtimeFeatureLoader }
+    const runtimeEngine = runEngineApp(
+        { config, options, envName, publicPath, features, resolvedContexts }
     );
-    const { engine, resolvedContexts, loadFeature } = runtimeEngine;
     ${loadExternalFeatures(target)}
+
     
+
     return runtimeEngine;
 }
 
@@ -139,7 +150,7 @@ function loadExternalFeatures(target: 'web' | 'webworker') {
             await ${target === 'web' ? loadScriptTags() : importScripts()}(entryPaths)
 
             for (const { name } of externalFeatures) {
-                for await (const loadedFeature of loadFeature(name)) {
+                for await (const loadedFeature of self.runtimeFeatureLoader.loadFeature(name)) {
                     engine.initFeature(loadedFeature, envName);
                     engine.runFeature(loadedFeature, envName).catch(console.error);
                 }

@@ -57,13 +57,25 @@ export async function runEngineEnvironment({
         childEnvName,
         type,
     });
+    const rootFeatureLoader = featureLoaders[featureName];
+    const { resolvedContexts = {} } = rootFeatureLoader;
+    if (!rootFeatureLoader) {
+        throw new Error(
+            "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
+        );
+    }
+    const featureLoader = new RuntimeFeatureLoader(new Map(Object.entries(featureLoaders)), resolvedContexts);
+    const loadedFeatures: Feature[] = [];
+    for await (const loadedFeature of featureLoader.loadFeature(featureName)) {
+        loadedFeatures.push(loadedFeature);
+    }
 
     return runEngineApp({
-        envName: name,
         config,
-        featureName,
         options: new Map(Object.entries(runtimeOptions)),
-        featureLoader: new RuntimeFeatureLoader(new Map(Object.entries(featureLoaders))),
+        envName: name,
+        features: loadedFeatures,
+        resolvedContexts,
     });
 }
 
