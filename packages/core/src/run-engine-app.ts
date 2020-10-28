@@ -40,7 +40,7 @@ export function runEngineApp({
     features = [],
     resolvedContexts = {},
 }: IRunEngineAppOptions) {
-    const [runningFeature] = features;
+    const runningFeature = features[features.length - 1];
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
     const runningPromise = engine.run(runningFeature, envName);
@@ -88,7 +88,8 @@ export class FeatureLoadersRegistry {
      */
     async getLoadedFeatures(rootFeatureName: string): Promise<Feature[]> {
         const loaded = [];
-        for await (const depName of await this.getFeatureDependencies(rootFeatureName)) {
+        const dependencies = await this.getFeatureDependencies(rootFeatureName);
+        for await (const depName of dependencies.reverse()) {
             if (!this.loadedFeatures.has(depName)) {
                 this.loadedFeatures.add(depName);
                 const loader = this.get(depName);
@@ -101,7 +102,7 @@ export class FeatureLoadersRegistry {
      * returns all the dependencies of a feature. doesn't handle duplications
      */
     public async getFeatureDependencies(featureName: string): Promise<string[]> {
-        const dependencies: string[] = [];
+        const dependencies: string[] = [featureName];
         const features = [featureName];
         while (features.length) {
             const { depFeatures } = await this.get(features.shift()!);
