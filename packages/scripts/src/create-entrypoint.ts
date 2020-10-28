@@ -87,7 +87,9 @@ export function createMainEntrypoint({
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
-import { getTopWindow, RuntimeFeatureLoader, runEngineApp } from '@wixc3/engine-core';
+import * as EngineCore from '@wixc3/engine-core';
+
+const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
 
 const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), envName, childEnvs, target)}
@@ -112,8 +114,14 @@ async function main() {
     ${staticBuild && config ? addOverrideConfig(config) : ''}
     
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
-    const features = [];
-    ${loadFeatureFiles()}
+    const rootFeatureLoader = featureLoaders.get(featureName);
+    if(!rootFeatureLoader) {
+        throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
+    }
+    const { resolvedContexts = {} } = rootFeatureLoader;
+
+    const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
+    cosnt features = await featureLoader.getLoadedFeatures(featureName))
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
@@ -216,23 +224,6 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
 }
 //#endregion
 
-//#region loading features
-function loadFeatureFiles() {
-    return `
-    const rootFeatureLoader = featureLoaders.get(featureName);
-    if(!rootFeatureLoader) {
-        throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
-    }
-    const { resolvedContexts = {} } = rootFeatureLoader;
-    const featureLoader = new RuntimeFeatureLoader(featureLoaders, resolvedContexts);
-    self.runtimeFeatureLoader = featureLoader;
-    for await (const loadedFeature of featureLoader.loadFeature(featureName)) {
-        features.push(loadedFeature);
-    }`;
-}
-
-//#endregion
-
 //#region config loaders
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
     const configNameToFiles: Record<string, IConfigFileMapping[]> = {};
@@ -311,18 +302,27 @@ function importStaticConfigs() {
 //#region loading 3rd party features
 function loadExternalFeatures(target: 'web' | 'webworker') {
     return `
+        self.runtimeFeatureLoader = featureLoader;
         const externalFeatures = ${fetchExternalFeatures('external/')};
         if(externalFeatures.length) {
             if(!self.EngineCore) {
-                self.EngineCore = await import('@wixc3/engine-core');
+                self.EngineCore = EngineCore;
             }
-            const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName])).filter(path => !!path);
-            await ${target === 'web' ? loadScripts() : importScripts()}(entryPaths)
+            const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName])).filter(Boolean);
+            await ${target === 'web' ? loadScripts() : importScripts()}(entryPaths);
 
             for (const { name } of externalFeatures) {
-                for await (const loadedFeature of self.runtimeFeatureLoader.loadFeature(name)) {
+                const loadedModules = [];
+                for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
+                    loadedModules.push(loadedFeature);
                     runtimeEngine.engine.initFeature(loadedFeature, envName);
-                    runtimeEngine.engine.runFeature(loadedFeature, envName).catch(console.error);
+                    runtimeEngine.engine.runFeature(loadedFeature, envName)
+                    .catch(err => {
+                        for(const module of loadedModules) {
+                            runtimeEngine.engine.dispose(module, envName);
+                        }
+                        console.error(err);
+                    });
                 }
             }
         }`;
@@ -337,7 +337,7 @@ function importScripts() {
 }
 
 function loadScripts() {
-    return `(function fetchScripts(...scripts) {
+    return `(function fetchScripts(scripts) {
         const loadScript = (src) =>
             new Promise((resolve, reject) => {
                 const script = document.createElement('script');

@@ -1,4 +1,4 @@
-import { COM, Feature, IFeatureLoader, runEngineApp, RuntimeEngine, RuntimeFeatureLoader } from '@wixc3/engine-core';
+import { COM, Feature, IFeatureLoader, runEngineApp, RuntimeEngine, FeatureLoadersRegistry } from '@wixc3/engine-core';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
@@ -39,9 +39,9 @@ export async function runNodeEnvironment({
             "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
         );
     }
-    const featureLoader = new RuntimeFeatureLoader(new Map(Object.entries(featureLoaders)), resolvedContexts);
+    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
     const loadedFeatures: Feature[] = [];
-    for await (const loadedFeature of featureLoader.loadFeature(featureName)) {
+    for (const loadedFeature of await featureLoader.getLoadedFeatures(featureName)) {
         loadedFeatures.push(loadedFeature);
     }
 
@@ -55,9 +55,9 @@ export async function runNodeEnvironment({
 
     for (const { name, envEntries } of externalFeatures) {
         if (envEntries[name]) {
-            require(envEntries[name]);
+            const module = require(envEntries[name]) as { [featureName: string]: IFeatureLoader };
         }
-        for await (const feature of featureLoader.loadFeature(name)) {
+        for (const feature of await featureLoader.getLoadedFeatures(name)) {
             runtimeEngine.engine.initFeature(feature, name);
             runtimeEngine.engine.runFeature(feature, name).catch(console.error);
         }

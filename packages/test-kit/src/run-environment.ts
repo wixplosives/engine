@@ -7,7 +7,7 @@ import {
     EntityRecord,
     DisposableContext,
     MapToProxyType,
-    RuntimeFeatureLoader,
+    FeatureLoadersRegistry,
 } from '@wixc3/engine-core';
 import { readFeatures, evaluateConfig, createFeatureLoaders } from '@wixc3/engine-scripts';
 import type { IFileSystem } from '@file-services/types';
@@ -64,9 +64,9 @@ export async function runEngineEnvironment({
             "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
         );
     }
-    const featureLoader = new RuntimeFeatureLoader(new Map(Object.entries(featureLoaders)), resolvedContexts);
+    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
     const loadedFeatures: Feature[] = [];
-    for await (const loadedFeature of featureLoader.loadFeature(featureName)) {
+    for await (const loadedFeature of featureLoader.getLoadedFeatures(featureName)) {
         loadedFeatures.push(loadedFeature);
     }
 

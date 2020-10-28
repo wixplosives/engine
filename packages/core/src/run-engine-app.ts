@@ -2,7 +2,7 @@ import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
 import type { Feature } from './entities';
-import { flattenTree, SetMultiMap } from './helpers';
+import { deferred, flattenTree, IDeferredPromise } from './helpers';
 
 export interface IRunEngineOptions {
     entryFeature: Feature | Feature[];
@@ -39,11 +39,12 @@ export function runEngineApp({
     publicPath,
     features = [],
     resolvedContexts = {},
+    externalFeatures = [],
 }: IRunEngineAppOptions) {
-    const runningFeature = features.length ? features[features.length - 1] : [];
+    const runningFeature = features[features.length - 1];
 
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    const runningPromise = engine.run(runningFeature, envName);
+    const runningPromise = engine.run([runningFeature, ...externalFeatures], envName);
 
     return {
         engine,
@@ -57,41 +58,51 @@ export function runEngineApp({
     };
 }
 
-export class RuntimeFeatureLoader {
-    private pendingFeatures = new SetMultiMap<string, (featueLoader: IFeatureLoader) => unknown>();
+export class FeatureLoadersRegistry {
+    private pendingLoaderRequests = new Map<string, IDeferredPromise<IFeatureLoader>>();
     private loadedFeatures = new Set<string>();
     constructor(
         private featureMapping = new Map<string, IFeatureLoader>(),
         private resolvedContexts: Record<string, string> = {}
     ) {}
-    register(name: string, featureLoader: IFeatureLoader) {
+    public register(name: string, featureLoader: IFeatureLoader) {
         this.featureMapping.set(name, featureLoader);
-        const pendingCallbacks = this.pendingFeatures.get(name) ?? [];
-        for (const cb of pendingCallbacks) {
-            cb(featureLoader);
-        }
-        this.pendingFeatures.deleteKey(name);
+        this.pendingLoaderRequests.get(name)?.resolve(featureLoader);
+        this.pendingLoaderRequests.delete(name);
     }
-    get(featureName: string): Promise<IFeatureLoader> {
+    public get(featureName: string): IFeatureLoader | Promise<IFeatureLoader> {
         const featureLoader = this.featureMapping.get(featureName);
         if (featureLoader) {
-            return Promise.resolve(featureLoader);
+            return featureLoader;
         }
-        return new Promise((resolve) => this.pendingFeatures.add(featureName, resolve));
+        let loaderPromise = this.pendingLoaderRequests.get(featureName);
+        if (!loaderPromise) {
+            loaderPromise = deferred<IFeatureLoader>();
+            this.pendingLoaderRequests.set(featureName, loaderPromise);
+        }
+        return loaderPromise.promise;
     }
-    getRunning() {
+    public getRegistered(): string[] {
         return [...this.featureMapping.keys()];
     }
-    async *loadFeature(featureName: string): AsyncGenerator<Feature> {
-        for await (const depName of this.getFeatureDependencies(featureName)) {
+    /**
+     * Yields all features which were actially loaded
+     */
+    async getLoadedFeatures(rootFeatureName: string): Promise<Feature[]> {
+        const loaded = [];
+        for await (const depName of this.getFeatureDependencies(rootFeatureName)) {
             if (!this.loadedFeatures.has(depName)) {
                 this.loadedFeatures.add(depName);
-                const loader = await this.get(depName);
-                yield loader.load(this.resolvedContexts);
+                const loader = this.get(depName);
+                loaded.push(loader);
             }
         }
+        return Promise.all((await Promise.all(loaded)).map(({ load }) => load(this.resolvedContexts)));
     }
-    async *getFeatureDependencies(featureName: string): AsyncGenerator<string> {
+    /**
+     * Yields all the dependencies of a feature. doesn't handle duplications
+     */
+    public async *getFeatureDependencies(featureName: string): AsyncGenerator<string> {
         const { depFeatures } = await this.get(featureName);
         for (const depFeature of depFeatures) {
             yield* this.getFeatureDependencies(depFeature);
