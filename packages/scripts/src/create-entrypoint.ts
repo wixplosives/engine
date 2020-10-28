@@ -75,7 +75,7 @@ export function createEntrypoint({
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
-import { getTopWindow, RuntimeFeatureLoader, runEngineApp } from '@wixc3/engine-core';
+import { getTopWindow, FeatureLoadersRegistry, runEngineApp } from '@wixc3/engine-core';
 
 const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), envName, childEnvs)}
@@ -105,10 +105,10 @@ async function main() {
         throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
     }
     const { resolvedContexts = {} } = rootFeatureLoader;
-    const featureLoader = new RuntimeFeatureLoader(featureLoaders, resolvedContexts);
+    const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
 
     const features = [];
-    for await (const loadedFeature of featureLoader.loadFeature(featureName)) {
+    for await (const loadedFeature of featureLoader.getLoadedFeatures(featureName)) {
         features.push(loadedFeature);
     }
 

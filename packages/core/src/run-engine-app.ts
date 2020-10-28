@@ -56,33 +56,37 @@ export function runEngineApp({
     };
 }
 
-export class RuntimeFeatureLoader {
-    private pendingFeatures = new SetMultiMap<string, (featueLoader: IFeatureLoader) => unknown>();
+export class FeatureLoadersRegistry {
+    private pendingLoaderRequests = new SetMultiMap<string, (featueLoader: IFeatureLoader) => unknown>();
     private loadedFeatures = new Set<string>();
     constructor(
         private featureMapping = new Map<string, IFeatureLoader>(),
         private resolvedContexts: Record<string, string> = {}
     ) {}
-    register(name: string, featureLoader: IFeatureLoader) {
+    public register(name: string, featureLoader: IFeatureLoader) {
         this.featureMapping.set(name, featureLoader);
-        const pendingCallbacks = this.pendingFeatures.get(name) ?? [];
+        const pendingCallbacks = this.pendingLoaderRequests.get(name) ?? [];
         for (const cb of pendingCallbacks) {
             cb(featureLoader);
         }
-        this.pendingFeatures.deleteKey(name);
+        this.pendingLoaderRequests.deleteKey(name);
     }
-    get(featureName: string): Promise<IFeatureLoader> {
+    public get(featureName: string): IFeatureLoader | Promise<IFeatureLoader> {
         const featureLoader = this.featureMapping.get(featureName);
         if (featureLoader) {
-            return Promise.resolve(featureLoader);
+            return featureLoader;
         }
-        return new Promise((resolve) => this.pendingFeatures.add(featureName, resolve));
+        // will be resolved once feature loader is registered
+        return new Promise((resolve) => this.pendingLoaderRequests.add(featureName, resolve));
     }
-    getRunning() {
+    public getRegistered(): string[] {
         return [...this.featureMapping.keys()];
     }
-    async *loadFeature(featureName: string): AsyncGenerator<Feature> {
-        for await (const depName of this.getFeatureDependencies(featureName)) {
+    /**
+     * Yields all features which were actially loaded
+     */
+    async *getLoadedFeatures(rootFeatureName: string): AsyncGenerator<Feature> {
+        for await (const depName of this.getFeatureDependencies(rootFeatureName)) {
             if (!this.loadedFeatures.has(depName)) {
                 this.loadedFeatures.add(depName);
                 const loader = await this.get(depName);
@@ -90,7 +94,10 @@ export class RuntimeFeatureLoader {
             }
         }
     }
-    async *getFeatureDependencies(featureName: string): AsyncGenerator<string> {
+    /**
+     * Yields all the dependencies of a feature. doesn't handle duplications
+     */
+    public async *getFeatureDependencies(featureName: string): AsyncGenerator<string> {
         const { depFeatures } = await this.get(featureName);
         for (const depFeature of depFeatures) {
             yield* this.getFeatureDependencies(depFeature);
