@@ -23,6 +23,17 @@ interface IConfigFileMapping {
     configEnvName?: string;
 }
 
+export interface WebpackFeatureLoaderArguments extends IFeatureDefinition {
+    childEnvs: string[];
+    envName: string;
+    publicPath?: string;
+}
+
+export type LoadStatement = Pick<
+    WebpackFeatureLoaderArguments,
+    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name'
+>;
+
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
     const configNameToFiles: Record<string, IConfigFileMapping[]> = {};
 
@@ -64,15 +75,15 @@ export function createEntrypoint({
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
-import { runEngineApp, getTopWindow } from '@wixc3/engine-core';
+import { getTopWindow, FeatureLoadersRegistry, runEngineApp } from '@wixc3/engine-core';
 
-const featureLoaders = {
+const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), envName, childEnvs)}
-}
-
+}));
 
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
+    const envName = '${envName}';
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
 
@@ -89,10 +100,19 @@ async function main() {
     ${staticBuild && config ? addOverrideConfig(config) : ''}
     
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
-    
-    const runtimeEngine = await runEngineApp(
-        { featureName, configName, featureLoaders, config, options, envName: '${envName}', publicPath }
+    const rootFeatureLoader = featureLoaders.get(featureName);
+    if(!rootFeatureLoader) {
+        throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
+    }
+    const { resolvedContexts = {} } = rootFeatureLoader;
+    const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
+
+    const features = await featureLoader.getLoadedFeatures(featureName);
+
+    const runtimeEngine = runEngineApp(
+        { config, options, envName, publicPath, features, resolvedContexts }
     );
+    
 
     return runtimeEngine;
 }
@@ -111,31 +131,13 @@ function createFeatureLoaders(features: Iterable<IFeatureDefinition>, envName: s
         .join(',\n');
 }
 
-export interface WebpackFeatureLoader {
-    childEnvs: string[];
-    contextFilePaths: Record<string, string>;
-    envName: string;
-    name: string;
-    envFilePaths: Record<string, string>;
-    scopedName: string;
-    filePath: string;
-    dependencies: string[];
-    resolvedContexts: Record<string, string>;
+function webpackFeatureLoader(args: WebpackFeatureLoaderArguments) {
+    return `    '${args.scopedName}': ${createLoaderInterface(args)}`;
 }
 
-function webpackFeatureLoader({
-    childEnvs,
-    dependencies,
-    name,
-    contextFilePaths,
-    envFilePaths,
-    envName,
-    scopedName,
-    filePath,
-    resolvedContexts,
-}: WebpackFeatureLoader) {
-    const loadStatements: string[] = [];
+function loadEnvAndContextFiles({ childEnvs, contextFilePaths, envName, name, envFilePaths }: LoadStatement) {
     let usesResolvedContexts = false;
+    const loadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
         const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
         if (contextFilePath) {
@@ -149,11 +151,15 @@ function webpackFeatureLoader({
     if (envFilePath) {
         loadStatements.push(webpackImportStatement(`[${envName}]${name}`, envFilePath));
     }
+    return { usesResolvedContexts, loadStatements };
+}
 
-    return `    '${scopedName}': {
-                    async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {${
-        loadStatements.length ? '\n' + loadStatements.join('\n') : ''
-    }
+function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
+    const { name, filePath, dependencies, resolvedContexts } = args;
+    const { loadStatements, usesResolvedContexts } = loadEnvAndContextFiles(args);
+    return `{
+                    async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
+                        ${loadStatements.length ? '\n' + loadStatements.join('\n') : ''}
                         const featureModule = ${webpackImportStatement(`[feature]${name}`, filePath)};
                         return featureModule.default;
                     },

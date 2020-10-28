@@ -1,4 +1,4 @@
-import { COM, Feature, IFeatureLoader, runEngineApp, RuntimeEngine } from '@wixc3/engine-core';
+import { COM, Feature, IFeatureLoader, runEngineApp, RuntimeEngine, FeatureLoadersRegistry } from '@wixc3/engine-core';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
@@ -26,16 +26,26 @@ export async function runNodeEnvironment({
         );
     }
 
+    const featureLoaders = createFeatureLoaders(new Map(features), {
+        name,
+        childEnvName,
+        type,
+    });
+    const rootFeatureLoader = featureLoaders[featureName];
+    const { resolvedContexts = {} } = rootFeatureLoader;
+    if (!rootFeatureLoader) {
+        throw new Error(
+            "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
+        );
+    }
+    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
+    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
     return runEngineApp({
-        featureName,
-        featureLoaders: createFeatureLoaders(new Map(features), {
-            name,
-            childEnvName,
-            type,
-        }),
         config,
         options: new Map(options),
         envName: name,
+        features: loadedFeatures,
+        resolvedContexts,
     });
 }
 
