@@ -107,10 +107,7 @@ async function main() {
     const { resolvedContexts = {} } = rootFeatureLoader;
     const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
 
-    const features = [];
-    for await (const loadedFeature of featureLoader.getLoadedFeatures(featureName)) {
-        features.push(loadedFeature);
-    }
+    const features = await featureLoader.getLoadedFeatures(featureName);
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }

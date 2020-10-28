@@ -65,10 +65,7 @@ export async function runEngineEnvironment({
         );
     }
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
-    const loadedFeatures: Feature[] = [];
-    for await (const loadedFeature of featureLoader.getLoadedFeatures(featureName)) {
-        loadedFeatures.push(loadedFeature);
-    }
+    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
 
     return runEngineApp({
         config,
