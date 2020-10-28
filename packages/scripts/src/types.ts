@@ -18,7 +18,7 @@ export interface IFeatureTarget {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
-export interface IPlugin {
+export interface IExtenalFeatureDescriptor {
     name: string;
     envEntries: Record<string, string>;
 }
@@ -30,7 +30,7 @@ export interface StartEnvironmentOptions extends IEnvironment {
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: Target;
-    plugins: IPlugin[];
+    externalFeatures?: IExtenalFeatureDescriptor[];
 }
 export interface VirtualEntry {
     source: string;
@@ -257,6 +257,8 @@ export interface IFeatureDefinition extends IFeatureModule {
     scopedName: string;
     resolvedContexts: Record<string, string>;
     isRoot: boolean;
+    packageName: string;
+    directoryPath: string;
     toJSON(): unknown;
 }
 export interface StaticConfig {
@@ -264,10 +266,13 @@ export interface StaticConfig {
     directoryPath: string;
 }
 
+export type IExternalFeatureDefinition = string | { [featuerName: string]: string };
+
 export interface EngineConfig {
     require?: string[];
     featuresDirectory?: string;
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
+    externalFeatureDefinitions: Array<IExternalFeatureDefinition>;
 }

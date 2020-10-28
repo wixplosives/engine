@@ -5,7 +5,7 @@ import fs from '@file-services/node';
 import type webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import { createEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
+import { createMainEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/engine-core';
 
 guiFeature.setup(
@@ -29,7 +29,7 @@ guiFeature.setup(
         const entryPath = fs.join(__dirname, 'main-dashboard-web-entry.js');
         const configurations = new SetMultiMap<string, IConfigDefinition>();
 
-        virtualModules[entryPath] = createEntrypoint({
+        virtualModules[entryPath] = createMainEntrypoint({
             features,
             childEnvs: [],
             envName: mainDashboardEnv.env,

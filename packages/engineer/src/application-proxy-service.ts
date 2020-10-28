@@ -85,6 +85,7 @@ export class TargetApplication extends Application {
         runtimeOptions = {},
         configName,
         overrideConfig,
+        externalFeatureDefinitions = [],
     }: IRunFeatureOptions) => {
         if (overrideConfig) {
             const generatedConfigName = generateConfigName(configName);
@@ -103,6 +104,7 @@ export class TargetApplication extends Application {
             overrideConfigsMap: this.overrideConfigsMap,
             runtimeOptions,
             mode: this.nodeEnvironmentsMode,
+            externalFeatureDefinitions,
         });
     };
 

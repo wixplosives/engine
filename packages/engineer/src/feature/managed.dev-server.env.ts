@@ -11,13 +11,17 @@ managedFeature.setup(
                 serverListeningHandlerSlot,
                 devServerActions: { close: closeServer },
                 application,
+                devServerConfig: { externalFeatureDefinitions },
             },
         }
     ) => {
         const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
             if (process.send) {
                 if (id === 'run-feature') {
-                    const responsePayload = await application.runFeature(payload as Required<IFeatureTarget>);
+                    const responsePayload = await application.runFeature({
+                        ...(payload as Required<IFeatureTarget>),
+                        externalFeatureDefinitions,
+                    });
                     process.send({ id: 'feature-initialized', payload: responsePayload });
                 }
                 if (id === 'close-feature') {

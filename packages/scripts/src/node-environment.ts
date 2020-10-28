@@ -11,6 +11,7 @@ export async function runNodeEnvironment({
     type,
     options,
     host,
+    externalFeatures = [],
 }: StartEnvironmentOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -44,13 +45,25 @@ export async function runNodeEnvironment({
         loadedFeatures.push(loadedFeature);
     }
 
-    return runEngineApp({
+    const runtimeEngine = runEngineApp({
         config,
         options: new Map(options),
         envName: name,
         features: loadedFeatures,
         resolvedContexts,
     });
+
+    for (const { name, envEntries } of externalFeatures) {
+        if (envEntries[name]) {
+            require(envEntries[name]);
+        }
+        for await (const feature of featureLoader.loadFeature(name)) {
+            runtimeEngine.engine.initFeature(feature, name);
+            runtimeEngine.engine.runFeature(feature, name).catch(console.error);
+        }
+    }
+
+    return runtimeEngine;
 }
 
 export function createFeatureLoaders(

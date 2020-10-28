@@ -27,6 +27,7 @@ import type {
     IEnvironment,
     IFeatureDefinition,
     IFeatureTarget,
+    IExternalFeatureDefinition,
     TopLevelConfigProvider,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
@@ -41,6 +42,7 @@ const builtinTemplatesPath = fs.join(__dirname, '../templates');
 
 export interface IRunFeatureOptions extends IFeatureTarget {
     featureName: string;
+    externalFeatureDefinitions?: IExternalFeatureDefinition[];
 }
 
 export interface IRunOptions extends IFeatureTarget {
@@ -112,7 +114,7 @@ export class Application {
         title,
         publicConfigsRoute,
         overrideConfig,
-        external = true,
+        external = false,
     }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -215,6 +217,7 @@ export class Application {
                 featureName,
                 configName,
                 mode: nodeEnvironmentsMode,
+                externalFeatureDefinitions: engineConfig?.externalFeatureDefinitions,
             });
         }
 
@@ -364,12 +367,10 @@ export class Application {
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
-        const enviroments = new Set<IEnvironment>();
+        const environments = new Set<IEnvironment>();
         for (const { exportedEnvs } of features.values()) {
             for (const exportedEnv of exportedEnvs) {
-                if (exportedEnv.type !== 'node') {
-                    enviroments.add(exportedEnv);
-                }
+                environments.add(exportedEnv);
             }
         }
         const webpackConfigs = createWebpackConfigs({
@@ -377,7 +378,7 @@ export class Application {
             context: basePath,
             mode,
             outputPath,
-            enviroments: Array.from(enviroments),
+            enviroments: Array.from(environments),
             features,
             featureName,
             configName,
@@ -389,11 +390,12 @@ export class Application {
             overrideConfig,
             singleFeature,
             createWebpackConfig: externalFeature ? createWebpackConfigForExteranlFeature : createWebpackConfig,
+            external: externalFeature,
         });
 
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
-        return { compiler, webEnvironments: enviroments };
+        return { compiler, environments };
     }
 
     protected analyzeFeatures() {

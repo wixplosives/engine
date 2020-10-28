@@ -4,11 +4,12 @@ import performance from '@wixc3/cross-performance';
 
 import type { OverrideConfig } from './config-middleware';
 import type { NodeEnvironmentsManager } from './node-environments-manager';
-import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget } from './types';
+import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget, IExternalFeatureDefinition } from './types';
 
 export function createFeaturesEngineRouter(
     overrideConfigsMap: Map<string, OverrideConfig>,
-    nodeEnvironmentManager: NodeEnvironmentsManager
+    nodeEnvironmentManager: NodeEnvironmentsManager,
+    externalFeatureDefinitions: IExternalFeatureDefinition[]
 ) {
     const router = Router();
     router.use(bodyParser.json());
@@ -32,6 +33,7 @@ export function createFeaturesEngineRouter(
                 featureName,
                 runtimeOptions: options,
                 overrideConfigsMap,
+                externalFeatureDefinitions,
             });
             res.json({
                 id: 'feature-initialized',

@@ -79,7 +79,7 @@ program
                 targetApplicationPath: fs.existsSync(path) ? fs.resolve(path) : process.cwd(),
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect,
-                plugins,
+                externalFeatureDefinitions: plugins,
             });
 
             const { port } = await new Promise((resolve) => {
@@ -105,6 +105,7 @@ program
     .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+    .option('--external [true|false]', 'build feature as external', parseBoolean, false)
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -117,6 +118,7 @@ program
             singleFeature,
             title,
             publicConfigsRoute,
+            external,
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -131,6 +133,7 @@ program
                 singleFeature,
                 title,
                 publicConfigsRoute,
+                external,
             });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {

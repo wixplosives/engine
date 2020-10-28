@@ -1,5 +1,6 @@
 import fs from '@file-services/node';
 import {
+    IExternalFeatureDefinition,
     isFeatureFile,
     loadFeaturesFromPaths,
     runNodeEnvironment,
@@ -30,7 +31,7 @@ export interface IStartOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     inspect?: boolean;
     runtimeOptions?: Record<string, string | boolean>;
-    plugins?: string[];
+    externalFeatureDefinitions?: IExternalFeatureDefinition[];
 }
 
 export async function startDevServer({
@@ -51,7 +52,7 @@ export async function startDevServer({
     outputPath,
     inspect,
     runtimeOptions = {},
-    plugins = [],
+    externalFeatureDefinitions = [],
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -88,7 +89,7 @@ export async function startDevServer({
                     outputPath,
                     inspect,
                     defaultRuntimeOptions: runtimeOptions,
-                    plugins,
+                    externalFeatureDefinitions,
                 },
             }),
             guiFeature.use({
@@ -97,6 +98,7 @@ export async function startDevServer({
                 },
             }),
         ],
+        externalFeatures: [],
     });
     return {
         engine,

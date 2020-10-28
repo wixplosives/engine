@@ -9,7 +9,7 @@ import {
     createConfigMiddleware,
 } from '@wixc3/engine-scripts';
 import WebpackDevMiddleware from 'webpack-dev-middleware';
-import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
+import { createFeaturesEngineRouter, getExternalFeatures } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import type { Communication } from '@wixc3/engine-core';
@@ -60,7 +60,7 @@ devServerFeature.setup(
             overrideConfig,
             defaultRuntimeOptions,
             outputPath,
-            plugins,
+            externalFeatureDefinitions: providedExternalDefinitions,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath });
         const disposables = new Set<() => unknown>();
@@ -84,7 +84,8 @@ devServerFeature.setup(
             if (engineConfig && engineConfig.require) {
                 await application.importModules(engineConfig.require);
             }
-
+            const { externalFeatureDefinitions = [] } = engineConfig ?? {};
+            externalFeatureDefinitions.push(...providedExternalDefinitions);
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
@@ -98,6 +99,7 @@ devServerFeature.setup(
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependants can rely on them in the topology
+
             application.setNodeEnvManager(
                 new NodeEnvironmentsManager(socketServer, {
                     configurations,
@@ -132,7 +134,7 @@ devServerFeature.setup(
             ]);
 
             // Write middleware for each of the apps
-            const { compiler, webEnvironments } = application.createCompiler({
+            const { compiler, environments } = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
@@ -158,32 +160,22 @@ devServerFeature.setup(
                 compiler.hooks.done.tap('compiled', resolve);
             });
 
-            const nodeModulesBasePath = join(basePath, 'node_modules');
-            console.log(`serving ${nodeModulesBasePath}`);
-            app.use('/plugins', express.static(nodeModulesBasePath));
-            const extranalPlugins = plugins.map((pluginName) => {
-                return {
-                    name: pluginName,
-                    envEntries: [...webEnvironments].reduce<Record<string, string>>((acc, { name: envName, type }) => {
-                        acc[envName] = join(
-                            'plugins',
-                            pluginName,
-                            'dist',
-                            `${envName}.${type === 'worker' ? 'webworker' : 'web'}.js`
-                        );
-                        return acc;
-                    }, {} as Record<string, string>),
-                };
-            });
+            app.use('/plugins', express.static(join(basePath, 'node_modules')));
+            const externalFeatures = getExternalFeatures(externalFeatureDefinitions, [...environments]);
+
             app.use('/external', (_, res) => {
-                res.json(extranalPlugins);
+                res.json(externalFeatures);
             });
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
             app.use(
                 '/engine-feature',
-                createFeaturesEngineRouter(application.getOverrideConfigsMap(), application.getNodeEnvManager()!)
+                createFeaturesEngineRouter(
+                    application.getOverrideConfigsMap(),
+                    application.getNodeEnvManager()!,
+                    externalFeatureDefinitions
+                )
             );
 
             app.get('/engine-state', (_req, res) => {
@@ -197,11 +189,11 @@ devServerFeature.setup(
                     },
                 });
             });
-
             if (autoLaunch && featureName) {
                 await application.runFeature({
                     featureName,
                     configName,
+                    externalFeatureDefinitions,
                 });
             }
 
