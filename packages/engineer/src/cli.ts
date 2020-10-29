@@ -42,7 +42,7 @@ program
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
-    .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts')
+    .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts', '.')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -106,6 +106,7 @@ program
     .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+    .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts', '.')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -118,12 +119,13 @@ program
             singleFeature,
             title,
             publicConfigsRoute,
+            featureDiscoveryRoot,
         } = cmd;
         try {
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const outputPath = resolve(outDir);
-            const app = new Application({ basePath, outputPath });
+            const app = new Application({ basePath, outputPath, featureDiscoveryRoot });
             const stats = await app.build({
                 featureName,
                 configName,

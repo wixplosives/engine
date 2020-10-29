@@ -35,7 +35,7 @@ describe('engineer:dev-server', function () {
         overrideConfig = [],
         outputPath,
         runtimeOptions = {},
-        featureDiscoveryRoot = undefined,
+        featureDiscoveryRoot,
     }: {
         featureName?: string;
         port?: number;
@@ -105,7 +105,7 @@ describe('engineer:dev-server', function () {
             config: { port },
         } = await setup({ basePath: engineFeatureRoots });
 
-        const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-single/x`);
+        const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/x`);
 
         const text = await getBodyContent(page);
 
@@ -117,7 +117,7 @@ describe('engineer:dev-server', function () {
             config: { port },
         } = await setup({ basePath: engineFeatureRoots, featureDiscoveryRoot: './build' });
 
-        const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-single/y`);
+        const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/y`);
 
         const text = await getBodyContent(page);
 
