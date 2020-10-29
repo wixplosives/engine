@@ -12,7 +12,7 @@ import WebpackDevMiddleware from 'webpack-dev-middleware';
 import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
-import type { Communication } from '@wixc3/engine-core';
+import { Communication, createDisposables } from '@wixc3/engine-core';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
     // This custom watch optimization only compiles once, but allows us to use webpack dev server
@@ -62,20 +62,9 @@ devServerFeature.setup(
             featureDiscoveryRoot,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
-        const disposables = new Set<() => unknown>();
+        const disposables = createDisposables();
 
-        // Extract these into a service
-        const close = async () => {
-            // Using map instead of foreach so I could await each dispose
-            await Promise.resolve(
-                [...disposables].reverse().map(async (dispose) => {
-                    await dispose();
-                })
-            );
-            disposables.clear();
-        };
-
-        onDispose(close);
+        onDispose(disposables.dispose);
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
@@ -218,7 +207,7 @@ devServerFeature.setup(
         });
         return {
             application,
-            devServerActions: { close },
+            devServerActions: { close: disposables.dispose },
         };
     }
 );
