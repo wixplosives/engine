@@ -59,8 +59,9 @@ devServerFeature.setup(
             overrideConfig,
             defaultRuntimeOptions,
             outputPath,
+            featureDiscoveryRoot,
         } = devServerConfig;
-        const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath });
+        const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
 
         onDispose(disposables.dispose);

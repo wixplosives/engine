@@ -10,6 +10,7 @@ import { startDevServer } from '@wixc3/engineer';
 
 const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
 const engineRuntimeFeatureFixturePath = fs.join(__dirname, './fixtures/engine-run-options');
+const engineFeatureRoots = fs.join(__dirname, './fixtures/engine-feature-roots');
 const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
 const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
 const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
@@ -34,6 +35,7 @@ describe('engineer:dev-server', function () {
         overrideConfig = [],
         outputPath,
         runtimeOptions = {},
+        featureDiscoveryRoot,
     }: {
         featureName?: string;
         port?: number;
@@ -44,6 +46,7 @@ describe('engineer:dev-server', function () {
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
         outputPath?: string;
         runtimeOptions?: Record<string, string | boolean>;
+        featureDiscoveryRoot?: string;
     }): Promise<{
         dispose: () => Promise<void>;
         engine: RuntimeEngine;
@@ -62,6 +65,7 @@ describe('engineer:dev-server', function () {
             outputPath,
             singleRun: true,
             runtimeOptions,
+            featureDiscoveryRoot,
         });
         const runningPort = await new Promise<number>((resolve) => {
             devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
@@ -94,6 +98,30 @@ describe('engineer:dev-server', function () {
         const text = await getBodyContent(page);
 
         expect(text).to.include('App is running');
+    });
+
+    it('serves a root feature without featureDiscoveryRoot ', async () => {
+        const {
+            config: { port },
+        } = await setup({ basePath: engineFeatureRoots });
+
+        const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/x`);
+
+        const text = await getBodyContent(page);
+
+        expect(text).to.include('Root Feature is running');
+    });
+
+    it('serves a build feature with featureDiscoveryRoot ', async () => {
+        const {
+            config: { port },
+        } = await setup({ basePath: engineFeatureRoots, featureDiscoveryRoot: './build' });
+
+        const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/y`);
+
+        const text = await getBodyContent(page);
+
+        expect(text).to.include('Build Feature is running');
     });
 
     it('serves a fixture feature', async () => {

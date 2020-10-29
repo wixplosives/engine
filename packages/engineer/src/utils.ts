@@ -30,6 +30,7 @@ export interface IStartOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     inspect?: boolean;
     runtimeOptions?: Record<string, string | boolean>;
+    featureDiscoveryRoot?: string;
 }
 
 export async function startDevServer({
@@ -50,6 +51,7 @@ export async function startDevServer({
     outputPath,
     inspect,
     runtimeOptions = {},
+    featureDiscoveryRoot,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -86,6 +88,7 @@ export async function startDevServer({
                     outputPath,
                     inspect,
                     defaultRuntimeOptions: runtimeOptions,
+                    featureDiscoveryRoot,
                 },
             }),
             guiFeature.use({
