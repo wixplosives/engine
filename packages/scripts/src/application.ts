@@ -423,18 +423,28 @@ export class Application {
         if (!foundFeature) {
             throw new Error(`cannot find feature: ${featureName}`);
         }
-        try {
-            const filteredFeatures = [
-                ...flattenTree(foundFeature, ({ dependencies }) => dependencies.map((d) => features.get(d)!)),
-            ].map(({ scopedName }) => scopedName);
-
-            for (const [foundFeatureName] of features) {
-                if (!filteredFeatures.includes(foundFeatureName)) {
-                    features.delete(foundFeatureName);
-                }
+        const nonFoundDependencies: string[] = [];
+        const filteredFeatures = [
+            ...flattenTree(foundFeature, ({ dependencies }) =>
+                dependencies.map((dependencyName) => {
+                    const feature = features.get(dependencyName);
+                    if (!feature) {
+                        nonFoundDependencies.push(dependencyName);
+                        return {} as IFeatureDefinition;
+                    }
+                    return feature;
+                })
+            ),
+        ].map(({ scopedName }) => scopedName);
+        if (nonFoundDependencies.length) {
+            throw new Error(
+                `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`
+            );
+        }
+        for (const [foundFeatureName] of features) {
+            if (!filteredFeatures.includes(foundFeatureName)) {
+                features.delete(foundFeatureName);
             }
-        } catch (ex) {
-            throw new Error(`one of the dependencies of ${featureName} was not found`);
         }
     }
 }
