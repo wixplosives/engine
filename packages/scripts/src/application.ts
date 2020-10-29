@@ -4,7 +4,7 @@ import rimrafCb from 'rimraf';
 import webpack from 'webpack';
 import fs from '@file-services/node';
 
-import { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -423,11 +423,18 @@ export class Application {
         if (!foundFeature) {
             throw new Error(`cannot find feature: ${featureName}`);
         }
-        const featuresToInclude = new Set([...foundFeature.dependencies, featureName]);
-        for (const [foundFeatureName] of features) {
-            if (!featuresToInclude.has(foundFeatureName)) {
-                features.delete(foundFeatureName);
+        try {
+            const filteredFeatures = [
+                ...flattenTree(foundFeature, ({ dependencies }) => dependencies.map((d) => features.get(d)!)),
+            ].map(({ scopedName }) => scopedName);
+
+            for (const [foundFeatureName] of features) {
+                if (!filteredFeatures.includes(foundFeatureName)) {
+                    features.delete(foundFeatureName);
+                }
             }
+        } catch (ex) {
+            throw new Error(`one of the dependencies of ${featureName} was not found`);
         }
     }
 }
