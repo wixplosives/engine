@@ -67,6 +67,7 @@ export interface ICreateOptions {
 export interface IApplicationOptions {
     basePath?: string;
     outputPath?: string;
+    featureDiscoveryRoot?: string;
 }
 
 export interface ICompilerOptions {
@@ -86,10 +87,16 @@ export interface ICompilerOptions {
 export class Application {
     public outputPath: string;
     protected basePath: string;
+    protected featureDiscoveryRoot?: string;
 
-    constructor({ basePath = process.cwd(), outputPath = fs.join(basePath, 'dist') }: IApplicationOptions) {
+    constructor({
+        basePath = process.cwd(),
+        outputPath = fs.join(basePath, 'dist'),
+        featureDiscoveryRoot,
+    }: IApplicationOptions) {
         this.basePath = basePath;
         this.outputPath = outputPath;
+        this.featureDiscoveryRoot = featureDiscoveryRoot;
     }
 
     public async clean() {
@@ -387,10 +394,11 @@ export class Application {
     }
 
     protected analyzeFeatures() {
-        const { basePath } = this;
+        const { basePath, featureDiscoveryRoot } = this;
+
         console.time(`Analyzing Features.`);
         const packages = resolvePackages(basePath);
-        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs);
+        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features.');
         return { ...featuresAndConfigs, packages };
     }

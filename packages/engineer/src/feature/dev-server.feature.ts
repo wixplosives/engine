@@ -22,6 +22,7 @@ export interface DevServerConfig {
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
     defaultRuntimeOptions: Record<string, string | boolean>;
     outputPath?: string;
+    featureDiscoveryRoot?: string;
 }
 
 export interface DevServerActions {
