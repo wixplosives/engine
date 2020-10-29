@@ -40,11 +40,21 @@ export async function runNodeEnvironment({
         );
     }
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
-    const loadedFeatures: Feature[] = [];
-    for (const loadedFeature of await featureLoader.getLoadedFeatures(featureName)) {
-        loadedFeatures.push(loadedFeature);
-    }
+    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
+    const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]];
+    for (const { name, envEntries } of externalFeatures) {
+        if (envEntries[name]) {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const externalFeatureLoaders = require(envEntries[name]) as { [featureName: string]: IFeatureLoader };
 
+            for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
+                featureLoader.register(name, loader);
+            }
+        }
+        for (const feature of await featureLoader.getLoadedFeatures(name)) {
+            runningFeatures.push(feature);
+        }
+    }
     const runtimeEngine = runEngineApp({
         config,
         options: new Map(options),
@@ -52,16 +62,6 @@ export async function runNodeEnvironment({
         features: loadedFeatures,
         resolvedContexts,
     });
-
-    for (const { name, envEntries } of externalFeatures) {
-        if (envEntries[name]) {
-            const module = require(envEntries[name]) as { [featureName: string]: IFeatureLoader };
-        }
-        for (const feature of await featureLoader.getLoadedFeatures(name)) {
-            runtimeEngine.engine.initFeature(feature, name);
-            runtimeEngine.engine.runFeature(feature, name).catch(console.error);
-        }
-    }
 
     return runtimeEngine;
 }

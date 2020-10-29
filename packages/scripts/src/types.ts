@@ -275,4 +275,6 @@ export interface EngineConfig {
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
     externalFeatureDefinitions: Array<IExternalFeatureDefinition>;
+    externalFeaturesPath?: string;
+    serveExternalFeaturesPath?: boolean;
 }

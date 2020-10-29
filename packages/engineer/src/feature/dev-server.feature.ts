@@ -23,6 +23,8 @@ export interface DevServerConfig {
     defaultRuntimeOptions: Record<string, string | boolean>;
     outputPath?: string;
     externalFeatureDefinitions: IExternalFeatureDefinition[];
+    externalFeaturesPath?: string;
+    serveExternalFeaturesPath?: boolean;
 }
 
 export interface DevServerActions {

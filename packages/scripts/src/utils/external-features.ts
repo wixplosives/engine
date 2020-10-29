@@ -1,20 +1,23 @@
 import { join } from 'path';
 import type { IEnvironment, IExtenalFeatureDescriptor, IExternalFeatureDefinition } from '../types';
 
-export function getFeatureFromDefinition(pluginDefinition: IExternalFeatureDefinition) {
+export function getFeatureFromDefinition(pluginDefinition: IExternalFeatureDefinition, pluginsBaseDirectory: string) {
     const pluginName = typeof pluginDefinition === 'string' ? pluginDefinition : Object.keys(pluginDefinition)[0];
     const pluginEntryPath =
-        typeof pluginDefinition === 'string' ? join('plugins', pluginName, 'dist') : pluginDefinition[pluginName];
+        typeof pluginDefinition === 'string'
+            ? join(pluginsBaseDirectory, pluginName, 'dist')
+            : pluginDefinition[pluginName];
     console.log(pluginDefinition);
     return { pluginName, pluginEntryPath };
 }
 
 export function getExternalFeatures(
     pluginDefinitions: IExternalFeatureDefinition[],
-    environments: IEnvironment[]
+    environments: IEnvironment[],
+    pluginsBaseDirectory: string
 ): IExtenalFeatureDescriptor[] {
     return pluginDefinitions.map((pluginDefinition) => {
-        const { pluginName, pluginEntryPath } = getFeatureFromDefinition(pluginDefinition);
+        const { pluginName, pluginEntryPath } = getFeatureFromDefinition(pluginDefinition, pluginsBaseDirectory);
         return {
             name: pluginName,
             envEntries: [...environments].reduce<Record<string, string>>((acc, { name, type }) => {

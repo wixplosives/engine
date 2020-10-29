@@ -13,7 +13,7 @@ import { createFeaturesEngineRouter, getExternalFeatures } from '@wixc3/engine-s
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import type { Communication } from '@wixc3/engine-core';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
     // This custom watch optimization only compiles once, but allows us to use webpack dev server
@@ -61,6 +61,8 @@ devServerFeature.setup(
             defaultRuntimeOptions,
             outputPath,
             externalFeatureDefinitions: providedExternalDefinitions,
+            externalFeaturesPath = join(basePath, 'node_modules'),
+            serveExternalFeaturesPath = true,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath });
         const disposables = new Set<() => unknown>();
@@ -81,10 +83,11 @@ devServerFeature.setup(
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
             const engineConfig = await application.getEngineConfig();
-            if (engineConfig && engineConfig.require) {
-                await application.importModules(engineConfig.require);
+
+            const { externalFeatureDefinitions = [], require } = engineConfig ?? {};
+            if (require) {
+                await application.importModules(require);
             }
-            const { externalFeatureDefinitions = [] } = engineConfig ?? {};
             externalFeatureDefinitions.push(...providedExternalDefinitions);
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
@@ -97,19 +100,6 @@ devServerFeature.setup(
             attachWSHost(socketServer, devServerEnv.env, communication);
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
-            //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
-            // So potential dependants can rely on them in the topology
-
-            application.setNodeEnvManager(
-                new NodeEnvironmentsManager(socketServer, {
-                    configurations,
-                    features,
-                    defaultRuntimeOptions,
-                    port: actualPort,
-                    inspect,
-                    overrideConfig,
-                })
-            );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
@@ -159,13 +149,37 @@ devServerFeature.setup(
             await new Promise((resolve) => {
                 compiler.hooks.done.tap('compiled', resolve);
             });
+            const resolvedFeaturesPath = externalFeaturesPath.startsWith('http')
+                ? externalFeaturesPath
+                : resolve(externalFeaturesPath);
 
-            app.use('/plugins', express.static(join(basePath, 'node_modules')));
-            const externalFeatures = getExternalFeatures(externalFeatureDefinitions, [...environments]);
+            if (serveExternalFeaturesPath) {
+                app.use('/plugins', express.static(resolvedFeaturesPath));
+            }
+            const externalFeatures = getExternalFeatures(
+                externalFeatureDefinitions,
+                [...environments],
+                serveExternalFeaturesPath ? 'plugins' : resolvedFeaturesPath
+            );
 
             app.use('/external', (_, res) => {
                 res.json(externalFeatures);
             });
+
+            //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
+            // So potential dependants can rely on them in the topology
+
+            application.setNodeEnvManager(
+                new NodeEnvironmentsManager(socketServer, {
+                    configurations,
+                    features,
+                    defaultRuntimeOptions,
+                    port: actualPort,
+                    inspect,
+                    overrideConfig,
+                    basePath,
+                })
+            );
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
@@ -174,7 +188,8 @@ devServerFeature.setup(
                 createFeaturesEngineRouter(
                     application.getOverrideConfigsMap(),
                     application.getNodeEnvManager()!,
-                    externalFeatureDefinitions
+                    externalFeatureDefinitions,
+                    resolvedFeaturesPath
                 )
             );
 
@@ -189,6 +204,7 @@ devServerFeature.setup(
                     },
                 });
             });
+
             if (autoLaunch && featureName) {
                 await application.runFeature({
                     featureName,

@@ -29,11 +29,13 @@ import type {
     IFeatureTarget,
     IExternalFeatureDefinition,
     TopLevelConfigProvider,
+    IExtenalFeatureDescriptor,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
-import { filterEnvironments } from './utils/environments';
+import { getEnvironmnts } from './utils/environments';
 import { launchHttpServer } from './launch-http-server';
+import { getExternalFeatures } from './utils';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -45,7 +47,7 @@ export interface IRunFeatureOptions extends IFeatureTarget {
     externalFeatureDefinitions?: IExternalFeatureDefinition[];
 }
 
-export interface IRunOptions extends IFeatureTarget {
+export interface IRunApplicationOptions extends IFeatureTarget {
     singleRun?: boolean;
     singleFeature?: boolean;
     inspect?: boolean;
@@ -56,7 +58,15 @@ export interface IRunOptions extends IFeatureTarget {
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
+}
+
+export interface IBuildCommandOptions extends IRunApplicationOptions {
     external?: boolean;
+}
+
+export interface IRunCommandOptions extends IRunApplicationOptions {
+    serveExternalFeaturesPath?: boolean;
+    externalFeaturesPath?: string;
 }
 
 export interface IBuildManifest {
@@ -115,11 +125,12 @@ export class Application {
         publicConfigsRoute,
         overrideConfig,
         external = false,
-    }: IRunOptions = {}): Promise<webpack.compilation.MultiStats> {
+    }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
             await this.importModules(engineConfig.require);
         }
+
         const { features, configurations } = this.analyzeFeatures();
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
@@ -160,7 +171,7 @@ export class Application {
         return stats;
     }
 
-    public async run(runOptions: IRunOptions = {}) {
+    public async run(runOptions: IRunCommandOptions = {}) {
         const { features, defaultConfigName, defaultFeatureName } = (await fs.promises.readJsonFile(
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
@@ -176,6 +187,8 @@ export class Application {
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
+            externalFeaturesPath: providedExternalFeatuersPath = this.basePath,
+            serveExternalFeaturesPath: providedServeExternalFeaturesPath,
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
@@ -196,6 +209,7 @@ export class Application {
             inspect,
             overrideConfig: config,
             configurations,
+            basePath: this.basePath,
         });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
@@ -212,12 +226,39 @@ export class Application {
                 createConfigMiddleware(config),
             ]);
         }
+        const {
+            externalFeatureDefinitions = [],
+            externalFeaturesPath = providedExternalFeatuersPath,
+            serveExternalFeaturesPath = providedServeExternalFeaturesPath,
+        } = engineConfig ?? {};
+
+        const resolvedExternalPath = externalFeaturesPath.startsWith('http')
+            ? externalFeaturesPath
+            : fs.resolve(externalFeaturesPath);
+
         if (autoLaunch && featureName) {
+            if (externalFeaturesPath) {
+                const environments = getEnvironmnts(featureName, new Map(features));
+
+                if (serveExternalFeaturesPath) {
+                    app.use('/plugins', express.static(resolvedExternalPath));
+                }
+
+                const externalFeatures: IExtenalFeatureDescriptor[] = getExternalFeatures(
+                    externalFeatureDefinitions,
+                    [...environments],
+                    serveExternalFeaturesPath ? 'plugins' : resolvedExternalPath
+                );
+                app.use('/external', (_, res) => {
+                    res.json(externalFeatures);
+                });
+            }
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
                 mode: nodeEnvironmentsMode,
                 externalFeatureDefinitions: engineConfig?.externalFeatureDefinitions,
+                externalFeaturesBasePath: resolvedExternalPath,
             });
         }
 
@@ -234,7 +275,7 @@ export class Application {
         };
     }
 
-    public async remote({ port: preferredPort }: IRunOptions = {}) {
+    public async remote({ port: preferredPort }: IRunApplicationOptions = {}) {
         if (!process.send) {
             throw new Error('"remote" command can only be used in a forked process');
         }
@@ -422,7 +463,7 @@ export class Application {
             const [rootFeatureName] = scopedName.split('/');
             featureEnvDefinitions[scopedName] = {
                 configurations: configNames.filter((name) => name.includes(rootFeatureName)),
-                hasServerEnvironments: filterEnvironments(scopedName, features, 'node').size > 0,
+                hasServerEnvironments: getEnvironmnts(scopedName, features, 'node').size > 0,
                 featureName: scopedName,
             };
         }

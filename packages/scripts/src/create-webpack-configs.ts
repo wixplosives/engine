@@ -12,7 +12,6 @@ import {
     webpackImportStatement,
 } from './create-entrypoint';
 import type { IEnvironment, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
-import { join } from 'path';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -268,7 +267,7 @@ export function createWebpackConfigForExteranlFeature({
                     ...feature,
                     childEnvs,
                     envName,
-                    publicPath: join('plugins', feature.name, 'dist/'),
+                    publicPath: './',
                     loadStatement: target === 'node' ? nodeImportStatement : webpackImportStatement,
                 });
             }

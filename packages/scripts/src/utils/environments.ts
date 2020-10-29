@@ -1,10 +1,10 @@
 import { flattenTree, EnvironmentTypes } from '@wixc3/engine-core';
 import type { IEnvironment, IFeatureDefinition } from '../types';
 
-export function filterEnvironments(
+export function getEnvironmnts(
     featureName: string,
     features: Map<string, IFeatureDefinition>,
-    envTypes: EnvironmentTypes[] | EnvironmentTypes
+    envTypes?: EnvironmentTypes[] | EnvironmentTypes
 ) {
     const environmentTypesToFilterBy = Array.isArray(envTypes) ? envTypes : [envTypes];
     const filteredEnvironments = new Set<IEnvironment>();

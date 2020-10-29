@@ -8,8 +8,9 @@ import {
     DisposableContext,
     MapToProxyType,
     FeatureLoadersRegistry,
+    IFeatureLoader,
 } from '@wixc3/engine-core';
-import { readFeatures, evaluateConfig, createFeatureLoaders } from '@wixc3/engine-scripts';
+import { readFeatures, evaluateConfig, createFeatureLoaders, IExtenalFeatureDescriptor } from '@wixc3/engine-scripts';
 import type { IFileSystem } from '@file-services/types';
 
 export interface IRunNodeEnvironmentOptions {
@@ -20,6 +21,7 @@ export interface IRunNodeEnvironmentOptions {
     basePath?: string;
     env: Environment;
     fs: IFileSystem;
+    externalFeatures?: IExtenalFeatureDescriptor[];
 }
 
 export interface IGetRuinnnigFeatureOptions<
@@ -39,6 +41,7 @@ export async function runEngineEnvironment({
     env,
     basePath = process.cwd(),
     fs,
+    externalFeatures = [],
 }: IRunNodeEnvironmentOptions): Promise<{
     engine: RuntimeEngine;
     dispose: () => Promise<void>;
@@ -65,16 +68,26 @@ export async function runEngineEnvironment({
         );
     }
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
-    const loadedFeatures: Feature[] = [];
-    for await (const loadedFeature of featureLoader.getLoadedFeatures(featureName)) {
-        loadedFeatures.push(loadedFeature);
-    }
+    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
+    const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]];
+    for (const { name, envEntries } of externalFeatures) {
+        if (envEntries[name]) {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const externalFeatureLoaders = require(envEntries[name]) as { [featureName: string]: IFeatureLoader };
 
+            for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
+                featureLoader.register(name, loader);
+            }
+        }
+        for (const feature of await featureLoader.getLoadedFeatures(name)) {
+            runningFeatures.push(feature);
+        }
+    }
     return runEngineApp({
         config,
         options: new Map(Object.entries(runtimeOptions)),
         envName: name,
-        features: loadedFeatures,
+        features: runningFeatures,
         resolvedContexts,
     });
 }
@@ -93,6 +106,7 @@ export async function getRunningFeature<
     basePath = process.cwd(),
     fs,
     feature,
+    externalFeatures,
 }: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT>): Promise<{
     dispose: () => Promise<void>;
     runningApi: MapToProxyType<API>;
@@ -106,6 +120,7 @@ export async function getRunningFeature<
         runtimeOptions,
         fs,
         basePath,
+        externalFeatures,
     });
     const { api } = engine.get(feature);
     return {

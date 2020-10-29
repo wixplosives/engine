@@ -39,16 +39,12 @@ export function runEngineApp({
     publicPath,
     features = [],
     resolvedContexts = {},
-    externalFeatures = [],
 }: IRunEngineAppOptions) {
-    const runningFeature = features[features.length - 1];
-
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    const runningPromise = engine.run([runningFeature, ...externalFeatures], envName);
+    const runningPromise = engine.run(features, envName);
 
     return {
         engine,
-        resolvedContexts,
         async dispose() {
             await runningPromise;
             for (const feature of features) {
@@ -86,11 +82,12 @@ export class FeatureLoadersRegistry {
         return [...this.featureMapping.keys()];
     }
     /**
-     * Yields all features which were actially loaded
+     * returns all features which were actially loaded
      */
     async getLoadedFeatures(rootFeatureName: string): Promise<Feature[]> {
         const loaded = [];
-        for await (const depName of this.getFeatureDependencies(rootFeatureName)) {
+        const dependencies = await this.getFeatureDependencies(rootFeatureName);
+        for await (const depName of dependencies.reverse()) {
             if (!this.loadedFeatures.has(depName)) {
                 this.loadedFeatures.add(depName);
                 const loader = this.get(depName);
@@ -100,14 +97,21 @@ export class FeatureLoadersRegistry {
         return Promise.all((await Promise.all(loaded)).map(({ load }) => load(this.resolvedContexts)));
     }
     /**
-     * Yields all the dependencies of a feature. doesn't handle duplications
+     * returns all the dependencies of a feature. doesn't handle duplications
      */
-    public async *getFeatureDependencies(featureName: string): AsyncGenerator<string> {
-        const { depFeatures } = await this.get(featureName);
-        for (const depFeature of depFeatures) {
-            yield* this.getFeatureDependencies(depFeature);
+    public async getFeatureDependencies(featureName: string): Promise<string[]> {
+        const dependencies: string[] = [featureName];
+        const features = [featureName];
+        while (features.length) {
+            const { depFeatures } = await this.get(features.shift()!);
+            for (const depFeature of depFeatures) {
+                if (!dependencies.includes(depFeature)) {
+                    dependencies.push(depFeature);
+                    features.push(depFeature);
+                }
+            }
         }
-        yield featureName;
+        return dependencies;
     }
 }
 

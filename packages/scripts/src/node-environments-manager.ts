@@ -20,7 +20,7 @@ import {
     TopLevelConfigProvider,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
-import { filterEnvironments } from './utils/environments';
+import { getEnvironmnts } from './utils/environments';
 import { getExternalFeatures } from './utils/external-features';
 
 type RunningEnvironments = Record<string, number>;
@@ -37,6 +37,7 @@ export interface RunEnvironmentOptions {
     overrideConfigsMap?: Map<string, OverrideConfig>;
     mode?: LaunchEnvironmentMode;
     externalFeatureDefinitions?: IExternalFeatureDefinition[];
+    externalFeaturesBasePath?: string;
 }
 
 const cliEntry = require.resolve('./cli');
@@ -48,6 +49,7 @@ export interface INodeEnvironmentsManagerOptions {
     port: number;
     inspect?: boolean;
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
+    externalFeaturesBasePath: string;
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -67,8 +69,11 @@ export interface ILaunchEnvironmentOptions {
 
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
+    private options: INodeEnvironmentsManagerOptions;
 
-    constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
+    constructor(private socketServer: io.Server, options: INodeEnvironmentsManagerOptions) {
+        this.options;
+    }
 
     public async runServerEnvironments({
         featureName,
@@ -77,6 +82,7 @@ export class NodeEnvironmentsManager {
         overrideConfigsMap = new Map<string, OverrideConfig>(),
         mode = 'new-server',
         externalFeatureDefinitions = [],
+        externalFeaturesBasePath = this.options.externalFeaturesBasePath,
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
@@ -84,8 +90,12 @@ export class NodeEnvironmentsManager {
         const runningEnvironments: Record<string, number> = {};
         const disposables: Array<() => unknown> = [];
         const { defaultRuntimeOptions, features } = this.options;
-        const nodeEnvironments = filterEnvironments(featureName, features, 'node');
-        const externalFeatures = getExternalFeatures(externalFeatureDefinitions, [...nodeEnvironments]);
+        const nodeEnvironments = getEnvironmnts(featureName, features, 'node');
+        const externalFeatures = getExternalFeatures(
+            externalFeatureDefinitions,
+            [...nodeEnvironments],
+            externalFeaturesBasePath
+        );
 
         // checking if already has running environments for this feature
         const runningEnv = this.runningEnvironments.get(featureId);

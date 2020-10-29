@@ -119,14 +119,15 @@ async function main() {
         throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
     }
     const { resolvedContexts = {} } = rootFeatureLoader;
-
     const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
-    cosnt features = await featureLoader.getLoadedFeatures(featureName))
+
+    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
+    const features = [loadedFeatures[loadedFeatures.length - 1]];
+    ${loadExternalFeatures(target)}
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
     );
-    ${loadExternalFeatures(target)}
 
     return runtimeEngine;
 }
@@ -312,17 +313,8 @@ function loadExternalFeatures(target: 'web' | 'webworker') {
             await ${target === 'web' ? loadScripts() : importScripts()}(entryPaths);
 
             for (const { name } of externalFeatures) {
-                const loadedModules = [];
                 for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
-                    loadedModules.push(loadedFeature);
-                    runtimeEngine.engine.initFeature(loadedFeature, envName);
-                    runtimeEngine.engine.runFeature(loadedFeature, envName)
-                    .catch(err => {
-                        for(const module of loadedModules) {
-                            runtimeEngine.engine.dispose(module, envName);
-                        }
-                        console.error(err);
-                    });
+                    loadedFeatures.push(loadedFeature);
                 }
             }
         }`;
