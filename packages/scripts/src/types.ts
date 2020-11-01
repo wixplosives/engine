@@ -266,7 +266,7 @@ export interface StaticConfig {
     directoryPath: string;
 }
 
-export type IExternalFeatureDefinition = string | { [featuerName: string]: string };
+export type IExternalFeatureDefinition = { featureName: string; packageName: string; outDir?: string };
 
 export interface EngineConfig {
     require?: string[];

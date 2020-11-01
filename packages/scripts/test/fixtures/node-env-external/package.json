@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/node-env-external",
+  "version": "15.2.0",
+  "scripts": {
+    "start": "engineer start"
+  },
+  "private": true
+}

@@ -20,7 +20,7 @@ import {
     TopLevelConfigProvider,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
-import { getEnvironmnts } from './utils/environments';
+import { getEnvironmntsForFeature } from './utils/environments';
 import { getExternalFeatures } from './utils/external-features';
 
 type RunningEnvironments = Record<string, number>;
@@ -69,11 +69,8 @@ export interface ILaunchEnvironmentOptions {
 
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
-    private options: INodeEnvironmentsManagerOptions;
 
-    constructor(private socketServer: io.Server, options: INodeEnvironmentsManagerOptions) {
-        this.options;
-    }
+    constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
 
     public async runServerEnvironments({
         featureName,
@@ -90,7 +87,7 @@ export class NodeEnvironmentsManager {
         const runningEnvironments: Record<string, number> = {};
         const disposables: Array<() => unknown> = [];
         const { defaultRuntimeOptions, features } = this.options;
-        const nodeEnvironments = getEnvironmnts(featureName, features, 'node');
+        const nodeEnvironments = getEnvironmntsForFeature(featureName, features, 'node');
         const externalFeatures = getExternalFeatures(
             externalFeatureDefinitions,
             [...nodeEnvironments],

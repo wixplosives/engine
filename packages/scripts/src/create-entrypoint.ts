@@ -65,9 +65,9 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
 }
 
 export function createExternalNodeEntrypoint(args: WebpackFeatureLoaderArguments) {
-    return `
-    module.exports = {'${args.scopedName}':  ${createLoaderInterface(args)}};
-    ;
+    return `module.exports = {
+        '${args.scopedName}': ${createLoaderInterface(args)}
+}
     `;
 }
 
@@ -144,7 +144,7 @@ export function webpackImportStatement({ moduleIdentifier, filePath }: LoadState
 }
 
 export function nodeImportStatement({ filePath, packageName, directoryPath }: LoadStatementArguments) {
-    return `__non_webpack_require__(${stringify(remapFileRequest({ directoryPath, filePath, packageName }))})`;
+    return `require(${stringify(remapFileRequest({ directoryPath, filePath, packageName }))})`;
 }
 
 //#endregion
@@ -208,20 +208,20 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
     const { name, filePath, dependencies, resolvedContexts, loadStatement, packageName, directoryPath } = args;
     const { loadStatements, usesResolvedContexts } = loadEnvAndContextFiles(args);
     return `{
-                    async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
-                        ${loadStatements.length ? loadStatements.join('\n') : ''}
-                        const featureModule = ${loadStatement({
-                            moduleIdentifier: `[feature]${name}`,
-                            filePath,
-                            directoryPath,
-                            packageName,
-                        })};
-                        self[featureModule.default.id] = featureModule;
-                        return featureModule.default;
-                    },
-                    depFeatures: ${stringify(dependencies)},
-                    resolvedContexts: ${stringify(resolvedContexts)},
-                }`;
+                async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
+                    ${loadStatements.length ? loadStatements.join(';\n') : ''}
+                    const featureModule = ${loadStatement({
+                        moduleIdentifier: `[feature]${name}`,
+                        filePath,
+                        directoryPath,
+                        packageName,
+                    })};
+                    self[featureModule.default.id] = featureModule;
+                    return featureModule.default;
+                },
+                depFeatures: ${stringify(dependencies)},
+                resolvedContexts: ${stringify(resolvedContexts)},
+            }`;
 }
 //#endregion
 
@@ -314,7 +314,7 @@ function loadExternalFeatures(target: 'web' | 'webworker') {
 
             for (const { name } of externalFeatures) {
                 for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
-                    loadedFeatures.push(loadedFeature);
+                    features.push(loadedFeature);
                 }
             }
         }`;
@@ -337,6 +337,7 @@ function loadScripts() {
                 script.onload = () => resolve();
                 script.onerror = reject;
                 script.crossOrigin = 'anonymous';
+                script.type = 'module';
                 document.head.appendChild(script);
             });
 

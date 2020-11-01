@@ -109,20 +109,6 @@ devServerFeature.setup(
                 }
             }
 
-            const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
-                featureName.indexOf('engineer/') === 0
-                    ? {
-                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                      }
-                    : undefined;
-
-            app.use(`/${publicConfigsRoute}`, [
-                ensureTopLevelConfigMiddleware,
-                createCommunicationMiddleware(application.getNodeEnvManager()!, publicPath, topologyOverrides),
-                createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
-                createConfigMiddleware(overrideConfig),
-            ]);
-
             // Write middleware for each of the apps
             const { compiler, environments } = application.createCompiler({
                 ...devServerConfig,
@@ -156,6 +142,7 @@ devServerFeature.setup(
             if (serveExternalFeaturesPath) {
                 app.use('/plugins', express.static(resolvedFeaturesPath));
             }
+
             const externalFeatures = getExternalFeatures(
                 externalFeatureDefinitions,
                 [...environments],
@@ -177,9 +164,23 @@ devServerFeature.setup(
                     port: actualPort,
                     inspect,
                     overrideConfig,
-                    basePath,
+                    externalFeaturesBasePath: externalFeaturesPath,
                 })
             );
+
+            const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
+                featureName.indexOf('engineer/') === 0
+                    ? {
+                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+                      }
+                    : undefined;
+
+            app.use(`/${publicConfigsRoute}`, [
+                ensureTopLevelConfigMiddleware,
+                createCommunicationMiddleware(application.getNodeEnvManager()!, publicPath, topologyOverrides),
+                createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
+                createConfigMiddleware(overrideConfig),
+            ]);
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 

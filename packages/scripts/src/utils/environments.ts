@@ -1,7 +1,7 @@
-import { flattenTree, EnvironmentTypes } from '@wixc3/engine-core';
+import { flattenTree, EnvironmentTypes, SetMultiMap } from '@wixc3/engine-core';
 import type { IEnvironment, IFeatureDefinition } from '../types';
 
-export function getEnvironmnts(
+export function getEnvironmntsForFeature(
     featureName: string,
     features: Map<string, IFeatureDefinition>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes
@@ -22,7 +22,7 @@ export function getEnvironmnts(
     for (const { exportedEnvs } of deepDefsForFeature) {
         for (const exportedEnv of exportedEnvs) {
             if (
-                environmentTypesToFilterBy.includes(exportedEnv.type) &&
+                (!envTypes || environmentTypesToFilterBy.includes(exportedEnv.type)) &&
                 (!exportedEnv.childEnvName || resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
             ) {
                 filteredEnvironments.add(exportedEnv);
@@ -30,4 +30,73 @@ export function getEnvironmnts(
         }
     }
     return filteredEnvironments;
+}
+
+export interface GetResolveEnvironmentsParams {
+    featureName?: string;
+    singleFeature?: boolean;
+    features: Map<string, IFeatureDefinition>;
+    environments: IEnvironment[];
+}
+
+export function getResolvedEnvironments({
+    featureName,
+    singleFeature,
+    features,
+    environments,
+}: GetResolveEnvironmentsParams) {
+    const webEnvs = new Map<string, string[]>();
+    const workerEnvs = new Map<string, string[]>();
+    const electronRendererEnvs = new Map<string, string[]>();
+    const nodeEnvs = new Map<string, string[]>();
+    const electronMainEnvs = new Map<string, string[]>();
+
+    const resolvedContexts =
+        featureName && singleFeature
+            ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
+            : getAllResolvedContexts(features);
+    for (const env of environments) {
+        const { name, childEnvName, type } = env;
+        if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
+            if (type === 'window' || type === 'iframe') {
+                addEnv(webEnvs, env);
+            } else if (type === 'worker') {
+                addEnv(workerEnvs, env);
+            } else if (type === 'electron-renderer') {
+                addEnv(electronRendererEnvs, env);
+            } else if (type === 'node') {
+                addEnv(nodeEnvs, env);
+            } else if (type === 'electron-main') {
+                addEnv(electronMainEnvs, env);
+            }
+    }
+    return {
+        webEnvs,
+        workerEnvs,
+        electronRendererEnvs,
+        nodeEnvs,
+    };
+}
+
+function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
+    const childEnvs = envs.get(name) || [];
+    if (childEnvName) {
+        childEnvs.push(childEnvName);
+    }
+    envs.set(name, childEnvs);
+}
+
+function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
+    const allContexts = new SetMultiMap<string, string>();
+    for (const { resolvedContexts } of features.values()) {
+        convertEnvRecordToSetMultiMap(resolvedContexts, allContexts);
+    }
+    return allContexts;
+}
+
+function convertEnvRecordToSetMultiMap(record: Record<string, string>, set = new SetMultiMap<string, string>()) {
+    for (const [env, resolvedContext] of Object.entries(record)) {
+        set.add(env, resolvedContext);
+    }
+    return set;
 }

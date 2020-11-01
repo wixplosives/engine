@@ -5,6 +5,8 @@ import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import type { Page } from 'puppeteer';
 import { Application } from '@wixc3/engine-scripts';
+import { join } from 'path';
+import rimraf from 'rimraf';
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -28,7 +30,9 @@ describe('Application', function () {
     };
 
     const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
+    const engineMultiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
     const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
+    const nodeExternalFeatureFixturePath = fs.join(__dirname, './fixtures/node-env-external');
     const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 
     describe('build', () => {
@@ -38,6 +42,15 @@ describe('Application', function () {
             disposables.add(() => app.clean());
 
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+        });
+        it('allows building features in external mode', async () => {
+            const app = new Application({ basePath: engineFeatureFixturePath });
+            await app.build({ external: true });
+            disposables.add(() => app.clean());
+            expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+            const contents = fs.readdirSync(app.outputPath);
+            expect(contents).to.include('main.web.js');
+            expect(contents).to.include('[feature]x.web.js');
         });
     });
 
@@ -199,6 +212,88 @@ describe('Application', function () {
                         expect(parsedBodyConfig.value).to.eq(1);
                     }
                 }
+            });
+        });
+
+        it('loads external features in browser', async () => {
+            const externalFeatureName = 'engine-multi/variant';
+            const pluginsFolderPath = join(engineMultiFeatureFixturePath, 'node_modules');
+            const { name } = fs.readJsonFileSync(join(engineMultiFeatureFixturePath, 'package.json')) as {
+                name: string;
+            };
+            const externalFeatureApp = new Application({
+                basePath: engineMultiFeatureFixturePath,
+                outputPath: join(pluginsFolderPath, name, 'variant/dist'),
+            });
+            await externalFeatureApp.build({
+                external: true,
+                featureName: externalFeatureName,
+            });
+            disposables.add(() => externalFeatureApp.clean());
+            disposables.add(() => rimraf.sync(pluginsFolderPath));
+
+            const app = new Application({ basePath: engineMultiFeatureFixturePath });
+            await app.build({ featureName: 'engine-multi/app', singleFeature: true });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                serveExternalFeaturesPath: true,
+                externalFeaturesPath: pluginsFolderPath,
+                externalFeatureDefinitions: [
+                    {
+                        featureName: externalFeatureName,
+                        packageName: name,
+                    },
+                ],
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                expect(bodyContent).include('testing 1 2 3');
+            });
+        });
+
+        it.only('loads external features in server', async () => {
+            const externalFeatureName = 'node-env-external';
+            const pluginsFolderPath = join(nodeFeatureFixturePath, 'node_modules');
+            const { name } = fs.readJsonFileSync(join(nodeExternalFeatureFixturePath, 'package.json')) as {
+                name: string;
+            };
+            const externalFeatureApp = new Application({
+                basePath: nodeExternalFeatureFixturePath,
+                outputPath: join(pluginsFolderPath, name, 'dist'),
+            });
+            await externalFeatureApp.build({
+                external: true,
+                featureName: externalFeatureName,
+            });
+            // disposables.add(() => externalFeatureApp.clean());
+            // disposables.add(() => rimraf.sync(pluginsFolderPath));
+
+            const app = new Application({ basePath: nodeFeatureFixturePath });
+            await app.build({ featureName: 'engine-node/x', singleFeature: true });
+            // disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                serveExternalFeaturesPath: true,
+                externalFeaturesPath: pluginsFolderPath,
+                externalFeatureDefinitions: [
+                    {
+                        featureName: externalFeatureName,
+                        packageName: name,
+                    },
+                ],
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(async () => {
+                const buttonElement = await page.$('#button');
+                await buttonElement?.click();
+                const bodyContent = await getBodyContent(page);
+                expect(bodyContent).include('value');
             });
         });
     });

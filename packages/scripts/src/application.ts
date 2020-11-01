@@ -29,13 +29,13 @@ import type {
     IFeatureTarget,
     IExternalFeatureDefinition,
     TopLevelConfigProvider,
-    IExtenalFeatureDescriptor,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
-import { getEnvironmnts } from './utils/environments';
+import { getEnvironmntsForFeature, getResolvedEnvironments } from './utils/environments';
 import { launchHttpServer } from './launch-http-server';
 import { getExternalFeatures } from './utils';
+import { createExternalNodeEntrypoint, nodeImportStatement } from './create-entrypoint';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -67,6 +67,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
 export interface IRunCommandOptions extends IRunApplicationOptions {
     serveExternalFeaturesPath?: boolean;
     externalFeaturesPath?: string;
+    externalFeatureDefinitions?: IExternalFeatureDefinition[];
 }
 
 export interface IBuildManifest {
@@ -131,6 +132,10 @@ export class Application {
             await this.importModules(engineConfig.require);
         }
 
+        if (external && !featureName) {
+            throw new Error('You must specify a feature name when building a feature in external mode');
+        }
+
         const { features, configurations } = this.analyzeFeatures();
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
@@ -162,6 +167,10 @@ export class Application {
             })
         );
 
+        if (external) {
+            this.createNodeEntries(features, featureName!, singleFeature);
+        }
+
         await this.writeManifest({
             features,
             featureName,
@@ -187,8 +196,9 @@ export class Application {
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
-            externalFeaturesPath: providedExternalFeatuersPath = this.basePath,
+            externalFeaturesPath: providedExternalFeatuersPath = join(this.basePath, 'node_modules'),
             serveExternalFeaturesPath: providedServeExternalFeaturesPath,
+            externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
@@ -202,15 +212,6 @@ export class Application {
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
         disposables.add(() => close());
 
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
-            features: new Map(features),
-            port,
-            defaultRuntimeOptions,
-            inspect,
-            overrideConfig: config,
-            configurations,
-            basePath: this.basePath,
-        });
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
         if (engineConfig && engineConfig.serveStatic) {
@@ -219,6 +220,28 @@ export class Application {
             }
         }
 
+        const {
+            externalFeatureDefinitions = [],
+            externalFeaturesPath = providedExternalFeatuersPath,
+            serveExternalFeaturesPath = providedServeExternalFeaturesPath,
+        } = engineConfig ?? {};
+
+        externalFeatureDefinitions.push(...providedExternalFeaturesDefinitions);
+
+        const resolvedExternalPath = externalFeaturesPath.startsWith('http')
+            ? externalFeaturesPath
+            : fs.resolve(externalFeaturesPath);
+
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
+            features: new Map(features),
+            port,
+            defaultRuntimeOptions,
+            inspect,
+            overrideConfig: config,
+            configurations,
+            externalFeaturesBasePath: resolvedExternalPath,
+        });
+
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, [
                 ensureTopLevelConfigMiddleware,
@@ -226,28 +249,20 @@ export class Application {
                 createConfigMiddleware(config),
             ]);
         }
-        const {
-            externalFeatureDefinitions = [],
-            externalFeaturesPath = providedExternalFeatuersPath,
-            serveExternalFeaturesPath = providedServeExternalFeaturesPath,
-        } = engineConfig ?? {};
-
-        const resolvedExternalPath = externalFeaturesPath.startsWith('http')
-            ? externalFeaturesPath
-            : fs.resolve(externalFeaturesPath);
 
         if (autoLaunch && featureName) {
             if (externalFeaturesPath) {
-                const environments = getEnvironmnts(featureName, new Map(features));
+                const environments = getEnvironmntsForFeature(featureName, new Map(features));
 
                 if (serveExternalFeaturesPath) {
                     app.use('/plugins', express.static(resolvedExternalPath));
                 }
+                const externalFeaturesPath = serveExternalFeaturesPath ? 'plugins' : resolvedExternalPath;
 
-                const externalFeatures: IExtenalFeatureDescriptor[] = getExternalFeatures(
+                const externalFeatures = getExternalFeatures(
                     externalFeatureDefinitions,
                     [...environments],
-                    serveExternalFeaturesPath ? 'plugins' : resolvedExternalPath
+                    externalFeaturesPath
                 );
                 app.use('/external', (_, res) => {
                     res.json(externalFeatures);
@@ -257,7 +272,7 @@ export class Application {
                 featureName,
                 configName,
                 mode: nodeEnvironmentsMode,
-                externalFeatureDefinitions: engineConfig?.externalFeatureDefinitions,
+                externalFeatureDefinitions,
                 externalFeaturesBasePath: resolvedExternalPath,
             });
         }
@@ -431,7 +446,6 @@ export class Application {
             overrideConfig,
             singleFeature,
             createWebpackConfig: externalFeature ? createWebpackConfigForExteranlFeature : createWebpackConfig,
-            external: externalFeature,
         });
 
         const compiler = webpack(webpackConfigs);
@@ -446,6 +460,36 @@ export class Application {
         const featuresAndConfigs = loadFeaturesFromPackages(packages, fs);
         console.timeEnd('Analyzing Features.');
         return { ...featuresAndConfigs, packages };
+    }
+
+    protected createNodeEntries(
+        features: Map<string, IFeatureDefinition>,
+        featureName: string,
+        singleFeature?: boolean
+    ) {
+        const nodeEntries: Record<string, string> = {};
+        const { nodeEnvs } = getResolvedEnvironments({
+            featureName,
+            singleFeature,
+            features,
+            environments: [...getEnvironmntsForFeature(featureName, features, 'node')],
+        });
+        for (const feature of features.values()) {
+            if (feature.isRoot && (!featureName || featureName === feature.scopedName)) {
+                for (const [envName, childEnvs] of nodeEnvs) {
+                    fs.writeFileSync(
+                        join(this.outputPath, `${envName}.node.js`),
+                        createExternalNodeEntrypoint({
+                            ...feature,
+                            childEnvs,
+                            envName,
+                            loadStatement: nodeImportStatement,
+                        })
+                    );
+                }
+            }
+        }
+        return nodeEntries;
     }
 
     protected getFeatureEnvDefinitions(
@@ -463,7 +507,7 @@ export class Application {
             const [rootFeatureName] = scopedName.split('/');
             featureEnvDefinitions[scopedName] = {
                 configurations: configNames.filter((name) => name.includes(rootFeatureName)),
-                hasServerEnvironments: getEnvironmnts(scopedName, features, 'node').size > 0,
+                hasServerEnvironments: getEnvironmntsForFeature(scopedName, features, 'node').size > 0,
                 featureName: scopedName,
             };
         }
