@@ -37,7 +37,7 @@
     "@types/puppeteer": "^3.0.4",
     "@types/react": "^16.9.55",
     "@types/react-dom": "^16.9.9",
-    "@types/react-select": "^3.0.22",
+    "@types/react-select": "^3.0.23",
     "@types/rimraf": "^3.0.0",
     "@types/sinon": "^9.0.8",
     "@types/sinon-chai": "^3.2.5",
