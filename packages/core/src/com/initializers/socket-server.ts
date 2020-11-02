@@ -4,7 +4,7 @@ import type { EnvironmentInitializer } from '../types';
 type listenFn = (cb: () => void) => void;
 
 export function socketServerInitializer(
-    options?: unknown
+    options?: object
 ): EnvironmentInitializer<{
     id: string;
     onDisconnect: listenFn;
