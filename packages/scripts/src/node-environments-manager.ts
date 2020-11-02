@@ -60,6 +60,8 @@ export interface ILaunchEnvironmentOptions {
     mode?: LaunchEnvironmentMode;
 }
 
+const SOCKET_PING_TIMEOUT = 60_000 * 10;
+
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
@@ -229,7 +231,7 @@ export class NodeEnvironmentsManager {
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
         const socketServer = io(httpServer, {
-            pingTimeout: 15_000,
+            pingTimeout: SOCKET_PING_TIMEOUT,
         });
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
