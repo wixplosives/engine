@@ -1,6 +1,6 @@
 {
   "name": "@example/playground",
-  "version": "16.0.0",
+  "version": "16.1.1",
   "scripts": {
     "start": "engineer start"
   },
