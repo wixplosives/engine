@@ -19,6 +19,7 @@ export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) =>
 
 export interface IFeatureLoader {
     load: (resolvedContexts: Record<string, string>) => Promise<Feature>;
+    preLoad: () => void;
     depFeatures: string[];
     resolvedContexts: Record<string, string>;
 }
@@ -96,7 +97,16 @@ export class FeatureLoadersRegistry {
                 loaded.push(loader);
             }
         }
-        return Promise.all((await Promise.all(loaded)).map(({ load }) => load(this.resolvedContexts)));
+        return Promise.all(
+            (await Promise.all(loaded))
+                .map((loader) => {
+                    if (loader.preLoad) {
+                        loader.preLoad();
+                    }
+                    return loader;
+                })
+                .map(({ load }) => load(this.resolvedContexts))
+        );
     }
     /**
      * returns all the dependencies of a feature. doesn't handle duplications

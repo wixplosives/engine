@@ -61,8 +61,16 @@ export function createFeatureLoaders(
         envFilePaths,
         contextFilePaths,
         resolvedContexts,
+        preenvFilePaths,
     } of features.values()) {
         featureLoaders[scopedName] = {
+            preLoad: () => {
+                const preenvFilePath = preenvFilePaths[envName];
+                if (preenvFilePath) {
+                    // This performs side effect, I want it sync
+                    require(preenvFilePath);
+                }
+            },
             load: async (currentContext) => {
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
@@ -70,6 +78,7 @@ export function createFeatureLoaders(
                         await import(contextFilePath);
                     }
                 }
+
                 const envFilePath = envFilePaths[envName];
                 if (envFilePath) {
                     await import(envFilePath);

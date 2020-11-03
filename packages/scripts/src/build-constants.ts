@@ -4,6 +4,7 @@ import path from 'path';
 export const FEATURE_FILENAME_HINT = '.feature.';
 export const CONFIG_FILENAME_HINT = '.config.';
 export const ENV_FILENAME_HINT = '.env.';
+export const PREENV_FILENAME_HINT = '.preenv.';
 export const CONTEXT_FILENAME_HINT = '.context.';
 export const ENGINE_CONFIG_FILE_NAME = 'engine.config.js';
 
@@ -19,6 +20,7 @@ export const isCodeModule = (fileName: string) =>
     (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) || fileName.endsWith('.tsx') || fileName.endsWith('.js');
 export const isConfigFile = (fileName: string) => fileName.indexOf(CONFIG_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isEnvFile = (fileName: string) => fileName.indexOf(ENV_FILENAME_HINT) >= 1 && isCodeModule(fileName);
+export const isPreenvFile = (fileName: string) => fileName.indexOf(PREENV_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isFeatureFile = (fileName: string) =>
     fileName.indexOf(FEATURE_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isContextFile = (fileName: string) =>
@@ -56,4 +58,14 @@ export function parseContextFileName(fileName: string) {
         throw new Error(`cannot parse context file: ${fileName}`);
     }
     return { featureName, envName, childEnvName };
+}
+
+export function parsePreenvFileName(fileName: string) {
+    const [featureName, envName] = fileName.split(PREENV_FILENAME_HINT).shift()!.split('.');
+
+    if (!featureName || !envName) {
+        throw new Error(`cannot parse env file: ${fileName}`);
+    }
+
+    return { featureName, envName };
 }
