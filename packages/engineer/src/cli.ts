@@ -43,6 +43,7 @@ program
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
     .option('--plugins <plugins...>', 'list of plugins')
+    .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts', '.')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -61,7 +62,9 @@ program
             engineerEntry,
             inspect,
             plugins,
+            featureDiscoveryRoot,
         } = cmd;
+
         try {
             const { devServerFeature } = await startDevServer({
                 featureName,
@@ -80,6 +83,7 @@ program
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect,
                 externalFeatureDefinitions: plugins,
+                featureDiscoveryRoot,
             });
 
             const { port } = await new Promise((resolve) => {
@@ -106,6 +110,7 @@ program
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .option('--external [true|false]', 'build feature as external', parseBoolean, false)
+    .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts', '.')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -119,12 +124,13 @@ program
             title,
             publicConfigsRoute,
             external,
+            featureDiscoveryRoot,
         } = cmd;
         try {
             const basePath = resolve(path);
             preRequire(pathsToRequire, basePath);
             const outputPath = resolve(outDir);
-            const app = new Application({ basePath, outputPath });
+            const app = new Application({ basePath, outputPath, featureDiscoveryRoot });
             const stats = await app.build({
                 featureName,
                 configName,

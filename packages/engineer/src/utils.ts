@@ -33,6 +33,7 @@ export interface IStartOptions {
     runtimeOptions?: Record<string, string | boolean>;
     externalFeatureDefinitions?: IExternalFeatureDefinition[];
     externalFeaturesPath?: string;
+    featureDiscoveryRoot?: string;
 }
 
 export async function startDevServer({
@@ -55,6 +56,7 @@ export async function startDevServer({
     runtimeOptions = {},
     externalFeatureDefinitions = [],
     externalFeaturesPath,
+    featureDiscoveryRoot,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -93,6 +95,7 @@ export async function startDevServer({
                     defaultRuntimeOptions: runtimeOptions,
                     externalFeatureDefinitions,
                     externalFeaturesPath,
+                    featureDiscoveryRoot,
                 },
             }),
             guiFeature.use({

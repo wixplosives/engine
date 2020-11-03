@@ -25,6 +25,7 @@ export interface DevServerConfig {
     externalFeatureDefinitions: IExternalFeatureDefinition[];
     externalFeaturesPath?: string;
     serveExternalFeaturesPath?: boolean;
+    featureDiscoveryRoot?: string;
 }
 
 export interface DevServerActions {
