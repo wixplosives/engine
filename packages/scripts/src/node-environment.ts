@@ -64,11 +64,11 @@ export function createFeatureLoaders(
         preenvFilePaths,
     } of features.values()) {
         featureLoaders[scopedName] = {
-            preLoad: () => {
+            preLoad: async () => {
                 const preenvFilePath = preenvFilePaths[envName];
                 if (preenvFilePath) {
                     // This performs side effect, I want it sync
-                    require(preenvFilePath);
+                    await import(preenvFilePath);
                 }
             },
             load: async (currentContext) => {
