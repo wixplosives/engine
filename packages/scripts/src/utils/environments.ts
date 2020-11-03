@@ -15,7 +15,6 @@ export function getEnvironmntsForFeature(
         throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
     }
     const { resolvedContexts } = featureDefinition;
-
     const deepDefsForFeature = flattenTree(featureDefinition, (f) =>
         f.dependencies.map((fName) => features.get(fName)!)
     );

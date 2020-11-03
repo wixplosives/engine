@@ -208,12 +208,18 @@ export function createWebpackConfigForExteranlFeature({
             for (const [envName, childEnvs] of enviroments) {
                 const entryPath = fs.join(context, `${envName}.js`);
                 entry[envName] = entryPath;
+                const publicPathParts = ['plugins', feature.packageName];
+                if (feature.scopedName !== feature.name) {
+                    publicPathParts.push(feature.name);
+                }
+                publicPathParts.push(basename(outputPath) + '/');
                 virtualModules[entryPath] = createExternalBrowserEntrypoint({
                     ...feature,
                     childEnvs,
                     envName,
-                    publicPath: join('plugins', feature.packageName, feature.name, basename(outputPath) + '/'),
+                    publicPath: join(...publicPathParts),
                     loadStatement: webpackImportStatement,
+                    target: target === 'webworker' ? 'webworker' : 'web',
                 });
             }
         } else {

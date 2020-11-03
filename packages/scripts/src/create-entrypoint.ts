@@ -27,11 +27,15 @@ interface IConfigFileMapping {
     configEnvName?: string;
 }
 
-export interface WebpackFeatureLoaderArguments extends IFeatureDefinition {
+export interface ExternalEntrypoint extends IFeatureDefinition {
     childEnvs: string[];
     envName: string;
     publicPath?: string;
     loadStatement: (args: LoadStatementArguments) => string;
+}
+
+export interface WebpackFeatureLoaderArguments extends ExternalEntrypoint {
+    target: 'web' | 'webworker' | 'node';
 }
 
 export type LoadStatement = Pick<
@@ -64,9 +68,9 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
     `;
 }
 
-export function createExternalNodeEntrypoint(args: WebpackFeatureLoaderArguments) {
+export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
     return `module.exports = {
-        '${args.scopedName}': ${createLoaderInterface(args)}
+        '${args.scopedName}': ${createLoaderInterface({ ...args, target: 'node' })}
 }
     `;
 }
@@ -164,6 +168,7 @@ function createFeatureLoaders(
                     envName,
                     childEnvs,
                     loadStatement: target === 'node' ? nodeImportStatement : webpackImportStatement,
+                    target,
                 })}`
         )
         .join(',\n');
@@ -205,7 +210,7 @@ function loadEnvAndContextFiles({
 }
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
-    const { name, filePath, dependencies, resolvedContexts, loadStatement, packageName, directoryPath } = args;
+    const { name, filePath, dependencies, resolvedContexts, loadStatement, packageName, directoryPath, target } = args;
     const { loadStatements, usesResolvedContexts } = loadEnvAndContextFiles(args);
     return `{
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
@@ -216,7 +221,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                         directoryPath,
                         packageName,
                     })};
-                    self[featureModule.default.id] = featureModule;
+                    ${target !== 'node' ? `self[featureModule.default.id] = featureModule;` : ''}
                     return featureModule.default;
                 },
                 depFeatures: ${stringify(dependencies)},

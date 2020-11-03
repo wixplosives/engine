@@ -255,7 +255,7 @@ describe('Application', function () {
             });
         });
 
-        it.only('loads external features in server', async () => {
+        it('loads external features in server', async () => {
             const externalFeatureName = 'node-env-external';
             const pluginsFolderPath = join(nodeFeatureFixturePath, 'node_modules');
             const { name } = fs.readJsonFileSync(join(nodeExternalFeatureFixturePath, 'package.json')) as {
@@ -269,12 +269,16 @@ describe('Application', function () {
                 external: true,
                 featureName: externalFeatureName,
             });
-            // disposables.add(() => externalFeatureApp.clean());
-            // disposables.add(() => rimraf.sync(pluginsFolderPath));
-
+            disposables.add(() => externalFeatureApp.clean());
+            disposables.add(() => rimraf.sync(pluginsFolderPath));
+            const publicConfigsRoute = '/config';
             const app = new Application({ basePath: nodeFeatureFixturePath });
-            await app.build({ featureName: 'engine-node/x', singleFeature: true });
-            // disposables.add(() => app.clean());
+            await app.build({
+                featureName: 'engine-node/x',
+                singleFeature: true,
+                publicConfigsRoute,
+            });
+            disposables.add(() => app.clean());
 
             const { close, port } = await app.run({
                 serveExternalFeaturesPath: true,
@@ -285,6 +289,7 @@ describe('Application', function () {
                         packageName: name,
                     },
                 ],
+                publicConfigsRoute: 'config',
             });
             disposables.add(() => close());
 

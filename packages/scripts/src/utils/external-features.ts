@@ -1,13 +1,13 @@
 import { join } from 'path';
 import type { IEnvironment, IExtenalFeatureDescriptor, IExternalFeatureDefinition } from '../types';
 
-export function getFeatureFromDefinition(
-    { featureName, packageName, outDir }: IExternalFeatureDefinition,
-    pluginsBaseDirectory: string
-) {
-    const pluginEntryPathParts = [pluginsBaseDirectory, packageName];
+export function getFeatureFromDefinition({ featureName, packageName, outDir }: IExternalFeatureDefinition) {
+    // eslint-disable-next-line prefer-const
+    let [monorepoName, realPackageName] = packageName.split('/');
+    realPackageName = realPackageName ?? monorepoName;
+    const pluginEntryPathParts = [packageName];
     const [scope, feature] = featureName.split('/');
-    if (scope && feature) {
+    if (scope && feature && scope !== realPackageName) {
         pluginEntryPathParts.push(feature);
     }
     pluginEntryPathParts.push(outDir ?? 'dist');
@@ -19,14 +19,13 @@ export function getExternalFeatures(
     environments: IEnvironment[],
     pluginsBaseDirectory: string
 ): IExtenalFeatureDescriptor[] {
-    console.log(environments);
     return pluginDefinitions.map((pluginDefinition) => {
-        const { pluginName, pluginEntryPath } = getFeatureFromDefinition(pluginDefinition, pluginsBaseDirectory);
+        const { pluginName, pluginEntryPath } = getFeatureFromDefinition(pluginDefinition);
         return {
             name: pluginName,
             envEntries: [...environments].reduce<Record<string, string>>((acc, { name, type }) => {
                 acc[name] = join(
-                    pluginEntryPath,
+                    join(type === 'node' ? pluginsBaseDirectory : 'plugins', pluginEntryPath),
                     `${name}.${
                         ['electron-renerer', 'iframe', 'window'].includes(type)
                             ? 'web'

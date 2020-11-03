@@ -8,6 +8,7 @@ sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { startEnvironment } 
     const echoValue = document.createElement('div');
 
     getSlotValueButton.id = 'button';
+    getSlotValueButton.textContent = 'click me';
     slotValue.id = 'slotValue';
     echoValue.id = 'echoValue';
 

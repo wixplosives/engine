@@ -5,8 +5,11 @@ import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
-import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import { Application, IExternalFeatureDefinition, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
+import { join } from 'path';
+import rimraf from 'rimraf';
+// import rimraf from 'rimraf';
 
 const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
 const engineRuntimeFeatureFixturePath = fs.join(__dirname, './fixtures/engine-run-options');
@@ -34,6 +37,9 @@ describe('engineer:dev-server', function () {
         overrideConfig = [],
         outputPath,
         runtimeOptions = {},
+        externalFeatureDefinitions,
+        externalFeaturesPath,
+        singleFeature,
     }: {
         featureName?: string;
         port?: number;
@@ -44,6 +50,9 @@ describe('engineer:dev-server', function () {
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
         outputPath?: string;
         runtimeOptions?: Record<string, string | boolean>;
+        externalFeatureDefinitions?: IExternalFeatureDefinition[];
+        externalFeaturesPath?: string;
+        singleFeature?: boolean;
     }): Promise<{
         dispose: () => Promise<void>;
         engine: RuntimeEngine;
@@ -62,6 +71,9 @@ describe('engineer:dev-server', function () {
             outputPath,
             singleRun: true,
             runtimeOptions,
+            externalFeatureDefinitions,
+            externalFeaturesPath,
+            singleFeature,
         });
         const runningPort = await new Promise<number>((resolve) => {
             devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
@@ -427,6 +439,96 @@ describe('engineer:dev-server', function () {
 
         expect(text).to.include('{"foo":"bar"}');
     });
+
+    it('loads external features in browser', async () => {
+        const externalFeatureName = 'engine-multi/variant';
+        const pluginsFolderPath = join(multiFeatureFixturePath, 'node_modules');
+        const { name: packageName } = fs.readJsonFileSync(join(multiFeatureFixturePath, 'package.json')) as {
+            name: string;
+        };
+        const name = packageName + 'sample';
+        const externalFeatureApp = new Application({
+            basePath: multiFeatureFixturePath,
+            outputPath: join(pluginsFolderPath, name, 'variant/dist'),
+        });
+        await externalFeatureApp.build({
+            external: true,
+            featureName: externalFeatureName,
+        });
+        disposables.add(() => externalFeatureApp.clean());
+        disposables.add(() => rimraf.sync(pluginsFolderPath));
+
+        const {
+            dispose,
+            config: { port },
+        } = await setup({
+            basePath: multiFeatureFixturePath,
+            featureName: 'engine-multi/app',
+            externalFeatureDefinitions: [
+                {
+                    featureName: externalFeatureName,
+                    packageName: name,
+                },
+            ],
+            externalFeaturesPath: pluginsFolderPath,
+            singleFeature: true,
+        });
+
+        disposables.add(() => dispose());
+
+        const page = await loadPage(`http://localhost:${port}/main.html`);
+        await waitFor(async () => {
+            const bodyContent = await getBodyContent(page);
+            expect(bodyContent).include('testing 1 2 3');
+        });
+    });
+
+    // it('loads external features in server', async () => {
+    //     const externalFeatureName = 'node-env-external';
+    //     const pluginsFolderPath = join(nodeFeatureFixturePath, 'node_modules');
+    //     const { name } = fs.readJsonFileSync(join(nodeExternalFeatureFixturePath, 'package.json')) as {
+    //         name: string;
+    //     };
+    //     const externalFeatureApp = new Application({
+    //         basePath: nodeExternalFeatureFixturePath,
+    //         outputPath: join(pluginsFolderPath, name, 'dist'),
+    //     });
+    //     await externalFeatureApp.build({
+    //         external: true,
+    //         featureName: externalFeatureName,
+    //     });
+    //     disposables.add(() => externalFeatureApp.clean());
+    //     disposables.add(() => rimraf.sync(pluginsFolderPath));
+    //     const publicConfigsRoute = '/config';
+    //     const app = new Application({ basePath: nodeFeatureFixturePath });
+    //     await app.build({
+    //         featureName: 'engine-node/x',
+    //         singleFeature: true,
+    //         publicConfigsRoute,
+    //     });
+    //     disposables.add(() => app.clean());
+
+    //     const { close, port } = await app.run({
+    //         serveExternalFeaturesPath: true,
+    //         externalFeaturesPath: pluginsFolderPath,
+    //         externalFeatureDefinitions: [
+    //             {
+    //                 featureName: externalFeatureName,
+    //                 packageName: name,
+    //             },
+    //         ],
+    //         publicConfigsRoute: 'config',
+    //     });
+    //     disposables.add(() => close());
+
+    //     const page = await loadPage(`http://localhost:${port}/main.html`);
+    //     await waitFor(async () => {
+    //         const buttonElement = await page.$('#button');
+    //         await buttonElement?.click();
+    //         const bodyContent = await getBodyContent(page);
+    //         expect(bodyContent).include('value');
+    //     });
+    // });
 });
 
 function getConfigFileContent(textText: string) {

@@ -62,6 +62,7 @@ export interface IRunApplicationOptions extends IFeatureTarget {
 
 export interface IBuildCommandOptions extends IRunApplicationOptions {
     external?: boolean;
+    staticBuild?: boolean;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -126,6 +127,7 @@ export class Application {
         publicConfigsRoute,
         overrideConfig,
         external = false,
+        staticBuild = true,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -137,9 +139,16 @@ export class Application {
         }
 
         const { features, configurations } = this.analyzeFeatures();
+        console.log(features.get('engine-core/communication'));
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
         }
+        console.log(features.get('engine-core/communication'));
+
+        if (external) {
+            this.createNodeEntries(features, featureName!, singleFeature);
+        }
+
         const { compiler } = this.createCompiler({
             mode,
             features,
@@ -148,7 +157,7 @@ export class Application {
             publicPath,
             title,
             configurations,
-            staticBuild: true,
+            staticBuild,
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
@@ -166,10 +175,6 @@ export class Application {
                 }
             })
         );
-
-        if (external) {
-            this.createNodeEntries(features, featureName!, singleFeature);
-        }
 
         await this.writeManifest({
             features,
@@ -468,6 +473,7 @@ export class Application {
         singleFeature?: boolean
     ) {
         const nodeEntries: Record<string, string> = {};
+        console.log(features.get('engine-core/communication'));
         const { nodeEnvs } = getResolvedEnvironments({
             featureName,
             singleFeature,
