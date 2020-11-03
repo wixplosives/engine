@@ -136,7 +136,7 @@ devServerFeature.setup(
             const externalFeatures = getExternalFeatures(
                 externalFeatureDefinitions,
                 [...environments],
-                serveExternalFeaturesPath ? 'plugins' : resolvedFeaturesPath
+                externalFeaturesPath
             );
 
             app.use('/external', (_, res) => {

@@ -47,7 +47,7 @@ export async function startDevServer({
     mode = 'development',
     title,
     publicConfigsRoute = 'configs/',
-    autoLaunch,
+    autoLaunch = true,
     targetApplicationPath,
     engineerEntry = 'engineer/gui',
     overrideConfig = [],

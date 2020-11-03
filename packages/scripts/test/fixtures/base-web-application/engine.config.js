@@ -3,9 +3,8 @@ module.exports = {
     require: ['@ts-tools/node/r'],
     externalFeatureDefinitions: [
         {
-            name: 'application-external',
-            packageName: '@fixture/application-external',
+            featureName: 'application-external',
+            packageName: '@fixture/application-external-feature',
         },
     ],
-    externalFeaturesPath: './node_modules',
 };
