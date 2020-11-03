@@ -1,4 +1,6 @@
 import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment, Config } from '@wixc3/engine-core';
+import depFeature from './dep.feature';
+import parallelFeature from './parallel.feature';
 
 export const mainEnv = new Environment('main', 'window', 'single');
 export const workerEnv = new Environment('worker1', 'worker', 'single');
@@ -15,7 +17,7 @@ export interface INameProvider {
 
 export default new Feature({
     id: 'contextual-environment-test',
-    dependencies: [COM],
+    dependencies: [COM, parallelFeature, depFeature],
     api: {
         config: new Config<{ name: string }>({
             name: 'test',
