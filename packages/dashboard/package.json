@@ -8,8 +8,7 @@
     "build:stylable": "stc --srcDir=\"src\" --outDir=\"dist\" --stcss --cjs=false"
   },
   "peerDependencies": {
-    "react": ">=16",
-    "react-dom": ">=16"
+    "react": ">=16"
   },
   "dependencies": {
     "@stylable/runtime": "^3.11.5",

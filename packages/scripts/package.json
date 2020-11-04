@@ -7,8 +7,6 @@
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "peerDependencies": {
-    "react": ">=16",
-    "react-dom": ">=16",
     "webpack": ">=4"
   },
   "dependencies": {
