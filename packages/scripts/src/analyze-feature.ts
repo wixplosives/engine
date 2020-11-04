@@ -180,7 +180,7 @@ export function loadFeaturesFromPaths(
                         dependencies: this.dependencies,
                         filePath: getFilePathInPackage(fs, featurePackage, this.filePath),
                         envFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.envFilePaths),
-                        preenvFilePaths: {},
+                        preenvFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preenvFilePaths),
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         scopedName,
