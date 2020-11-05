@@ -264,4 +264,5 @@ export interface EngineConfig {
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
+    socketPingTimeout?: number;
 }

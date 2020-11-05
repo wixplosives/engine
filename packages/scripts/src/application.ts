@@ -186,14 +186,18 @@ export class Application {
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
         disposables.add(() => close());
 
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
-            features: new Map(features),
-            port,
-            defaultRuntimeOptions,
-            inspect,
-            overrideConfig: config,
-            configurations,
-        });
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(
+            socketServer,
+            {
+                features: new Map(features),
+                port,
+                defaultRuntimeOptions,
+                inspect,
+                overrideConfig: config,
+                configurations,
+            },
+            engineConfig
+        );
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
         if (engineConfig && engineConfig.serveStatic) {

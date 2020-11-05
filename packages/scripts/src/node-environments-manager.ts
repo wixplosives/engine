@@ -8,6 +8,7 @@ import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
 import {
+    EngineConfig,
     IConfigDefinition,
     IEnvironment,
     IEnvironmentMessage,
@@ -60,12 +61,14 @@ export interface ILaunchEnvironmentOptions {
     mode?: LaunchEnvironmentMode;
 }
 
-const SOCKET_PING_TIMEOUT = 60_000 * 10;
-
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
-    constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
+    constructor(
+        private socketServer: io.Server,
+        private options: INodeEnvironmentsManagerOptions,
+        private engineConfig?: EngineConfig
+    ) {}
 
     public async runServerEnvironments({
         featureName,
@@ -231,8 +234,9 @@ export class NodeEnvironmentsManager {
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
         const socketServer = io(httpServer, {
-            pingTimeout: SOCKET_PING_TIMEOUT,
+            pingTimeout: this.engineConfig?.socketPingTimeout,
         });
+
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
         const captureConnections = (socket: Socket): void => {

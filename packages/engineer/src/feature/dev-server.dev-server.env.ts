@@ -85,16 +85,20 @@ devServerFeature.setup(
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
-            // So potential dependants can rely on them in the topology
+            // So potential dependencies can rely on them in the topology
             application.setNodeEnvManager(
-                new NodeEnvironmentsManager(socketServer, {
-                    configurations,
-                    features,
-                    defaultRuntimeOptions,
-                    port: actualPort,
-                    inspect,
-                    overrideConfig,
-                })
+                new NodeEnvironmentsManager(
+                    socketServer,
+                    {
+                        configurations,
+                        features,
+                        defaultRuntimeOptions,
+                        port: actualPort,
+                        inspect,
+                        overrideConfig,
+                    },
+                    engineConfig
+                )
             );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
