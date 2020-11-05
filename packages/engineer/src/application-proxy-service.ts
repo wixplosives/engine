@@ -15,7 +15,6 @@ import {
 } from '@wixc3/engine-scripts';
 import type { SetMultiMap } from '@wixc3/engine-core';
 import performance from '@wixc3/cross-performance';
-import { join } from 'path';
 
 export interface IApplicationProxyOptions extends IApplicationOptions {
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
@@ -99,7 +98,6 @@ export class TargetApplication extends Application {
         // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
         performance.clearMeasures();
         performance.clearMarks();
-        const { externalFeaturesPath = join(this.basePath, 'node_modules') } = (await this.getEngineConfig()) ?? {};
         return this.getNodeEnvManager()!.runServerEnvironments({
             featureName,
             configName,
@@ -107,7 +105,6 @@ export class TargetApplication extends Application {
             runtimeOptions,
             mode: this.nodeEnvironmentsMode,
             externalFeatureDefinitions,
-            externalFeaturesBasePath: externalFeaturesPath,
         });
     };
 
