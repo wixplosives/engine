@@ -9,6 +9,7 @@ import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/
 
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';
+import type { ServerOptions } from 'socket.io';
 
 const basePath = fs.join(__dirname, './feature');
 
@@ -31,6 +32,7 @@ export interface IStartOptions {
     inspect?: boolean;
     runtimeOptions?: Record<string, string | boolean>;
     featureDiscoveryRoot?: string;
+    socketServerOptions?: ServerOptions;
 }
 
 export async function startDevServer({
@@ -52,6 +54,7 @@ export async function startDevServer({
     inspect,
     runtimeOptions = {},
     featureDiscoveryRoot,
+    socketServerOptions,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -89,6 +92,7 @@ export async function startDevServer({
                     inspect,
                     defaultRuntimeOptions: runtimeOptions,
                     featureDiscoveryRoot,
+                    socketServerOptions,
                 },
             }),
             guiFeature.use({

@@ -8,7 +8,6 @@ import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
 import {
-    EngineConfig,
     IConfigDefinition,
     IEnvironment,
     IEnvironmentMessage,
@@ -64,11 +63,7 @@ export interface ILaunchEnvironmentOptions {
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
-    constructor(
-        private socketServer: io.Server,
-        private options: INodeEnvironmentsManagerOptions,
-        private engineConfig?: EngineConfig
-    ) {}
+    constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
 
     public async runServerEnvironments({
         featureName,
@@ -233,9 +228,7 @@ export class NodeEnvironmentsManager {
 
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
-        const socketServer = io(httpServer, {
-            pingTimeout: this.engineConfig?.socketPingTimeout,
-        });
+        const socketServer = io(httpServer);
 
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
