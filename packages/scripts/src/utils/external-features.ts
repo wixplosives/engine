@@ -7,7 +7,7 @@ export function getFeatureFromDefinition({ featureName, packageName, outDir }: I
     realPackageName = realPackageName ?? monorepoName;
     const pluginEntryPathParts = [packageName];
     const [scope, feature] = featureName.split('/');
-    if (scope && feature && scope !== realPackageName) {
+    if (scope && feature && scope === realPackageName) {
         pluginEntryPathParts.push(feature);
     }
     pluginEntryPathParts.push(outDir ?? 'dist');

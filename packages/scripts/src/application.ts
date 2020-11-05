@@ -146,14 +146,8 @@ export class Application {
         }
 
         const { features, configurations } = this.analyzeFeatures();
-        console.log(features.get('engine-core/communication'));
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
-        }
-        console.log(features.get('engine-core/communication'));
-
-        if (external) {
-            this.createNodeEntries(features, featureName!, singleFeature);
         }
 
         const { compiler } = this.createCompiler({
@@ -182,6 +176,10 @@ export class Application {
                 }
             })
         );
+
+        if (external) {
+            this.createNodeEntries(features, featureName!, singleFeature);
+        }
 
         await this.writeManifest({
             features,
@@ -262,24 +260,24 @@ export class Application {
             ]);
         }
 
-        if (autoLaunch && featureName) {
-            if (externalFeaturesPath) {
-                const environments = getEnvironmntsForFeature(featureName, new Map(features));
+        if (externalFeaturesPath && featureName) {
+            const environments = getEnvironmntsForFeature(featureName, new Map(features));
 
-                if (serveExternalFeaturesPath) {
-                    app.use('/plugins', express.static(resolvedExternalPath));
-                }
-                const externalFeaturesPath = serveExternalFeaturesPath ? 'plugins' : resolvedExternalPath;
-
-                const externalFeatures = getExternalFeatures(
-                    externalFeatureDefinitions,
-                    [...environments],
-                    externalFeaturesPath
-                );
-                app.use('/external', (_, res) => {
-                    res.json(externalFeatures);
-                });
+            if (serveExternalFeaturesPath) {
+                app.use('/plugins', express.static(resolvedExternalPath));
             }
+            const externalFeaturesPath = serveExternalFeaturesPath ? 'plugins' : resolvedExternalPath;
+
+            const externalFeatures = getExternalFeatures(
+                externalFeatureDefinitions,
+                [...environments],
+                externalFeaturesPath
+            );
+            app.use('/external', (_, res) => {
+                res.json(externalFeatures);
+            });
+        }
+        if (autoLaunch && featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
@@ -481,7 +479,6 @@ export class Application {
         singleFeature?: boolean
     ) {
         const nodeEntries: Record<string, string> = {};
-        console.log(features.get('engine-core/communication'));
         const { nodeEnvs } = getResolvedEnvironments({
             featureName,
             singleFeature,

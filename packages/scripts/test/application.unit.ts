@@ -30,9 +30,9 @@ describe('Application', function () {
     };
 
     const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
-    const engineMultiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
+    const baseWebApplicationFixturePath = fs.join(__dirname, './fixtures/base-web-application');
+    const applicationExternalFixturePath = fs.join(__dirname, './fixtures/application-external');
     const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
-    const nodeExternalFeatureFixturePath = fs.join(__dirname, './fixtures/node-env-external');
     const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 
     describe('build', () => {
@@ -45,7 +45,7 @@ describe('Application', function () {
         });
         it('allows building features in external mode', async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
-            await app.build({ external: true });
+            await app.build({ external: true, featureName: 'engine-single/x' });
             disposables.add(() => app.clean());
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
             const contents = fs.readdirSync(app.outputPath);
@@ -216,89 +216,54 @@ describe('Application', function () {
         });
 
         it('loads external features in browser', async () => {
-            const externalFeatureName = 'engine-multi/variant';
-            const pluginsFolderPath = join(engineMultiFeatureFixturePath, 'node_modules');
-            const { name } = fs.readJsonFileSync(join(engineMultiFeatureFixturePath, 'package.json')) as {
+            const externalFeatureName = 'application-external';
+            const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
+            const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
                 name: string;
             };
             const externalFeatureApp = new Application({
-                basePath: engineMultiFeatureFixturePath,
-                outputPath: join(pluginsFolderPath, name, 'variant/dist'),
-            });
-            await externalFeatureApp.build({
-                external: true,
-                featureName: externalFeatureName,
-            });
-            disposables.add(() => externalFeatureApp.clean());
-            disposables.add(() => rimraf.sync(pluginsFolderPath));
-
-            const app = new Application({ basePath: engineMultiFeatureFixturePath });
-            await app.build({ featureName: 'engine-multi/app', singleFeature: true });
-            disposables.add(() => app.clean());
-
-            const { close, port } = await app.run({
-                serveExternalFeaturesPath: true,
-                externalFeaturesPath: pluginsFolderPath,
-                externalFeatureDefinitions: [
-                    {
-                        featureName: externalFeatureName,
-                        packageName: name,
-                    },
-                ],
-            });
-            disposables.add(() => close());
-
-            const page = await loadPage(`http://localhost:${port}/main.html`);
-            await waitFor(async () => {
-                const bodyContent = await getBodyContent(page);
-                expect(bodyContent).include('testing 1 2 3');
-            });
-        });
-
-        it('loads external features in server', async () => {
-            const externalFeatureName = 'node-env-external';
-            const pluginsFolderPath = join(nodeFeatureFixturePath, 'node_modules');
-            const { name } = fs.readJsonFileSync(join(nodeExternalFeatureFixturePath, 'package.json')) as {
-                name: string;
-            };
-            const externalFeatureApp = new Application({
-                basePath: nodeExternalFeatureFixturePath,
+                basePath: applicationExternalFixturePath,
                 outputPath: join(pluginsFolderPath, name, 'dist'),
             });
+            const publicConfigsRoute = 'config';
             await externalFeatureApp.build({
                 external: true,
                 featureName: externalFeatureName,
             });
             disposables.add(() => externalFeatureApp.clean());
             disposables.add(() => rimraf.sync(pluginsFolderPath));
-            const publicConfigsRoute = '/config';
-            const app = new Application({ basePath: nodeFeatureFixturePath });
+
+            const app = new Application({ basePath: baseWebApplicationFixturePath });
             await app.build({
-                featureName: 'engine-node/x',
+                featureName: 'base-web-application',
                 singleFeature: true,
-                publicConfigsRoute,
+                publicConfigsRoute: '/config',
             });
             disposables.add(() => app.clean());
 
             const { close, port } = await app.run({
                 serveExternalFeaturesPath: true,
-                externalFeaturesPath: pluginsFolderPath,
                 externalFeatureDefinitions: [
                     {
                         featureName: externalFeatureName,
                         packageName: name,
                     },
                 ],
-                publicConfigsRoute: 'config',
+                autoLaunch: true,
+                publicConfigsRoute,
             });
             disposables.add(() => close());
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
             await waitFor(async () => {
-                const buttonElement = await page.$('#button');
-                await buttonElement?.click();
                 const bodyContent = await getBodyContent(page);
-                expect(bodyContent).include('value');
+                expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
+            });
+            const button = await page.$('#server-slot');
+            await button?.click();
+            await waitFor(async () => {
+                const elem = await page.$('#server-slot-value');
+                expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
             });
         });
     });

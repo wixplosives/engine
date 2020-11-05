@@ -8,6 +8,7 @@ import {
     createExternalBrowserEntrypoint,
     remapFileRequest,
     webpackImportStatement,
+    LOADED_FEATURE_MODULES_NAMESPACE,
 } from './create-entrypoint';
 import type { IEnvironment, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { basename, join } from 'path';
@@ -225,7 +226,12 @@ export function createWebpackConfigForExteranlFeature({
         } else {
             if (feature.packageName !== '@wixc3/engine-core') {
                 const featureFilePath = remapFileRequest(feature);
-                externals[featureFilePath] = feature.exportedFeature.id;
+                externals[featureFilePath] =
+                    LOADED_FEATURE_MODULES_NAMESPACE +
+                    '.' +
+                    feature.packageName.replace('@', '').replace(/\//g, '').replace(/-/g, '') +
+                    '_' +
+                    feature.exportedFeature.id;
             }
         }
     }
@@ -243,7 +249,7 @@ export function createWebpackConfigForExteranlFeature({
             path: outputPath,
             filename: `[name].${target}.js`,
             chunkFilename: `[name].${target}.js`,
-            libraryTarget: 'umd',
+            libraryTarget: 'var',
             jsonpFunction: packageName + name,
         },
         plugins: [...basePlugins, ...plugins],

@@ -18,6 +18,8 @@ const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feat
 const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
 const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 const useConfigsFeaturePath = fs.join(__dirname, './fixtures/using-config');
+const baseWebApplicationFixturePath = fs.join(__dirname, './fixtures/base-web-application');
+const applicationExternalFixturePath = fs.join(__dirname, './fixtures/application-external');
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -469,15 +471,14 @@ describe('engineer:dev-server', function () {
     });
 
     it('loads external features in browser', async () => {
-        const externalFeatureName = 'engine-multi/variant';
-        const pluginsFolderPath = join(multiFeatureFixturePath, 'node_modules');
-        const { name: packageName } = fs.readJsonFileSync(join(multiFeatureFixturePath, 'package.json')) as {
+        const externalFeatureName = 'application-external';
+        const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
+        const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
             name: string;
         };
-        const name = packageName + 'sample';
         const externalFeatureApp = new Application({
-            basePath: multiFeatureFixturePath,
-            outputPath: join(pluginsFolderPath, name, 'variant/dist'),
+            basePath: applicationExternalFixturePath,
+            outputPath: join(pluginsFolderPath, name, 'dist'),
         });
         await externalFeatureApp.build({
             external: true,
@@ -490,73 +491,23 @@ describe('engineer:dev-server', function () {
             dispose,
             config: { port },
         } = await setup({
-            basePath: multiFeatureFixturePath,
-            featureName: 'engine-multi/app',
-            externalFeatureDefinitions: [
-                {
-                    featureName: externalFeatureName,
-                    packageName: name,
-                },
-            ],
-            externalFeaturesPath: pluginsFolderPath,
-            singleFeature: true,
+            basePath: baseWebApplicationFixturePath,
+            featureName: 'base-web-application',
         });
-
         disposables.add(() => dispose());
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
         await waitFor(async () => {
             const bodyContent = await getBodyContent(page);
-            expect(bodyContent).include('testing 1 2 3');
+            expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
+        });
+        const button = await page.$('#server-slot');
+        await button?.click();
+        await waitFor(async () => {
+            const elem = await page.$('#server-slot-value');
+            expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
         });
     });
-
-    // it('loads external features in server', async () => {
-    //     const externalFeatureName = 'node-env-external';
-    //     const pluginsFolderPath = join(nodeFeatureFixturePath, 'node_modules');
-    //     const { name } = fs.readJsonFileSync(join(nodeExternalFeatureFixturePath, 'package.json')) as {
-    //         name: string;
-    //     };
-    //     const externalFeatureApp = new Application({
-    //         basePath: nodeExternalFeatureFixturePath,
-    //         outputPath: join(pluginsFolderPath, name, 'dist'),
-    //     });
-    //     await externalFeatureApp.build({
-    //         external: true,
-    //         featureName: externalFeatureName,
-    //     });
-    //     disposables.add(() => externalFeatureApp.clean());
-    //     disposables.add(() => rimraf.sync(pluginsFolderPath));
-    //     const publicConfigsRoute = '/config';
-    //     const app = new Application({ basePath: nodeFeatureFixturePath });
-    //     await app.build({
-    //         featureName: 'engine-node/x',
-    //         singleFeature: true,
-    //         publicConfigsRoute,
-    //     });
-    //     disposables.add(() => app.clean());
-
-    //     const { close, port } = await app.run({
-    //         serveExternalFeaturesPath: true,
-    //         externalFeaturesPath: pluginsFolderPath,
-    //         externalFeatureDefinitions: [
-    //             {
-    //                 featureName: externalFeatureName,
-    //                 packageName: name,
-    //             },
-    //         ],
-    //         publicConfigsRoute: 'config',
-    //     });
-    //     disposables.add(() => close());
-
-    //     const page = await loadPage(`http://localhost:${port}/main.html`);
-    //     await waitFor(async () => {
-    //         const buttonElement = await page.$('#button');
-    //         await buttonElement?.click();
-    //         const bodyContent = await getBodyContent(page);
-    //         expect(bodyContent).include('value');
-    //     });
-    // });
 });
 
 function getConfigFileContent(textText: string) {

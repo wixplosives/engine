@@ -183,7 +183,6 @@ export function loadFeaturesFromPaths(
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         packageName: this.packageName,
-                        directoryPath: this.directoryPath,
                         scopedName,
                     };
                 },

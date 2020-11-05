@@ -75,6 +75,8 @@ export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
     `;
 }
 
+export const LOADED_FEATURE_MODULES_NAMESPACE = '_engine_';
+
 export function createMainEntrypoint({
     features,
     envName,
@@ -98,6 +100,8 @@ const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
 const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), envName, childEnvs, target)}
 }));
+
+self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
 
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
@@ -221,7 +225,14 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                         directoryPath,
                         packageName,
                     })};
-                    ${target !== 'node' ? `self[featureModule.default.id] = featureModule;` : ''}
+                    ${
+                        target !== 'node'
+                            ? `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(packageName)
+                                  .replace('@', '')
+                                  .replace(/\//g, '')
+                                  .replace(/-/g, '')} + "_" + featureModule.default.id] = featureModule;`
+                            : ''
+                    }
                     return featureModule.default;
                 },
                 depFeatures: ${stringify(dependencies)},
