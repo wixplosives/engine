@@ -1,5 +1,5 @@
 import devServerFeature, { devServerEnv } from './dev-server.feature';
-import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
+import { launchHttpServer, NodeEnvironmentsManager, getExportedEnvironments } from '@wixc3/engine-scripts';
 import { TargetApplication } from '../application-proxy-service';
 import express from 'express';
 import {
@@ -100,7 +100,7 @@ devServerFeature.setup(
             }
 
             // Write middleware for each of the apps
-            const { compiler, environments } = application.createCompiler({
+            const compiler = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
@@ -135,7 +135,7 @@ devServerFeature.setup(
 
             const externalFeatures = getExternalFeatures(
                 externalFeatureDefinitions,
-                [...environments],
+                [...getExportedEnvironments(features)],
                 externalFeaturesPath
             );
 

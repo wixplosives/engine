@@ -150,7 +150,7 @@ export class Application {
             this.filterByFeatureName(features, featureName);
         }
 
-        const { compiler } = this.createCompiler({
+        const compiler = this.createCompiler({
             mode,
             features,
             featureName,
@@ -433,18 +433,13 @@ export class Application {
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
-        const environments = new Set<IEnvironment>();
-        for (const { exportedEnvs } of features.values()) {
-            for (const exportedEnv of exportedEnvs) {
-                environments.add(exportedEnv);
-            }
-        }
+        const environments = getExportedEnvironments(features);
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
             context: basePath,
             mode,
             outputPath,
-            enviroments: Array.from(environments),
+            environments: Array.from(environments),
             features,
             featureName,
             configName,
@@ -460,7 +455,7 @@ export class Application {
 
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
-        return { compiler, environments };
+        return compiler;
     }
 
     protected analyzeFeatures() {
@@ -559,6 +554,16 @@ export class Application {
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
+
+export function getExportedEnvironments(features: Map<string, IFeatureDefinition>): Set<IEnvironment> {
+    const environments = new Set<IEnvironment>();
+    for (const { exportedEnvs } of features.values()) {
+        for (const exportedEnv of exportedEnvs) {
+            environments.add(exportedEnv);
+        }
+    }
+    return environments;
+}
 
 function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);

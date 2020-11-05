@@ -42,7 +42,6 @@ program
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
-    .option('--plugins <plugins...>', 'list of plugins')
     .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts', '.')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -61,7 +60,6 @@ program
             autoLaunch,
             engineerEntry,
             inspect,
-            plugins,
             featureDiscoveryRoot,
         } = cmd;
 
@@ -82,7 +80,6 @@ program
                 targetApplicationPath: fs.existsSync(path) ? fs.resolve(path) : process.cwd(),
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect,
-                externalFeatureDefinitions: plugins,
                 featureDiscoveryRoot,
             });
 

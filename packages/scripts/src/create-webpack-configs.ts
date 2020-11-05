@@ -23,7 +23,7 @@ export interface ICreateWebpackConfigsOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    enviroments: IEnvironment[];
+    environments: IEnvironment[];
     publicPath?: string;
     title?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
@@ -34,15 +34,7 @@ export interface ICreateWebpackConfigsOptions {
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
-    const {
-        enviroments,
-        baseConfig = {},
-        publicPath = '',
-        featureName,
-        features,
-        singleFeature,
-        createWebpackConfig,
-    } = options;
+    const { baseConfig = {}, publicPath = '', createWebpackConfig } = options;
 
     if (!baseConfig.output) {
         baseConfig.output = {};
@@ -51,12 +43,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
-    const { electronRendererEnvs, webEnvs, workerEnvs } = getResolvedEnvironments({
-        featureName,
-        singleFeature,
-        environments: enviroments,
-        features,
-    });
+    const { electronRendererEnvs, webEnvs, workerEnvs } = getResolvedEnvironments(options);
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
