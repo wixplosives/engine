@@ -31,7 +31,7 @@ export interface WebpackFeatureLoaderArguments extends IFeatureDefinition {
 
 export type LoadStatement = Pick<
     WebpackFeatureLoaderArguments,
-    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name'
+    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name' | 'preenvFilePaths'
 >;
 
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
@@ -135,9 +135,17 @@ function webpackFeatureLoader(args: WebpackFeatureLoaderArguments) {
     return `    '${args.scopedName}': ${createLoaderInterface(args)}`;
 }
 
-function loadEnvAndContextFiles({ childEnvs, contextFilePaths, envName, name, envFilePaths }: LoadStatement) {
+function loadEnvAndContextFiles({
+    childEnvs,
+    contextFilePaths,
+    envName,
+    name,
+    envFilePaths,
+    preenvFilePaths,
+}: LoadStatement) {
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
+    const preLoadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
         const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
         if (contextFilePath) {
@@ -146,22 +154,38 @@ function loadEnvAndContextFiles({ childEnvs, contextFilePaths, envName, name, en
                 ${webpackImportStatement(name, contextFilePath)};
             }`);
         }
+        const preEnvFilePath = preenvFilePaths[`${envName}/${childEnvName}`];
+        if (preEnvFilePath) {
+            usesResolvedContexts = true;
+            preLoadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(
+                childEnvName
+            )}) {
+                ${webpackImportStatement(name, preEnvFilePath)};
+            }`);
+        }
     }
     const envFilePath = envFilePaths[envName];
     if (envFilePath) {
         loadStatements.push(webpackImportStatement(`[${envName}]${name}`, envFilePath));
     }
-    return { usesResolvedContexts, loadStatements };
+    const preEnvFilePath = preenvFilePaths[envName];
+    if (preEnvFilePath) {
+        preLoadStatements.push(webpackImportStatement(`[${envName}]${name}`, preEnvFilePath));
+    }
+    return { usesResolvedContexts, loadStatements, preLoadStatements };
 }
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
     const { name, filePath, dependencies, resolvedContexts } = args;
-    const { loadStatements, usesResolvedContexts } = loadEnvAndContextFiles(args);
+    const { loadStatements, usesResolvedContexts, preLoadStatements } = loadEnvAndContextFiles(args);
     return `{
                     async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                         ${loadStatements.length ? '\n' + loadStatements.join('\n') : ''}
                         const featureModule = ${webpackImportStatement(`[feature]${name}`, filePath)};
                         return featureModule.default;
+                    },
+                    async preLoad(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
+                        ${preLoadStatements.length ? '\n' + preLoadStatements.join('\n') : ''}
                     },
                     depFeatures: ${stringify(dependencies)},
                     resolvedContexts: ${stringify(resolvedContexts)},

@@ -61,10 +61,14 @@ export function parseContextFileName(fileName: string) {
 }
 
 export function parsePreenvFileName(fileName: string) {
-    const [featureName, envName] = fileName.split(PREENV_FILENAME_HINT).shift()!.split('.');
+    const [featureName, envName, childEnvNameCandidate] = fileName.split(PREENV_FILENAME_HINT).shift()!.split('.');
 
     if (!featureName || !envName) {
         throw new Error(`cannot parse env file: ${fileName}`);
+    }
+
+    if (`.${childEnvNameCandidate}.` !== PREENV_FILENAME_HINT) {
+        return { featureName, envName, childEnvName: childEnvNameCandidate };
     }
 
     return { featureName, envName };

@@ -212,10 +212,11 @@ export function loadFeaturesFromPaths(
         }
 
         for (const preenvFile of preenvs) {
-            const { featureName, envName } = parsePreenvFileName(fs.basename(preenvFile));
+            const { featureName, envName, childEnvName } = parsePreenvFileName(fs.basename(preenvFile));
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
+            const contextualName = childEnvName ? `${envName}/${childEnvName}` : envName;
             if (existingDefinition) {
-                existingDefinition.preenvFilePaths[envName] = preenvFile;
+                existingDefinition.preenvFilePaths[contextualName] = preenvFile;
             }
         }
     }

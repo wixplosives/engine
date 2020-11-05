@@ -19,7 +19,7 @@ export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) =>
 
 export interface IFeatureLoader {
     load: (resolvedContexts: Record<string, string>) => Promise<Feature>;
-    preLoad: () => Promise<void>;
+    preLoad: (resolveContexts: Record<string, string>) => Promise<void>;
     depFeatures: string[];
     resolvedContexts: Record<string, string>;
 }
@@ -100,7 +100,7 @@ export class FeatureLoadersRegistry {
         const loaders = await Promise.all(loaded);
         for (const loader of loaders) {
             if (loader.preLoad) {
-                await loader.preLoad();
+                await loader.preLoad(this.resolvedContexts);
             }
         }
         return Promise.all(loaders.map(({ load }) => load(this.resolvedContexts)));
