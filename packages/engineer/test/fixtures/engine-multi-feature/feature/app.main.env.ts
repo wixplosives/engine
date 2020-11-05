@@ -8,7 +8,7 @@ MyFeature.setup(MAIN, ({ run, myConfig, mySlot }) => {
         <h2>myConfig</h2>
         <pre id="myConfig">${JSON.stringify(myConfig)}</pre>
         <h2>mySlot</h2>
-        <pre>${JSON.stringify(mySlot)}</pre>
+        <pre id="mySlot">${JSON.stringify([...mySlot])}</pre>
       `;
     });
 });

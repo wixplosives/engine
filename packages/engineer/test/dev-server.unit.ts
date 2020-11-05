@@ -17,8 +17,14 @@ const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feat
 const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
 const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 const useConfigsFeaturePath = fs.join(__dirname, './fixtures/using-config');
-const baseWebApplicationFixturePath = fs.join(__dirname, './fixtures/base-web-application');
-const applicationExternalFixturePath = fs.join(__dirname, './fixtures/application-external');
+const baseWebApplicationFixturePath = fs.join(
+    fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
+    'test/fixtures/base-web-application'
+);
+const applicationExternalFixturePath = fs.join(
+    fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
+    'test/fixtures/application-external'
+);
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -472,12 +478,9 @@ describe('engineer:dev-server', function () {
     it('loads external features in browser', async () => {
         const externalFeatureName = 'application-external';
         const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
-        const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
-            name: string;
-        };
         const externalFeatureApp = new Application({
             basePath: applicationExternalFixturePath,
-            outputPath: join(pluginsFolderPath, name, 'dist'),
+            outputPath: join(pluginsFolderPath, '@fixture/application-external-feature', 'dist'),
         });
         await externalFeatureApp.build({
             external: true,
@@ -492,6 +495,12 @@ describe('engineer:dev-server', function () {
         } = await setup({
             basePath: baseWebApplicationFixturePath,
             featureName: 'base-web-application',
+            externalFeatureDefinitions: [
+                {
+                    featureName: externalFeatureName,
+                    packageName: '@fixture/application-external-feature',
+                },
+            ],
         });
         disposables.add(() => dispose());
 

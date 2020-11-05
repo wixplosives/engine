@@ -128,7 +128,6 @@ devServerFeature.setup(
             const resolvedFeaturesPath = externalFeaturesPath.startsWith('http')
                 ? externalFeaturesPath
                 : resolve(externalFeaturesPath);
-
             if (serveExternalFeaturesPath) {
                 app.use('/plugins', express.static(resolvedFeaturesPath));
             }
