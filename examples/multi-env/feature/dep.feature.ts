@@ -7,7 +7,4 @@ export default new Feature({
     id: 'dep',
     api: {},
     dependencies: [deepDepFeature],
-    prepareApplication: () => {
-        console.log('dep prepare');
-    },
 });
