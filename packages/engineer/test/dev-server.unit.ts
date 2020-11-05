@@ -9,7 +9,6 @@ import { Application, IExternalFeatureDefinition, TopLevelConfigProvider } from 
 import { startDevServer } from '@wixc3/engineer';
 import { join } from 'path';
 import rimraf from 'rimraf';
-// import rimraf from 'rimraf';
 
 const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
 const engineRuntimeFeatureFixturePath = fs.join(__dirname, './fixtures/engine-run-options');
