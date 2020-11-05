@@ -64,4 +64,25 @@ describe('loadFeatureDirectory', () => {
             preenvs: [],
         });
     });
+
+    it('supports preenvs of envs and contexts', () => {
+        const fs = createMemoryFs({
+            src: {
+                'my-thing.main.preenv.ts': '',
+                'my-thing.main.somecontext.preenv.ts': '',
+            },
+        });
+
+        const directoryPath = '/src';
+        const results = loadFeatureDirectory({ fs, directoryPath });
+
+        expect(results).to.eql({
+            directoryPath,
+            features: [],
+            configurations: [],
+            envs: [],
+            contexts: [],
+            preenvs: ['/src/my-thing.main.preenv.ts', '/src/my-thing.main.somecontext.preenv.ts'],
+        });
+    });
 });
