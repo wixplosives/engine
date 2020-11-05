@@ -23,7 +23,7 @@ describe('loadFeatureDirectory', () => {
             configurations: ['/src/my-config.config.ts', '/src/my-config2.config.ts'],
             envs: ['/src/my-thing.main.env.ts'],
             contexts: ['/src/main.test.context.ts'],
-            preenvs: [],
+            preloads: [],
         });
     });
 
@@ -61,15 +61,15 @@ describe('loadFeatureDirectory', () => {
             configurations: ['/my-config.config.ts', '/my-config2.config.ts'],
             envs: [],
             contexts: [],
-            preenvs: [],
+            preloads: [],
         });
     });
 
-    it('supports preenvs of envs and contexts', () => {
+    it('supports preloads of envs and contexts', () => {
         const fs = createMemoryFs({
             src: {
-                'my-thing.main.preenv.ts': '',
-                'my-thing.main.somecontext.preenv.ts': '',
+                'my-thing.main.preload.ts': '',
+                'my-thing.main.somecontext.preload.ts': '',
             },
         });
 
@@ -82,7 +82,7 @@ describe('loadFeatureDirectory', () => {
             configurations: [],
             envs: [],
             contexts: [],
-            preenvs: ['/src/my-thing.main.preenv.ts', '/src/my-thing.main.somecontext.preenv.ts'],
+            preloads: ['/src/my-thing.main.preload.ts', '/src/my-thing.main.somecontext.preload.ts'],
         });
     });
 });

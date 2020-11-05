@@ -247,7 +247,7 @@ export interface IConfigDefinition {
 export interface IFeatureDefinition extends IFeatureModule {
     contextFilePaths: Record<string, string>;
     envFilePaths: Record<string, string>;
-    preenvFilePaths: Record<string, string>;
+    preloadFilePaths: Record<string, string>;
     dependencies: string[];
     scopedName: string;
     resolvedContexts: Record<string, string>;

@@ -16,7 +16,7 @@ import {
     parseContextFileName,
     parseEnvFileName,
     parseFeatureFileName,
-    parsePreenvFileName,
+    parsePreloadFileName,
 } from './build-constants';
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
@@ -138,7 +138,7 @@ export function loadFeaturesFromPaths(
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
     const featureToScopedName = new Map<Feature, string>();
 
-    for (const { directoryPath, features, configurations, envs, contexts, preenvs } of featureDirectories) {
+    for (const { directoryPath, features, configurations, envs, contexts, preloads } of featureDirectories) {
         const featurePackage = directoryToPackage.get(directoryPath);
         if (!featurePackage) {
             throw new Error(`cannot find package name for ${directoryPath}`);
@@ -170,7 +170,7 @@ export function loadFeaturesFromPaths(
                 dependencies: [],
                 envFilePaths: {},
                 contextFilePaths: {},
-                preenvFilePaths: {},
+                preloadFilePaths: {},
                 resolvedContexts: {},
                 isRoot: ownFeatureFilePaths.has(featureFilePath),
                 filePath: featureFilePath,
@@ -180,7 +180,7 @@ export function loadFeaturesFromPaths(
                         dependencies: this.dependencies,
                         filePath: getFilePathInPackage(fs, featurePackage, this.filePath),
                         envFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.envFilePaths),
-                        preenvFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preenvFilePaths),
+                        preloadFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preloadFilePaths),
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         scopedName,
@@ -211,12 +211,12 @@ export function loadFeaturesFromPaths(
             }
         }
 
-        for (const preenvFile of preenvs) {
-            const { featureName, envName, childEnvName } = parsePreenvFileName(fs.basename(preenvFile));
+        for (const preloadFile of preloads) {
+            const { featureName, envName, childEnvName } = parsePreloadFileName(fs.basename(preloadFile));
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             const contextualName = childEnvName ? `${envName}/${childEnvName}` : envName;
             if (existingDefinition) {
-                existingDefinition.preenvFilePaths[contextualName] = preenvFile;
+                existingDefinition.preloadFilePaths[contextualName] = preloadFile;
             }
         }
     }

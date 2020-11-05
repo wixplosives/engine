@@ -1,5 +1,5 @@
 import type { IFileSystemSync } from '@file-services/types';
-import { isConfigFile, isContextFile, isEnvFile, isFeatureFile, isPreenvFile } from './build-constants';
+import { isConfigFile, isContextFile, isEnvFile, isFeatureFile, isPreloadFile } from './build-constants';
 
 export interface IFeatureDirectory {
     directoryPath: string;
@@ -7,7 +7,7 @@ export interface IFeatureDirectory {
     configurations: string[];
     envs: string[];
     contexts: string[];
-    preenvs: string[];
+    preloads: string[];
 }
 
 export interface ILoadFeatureDirectoryOptions {
@@ -20,7 +20,7 @@ export function loadFeatureDirectory({ fs, directoryPath }: ILoadFeatureDirector
     const configurations: string[] = [];
     const envs: string[] = [];
     const contexts: string[] = [];
-    const preenvs: string[] = [];
+    const preloads: string[] = [];
     for (const item of fs.readdirSync(directoryPath, { withFileTypes: true })) {
         const itemName = item.name;
         const itemPath = fs.join(directoryPath, itemName);
@@ -33,10 +33,10 @@ export function loadFeatureDirectory({ fs, directoryPath }: ILoadFeatureDirector
                 envs.push(itemPath);
             } else if (isContextFile(itemName)) {
                 contexts.push(itemPath);
-            } else if (isPreenvFile(itemName)) {
-                preenvs.push(itemPath);
+            } else if (isPreloadFile(itemName)) {
+                preloads.push(itemPath);
             }
         }
     }
-    return { directoryPath, features, envs, configurations, contexts, preenvs };
+    return { directoryPath, features, envs, configurations, contexts, preloads };
 }

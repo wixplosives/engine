@@ -31,7 +31,7 @@ export interface WebpackFeatureLoaderArguments extends IFeatureDefinition {
 
 export type LoadStatement = Pick<
     WebpackFeatureLoaderArguments,
-    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name' | 'preenvFilePaths'
+    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name' | 'preloadFilePaths'
 >;
 
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
@@ -141,7 +141,7 @@ function loadEnvAndContextFiles({
     envName,
     name,
     envFilePaths,
-    preenvFilePaths,
+    preloadFilePaths,
 }: LoadStatement) {
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
@@ -154,13 +154,13 @@ function loadEnvAndContextFiles({
                 ${webpackImportStatement(name, contextFilePath)};
             }`);
         }
-        const preEnvFilePath = preenvFilePaths[`${envName}/${childEnvName}`];
-        if (preEnvFilePath) {
+        const preloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+        if (preloadFilePath) {
             usesResolvedContexts = true;
             preLoadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(
                 childEnvName
             )}) {
-                ${webpackImportStatement(name, preEnvFilePath)};
+                ${webpackImportStatement(name, preloadFilePath)};
             }`);
         }
     }
@@ -168,9 +168,9 @@ function loadEnvAndContextFiles({
     if (envFilePath) {
         loadStatements.push(webpackImportStatement(`[${envName}]${name}`, envFilePath));
     }
-    const preEnvFilePath = preenvFilePaths[envName];
-    if (preEnvFilePath) {
-        preLoadStatements.push(webpackImportStatement(`[${envName}]${name}`, preEnvFilePath));
+    const preloadFilePath = preloadFilePaths[envName];
+    if (preloadFilePath) {
+        preLoadStatements.push(webpackImportStatement(`[${envName}]${name}`, preloadFilePath));
     }
     return { usesResolvedContexts, loadStatements, preLoadStatements };
 }
