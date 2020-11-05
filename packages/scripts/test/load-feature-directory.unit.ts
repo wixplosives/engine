@@ -23,6 +23,7 @@ describe('loadFeatureDirectory', () => {
             configurations: ['/src/my-config.config.ts', '/src/my-config2.config.ts'],
             envs: ['/src/my-thing.main.env.ts'],
             contexts: ['/src/main.test.context.ts'],
+            preenvs: [],
         });
     });
 
@@ -60,6 +61,7 @@ describe('loadFeatureDirectory', () => {
             configurations: ['/my-config.config.ts', '/my-config2.config.ts'],
             envs: [],
             contexts: [],
+            preenvs: [],
         });
     });
 });
