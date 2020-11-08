@@ -1,10 +1,9 @@
 import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment, Config } from '@wixc3/engine-core';
-import depFeature from './dep.feature';
 import parallelFeature from './parallel.feature';
 
 export const mainEnv = new Environment('main', 'window', 'single');
-export const workerEnv = new Environment('worker1', 'worker', 'single');
-export const nodeEnv = new Environment('node1', 'node', 'single');
+const workerEnv = new Environment('worker1', 'worker', 'single');
+const nodeEnv = new Environment('node1', 'node', 'single');
 export const processingEnv = new SingleEndpointContextualEnvironment('processing', [workerEnv, nodeEnv]);
 
 export interface IEchoService {
@@ -17,7 +16,7 @@ export interface INameProvider {
 
 export default new Feature({
     id: 'contextual-environment-test',
-    dependencies: [COM, parallelFeature, depFeature],
+    dependencies: [COM, parallelFeature],
     api: {
         config: new Config<{ name: string }>({
             name: 'test',
