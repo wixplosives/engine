@@ -197,7 +197,6 @@ export function loadFeaturesFromPaths(
             if (existingDefinition) {
                 const targetEnv = childEnvName ? `${envName}/${childEnvName}` : envName;
                 existingDefinition.envFilePaths[targetEnv] = envFilePath;
-                // pick up environemt presetup files
             }
         }
 

@@ -38,9 +38,4 @@ describe('parsePreloadFileName', () => {
     it('should throw if no env', () => {
         expect(() => parsePreloadFileName(`${featureName}.preload.ts`)).to.throw();
     });
-    it('shoud throw if additional unknown parts', () => {
-        expect(() =>
-            parsePreloadFileName(`${featureName}.${envName}.${contextName}.someotherchunk.preload.ts`)
-        ).to.throw();
-    });
 });

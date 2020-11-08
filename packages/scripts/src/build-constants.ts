@@ -62,12 +62,9 @@ export function parseContextFileName(fileName: string) {
 }
 
 export function parsePreloadFileName(fileName: string) {
-    const [featureName, envName, childEnvNameCandidate, rest] = fileName
-        .split(PRELOAD_FILENAME_HINT)
-        .shift()!
-        .split('.');
+    const [featureName, envName, childEnvNameCandidate] = fileName.split(PRELOAD_FILENAME_HINT).shift()!.split('.');
 
-    if (!featureName || !envName || rest) {
+    if (!featureName || !envName) {
         throw new Error(`cannot parse env file: ${fileName}`);
     }
 
