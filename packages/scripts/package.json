@@ -23,7 +23,7 @@
     "html-webpack-plugin": "^4.5.0",
     "import-fresh": "^3.2.2",
     "rimraf": "^3.0.2",
-    "socket.io": "^2.3.0",
+    "socket.io": "^3.0.0",
     "webpack-virtual-modules": "^0.3.2"
   },
   "files": [
