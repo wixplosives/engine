@@ -4,6 +4,7 @@ import {
     loadFeaturesFromPaths,
     runNodeEnvironment,
     TopLevelConfigProvider,
+    LaunchEnvironmentMode,
 } from '@wixc3/engine-scripts';
 import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/engine-core';
 
@@ -31,6 +32,7 @@ export interface IStartOptions {
     inspect?: boolean;
     runtimeOptions?: Record<string, string | boolean>;
     featureDiscoveryRoot?: string;
+    nodeEnvironmentsMode?: LaunchEnvironmentMode;
 }
 
 export async function startDevServer({
@@ -52,6 +54,7 @@ export async function startDevServer({
     inspect,
     runtimeOptions = {},
     featureDiscoveryRoot,
+    nodeEnvironmentsMode,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -89,6 +92,7 @@ export async function startDevServer({
                     inspect,
                     defaultRuntimeOptions: runtimeOptions,
                     featureDiscoveryRoot,
+                    nodeEnvironmentsMode,
                 },
             }),
             guiFeature.use({
