@@ -9,7 +9,7 @@ export const mainEnv = new Environment('main', 'window', 'single');
 export const workerEnv = new Environment('worker1', 'worker', 'single');
 
 export default new Feature({
-    id: 'nodefeature',
+    id: 'allfeature',
     dependencies: [COM],
     api: {
         nodeEnvMessages: Service.withType<{ getNodeEnvMessages: () => Array<string> }>()

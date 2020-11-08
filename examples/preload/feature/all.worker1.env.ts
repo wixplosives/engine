@@ -1,8 +1,8 @@
-import nodeFeature, { workerEnv } from './node.feature';
+import allFeature, { workerEnv } from './all.feature';
 
 globalThis.envMessages.push('enveval');
 
-nodeFeature.setup(workerEnv, () => {
+allFeature.setup(workerEnv, () => {
     return {
         workerEnvMessages: {
             getWorkerEnvMessages: () => [...globalThis.envMessages],

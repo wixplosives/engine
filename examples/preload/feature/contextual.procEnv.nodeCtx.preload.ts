@@ -1,0 +1,1 @@
+globalThis.envMessages = ['nodeCtx', 'preload'];

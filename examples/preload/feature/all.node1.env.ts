@@ -1,7 +1,7 @@
 globalThis.envMessages.push('enveval');
-import nodeFeature, { nodeEnv } from './node.feature';
+import allFeature, { nodeEnv } from './all.feature';
 
-nodeFeature.setup(nodeEnv, () => {
+allFeature.setup(nodeEnv, () => {
     return {
         nodeEnvMessages: {
             getNodeEnvMessages: () => [...globalThis.envMessages],

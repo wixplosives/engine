@@ -1,0 +1,1 @@
+globalThis.envMessages = ['workerCtx', 'preload'];
