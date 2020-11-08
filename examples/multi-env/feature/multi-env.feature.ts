@@ -1,5 +1,4 @@
 import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment, Config } from '@wixc3/engine-core';
-import parallelFeature from './parallel.feature';
 
 export const mainEnv = new Environment('main', 'window', 'single');
 const workerEnv = new Environment('worker1', 'worker', 'single');
