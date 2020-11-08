@@ -75,10 +75,12 @@ devServerFeature.setup(
                 await application.importModules(require);
             }
 
+            const resolvedSocketServerOptions = { ...configServerOptions, ...socketServerOptions };
+
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
-                socketServerOptions: { ...socketServerOptions, ...configServerOptions },
+                socketServerOptions: resolvedSocketServerOptions,
             });
             disposables.add(() => close());
 
@@ -90,14 +92,18 @@ devServerFeature.setup(
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
             application.setNodeEnvManager(
-                new NodeEnvironmentsManager(socketServer, {
-                    configurations,
-                    features,
-                    defaultRuntimeOptions,
-                    port: actualPort,
-                    inspect,
-                    overrideConfig,
-                })
+                new NodeEnvironmentsManager(
+                    socketServer,
+                    {
+                        configurations,
+                        features,
+                        defaultRuntimeOptions,
+                        port: actualPort,
+                        inspect,
+                        overrideConfig,
+                    },
+                    resolvedSocketServerOptions
+                )
             );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
