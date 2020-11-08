@@ -75,10 +75,12 @@ devServerFeature.setup(
                 await application.importModules(require);
             }
 
+            const resolvedSocketServerOptions = { ...configServerOptions, ...socketServerOptions };
+
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
-                socketServerOptions: { ...socketServerOptions, ...configServerOptions },
+                socketServerOptions: resolvedSocketServerOptions,
             });
             disposables.add(() => close());
 
@@ -100,7 +102,7 @@ devServerFeature.setup(
                         inspect,
                         overrideConfig,
                     },
-                    { ...socketServerOptions, ...configServerOptions }
+                    resolvedSocketServerOptions
                 )
             );
 
