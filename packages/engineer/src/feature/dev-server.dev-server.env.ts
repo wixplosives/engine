@@ -60,6 +60,7 @@ devServerFeature.setup(
             defaultRuntimeOptions,
             outputPath,
             featureDiscoveryRoot,
+            socketServerOptions,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -68,14 +69,16 @@ devServerFeature.setup(
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
-            const engineConfig = await application.getEngineConfig();
-            if (engineConfig && engineConfig.require) {
-                await application.importModules(engineConfig.require);
+            const { require, socketServerOptions: configServerOptions, serveStatic } =
+                (await application.getEngineConfig()) ?? {};
+            if (require) {
+                await application.importModules(require);
             }
 
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
+                socketServerOptions: { ...socketServerOptions, ...configServerOptions },
             });
             disposables.add(() => close());
 
@@ -85,7 +88,7 @@ devServerFeature.setup(
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
-            // So potential dependants can rely on them in the topology
+            // So potential dependencies can rely on them in the topology
             application.setNodeEnvManager(
                 new NodeEnvironmentsManager(socketServer, {
                     configurations,
@@ -99,8 +102,8 @@ devServerFeature.setup(
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
-            if (engineConfig?.serveStatic) {
-                for (const { route, directoryPath } of engineConfig.serveStatic) {
+            if (serveStatic) {
+                for (const { route, directoryPath } of serveStatic) {
                     app.use(route, express.static(directoryPath));
                 }
             }
