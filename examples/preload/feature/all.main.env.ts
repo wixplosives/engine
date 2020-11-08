@@ -1,6 +1,6 @@
-globalThis.envMessages.push('enveval');
 import allFeature, { mainEnv, nodeEnv, workerEnv } from './all.feature';
 import { socketServerInitializer, workerInitializer } from '@wixc3/engine-core';
+globalThis.envMessages.push('enveval');
 
 const content = `
 This example is meant to show how to use preload files.

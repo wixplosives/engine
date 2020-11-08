@@ -1,20 +1,30 @@
 import { expect } from 'chai';
-import { withFeature } from '@wixc3/engine-test-kit';
+import path from 'path';
 import { createDisposables } from '@wixc3/engine-core';
+import { startServerNewProcess } from './utils';
 
 describe('Contextual preload', () => {
+    const projectPath = path.join(__dirname, '..');
     const disposables = createDisposables();
     afterEach(async () => await disposables.dispose());
 
     describe('node context', () => {
         // Preload declares 2 messages, nodeCtx declares 1, procEnv declares 1
         const featureName = 'preload/contextual';
-        const { getLoadedFeature } = withFeature({
-            featureName,
-        });
 
         it('Runs only the node context preload, and runs it first, in dev mode', async () => {
-            const { page } = await getLoadedFeature();
+            const { dispose, featureUrl, browserProvider } = await startServerNewProcess({
+                projectPath,
+                featureName,
+            });
+            disposables.add(async () => await dispose());
+            disposables.add(async () => {
+                await browserProvider.disposePages();
+                await browserProvider.dispose();
+            });
+            const page = await browserProvider.loadPage(featureUrl);
+            disposables.add(async () => await page.close());
+
             const content = await page.$eval('pre', (e) => e.textContent!);
             const parsedContent = JSON.parse(content) as { proc: string[] };
 
@@ -26,12 +36,20 @@ describe('Contextual preload', () => {
     describe('worker context', () => {
         // Preload declares 2 messages, workerCtx declares 1, procEnv declares 1
         const featureName = 'preload/contextual-worker';
-        const { getLoadedFeature } = withFeature({
-            featureName,
-        });
 
         it('Runs only the worker context preload, and runs it first, in dev mode', async () => {
-            const { page } = await getLoadedFeature();
+            const { dispose, featureUrl, browserProvider } = await startServerNewProcess({
+                projectPath,
+                featureName,
+            });
+            disposables.add(async () => await dispose());
+            disposables.add(async () => {
+                await browserProvider.disposePages();
+                await browserProvider.dispose();
+            });
+            const page = await browserProvider.loadPage(featureUrl);
+            disposables.add(async () => await page.close());
+
             const content = await page.$eval('pre', (e) => e.textContent!);
             const parsedContent = JSON.parse(content) as { proc: string[] };
 

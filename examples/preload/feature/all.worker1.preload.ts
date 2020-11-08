@@ -1,2 +1,5 @@
-globalThis.envMessages = ['worker'];
-globalThis.envMessages.push('preload');
+if (globalThis.envMessages) {
+    globalThis.envMessages.push('error: something loaded before preload');
+} else {
+    globalThis.envMessages = ['worker', 'preload'];
+}
