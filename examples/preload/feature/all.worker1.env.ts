@@ -1,6 +1,5 @@
 import allFeature, { workerEnv } from './all.feature';
-
-globalThis.envMessages.push('enveval');
+globalThis.envMessages = [...(globalThis.envMessages ?? []), 'enveval'];
 
 allFeature.setup(workerEnv, () => {
     return {

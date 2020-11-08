@@ -1,4 +1,4 @@
 import contextualFeature, { procEnv } from './contextual.feature';
-globalThis.envMessages.push('workerEnvCtxEval');
+globalThis.envMessages = [...(globalThis.envMessages ?? []), 'workerEnvCtxEval'];
 
 contextualFeature.setupContext(procEnv, 'someCtx', () => ({}));

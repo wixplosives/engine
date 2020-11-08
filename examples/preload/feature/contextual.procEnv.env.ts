@@ -1,5 +1,5 @@
 import contextualFeature, { procEnv } from './contextual.feature';
-globalThis.envMessages.push('procEnvEval');
+globalThis.envMessages = [...(globalThis.envMessages ?? []), 'procEnvEval'];
 
 contextualFeature.setup(procEnv, () => {
     return {
