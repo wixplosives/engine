@@ -63,7 +63,11 @@ export interface ILaunchEnvironmentOptions {
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
-    constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
+    constructor(
+        private socketServer: io.Server,
+        private options: INodeEnvironmentsManagerOptions,
+        private socketServerOptions?: SocketIO.ServerOptions
+    ) {}
 
     public async runServerEnvironments({
         featureName,
@@ -228,7 +232,7 @@ export class NodeEnvironmentsManager {
 
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
-        const socketServer = io(httpServer);
+        const socketServer = io(httpServer, this.socketServerOptions);
 
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
