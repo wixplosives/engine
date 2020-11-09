@@ -97,13 +97,13 @@ export class FeatureLoadersRegistry {
                 loaded.push(loader);
             }
         }
-        const loaders = await Promise.all(loaded);
-        for (const loader of loaders) {
-            if (loader.preLoad) {
-                await loader.preLoad(this.resolvedContexts);
+        const featureLoaders = await Promise.all(loaded);
+        for (const featureLoader of featureLoaders) {
+            if (featureLoader.preLoad) {
+                await featureLoader.preLoad(this.resolvedContexts);
             }
         }
-        return Promise.all(loaders.map(({ load }) => load(this.resolvedContexts)));
+        return Promise.all(featureLoaders.map(({ load }) => load(this.resolvedContexts)));
     }
     /**
      * returns all the dependencies of a feature. doesn't handle duplications
