@@ -13,6 +13,8 @@ export const startServerNewProcess = async ({
         featureName,
         autoLaunch: true,
         singleFeature: true,
+        // We are using forked to guarentee that each node env runs in its own process
+        // This is retquired in this set of tests because it validates changes to globals
         nodeEnvironmentsMode: 'forked',
     });
 
