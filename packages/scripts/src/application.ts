@@ -177,7 +177,7 @@ export class Application {
                           externalFeaturesPath
                       )
                     : [],
-            fetchFeatures: !withExternalFeatures || !staticBuild,
+            fetchFeatures: !withExternalFeatures,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -446,6 +446,7 @@ export class Application {
         singleFeature,
         isExternal,
         externalFeatures,
+        fetchFeatures,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -470,6 +471,7 @@ export class Application {
             singleFeature,
             createWebpackConfig: isExternal ? createWebpackConfigForExteranlFeature : createWebpackConfig,
             externalFeatures,
+            fetchFeatures,
         });
 
         const compiler = webpack(webpackConfigs);
