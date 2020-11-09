@@ -64,7 +64,7 @@ export function createFeatureLoaders(
         preloadFilePaths,
     } of features.values()) {
         featureLoaders[scopedName] = {
-            preLoad: async (currentContext) => {
+            preload: async (currentContext) => {
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
                     if (contextPreloadFilePath) {

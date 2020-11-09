@@ -184,7 +184,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                         const featureModule = ${webpackImportStatement(`[feature]${name}`, filePath)};
                         return featureModule.default;
                     },
-                    async preLoad(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
+                    async preload(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                         ${preloadStatements.join('\n')}
                     },
                     depFeatures: ${stringify(dependencies)},
