@@ -23,6 +23,7 @@ describe('loadFeatureDirectory', () => {
             configurations: ['/src/my-config.config.ts', '/src/my-config2.config.ts'],
             envs: ['/src/my-thing.main.env.ts'],
             contexts: ['/src/main.test.context.ts'],
+            preloads: [],
         });
     });
 
@@ -60,6 +61,28 @@ describe('loadFeatureDirectory', () => {
             configurations: ['/my-config.config.ts', '/my-config2.config.ts'],
             envs: [],
             contexts: [],
+            preloads: [],
+        });
+    });
+
+    it('supports preloads of envs and contexts', () => {
+        const fs = createMemoryFs({
+            src: {
+                'my-thing.main.preload.ts': '',
+                'my-thing.main.somecontext.preload.ts': '',
+            },
+        });
+
+        const directoryPath = '/src';
+        const results = loadFeatureDirectory({ fs, directoryPath });
+
+        expect(results).to.eql({
+            directoryPath,
+            features: [],
+            configurations: [],
+            envs: [],
+            contexts: [],
+            preloads: ['/src/my-thing.main.preload.ts', '/src/my-thing.main.somecontext.preload.ts'],
         });
     });
 });

@@ -31,7 +31,7 @@ export interface WebpackFeatureLoaderArguments extends IFeatureDefinition {
 
 export type LoadStatement = Pick<
     WebpackFeatureLoaderArguments,
-    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name'
+    'childEnvs' | 'envName' | 'contextFilePaths' | 'envFilePaths' | 'name' | 'preloadFilePaths'
 >;
 
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
@@ -135,9 +135,18 @@ function webpackFeatureLoader(args: WebpackFeatureLoaderArguments) {
     return `    '${args.scopedName}': ${createLoaderInterface(args)}`;
 }
 
-function loadEnvAndContextFiles({ childEnvs, contextFilePaths, envName, name, envFilePaths }: LoadStatement) {
+function loadEnvAndContextFiles({
+    childEnvs,
+    contextFilePaths,
+    envName,
+    name,
+    envFilePaths,
+    preloadFilePaths,
+}: LoadStatement) {
+    // This flag later indicates whether resolvedContexts need to be passed to the preload/load functions
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
+    const preloadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
         const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
         if (contextFilePath) {
@@ -146,22 +155,37 @@ function loadEnvAndContextFiles({ childEnvs, contextFilePaths, envName, name, en
                 ${webpackImportStatement(name, contextFilePath)};
             }`);
         }
+        const preloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+        if (preloadFilePath) {
+            // If a context env has a preload file, it's the same as resolving a context
+            usesResolvedContexts = true;
+            preloadStatements.push(`if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
+                ${webpackImportStatement(name, preloadFilePath)};
+            }`);
+        }
     }
     const envFilePath = envFilePaths[envName];
     if (envFilePath) {
         loadStatements.push(webpackImportStatement(`[${envName}]${name}`, envFilePath));
     }
-    return { usesResolvedContexts, loadStatements };
+    const preloadFilePath = preloadFilePaths[envName];
+    if (preloadFilePath) {
+        preloadStatements.push(webpackImportStatement(`[${envName}]${name}`, preloadFilePath));
+    }
+    return { usesResolvedContexts, loadStatements, preloadStatements };
 }
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
     const { name, filePath, dependencies, resolvedContexts } = args;
-    const { loadStatements, usesResolvedContexts } = loadEnvAndContextFiles(args);
+    const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
     return `{
                     async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                         ${loadStatements.length ? '\n' + loadStatements.join('\n') : ''}
                         const featureModule = ${webpackImportStatement(`[feature]${name}`, filePath)};
                         return featureModule.default;
+                    },
+                    async preload(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
+                        ${preloadStatements.join('\n')}
                     },
                     depFeatures: ${stringify(dependencies)},
                     resolvedContexts: ${stringify(resolvedContexts)},

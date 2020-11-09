@@ -4,6 +4,7 @@ import {
     loadFeaturesFromPaths,
     runNodeEnvironment,
     TopLevelConfigProvider,
+    LaunchEnvironmentMode,
 } from '@wixc3/engine-scripts';
 import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/engine-core';
 
@@ -32,6 +33,7 @@ export interface IStartOptions {
     inspect?: boolean;
     runtimeOptions?: Record<string, string | boolean>;
     featureDiscoveryRoot?: string;
+    nodeEnvironmentsMode?: LaunchEnvironmentMode;
     socketServerOptions?: ServerOptions;
 }
 
@@ -54,6 +56,7 @@ export async function startDevServer({
     inspect,
     runtimeOptions = {},
     featureDiscoveryRoot,
+    nodeEnvironmentsMode,
     socketServerOptions,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
@@ -92,6 +95,7 @@ export async function startDevServer({
                     inspect,
                     defaultRuntimeOptions: runtimeOptions,
                     featureDiscoveryRoot,
+                    nodeEnvironmentsMode,
                     socketServerOptions,
                 },
             }),
