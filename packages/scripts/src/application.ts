@@ -27,7 +27,7 @@ import type {
     IEnvironment,
     IFeatureDefinition,
     IFeatureTarget,
-    IExternalDeclaration,
+    IExternalDefinition,
     TopLevelConfigProvider,
     IExtenalFeatureDescriptor,
 } from './types';
@@ -70,7 +70,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
 export interface IRunCommandOptions extends IRunApplicationOptions {
     serveExternalFeaturesPath?: boolean;
     externalFeaturesPath?: string;
-    externalFeatureDefinitions?: IExternalDeclaration[];
+    externalFeatureDefinitions?: IExternalDefinition[];
 }
 
 export interface IBuildManifest {

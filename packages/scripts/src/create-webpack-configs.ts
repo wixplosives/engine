@@ -123,7 +123,7 @@ interface ICreateWebpackConfigOptions {
     outputPath: string;
     enviroments: Map<string, string[]>;
     publicPath?: string;
-    target: 'web' | 'webworker' | 'electron-renderer' | 'node';
+    target: 'web' | 'webworker' | 'electron-renderer';
     virtualModules: Record<string, string>;
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;
@@ -224,14 +224,11 @@ export function createWebpackConfigForExteranlFeature({
         '@wixc3/engine-core': 'EngineCore',
     };
     for (const feature of [...features.values()]) {
-        if (feature.isRoot && (!featureName || featureName === feature.scopedName)) {
+        if (featureName === feature.scopedName) {
             for (const [envName, childEnvs] of enviroments) {
                 const entryPath = fs.join(context, `${envName}.js`);
                 entry[envName] = entryPath;
                 const publicPathParts = [EXTERNAL_FEATURES_BASE_URI, feature.packageName];
-                if (feature.scopedName !== feature.name) {
-                    publicPathParts.push(feature.name);
-                }
                 publicPathParts.push(basename(outputPath) + '/');
                 virtualModules[entryPath] = createExternalBrowserEntrypoint({
                     ...feature,

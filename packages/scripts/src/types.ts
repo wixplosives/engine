@@ -266,7 +266,7 @@ export interface StaticConfig {
     directoryPath: string;
 }
 
-export interface IExternalDeclaration {
+export interface IExternalDefinition {
     /**
      * name of the package containing the external feature
      */
@@ -278,17 +278,13 @@ export interface IExternalDeclaration {
     outDir?: string;
 }
 
-export interface IExternalDefinition extends IExternalDeclaration {
-    featureName: string;
-}
-
 export interface EngineConfig {
     require?: string[];
     featuresDirectory?: string;
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
-    externalFeatureDefinitions: Array<IExternalDeclaration>;
+    externalFeatureDefinitions: Array<IExternalDefinition>;
     externalFeaturesPath?: string;
     serveExternalFeaturesPath?: boolean;
 }

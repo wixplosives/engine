@@ -1,24 +1,11 @@
 import { dirname, join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from '../commons';
-import type { IEnvironment, IExtenalFeatureDescriptor, IExternalDeclaration, IExternalDefinition } from '../types';
+import type { IEnvironment, IExtenalFeatureDescriptor, IExternalDefinition } from '../types';
 import fs from '@file-services/node';
 import type { IBuildManifest } from '../application';
 
-export function getFeatureFromDefinition({ featureName, packageName, outDir }: IExternalDefinition) {
-    // eslint-disable-next-line prefer-const
-    let [monorepoName, realPackageName] = packageName.split('/');
-    realPackageName = realPackageName ?? monorepoName;
-    const pluginEntryPathParts = [packageName];
-    const [scope, feature] = featureName.split('/');
-    if (scope && feature && scope === realPackageName) {
-        pluginEntryPathParts.push(feature);
-    }
-    pluginEntryPathParts.push(outDir ?? 'dist');
-    return { pluginName: featureName, pluginEntryPath: join(...pluginEntryPathParts) };
-}
-
 export function getExternalFeatures(
-    pluginDefinitions: IExternalDeclaration[],
+    pluginDefinitions: IExternalDefinition[],
     environments: IEnvironment[],
     pluginsBaseDirectory: string
 ): IExtenalFeatureDescriptor[] {
@@ -36,16 +23,15 @@ export function getExternalFeatures(
                 'manifest.json'
             )
         ) as IBuildManifest;
-        const { pluginName, pluginEntryPath } = getFeatureFromDefinition({
-            featureName: externalPackageManifest.defaultFeatureName!,
-            packageName: featureDefinition.packageName,
-            outDir,
-        });
         return {
-            name: pluginName,
+            name: externalPackageManifest.defaultFeatureName!,
             envEntries: [...environments].reduce<Record<string, string>>((acc, { name, type }) => {
                 acc[name] = join(
-                    join(type === 'node' ? pluginsBaseDirectory : EXTERNAL_FEATURES_BASE_URI, pluginEntryPath),
+                    join(
+                        type === 'node' ? pluginsBaseDirectory : EXTERNAL_FEATURES_BASE_URI,
+                        featureDefinition.packageName,
+                        outDir
+                    ),
                     `${name}.${
                         ['electron-renerer', 'iframe', 'window'].includes(type)
                             ? 'web'
