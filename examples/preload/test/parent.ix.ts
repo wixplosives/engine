@@ -23,6 +23,7 @@ describe('Parent feature', function () {
         const page = await browserProvider.loadPage(featureUrl);
         disposables.add(() => page.close());
 
+        await page.waitForSelector('#envMessages');
         const content = await page.$eval('#envMessages', (e) => e.textContent!);
         const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; worker: string[] };
 

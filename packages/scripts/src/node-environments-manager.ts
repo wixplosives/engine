@@ -66,7 +66,7 @@ export class NodeEnvironmentsManager {
     constructor(
         private socketServer: io.Server,
         private options: INodeEnvironmentsManagerOptions,
-        private socketServerOptions?: SocketIO.ServerOptions
+        private socketServerOptions?: Partial<io.ServerOptions>
     ) {}
 
     public async runServerEnvironments({
@@ -232,7 +232,7 @@ export class NodeEnvironmentsManager {
 
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
-        const socketServer = io(httpServer, this.socketServerOptions);
+        const socketServer = new io.Server(httpServer, { cors: {}, ...this.socketServerOptions });
 
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();

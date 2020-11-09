@@ -25,8 +25,9 @@ describe('All Environment', () => {
         const page = await browserProvider.loadPage(featureUrl);
         disposables.add(async () => await page.close());
 
-        const envMessagesContent = await page.$eval('#envMessages', (e) => e.textContent!);
-        const parsedContent = JSON.parse(envMessagesContent) as { window: string[]; node: string[]; worker: string[] };
+        await page.waitForSelector('#envMessages');
+        const content = await page.$eval('#envMessages', (e) => e.textContent!);
+        const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; worker: string[] };
 
         expect(parsedContent.node).to.eql(['node', 'preload', 'feature', 'enveval']);
 

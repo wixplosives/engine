@@ -1,24 +1,25 @@
-import io from 'socket.io-client';
+import { io, Socket, SocketOptions } from 'socket.io-client';
+import type { Message } from '../message-types';
 import { BaseHost } from './base-host';
 import { deferred, EventEmitter } from '../../helpers';
 
 export class WsClientHost extends BaseHost {
     public connected: Promise<void>;
-    private socketClient: SocketIOClient.Socket;
+    private socketClient: Socket;
     public subscribers = new EventEmitter<{ disconnect: void; reconnect: void }>();
 
-    constructor(url: string, options?: object) {
+    constructor(url: string, options?: Partial<SocketOptions>) {
         super();
 
         const { promise, resolve } = deferred();
         this.connected = promise;
 
-        this.socketClient = io.connect(url, options as SocketIOClient.ConnectOpts);
+        this.socketClient = io(url, options);
 
         this.socketClient.on('connect', () => {
             resolve();
-            this.socketClient.on('message', (data: any) => {
-                this.emitMessageHandlers(data);
+            this.socketClient.on('message', (data: unknown) => {
+                this.emitMessageHandlers(data as Message);
             });
         });
 
@@ -30,6 +31,8 @@ export class WsClientHost extends BaseHost {
         this.socketClient.on('reconnect', () => {
             this.subscribers.emit('reconnect', undefined);
         });
+
+        this.socketClient.connect();
     }
 
     public postMessage(data: any) {
