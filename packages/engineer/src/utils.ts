@@ -1,3 +1,4 @@
+import type io from 'socket.io';
 import fs from '@file-services/node';
 import {
     isFeatureFile,
@@ -10,7 +11,6 @@ import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/
 
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';
-import type { ServerOptions } from 'socket.io';
 
 const basePath = fs.join(__dirname, './feature');
 
@@ -34,7 +34,7 @@ export interface IStartOptions {
     runtimeOptions?: Record<string, string | boolean>;
     featureDiscoveryRoot?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
-    socketServerOptions?: ServerOptions;
+    socketServerOptions?: Partial<io.ServerOptions>;
 }
 
 export async function startDevServer({

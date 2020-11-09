@@ -3,7 +3,7 @@ import express from 'express';
 import rimrafCb from 'rimraf';
 import webpack from 'webpack';
 import fs from '@file-services/node';
-
+import type io from 'socket.io';
 import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
@@ -29,7 +29,6 @@ import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import { filterEnvironments } from './utils/environments';
 import { launchHttpServer } from './launch-http-server';
-import type { ServerOptions } from 'socket.io';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -54,7 +53,7 @@ export interface IBuildOptions extends IFeatureTarget {
 }
 
 export interface IRunOptions extends IBuildOptions {
-    socketServerOptions?: ServerOptions;
+    socketServerOptions?: Partial<io.ServerOptions>;
 }
 
 export interface IBuildManifest {

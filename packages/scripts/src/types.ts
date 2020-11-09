@@ -1,3 +1,4 @@
+import type io from 'socket.io';
 import type {
     Environment,
     EnvironmentContext,
@@ -6,7 +7,6 @@ import type {
     Feature,
     Target,
 } from '@wixc3/engine-core';
-import type { ServerOptions } from 'socket.io';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -266,5 +266,5 @@ export interface EngineConfig {
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
-    socketServerOptions?: ServerOptions;
+    socketServerOptions?: Partial<io.ServerOptions>;
 }
