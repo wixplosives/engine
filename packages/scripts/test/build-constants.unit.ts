@@ -2,6 +2,12 @@ import { isPreloadFile, parsePreloadFileName } from '@wixc3/engine-scripts';
 import { expect } from 'chai';
 
 describe('isPreloadFile', () => {
+    it('should return true for valid preload for regular env', () => {
+        expect(isPreloadFile('file.env.preload.ts')).to.eq(true);
+    });
+    it('should return true for valid preload for context', () => {
+        expect(isPreloadFile('file.env.context.preload.ts')).to.eq(true);
+    });
     it('should return false for not valid extention', () => {
         expect(isPreloadFile('file.preload.md')).to.eq(false);
     });
@@ -9,12 +15,6 @@ describe('isPreloadFile', () => {
         expect(isPreloadFile('file.ts')).to.eq(false);
         expect(isPreloadFile('file.js')).to.eq(false);
         expect(isPreloadFile('file.tsx')).to.eq(false);
-    });
-    it('should return true for valid preload for regular env', () => {
-        expect(isPreloadFile('file.env.preload.ts')).to.eq(true);
-    });
-    it('should return true for valid preload for context', () => {
-        expect(isPreloadFile('file.env.context.preload.ts')).to.eq(true);
     });
 });
 
@@ -36,6 +36,8 @@ describe('parsePreloadFileName', () => {
         });
     });
     it('should throw if no env', () => {
-        expect(() => parsePreloadFileName(`${featureName}.preload.ts`)).to.throw();
+        expect(() => parsePreloadFileName(`${featureName}.preload.ts`)).to.throw(
+            `cannot parse preload file: ${featureName}.preload.ts`
+        );
     });
 });
