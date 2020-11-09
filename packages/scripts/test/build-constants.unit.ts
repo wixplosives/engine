@@ -18,7 +18,7 @@ describe('isPreloadFile', () => {
     });
 });
 
-describe.only('parsePreloadFileName', () => {
+describe('parsePreloadFileName', () => {
     const featureName = 'featureName';
     const envName = 'envName';
     const contextName = 'contextName';

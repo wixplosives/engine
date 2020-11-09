@@ -7,7 +7,7 @@ describe('All Environment', () => {
     const projectPath = dirname(require.resolve('../package.json'));
     const featureName = 'preload/all';
     const disposables = createDisposables();
-    afterEach(disposables.dispose;
+    afterEach(disposables.dispose);
 
     it('loads preload files in all environments, non-contextual', async () => {
         const { browserProvider, featureUrl, dispose } = await startServerNewProcess({
