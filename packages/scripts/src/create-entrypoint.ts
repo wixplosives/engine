@@ -143,9 +143,10 @@ function loadEnvAndContextFiles({
     envFilePaths,
     preloadFilePaths,
 }: LoadStatement) {
+    // This flag later indicates whether resolvedContexts need to be passed to the preload/load functions
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
-    const preLoadStatements: string[] = [];
+    const preloadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
         const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
         if (contextFilePath) {
@@ -156,10 +157,9 @@ function loadEnvAndContextFiles({
         }
         const preloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
         if (preloadFilePath) {
+            // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
-            preLoadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(
-                childEnvName
-            )}) {
+            preloadStatements.push(`if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
                 ${webpackImportStatement(name, preloadFilePath)};
             }`);
         }
@@ -170,14 +170,14 @@ function loadEnvAndContextFiles({
     }
     const preloadFilePath = preloadFilePaths[envName];
     if (preloadFilePath) {
-        preLoadStatements.push(webpackImportStatement(`[${envName}]${name}`, preloadFilePath));
+        preloadStatements.push(webpackImportStatement(`[${envName}]${name}`, preloadFilePath));
     }
-    return { usesResolvedContexts, loadStatements, preLoadStatements };
+    return { usesResolvedContexts, loadStatements, preloadStatements };
 }
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
     const { name, filePath, dependencies, resolvedContexts } = args;
-    const { loadStatements, usesResolvedContexts, preLoadStatements } = loadEnvAndContextFiles(args);
+    const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
     return `{
                     async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                         ${loadStatements.length ? '\n' + loadStatements.join('\n') : ''}
@@ -185,7 +185,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                         return featureModule.default;
                     },
                     async preLoad(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
-                        ${preLoadStatements.length ? '\n' + preLoadStatements.join('\n') : ''}
+                        ${preloadStatements.join('\n')}
                     },
                     depFeatures: ${stringify(dependencies)},
                     resolvedContexts: ${stringify(resolvedContexts)},
