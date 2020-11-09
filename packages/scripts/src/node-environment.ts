@@ -40,7 +40,6 @@ export async function runNodeEnvironment({
     }
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
     const optionsRecord: Record<string, string | boolean> = {};
-    Object.fr;
 
     for (const opt of options || []) {
         optionsRecord[opt[0]] = opt[1];
