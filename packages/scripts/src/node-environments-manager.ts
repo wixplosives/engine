@@ -232,7 +232,7 @@ export class NodeEnvironmentsManager {
 
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
-        const socketServer = new io.Server(httpServer, { ...this.socketServerOptions, cors: {} });
+        const socketServer = new io.Server(httpServer, { cors: {}, ...this.socketServerOptions });
 
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();

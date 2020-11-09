@@ -35,7 +35,7 @@ export async function launchHttpServer({
 
     app.use('/favicon.ico', noContentHandler);
 
-    const socketServer = new io.Server(httpServer, { ...socketServerOptions, cors: {} });
+    const socketServer = new io.Server(httpServer, { cors: {}, ...socketServerOptions });
 
     return {
         close: async () => {
