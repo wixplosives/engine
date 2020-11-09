@@ -11,6 +11,7 @@ import {
     launchHttpServer,
     NodeEnvironmentsManager,
     getExportedEnvironments,
+    EXTERNAL_FEATURES_BASE_URI,
 } from '@wixc3/engine-scripts';
 import WebpackDevMiddleware from 'webpack-dev-middleware';
 import webpack from 'webpack';
@@ -82,8 +83,9 @@ devServerFeature.setup(
             if (require) {
                 await application.importModules(require);
             }
-            const externalFeaturesPath =
-                providedExternalFeaturesPath ?? configExternalFeaturesPath ?? join(basePath, 'node_modules');
+            const externalFeaturesPath = resolve(
+                providedExternalFeaturesPath ?? configExternalFeaturesPath ?? join(basePath, 'node_modules')
+            );
             externalFeatureDefinitions.push(...providedExternalDefinitions);
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
@@ -97,6 +99,14 @@ devServerFeature.setup(
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
 
+            const externalFeatures = getExternalFeatures(
+                externalFeatureDefinitions,
+                [...getExportedEnvironments(features)],
+                externalFeaturesPath
+            );
+
+            //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
+            // So potential dependants can rely on them in the topology
             application.setNodeEnvManager(
                 new NodeEnvironmentsManager(socketServer, {
                     configurations,
@@ -105,7 +115,7 @@ devServerFeature.setup(
                     port: actualPort,
                     inspect,
                     overrideConfig,
-                    externalFeaturesBasePath: externalFeaturesPath,
+                    externalFeatures,
                 })
             );
 
@@ -131,13 +141,18 @@ devServerFeature.setup(
                 createConfigMiddleware(overrideConfig),
             ]);
 
+            if (serveExternalFeaturesPath) {
+                app.use(`/${EXTERNAL_FEATURES_BASE_URI}`, express.static(resolve(externalFeaturesPath)));
+            }
+
             // Write middleware for each of the apps
             const compiler = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
                 configurations,
-                externalFeature: false,
+                isExternal: false,
+                externalFeatures,
             });
 
             for (const childCompiler of compiler.compilers) {
@@ -157,32 +172,12 @@ devServerFeature.setup(
             await new Promise((resolve) => {
                 compiler.hooks.done.tap('compiled', resolve);
             });
-            if (serveExternalFeaturesPath) {
-                app.use('/plugins', express.static(resolve(externalFeaturesPath)));
-            }
-
-            const externalFeatures = getExternalFeatures(
-                externalFeatureDefinitions,
-                [...getExportedEnvironments(features)],
-                externalFeaturesPath
-            );
-
-            app.use('/external', (_, res) => {
-                res.json(externalFeatures);
-            });
-
-            //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
-            // So potential dependants can rely on them in the topology
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
             app.use(
                 '/engine-feature',
-                createFeaturesEngineRouter(
-                    application.getOverrideConfigsMap(),
-                    application.getNodeEnvManager()!,
-                    externalFeatureDefinitions
-                )
+                createFeaturesEngineRouter(application.getOverrideConfigsMap(), application.getNodeEnvManager()!)
             );
 
             app.get('/engine-state', (_req, res) => {
@@ -201,15 +196,14 @@ devServerFeature.setup(
                 await application.runFeature({
                     featureName,
                     configName,
-                    externalFeatureDefinitions,
                 });
             }
 
-            /* I create new compilers for the engineering config for 2 reasons
-             *  1. I don't want to couple the engineering build and the users application build
+            /* creating new compilers for the engineering config for 2 reasons
+             *  1. de-couple the engineering build and the users application build
              *  For example it's very likely that later down the line we will never watch here
              *  but we will keep on watching on the users applicatino
-             *  2. I the createCompiler function, which I can't extend with more configs with the current API
+             *  2. the createCompiler function is not extendable with more configs with the current API
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             for (const childCompiler of engineerCompilers.compilers) {

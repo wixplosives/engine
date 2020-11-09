@@ -14,14 +14,12 @@ import {
     IEnvironmentStartMessage,
     IFeatureDefinition,
     IExtenalFeatureDescriptor,
-    IExternalFeatureDefinition,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
     TopLevelConfigProvider,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
 import { getEnvironmntsForFeature } from './utils/environments';
-import { getExternalFeatures } from './utils/external-features';
 
 type RunningEnvironments = Record<string, number>;
 
@@ -36,7 +34,7 @@ export interface RunEnvironmentOptions {
     runtimeOptions?: Record<string, string | boolean>;
     overrideConfigsMap?: Map<string, OverrideConfig>;
     mode?: LaunchEnvironmentMode;
-    externalFeatureDefinitions?: IExternalFeatureDefinition[];
+    externalFeatureDefinitions?: IExtenalFeatureDescriptor[];
     externalFeaturesBasePath?: string;
 }
 
@@ -49,7 +47,7 @@ export interface INodeEnvironmentsManagerOptions {
     port: number;
     inspect?: boolean;
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
-    externalFeaturesBasePath: string;
+    externalFeatures: IExtenalFeatureDescriptor[];
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -78,21 +76,14 @@ export class NodeEnvironmentsManager {
         runtimeOptions = {},
         overrideConfigsMap = new Map<string, OverrideConfig>(),
         mode = 'new-server',
-        externalFeatureDefinitions = [],
-        externalFeaturesBasePath = this.options.externalFeaturesBasePath,
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
         const topology: Record<string, string> = {};
         const runningEnvironments: Record<string, number> = {};
         const disposables: Array<() => unknown> = [];
-        const { defaultRuntimeOptions, features } = this.options;
+        const { defaultRuntimeOptions, features, externalFeatures } = this.options;
         const nodeEnvironments = getEnvironmntsForFeature(featureName, features, 'node');
-        const externalFeatures = getExternalFeatures(
-            externalFeatureDefinitions,
-            [...nodeEnvironments],
-            externalFeaturesBasePath
-        );
 
         // checking if already has running environments for this feature
         const runningEnv = this.runningEnvironments.get(featureId);

@@ -29,6 +29,7 @@ import type {
     IFeatureTarget,
     IExternalFeatureDefinition,
     TopLevelConfigProvider,
+    IExtenalFeatureDescriptor,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
@@ -36,6 +37,7 @@ import { getEnvironmntsForFeature, getResolvedEnvironments } from './utils/envir
 import { launchHttpServer } from './launch-http-server';
 import { getExternalFeatures } from './utils';
 import { createExternalNodeEntrypoint, nodeImportStatement } from './create-entrypoint';
+import { EXTERNAL_FEATURES_BASE_URI } from './commons';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -44,7 +46,6 @@ const builtinTemplatesPath = fs.join(__dirname, '../templates');
 
 export interface IRunFeatureOptions extends IFeatureTarget {
     featureName: string;
-    externalFeatureDefinitions?: IExternalFeatureDefinition[];
 }
 
 export interface IRunApplicationOptions extends IFeatureTarget {
@@ -63,6 +64,7 @@ export interface IRunApplicationOptions extends IFeatureTarget {
 export interface IBuildCommandOptions extends IRunApplicationOptions {
     external?: boolean;
     staticBuild?: boolean;
+    withExternalFeatures?: boolean;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -101,7 +103,8 @@ export interface ICompilerOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     singleFeature?: boolean;
-    externalFeature: boolean;
+    isExternal: boolean;
+    externalFeatures: IExtenalFeatureDescriptor[];
 }
 
 export class Application {
@@ -135,10 +138,12 @@ export class Application {
         overrideConfig,
         external = false,
         staticBuild = true,
+        withExternalFeatures,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
-        const engineConfig = await this.getEngineConfig();
-        if (engineConfig && engineConfig.require) {
-            await this.importModules(engineConfig.require);
+        const { require, externalFeatureDefinitions, externalFeaturesPath = join(this.basePath, 'node_modules') } =
+            (await this.getEngineConfig()) ?? {};
+        if (require) {
+            await this.importModules(require);
         }
 
         if (external && !featureName) {
@@ -162,7 +167,15 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
-            externalFeature: external,
+            isExternal: external,
+            externalFeatures:
+                withExternalFeatures && externalFeatureDefinitions
+                    ? getExternalFeatures(
+                          externalFeatureDefinitions,
+                          [...getExportedEnvironments(features)],
+                          externalFeaturesPath
+                      )
+                    : [],
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -206,7 +219,7 @@ export class Application {
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
-            externalFeaturesPath: providedExternalFeatuersPath = join(this.basePath, 'node_modules'),
+            externalFeaturesPath: providedExternalFeatuersPath,
             serveExternalFeaturesPath: providedServeExternalFeaturesPath,
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
         } = runOptions;
@@ -232,12 +245,21 @@ export class Application {
 
         const {
             externalFeatureDefinitions = [],
-            externalFeaturesPath: baseExternalFeaturesPath = providedExternalFeatuersPath,
+            externalFeaturesPath: baseExternalFeaturesPath,
             serveExternalFeaturesPath = providedServeExternalFeaturesPath,
         } = engineConfig ?? {};
 
         externalFeatureDefinitions.push(...providedExternalFeaturesDefinitions);
-        const resolvedExternalFeaturesPath = fs.resolve(baseExternalFeaturesPath);
+
+        const resolvedExternalFeaturesPath = fs.resolve(
+            baseExternalFeaturesPath ?? providedExternalFeatuersPath ?? join(this.basePath, 'node_modules')
+        );
+
+        const externalFeatures = getExternalFeatures(
+            externalFeatureDefinitions,
+            [...getExportedEnvironments(new Map(features))],
+            resolvedExternalFeaturesPath
+        );
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             features: new Map(features),
@@ -246,7 +268,7 @@ export class Application {
             inspect,
             overrideConfig: config,
             configurations,
-            externalFeaturesBasePath: resolvedExternalFeaturesPath,
+            externalFeatures,
         });
 
         if (publicConfigsRoute) {
@@ -257,18 +279,10 @@ export class Application {
             ]);
         }
 
-        const environments = [...getExportedEnvironments(new Map(features))];
-
         if (serveExternalFeaturesPath) {
-            app.use('/plugins', express.static(resolvedExternalFeaturesPath));
+            app.use(`/${EXTERNAL_FEATURES_BASE_URI}`, express.static(resolvedExternalFeaturesPath));
         }
-        const externalFeaturesPath = serveExternalFeaturesPath ? 'plugins' : baseExternalFeaturesPath;
 
-        const externalFeatures = getExternalFeatures(
-            externalFeatureDefinitions,
-            [...environments],
-            externalFeaturesPath
-        );
         app.use('/external', (_, res) => {
             res.json(externalFeatures);
         });
@@ -277,7 +291,6 @@ export class Application {
                 featureName,
                 configName,
                 mode: nodeEnvironmentsMode,
-                externalFeatureDefinitions,
             });
         }
 
@@ -421,7 +434,8 @@ export class Application {
         publicConfigsRoute,
         overrideConfig,
         singleFeature,
-        externalFeature,
+        isExternal,
+        externalFeatures,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
@@ -444,7 +458,8 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
-            createWebpackConfig: externalFeature ? createWebpackConfigForExteranlFeature : createWebpackConfig,
+            createWebpackConfig: isExternal ? createWebpackConfigForExteranlFeature : createWebpackConfig,
+            externalFeatures,
         });
 
         const compiler = webpack(webpackConfigs);

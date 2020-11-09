@@ -1,7 +1,7 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import { join, parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
-import type { IFeatureDefinition, IConfigDefinition } from './types';
+import type { IFeatureDefinition, IConfigDefinition, IExtenalFeatureDescriptor } from './types';
 
 const { stringify } = JSON;
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
@@ -21,6 +21,7 @@ export interface ICreateEntrypointsOptions {
     publicConfigsRoute?: string;
     config?: TopLevelConfig;
     target: 'webworker' | 'web';
+    externalFeatures: IExtenalFeatureDescriptor[];
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -59,7 +60,8 @@ export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePa
 
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
-    const publicPath = ${
+    const options = new URLSearchParams(topWindow.location.search);
+    const publicPath = options.has('externalPublicPath') ? options.get('externalPublicPath') ? ${
         typeof args.publicPath === 'string' ? JSON.stringify(args.publicPath) : '__webpack_public_path__'
     };
     __webpack_public_path__= publicPath;
@@ -90,6 +92,7 @@ export function createMainEntrypoint({
     publicConfigsRoute,
     config,
     target,
+    externalFeatures,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -131,7 +134,7 @@ async function main() {
 
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
     const features = [loadedFeatures[loadedFeatures.length - 1]];
-    ${loadExternalFeatures(target)}
+    ${loadExternalFeatures(target, externalFeatures, staticBuild)}
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
@@ -317,10 +320,16 @@ function importStaticConfigs() {
 //#endregion
 
 //#region loading 3rd party features
-function loadExternalFeatures(target: 'web' | 'webworker') {
+function loadExternalFeatures(
+    target: 'web' | 'webworker',
+    externalFeatures: IExtenalFeatureDescriptor[],
+    fetchFeatures: boolean
+) {
     return `
         self.runtimeFeatureLoader = featureLoader;
-        const externalFeatures = ${fetchExternalFeatures('external/')};
+        const externalFeatures = ${
+            fetchFeatures ? fetchExternalFeatures('/external') : JSON.stringify(externalFeatures)
+        };
         if(externalFeatures.length) {
             if(!self.EngineCore) {
                 self.EngineCore = EngineCore;

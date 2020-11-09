@@ -39,6 +39,7 @@ guiFeature.setup(
             configurations,
             featureName: 'engineer/gui',
             target: 'web',
+            externalFeatures: [],
         });
 
         engineerWebpackConfigs.register(

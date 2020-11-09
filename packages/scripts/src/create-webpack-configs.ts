@@ -10,9 +10,16 @@ import {
     webpackImportStatement,
     LOADED_FEATURE_MODULES_NAMESPACE,
 } from './create-entrypoint';
-import type { IEnvironment, IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
+import type {
+    IEnvironment,
+    IFeatureDefinition,
+    IConfigDefinition,
+    TopLevelConfigProvider,
+    IExtenalFeatureDescriptor,
+} from './types';
 import { basename, join } from 'path';
 import { getResolvedEnvironments } from './utils/environments';
+import { EXTERNAL_FEATURES_BASE_URI } from './commons';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -31,6 +38,7 @@ export interface ICreateWebpackConfigsOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
+    externalFeatures: IExtenalFeatureDescriptor[];
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -44,6 +52,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const virtualModules: Record<string, string> = {};
 
     const { electronRendererEnvs, webEnvs, workerEnvs } = getResolvedEnvironments(options);
+
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
@@ -56,6 +65,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
+                externalFeatures: filterExternalFeatures(webEnvs),
             })
         );
     }
@@ -68,6 +78,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
+                externalFeatures: filterExternalFeatures(workerEnvs),
             })
         );
     }
@@ -80,11 +91,24 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
+                externalFeatures: filterExternalFeatures(workerEnvs),
             })
         );
     }
 
     return configurations;
+
+    function filterExternalFeatures(envs: Map<string, string[]>): IExtenalFeatureDescriptor[] {
+        return options.externalFeatures.map<IExtenalFeatureDescriptor>(({ envEntries, name }) => ({
+            name,
+            envEntries: Object.entries(envEntries)
+                .filter(([envName]) => envs.has(envName))
+                .reduce((acc, [key, val]) => {
+                    acc[key] = val;
+                    return acc;
+                }, {} as Record<string, string>),
+        }));
+    }
 }
 
 interface ICreateWebpackConfigOptions {
@@ -106,6 +130,7 @@ interface ICreateWebpackConfigOptions {
     staticBuild: boolean;
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
+    externalFeatures: IExtenalFeatureDescriptor[];
 }
 
 export function createWebpackConfig({
@@ -127,6 +152,7 @@ export function createWebpackConfig({
     staticBuild,
     publicConfigsRoute,
     overrideConfig,
+    externalFeatures,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -145,6 +171,7 @@ export function createWebpackConfig({
             publicConfigsRoute,
             config,
             target: target === 'webworker' ? target : 'web',
+            externalFeatures,
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
@@ -196,7 +223,7 @@ export function createWebpackConfigForExteranlFeature({
             for (const [envName, childEnvs] of enviroments) {
                 const entryPath = fs.join(context, `${envName}.js`);
                 entry[envName] = entryPath;
-                const publicPathParts = ['plugins', feature.packageName];
+                const publicPathParts = [EXTERNAL_FEATURES_BASE_URI, feature.packageName];
                 if (feature.scopedName !== feature.name) {
                     publicPathParts.push(feature.name);
                 }

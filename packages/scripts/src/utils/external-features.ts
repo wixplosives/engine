@@ -1,4 +1,5 @@
 import { join } from 'path';
+import { EXTERNAL_FEATURES_BASE_URI } from '../commons';
 import type { IEnvironment, IExtenalFeatureDescriptor, IExternalFeatureDefinition } from '../types';
 
 export function getFeatureFromDefinition({ featureName, packageName, outDir }: IExternalFeatureDefinition) {
@@ -25,7 +26,7 @@ export function getExternalFeatures(
             name: pluginName,
             envEntries: [...environments].reduce<Record<string, string>>((acc, { name, type }) => {
                 acc[name] = join(
-                    join(type === 'node' ? pluginsBaseDirectory : 'plugins', pluginEntryPath),
+                    join(type === 'node' ? pluginsBaseDirectory : EXTERNAL_FEATURES_BASE_URI, pluginEntryPath),
                     `${name}.${
                         ['electron-renerer', 'iframe', 'window'].includes(type)
                             ? 'web'
