@@ -1,6 +1,6 @@
 import managedFeature from './managed.feature';
 import { devServerEnv, ServerListeningParams } from './dev-server.feature';
-import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts';
+import type { IProcessMessage, IFeatureMessagePayload, IPortMessage, IRunFeatureOptions } from '@wixc3/engine-scripts';
 
 managedFeature.setup(
     devServerEnv,
@@ -11,17 +11,13 @@ managedFeature.setup(
                 serverListeningHandlerSlot,
                 devServerActions: { close: closeServer },
                 application,
-                devServerConfig: { externalFeatureDefinitions },
             },
         }
     ) => {
         const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
             if (process.send) {
                 if (id === 'run-feature') {
-                    const responsePayload = await application.runFeature({
-                        ...(payload as Required<IFeatureTarget>),
-                        externalFeatureDefinitions,
-                    });
+                    const responsePayload = await application.runFeature(payload as Required<IRunFeatureOptions>);
                     process.send({ id: 'feature-initialized', payload: responsePayload });
                 }
                 if (id === 'close-feature') {

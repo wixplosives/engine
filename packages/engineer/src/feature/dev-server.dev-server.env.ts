@@ -97,14 +97,6 @@ devServerFeature.setup(
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
 
-            disposables.add(() => application.getNodeEnvManager()?.closeAll());
-
-            if (engineConfig?.serveStatic) {
-                for (const { route, directoryPath } of engineConfig.serveStatic) {
-                    app.use(route, express.static(directoryPath));
-                }
-            }
-
             application.setNodeEnvManager(
                 new NodeEnvironmentsManager(socketServer, {
                     configurations,
@@ -117,12 +109,27 @@ devServerFeature.setup(
                 })
             );
 
+            disposables.add(() => application.getNodeEnvManager()?.closeAll());
+
+            if (engineConfig?.serveStatic) {
+                for (const { route, directoryPath } of engineConfig.serveStatic) {
+                    app.use(route, express.static(directoryPath));
+                }
+            }
+
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
                           [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
                       }
                     : undefined;
+
+            app.use(`/${publicConfigsRoute}`, [
+                ensureTopLevelConfigMiddleware,
+                createCommunicationMiddleware(application.getNodeEnvManager()!, publicPath, topologyOverrides),
+                createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
+                createConfigMiddleware(overrideConfig),
+            ]);
 
             // Write middleware for each of the apps
             const compiler = application.createCompiler({
@@ -166,13 +173,6 @@ devServerFeature.setup(
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependants can rely on them in the topology
-
-            app.use(`/${publicConfigsRoute}`, [
-                ensureTopLevelConfigMiddleware,
-                createCommunicationMiddleware(application.getNodeEnvManager()!, publicPath, topologyOverrides),
-                createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
-                createConfigMiddleware(overrideConfig),
-            ]);
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
