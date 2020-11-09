@@ -9,8 +9,7 @@ import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget, IExternal
 export function createFeaturesEngineRouter(
     overrideConfigsMap: Map<string, OverrideConfig>,
     nodeEnvironmentManager: NodeEnvironmentsManager,
-    externalFeatureDefinitions: IExternalFeatureDefinition[],
-    externalFeaturesBasePath: string
+    externalFeatureDefinitions: IExternalFeatureDefinition[]
 ) {
     const router = Router();
     router.use(bodyParser.json());
@@ -35,7 +34,6 @@ export function createFeaturesEngineRouter(
                 runtimeOptions: options,
                 overrideConfigsMap,
                 externalFeatureDefinitions,
-                externalFeaturesBasePath,
             });
             res.json({
                 id: 'feature-initialized',

@@ -105,6 +105,25 @@ devServerFeature.setup(
                 }
             }
 
+            application.setNodeEnvManager(
+                new NodeEnvironmentsManager(socketServer, {
+                    configurations,
+                    features,
+                    defaultRuntimeOptions,
+                    port: actualPort,
+                    inspect,
+                    overrideConfig,
+                    externalFeaturesBasePath: externalFeaturesPath,
+                })
+            );
+
+            const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
+                featureName.indexOf('engineer/') === 0
+                    ? {
+                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+                      }
+                    : undefined;
+
             // Write middleware for each of the apps
             const compiler = application.createCompiler({
                 ...devServerConfig,
@@ -131,9 +150,8 @@ devServerFeature.setup(
             await new Promise((resolve) => {
                 compiler.hooks.done.tap('compiled', resolve);
             });
-            const resolvedFeaturesPath = resolve(externalFeaturesPath);
             if (serveExternalFeaturesPath) {
-                app.use('/plugins', express.static(resolvedFeaturesPath));
+                app.use('/plugins', express.static(resolve(externalFeaturesPath)));
             }
 
             const externalFeatures = getExternalFeatures(
@@ -149,25 +167,6 @@ devServerFeature.setup(
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependants can rely on them in the topology
 
-            application.setNodeEnvManager(
-                new NodeEnvironmentsManager(socketServer, {
-                    configurations,
-                    features,
-                    defaultRuntimeOptions,
-                    port: actualPort,
-                    inspect,
-                    overrideConfig,
-                    externalFeaturesBasePath: externalFeaturesPath,
-                })
-            );
-
-            const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
-                featureName.indexOf('engineer/') === 0
-                    ? {
-                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                      }
-                    : undefined;
-
             app.use(`/${publicConfigsRoute}`, [
                 ensureTopLevelConfigMiddleware,
                 createCommunicationMiddleware(application.getNodeEnvManager()!, publicPath, topologyOverrides),
@@ -182,8 +181,7 @@ devServerFeature.setup(
                 createFeaturesEngineRouter(
                     application.getOverrideConfigsMap(),
                     application.getNodeEnvManager()!,
-                    externalFeatureDefinitions,
-                    resolvedFeaturesPath
+                    externalFeatureDefinitions
                 )
             );
 
