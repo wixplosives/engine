@@ -24,6 +24,7 @@ allFeature.setup(
             const workerMessages = await getWorkerEnvMessages();
 
             const pre = document.createElement('pre');
+            pre.setAttribute('id', 'envMessages');
 
             pre.innerHTML = JSON.stringify(
                 {

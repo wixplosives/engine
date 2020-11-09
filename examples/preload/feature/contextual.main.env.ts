@@ -12,6 +12,7 @@ contextualFeature.setup(mainEnv, ({ run, procEnvMessages: { getProcEnvMessages }
         const procMessages = await getProcEnvMessages();
 
         const pre = document.createElement('pre');
+        pre.setAttribute('id', 'envMessages');
         pre.innerHTML = JSON.stringify(
             {
                 window: globalThis.envMessages,

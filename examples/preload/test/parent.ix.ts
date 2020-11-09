@@ -1,10 +1,10 @@
-import path from 'path';
+import { dirname } from 'path';
 import { expect } from 'chai';
 import { createDisposables } from '@wixc3/engine-core';
 import { startServerNewProcess } from './utils';
 
 describe('Parent feature', function () {
-    const projectPath = path.join(__dirname, '..');
+    const projectPath = dirname(require.resolve('../package.json'));
     const featureName = 'preload/parent';
     const disposables = createDisposables();
     afterEach(async () => await disposables.dispose());
@@ -23,12 +23,9 @@ describe('Parent feature', function () {
         const page = await browserProvider.loadPage(featureUrl);
         disposables.add(() => page.close());
 
-        const content = await page.$eval('pre', (e) => e.textContent!);
+        const content = await page.$eval('#envMessages', (e) => e.textContent!);
         const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; worker: string[] };
 
-        expect(parsedContent.node[0]).to.eq('node');
-        expect(parsedContent.node[1]).to.eq('preload');
-        expect(parsedContent.node.includes('parentEnvEval')).to.be.true;
-        expect(parsedContent.node.indexOf('preload')).to.be.lessThan(parsedContent.node.indexOf('parentEnvEval'));
+        expect(parsedContent.node).to.eql(['node', 'preload', 'feature', 'enveval', 'parentEnvEval']);
     });
 });

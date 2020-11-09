@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import path from 'path';
+import { dirname } from 'path';
 import { createDisposables } from '@wixc3/engine-core';
 import { startServerNewProcess } from './utils';
 
 describe('Contextual preload', () => {
-    const projectPath = path.join(__dirname, '..');
+    const projectPath = dirname(require.resolve('../package.json'));
     const disposables = createDisposables();
     afterEach(async () => await disposables.dispose());
 
@@ -25,12 +25,10 @@ describe('Contextual preload', () => {
             const page = await browserProvider.loadPage(featureUrl);
             disposables.add(async () => await page.close());
 
-            const content = await page.$eval('pre', (e) => e.textContent!);
+            const content = await page.$eval('#envMessages', (e) => e.textContent!);
             const parsedContent = JSON.parse(content) as { proc: string[] };
 
-            expect(parsedContent.proc[0]).to.eq('nodeCtx');
-            expect(parsedContent.proc[1]).to.eq('preload');
-            expect(parsedContent.proc.length).to.eq(4);
+            expect(parsedContent.proc).to.eql(['nodeCtx', 'preload', 'nodeEnvCtxEval', 'procEnvEval']);
         });
     });
     describe('worker context', () => {
@@ -50,12 +48,10 @@ describe('Contextual preload', () => {
             const page = await browserProvider.loadPage(featureUrl);
             disposables.add(async () => await page.close());
 
-            const content = await page.$eval('pre', (e) => e.textContent!);
+            const content = await page.$eval('#envMessages', (e) => e.textContent!);
             const parsedContent = JSON.parse(content) as { proc: string[] };
 
-            expect(parsedContent.proc[0]).to.eq('workerCtx');
-            expect(parsedContent.proc[1]).to.eq('preload');
-            expect(parsedContent.proc.length).to.eq(4);
+            expect(parsedContent.proc).to.eql(['workerCtx', 'preload', 'workerEnvCtxEval', 'procEnvEval']);
         });
     });
 });
