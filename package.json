@@ -41,8 +41,6 @@
     "@types/rimraf": "^3.0.0",
     "@types/sinon": "^9.0.8",
     "@types/sinon-chai": "^3.2.5",
-    "@types/socket.io": "^2.1.11",
-    "@types/socket.io-client": "^1.4.34",
     "@types/webpack": "^4.41.24",
     "@types/webpack-dev-middleware": "^3.7.2",
     "@types/webpack-sources": "^2.0.0",

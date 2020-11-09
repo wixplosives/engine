@@ -1,3 +1,4 @@
+import type io from 'socket.io';
 import devServerFeature, { devServerEnv } from './dev-server.feature';
 import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import { TargetApplication } from '../application-proxy-service';
@@ -30,7 +31,7 @@ function singleRunWatchFunction(compiler: webpack.Compiler) {
     };
 }
 
-const attachWSHost = (socketServer: SocketIO.Server, envName: string, communication: Communication) => {
+const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
 
     communication.clearEnvironment(envName);
@@ -75,7 +76,10 @@ devServerFeature.setup(
                 await application.importModules(require);
             }
 
-            const resolvedSocketServerOptions = { ...configServerOptions, ...socketServerOptions };
+            const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
+                ...configServerOptions,
+                ...socketServerOptions,
+            };
 
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,

@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { safeListeningHttpServer } from 'create-listening-server';
-import io, { ServerOptions } from 'socket.io';
+import io from 'socket.io';
 import type { Socket } from 'net';
 
 export const DEFAULT_PORT = 3000;
@@ -11,10 +11,10 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
     res.end();
 };
 
-interface ILaunchHttpServerOptions {
+export interface ILaunchHttpServerOptions {
     staticDirPath: string;
     httpServerPort?: number;
-    socketServerOptions?: ServerOptions;
+    socketServerOptions?: Partial<io.ServerOptions>;
 }
 
 export async function launchHttpServer({
@@ -35,7 +35,7 @@ export async function launchHttpServer({
 
     app.use('/favicon.ico', noContentHandler);
 
-    const socketServer = io(httpServer, socketServerOptions);
+    const socketServer = new io.Server(httpServer, { ...socketServerOptions, cors: {} });
 
     return {
         close: async () => {

@@ -1,10 +1,11 @@
+import type { SocketOptions } from 'socket.io-client';
 import { WsClientHost } from '../hosts/ws-client-host';
 import type { ReadyMessage } from '../message-types';
 import type { EnvironmentInitializer } from '../types';
 type listenFn = (cb: () => void) => void;
 
 export function socketServerInitializer(
-    options?: object
+    options?: Partial<SocketOptions>
 ): EnvironmentInitializer<{
     id: string;
     onDisconnect: listenFn;
@@ -16,7 +17,7 @@ export function socketServerInitializer(
             throw new Error(`Could not find node topology for ${env} environment`);
         }
         const instanceId = env;
-        const host = new WsClientHost(url, options as SocketIOClient.ConnectOpts);
+        const host = new WsClientHost(url, options);
         communication.registerMessageHandler(host);
         communication.registerEnv(instanceId, host);
         await host.connected;

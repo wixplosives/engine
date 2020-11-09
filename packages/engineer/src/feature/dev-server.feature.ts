@@ -1,8 +1,8 @@
+import type io from 'socket.io';
 import type webpack from 'webpack';
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
 import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import type { TargetApplication } from '../application-proxy-service';
-import type { ServerOptions } from 'socket.io';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
 
@@ -24,7 +24,7 @@ export interface DevServerConfig {
     defaultRuntimeOptions: Record<string, string | boolean>;
     outputPath?: string;
     featureDiscoveryRoot?: string;
-    socketServerOptions?: ServerOptions;
+    socketServerOptions?: Partial<io.ServerOptions>;
 }
 
 export interface DevServerActions {
