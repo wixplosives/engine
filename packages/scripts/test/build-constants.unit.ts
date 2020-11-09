@@ -18,7 +18,7 @@ describe('isPreloadFile', () => {
     });
 });
 
-describe('parsePreloadFileName', () => {
+describe.only('parsePreloadFileName', () => {
     const featureName = 'featureName';
     const envName = 'envName';
     const contextName = 'contextName';
@@ -26,6 +26,7 @@ describe('parsePreloadFileName', () => {
         expect(parsePreloadFileName(`${featureName}.${envName}.preload.ts`)).to.eql({
             featureName,
             envName,
+            childEnvName: undefined,
         });
     });
     it('should detect feaure, env and context with contextual', () => {

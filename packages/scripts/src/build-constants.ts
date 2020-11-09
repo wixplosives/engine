@@ -68,9 +68,5 @@ export function parsePreloadFileName(fileName: string) {
         throw new Error(`cannot parse preload file: ${fileName}`);
     }
 
-    if (childEnvNameCandidate) {
-        return { featureName, envName, childEnvName: childEnvNameCandidate };
-    }
-
-    return { featureName, envName };
+    return { featureName, envName, childEnvName: childEnvNameCandidate };
 }
