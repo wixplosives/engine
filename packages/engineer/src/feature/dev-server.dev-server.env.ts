@@ -78,8 +78,12 @@ devServerFeature.setup(
             // Should engine config be part of the dev experience of the engine????
             const engineConfig = await application.getEngineConfig();
 
-            const { externalFeatureDefinitions = [], require, externalFeaturesPath: configExternalFeaturesPath } =
-                engineConfig ?? {};
+            const {
+                externalFeatureDefinitions = [],
+                require,
+                externalFeaturesPath: configExternalFeaturesPath,
+                serveStatic = [],
+            } = engineConfig ?? {};
             if (require) {
                 await application.importModules(require);
             }
@@ -121,8 +125,15 @@ devServerFeature.setup(
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
-            if (engineConfig?.serveStatic) {
-                for (const { route, directoryPath } of engineConfig.serveStatic) {
+            if (serveExternalFeaturesPath) {
+                serveStatic.push({
+                    route: `/${EXTERNAL_FEATURES_BASE_URI}`,
+                    directoryPath: externalFeaturesPath,
+                });
+            }
+
+            if (serveStatic) {
+                for (const { route, directoryPath } of serveStatic) {
                     app.use(route, express.static(directoryPath));
                 }
             }
@@ -140,10 +151,6 @@ devServerFeature.setup(
                 createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
                 createConfigMiddleware(overrideConfig),
             ]);
-
-            if (serveExternalFeaturesPath) {
-                app.use(`/${EXTERNAL_FEATURES_BASE_URI}`, express.static(resolve(externalFeaturesPath)));
-            }
 
             // Write middleware for each of the apps
             const compiler = application.createCompiler({

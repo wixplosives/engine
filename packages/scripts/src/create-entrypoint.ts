@@ -22,6 +22,7 @@ export interface ICreateEntrypointsOptions {
     config?: TopLevelConfig;
     target: 'webworker' | 'web';
     externalFeatures: IExtenalFeatureDescriptor[];
+    fetchFeatures?: boolean;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -32,10 +33,13 @@ export interface ExternalEntrypoint extends IFeatureDefinition {
     childEnvs: string[];
     envName: string;
     publicPath?: string;
+}
+
+export interface ExternalBrowserEntrypoint extends ExternalEntrypoint {
     loadStatement: (args: LoadStatementArguments) => string;
 }
 
-export interface WebpackFeatureLoaderArguments extends ExternalEntrypoint {
+export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint {
     target: 'web' | 'webworker' | 'node';
 }
 
@@ -60,8 +64,11 @@ export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePa
 
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
+    import { getTopWindow } from '@wixc3/engine-core';
+
+    const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
-    const publicPath = options.has('externalPublicPath') ? options.get('externalPublicPath') ? ${
+    const publicPath = options.has('externalPublicPath') ? options.get('externalPublicPath') : ${
         typeof args.publicPath === 'string' ? JSON.stringify(args.publicPath) : '__webpack_public_path__'
     };
     __webpack_public_path__= publicPath;
@@ -72,7 +79,7 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
 
 export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
     return `module.exports = {
-        '${args.scopedName}': ${createLoaderInterface({ ...args, target: 'node' })}
+        '${args.scopedName}': ${createLoaderInterface({ ...args, target: 'node', loadStatement: nodeImportStatement })}
 }
     `;
 }
@@ -93,6 +100,7 @@ export function createMainEntrypoint({
     config,
     target,
     externalFeatures,
+    fetchFeatures,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -134,7 +142,7 @@ async function main() {
 
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
     const features = [loadedFeatures[loadedFeatures.length - 1]];
-    ${loadExternalFeatures(target, externalFeatures, staticBuild)}
+    ${loadExternalFeatures(target, externalFeatures, fetchFeatures)}
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
@@ -230,10 +238,9 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                     })};
                     ${
                         target !== 'node'
-                            ? `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(packageName)
-                                  .replace('@', '')
-                                  .replace(/\//g, '')
-                                  .replace(/-/g, '')} + "_" + featureModule.default.id] = featureModule;`
+                            ? `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
+                                  normilizePackageName(packageName)
+                              )} + "_" + featureModule.default.id] = featureModule;`
                             : ''
                     }
                     return featureModule.default;
@@ -323,13 +330,12 @@ function importStaticConfigs() {
 function loadExternalFeatures(
     target: 'web' | 'webworker',
     externalFeatures: IExtenalFeatureDescriptor[],
-    fetchFeatures: boolean
+    fetchFeatures?: boolean
 ) {
     return `
         self.runtimeFeatureLoader = featureLoader;
-        const externalFeatures = ${
-            fetchFeatures ? fetchExternalFeatures('/external') : JSON.stringify(externalFeatures)
-        };
+        const externalFeatures = ${JSON.stringify(externalFeatures)}; 
+        ${fetchFeatures ? `externalFeatures.push(...${fetchExternalFeatures('/external')})` : ''};
         if(externalFeatures.length) {
             if(!self.EngineCore) {
                 self.EngineCore = EngineCore;
@@ -346,7 +352,7 @@ function loadExternalFeatures(
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
-    return `await (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json();`;
+    return `await (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json()`;
 }
 
 function importScripts() {
@@ -387,4 +393,8 @@ function normalizeRoute(route?: string) {
     }
 
     return route;
+}
+
+export function normilizePackageName(packageName: string) {
+    return packageName.replace('@', '').replace(/\//g, '').replace(/-/g, '');
 }

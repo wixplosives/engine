@@ -36,7 +36,7 @@ import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import { getEnvironmntsForFeature, getResolvedEnvironments } from './utils/environments';
 import { launchHttpServer } from './launch-http-server';
 import { getExternalFeatures } from './utils';
-import { createExternalNodeEntrypoint, nodeImportStatement } from './create-entrypoint';
+import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './commons';
 
 const rimraf = promisify(rimrafCb);
@@ -105,6 +105,7 @@ export interface ICompilerOptions {
     singleFeature?: boolean;
     isExternal: boolean;
     externalFeatures: IExtenalFeatureDescriptor[];
+    fetchFeatures?: boolean;
 }
 
 export class Application {
@@ -176,6 +177,7 @@ export class Application {
                           externalFeaturesPath
                       )
                     : [],
+            fetchFeatures: !withExternalFeatures || !staticBuild,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -235,25 +237,31 @@ export class Application {
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
         disposables.add(() => close());
 
-        disposables.add(() => nodeEnvironmentManager.closeAll());
-
-        if (engineConfig && engineConfig.serveStatic) {
-            for (const { route, directoryPath } of engineConfig.serveStatic) {
-                app.use(route, express.static(directoryPath));
-            }
-        }
-
         const {
             externalFeatureDefinitions = [],
             externalFeaturesPath: baseExternalFeaturesPath,
             serveExternalFeaturesPath = providedServeExternalFeaturesPath,
+            serveStatic = [],
         } = engineConfig ?? {};
-
-        externalFeatureDefinitions.push(...providedExternalFeaturesDefinitions);
 
         const resolvedExternalFeaturesPath = fs.resolve(
             baseExternalFeaturesPath ?? providedExternalFeatuersPath ?? join(this.basePath, 'node_modules')
         );
+
+        if (serveExternalFeaturesPath) {
+            serveStatic.push({
+                route: `/${EXTERNAL_FEATURES_BASE_URI}`,
+                directoryPath: resolvedExternalFeaturesPath,
+            });
+        }
+
+        if (serveStatic) {
+            for (const { route, directoryPath } of serveStatic) {
+                app.use(route, express.static(directoryPath));
+            }
+        }
+
+        externalFeatureDefinitions.push(...providedExternalFeaturesDefinitions);
 
         const externalFeatures = getExternalFeatures(
             externalFeatureDefinitions,
@@ -270,6 +278,8 @@ export class Application {
             configurations,
             externalFeatures,
         });
+
+        disposables.add(() => nodeEnvironmentManager.closeAll());
 
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, [
@@ -498,7 +508,6 @@ export class Application {
                             ...feature,
                             childEnvs,
                             envName,
-                            loadStatement: nodeImportStatement,
                         })
                     );
                 }

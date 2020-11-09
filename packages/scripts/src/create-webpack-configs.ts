@@ -9,6 +9,7 @@ import {
     remapFileRequest,
     webpackImportStatement,
     LOADED_FEATURE_MODULES_NAMESPACE,
+    normilizePackageName,
 } from './create-entrypoint';
 import type {
     IEnvironment,
@@ -39,6 +40,7 @@ export interface ICreateWebpackConfigsOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
     externalFeatures: IExtenalFeatureDescriptor[];
+    fetchFeatures?: boolean;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -131,6 +133,7 @@ interface ICreateWebpackConfigOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     externalFeatures: IExtenalFeatureDescriptor[];
+    fetchFeatures?: boolean;
 }
 
 export function createWebpackConfig({
@@ -153,6 +156,7 @@ export function createWebpackConfig({
     publicConfigsRoute,
     overrideConfig,
     externalFeatures,
+    fetchFeatures,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -172,6 +176,7 @@ export function createWebpackConfig({
             config,
             target: target === 'webworker' ? target : 'web',
             externalFeatures,
+            fetchFeatures,
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
@@ -243,7 +248,7 @@ export function createWebpackConfigForExteranlFeature({
                 externals[featureFilePath] =
                     LOADED_FEATURE_MODULES_NAMESPACE +
                     '.' +
-                    feature.packageName.replace('@', '').replace(/\//g, '').replace(/-/g, '') +
+                    normilizePackageName(feature.packageName) +
                     '_' +
                     feature.exportedFeature.id;
             }
