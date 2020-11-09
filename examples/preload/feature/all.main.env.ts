@@ -14,7 +14,11 @@ If building and then running this example, one can see it with 4 elements as exe
 allFeature.setup(
     mainEnv,
     (
-        { run, nodeEnvMessages: { getNodeEnvMessages }, workerEnvMessages: { getWorkerEnvMessages } },
+        {
+            run,
+            nodeEnvMessages: { getNodeEnvMessages, getRuntimeOptions },
+            workerEnvMessages: { getWorkerEnvMessages },
+        },
         { COM: { startEnvironment } }
     ) => {
         run(async () => {
@@ -36,11 +40,25 @@ allFeature.setup(
                 2
             );
 
+            const runtimeOptionsPre = document.createElement('pre');
+            runtimeOptionsPre.setAttribute('id', 'runtimeOptions');
+
+            const nodeRuntimeOptions = await getRuntimeOptions();
+            runtimeOptionsPre.innerHTML = JSON.stringify(
+                {
+                    node: nodeRuntimeOptions,
+                    window: globalThis.runtimeOptions,
+                },
+                null,
+                2
+            );
+
             const explanation = document.createElement('p');
             explanation.innerHTML = content;
 
             document.body.appendChild(explanation);
             document.body.appendChild(pre);
+            document.body.appendChild(runtimeOptionsPre);
         });
     }
 );
