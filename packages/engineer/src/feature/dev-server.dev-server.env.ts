@@ -61,7 +61,7 @@ devServerFeature.setup(
             defaultRuntimeOptions,
             outputPath,
             externalFeatureDefinitions: providedExternalDefinitions,
-            externalFeaturesPath = join(basePath, 'node_modules'),
+            externalFeaturesPath: providedExternalFeaturesPath,
             serveExternalFeaturesPath = true,
             featureDiscoveryRoot,
         } = devServerConfig;
@@ -74,10 +74,13 @@ devServerFeature.setup(
             // Should engine config be part of the dev experience of the engine????
             const engineConfig = await application.getEngineConfig();
 
-            const { externalFeatureDefinitions = [], require } = engineConfig ?? {};
+            const { externalFeatureDefinitions = [], require, externalFeaturesPath: configExternalFeaturesPath } =
+                engineConfig ?? {};
             if (require) {
                 await application.importModules(require);
             }
+            const externalFeaturesPath =
+                providedExternalFeaturesPath ?? configExternalFeaturesPath ?? join(basePath, 'node_modules');
             externalFeatureDefinitions.push(...providedExternalDefinitions);
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
@@ -125,9 +128,7 @@ devServerFeature.setup(
             await new Promise((resolve) => {
                 compiler.hooks.done.tap('compiled', resolve);
             });
-            const resolvedFeaturesPath = externalFeaturesPath.startsWith('http')
-                ? externalFeaturesPath
-                : resolve(externalFeaturesPath);
+            const resolvedFeaturesPath = resolve(externalFeaturesPath);
             if (serveExternalFeaturesPath) {
                 app.use('/plugins', express.static(resolvedFeaturesPath));
             }

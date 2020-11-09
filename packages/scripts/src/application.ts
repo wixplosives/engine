@@ -232,15 +232,12 @@ export class Application {
 
         const {
             externalFeatureDefinitions = [],
-            externalFeaturesPath = providedExternalFeatuersPath,
+            externalFeaturesPath: baseExternalFeaturesPath = providedExternalFeatuersPath,
             serveExternalFeaturesPath = providedServeExternalFeaturesPath,
         } = engineConfig ?? {};
 
         externalFeatureDefinitions.push(...providedExternalFeaturesDefinitions);
-
-        const resolvedExternalPath = externalFeaturesPath.startsWith('http')
-            ? externalFeaturesPath
-            : fs.resolve(externalFeaturesPath);
+        const resolvedExternalFeaturesPath = fs.resolve(baseExternalFeaturesPath);
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
             features: new Map(features),
@@ -249,7 +246,7 @@ export class Application {
             inspect,
             overrideConfig: config,
             configurations,
-            externalFeaturesBasePath: resolvedExternalPath,
+            externalFeaturesBasePath: resolvedExternalFeaturesPath,
         });
 
         if (publicConfigsRoute) {
@@ -260,30 +257,27 @@ export class Application {
             ]);
         }
 
-        if (externalFeaturesPath && featureName) {
-            const environments = getEnvironmntsForFeature(featureName, new Map(features));
+        const environments = [...getExportedEnvironments(new Map(features))];
 
-            if (serveExternalFeaturesPath) {
-                app.use('/plugins', express.static(resolvedExternalPath));
-            }
-            const externalFeaturesPath = serveExternalFeaturesPath ? 'plugins' : resolvedExternalPath;
-
-            const externalFeatures = getExternalFeatures(
-                externalFeatureDefinitions,
-                [...environments],
-                externalFeaturesPath
-            );
-            app.use('/external', (_, res) => {
-                res.json(externalFeatures);
-            });
+        if (serveExternalFeaturesPath) {
+            app.use('/plugins', express.static(resolvedExternalFeaturesPath));
         }
+        const externalFeaturesPath = serveExternalFeaturesPath ? 'plugins' : baseExternalFeaturesPath;
+
+        const externalFeatures = getExternalFeatures(
+            externalFeatureDefinitions,
+            [...environments],
+            externalFeaturesPath
+        );
+        app.use('/external', (_, res) => {
+            res.json(externalFeatures);
+        });
         if (autoLaunch && featureName) {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
                 mode: nodeEnvironmentsMode,
                 externalFeatureDefinitions,
-                externalFeaturesBasePath: resolvedExternalPath,
             });
         }
 
@@ -481,7 +475,7 @@ export class Application {
             environments: [...getEnvironmntsForFeature(featureName, features, 'node')],
         });
         for (const feature of features.values()) {
-            if (feature.isRoot && (!featureName || featureName === feature.scopedName)) {
+            if (featureName === feature.scopedName) {
                 for (const [envName, childEnvs] of nodeEnvs) {
                     fs.writeFileSync(
                         join(this.outputPath, `${envName}.node.js`),
