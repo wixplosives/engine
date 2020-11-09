@@ -1,6 +1,6 @@
 import type webpack from 'webpack';
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
-import type { IExternalFeatureDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import type { IExternalDeclaration, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import type { TargetApplication } from '../application-proxy-service';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
@@ -22,7 +22,7 @@ export interface DevServerConfig {
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
     defaultRuntimeOptions: Record<string, string | boolean>;
     outputPath?: string;
-    externalFeatureDefinitions: IExternalFeatureDefinition[];
+    externalFeatureDefinitions: IExternalDeclaration[];
     externalFeaturesPath?: string;
     serveExternalFeaturesPath?: boolean;
     featureDiscoveryRoot?: string;

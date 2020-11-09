@@ -34,7 +34,7 @@ export interface RunEnvironmentOptions {
     runtimeOptions?: Record<string, string | boolean>;
     overrideConfigsMap?: Map<string, OverrideConfig>;
     mode?: LaunchEnvironmentMode;
-    externalFeatureDefinitions?: IExtenalFeatureDescriptor[];
+    externalFeatures?: IExtenalFeatureDescriptor[];
     externalFeaturesBasePath?: string;
 }
 

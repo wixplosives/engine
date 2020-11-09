@@ -1,8 +1,10 @@
-import { join } from 'path';
+import { dirname, join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from '../commons';
-import type { IEnvironment, IExtenalFeatureDescriptor, IExternalFeatureDefinition } from '../types';
+import type { IEnvironment, IExtenalFeatureDescriptor, IExternalDeclaration, IExternalDefinition } from '../types';
+import fs from '@file-services/node';
+import type { IBuildManifest } from '../application';
 
-export function getFeatureFromDefinition({ featureName, packageName, outDir }: IExternalFeatureDefinition) {
+export function getFeatureFromDefinition({ featureName, packageName, outDir }: IExternalDefinition) {
     // eslint-disable-next-line prefer-const
     let [monorepoName, realPackageName] = packageName.split('/');
     realPackageName = realPackageName ?? monorepoName;
@@ -16,12 +18,29 @@ export function getFeatureFromDefinition({ featureName, packageName, outDir }: I
 }
 
 export function getExternalFeatures(
-    pluginDefinitions: IExternalFeatureDefinition[],
+    pluginDefinitions: IExternalDeclaration[],
     environments: IEnvironment[],
     pluginsBaseDirectory: string
 ): IExtenalFeatureDescriptor[] {
-    return pluginDefinitions.map((pluginDefinition) => {
-        const { pluginName, pluginEntryPath } = getFeatureFromDefinition(pluginDefinition);
+    return pluginDefinitions.map((featureDefinition) => {
+        const outDir = featureDefinition.outDir ?? 'dist';
+        const packageJsonPath = join(featureDefinition.packageName, 'package.json');
+        const externalPackageManifest = fs.readJsonFileSync(
+            join(
+                dirname(
+                    require.resolve(packageJsonPath, {
+                        paths: [pluginsBaseDirectory],
+                    })
+                ),
+                outDir,
+                'manifest.json'
+            )
+        ) as IBuildManifest;
+        const { pluginName, pluginEntryPath } = getFeatureFromDefinition({
+            featureName: externalPackageManifest.defaultFeatureName!,
+            packageName: featureDefinition.packageName,
+            outDir,
+        });
         return {
             name: pluginName,
             envEntries: [...environments].reduce<Record<string, string>>((acc, { name, type }) => {

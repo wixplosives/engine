@@ -27,7 +27,7 @@ import type {
     IEnvironment,
     IFeatureDefinition,
     IFeatureTarget,
-    IExternalFeatureDefinition,
+    IExternalDeclaration,
     TopLevelConfigProvider,
     IExtenalFeatureDescriptor,
 } from './types';
@@ -70,7 +70,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
 export interface IRunCommandOptions extends IRunApplicationOptions {
     serveExternalFeaturesPath?: boolean;
     externalFeaturesPath?: string;
-    externalFeatureDefinitions?: IExternalFeatureDefinition[];
+    externalFeatureDefinitions?: IExternalDeclaration[];
 }
 
 export interface IBuildManifest {
@@ -287,10 +287,6 @@ export class Application {
                 createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
                 createConfigMiddleware(config),
             ]);
-        }
-
-        if (serveExternalFeaturesPath) {
-            app.use(`/${EXTERNAL_FEATURES_BASE_URI}`, express.static(resolvedExternalFeaturesPath));
         }
 
         app.use('/external', (_, res) => {

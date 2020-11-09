@@ -1,6 +1,6 @@
 import fs from '@file-services/node';
 import {
-    IExternalFeatureDefinition,
+    IExternalDeclaration,
     isFeatureFile,
     loadFeaturesFromPaths,
     runNodeEnvironment,
@@ -31,7 +31,7 @@ export interface IStartOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     inspect?: boolean;
     runtimeOptions?: Record<string, string | boolean>;
-    externalFeatureDefinitions?: IExternalFeatureDefinition[];
+    externalFeatureDefinitions?: IExternalDeclaration[];
     externalFeaturesPath?: string;
     featureDiscoveryRoot?: string;
 }

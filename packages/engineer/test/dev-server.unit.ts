@@ -5,7 +5,7 @@ import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
-import { Application, IExternalFeatureDefinition, TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import { Application, IExternalDeclaration, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
 import { join } from 'path';
 import rimraf from 'rimraf';
@@ -59,7 +59,7 @@ describe('engineer:dev-server', function () {
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
         outputPath?: string;
         runtimeOptions?: Record<string, string | boolean>;
-        externalFeatureDefinitions?: IExternalFeatureDefinition[];
+        externalFeatureDefinitions?: IExternalDeclaration[];
         externalFeaturesPath?: string;
         singleFeature?: boolean;
         featureDiscoveryRoot?: string;
@@ -497,7 +497,6 @@ describe('engineer:dev-server', function () {
             featureName: 'base-web-application',
             externalFeatureDefinitions: [
                 {
-                    featureName: externalFeatureName,
                     packageName: '@fixture/application-external-feature',
                 },
             ],

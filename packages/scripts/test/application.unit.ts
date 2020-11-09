@@ -245,7 +245,6 @@ describe('Application', function () {
                 serveExternalFeaturesPath: true,
                 externalFeatureDefinitions: [
                     {
-                        featureName: externalFeatureName,
                         packageName: name,
                     },
                 ],

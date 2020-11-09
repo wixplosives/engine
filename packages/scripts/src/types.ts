@@ -266,7 +266,21 @@ export interface StaticConfig {
     directoryPath: string;
 }
 
-export type IExternalFeatureDefinition = { featureName: string; packageName: string; outDir?: string };
+export interface IExternalDeclaration {
+    /**
+     * name of the package containing the external feature
+     */
+    packageName: string;
+    /**
+     * the directory where the built source code is located at
+     * @default dist
+     */
+    outDir?: string;
+}
+
+export interface IExternalDefinition extends IExternalDeclaration {
+    featureName: string;
+}
 
 export interface EngineConfig {
     require?: string[];
@@ -274,7 +288,7 @@ export interface EngineConfig {
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
-    externalFeatureDefinitions: Array<IExternalFeatureDefinition>;
+    externalFeatureDefinitions: Array<IExternalDeclaration>;
     externalFeaturesPath?: string;
     serveExternalFeaturesPath?: boolean;
 }
