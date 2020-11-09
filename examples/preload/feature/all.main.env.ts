@@ -47,7 +47,6 @@ allFeature.setup(
             runtimeOptionsPre.innerHTML = JSON.stringify(
                 {
                     node: nodeRuntimeOptions,
-                    window: globalThis.runtimeOptions,
                 },
                 null,
                 2

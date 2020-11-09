@@ -39,7 +39,5 @@ describe('All Environment', () => {
         };
 
         expect(runtimeOptionsparsedContent.node).to.eql(runtimeOptions);
-        expect(runtimeOptionsparsedContent.window).to.eql(runtimeOptions);
-        expect(runtimeOptionsparsedContent.worker).to.eql(runtimeOptions);
     });
 });
