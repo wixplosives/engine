@@ -25,6 +25,7 @@ describe('Contextual preload', () => {
             const page = await browserProvider.loadPage(featureUrl);
             disposables.add(async () => await page.close());
 
+            await page.waitForSelector('#envMessages');
             const content = await page.$eval('#envMessages', (e) => e.textContent!);
             const parsedContent = JSON.parse(content) as { proc: string[] };
 
@@ -48,6 +49,7 @@ describe('Contextual preload', () => {
             const page = await browserProvider.loadPage(featureUrl);
             disposables.add(async () => await page.close());
 
+            await page.waitForSelector('#envMessages');
             const content = await page.$eval('#envMessages', (e) => e.textContent!);
             const parsedContent = JSON.parse(content) as { proc: string[] };
 
