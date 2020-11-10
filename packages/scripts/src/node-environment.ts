@@ -1,4 +1,12 @@
-import { COM, Feature, IFeatureLoader, runEngineApp, RuntimeEngine, FeatureLoadersRegistry } from '@wixc3/engine-core';
+import {
+    COM,
+    Feature,
+    IFeatureLoader,
+    runEngineApp,
+    RuntimeEngine,
+    FeatureLoadersRegistry,
+    IPreloadModule,
+} from '@wixc3/engine-core';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
@@ -73,9 +81,7 @@ export function createFeatureLoaders(
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
                     if (contextPreloadFilePath) {
-                        const preloadContextModule = (await import(contextPreloadFilePath)) as {
-                            init?: (runtimeOptions: Record<string, string | boolean>) => Promise<void>;
-                        };
+                        const preloadContextModule: IPreloadModule = await import(contextPreloadFilePath);
                         if (preloadContextModule.init) {
                             await preloadContextModule.init(runtimeOptions);
                         }
@@ -83,9 +89,7 @@ export function createFeatureLoaders(
                 }
                 const preloadFilePath = preloadFilePaths[envName];
                 if (preloadFilePath) {
-                    const preloadModule = (await import(preloadFilePath)) as {
-                        init?: (runtimeOptions: Record<string, string | boolean>) => Promise<void>;
-                    };
+                    const preloadModule: IPreloadModule = await import(preloadFilePath);
                     if (preloadModule.init) {
                         await preloadModule.init(runtimeOptions);
                     }

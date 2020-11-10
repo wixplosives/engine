@@ -27,6 +27,10 @@ export interface IFeatureLoader {
     resolvedContexts: Record<string, string>;
 }
 
+export interface IPreloadModule {
+    init?: (runtimeOptions?: Record<string, string | boolean>) => Promise<void> | void;
+}
+
 export interface IRunEngineAppOptions {
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;
