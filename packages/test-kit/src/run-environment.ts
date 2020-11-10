@@ -64,8 +64,9 @@ export async function runEngineEnvironment({
             "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
         );
     }
+
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
-    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
+    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, runtimeOptions);
 
     return runEngineApp({
         config,
