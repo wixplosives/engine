@@ -18,7 +18,6 @@ export default new Feature({
             .allowRemoteAccess(),
         workerEnvMessages: Service.withType<{
             getWorkerEnvMessages: () => Array<string>;
-            getWorkerRuntimeOptions: () => Record<string, string | boolean>;
         }>()
             .defineEntity(workerEnv)
             .allowRemoteAccess(),
