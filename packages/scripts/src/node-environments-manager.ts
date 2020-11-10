@@ -68,7 +68,11 @@ export interface ILaunchEnvironmentOptions {
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
-    constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
+    constructor(
+        private socketServer: io.Server,
+        private options: INodeEnvironmentsManagerOptions,
+        private socketServerOptions?: Partial<io.ServerOptions>
+    ) {}
 
     public async runServerEnvironments({
         featureName,
@@ -245,9 +249,8 @@ export class NodeEnvironmentsManager {
 
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
-        const socketServer = io(httpServer, {
-            pingTimeout: 15_000,
-        });
+        const socketServer = new io.Server(httpServer, { cors: {}, ...this.socketServerOptions });
+
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
         const captureConnections = (socket: Socket): void => {

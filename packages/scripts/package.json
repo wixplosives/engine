@@ -1,22 +1,20 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "16.1.1",
+  "version": "16.2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "peerDependencies": {
-    "react": ">=16",
-    "react-dom": ">=16",
     "webpack": ">=4"
   },
   "dependencies": {
     "@file-services/node": "^4.1.2",
     "@file-services/types": "^4.1.0",
-    "@wixc3/cross-performance": "^16.1.1",
-    "@wixc3/engine-core": "^16.1.1",
-    "@wixc3/engine-core-node": "^16.1.1",
+    "@wixc3/cross-performance": "^16.2.0",
+    "@wixc3/engine-core": "^16.2.0",
+    "@wixc3/engine-core-node": "^16.2.0",
     "commander": "^6.2.0",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
@@ -25,7 +23,7 @@
     "html-webpack-plugin": "^4.5.0",
     "import-fresh": "^3.2.2",
     "rimraf": "^3.0.2",
-    "socket.io": "^2.3.0",
+    "socket.io": "^3.0.1",
     "webpack-virtual-modules": "^0.3.2"
   },
   "files": [

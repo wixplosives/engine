@@ -3,7 +3,7 @@ import express from 'express';
 import rimrafCb from 'rimraf';
 import webpack from 'webpack';
 import fs from '@file-services/node';
-
+import type io from 'socket.io';
 import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
@@ -59,6 +59,7 @@ export interface IRunApplicationOptions extends IFeatureTarget {
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
+    socketServerOptions?: Partial<io.ServerOptions>;
 }
 
 export interface IBuildCommandOptions extends IRunApplicationOptions {
@@ -224,6 +225,7 @@ export class Application {
             externalFeaturesPath: providedExternalFeatuersPath,
             serveExternalFeaturesPath: providedServeExternalFeaturesPath,
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
+            socketServerOptions,
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
@@ -233,6 +235,7 @@ export class Application {
         const { port, close, socketServer, app } = await launchHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort,
+            socketServerOptions,
         });
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
         disposables.add(() => close());
@@ -242,6 +245,7 @@ export class Application {
             externalFeaturesPath: baseExternalFeaturesPath,
             serveExternalFeaturesPath = providedServeExternalFeaturesPath,
             serveStatic = [],
+            socketServerOptions: configSocketServerOptions,
         } = engineConfig ?? {};
 
         const resolvedExternalFeaturesPath = fs.resolve(
@@ -269,15 +273,19 @@ export class Application {
             resolvedExternalFeaturesPath
         );
 
-        const nodeEnvironmentManager = new NodeEnvironmentsManager(socketServer, {
-            features: new Map(features),
-            port,
-            defaultRuntimeOptions,
-            inspect,
-            overrideConfig: config,
-            configurations,
-            externalFeatures,
-        });
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(
+            socketServer,
+            {
+                features: new Map(features),
+                port,
+                defaultRuntimeOptions,
+                inspect,
+                overrideConfig: config,
+                configurations,
+                externalFeatures,
+            },
+            { ...socketServerOptions, ...configSocketServerOptions }
+        );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
@@ -313,7 +321,7 @@ export class Application {
         };
     }
 
-    public async remote({ port: preferredPort }: IRunApplicationOptions = {}) {
+    public async remote({ port: preferredPort, socketServerOptions }: IRunApplicationOptions = {}) {
         if (!process.send) {
             throw new Error('"remote" command can only be used in a forked process');
         }
@@ -324,6 +332,7 @@ export class Application {
         const { socketServer, close, port } = await launchHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort: preferredPort,
+            socketServerOptions,
         });
 
         const parentProcess = new ForkedProcess(process);

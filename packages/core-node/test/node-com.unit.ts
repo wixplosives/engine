@@ -38,7 +38,7 @@ describe('Socket communication', () => {
 
         const { httpServer: server, port: servingPort } = await safeListeningHttpServer(3050);
         port = servingPort;
-        socketServer = io(server);
+        socketServer = new io.Server(server, { cors: {} });
         const connections = new Set<Socket>();
         disposables.add(() => new Promise((res) => socketServer.close(res)));
         const onConnection = (connection: Socket): void => {

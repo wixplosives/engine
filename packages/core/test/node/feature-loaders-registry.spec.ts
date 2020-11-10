@@ -21,6 +21,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
 
         const registry = new FeatureLoadersRegistry();
@@ -45,6 +46,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
 
         const depFeatureLoader: IFeatureLoader = {
@@ -54,6 +56,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
 
         const registry = new FeatureLoadersRegistry();
@@ -77,6 +80,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
 
         const depFeatureLoader: IFeatureLoader = {
@@ -85,6 +89,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
 
         const registry = new FeatureLoadersRegistry();
@@ -108,6 +113,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
         const dep: IFeatureLoader = {
             depFeatures: ['dep1', 'dep2'],
@@ -115,6 +121,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
         const dep1: IFeatureLoader = {
             depFeatures: ['dep3'],
@@ -122,6 +129,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
         const dep2: IFeatureLoader = {
             depFeatures: ['dep4'],
@@ -129,6 +137,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
 
         const dep3: IFeatureLoader = {
@@ -137,6 +146,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
 
         const dep4: IFeatureLoader = {
@@ -145,6 +155,7 @@ describe('Feature loader registry', () => {
                 return Promise.resolve(f);
             },
             resolvedContexts: {},
+            preload: () => Promise.resolve(),
         };
 
         const registry = new FeatureLoadersRegistry();

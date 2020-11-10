@@ -1,3 +1,4 @@
+import type io from 'socket.io';
 import type webpack from 'webpack';
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
 import type { IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
@@ -26,6 +27,7 @@ export interface DevServerConfig {
     externalFeaturesPath?: string;
     serveExternalFeaturesPath?: boolean;
     featureDiscoveryRoot?: string;
+    socketServerOptions?: Partial<io.ServerOptions>;
 }
 
 export interface DevServerActions {

@@ -16,6 +16,7 @@ import {
     parseContextFileName,
     parseEnvFileName,
     parseFeatureFileName,
+    parsePreloadFileName,
 } from './build-constants';
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
@@ -137,7 +138,7 @@ export function loadFeaturesFromPaths(
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
     const featureToScopedName = new Map<Feature, string>();
 
-    for (const { directoryPath, features, configurations, envs, contexts } of featureDirectories) {
+    for (const { directoryPath, features, configurations, envs, contexts, preloads } of featureDirectories) {
         const featurePackage = directoryToPackage.get(directoryPath);
         if (!featurePackage) {
             throw new Error(`cannot find package name for ${directoryPath}`);
@@ -169,6 +170,7 @@ export function loadFeaturesFromPaths(
                 dependencies: [],
                 envFilePaths: {},
                 contextFilePaths: {},
+                preloadFilePaths: {},
                 resolvedContexts: {},
                 isRoot: ownFeatureFilePaths.has(featureFilePath),
                 packageName: featurePackage.name,
@@ -180,6 +182,7 @@ export function loadFeaturesFromPaths(
                         dependencies: this.dependencies,
                         filePath: getFilePathInPackage(fs, featurePackage, this.filePath),
                         envFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.envFilePaths),
+                        preloadFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preloadFilePaths),
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         packageName: this.packageName,
@@ -207,6 +210,15 @@ export function loadFeaturesFromPaths(
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
                 existingDefinition.contextFilePaths[contextualName] = contextFilePath;
+            }
+        }
+
+        for (const preloadFile of preloads) {
+            const { featureName, envName, childEnvName } = parsePreloadFileName(fs.basename(preloadFile));
+            const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
+            const contextualName = childEnvName ? `${envName}/${childEnvName}` : envName;
+            if (existingDefinition) {
+                existingDefinition.preloadFilePaths[contextualName] = preloadFile;
             }
         }
     }

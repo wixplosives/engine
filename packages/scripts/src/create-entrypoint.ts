@@ -53,6 +53,7 @@ export type LoadStatement = Pick<
     | 'loadStatement'
     | 'packageName'
     | 'directoryPath'
+    | 'preloadFilePaths'
 >;
 
 export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'> {
@@ -198,15 +199,30 @@ function loadEnvAndContextFiles({
     loadStatement,
     directoryPath,
     packageName,
+    preloadFilePaths,
 }: LoadStatement) {
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
+    const preloadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
         const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
         if (contextFilePath) {
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
                 ${loadStatement({ moduleIdentifier: name, filePath: contextFilePath, directoryPath, packageName })};
+            }`);
+        }
+        const preloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+        if (preloadFilePath) {
+            // If a context env has a preload file, it's the same as resolving a context
+            usesResolvedContexts = true;
+            preloadStatements.push(`if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
+                ${webpackImportStatement({
+                    directoryPath,
+                    filePath: preloadFilePath,
+                    moduleIdentifier: name,
+                    packageName,
+                })};
             }`);
         }
     }
@@ -221,12 +237,23 @@ function loadEnvAndContextFiles({
             })
         );
     }
-    return { usesResolvedContexts, loadStatements };
+    const preloadFilePath = preloadFilePaths[envName];
+    if (preloadFilePath) {
+        preloadStatements.push(
+            webpackImportStatement({
+                moduleIdentifier: `[${envName}]${name}`,
+                filePath: preloadFilePath,
+                directoryPath,
+                packageName,
+            })
+        );
+    }
+    return { usesResolvedContexts, loadStatements, preloadStatements };
 }
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
     const { name, filePath, dependencies, resolvedContexts, loadStatement, packageName, directoryPath, target } = args;
-    const { loadStatements, usesResolvedContexts } = loadEnvAndContextFiles(args);
+    const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
     return `{
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                     ${loadStatements.length ? loadStatements.join(';\n') : ''}
@@ -244,6 +271,9 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                             : ''
                     }
                     return featureModule.default;
+                },
+                async preload(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
+                    ${preloadStatements.join('\n')}
                 },
                 depFeatures: ${stringify(dependencies)},
                 resolvedContexts: ${stringify(resolvedContexts)},

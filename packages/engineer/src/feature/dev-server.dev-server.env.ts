@@ -1,3 +1,4 @@
+import type io from 'socket.io';
 import devServerFeature, { devServerEnv } from './dev-server.feature';
 import { TargetApplication } from '../application-proxy-service';
 import express from 'express';
@@ -35,7 +36,7 @@ function singleRunWatchFunction(compiler: webpack.Compiler) {
     };
 }
 
-const attachWSHost = (socketServer: SocketIO.Server, envName: string, communication: Communication) => {
+const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
 
     communication.clearEnvironment(envName);
@@ -68,6 +69,7 @@ devServerFeature.setup(
             externalFeaturesPath: providedExternalFeaturesPath,
             serveExternalFeaturesPath = true,
             featureDiscoveryRoot,
+            socketServerOptions = {},
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -81,12 +83,17 @@ devServerFeature.setup(
             const {
                 externalFeatureDefinitions = [],
                 require,
+                socketServerOptions: configServerOptions = {},
                 externalFeaturesPath: configExternalFeaturesPath,
                 serveStatic = [],
             } = engineConfig ?? {};
             if (require) {
                 await application.importModules(require);
             }
+            const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
+                ...socketServerOptions,
+                ...configServerOptions,
+            };
             const externalFeaturesPath = resolve(
                 providedExternalFeaturesPath ?? configExternalFeaturesPath ?? join(basePath, 'node_modules')
             );
@@ -94,6 +101,7 @@ devServerFeature.setup(
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
+                socketServerOptions: resolvedSocketServerOptions,
             });
             disposables.add(() => close());
 
@@ -110,17 +118,21 @@ devServerFeature.setup(
             );
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
-            // So potential dependants can rely on them in the topology
+            // So potential dependencies can rely on them in the topology
             application.setNodeEnvManager(
-                new NodeEnvironmentsManager(socketServer, {
-                    configurations,
-                    features,
-                    defaultRuntimeOptions,
-                    port: actualPort,
-                    inspect,
-                    overrideConfig,
-                    externalFeatures,
-                })
+                new NodeEnvironmentsManager(
+                    socketServer,
+                    {
+                        configurations,
+                        features,
+                        defaultRuntimeOptions,
+                        port: actualPort,
+                        inspect,
+                        overrideConfig,
+                        externalFeatures,
+                    },
+                    resolvedSocketServerOptions
+                )
             );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());

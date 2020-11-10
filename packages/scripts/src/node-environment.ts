@@ -79,8 +79,21 @@ export function createFeatureLoaders(
         envFilePaths,
         contextFilePaths,
         resolvedContexts,
+        preloadFilePaths,
     } of features.values()) {
         featureLoaders[scopedName] = {
+            preload: async (currentContext) => {
+                if (childEnvName && currentContext[envName] === childEnvName) {
+                    const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+                    if (contextPreloadFilePath) {
+                        await import(contextPreloadFilePath);
+                    }
+                }
+                const preloadFilePath = preloadFilePaths[envName];
+                if (preloadFilePath) {
+                    await import(preloadFilePath);
+                }
+            },
             load: async (currentContext) => {
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
@@ -88,6 +101,7 @@ export function createFeatureLoaders(
                         await import(contextFilePath);
                     }
                 }
+
                 const envFilePath = envFilePaths[envName];
                 if (envFilePath) {
                     await import(envFilePath);

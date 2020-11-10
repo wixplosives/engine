@@ -1,3 +1,4 @@
+import type io from 'socket.io';
 import fs from '@file-services/node';
 import {
     IExternalDefinition,
@@ -5,6 +6,7 @@ import {
     loadFeaturesFromPaths,
     runNodeEnvironment,
     TopLevelConfigProvider,
+    LaunchEnvironmentMode,
 } from '@wixc3/engine-scripts';
 import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/engine-core';
 
@@ -34,6 +36,8 @@ export interface IStartOptions {
     externalFeatureDefinitions?: IExternalDefinition[];
     externalFeaturesPath?: string;
     featureDiscoveryRoot?: string;
+    nodeEnvironmentsMode?: LaunchEnvironmentMode;
+    socketServerOptions?: Partial<io.ServerOptions>;
 }
 
 export async function startDevServer({
@@ -57,6 +61,8 @@ export async function startDevServer({
     externalFeatureDefinitions = [],
     externalFeaturesPath,
     featureDiscoveryRoot,
+    nodeEnvironmentsMode,
+    socketServerOptions,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -96,6 +102,8 @@ export async function startDevServer({
                     externalFeatureDefinitions,
                     externalFeaturesPath,
                     featureDiscoveryRoot,
+                    nodeEnvironmentsMode,
+                    socketServerOptions,
                 },
             }),
             guiFeature.use({

@@ -1,0 +1,11 @@
+{
+  "name": "@example/preload",
+  "version": "16.2.0",
+  "scripts": {
+    "start": "engineer start",
+    "test": "yarn test:ix",
+    "test:ix": "mocha \"test/**/*.ix.ts?(x)\""
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
