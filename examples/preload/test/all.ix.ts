@@ -9,7 +9,7 @@ describe('All Environment', () => {
     const disposables = createDisposables();
     afterEach(disposables.dispose);
 
-    it.only('loads preload files in all environments, non-contextual', async () => {
+    it('loads preload files in all environments, non-contextual', async () => {
         const runtimeOptions = { a: 'b', c: true };
         const { browserProvider, featureUrl, dispose } = await startServerNewProcess({
             projectPath,
