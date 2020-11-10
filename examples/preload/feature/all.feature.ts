@@ -10,10 +10,15 @@ export default new Feature({
     id: 'allfeature',
     dependencies: [COM],
     api: {
-        nodeEnvMessages: Service.withType<{ getNodeEnvMessages: () => Array<string> }>()
+        nodeEnvMessages: Service.withType<{
+            getNodeEnvMessages: () => Array<string>;
+            getNodeRuntimeOptions: () => Record<string, string | boolean>;
+        }>()
             .defineEntity(nodeEnv)
             .allowRemoteAccess(),
-        workerEnvMessages: Service.withType<{ getWorkerEnvMessages: () => Array<string> }>()
+        workerEnvMessages: Service.withType<{
+            getWorkerEnvMessages: () => Array<string>;
+        }>()
             .defineEntity(workerEnv)
             .allowRemoteAccess(),
     },
