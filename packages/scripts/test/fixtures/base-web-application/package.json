@@ -1,10 +1,10 @@
 {
   "name": "@fixture/base-web-application-feature",
-  "version": "15.2.0",
+  "version": "16.2.1",
   "private": true,
   "devDependencies": {
     "@ts-tools/node": "^2.1.1",
     "typescript": "~4.0.5",
-    "@wixc3/engine-core": "^16.1.1"
+    "@wixc3/engine-core": "^16.2.1"
   }
 }
