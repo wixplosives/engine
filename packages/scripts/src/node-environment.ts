@@ -41,8 +41,8 @@ export async function runNodeEnvironment({
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
     const optionsRecord: Record<string, string | boolean> = {};
 
-    for (const opt of options || []) {
-        optionsRecord[opt[0]] = opt[1];
+    for (const [key, val] of options || []) {
+        optionsRecord[key] = val;
     }
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     return runEngineApp({
