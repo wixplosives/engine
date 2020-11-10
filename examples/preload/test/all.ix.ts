@@ -22,7 +22,7 @@ describe('All Environment', () => {
             await dispose();
         });
 
-        const page = await browserProvider.loadPage(`${featureUrl}&runtimeOptions=${JSON.stringify(runtimeOptions)}`);
+        const page = await browserProvider.loadPage(featureUrl);
         disposables.add(async () => await page.close());
 
         await page.waitForSelector('#envMessages');
