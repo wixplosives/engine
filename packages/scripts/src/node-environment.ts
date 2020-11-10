@@ -81,15 +81,15 @@ export function createFeatureLoaders(
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
                     if (contextPreloadFilePath) {
-                        const preloadContextModule: IPreloadModule = await import(contextPreloadFilePath);
-                        if (preloadContextModule.init) {
-                            await preloadContextModule.init(runtimeOptions);
+                        const preloadedContextModule = (await import(contextPreloadFilePath)) as IPreloadModule;
+                        if (preloadedContextModule.init) {
+                            await preloadedContextModule.init(runtimeOptions);
                         }
                     }
                 }
                 const preloadFilePath = preloadFilePaths[envName];
                 if (preloadFilePath) {
-                    const preloadModule: IPreloadModule = await import(preloadFilePath);
+                    const preloadModule = (await import(preloadFilePath)) as IPreloadModule;
                     if (preloadModule.init) {
                         await preloadModule.init(runtimeOptions);
                     }
