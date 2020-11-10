@@ -17,7 +17,7 @@ allFeature.setup(
         {
             run,
             nodeEnvMessages: { getNodeEnvMessages, getNodeRuntimeOptions },
-            workerEnvMessages: { getWorkerEnvMessages, getWorkerRuntimeOptions },
+            workerEnvMessages: { getWorkerEnvMessages },
         },
         { COM: { startEnvironment } }
     ) => {
@@ -44,12 +44,9 @@ allFeature.setup(
             runtimeOptionsPre.setAttribute('id', 'runtimeOptions');
 
             const nodeRuntimeOptions = await getNodeRuntimeOptions();
-            const workerRuntimeOptions = await getWorkerRuntimeOptions();
             runtimeOptionsPre.innerHTML = JSON.stringify(
                 {
                     node: nodeRuntimeOptions,
-                    window: globalThis.runtimeOptions,
-                    worker: workerRuntimeOptions,
                 },
                 null,
                 2

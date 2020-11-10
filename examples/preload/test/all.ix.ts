@@ -33,9 +33,7 @@ describe('All Environment', () => {
 
         const runtimeOptionsContent = await page.$eval('#runtimeOptions', (e) => e.textContent!);
         const runtimeOptionsparsedContent = JSON.parse(runtimeOptionsContent) as {
-            window: Record<string, string | boolean>;
             node: Record<string, string | boolean>;
-            worker: Record<string, string | boolean>;
         };
 
         expect(runtimeOptionsparsedContent.node).to.eql(runtimeOptions);
