@@ -12,11 +12,14 @@ export default new Feature({
     api: {
         nodeEnvMessages: Service.withType<{
             getNodeEnvMessages: () => Array<string>;
-            getRuntimeOptions: () => Record<string, string | boolean>;
+            getNodeRuntimeOptions: () => Record<string, string | boolean>;
         }>()
             .defineEntity(nodeEnv)
             .allowRemoteAccess(),
-        workerEnvMessages: Service.withType<{ getWorkerEnvMessages: () => Array<string> }>()
+        workerEnvMessages: Service.withType<{
+            getWorkerEnvMessages: () => Array<string>;
+            getWorkerRuntimeOptions: () => Record<string, string | boolean>;
+        }>()
             .defineEntity(workerEnv)
             .allowRemoteAccess(),
     },

@@ -86,6 +86,7 @@ async function main() {
     const envName = '${envName}';
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
+    const runtimeOptions = JSON.parse(options.has('runtimeOptions') ? options.get('runtimeOptions') : '{}');
 
     const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
         typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
@@ -107,7 +108,7 @@ async function main() {
     const { resolvedContexts = {} } = rootFeatureLoader;
     const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
 
-    const features = await featureLoader.getLoadedFeatures(featureName);
+    const features = await featureLoader.getLoadedFeatures(featureName, runtimeOptions);
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
@@ -160,7 +161,10 @@ function loadEnvAndContextFiles({
             // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
             preloadStatements.push(`if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
-                ${webpackImportStatement(name, preloadFilePath)};
+                const preloadedModule = ${webpackImportStatement(name, preloadFilePath)};
+                if (preloadedModule.init) {
+                    await preloadedModule.init(runtimeOptions)
+                }
             }`);
         }
     }
@@ -170,7 +174,14 @@ function loadEnvAndContextFiles({
     }
     const preloadFilePath = preloadFilePaths[envName];
     if (preloadFilePath) {
-        preloadStatements.push(webpackImportStatement(`[${envName}]${name}`, preloadFilePath));
+        preloadStatements.push(`const preloadedModule = ${webpackImportStatement(
+            `[${envName}]${name}`,
+            preloadFilePath
+        )};
+            if (preloadedModule.init) {
+                await preloadedModule.init(runtimeOptions)
+            }
+        `);
     }
     return { usesResolvedContexts, loadStatements, preloadStatements };
 }
@@ -184,7 +195,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                         const featureModule = ${webpackImportStatement(`[feature]${name}`, filePath)};
                         return featureModule.default;
                     },
-                    async preload(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
+                    async preload(resolvedContexts, runtimeOptions) {
                         ${preloadStatements.join('\n')}
                     },
                     depFeatures: ${stringify(dependencies)},

@@ -5,6 +5,7 @@ allFeature.setup(workerEnv, () => {
     return {
         workerEnvMessages: {
             getWorkerEnvMessages: () => [...globalThis.envMessages],
+            getWorkerRuntimeOptions: () => ({ ...globalThis.runtimeOptions }),
         },
     };
 });

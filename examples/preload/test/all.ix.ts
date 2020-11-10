@@ -9,7 +9,7 @@ describe('All Environment', () => {
     const disposables = createDisposables();
     afterEach(disposables.dispose);
 
-    it('loads preload files in all environments, non-contextual', async () => {
+    it.only('loads preload files in all environments, non-contextual', async () => {
         const runtimeOptions = { a: 'b', c: true };
         const { browserProvider, featureUrl, dispose } = await startServerNewProcess({
             projectPath,
@@ -22,7 +22,7 @@ describe('All Environment', () => {
             await dispose();
         });
 
-        const page = await browserProvider.loadPage(featureUrl);
+        const page = await browserProvider.loadPage(`${featureUrl}&runtimeOptions=${JSON.stringify(runtimeOptions)}`);
         disposables.add(async () => await page.close());
 
         await page.waitForSelector('#envMessages');
@@ -39,5 +39,7 @@ describe('All Environment', () => {
         };
 
         expect(runtimeOptionsparsedContent.node).to.eql(runtimeOptions);
+        expect(runtimeOptionsparsedContent.window).to.eql(runtimeOptions);
+        expect(runtimeOptionsparsedContent.worker).to.eql(runtimeOptions);
     });
 });

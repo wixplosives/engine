@@ -5,7 +5,7 @@ allFeature.setup(nodeEnv, () => {
     return {
         nodeEnvMessages: {
             getNodeEnvMessages: () => [...globalThis.envMessages],
-            getRuntimeOptions: () => ({ ...globalThis.runtimeOptions }),
+            getNodeRuntimeOptions: () => ({ ...globalThis.runtimeOptions }),
         },
     };
 });
