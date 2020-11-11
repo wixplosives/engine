@@ -364,7 +364,7 @@ function loadExternalFeatures(
 ) {
     return `
         self.runtimeFeatureLoader = featureLoader;
-        const externalFeatures = ${JSON.stringify(externalFeatures)}; 
+        const externalFeatures = ${JSON.stringify(externalFeatures)};
         ${fetchFeatures ? `externalFeatures.push(...${fetchExternalFeatures('/external')})` : ''};
         if(externalFeatures.length) {
             if(!self.EngineCore) {

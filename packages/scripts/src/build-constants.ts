@@ -14,6 +14,7 @@ export const CORE_PACKAGE = '@wixc3/engine-core';
 // Used query params
 export const CONFIG_QUERY_PARAM = 'config';
 export const FEATURE_QUERY_PARAM = 'feature';
+export const EXTERNAL_FEATURES_QUERY_PARAM = 'externalFeatures';
 
 // File naming helpers
 export const isCodeModule = (fileName: string) =>

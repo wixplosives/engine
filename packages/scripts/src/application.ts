@@ -66,6 +66,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     external?: boolean;
     staticBuild?: boolean;
     withExternalFeatures?: boolean;
+    fetchExternalFeatures?: boolean;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -141,6 +142,7 @@ export class Application {
         external = false,
         staticBuild = true,
         withExternalFeatures,
+        fetchExternalFeatures = !withExternalFeatures,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const { require, externalFeatureDefinitions, externalFeaturesPath = join(this.basePath, 'node_modules') } =
             (await this.getEngineConfig()) ?? {};
@@ -178,7 +180,7 @@ export class Application {
                           externalFeaturesPath
                       )
                     : [],
-            fetchFeatures: !withExternalFeatures,
+            fetchFeatures: fetchExternalFeatures,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
