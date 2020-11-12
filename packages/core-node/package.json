@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core-node",
-  "version": "16.3.1",
+  "version": "16.3.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -10,7 +10,7 @@
   "dependencies": {
     "@types/cookie": "*",
     "@types/cors": "*",
-    "@wixc3/engine-core": "^16.3.1",
+    "@wixc3/engine-core": "^16.3.2",
     "create-listening-server": "^1.0.0",
     "express": "^4.17.1",
     "socket.io": "^3.0.1"
