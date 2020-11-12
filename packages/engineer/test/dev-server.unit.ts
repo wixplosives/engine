@@ -508,8 +508,7 @@ describe('engineer:dev-server', function () {
             async () => {
                 const bodyContent = await getBodyContent(page);
                 expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
-            },
-            { timeout: 5_000 }
+            }
         );
         const button = await page.$('#server-slot');
         await waitFor(
@@ -517,8 +516,7 @@ describe('engineer:dev-server', function () {
                 await button?.click();
                 const elem = await page.$('#server-slot-value');
                 expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
-            },
-            { timeout: 5_000 }
+            }
         );
     });
 });

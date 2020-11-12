@@ -1,5 +1,5 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { join, parse } from 'path';
+import { parse, posix } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition, IConfigDefinition, IExtenalFeatureDescriptor } from './types';
 
@@ -430,7 +430,7 @@ export function remapFileRequest({
     packageName,
 }: Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'>): string {
     const { name, dir } = parse(filePath.replace(directoryPath, packageName));
-    return join(dir, name);
+    return posix.join(dir, name);
 }
 
 function normalizeRoute(route?: string) {
