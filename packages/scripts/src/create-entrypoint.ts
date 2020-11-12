@@ -5,6 +5,7 @@ import type { IFeatureDefinition, IConfigDefinition, IExtenalFeatureDescriptor }
 
 const { stringify } = JSON;
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
+export const LOADED_FEATURE_MODULES_NAMESPACE = '_engine_';
 
 //#region types
 
@@ -20,7 +21,7 @@ export interface ICreateEntrypointsOptions {
     mode: 'production' | 'development';
     publicConfigsRoute?: string;
     config?: TopLevelConfig;
-    target: 'webworker' | 'web';
+    target: 'webworker' | 'web' | 'electron-renderer';
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
 }
@@ -40,7 +41,7 @@ export interface ExternalBrowserEntrypoint extends ExternalEntrypoint {
 }
 
 export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint {
-    target: 'web' | 'webworker' | 'node';
+    target: 'web' | 'webworker' | 'node' | 'electron-renderer';
 }
 
 export type LoadStatement = Pick<
@@ -84,8 +85,6 @@ export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
 }
     `;
 }
-
-export const LOADED_FEATURE_MODULES_NAMESPACE = '_engine_';
 
 export function createMainEntrypoint({
     features,
@@ -174,7 +173,7 @@ function createFeatureLoaders(
     features: Iterable<IFeatureDefinition>,
     envName: string,
     childEnvs: string[],
-    target: 'web' | 'webworker' | 'node'
+    target: 'web' | 'webworker' | 'node' | 'electron-renderer'
 ) {
     return Array.from(features)
         .map(
@@ -358,14 +357,22 @@ function importStaticConfigs() {
 
 //#region loading 3rd party features
 function loadExternalFeatures(
-    target: 'web' | 'webworker',
+    target: 'web' | 'webworker' | 'electron-renderer',
     externalFeatures: IExtenalFeatureDescriptor[],
     fetchFeatures?: boolean
 ) {
     return `
         self.runtimeFeatureLoader = featureLoader;
         const externalFeatures = ${JSON.stringify(externalFeatures)};
-        ${fetchFeatures ? `externalFeatures.push(...${fetchExternalFeatures('/external')})` : ''};
+        ${
+            fetchFeatures
+                ? `externalFeatures.push(...${
+                      target === 'electron-renderer'
+                          ? fetchFeaturesFromElectronProcess('/external')
+                          : fetchExternalFeatures('/external')
+                  })`
+                : ''
+        };
         if(externalFeatures.length) {
             if(!self.EngineCore) {
                 self.EngineCore = EngineCore;
@@ -383,6 +390,13 @@ function loadExternalFeatures(
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
     return `await (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json()`;
+}
+
+function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
+    return `const { ipcRenderer } = require('electron')
+
+    await ipcRenderer.invoke(${externalFeaturesRoute})
+    `;
 }
 
 function importScripts() {

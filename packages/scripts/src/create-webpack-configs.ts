@@ -43,7 +43,9 @@ export interface ICreateWebpackConfigsOptions {
     fetchFeatures?: boolean;
 }
 
-export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
+export function createWebpackConfigs(
+    options: ICreateWebpackConfigsOptions
+): { configurations: webpack.Configuration[]; entries: Record<string, string> } {
     const { baseConfig = {}, publicPath = '', createWebpackConfig } = options;
 
     if (!baseConfig.output) {
@@ -98,12 +100,12 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         );
     }
 
-    return configurations;
+    return { configurations, entries: virtualModules };
 
     function filterExternalFeatures(envs: Map<string, string[]>): IExtenalFeatureDescriptor[] {
-        return options.externalFeatures.map<IExtenalFeatureDescriptor>(({ envEntries, name }) => ({
-            name,
-            envEntries: Object.entries(envEntries)
+        return options.externalFeatures.map<IExtenalFeatureDescriptor>((descriptor) => ({
+            ...descriptor,
+            envEntries: Object.entries(descriptor.envEntries)
                 .filter(([envName]) => envs.has(envName))
                 .reduce((acc, [key, val]) => {
                     acc[key] = val;
@@ -226,7 +228,7 @@ export function createWebpackConfigForExteranlFeature({
     for (const feature of [...features.values()]) {
         if (featureName === feature.scopedName) {
             for (const [envName, childEnvs] of enviroments) {
-                const entryPath = fs.join(context, `${envName}.js`);
+                const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
                 entry[envName] = entryPath;
                 const publicPathParts = [EXTERNAL_FEATURES_BASE_URI, feature.packageName];
                 publicPathParts.push(basename(outputPath) + '/');

@@ -11,7 +11,6 @@ import {
     getExternalFeatures,
     launchHttpServer,
     NodeEnvironmentsManager,
-    getExportedEnvironments,
     EXTERNAL_FEATURES_BASE_URI,
 } from '@wixc3/engine-scripts';
 import WebpackDevMiddleware from 'webpack-dev-middleware';
@@ -111,11 +110,7 @@ devServerFeature.setup(
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
 
-            const externalFeatures = getExternalFeatures(
-                externalFeatureDefinitions,
-                [...getExportedEnvironments(features)],
-                externalFeaturesPath
-            );
+            const externalFeatures = getExternalFeatures(externalFeatureDefinitions, externalFeaturesPath);
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
@@ -165,7 +160,7 @@ devServerFeature.setup(
             ]);
 
             // Write middleware for each of the apps
-            const compiler = application.createCompiler({
+            const { compiler } = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,

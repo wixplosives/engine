@@ -79,6 +79,7 @@ export interface IBuildManifest {
     features: Array<[string, IFeatureDefinition]>;
     defaultFeatureName?: string;
     defaultConfigName?: string;
+    entryPoints: Record<string, string>;
 }
 
 export interface ICreateOptions {
@@ -150,6 +151,8 @@ export class Application {
             await this.importModules(require);
         }
 
+        const entryPoints: Record<string, string> = {};
+
         if (external && !featureName) {
             throw new Error('You must specify a feature name when building a feature in external mode');
         }
@@ -159,7 +162,7 @@ export class Application {
             this.filterByFeatureName(features, featureName);
         }
 
-        const compiler = this.createCompiler({
+        const { compiler, entries: webEntries } = this.createCompiler({
             mode,
             features,
             featureName,
@@ -174,14 +177,16 @@ export class Application {
             isExternal: external,
             externalFeatures:
                 withExternalFeatures && externalFeatureDefinitions
-                    ? getExternalFeatures(
-                          externalFeatureDefinitions,
-                          [...getExportedEnvironments(features)],
-                          externalFeaturesPath
-                      )
+                    ? getExternalFeatures(externalFeatureDefinitions, externalFeaturesPath)
                     : [],
             fetchFeatures: fetchExternalFeatures,
         });
+        const outDir = fs.basename(this.outputPath);
+
+        for (const [filePath] of Object.entries(webEntries)) {
+            const [envName, target] = fs.basename(filePath).split('.')[0].split('-');
+            entryPoints[envName] = join(outDir, `${envName}.${target}.js`);
+        }
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
             compiler.run((e, s) => {
@@ -196,13 +201,18 @@ export class Application {
         );
 
         if (external) {
-            this.createNodeEntries(features, featureName!, singleFeature);
+            const nodeEntries = this.createNodeEntries(features, featureName!, singleFeature);
+            for (const [filePath] of Object.entries(nodeEntries)) {
+                const [envName, target] = fs.basename(filePath).split('.');
+                entryPoints[envName] = join(outDir, `${envName}.${target}.js`);
+            }
         }
 
         await this.writeManifest({
             features,
             featureName,
             configName,
+            entryPoints,
         });
 
         return stats;
@@ -251,7 +261,7 @@ export class Application {
         } = engineConfig ?? {};
 
         const resolvedExternalFeaturesPath = fs.resolve(
-            baseExternalFeaturesPath ?? providedExternalFeatuersPath ?? join(this.basePath, 'node_modules')
+            providedExternalFeatuersPath ?? baseExternalFeaturesPath ?? join(this.basePath, 'node_modules')
         );
 
         if (serveExternalFeaturesPath) {
@@ -269,11 +279,7 @@ export class Application {
 
         externalFeatureDefinitions.push(...providedExternalFeaturesDefinitions);
 
-        const externalFeatures = getExternalFeatures(
-            externalFeatureDefinitions,
-            [...getExportedEnvironments(new Map(features))],
-            resolvedExternalFeaturesPath
-        );
+        const externalFeatures = getExternalFeatures(externalFeatureDefinitions, resolvedExternalFeaturesPath);
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
@@ -424,15 +430,18 @@ export class Application {
         features,
         featureName,
         configName,
+        entryPoints,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
+        entryPoints: Record<string, string>;
     }) {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
+            entryPoints,
         };
 
         await fs.promises.ensureDirectory(this.outputPath);
@@ -460,7 +469,7 @@ export class Application {
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
         const environments = getExportedEnvironments(features);
-        const webpackConfigs = createWebpackConfigs({
+        const { configurations: webpackConfigs, entries } = createWebpackConfigs({
             baseConfig,
             context: basePath,
             mode,
@@ -483,7 +492,7 @@ export class Application {
 
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
-        return compiler;
+        return { compiler, entries };
     }
 
     protected analyzeFeatures() {
@@ -511,14 +520,14 @@ export class Application {
         for (const feature of features.values()) {
             if (featureName === feature.scopedName) {
                 for (const [envName, childEnvs] of nodeEnvs) {
-                    fs.writeFileSync(
-                        join(this.outputPath, `${envName}.node.js`),
-                        createExternalNodeEntrypoint({
-                            ...feature,
-                            childEnvs,
-                            envName,
-                        })
-                    );
+                    const entryPath = join(this.outputPath, `${envName}.node.js`);
+                    const entryCode = createExternalNodeEntrypoint({
+                        ...feature,
+                        childEnvs,
+                        envName,
+                    });
+                    fs.writeFileSync(entryPath, entryCode);
+                    nodeEntries[entryPath] = entryCode;
                 }
             }
         }
