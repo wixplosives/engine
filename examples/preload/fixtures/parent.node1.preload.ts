@@ -1,5 +1,5 @@
-globalThis.envMessages = [...(globalThis.envMessages ?? []), 'node', 'parentPreload'];
+globalThis.envMessages = [...(globalThis.envMessages ?? []), 'parentPreload'];
 
 export const init = () => {
-    globalThis.envMessages = [...(globalThis.envMessages ?? []), 'node', 'parentPreloadInit'];
+    globalThis.envMessages = [...(globalThis.envMessages ?? []), 'parentPreloadInit'];
 };
