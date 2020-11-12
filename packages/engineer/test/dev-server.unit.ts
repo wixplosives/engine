@@ -512,9 +512,9 @@ describe('engineer:dev-server', function () {
             { timeout: 5_000 }
         );
         const button = await page.$('#server-slot');
-        await button?.click();
         await waitFor(
             async () => {
+                await button?.click();
                 const elem = await page.$('#server-slot-value');
                 expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
             },
