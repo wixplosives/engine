@@ -267,5 +267,4 @@ export interface EngineConfig {
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
     socketServerOptions?: Partial<io.ServerOptions>;
-    webpackConfigPath?: string;
 }

@@ -121,7 +121,7 @@ export class Application {
         overrideConfig,
         webpackConfigPath,
     }: IBuildOptions = {}): Promise<webpack.compilation.MultiStats> {
-        const { require, webpackConfigPath: definedWebpackConfigPath } = (await this.getEngineConfig()) ?? {};
+        const { require } = (await this.getEngineConfig()) ?? {};
         if (require) {
             await this.importModules(require);
         }
@@ -141,7 +141,7 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
-            webpackConfigPath: webpackConfigPath ?? definedWebpackConfigPath,
+            webpackConfigPath,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
