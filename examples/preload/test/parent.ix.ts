@@ -27,6 +27,15 @@ describe('Parent feature', function () {
         const content = await page.$eval('#envMessages', (e) => e.textContent!);
         const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; worker: string[] };
 
-        expect(parsedContent.node).to.eql(['node', 'preload', 'feature', 'enveval', 'parentEnvEval']);
+        expect(parsedContent.node).to.eql([
+            'node',
+            'preload',
+            'parentPreload',
+            'preloadInit',
+            'parentPreloadInit',
+            'feature',
+            'enveval',
+            'parentEnvEval',
+        ]);
     });
 });

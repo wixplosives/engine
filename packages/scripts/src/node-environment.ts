@@ -77,23 +77,25 @@ export function createFeatureLoaders(
         preloadFilePaths,
     } of features.values()) {
         featureLoaders[scopedName] = {
-            preload: async (currentContext, runtimeOptions) => {
+            preload: async (currentContext) => {
+                const initFunctions = [];
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
                     if (contextPreloadFilePath) {
                         const preloadedContextModule = (await import(contextPreloadFilePath)) as IPreloadModule;
                         if (preloadedContextModule.init) {
-                            await preloadedContextModule.init(runtimeOptions);
+                            initFunctions.push(preloadedContextModule.init);
                         }
                     }
                 }
                 const preloadFilePath = preloadFilePaths[envName];
                 if (preloadFilePath) {
-                    const preloadModule = (await import(preloadFilePath)) as IPreloadModule;
-                    if (preloadModule.init) {
-                        await preloadModule.init(runtimeOptions);
+                    const preloadedModule = (await import(preloadFilePath)) as IPreloadModule;
+                    if (preloadedModule.init) {
+                        initFunctions.push(preloadedModule.init);
                     }
                 }
+                return initFunctions;
             },
             load: async (currentContext) => {
                 if (childEnvName && currentContext[envName] === childEnvName) {

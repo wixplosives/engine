@@ -29,7 +29,7 @@ describe('All Environment', () => {
         const content = await page.$eval('#envMessages', (e) => e.textContent!);
         const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; worker: string[] };
 
-        expect(parsedContent.node).to.eql(['node', 'preload', 'feature', 'enveval']);
+        expect(parsedContent.node).to.eql(['node', 'preload', 'preloadInit', 'feature', 'enveval']);
 
         const runtimeOptionsContent = await page.$eval('#runtimeOptions', (e) => e.textContent!);
         const runtimeOptionsparsedContent = JSON.parse(runtimeOptionsContent) as {
