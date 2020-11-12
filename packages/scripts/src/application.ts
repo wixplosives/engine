@@ -121,9 +121,9 @@ export class Application {
         overrideConfig,
         webpackConfigPath,
     }: IBuildOptions = {}): Promise<webpack.compilation.MultiStats> {
-        const engineConfig = await this.getEngineConfig();
-        if (engineConfig && engineConfig.require) {
-            await this.importModules(engineConfig.require);
+        const { require, webpackConfigPath: definedWebpackConfigPath } = (await this.getEngineConfig()) ?? {};
+        if (require) {
+            await this.importModules(require);
         }
         const { features, configurations } = this.analyzeFeatures();
         if (singleFeature && featureName) {
@@ -141,7 +141,7 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
-            webpackConfigPath,
+            webpackConfigPath: webpackConfigPath ?? definedWebpackConfigPath,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>

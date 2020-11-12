@@ -71,8 +71,12 @@ devServerFeature.setup(
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
-            const { require, socketServerOptions: configServerOptions, serveStatic } =
-                (await application.getEngineConfig()) ?? {};
+            const {
+                require,
+                socketServerOptions: configServerOptions,
+                serveStatic,
+                webpackConfigPath: definedWebpackConfigPath,
+            } = (await application.getEngineConfig()) ?? {};
             if (require) {
                 await application.importModules(require);
             }
@@ -139,7 +143,7 @@ devServerFeature.setup(
                 features,
                 staticBuild: false,
                 configurations,
-                webpackConfigPath,
+                webpackConfigPath: webpackConfigPath ?? definedWebpackConfigPath,
             });
             for (const childCompiler of compiler.compilers) {
                 if (singleRun) {
