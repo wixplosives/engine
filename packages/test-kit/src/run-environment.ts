@@ -67,8 +67,9 @@ export async function runEngineEnvironment({
             "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
         );
     }
+
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
-    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
+    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, runtimeOptions);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]];
     for (const { name, envEntries } of externalFeatures) {
         if (envEntries[name]) {
@@ -79,7 +80,7 @@ export async function runEngineEnvironment({
                 featureLoader.register(name, loader);
             }
         }
-        for (const feature of await featureLoader.getLoadedFeatures(name)) {
+        for (const feature of await featureLoader.getLoadedFeatures(name, runtimeOptions)) {
             runningFeatures.push(feature);
         }
     }

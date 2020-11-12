@@ -105,7 +105,9 @@ export function createMainEntrypoint({
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import * as EngineCore from '@wixc3/engine-core';
-
+if(!self.EngineCore) {
+    self.EngineCore = EngineCore;
+}
 const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
 
 const featureLoaders = new Map(Object.entries({
@@ -376,9 +378,6 @@ function loadExternalFeatures(
                 : ''
         };
         if(externalFeatures.length) {
-            if(!self.EngineCore) {
-                self.EngineCore = EngineCore;
-            }
             const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName])).filter(Boolean);
             await ${target === 'web' ? loadScripts() : importScripts()}(entryPaths);
 

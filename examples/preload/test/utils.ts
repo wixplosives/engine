@@ -4,9 +4,11 @@ import { createBrowserProvider } from '@wixc3/engine-test-kit';
 export const startServerNewProcess = async ({
     projectPath,
     featureName,
+    runtimeOptions = {},
 }: {
     projectPath: string;
     featureName: string;
+    runtimeOptions?: Record<string, string | boolean>;
 }) => {
     const { dispose, devServerFeature } = await startDevServer({
         targetApplicationPath: projectPath,
@@ -16,6 +18,7 @@ export const startServerNewProcess = async ({
         // We are using forked to guarentee that each node env runs in its own process
         // This is retquired in this set of tests because it validates changes to globals
         nodeEnvironmentsMode: 'forked',
+        runtimeOptions,
     });
 
     const runningPort = await new Promise<number>((resolve) => {

@@ -1,11 +1,4 @@
-import {
-    CALLBACK_TIMEOUT,
-    DUPLICATE_REGISTER,
-    MISSING_ENV,
-    REMOTE_CALL_FAILED,
-    reportError,
-    UNKNOWN_CALLBACK_ID,
-} from './errors';
+import { CALLBACK_TIMEOUT, DUPLICATE_REGISTER, REMOTE_CALL_FAILED, reportError, UNKNOWN_CALLBACK_ID } from './errors';
 import { isWindow, isWorkerContext, MultiCounter } from './helpers';
 import type {
     CallbackMessage,
@@ -520,14 +513,10 @@ export class Communication {
         }
     }
     private sendTo(envId: string, message: Message): void {
-        const start = this.resolveMessageTarget(envId);
-        if (!start) {
-            throw new Error(MISSING_ENV(envId, Object.keys(this.environments)));
-        }
         if (this.pendingEnvs.get(envId)) {
-            this.pendingMessages.add(envId, () => this.post(start, message));
+            this.pendingMessages.add(envId, () => this.post(this.resolveMessageTarget(envId), message));
         } else {
-            this.post(start, message);
+            this.post(this.resolveMessageTarget(envId), message);
         }
     }
 

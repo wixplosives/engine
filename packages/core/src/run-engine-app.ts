@@ -19,9 +19,16 @@ export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) =>
 
 export interface IFeatureLoader {
     load: (resolvedContexts: Record<string, string>) => Promise<Feature>;
-    preload: (resolveContexts: Record<string, string>) => Promise<void>;
+    preload: (
+        resolveContexts: Record<string, string>,
+        runtimeOptions: Record<string, string | boolean>
+    ) => Promise<void>;
     depFeatures: string[];
     resolvedContexts: Record<string, string>;
+}
+
+export interface IPreloadModule {
+    init?: (runtimeOptions?: Record<string, string | boolean>) => Promise<void> | void;
 }
 
 export interface IRunEngineAppOptions {
@@ -85,7 +92,10 @@ export class FeatureLoadersRegistry {
     /**
      * returns all features which were actially loaded
      */
-    async getLoadedFeatures(rootFeatureName: string): Promise<Feature[]> {
+    async getLoadedFeatures(
+        rootFeatureName: string,
+        runtimeOptions: Record<string, string | boolean> = {}
+    ): Promise<Feature[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);
         for await (const depName of dependencies.reverse()) {
@@ -98,7 +108,7 @@ export class FeatureLoadersRegistry {
         const featureLoaders = await Promise.all(loaded);
         for (const featureLoader of featureLoaders) {
             if (featureLoader.preload) {
-                await featureLoader.preload(this.resolvedContexts);
+                await featureLoader.preload(this.resolvedContexts, runtimeOptions);
             }
         }
         return Promise.all(featureLoaders.map(({ load }) => load(this.resolvedContexts)));
