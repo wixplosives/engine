@@ -22,7 +22,7 @@ export interface IFeatureLoader {
     preload: (
         resolveContexts: Record<string, string>,
         runtimeOptions: Record<string, string | boolean>
-    ) => Promise<void>;
+    ) => Promise<Array<(runtimeOptions: Record<string, string | boolean>) => void | Promise<void>>>;
     depFeatures: string[];
     resolvedContexts: Record<string, string>;
 }
@@ -108,10 +108,14 @@ export class FeatureLoadersRegistry {
             }
         }
         const featureLoaders = await Promise.all(loaded);
+        const allPreloadInitFunctions = [];
         for (const featureLoader of featureLoaders) {
             if (featureLoader.preload) {
-                await featureLoader.preload(this.resolvedContexts, runtimeOptions);
+                allPreloadInitFunctions.push(...(await featureLoader.preload(this.resolvedContexts, runtimeOptions)));
             }
+        }
+        for (const initFunction of allPreloadInitFunctions) {
+            await initFunction(runtimeOptions);
         }
         return Promise.all(featureLoaders.map(({ load }) => load(this.resolvedContexts)));
     }
