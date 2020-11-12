@@ -325,7 +325,9 @@ function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
 }
 
 function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
-    return `import(/* webpackChunkName: "${filePath}" */ /* webpackMode: 'eager' */ ${JSON.stringify(
+    return `import(/* webpackChunkName: "[config]${scopedName}${
+        configEnvName ?? ''
+    }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
         topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
     )})`;
 }
