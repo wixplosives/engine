@@ -42,7 +42,6 @@ program
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
-    .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with', 'engineer/gui')
     .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts', '.')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -62,7 +61,6 @@ program
             engineerEntry,
             inspect,
             featureDiscoveryRoot,
-            webpackConfig,
         } = cmd;
 
         try {
@@ -83,7 +81,6 @@ program
                 runtimeOptions: parseCliArguments(process.argv.slice(3)),
                 inspect,
                 featureDiscoveryRoot,
-                webpackConfigPath: webpackConfig,
             });
 
             const { port } = await new Promise((resolve) => {

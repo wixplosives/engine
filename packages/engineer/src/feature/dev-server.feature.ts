@@ -25,7 +25,6 @@ export interface DevServerConfig {
     outputPath?: string;
     featureDiscoveryRoot?: string;
     socketServerOptions?: Partial<io.ServerOptions>;
-    webpackConfigPath?: string;
 }
 
 export interface DevServerActions {

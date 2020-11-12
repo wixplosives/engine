@@ -62,7 +62,6 @@ devServerFeature.setup(
             outputPath,
             featureDiscoveryRoot,
             socketServerOptions,
-            webpackConfigPath,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -139,7 +138,6 @@ devServerFeature.setup(
                 features,
                 staticBuild: false,
                 configurations,
-                webpackConfigPath,
             });
             for (const childCompiler of compiler.compilers) {
                 if (singleRun) {
