@@ -181,17 +181,17 @@ export class Application {
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
-            socketServerOptions,
+            socketServerOptions: runtimeSocketServerOptions,
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
         const disposables = new Set<() => unknown>();
         const configurations = await this.readConfigs();
-
+        const socketServerOptions = { ...runtimeSocketServerOptions, ...engineConfig?.socketServerOptions };
         const { port, close, socketServer, app } = await launchHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort,
-            socketServerOptions: { ...socketServerOptions, ...engineConfig?.socketServerOptions },
+            socketServerOptions,
         });
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
         disposables.add(() => close());
@@ -206,7 +206,7 @@ export class Application {
                 overrideConfig: config,
                 configurations,
             },
-            { ...socketServerOptions, ...engineConfig?.socketServerOptions }
+            socketServerOptions
         );
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
