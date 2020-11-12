@@ -191,7 +191,7 @@ export class Application {
         const { port, close, socketServer, app } = await launchHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort,
-            socketServerOptions,
+            socketServerOptions: { ...socketServerOptions, ...engineConfig?.socketServerOptions },
         });
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
         disposables.add(() => close());
@@ -206,7 +206,7 @@ export class Application {
                 overrideConfig: config,
                 configurations,
             },
-            engineConfig?.socketServerOptions
+            { ...socketServerOptions, ...engineConfig?.socketServerOptions }
         );
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
