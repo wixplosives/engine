@@ -137,6 +137,14 @@ devServerFeature.setup(
                     route: `/${EXTERNAL_FEATURES_BASE_URI}`,
                     directoryPath: externalFeaturesPath,
                 });
+                for (const { packageName, packagePath } of externalFeatureDefinitions) {
+                    if (packagePath) {
+                        serveStatic.push({
+                            route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
+                            directoryPath: packagePath,
+                        });
+                    }
+                }
             }
 
             if (serveStatic) {

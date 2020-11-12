@@ -269,6 +269,15 @@ export class Application {
                 route: `/${EXTERNAL_FEATURES_BASE_URI}`,
                 directoryPath: resolvedExternalFeaturesPath,
             });
+
+            for (const { packageName, packagePath } of externalFeatureDefinitions) {
+                if (packagePath) {
+                    serveStatic.push({
+                        route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
+                        directoryPath: packagePath,
+                    });
+                }
+            }
         }
 
         if (serveStatic) {

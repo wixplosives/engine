@@ -278,6 +278,11 @@ export interface IExternalDefinition {
      * @default dist
      */
     outDir?: string;
+
+    /**
+     * path to the package of the external feature
+     */
+    packagePath?: string;
 }
 
 export interface EngineConfig {
