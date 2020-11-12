@@ -50,6 +50,7 @@ export interface IBuildOptions extends IFeatureTarget {
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
+    webpackConfigPath?: string;
 }
 
 export interface IRunOptions extends IBuildOptions {
@@ -86,6 +87,7 @@ export interface ICompilerOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     singleFeature?: boolean;
+    webpackConfigPath?: string;
 }
 
 export class Application {
@@ -117,6 +119,7 @@ export class Application {
         title,
         publicConfigsRoute,
         overrideConfig,
+        webpackConfigPath,
     }: IBuildOptions = {}): Promise<webpack.compilation.MultiStats> {
         const engineConfig = await this.getEngineConfig();
         if (engineConfig && engineConfig.require) {
@@ -138,6 +141,7 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
+            webpackConfigPath,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -368,9 +372,12 @@ export class Application {
         publicConfigsRoute,
         overrideConfig,
         singleFeature,
+        webpackConfigPath,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
-        const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
+        const baseConfigPath = webpackConfigPath
+            ? fs.resolve(webpackConfigPath)
+            : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
         const enviroments = new Set<IEnvironment>();
