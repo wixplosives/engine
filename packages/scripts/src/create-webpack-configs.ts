@@ -105,12 +105,9 @@ export function createWebpackConfigs(
     function filterExternalFeatures(envs: Map<string, string[]>): IExtenalFeatureDescriptor[] {
         return options.externalFeatures.map<IExtenalFeatureDescriptor>((descriptor) => ({
             ...descriptor,
-            envEntries: Object.entries(descriptor.envEntries)
-                .filter(([envName]) => envs.has(envName))
-                .reduce((acc, [key, val]) => {
-                    acc[key] = val;
-                    return acc;
-                }, {} as Record<string, string>),
+            envEntries: Object.fromEntries(
+                Object.entries(descriptor.envEntries).filter(([envName]) => envs.has(envName))
+            ),
         }));
     }
 }

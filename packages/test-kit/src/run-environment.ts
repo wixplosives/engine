@@ -72,9 +72,11 @@ export async function runEngineEnvironment({
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, runtimeOptions);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]];
     for (const { name, envEntries } of externalFeatures) {
-        if (envEntries[name]) {
+        if (envEntries[name]['node']) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const externalFeatureLoaders = require(envEntries[name]) as { [featureName: string]: IFeatureLoader };
+            const externalFeatureLoaders = require(envEntries[name]['node']) as {
+                [featureName: string]: IFeatureLoader;
+            };
 
             for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
                 featureLoader.register(name, loader);

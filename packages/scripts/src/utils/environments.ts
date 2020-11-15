@@ -4,7 +4,8 @@ import type { IEnvironment, IFeatureDefinition } from '../types';
 export function getEnvironmntsForFeature(
     featureName: string,
     features: Map<string, IFeatureDefinition>,
-    envTypes?: EnvironmentTypes[] | EnvironmentTypes
+    envTypes?: EnvironmentTypes[] | EnvironmentTypes,
+    filterByContext = true
 ) {
     const environmentTypesToFilterBy = Array.isArray(envTypes) ? envTypes : [envTypes];
     const filteredEnvironments = new Set<IEnvironment>();
@@ -22,7 +23,9 @@ export function getEnvironmntsForFeature(
         for (const exportedEnv of exportedEnvs) {
             if (
                 (!envTypes || environmentTypesToFilterBy.includes(exportedEnv.type)) &&
-                (!exportedEnv.childEnvName || resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
+                (!filterByContext ||
+                    !exportedEnv.childEnvName ||
+                    resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
             ) {
                 filteredEnvironments.add(exportedEnv);
             }

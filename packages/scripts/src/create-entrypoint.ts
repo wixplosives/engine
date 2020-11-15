@@ -378,7 +378,7 @@ function loadExternalFeatures(
                 : ''
         };
         if(externalFeatures.length) {
-            const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName])).filter(Boolean);
+            const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
             await ${target === 'web' ? loadScripts() : importScripts()}(entryPaths);
 
             for (const { name } of externalFeatures) {

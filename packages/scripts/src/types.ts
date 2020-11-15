@@ -21,7 +21,7 @@ export interface IFeatureTarget {
 
 export interface IExtenalFeatureDescriptor {
     name: string;
-    envEntries: Record<string, string>;
+    envEntries: Record<string, Record<string, string>>;
 }
 
 export interface StartEnvironmentOptions extends IEnvironment {

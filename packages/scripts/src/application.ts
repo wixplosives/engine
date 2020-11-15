@@ -80,7 +80,7 @@ export interface IBuildManifest {
     features: Array<[string, IFeatureDefinition]>;
     defaultFeatureName?: string;
     defaultConfigName?: string;
-    entryPoints: Record<string, string>;
+    entryPoints: Record<string, Record<string, string>>;
 }
 
 export interface ICreateOptions {
@@ -154,7 +154,7 @@ export class Application {
             await this.importModules(require);
         }
 
-        const entryPoints: Record<string, string> = {};
+        const entryPoints: Record<string, Record<string, string>> = {};
 
         if (external && !featureName) {
             throw new Error('You must specify a feature name when building a feature in external mode');
@@ -189,7 +189,7 @@ export class Application {
 
         for (const [filePath] of Object.entries(webEntries)) {
             const [envName, target] = fs.basename(filePath).split('.')[0].split('-');
-            entryPoints[envName] = join(outDir, `${envName}.${target}.js`);
+            entryPoints[envName] = { ...entryPoints[envName], [target]: join(outDir, `${envName}.${target}.js`) };
         }
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -205,10 +205,10 @@ export class Application {
         );
 
         if (external) {
-            const nodeEntries = this.createNodeEntries(features, featureName!, singleFeature);
+            const nodeEntries = this.createNodeEntries(features, featureName!);
             for (const [filePath] of Object.entries(nodeEntries)) {
                 const [envName, target] = fs.basename(filePath).split('.');
-                entryPoints[envName] = join(outDir, `${envName}.${target}.js`);
+                entryPoints[envName] = { ...entryPoints[envName], [target]: join(outDir, `${envName}.${target}.js`) };
             }
         }
 
@@ -448,7 +448,7 @@ export class Application {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
-        entryPoints: Record<string, string>;
+        entryPoints: Record<string, Record<string, string>>;
     }) {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()),
@@ -521,17 +521,14 @@ export class Application {
         return { ...featuresAndConfigs, packages };
     }
 
-    protected createNodeEntries(
-        features: Map<string, IFeatureDefinition>,
-        featureName: string,
-        singleFeature?: boolean
-    ) {
+    protected createNodeEntries(features: Map<string, IFeatureDefinition>, featureName: string) {
         const nodeEntries: Record<string, string> = {};
         const { nodeEnvs } = getResolvedEnvironments({
             featureName,
-            singleFeature,
+            // we want to build all possible node entrypoints. this basically ignores the resolvedContexts
+            singleFeature: false,
             features,
-            environments: [...getEnvironmntsForFeature(featureName, features, 'node')],
+            environments: [...getEnvironmntsForFeature(featureName, features, 'node', false)],
         });
         for (const feature of features.values()) {
             if (featureName === feature.scopedName) {
