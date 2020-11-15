@@ -5,7 +5,7 @@ export function createBrowserProvider(options?: LaunchOptions) {
     return {
         async loadPage(url: string) {
             if (!browser) {
-                browser = await launch({ ...options, pipe: true });
+                browser = await launch(options);
             }
             const page = await browser.newPage();
             await page.goto(url, { waitUntil: 'networkidle0' });
