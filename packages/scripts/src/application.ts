@@ -60,6 +60,7 @@ export interface IRunApplicationOptions extends IFeatureTarget {
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
+    webpackConfigPath?: string;
 }
 
 export interface IBuildCommandOptions extends IRunApplicationOptions {
@@ -109,6 +110,7 @@ export interface ICompilerOptions {
     isExternal: boolean;
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
+    webpackConfigPath?: string;
 }
 
 export class Application {
@@ -144,6 +146,7 @@ export class Application {
         staticBuild = true,
         withExternalFeatures,
         fetchExternalFeatures = !withExternalFeatures,
+        webpackConfigPath,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const { require, externalFeatureDefinitions, externalFeaturesPath = join(this.basePath, 'node_modules') } =
             (await this.getEngineConfig()) ?? {};
@@ -180,6 +183,7 @@ export class Application {
                     ? getExternalFeatures(externalFeatureDefinitions, externalFeaturesPath)
                     : [],
             fetchFeatures: fetchExternalFeatures,
+            webpackConfigPath,
         });
         const outDir = fs.basename(this.outputPath);
 
@@ -237,13 +241,13 @@ export class Application {
             externalFeaturesPath: providedExternalFeatuersPath,
             serveExternalFeaturesPath: providedServeExternalFeaturesPath,
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
-            socketServerOptions,
+            socketServerOptions: runtimeSocketServerOptions,
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
         const disposables = new Set<() => unknown>();
         const configurations = await this.readConfigs();
-
+        const socketServerOptions = { ...runtimeSocketServerOptions, ...engineConfig?.socketServerOptions };
         const { port, close, socketServer, app } = await launchHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort,
@@ -472,9 +476,12 @@ export class Application {
         isExternal,
         externalFeatures,
         fetchFeatures,
+        webpackConfigPath,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
-        const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
+        const baseConfigPath = webpackConfigPath
+            ? fs.resolve(webpackConfigPath)
+            : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
         const environments = getExportedEnvironments(features);

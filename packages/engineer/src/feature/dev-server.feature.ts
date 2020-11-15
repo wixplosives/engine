@@ -28,6 +28,7 @@ export interface DevServerConfig {
     serveExternalFeaturesPath?: boolean;
     featureDiscoveryRoot?: string;
     socketServerOptions?: Partial<io.ServerOptions>;
+    webpackConfigPath?: string;
 }
 
 export interface DevServerActions {

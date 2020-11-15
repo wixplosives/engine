@@ -69,6 +69,7 @@ devServerFeature.setup(
             serveExternalFeaturesPath = true,
             featureDiscoveryRoot,
             socketServerOptions = {},
+            webpackConfigPath,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -175,6 +176,7 @@ devServerFeature.setup(
                 configurations,
                 isExternal: false,
                 externalFeatures,
+                webpackConfigPath,
             });
 
             for (const childCompiler of compiler.compilers) {
