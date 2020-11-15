@@ -6,7 +6,7 @@ import { startServerNewProcess } from './utils';
 describe('Contextual preload', () => {
     const projectPath = dirname(require.resolve('../package.json'));
     const disposables = createDisposables();
-    afterEach(async () => await disposables.dispose());
+    afterEach(disposables.dispose);
 
     describe('node context', () => {
         // Preload declares 2 messages, nodeCtx declares 1, procEnv declares 1
@@ -17,13 +17,9 @@ describe('Contextual preload', () => {
                 projectPath,
                 featureName,
             });
-            disposables.add(async () => await dispose());
-            disposables.add(async () => {
-                await browserProvider.disposePages();
-                await browserProvider.dispose();
-            });
+            disposables.add(browserProvider.dispose);
+            disposables.add(dispose);
             const page = await browserProvider.loadPage(featureUrl);
-            disposables.add(async () => await page.close());
 
             await page.waitForSelector('#envMessages');
             const content = await page.$eval('#envMessages', (e) => e.textContent!);
@@ -32,6 +28,7 @@ describe('Contextual preload', () => {
             expect(parsedContent.proc).to.eql(['nodeCtx', 'preload', 'nodeEnvCtxEval', 'procEnvEval']);
         });
     });
+
     describe('worker context', () => {
         // Preload declares 2 messages, workerCtx declares 1, procEnv declares 1
         const featureName = 'preload/contextual-worker';
@@ -41,13 +38,9 @@ describe('Contextual preload', () => {
                 projectPath,
                 featureName,
             });
-            disposables.add(async () => await dispose());
-            disposables.add(async () => {
-                await browserProvider.disposePages();
-                await browserProvider.dispose();
-            });
+            disposables.add(browserProvider.dispose);
+            disposables.add(dispose);
             const page = await browserProvider.loadPage(featureUrl);
-            disposables.add(async () => await page.close());
 
             await page.waitForSelector('#envMessages');
             const content = await page.$eval('#envMessages', (e) => e.textContent!);

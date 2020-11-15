@@ -20,7 +20,7 @@ describe('Node environments manager', function () {
         await app.build();
         disposables.add(() => app.clean());
         const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
-        disposables.add(() => close());
+        disposables.add(close);
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
@@ -35,7 +35,7 @@ describe('Node environments manager', function () {
         await app.build();
         disposables.add(() => app.clean());
         const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
-        disposables.add(() => close());
+        disposables.add(close);
 
         const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
 
@@ -54,7 +54,7 @@ describe('Node environments manager', function () {
         await app.build();
         disposables.add(() => app.clean());
         const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
-        disposables.add(() => close());
+        disposables.add(close);
 
         await expect(
             nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
@@ -68,7 +68,7 @@ describe('Node environments manager', function () {
         await app.build();
         disposables.add(() => app.clean());
         const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
-        disposables.add(() => close());
+        disposables.add(close);
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
         await expect(nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(

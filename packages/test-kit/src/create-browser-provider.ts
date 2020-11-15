@@ -11,14 +11,6 @@ export function createBrowserProvider(options?: LaunchOptions) {
             await page.goto(url, { waitUntil: 'networkidle0' });
             return page;
         },
-        async disposePages() {
-            if (browser) {
-                const pages = await browser.pages();
-                for (const page of pages) {
-                    await page.close();
-                }
-            }
-        },
         async dispose() {
             if (browser && browser.isConnected) {
                 await browser.close();

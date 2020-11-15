@@ -19,7 +19,7 @@ describe('Application', function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
-    after(() => browserProvider.dispose());
+    after(browserProvider.dispose);
 
     const loadPage = async (url: string) => {
         const page = await browserProvider.loadPage(url);
@@ -52,7 +52,7 @@ describe('Application', function () {
             disposables.add(() => app.clean());
 
             const { close, port } = await app.run();
-            disposables.add(() => close());
+            disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
 
@@ -72,7 +72,7 @@ describe('Application', function () {
             const { close, port } = await app.run({
                 publicConfigsRoute: 'configs',
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
 
@@ -97,7 +97,7 @@ describe('Application', function () {
             const { close, port } = await app.run({
                 featureName: 'engine-single/x',
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
             await waitFor(async () => {
@@ -159,7 +159,7 @@ describe('Application', function () {
                 featureName: 'engine-single/x',
                 overrideConfig,
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
             await waitFor(async () => {
@@ -187,7 +187,7 @@ describe('Application', function () {
                 featureName: 'engine-single/x',
                 overrideConfig,
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
             await waitFor(async () => {
@@ -210,7 +210,7 @@ describe('Application', function () {
         await app.build();
         disposables.add(() => app.clean());
         const { close, port, router } = await app.run({ singleRun: true });
-        disposables.add(() => close());
+        disposables.add(close);
         router.get('/test/me', (_req, res) => {
             res.send('OK');
         });

@@ -87,7 +87,7 @@ devServerFeature.setup(
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost
