@@ -29,7 +29,13 @@ describe('Contextual preload', () => {
             const content = await page.$eval('#envMessages', (e) => e.textContent!);
             const parsedContent = JSON.parse(content) as { proc: string[] };
 
-            expect(parsedContent.proc).to.eql(['nodeCtx', 'preload', 'nodeEnvCtxEval', 'procEnvEval']);
+            expect(parsedContent.proc).to.eql([
+                'procEnvContextualNoContextPreload',
+                'nodeCtx',
+                'preload',
+                'nodeEnvCtxEval',
+                'procEnvEval',
+            ]);
         });
     });
     describe('worker context', () => {
