@@ -4,7 +4,7 @@ import rimrafCb from 'rimraf';
 import webpack from 'webpack';
 import fs from '@file-services/node';
 import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree, createDisposables } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -185,7 +185,7 @@ export class Application {
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
-        const disposables = new Set<() => unknown>();
+        const disposables = createDisposables();
         const configurations = await this.readConfigs();
         const socketServerOptions = { ...runtimeSocketServerOptions, ...engineConfig?.socketServerOptions };
         const { port, close, socketServer, app } = await launchHttpServer({
@@ -194,7 +194,7 @@ export class Application {
             socketServerOptions,
         });
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
-        disposables.add(() => close());
+        disposables.add(close);
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
@@ -235,12 +235,7 @@ export class Application {
             port,
             router: app,
             nodeEnvironmentManager,
-            async close() {
-                for (const dispose of disposables) {
-                    await dispose();
-                }
-                disposables.clear();
-            },
+            close: disposables.dispose,
         };
     }
 
