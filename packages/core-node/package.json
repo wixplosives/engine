@@ -8,8 +8,8 @@
     "test:node": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
-    "@types/cookie": "*",
-    "@types/cors": "*",
+    "@types/cookie": "^0.4.0",
+    "@types/cors": "^2.8.8",
     "@wixc3/engine-core": "^16.3.2",
     "create-listening-server": "^1.0.0",
     "express": "^4.17.1",
