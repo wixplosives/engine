@@ -7967,10 +7967,10 @@ socket.io-adapter@~2.0.3:
   resolved "https://registry.yarnpkg.com/socket.io-adapter/-/socket.io-adapter-2.0.3.tgz#372b7cde7a535fc4f4f0d5ac7f73952a3062d438"
   integrity sha512-2wo4EXgxOGSFueqvHAdnmi5JLZzWqMArjuP4nqC26AtLh5PoCPsaRbRdah2xhcwTAMooZfjYiNVNkkmmSMaxOQ==
 
-socket.io-client@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/socket.io-client/-/socket.io-client-3.0.1.tgz#1f3e9c78c233181fa54401f4cb46c4db513c48e8"
-  integrity sha512-iIzWRDrF/h3KPtHjvLt5LL/1n7Euvv35zVa1r10ScRjVw40yc8DxFj7GnKrj1RNYkbtveWOwEsy2lWp3oFJO7w==
+socket.io-client@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/socket.io-client/-/socket.io-client-3.0.2.tgz#7984b1cd8e7274f8a53d032b01fb15694a0210d5"
+  integrity sha512-SEgeBLWAztLoOIePauBEvY1plhheShoNY7CA5gUnrjBxe+NOYiK+neazrpdXQ2RYYBlXXEosPWCtEhKydVdagA==
   dependencies:
     "@types/component-emitter" "^1.2.10"
     backo2 "1.0.2"
