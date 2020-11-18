@@ -7,7 +7,7 @@
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "peerDependencies": {
-    "webpack": ">=4"
+    "webpack": "^4.0.0"
   },
   "dependencies": {
     "@file-services/node": "^4.1.2",
