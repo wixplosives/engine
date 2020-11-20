@@ -181,7 +181,7 @@ export class Communication {
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>
     ): Promise<unknown> {
-        return new Promise((res, rej) => {
+        return new Promise<void>((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
 
             if (this.isListenCall(args) || serviceComConfig[method]?.removeAllListeners) {
@@ -372,7 +372,7 @@ export class Communication {
     private async forwardListenMessage(message: ListenMessage): Promise<void> {
         const callbackId = this.idsCounter.next('c');
 
-        const data = await new Promise((res, rej) => {
+        const data = await new Promise<void>((res, rej) => {
             const handlerId = message.data.handlerId;
             this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
                 this.sendTo(message.from, {
@@ -599,7 +599,7 @@ export class Communication {
         const handlerPrefix = `${message.from}__${message.to}_`;
         const { method, api } = this.parseHandlerId(message.data.handlerId, handlerPrefix);
 
-        const data = await new Promise((res, rej) =>
+        const data = await new Promise<void>((res, rej) =>
             this.addOrRemoveListener(
                 message.to,
                 api,

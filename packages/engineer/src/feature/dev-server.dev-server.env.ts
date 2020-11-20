@@ -151,7 +151,9 @@ devServerFeature.setup(
                     publicPath: '/',
                     logLevel: 'silent',
                 });
-                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                disposables.add(
+                    () => new Promise<void>((res) => devMiddleware.close(res))
+                );
                 app.use(devMiddleware);
             }
 
@@ -197,7 +199,9 @@ devServerFeature.setup(
                     publicPath: '/',
                     logLevel: 'silent',
                 });
-                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                disposables.add(
+                    () => new Promise<void>((res) => devMiddleware.close(res))
+                );
                 app.use(devMiddleware);
             }
 

@@ -69,7 +69,7 @@ export class AttachedApp implements IExecutableApplication {
                             const response = JSON.parse(responseChunks.join()) as IProcessMessage<ResponseType>;
                             resolve(response.payload);
                         } else {
-                            resolve();
+                            resolve({} as ResponseType);
                         }
                     });
                     res.on('error', reject);

@@ -40,7 +40,7 @@ export function createFeaturesEngineRouter(
                     featureName,
                 },
             } as IProcessMessage<IFeatureMessagePayload>);
-        } catch (error) {
+        } catch (error: unknown) {
             res.status(404).json({
                 id: 'error',
                 error: error && (error as Error).message,
@@ -62,7 +62,7 @@ export function createFeaturesEngineRouter(
                     configName,
                 },
             } as IProcessMessage<IFeatureMessagePayload>);
-        } catch (error) {
+        } catch (error: unknown) {
             res.status(404).json({
                 result: 'error',
                 error: error && (error as Error).message,
@@ -77,7 +77,7 @@ export function createFeaturesEngineRouter(
                 result: 'success',
                 data,
             });
-        } catch (error) {
+        } catch (error: unknown) {
             res.status(404).json({
                 result: 'error',
                 error: error && (error as Error).message,
@@ -94,7 +94,7 @@ export function createFeaturesEngineRouter(
                     measures: performance.getEntriesByType('measure'),
                 },
             });
-        } catch (error) {
+        } catch (error: unknown) {
             res.status(404).json({
                 result: 'error',
                 error: error && (error as Error).message,

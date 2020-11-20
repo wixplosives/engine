@@ -283,7 +283,7 @@ export class NodeEnvironmentsManager {
             port: this.options.port,
         });
         const port = await remoteNodeEnvironment.getRemotePort();
-        const startMessage = new Promise((resolve) => {
+        const startMessage = new Promise<void>((resolve) => {
             remoteNodeEnvironment.subscribe((message) => {
                 if (isEnvironmentStartMessage(message)) {
                     resolve();
