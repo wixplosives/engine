@@ -9,7 +9,7 @@ import {
     createLiveConfigsMiddleware,
     createConfigMiddleware,
 } from '@wixc3/engine-scripts';
-import WebpackDevMiddleware from 'webpack-dev-middleware';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
@@ -147,10 +147,7 @@ devServerFeature.setup(
                     // It was once a crash, which is no longer relevant
                     childCompiler.watch = singleRunWatchFunction(childCompiler);
                 }
-                const devMiddleware = WebpackDevMiddleware(childCompiler, {
-                    publicPath: '/',
-                    logLevel: 'silent',
-                });
+                const devMiddleware = webpackDevMiddleware(childCompiler);
                 disposables.add(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );
@@ -195,10 +192,7 @@ devServerFeature.setup(
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             for (const childCompiler of engineerCompilers.compilers) {
-                const devMiddleware = WebpackDevMiddleware(childCompiler, {
-                    publicPath: '/',
-                    logLevel: 'silent',
-                });
+                const devMiddleware = webpackDevMiddleware(childCompiler);
                 disposables.add(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );

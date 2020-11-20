@@ -1,11 +1,11 @@
-import { Browser, launch, LaunchOptions } from 'puppeteer';
+import puppeteer from 'puppeteer';
 
-export function createBrowserProvider(options?: LaunchOptions) {
-    let browser: Browser | undefined;
+export function createBrowserProvider(options?: puppeteer.LaunchOptions) {
+    let browser: puppeteer.Browser | undefined;
     return {
         async loadPage(url: string) {
             if (!browser) {
-                browser = await launch(options);
+                browser = await puppeteer.launch(options);
             }
             const page = await browser.newPage();
             await page.goto(url, { waitUntil: 'networkidle0' });

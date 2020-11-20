@@ -21,7 +21,7 @@ describe('All Environment', () => {
         disposables.add(dispose);
 
         const page = await browserProvider.loadPage(featureUrl);
-        disposables.add(async () => await page.close());
+        disposables.add(() => page.close());
 
         await page.waitForSelector('#envMessages');
         const content = await page.$eval('#envMessages', (e) => e.textContent!);
