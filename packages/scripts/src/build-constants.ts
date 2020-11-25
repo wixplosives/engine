@@ -14,7 +14,6 @@ export const CORE_PACKAGE = '@wixc3/engine-core';
 // Used query params
 export const CONFIG_QUERY_PARAM = 'config';
 export const FEATURE_QUERY_PARAM = 'feature';
-export const EXTERNAL_FEATURES_QUERY_PARAM = 'externalFeatures';
 
 // File naming helpers
 export const isCodeModule = (fileName: string) =>
@@ -27,6 +26,9 @@ export const isFeatureFile = (fileName: string) =>
     fileName.indexOf(FEATURE_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isContextFile = (fileName: string) =>
     fileName.indexOf(CONTEXT_FILENAME_HINT) >= 1 && isCodeModule(fileName);
+
+// external features
+export const EXTERNAL_FEATURES_BASE_URI = 'external-features';
 
 export function parseFeatureFileName(fileName: string): string {
     return fileName.split(FEATURE_FILENAME_HINT).shift()!;

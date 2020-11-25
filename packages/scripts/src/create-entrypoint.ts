@@ -267,7 +267,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                     ${
                         target !== 'node'
                             ? `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
-                                  normilizePackageName(packageName)
+                                  packageName
                               )} + "_" + featureModule.default.id] = featureModule;`
                             : ''
                     }
@@ -396,7 +396,7 @@ function fetchExternalFeatures(externalFeaturesRoute: string) {
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
     return `const { ipcRenderer } = require('electron')
 
-    await ipcRenderer.invoke(${externalFeaturesRoute})
+    await ipcRenderer.invoke(${externalFeaturesRoute});
     `;
 }
 
@@ -428,7 +428,13 @@ export function remapFileRequest({
     filePath,
     packageName,
 }: Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'>): string {
-    const { name, dir } = parse(filePath.replace(directoryPath, packageName));
+    const remappedFilePath = filePath.replace(directoryPath, packageName);
+    if (remappedFilePath === filePath) {
+        throw new Error(
+            'failed to re-map request for external feature while building. maybe caused because of link issues'
+        );
+    }
+    const { name, dir } = parse(remappedFilePath);
     return posix.join(dir, name);
 }
 

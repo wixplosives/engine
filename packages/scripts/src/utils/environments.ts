@@ -36,14 +36,14 @@ export function getEnvironmntsForFeature(
 
 export interface GetResolveEnvironmentsParams {
     featureName?: string;
-    singleFeature?: boolean;
+    filterContexts?: boolean;
     features: Map<string, IFeatureDefinition>;
     environments: IEnvironment[];
 }
 
 export function getResolvedEnvironments({
     featureName,
-    singleFeature,
+    filterContexts,
     features,
     environments,
 }: GetResolveEnvironmentsParams) {
@@ -54,7 +54,7 @@ export function getResolvedEnvironments({
     const electronMainEnvs = new Map<string, string[]>();
 
     const resolvedContexts =
-        featureName && singleFeature
+        featureName && filterContexts
             ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
             : getAllResolvedContexts(features);
     for (const env of environments) {

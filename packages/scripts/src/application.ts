@@ -35,9 +35,9 @@ import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import { getEnvironmntsForFeature, getResolvedEnvironments } from './utils/environments';
 import { launchHttpServer } from './launch-http-server';
-import { getExternalFeatures } from './utils';
+import { getExternalFeaturesMetadata } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
-import { EXTERNAL_FEATURES_BASE_URI } from './commons';
+import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -109,8 +109,9 @@ export interface ICompilerOptions {
     singleFeature?: boolean;
     isExternal: boolean;
     externalFeatures: IExtenalFeatureDescriptor[];
-    fetchFeatures?: boolean;
+    useLocalExtenalFeaturesMapping?: boolean;
     webpackConfigPath?: string;
+    environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
 }
 
 export class Application {
@@ -165,7 +166,14 @@ export class Application {
             this.filterByFeatureName(features, featureName);
         }
 
-        const { compiler, entries: webEntries } = this.createCompiler({
+        const resolvedEnvironments = getResolvedEnvironments({
+            featureName,
+            features,
+            filterContexts: external ? false : singleFeature,
+            environments: [...getExportedEnvironments(features)],
+        });
+
+        const compiler = this.createCompiler({
             mode,
             features,
             featureName,
@@ -177,20 +185,19 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
+            // should build this feature in external mode
             isExternal: external,
+            // external features to prepend to the built output
             externalFeatures:
                 withExternalFeatures && externalFeatureDefinitions
-                    ? getExternalFeatures(externalFeatureDefinitions, externalFeaturesPath)
+                    ? getExternalFeaturesMetadata(externalFeatureDefinitions, externalFeaturesPath)
                     : [],
-            fetchFeatures: fetchExternalFeatures,
+            // whether should fetch at runtime for the external features metadata
+            useLocalExtenalFeaturesMapping: fetchExternalFeatures,
             webpackConfigPath,
+            environments: resolvedEnvironments,
         });
         const outDir = fs.basename(this.outputPath);
-
-        for (const [filePath] of Object.entries(webEntries)) {
-            const [envName, target] = fs.basename(filePath).split('.')[0].split('-');
-            entryPoints[envName] = { ...entryPoints[envName], [target]: join(outDir, `${envName}.${target}.js`) };
-        }
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
             compiler.run((e, s) => {
@@ -205,11 +212,12 @@ export class Application {
         );
 
         if (external) {
-            const nodeEntries = this.createNodeEntries(features, featureName!);
-            for (const [filePath] of Object.entries(nodeEntries)) {
-                const [envName, target] = fs.basename(filePath).split('.');
-                entryPoints[envName] = { ...entryPoints[envName], [target]: join(outDir, `${envName}.${target}.js`) };
-            }
+            const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
+            this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs);
+            getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
+            getEnvEntrypoints(electronRendererEnvs.keys(), 'electron-renderer', entryPoints, outDir);
+            getEnvEntrypoints(webEnvs.keys(), 'web', entryPoints, outDir);
+            getEnvEntrypoints(workerEnvs.keys(), 'webworker', entryPoints, outDir);
         }
 
         await this.writeManifest({
@@ -278,13 +286,13 @@ export class Application {
                 if (packagePath) {
                     serveStatic.push({
                         route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
-                        directoryPath: packagePath,
+                        directoryPath: fs.resolve(packagePath),
                     });
                 }
             }
         }
 
-        if (serveStatic) {
+        if (serveStatic.length) {
             for (const { route, directoryPath } of serveStatic) {
                 app.use(route, express.static(directoryPath));
             }
@@ -292,7 +300,7 @@ export class Application {
 
         externalFeatureDefinitions.push(...providedExternalFeaturesDefinitions);
 
-        const externalFeatures = getExternalFeatures(externalFeatureDefinitions, resolvedExternalFeaturesPath);
+        const externalFeatures = getExternalFeaturesMetadata(externalFeatureDefinitions, resolvedExternalFeaturesPath);
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
@@ -470,8 +478,9 @@ export class Application {
         singleFeature,
         isExternal,
         externalFeatures,
-        fetchFeatures,
+        useLocalExtenalFeaturesMapping: fetchFeatures,
         webpackConfigPath,
+        environments,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = webpackConfigPath
@@ -479,25 +488,17 @@ export class Application {
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
-        const environments = getExportedEnvironments(features);
         // @types/webpack (webpack@4) are missing this field. webpack@5 has it
         // webpack@4 itself does support it
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         (baseConfig as any).infrastructureLogging = { level: 'warn' };
-        const enviroments = new Set<IEnvironment>();
-        for (const { exportedEnvs } of features.values()) {
-            for (const exportedEnv of exportedEnvs) {
-                if (exportedEnv.type !== 'node') {
-                    enviroments.add(exportedEnv);
-                }
-            }
-        }
-        const { configurations: webpackConfigs, entries } = createWebpackConfigs({
+
+        const webpackConfigs = createWebpackConfigs({
             baseConfig,
             context: basePath,
             mode,
             outputPath,
-            environments: Array.from(environments),
+            environments,
             features,
             featureName,
             configName,
@@ -515,7 +516,7 @@ export class Application {
 
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
-        return { compiler, entries };
+        return compiler;
     }
 
     protected analyzeFeatures() {
@@ -528,15 +529,11 @@ export class Application {
         return { ...featuresAndConfigs, packages };
     }
 
-    protected createNodeEntries(features: Map<string, IFeatureDefinition>, featureName: string) {
-        const nodeEntries: Record<string, string> = {};
-        const { nodeEnvs } = getResolvedEnvironments({
-            featureName,
-            // we want to build all possible node entrypoints. this basically ignores the resolvedContexts
-            singleFeature: false,
-            features,
-            environments: [...getEnvironmntsForFeature(featureName, features, 'node', false)],
-        });
+    protected createNodeEntries(
+        features: Map<string, IFeatureDefinition>,
+        featureName: string,
+        nodeEnvs: Map<string, string[]>
+    ) {
         for (const feature of features.values()) {
             if (featureName === feature.scopedName) {
                 for (const [envName, childEnvs] of nodeEnvs) {
@@ -547,11 +544,9 @@ export class Application {
                         envName,
                     });
                     fs.writeFileSync(entryPath, entryCode);
-                    nodeEntries[entryPath] = entryCode;
                 }
             }
         }
-        return nodeEntries;
     }
 
     protected getFeatureEnvDefinitions(
@@ -610,6 +605,17 @@ export class Application {
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
+
+function getEnvEntrypoints(
+    envs: Iterable<string>,
+    target: 'node' | 'web' | 'webworker' | 'electron-renderer',
+    entryPoints: Record<string, Record<string, string>>,
+    outDir: string
+) {
+    for (const envName of envs) {
+        entryPoints[envName] = { ...entryPoints[envName], [target]: join(outDir, `${envName}.${target}.js`) };
+    }
+}
 
 export function getExportedEnvironments(features: Map<string, IFeatureDefinition>): Set<IEnvironment> {
     const environments = new Set<IEnvironment>();

@@ -8,10 +8,12 @@ import {
     createLiveConfigsMiddleware,
     createConfigMiddleware,
     createFeaturesEngineRouter,
-    getExternalFeatures,
+    getExternalFeaturesMetadata,
     launchHttpServer,
     NodeEnvironmentsManager,
     EXTERNAL_FEATURES_BASE_URI,
+    getExportedEnvironments,
+    getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpack from 'webpack';
@@ -111,7 +113,7 @@ devServerFeature.setup(
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
 
-            const externalFeatures = getExternalFeatures(externalFeatureDefinitions, externalFeaturesPath);
+            const externalFeatures = getExternalFeaturesMetadata(externalFeatureDefinitions, externalFeaturesPath);
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
@@ -142,13 +144,13 @@ devServerFeature.setup(
                     if (packagePath) {
                         serveStatic.push({
                             route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
-                            directoryPath: packagePath,
+                            directoryPath: resolve(packagePath),
                         });
                     }
                 }
             }
 
-            if (serveStatic) {
+            if (serveStatic.length) {
                 for (const { route, directoryPath } of serveStatic) {
                     app.use(route, express.static(directoryPath));
                 }
@@ -169,7 +171,7 @@ devServerFeature.setup(
             ]);
 
             // Write middleware for each of the apps
-            const { compiler } = application.createCompiler({
+            const compiler = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
@@ -177,6 +179,13 @@ devServerFeature.setup(
                 isExternal: false,
                 externalFeatures,
                 webpackConfigPath,
+                useLocalExtenalFeaturesMapping: false,
+                environments: getResolvedEnvironments({
+                    featureName,
+                    features,
+                    filterContexts: singleFeature,
+                    environments: [...getExportedEnvironments(features)],
+                }),
             });
 
             for (const childCompiler of compiler.compilers) {

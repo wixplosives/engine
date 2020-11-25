@@ -1,26 +1,20 @@
 import fs from '@file-services/node';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import type webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
     remapFileRequest,
     webpackImportStatement,
     LOADED_FEATURE_MODULES_NAMESPACE,
-    normilizePackageName,
 } from './create-entrypoint';
-import type {
-    IEnvironment,
-    IFeatureDefinition,
-    IConfigDefinition,
-    TopLevelConfigProvider,
-    IExtenalFeatureDescriptor,
-} from './types';
 import { basename, join } from 'path';
-import { getResolvedEnvironments } from './utils/environments';
-import { EXTERNAL_FEATURES_BASE_URI } from './commons';
+import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+
+import type webpack from 'webpack';
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { getResolvedEnvironments } from './utils/environments';
+import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -31,7 +25,7 @@ export interface ICreateWebpackConfigsOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    environments: IEnvironment[];
+    environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'webEnvs' | 'workerEnvs' | 'electronRendererEnvs'>;
     publicPath?: string;
     title?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
@@ -43,10 +37,13 @@ export interface ICreateWebpackConfigsOptions {
     fetchFeatures?: boolean;
 }
 
-export function createWebpackConfigs(
-    options: ICreateWebpackConfigsOptions
-): { configurations: webpack.Configuration[]; entries: Record<string, string> } {
-    const { baseConfig = {}, publicPath = '', createWebpackConfig } = options;
+export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
+    const {
+        baseConfig = {},
+        publicPath = '',
+        createWebpackConfig,
+        environments: { electronRendererEnvs, webEnvs, workerEnvs },
+    } = options;
 
     if (!baseConfig.output) {
         baseConfig.output = {};
@@ -54,8 +51,6 @@ export function createWebpackConfigs(
     baseConfig.output.publicPath = publicPath;
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
-
-    const { electronRendererEnvs, webEnvs, workerEnvs } = getResolvedEnvironments(options);
 
     if (webEnvs.size) {
         const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
@@ -69,7 +64,7 @@ export function createWebpackConfigs(
                 virtualModules,
                 plugins,
                 entry,
-                externalFeatures: filterExternalFeatures(webEnvs),
+                externalFeatures: filterExternalFeatures(webEnvs, 'web'),
             })
         );
     }
@@ -82,7 +77,7 @@ export function createWebpackConfigs(
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                externalFeatures: filterExternalFeatures(workerEnvs),
+                externalFeatures: filterExternalFeatures(workerEnvs, 'webworker'),
             })
         );
     }
@@ -95,14 +90,17 @@ export function createWebpackConfigs(
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                externalFeatures: filterExternalFeatures(workerEnvs),
+                externalFeatures: filterExternalFeatures(workerEnvs, 'electron-renderer'),
             })
         );
     }
 
-    return { configurations, entries: virtualModules };
+    return configurations;
 
-    function filterExternalFeatures(envs: Map<string, string[]>): IExtenalFeatureDescriptor[] {
+    function filterExternalFeatures(
+        envs: Map<string, string[]>,
+        _target: 'web' | 'webworker' | 'electron-renderer'
+    ): IExtenalFeatureDescriptor[] {
         return options.externalFeatures.map<IExtenalFeatureDescriptor>((descriptor) => ({
             ...descriptor,
             envEntries: Object.fromEntries(
@@ -219,7 +217,7 @@ export function createWebpackConfigForExteranlFeature({
     entry = {},
     featureName,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
-    const externals: Record<string, string> = {
+    const externalFeatures: Record<string, string> = {
         '@wixc3/engine-core': 'EngineCore',
     };
     for (const feature of [...features.values()]) {
@@ -241,17 +239,25 @@ export function createWebpackConfigForExteranlFeature({
         } else {
             if (feature.packageName !== '@wixc3/engine-core') {
                 const featureFilePath = remapFileRequest(feature);
-                externals[featureFilePath] =
-                    LOADED_FEATURE_MODULES_NAMESPACE +
-                    '.' +
-                    normilizePackageName(feature.packageName) +
-                    '_' +
-                    feature.exportedFeature.id;
+                externalFeatures[featureFilePath] = `${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
+                    `${feature.packageName}_${feature.exportedFeature.id}`
+                )}]`;
             }
         }
     }
     const { packageName, name } = features.get(featureName!)!;
     const { plugins: basePlugins = [] } = baseConfig;
+    const externals: webpack.ExternalsElement[] = [];
+    externals.push(externalFeatures);
+
+    const userExternals = baseConfig.externals;
+    if (userExternals) {
+        if (Array.isArray(userExternals)) {
+            externals.push(...userExternals);
+        } else {
+            externals.push(userExternals);
+        }
+    }
     return {
         ...baseConfig,
         target,
