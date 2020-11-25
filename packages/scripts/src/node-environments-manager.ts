@@ -3,7 +3,7 @@ import { delimiter } from 'path';
 
 import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
-import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
+import { COM, TopLevelConfig, SetMultiMap, createDisposables } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
@@ -34,8 +34,6 @@ export interface RunEnvironmentOptions {
     runtimeOptions?: Record<string, string | boolean>;
     overrideConfigsMap?: Map<string, OverrideConfig>;
     mode?: LaunchEnvironmentMode;
-    externalFeatures?: IExtenalFeatureDescriptor[];
-    externalFeaturesBasePath?: string;
 }
 
 const cliEntry = require.resolve('./cli');
@@ -85,8 +83,8 @@ export class NodeEnvironmentsManager {
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
         const topology: Record<string, string> = {};
         const runningEnvironments: Record<string, number> = {};
-        const disposables: Array<() => unknown> = [];
-        const { defaultRuntimeOptions, features, externalFeatures } = this.options;
+        const disposables = createDisposables();
+        const { defaultRuntimeOptions, features } = this.options;
         const nodeEnvironments = getEnvironmntsForFeature(featureName, features, 'node');
 
         // checking if already has running environments for this feature
@@ -113,20 +111,15 @@ export class NodeEnvironmentsManager {
                     ...runtimeOptions,
                 },
                 mode,
-                externalFeatures,
+                externalFeatures: this.options.externalFeatures,
             });
-            disposables.push(() => close());
+            disposables.add(close);
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
             runningEnvironments[nodeEnv.name] = port;
         }
 
         const runningEnvironment: IRuntimeEnvironment = {
-            async close() {
-                for (const dispose of disposables) {
-                    await dispose();
-                }
-                disposables.length = 0;
-            },
+            close: disposables.dispose,
             runningEnvironments,
         };
 
@@ -305,7 +298,7 @@ export class NodeEnvironmentsManager {
             port: this.options.port,
         });
         const port = await remoteNodeEnvironment.getRemotePort();
-        const startMessage = new Promise((resolve) => {
+        const startMessage = new Promise<void>((resolve) => {
             remoteNodeEnvironment.subscribe((message) => {
                 if (isEnvironmentStartMessage(message)) {
                     resolve();

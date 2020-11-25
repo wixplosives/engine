@@ -75,7 +75,7 @@ function createDashboardConfig({
     title?: string;
     outputPath: string;
 }): webpack.Configuration {
-    return {
+    const dashboardConfig: webpack.Configuration = {
         ...baseConfig,
         entry: {
             index: entryPath,
@@ -99,4 +99,9 @@ function createDashboardConfig({
             chunkFilename: `[name].web.js`,
         },
     };
+    // @types/webpack (webpack@4) are missing this field. webpack@5 has it
+    // webpack@4 itself does support it
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (dashboardConfig as any).infrastructureLogging = { level: 'warn' };
+    return dashboardConfig;
 }

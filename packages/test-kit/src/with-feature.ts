@@ -143,7 +143,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             browser = await puppeteer.launch({
                 ...withFeatureOptions,
                 defaultViewport: undefined,
-                pipe: true,
             });
         }
     });

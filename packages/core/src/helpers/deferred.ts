@@ -1,4 +1,4 @@
-export type PromiseResolveCb<T> = (value?: T | PromiseLike<T>) => void;
+export type PromiseResolveCb<T> = (value: T | PromiseLike<T>) => void;
 export type PromiseRejectCb = (reason?: any) => void;
 
 export interface IDeferredPromise<T> {

@@ -13,7 +13,7 @@ import {
     NodeEnvironmentsManager,
     EXTERNAL_FEATURES_BASE_URI,
 } from '@wixc3/engine-scripts';
-import WebpackDevMiddleware from 'webpack-dev-middleware';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { join, resolve } from 'path';
@@ -103,7 +103,7 @@ devServerFeature.setup(
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost
@@ -185,11 +185,10 @@ devServerFeature.setup(
                     // It was once a crash, which is no longer relevant
                     childCompiler.watch = singleRunWatchFunction(childCompiler);
                 }
-                const devMiddleware = WebpackDevMiddleware(childCompiler, {
-                    publicPath: '/',
-                    logLevel: 'silent',
-                });
-                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                const devMiddleware = webpackDevMiddleware(childCompiler);
+                disposables.add(
+                    () => new Promise<void>((res) => devMiddleware.close(res))
+                );
                 app.use(devMiddleware);
             }
 
@@ -231,11 +230,10 @@ devServerFeature.setup(
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             for (const childCompiler of engineerCompilers.compilers) {
-                const devMiddleware = WebpackDevMiddleware(childCompiler, {
-                    publicPath: '/',
-                    logLevel: 'silent',
-                });
-                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                const devMiddleware = webpackDevMiddleware(childCompiler);
+                disposables.add(
+                    () => new Promise<void>((res) => devMiddleware.close(res))
+                );
                 app.use(devMiddleware);
             }
 

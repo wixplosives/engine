@@ -4,7 +4,7 @@ import rimrafCb from 'rimraf';
 import webpack from 'webpack';
 import fs from '@file-services/node';
 import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree, createDisposables } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -245,7 +245,7 @@ export class Application {
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
-        const disposables = new Set<() => unknown>();
+        const disposables = createDisposables();
         const configurations = await this.readConfigs();
         const socketServerOptions = { ...runtimeSocketServerOptions, ...engineConfig?.socketServerOptions };
         const { port, close, socketServer, app } = await launchHttpServer({
@@ -254,7 +254,7 @@ export class Application {
             socketServerOptions,
         });
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
-        disposables.add(() => close());
+        disposables.add(close);
 
         const {
             externalFeatureDefinitions = [],
@@ -333,12 +333,7 @@ export class Application {
             port,
             router: app,
             nodeEnvironmentManager,
-            async close() {
-                for (const dispose of disposables) {
-                    await dispose();
-                }
-                disposables.clear();
-            },
+            close: disposables.dispose,
         };
     }
 
@@ -485,6 +480,18 @@ export class Application {
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
         const environments = getExportedEnvironments(features);
+        // @types/webpack (webpack@4) are missing this field. webpack@5 has it
+        // webpack@4 itself does support it
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        (baseConfig as any).infrastructureLogging = { level: 'warn' };
+        const enviroments = new Set<IEnvironment>();
+        for (const { exportedEnvs } of features.values()) {
+            for (const exportedEnv of exportedEnvs) {
+                if (exportedEnv.type !== 'node') {
+                    enviroments.add(exportedEnv);
+                }
+            }
+        }
         const { configurations: webpackConfigs, entries } = createWebpackConfigs({
             baseConfig,
             context: basePath,
