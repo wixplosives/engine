@@ -413,10 +413,10 @@ export class Application {
     protected analyzeFeatures() {
         const { basePath, featureDiscoveryRoot } = this;
 
-        console.time(`Analyzing Features.`);
+        console.time(`Analyzing Features`);
         const packages = resolvePackages(basePath);
         const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
-        console.timeEnd('Analyzing Features.');
+        console.timeEnd('Analyzing Features');
         return { ...featuresAndConfigs, packages };
     }
 
