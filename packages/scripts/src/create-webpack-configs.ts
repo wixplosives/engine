@@ -99,12 +99,14 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
 
     function filterExternalFeatures(
         envs: Map<string, string[]>,
-        _target: 'web' | 'webworker' | 'electron-renderer'
+        target: 'web' | 'webworker' | 'electron-renderer'
     ): IExtenalFeatureDescriptor[] {
         return options.externalFeatures.map<IExtenalFeatureDescriptor>((descriptor) => ({
             ...descriptor,
             envEntries: Object.fromEntries(
-                Object.entries(descriptor.envEntries).filter(([envName]) => envs.has(envName))
+                Object.entries(descriptor.envEntries).filter(
+                    ([envName, envEntries]) => envs.has(envName) && !!envEntries[target]
+                )
             ),
         }));
     }

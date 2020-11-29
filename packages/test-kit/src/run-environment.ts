@@ -1,17 +1,14 @@
-import {
+import { readFeatures, evaluateConfig, IExtenalFeatureDescriptor, runNodeEnvironment } from '@wixc3/engine-scripts';
+import type { IFileSystem } from '@file-services/types';
+import type {
     TopLevelConfig,
     Environment,
-    runEngineApp,
     Feature,
-    RuntimeEngine,
     EntityRecord,
     DisposableContext,
+    RuntimeEngine,
     MapToProxyType,
-    FeatureLoadersRegistry,
-    IFeatureLoader,
 } from '@wixc3/engine-core';
-import { readFeatures, evaluateConfig, createFeatureLoaders, IExtenalFeatureDescriptor } from '@wixc3/engine-scripts';
-import type { IFileSystem } from '@file-services/types';
 
 export interface IRunNodeEnvironmentOptions {
     featureName: string;
@@ -48,50 +45,20 @@ export async function runEngineEnvironment({
 }> {
     const { env: name, envType: type } = env;
     const { features, configurations } = readFeatures(fs, basePath);
-
     if (configName) {
         config = [...evaluateConfig(configName, configurations, name), ...config];
     }
-
     const featureDef = features.get(featureName);
     const childEnvName = featureDef?.resolvedContexts[name];
-    const featureLoaders = createFeatureLoaders(features, {
+    return runNodeEnvironment({
+        featureName,
+        features: [...features.entries()],
         name,
-        childEnvName,
         type,
-    });
-    const rootFeatureLoader = featureLoaders[featureName];
-    const { resolvedContexts = {} } = rootFeatureLoader;
-    if (!rootFeatureLoader) {
-        throw new Error(
-            "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
-        );
-    }
-
-    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
-    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, runtimeOptions);
-    const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]];
-    for (const { name, envEntries } of externalFeatures) {
-        if (envEntries[name]['node']) {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const externalFeatureLoaders = require(envEntries[name]['node']) as {
-                [featureName: string]: IFeatureLoader;
-            };
-
-            for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
-                featureLoader.register(name, loader);
-            }
-        }
-        for (const feature of await featureLoader.getLoadedFeatures(name, runtimeOptions)) {
-            runningFeatures.push(feature);
-        }
-    }
-    return runEngineApp({
+        childEnvName,
         config,
-        options: new Map(Object.entries(runtimeOptions)),
-        envName: name,
-        features: runningFeatures,
-        resolvedContexts,
+        externalFeatures,
+        options: Object.entries(runtimeOptions),
     });
 }
 

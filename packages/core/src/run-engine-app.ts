@@ -18,7 +18,7 @@ export function run({ entryFeature, topLevelConfig = [], envName = '', runOption
 export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
 
 export interface IFeatureLoader {
-    load: (resolvedContexts: Record<string, string>) => Promise<Feature>;
+    load: (resolvedContexts: Record<string, string>) => Promise<Feature> | Feature;
     preload: (
         resolveContexts: Record<string, string>
     ) => Promise<Array<(runtimeOptions: Record<string, string | boolean>) => void | Promise<void>>> | undefined;
