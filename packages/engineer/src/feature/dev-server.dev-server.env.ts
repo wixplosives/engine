@@ -9,7 +9,7 @@ import {
     createLiveConfigsMiddleware,
     createConfigMiddleware,
 } from '@wixc3/engine-scripts';
-import WebpackDevMiddleware from 'webpack-dev-middleware';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
@@ -62,6 +62,7 @@ devServerFeature.setup(
             outputPath,
             featureDiscoveryRoot,
             socketServerOptions,
+            webpackConfigPath,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -86,7 +87,7 @@ devServerFeature.setup(
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost
@@ -138,6 +139,7 @@ devServerFeature.setup(
                 features,
                 staticBuild: false,
                 configurations,
+                webpackConfigPath,
             });
             for (const childCompiler of compiler.compilers) {
                 if (singleRun) {
@@ -145,11 +147,10 @@ devServerFeature.setup(
                     // It was once a crash, which is no longer relevant
                     childCompiler.watch = singleRunWatchFunction(childCompiler);
                 }
-                const devMiddleware = WebpackDevMiddleware(childCompiler, {
-                    publicPath: '/',
-                    logLevel: 'silent',
-                });
-                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                const devMiddleware = webpackDevMiddleware(childCompiler);
+                disposables.add(
+                    () => new Promise<void>((res) => devMiddleware.close(res))
+                );
                 app.use(devMiddleware);
             }
 
@@ -191,11 +192,10 @@ devServerFeature.setup(
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             for (const childCompiler of engineerCompilers.compilers) {
-                const devMiddleware = WebpackDevMiddleware(childCompiler, {
-                    publicPath: '/',
-                    logLevel: 'silent',
-                });
-                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                const devMiddleware = webpackDevMiddleware(childCompiler);
+                disposables.add(
+                    () => new Promise<void>((res) => devMiddleware.close(res))
+                );
                 app.use(devMiddleware);
             }
 

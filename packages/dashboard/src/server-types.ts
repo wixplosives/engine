@@ -54,7 +54,7 @@ export const isErrorResponse = (message: unknown): message is ErrorResponse =>
     isServerResponseMessage(message) && message.id === 'error';
 
 export const isPossibleFeaturesAndConfigs = (value: unknown): value is PossibleFeaturesAndConfigs =>
-    value && typeof value === 'object' && !!(value as PossibleFeaturesAndConfigs).features;
+    !!value && typeof value === 'object' && !!(value as PossibleFeaturesAndConfigs).features;
 
 export interface PossibleFeaturesAndConfigs {
     features: string[];

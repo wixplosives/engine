@@ -3,7 +3,7 @@ import { delimiter } from 'path';
 
 import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
-import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
+import { COM, TopLevelConfig, SetMultiMap, createDisposables } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
@@ -81,7 +81,7 @@ export class NodeEnvironmentsManager {
 
         const topology: Record<string, string> = {};
         const runningEnvironments: Record<string, number> = {};
-        const disposables: Array<() => unknown> = [];
+        const disposables = createDisposables();
         const { defaultRuntimeOptions, features } = this.options;
 
         // checking if already has running environments for this feature
@@ -109,18 +109,13 @@ export class NodeEnvironmentsManager {
                 },
                 mode,
             });
-            disposables.push(() => close());
+            disposables.add(close);
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
             runningEnvironments[nodeEnv.name] = port;
         }
 
         const runningEnvironment: IRuntimeEnvironment = {
-            async close() {
-                for (const dispose of disposables) {
-                    await dispose();
-                }
-                disposables.length = 0;
-            },
+            close: disposables.dispose,
             runningEnvironments,
         };
 
@@ -288,7 +283,7 @@ export class NodeEnvironmentsManager {
             port: this.options.port,
         });
         const port = await remoteNodeEnvironment.getRemotePort();
-        const startMessage = new Promise((resolve) => {
+        const startMessage = new Promise<void>((resolve) => {
             remoteNodeEnvironment.subscribe((message) => {
                 if (isEnvironmentStartMessage(message)) {
                     resolve();

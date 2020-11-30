@@ -71,7 +71,7 @@ describe('engineer:dev-server', function () {
             devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
         });
 
-        disposables.add(() => dispose());
+        disposables.add(dispose);
 
         return { dispose, engine, runtimeFeature: devServerFeature, config: { featureName, port: runningPort } };
     };
@@ -86,7 +86,7 @@ describe('engineer:dev-server', function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
-    after(() => browserProvider.dispose());
+    after(browserProvider.dispose);
 
     it(`serves and allows running a feature`, async () => {
         const {

@@ -100,7 +100,7 @@ function getSingleInstanceId(providedFrom: unknown): string | void {
 
 function isSingleInstance(providedFrom: unknown): providedFrom is Environment<string, EnvironmentTypes, 'single'> {
     return (
-        providedFrom &&
+        !!providedFrom &&
         (providedFrom as Environment).endpointType &&
         (providedFrom as Environment).endpointType === 'single'
     );

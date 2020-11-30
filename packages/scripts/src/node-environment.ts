@@ -40,12 +40,13 @@ export async function runNodeEnvironment({
         type,
     });
     const rootFeatureLoader = featureLoaders[featureName];
-    const { resolvedContexts = {} } = rootFeatureLoader;
     if (!rootFeatureLoader) {
         throw new Error(
             "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
         );
     }
+    const { resolvedContexts = {} } = rootFeatureLoader;
+
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
     const optionsRecord: Record<string, string | boolean> = {};
 

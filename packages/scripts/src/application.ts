@@ -4,7 +4,7 @@ import rimrafCb from 'rimraf';
 import webpack from 'webpack';
 import fs from '@file-services/node';
 import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree, createDisposables } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -50,6 +50,7 @@ export interface IBuildOptions extends IFeatureTarget {
     publicConfigsRoute?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
+    webpackConfigPath?: string;
 }
 
 export interface IRunOptions extends IBuildOptions {
@@ -86,6 +87,7 @@ export interface ICompilerOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     singleFeature?: boolean;
+    webpackConfigPath?: string;
 }
 
 export class Application {
@@ -117,10 +119,11 @@ export class Application {
         title,
         publicConfigsRoute,
         overrideConfig,
+        webpackConfigPath,
     }: IBuildOptions = {}): Promise<webpack.compilation.MultiStats> {
-        const engineConfig = await this.getEngineConfig();
-        if (engineConfig && engineConfig.require) {
-            await this.importModules(engineConfig.require);
+        const { require } = (await this.getEngineConfig()) ?? {};
+        if (require) {
+            await this.importModules(require);
         }
         const { features, configurations } = this.analyzeFeatures();
         if (singleFeature && featureName) {
@@ -138,6 +141,7 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
+            webpackConfigPath,
         });
 
         const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
@@ -177,20 +181,20 @@ export class Application {
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
-            socketServerOptions,
+            socketServerOptions: runtimeSocketServerOptions,
         } = runOptions;
         const engineConfig = await this.getEngineConfig();
 
-        const disposables = new Set<() => unknown>();
+        const disposables = createDisposables();
         const configurations = await this.readConfigs();
-
+        const socketServerOptions = { ...runtimeSocketServerOptions, ...engineConfig?.socketServerOptions };
         const { port, close, socketServer, app } = await launchHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort,
             socketServerOptions,
         });
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
-        disposables.add(() => close());
+        disposables.add(close);
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
@@ -202,7 +206,7 @@ export class Application {
                 overrideConfig: config,
                 configurations,
             },
-            engineConfig?.socketServerOptions
+            socketServerOptions
         );
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
@@ -231,12 +235,7 @@ export class Application {
             port,
             router: app,
             nodeEnvironmentManager,
-            async close() {
-                for (const dispose of disposables) {
-                    await dispose();
-                }
-                disposables.clear();
-            },
+            close: disposables.dispose,
         };
     }
 
@@ -368,11 +367,18 @@ export class Application {
         publicConfigsRoute,
         overrideConfig,
         singleFeature,
+        webpackConfigPath,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
-        const baseConfigPath = fs.findClosestFileSync(basePath, 'webpack.config.js');
+        const baseConfigPath = webpackConfigPath
+            ? fs.resolve(webpackConfigPath)
+            : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
+        // @types/webpack (webpack@4) are missing this field. webpack@5 has it
+        // webpack@4 itself does support it
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        (baseConfig as any).infrastructureLogging = { level: 'warn' };
         const enviroments = new Set<IEnvironment>();
         for (const { exportedEnvs } of features.values()) {
             for (const exportedEnv of exportedEnvs) {
@@ -407,10 +413,10 @@ export class Application {
     protected analyzeFeatures() {
         const { basePath, featureDiscoveryRoot } = this;
 
-        console.time(`Analyzing Features.`);
+        console.time(`Analyzing Features`);
         const packages = resolvePackages(basePath);
         const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
-        console.timeEnd('Analyzing Features.');
+        console.timeEnd('Analyzing Features');
         return { ...featuresAndConfigs, packages };
     }
 

@@ -1,15 +1,20 @@
+import type puppeteer from 'puppeteer';
 import { startDevServer } from '@wixc3/engineer';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
+
+export interface StartServerNewProcessOptions {
+    projectPath: string;
+    featureName: string;
+    runtimeOptions?: Record<string, string | boolean>;
+    launchOptions?: puppeteer.LaunchOptions;
+}
 
 export const startServerNewProcess = async ({
     projectPath,
     featureName,
     runtimeOptions = {},
-}: {
-    projectPath: string;
-    featureName: string;
-    runtimeOptions?: Record<string, string | boolean>;
-}) => {
+    launchOptions,
+}: StartServerNewProcessOptions) => {
     const { dispose, devServerFeature } = await startDevServer({
         targetApplicationPath: projectPath,
         featureName,
@@ -29,5 +34,5 @@ export const startServerNewProcess = async ({
 
     const featureUrl = `http://localhost:${runningPort}/main.html?feature=${featureName}`;
 
-    return { dispose, runningPort, browserProvider: createBrowserProvider(), featureUrl };
+    return { dispose, runningPort, browserProvider: createBrowserProvider(launchOptions), featureUrl };
 };
