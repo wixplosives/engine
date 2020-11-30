@@ -10,7 +10,7 @@ describe('All Environment', () => {
     const disposables = createDisposables();
     const runtimeOptions = { a: 'b', c: true };
     let page: Page | undefined;
-    beforeEach(function () {
+    beforeEach(async function () {
         this.timeout(50_000);
         const { browserProvider, featureUrl, dispose } = await startServerNewProcess({
             projectPath,
