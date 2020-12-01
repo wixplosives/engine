@@ -11,7 +11,7 @@ describe('All Environment', () => {
     const runtimeOptions = { a: 'b', c: true };
     let page: Page | undefined;
     beforeEach(async function () {
-        this.timeout(50_000);
+        this.timeout(20_000);
         const { browserProvider, featureUrl, dispose } = await startServerNewProcess({
             projectPath,
             featureName,
