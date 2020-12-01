@@ -129,10 +129,10 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@file-services/directory@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-5.0.0.tgz#7d710ed98c31f64e48556acf358cf22fcafc3339"
-  integrity sha512-bAnczct+l8IweR2EIwm/rBMsQ/vDY7mGuVaH8F+FQO//l1NjOtXKympwWgAhexxS155+7ONl5wz5CnzaPaOIKg==
+"@file-services/directory@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-5.1.0.tgz#3a4076bf54c168a99ab80e93fdaeac9e685df90d"
+  integrity sha512-6pOf7JIlKi4fLs+5hUj+ZaStjCg99OxG5nHch97XKjg7Yi3ij0VMUJJhruvdtmPdMyqyMs60nmH3mE3uQb2EtA==
   dependencies:
     "@file-services/path" "^5.0.0"
     "@file-services/types" "^5.0.0"
