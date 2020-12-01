@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@file-services/directory": "^5.0.0",
-    "@file-services/node": "^5.0.0"
+    "@file-services/node": "^5.1.0"
   },
   "license": "UNLICENSED",
   "private": true
