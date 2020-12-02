@@ -1,8 +1,8 @@
 import { Feature } from '@wixc3/engine-core';
-import contextualFeature, { procEnv } from '../feature/contextual.feature';
+import contextualFeature, { procEnv } from '../feature/preload-context.feature';
 
 export default new Feature({
-    id: 'contextWorker',
+    id: 'preloadContextWorker',
     dependencies: [contextualFeature],
     api: {},
 });

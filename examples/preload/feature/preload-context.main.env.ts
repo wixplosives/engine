@@ -1,4 +1,4 @@
-import contextualFeature, { mainEnv, procEnv } from './contextual.feature';
+import contextualFeature, { mainEnv, procEnv } from './preload-context.feature';
 import { socketServerInitializer, initializeContextualEnv, workerInitializer } from '@wixc3/engine-core';
 
 contextualFeature.setup(mainEnv, ({ run, procEnvMessages: { getProcEnvMessages } }, { COM: { startEnvironment } }) => {
