@@ -10,7 +10,7 @@ describe('Contextual preload', () => {
 
     describe('node context', () => {
         // Preload declares 2 messages, nodeCtx declares 1, procEnv declares 1
-        const featureName = 'preload/contextual';
+        const featureName = 'preload/preload-context';
 
         it('Runs only the node context preload, and runs it first, in dev mode', async () => {
             const { dispose, featureUrl, browserProvider } = await startServerNewProcess({
@@ -31,7 +31,7 @@ describe('Contextual preload', () => {
 
     describe('worker context', () => {
         // Preload declares 2 messages, workerCtx declares 1, procEnv declares 1
-        const featureName = 'preload/contextual-worker';
+        const featureName = 'preload/preload-context-worker';
 
         it('Runs only the worker context preload, and runs it first, in dev mode', async () => {
             const { dispose, featureUrl, browserProvider } = await startServerNewProcess({
