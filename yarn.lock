@@ -1049,14 +1049,14 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/cli@^3.11.8":
-  version "3.11.8"
-  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-3.11.8.tgz#045eaeb52031141a4abe7258c02b80ce0b272148"
-  integrity sha512-RQJLboE2iZxNFb1l57cV5Am7lsKQeiA6/Ua1M70bcenJo9t6YgsJD181uyGUEaXPDWV8UyV7aXsz6z02B3iexQ==
+"@stylable/cli@^3.11.9":
+  version "3.11.9"
+  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-3.11.9.tgz#12d9851bf62165585d911490964b7da38bdd50aa"
+  integrity sha512-4StE2HF1gtlX9Fq2rpx8Ws0fnJrSQKBi16H+91e3N7kKNU8OneKp1p/Grwj985zNwXYoU4GSAyEJKs3JNVIQIw==
   dependencies:
-    "@stylable/core" "^3.11.8"
-    "@stylable/node" "^3.11.8"
-    "@stylable/optimizer" "^3.11.8"
+    "@stylable/core" "^3.11.9"
+    "@stylable/node" "^3.11.9"
+    "@stylable/optimizer" "^3.11.9"
     lodash.camelcase "^4.3.0"
     lodash.upperfirst "^4.3.1"
     yargs "^16.1.1"
@@ -1089,23 +1089,30 @@
   dependencies:
     "@stylable/core" "^3.11.8"
 
-"@stylable/node@^3.11.8":
-  version "3.11.8"
-  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-3.11.8.tgz#d51afe92ebda39c40afffecee6f9e0403b34bce2"
-  integrity sha512-5Dclc3ovm9e/cb6URn+WajoysB2dnbr2P83TMvTTHr9yUmqjAOTIXxCevXnP09OcjzjyWls95EDYPDn9rhCD/g==
+"@stylable/module-utils@^3.11.9":
+  version "3.11.9"
+  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-3.11.9.tgz#7344e14797caade404d3fdc742bcf4528e223241"
+  integrity sha512-81FbdDjuivCa2TjTQxn+sh2XFi39Il1h9uamMvuhRX5AkJmG2REzpoE56X1I3DLve1MwPbmiKR9h5NKDx2JGjA==
   dependencies:
-    "@stylable/core" "^3.11.8"
-    "@stylable/module-utils" "^3.11.8"
+    "@stylable/core" "^3.11.9"
+
+"@stylable/node@^3.11.8", "@stylable/node@^3.11.9":
+  version "3.11.9"
+  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-3.11.9.tgz#7a9ea64a57d2fd966bfa457198f2ec831e829f8d"
+  integrity sha512-DEd8E6wpHmHpgqQLKDhhYjZ28ug9GZmFG87V7QMF2B7wfUAdqc3hzObATkbVG16B+0rC2lAEhq8iOT/oiruI3A==
+  dependencies:
+    "@stylable/core" "^3.11.9"
+    "@stylable/module-utils" "^3.11.9"
     find-config "^1.0.0"
 
-"@stylable/optimizer@^3.11.8":
-  version "3.11.8"
-  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-3.11.8.tgz#3c91c43b797f49c2cec464425bd0ba095a8d2287"
-  integrity sha512-ezIRzK3/swyAqFuRUsVoFbDQxJ30egmr0hqBJWyg582sbhs+irgTFiNKz2Q8FZ5w1eRU8i7J1Zvzo2a+hDYAOw==
+"@stylable/optimizer@^3.11.8", "@stylable/optimizer@^3.11.9":
+  version "3.11.9"
+  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-3.11.9.tgz#c462415ae8eba0f70f3651e44c03094266a5ed55"
+  integrity sha512-DGVR4q7rDoIF9rLdgaq7DgEqNOD5rQABHKh8UuPZj0/QOyWCPZBdeBnoxT07E+EHA+VcTMBfYJ2as1amK8du8w==
   dependencies:
-    "@stylable/core" "^3.11.8"
-    csso "^4.1.1"
-    postcss "^8.1.10"
+    "@stylable/core" "^3.11.9"
+    csso "^4.2.0"
+    postcss "^8.1.13"
 
 "@stylable/runtime@^3.11.8", "@stylable/runtime@^3.11.9":
   version "3.11.9"
@@ -3049,7 +3056,7 @@ cssesc@^3.0.0:
   resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-3.0.0.tgz#37741919903b868565e1c09ea747445cd18983ee"
   integrity sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==
 
-csso@^4.1.1:
+csso@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/csso/-/csso-4.2.0.tgz#ea3a561346e8dc9f546d6febedd50187cf389529"
   integrity sha512-wvlcdIbf6pwKEk7vHj8/Bkc0B4ylXZruLvOgs9doS5eOsOpuodOV2zJChSpkp+pRpYQLQMeF04nr3Z68Sta9jA==
@@ -7067,7 +7074,7 @@ postcss@^7.0.2:
     source-map "^0.6.1"
     supports-color "^6.1.0"
 
-postcss@^8.1.0, postcss@^8.1.10, postcss@^8.1.13, postcss@^8.1.4, postcss@^8.1.6:
+postcss@^8.1.0, postcss@^8.1.13, postcss@^8.1.4, postcss@^8.1.6:
   version "8.1.14"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.1.14.tgz#77d6a5db2fdc0afa918e24af5323a53fb8727f2e"
   integrity sha512-KatkyVPBKfENS+c3dpXJoDXnDD5UZs5exAnDksLqaRJPKwYphEPZt4N0m0i049v2/BtWVQibAhxW4ilXXcolpA==
