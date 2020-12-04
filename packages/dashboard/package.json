@@ -11,7 +11,7 @@
     "react": ">=16"
   },
   "dependencies": {
-    "@stylable/runtime": "^3.11.8",
+    "@stylable/runtime": "^3.11.9",
     "@wixc3/engine-core": "^16.4.3",
     "@wixc3/engine-scripts": "^16.5.0"
   },
