@@ -494,7 +494,7 @@ export class Communication {
                     this.callWithCallback(envId, message, callbackId, res, rej);
                 }
             } else {
-                throw new Error(`cannot add listenr to unconfigured method ${api} ${method}`);
+                throw new Error(`cannot add listener to unconfigured method ${api} ${method}`);
             }
         }
     }
