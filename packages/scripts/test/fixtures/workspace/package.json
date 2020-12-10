@@ -1,6 +1,6 @@
 {
   "name": "@fixture/workspace",
-  "version": "16.4.3",
+  "version": "16.5.1",
   "workspaces": [
     "packages/*"
   ],
