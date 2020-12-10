@@ -14,7 +14,6 @@ describe('Processing env test', () => {
             runtimeOptions: {
                 projectPath: __dirname,
             },
-            fs,
             feature: Feature,
         });
 
