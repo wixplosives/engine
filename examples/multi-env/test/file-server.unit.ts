@@ -1,7 +1,6 @@
 import { getRunningFeature } from '@wixc3/engine-test-kit';
 import Feature, { processingEnv } from '../feature/multi-env.feature';
 import { expect } from 'chai';
-import fs from '@file-services/node';
 
 describe('Processing env test', () => {
     it('echos from node env', async () => {
@@ -11,7 +10,6 @@ describe('Processing env test', () => {
             runtimeOptions: {
                 projectPath: __dirname,
             },
-            fs,
             feature: Feature,
         });
 

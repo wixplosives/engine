@@ -1,3 +1,5 @@
+import fs from '@file-services/node';
+import type { IFileSystem } from '@file-services/types';
 import {
     TopLevelConfig,
     Environment,
@@ -8,18 +10,34 @@ import {
     DisposableContext,
     MapToProxyType,
     FeatureLoadersRegistry,
+    flattenTree,
 } from '@wixc3/engine-core';
-import { readFeatures, evaluateConfig, createFeatureLoaders } from '@wixc3/engine-scripts';
-import type { IFileSystem } from '@file-services/types';
+import { readFeatures, evaluateConfig, createFeatureLoaders, IFeatureDefinition } from '@wixc3/engine-scripts';
 
 export interface IRunNodeEnvironmentOptions {
     featureName: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
     config?: TopLevelConfig;
+    /**
+     * from where to locate features
+     * @default {process.cwd()}
+     */
     basePath?: string;
+    /**
+     * base folder to locate features from within basePath
+     */
+    featureDiscoveryRoot?: string;
     env: Environment;
-    fs: IFileSystem;
+    /**
+     * warn or throw if the the context of the running environments is not node
+     * @default true
+     */
+    warnOnWrongContext?: boolean;
+    /**
+     * @deprecated this is not being used and will be deprecated in the next major. fs is always node
+     */
+    fs?: IFileSystem;
 }
 
 export interface IGetRuinnnigFeatureOptions<
@@ -31,6 +49,9 @@ export interface IGetRuinnnigFeatureOptions<
     feature: Feature<NAME, DEPS, API, CONTEXT>;
 }
 
+export const wrongContextErrorMessage = (envName: string, contextName: string, target: string) =>
+    `Trying to run ${envName} with the ${contextName} context, the target of which is ${target}`;
+
 export async function runEngineEnvironment({
     featureName,
     configName,
@@ -38,20 +59,34 @@ export async function runEngineEnvironment({
     config = [],
     env,
     basePath = process.cwd(),
-    fs,
+    warnOnWrongContext = true,
+    featureDiscoveryRoot: featureDirectoryRoot,
 }: IRunNodeEnvironmentOptions): Promise<{
     engine: RuntimeEngine;
     dispose: () => Promise<void>;
 }> {
     const { env: name, envType: type } = env;
-    const { features, configurations } = readFeatures(fs, basePath);
+    const { features, configurations } = readFeatures(fs, basePath, featureDirectoryRoot);
 
     if (configName) {
         config = [...evaluateConfig(configName, configurations, name), ...config];
     }
 
     const featureDef = features.get(featureName);
+
     const childEnvName = featureDef?.resolvedContexts[name];
+
+    if (childEnvName) {
+        const { type } = locateEnvironment(featureDef!, features, name, childEnvName);
+        if (type !== 'node') {
+            const errorMessage = wrongContextErrorMessage(name, childEnvName, type);
+            if (!warnOnWrongContext) {
+                throw new Error(errorMessage);
+            }
+            console.warn(`Warning: ${errorMessage}`);
+        }
+    }
+
     const featureLoaders = createFeatureLoaders(features, {
         name,
         childEnvName,
@@ -77,6 +112,28 @@ export async function runEngineEnvironment({
     });
 }
 
+function locateEnvironment(
+    featureDef: IFeatureDefinition,
+    features: Map<string, IFeatureDefinition>,
+    name: string,
+    childEnvName: string
+) {
+    const deepDefsForFeature = flattenTree<IFeatureDefinition>(featureDef, (f) =>
+        f.dependencies.map((fName) => features.get(fName)!)
+    );
+    for (const { exportedEnvs } of deepDefsForFeature) {
+        for (const env of exportedEnvs) {
+            if (env.name === name && env.childEnvName === childEnvName) {
+                return env;
+            }
+        }
+    }
+
+    throw new Error(
+        `environment ${name} with the context ${childEnvName} is not found when running ${featureDef.name} feature`
+    );
+}
+
 export async function getRunningFeature<
     NAME extends string,
     DEPS extends Feature[],
@@ -89,8 +146,9 @@ export async function getRunningFeature<
     config = [],
     env,
     basePath = process.cwd(),
-    fs,
     feature,
+    warnOnWrongContext,
+    featureDiscoveryRoot: featureDirectoryRoot,
 }: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT>): Promise<{
     dispose: () => Promise<void>;
     runningApi: MapToProxyType<API>;
@@ -102,8 +160,9 @@ export async function getRunningFeature<
         configName,
         env,
         runtimeOptions,
-        fs,
         basePath,
+        warnOnWrongContext,
+        featureDiscoveryRoot: featureDirectoryRoot,
     });
     const { api } = engine.get(feature);
     return {
