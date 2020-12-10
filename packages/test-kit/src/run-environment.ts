@@ -46,13 +46,13 @@ export async function runEngineEnvironment({
     config = [],
     env,
     basePath = process.cwd(),
-    featureDiscoveryRoot: featureDirectoryRoot,
+    featureDiscoveryRoot,
 }: IRunNodeEnvironmentOptions): Promise<{
     engine: RuntimeEngine;
     dispose: () => Promise<void>;
 }> {
     const { env: name, envType: type } = env;
-    const { features, configurations } = readFeatures(fs, basePath, featureDirectoryRoot);
+    const { features, configurations } = readFeatures(fs, basePath, featureDiscoveryRoot);
 
     if (configName) {
         config = [...evaluateConfig(configName, configurations, name), ...config];
@@ -63,9 +63,18 @@ export async function runEngineEnvironment({
     const childEnvName = featureDef?.resolvedContexts[name];
 
     if (childEnvName) {
-        const { type } = locateEnvironment(featureDef!, features, name, childEnvName);
-        if (type !== 'node') {
-            throw new Error(`Trying to run ${name} with the ${childEnvName} context, the target of which is ${type}`);
+        const env = locateEnvironment(featureDef!, features, name, childEnvName);
+        if (!env) {
+            throw new Error(
+                `environment "${name}" with the context "${childEnvName}" is not found when running "${
+                    featureDef!.name
+                }" feature`
+            );
+        }
+        if (env.type !== 'node') {
+            throw new Error(
+                `Trying to run "${name}" with the "${childEnvName}" context, the target of which is "${env.type}"`
+            );
         }
     }
 
@@ -111,9 +120,7 @@ function locateEnvironment(
         }
     }
 
-    throw new Error(
-        `environment ${name} with the context ${childEnvName} is not found when running ${featureDef.name} feature`
-    );
+    return undefined;
 }
 
 export async function getRunningFeature<
@@ -121,29 +128,15 @@ export async function getRunningFeature<
     DEPS extends Feature[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>
->({
-    featureName,
-    configName,
-    runtimeOptions = {},
-    config = [],
-    env,
-    basePath = process.cwd(),
-    feature,
-    featureDiscoveryRoot: featureDirectoryRoot,
-}: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT>): Promise<{
+>(
+    options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT>
+): Promise<{
     dispose: () => Promise<void>;
     runningApi: MapToProxyType<API>;
     engine: RuntimeEngine;
 }> {
-    const { engine, dispose } = await runEngineEnvironment({
-        featureName,
-        config,
-        configName,
-        env,
-        runtimeOptions,
-        basePath,
-        featureDiscoveryRoot: featureDirectoryRoot,
-    });
+    const { feature } = options;
+    const { engine, dispose } = await runEngineEnvironment(options);
     const { api } = engine.get(feature);
     return {
         runningApi: api,
