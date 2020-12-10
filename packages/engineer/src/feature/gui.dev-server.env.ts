@@ -11,7 +11,7 @@ import { SetMultiMap } from '@wixc3/engine-core';
 guiFeature.setup(
     devServerEnv,
     (
-        { engineerConfig: { features } },
+        { engineerConfig: { features, externalFeatures } },
         {
             buildFeature: {
                 engineerWebpackConfigs,
@@ -39,7 +39,7 @@ guiFeature.setup(
             configurations,
             featureName: 'engineer/gui',
             target: 'web',
-            externalFeatures: [],
+            externalFeatures,
         });
 
         engineerWebpackConfigs.register(

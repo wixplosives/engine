@@ -156,6 +156,7 @@ export class Application {
         }
 
         const entryPoints: Record<string, Record<string, string>> = {};
+        const engineConfigPath = await this.getClosestEngineConfigPath();
 
         if (external && !featureName) {
             throw new Error('You must specify a feature name when building a feature in external mode');
@@ -190,7 +191,11 @@ export class Application {
             // external features to prepend to the built output
             externalFeatures:
                 withExternalFeatures && externalFeatureDefinitions
-                    ? getExternalFeaturesMetadata(externalFeatureDefinitions, externalFeaturesPath)
+                    ? getExternalFeaturesMetadata(
+                          externalFeatureDefinitions,
+                          engineConfigPath ? fs.dirname(engineConfigPath) : this.basePath,
+                          externalFeaturesPath
+                      )
                     : [],
             // whether should fetch at runtime for the external features metadata
             useLocalExtenalFeaturesMapping: fetchExternalFeatures,
@@ -300,7 +305,12 @@ export class Application {
 
         externalFeatureDefinitions.push(...providedExternalFeaturesDefinitions);
 
-        const externalFeatures = getExternalFeaturesMetadata(externalFeatureDefinitions, resolvedExternalFeaturesPath);
+        const engineConfigPath = await this.getClosestEngineConfigPath();
+        const externalFeatures = getExternalFeaturesMetadata(
+            externalFeatureDefinitions,
+            engineConfigPath ? fs.dirname(engineConfigPath) : this.basePath,
+            resolvedExternalFeaturesPath
+        );
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
@@ -389,7 +399,7 @@ export class Application {
     }
 
     protected async getEngineConfig() {
-        const engineConfigFilePath = await fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
+        const engineConfigFilePath = await this.getClosestEngineConfigPath();
         if (engineConfigFilePath) {
             try {
                 return (await import(engineConfigFilePath)) as EngineConfig;
@@ -398,6 +408,10 @@ export class Application {
             }
         }
         return undefined;
+    }
+
+    protected getClosestEngineConfigPath() {
+        return fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
     }
 
     protected async importModules(requiredModules: string[]) {

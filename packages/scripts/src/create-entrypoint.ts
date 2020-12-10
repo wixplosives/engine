@@ -1,5 +1,5 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { parse, posix } from 'path';
+import { extname } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition, IConfigDefinition, IExtenalFeatureDescriptor } from './types';
 
@@ -164,8 +164,8 @@ export function webpackImportStatement({ moduleIdentifier, filePath }: LoadState
     return `await import(/* webpackChunkName: "${moduleIdentifier}" */ ${stringify(filePath)});`;
 }
 
-export function nodeImportStatement({ filePath, packageName, directoryPath }: LoadStatementArguments) {
-    return `require(${stringify(remapFileRequest({ directoryPath, filePath, packageName }))})`;
+export function nodeImportStatement({ filePath, directoryPath }: LoadStatementArguments) {
+    return `require(${stringify(remapFileRequest({ directoryPath, filePath, packageName: '.' }))})`;
 }
 
 //#endregion
@@ -428,14 +428,14 @@ export function remapFileRequest({
     filePath,
     packageName,
 }: Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'>): string {
-    const remappedFilePath = filePath.replace(directoryPath, packageName);
+    const fileExtname = extname(filePath);
+    const remappedFilePath = filePath.replace(directoryPath, packageName).replace(fileExtname, '');
     if (remappedFilePath === filePath) {
         throw new Error(
             'failed to re-map request for external feature while building. maybe caused because of link issues'
         );
     }
-    const { name, dir } = parse(remappedFilePath);
-    return posix.join(dir, name);
+    return remappedFilePath;
 }
 
 function normalizeRoute(route?: string) {

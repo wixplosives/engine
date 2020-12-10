@@ -31,6 +31,7 @@ program
     .option('--title <title>', 'application title to display in browser')
     .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+    .option('--external [true|false]', 'build feature as external')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -44,6 +45,7 @@ program
             title,
             publicConfigsRoute,
             webpackConfig,
+            external,
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -59,6 +61,7 @@ program
                 title,
                 publicConfigsRoute,
                 webpackConfigPath: webpackConfig,
+                external,
             });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {

@@ -18,7 +18,7 @@ import {
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
-import { join, resolve } from 'path';
+import { dirname, join, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
@@ -112,8 +112,12 @@ devServerFeature.setup(
             attachWSHost(socketServer, devServerEnv.env, communication);
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
-
-            const externalFeatures = getExternalFeaturesMetadata(externalFeatureDefinitions, externalFeaturesPath);
+            const engineConfigPath = await application.getClosestEngineConfigPath();
+            const externalFeatures = getExternalFeaturesMetadata(
+                externalFeatureDefinitions,
+                engineConfigPath ? dirname(engineConfigPath) : basePath,
+                externalFeaturesPath
+            );
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
@@ -144,7 +148,10 @@ devServerFeature.setup(
                     if (packagePath) {
                         serveStatic.push({
                             route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
-                            directoryPath: resolve(packagePath),
+                            directoryPath: resolve(
+                                engineConfigPath ? dirname(engineConfigPath) : basePath,
+                                packagePath
+                            ),
                         });
                     }
                 }

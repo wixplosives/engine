@@ -1,4 +1,4 @@
-import { join, resolve } from 'path';
+import { join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from '../build-constants';
 import type { IExtenalFeatureDescriptor, IExternalDefinition } from '../types';
 import fs from '@file-services/node';
@@ -6,11 +6,14 @@ import type { IBuildManifest } from '../application';
 
 export function getExternalFeaturesMetadata(
     pluginDefinitions: IExternalDefinition[],
+    engineConfigPath: string,
     pluginsBaseDirectory: string
 ): IExtenalFeatureDescriptor[] {
     // mapping a feature definition to the entries of each environment of that feature, per target
     return pluginDefinitions.map(({ packageName, outDir = 'dist', packagePath }) => {
-        const packageBasePath = packagePath ? resolve(packagePath) : join(pluginsBaseDirectory, packageName);
+        const packageBasePath = packagePath
+            ? fs.resolve(engineConfigPath, packagePath)
+            : join(pluginsBaseDirectory, packageName);
         const { entryPoints, defaultFeatureName } = fs.readJsonFileSync(
             fs.join(packageBasePath, outDir, 'manifest.json')
         ) as IBuildManifest;
