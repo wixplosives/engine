@@ -5,7 +5,7 @@ module.exports = {
     context: __dirname,
     devtool: 'source-map',
     resolve: {
-        extensions: ['.ts', '.tsx', '.mjs', '.js', '.json'],
+        extensions: ['.ts', '.tsx', '.js', '.json'],
     },
     module: {
         rules: [

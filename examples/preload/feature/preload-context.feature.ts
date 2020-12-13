@@ -6,7 +6,7 @@ export const procEnv = new SingleEndpointContextualEnvironment('procEnv', [nodeE
 export const mainEnv = new Environment('main', 'window', 'single');
 
 export default new Feature({
-    id: 'contextual',
+    id: 'preloadcontext',
     api: {
         procEnvMessages: Service.withType<{ getProcEnvMessages: () => Array<string> }>()
             .defineEntity(procEnv)

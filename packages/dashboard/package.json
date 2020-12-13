@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-dashboard",
-  "version": "16.4.3",
+  "version": "16.5.1",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,9 +11,9 @@
     "react": ">=16"
   },
   "dependencies": {
-    "@stylable/runtime": "^3.11.8",
-    "@wixc3/engine-core": "^16.4.3",
-    "@wixc3/engine-scripts": "^16.4.3"
+    "@stylable/runtime": "^3.11.9",
+    "@wixc3/engine-core": "^16.5.1",
+    "@wixc3/engine-scripts": "^16.5.1"
   },
   "files": [
     "dist",
