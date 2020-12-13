@@ -1,4 +1,5 @@
 import { Feature, Environment, SingleEndpointContextualEnvironment, Service, COM } from '@wixc3/engine-core';
+import nonContextualFeature from './non-contextual.feature';
 
 const nodeEnv = new Environment('nodeCtx', 'node', 'single');
 const workerEnv = new Environment('workerCtx', 'worker', 'single');
@@ -12,7 +13,7 @@ export default new Feature({
             .defineEntity(procEnv)
             .allowRemoteAccess(),
     },
-    dependencies: [COM],
+    dependencies: [COM, nonContextualFeature.asEntity],
     context: {
         someCtx: procEnv.withContext<{}>(),
     },
