@@ -249,8 +249,7 @@ export function createWebpackConfigForExteranlFeature({
     }
     const { packageName, name } = features.get(featureName!)!;
     const { plugins: basePlugins = [] } = baseConfig;
-    const externals: webpack.ExternalsElement[] = [];
-    externals.push(externalFeatures);
+    const externals: webpack.ExternalsElement[] = [externalFeatures];
 
     const userExternals = baseConfig.externals;
     if (userExternals) {
