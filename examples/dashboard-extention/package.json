@@ -1,12 +1,7 @@
 {
   "name": "@example/dashboard-ext",
   "version": "16.4.3",
-  "scripts": {
-    "start": "engineer start",
-    "test": "yarn test:ix && yarn test:unit",
-    "test:ix": "mocha \"test/**/*.ix.ts?(x)\"",
-    "test:unit": "mocha \"test/**/*.unit.ts\""
-  },
+
   "dependencies": {
     "@wixc3/engine-core": "^16.4.3",
     "@wixc3/engineer": "^16.4.3"

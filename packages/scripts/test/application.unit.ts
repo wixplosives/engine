@@ -212,7 +212,7 @@ describe('Application', function () {
             });
         });
 
-        it('loads external features in browser', async () => {
+        it('loads external features', async () => {
             const externalFeatureName = 'application-external';
             const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
             const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
@@ -220,13 +220,16 @@ describe('Application', function () {
             };
             const externalFeatureApp = new Application({
                 basePath: applicationExternalFixturePath,
-                outputPath: join(pluginsFolderPath, name, 'dist'),
             });
             const publicConfigsRoute = 'config';
             await externalFeatureApp.build({
                 external: true,
                 featureName: externalFeatureName,
+                featureOutDir: 'dist',
             });
+
+            fs.copyDirectorySync(applicationExternalFixturePath, join(pluginsFolderPath, name, 'dist'));
+            fs.copyDirectorySync(join(applicationExternalFixturePath, 'dist'), join(pluginsFolderPath, name, 'dist'));
             disposables.add(() => externalFeatureApp.clean());
             disposables.add(() => rimraf.sync(pluginsFolderPath));
 

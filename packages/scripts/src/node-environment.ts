@@ -66,9 +66,9 @@ export async function runNodeEnvironment({
             for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
                 featureLoader.register(name, loader);
             }
-        }
-        for (const feature of await featureLoader.getLoadedFeatures(externalFeatureName, optionsRecord)) {
-            runningFeatures.push(feature);
+            for (const feature of await featureLoader.getLoadedFeatures(externalFeatureName, optionsRecord)) {
+                runningFeatures.push(feature);
+            }
         }
     }
     const runtimeEngine = runEngineApp({

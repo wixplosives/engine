@@ -25,13 +25,17 @@ program
     .option('-f ,--feature <feature>')
     .option('-c ,--config <config>')
     .option('--mode <production|development>', 'mode passed to webpack', 'production')
-    .option('--outDir <outDir>')
+    .option('--outDir <outDir>', 'default: dist')
     .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
     .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
     .option('--title <title>', 'application title to display in browser')
     .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
     .option('--external [true|false]', 'build feature as external')
+    .option(
+        '--featureOutDir <featureOutDir>',
+        'the directory where the published feature file is located (relative to the base path). default: "."'
+    )
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
         const {
@@ -46,6 +50,7 @@ program
             publicConfigsRoute,
             webpackConfig,
             external,
+            featureOutDir,
         } = cmd;
         try {
             const basePath = resolve(path);
@@ -62,6 +67,7 @@ program
                 publicConfigsRoute,
                 webpackConfigPath: webpackConfig,
                 external,
+                featureOutDir,
             });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {

@@ -164,8 +164,8 @@ export function webpackImportStatement({ moduleIdentifier, filePath }: LoadState
     return `await import(/* webpackChunkName: "${moduleIdentifier}" */ ${stringify(filePath)});`;
 }
 
-export function nodeImportStatement({ filePath, directoryPath }: LoadStatementArguments) {
-    return `require(${stringify(remapFileRequest({ directoryPath, filePath, packageName: '.' }))})`;
+export function nodeImportStatement(args: LoadStatementArguments) {
+    return `require(${stringify(remapFileRequest(args))})`;
 }
 
 //#endregion

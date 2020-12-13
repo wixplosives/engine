@@ -68,6 +68,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     staticBuild?: boolean;
     withExternalFeatures?: boolean;
     fetchExternalFeatures?: boolean;
+    featureOutDir?: string;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -148,9 +149,14 @@ export class Application {
         withExternalFeatures,
         fetchExternalFeatures = !withExternalFeatures,
         webpackConfigPath,
+        featureOutDir,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
-        const { require, externalFeatureDefinitions, externalFeaturesPath = join(this.basePath, 'node_modules') } =
-            (await this.getEngineConfig()) ?? {};
+        const {
+            require,
+            externalFeatureDefinitions,
+            externalFeaturesPath = join(this.basePath, 'node_modules'),
+            featureOutDir: configFeatureOutDir,
+        } = (await this.getEngineConfig()) ?? {};
         if (require) {
             await this.importModules(require);
         }
@@ -217,8 +223,16 @@ export class Application {
         );
 
         if (external) {
+            // in order to understand where the target feature file is located, we need the user to tell us (featureOutDir).
+            // The node entry, on the other hand is created inside the outDir, and requires the mentioned feature file (as well as environment files)
+            // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
+            const providedOutDir = featureOutDir ?? configFeatureOutDir;
+            const relativeFeatureOutDir = providedOutDir
+                ? // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
+                  fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir)) || '.'
+                : '.';
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
-            this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs);
+            this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeFeatureOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
             getEnvEntrypoints(electronRendererEnvs.keys(), 'electron-renderer', entryPoints, outDir);
             getEnvEntrypoints(webEnvs.keys(), 'web', entryPoints, outDir);
@@ -546,7 +560,8 @@ export class Application {
     protected createNodeEntries(
         features: Map<string, IFeatureDefinition>,
         featureName: string,
-        nodeEnvs: Map<string, string[]>
+        nodeEnvs: Map<string, string[]>,
+        featureOutPath: string
     ) {
         for (const feature of features.values()) {
             if (featureName === feature.scopedName) {
@@ -556,6 +571,7 @@ export class Application {
                         ...feature,
                         childEnvs,
                         envName,
+                        packageName: featureOutPath,
                     });
                     fs.writeFileSync(entryPath, entryCode);
                 }

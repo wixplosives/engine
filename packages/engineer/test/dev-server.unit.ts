@@ -475,20 +475,31 @@ describe('engineer:dev-server', function () {
         expect(text).to.include('{"foo":"bar"}');
     });
 
-    it('loads external features in browser', async () => {
+    it('loads external features', async () => {
         const externalFeatureName = 'application-external';
         const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
         const externalFeatureApp = new Application({
             basePath: applicationExternalFixturePath,
-            outputPath: join(pluginsFolderPath, '@fixture/application-external-feature', 'dist'),
         });
+
         await externalFeatureApp.build({
             external: true,
             featureName: externalFeatureName,
+            featureOutDir: 'dist',
         });
+
+        fs.copyDirectorySync(
+            join(applicationExternalFixturePath, 'dist'),
+            join(pluginsFolderPath, '@fixture/application-external-feature', 'dist')
+        );
+
+        fs.copyDirectorySync(
+            applicationExternalFixturePath,
+            join(pluginsFolderPath, '@fixture/application-external-feature', 'dist')
+        );
+
         disposables.add(() => externalFeatureApp.clean());
         disposables.add(() => rimraf.sync(pluginsFolderPath));
-
         const {
             dispose,
             config: { port },
@@ -504,21 +515,17 @@ describe('engineer:dev-server', function () {
         disposables.add(() => dispose());
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
-        await waitFor(
-            async () => {
-                const bodyContent = await getBodyContent(page);
-                expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
-            }
-        );
+        await waitFor(async () => {
+            const bodyContent = await getBodyContent(page);
+            expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
+        });
         const button = await page.$('#server-slot');
-        await waitFor(
-            async () => {
-                await button?.click();
-                const elem = await page.$('#server-slot-value');
-                expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
-            }
-        );
-    });
+        await waitFor(async () => {
+            await button?.click();
+            const elem = await page.$('#server-slot-value');
+            expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
+        });
+    }).timeout(30_000);
 });
 
 function getConfigFileContent(textText: string) {
