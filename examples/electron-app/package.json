@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@file-services/node": "^5.2.0",
-    "electron": "^11.0.4"
+    "electron": "^11.1.0"
   },
   "license": "UNLICENSED",
   "private": true
