@@ -5,8 +5,10 @@ import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
-import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import { Application, IExternalDefinition, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
+import { join } from 'path';
+import rimraf from 'rimraf';
 
 const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
 const engineRuntimeFeatureFixturePath = fs.join(__dirname, './fixtures/engine-run-options');
@@ -15,6 +17,14 @@ const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feat
 const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
 const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 const useConfigsFeaturePath = fs.join(__dirname, './fixtures/using-config');
+const baseWebApplicationFixturePath = fs.join(
+    fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
+    'test/fixtures/base-web-application'
+);
+const applicationExternalFixturePath = fs.join(
+    fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
+    'test/fixtures/application-external'
+);
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -35,6 +45,9 @@ describe('engineer:dev-server', function () {
         overrideConfig = [],
         outputPath,
         runtimeOptions = {},
+        externalFeatureDefinitions,
+        externalFeaturesPath,
+        singleFeature,
         featureDiscoveryRoot,
     }: {
         featureName?: string;
@@ -46,6 +59,9 @@ describe('engineer:dev-server', function () {
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
         outputPath?: string;
         runtimeOptions?: Record<string, string | boolean>;
+        externalFeatureDefinitions?: IExternalDefinition[];
+        externalFeaturesPath?: string;
+        singleFeature?: boolean;
         featureDiscoveryRoot?: string;
     }): Promise<{
         dispose: () => Promise<void>;
@@ -65,6 +81,9 @@ describe('engineer:dev-server', function () {
             outputPath,
             singleRun: true,
             runtimeOptions,
+            externalFeatureDefinitions,
+            externalFeaturesPath,
+            singleFeature,
             featureDiscoveryRoot,
         });
         const runningPort = await new Promise<number>((resolve) => {
@@ -455,6 +474,58 @@ describe('engineer:dev-server', function () {
 
         expect(text).to.include('{"foo":"bar"}');
     });
+
+    it('loads external features', async () => {
+        const externalFeatureName = 'application-external';
+        const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
+        const externalFeatureApp = new Application({
+            basePath: applicationExternalFixturePath,
+        });
+
+        await externalFeatureApp.build({
+            external: true,
+            featureName: externalFeatureName,
+            featureOutDir: 'dist',
+        });
+
+        fs.copyDirectorySync(
+            join(applicationExternalFixturePath, 'dist'),
+            join(pluginsFolderPath, '@fixture/application-external-feature', 'dist')
+        );
+
+        fs.copyDirectorySync(
+            applicationExternalFixturePath,
+            join(pluginsFolderPath, '@fixture/application-external-feature', 'dist')
+        );
+
+        disposables.add(() => externalFeatureApp.clean());
+        disposables.add(() => rimraf.sync(pluginsFolderPath));
+        const {
+            dispose,
+            config: { port },
+        } = await setup({
+            basePath: baseWebApplicationFixturePath,
+            featureName: 'base-web-application',
+            externalFeatureDefinitions: [
+                {
+                    packageName: '@fixture/application-external-feature',
+                },
+            ],
+        });
+        disposables.add(() => dispose());
+
+        const page = await loadPage(`http://localhost:${port}/main.html`);
+        await waitFor(async () => {
+            const bodyContent = await getBodyContent(page);
+            expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
+        });
+        const button = await page.$('#server-slot');
+        await waitFor(async () => {
+            await button?.click();
+            const elem = await page.$('#server-slot-value');
+            expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
+        });
+    }).timeout(30_000);
 });
 
 function getConfigFileContent(textText: string) {

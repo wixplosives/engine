@@ -1,7 +1,7 @@
 import type io from 'socket.io';
 import type webpack from 'webpack';
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
-import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import type { IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import type { TargetApplication } from '../application-proxy-service';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
@@ -23,6 +23,9 @@ export interface DevServerConfig {
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
     defaultRuntimeOptions: Record<string, string | boolean>;
     outputPath?: string;
+    externalFeatureDefinitions: IExternalDefinition[];
+    externalFeaturesPath?: string;
+    serveExternalFeaturesPath?: boolean;
     featureDiscoveryRoot?: string;
     socketServerOptions?: Partial<io.ServerOptions>;
     webpackConfigPath?: string;
@@ -60,6 +63,7 @@ export default new Feature({
             overrideConfig: [],
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
+            externalFeatureDefinitions: [],
         }),
         /**
          * a slot for registering callback that will be called when the devserver is listening

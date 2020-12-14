@@ -19,6 +19,11 @@ export interface IFeatureTarget {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
+export interface IExtenalFeatureDescriptor {
+    name: string;
+    envEntries: Record<string, Record<string, string>>;
+}
+
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
@@ -26,6 +31,7 @@ export interface StartEnvironmentOptions extends IEnvironment {
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: Target;
+    externalFeatures?: IExtenalFeatureDescriptor[];
 }
 export interface VirtualEntry {
     source: string;
@@ -253,11 +259,30 @@ export interface IFeatureDefinition extends IFeatureModule {
     scopedName: string;
     resolvedContexts: Record<string, string>;
     isRoot: boolean;
+    packageName: string;
+    directoryPath: string;
     toJSON(): unknown;
 }
 export interface StaticConfig {
     route: string;
     directoryPath: string;
+}
+
+export interface IExternalDefinition {
+    /**
+     * name of the package containing the external feature
+     */
+    packageName: string;
+    /**
+     * the directory where the built source code is located at
+     * @default dist
+     */
+    outDir?: string;
+
+    /**
+     * path to the package of the external feature
+     */
+    packagePath?: string;
 }
 
 export interface EngineConfig {
@@ -266,5 +291,9 @@ export interface EngineConfig {
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
+    externalFeatureDefinitions: Array<IExternalDefinition>;
+    externalFeaturesPath?: string;
+    serveExternalFeaturesPath?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
+    featureOutDir?: string;
 }

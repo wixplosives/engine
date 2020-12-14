@@ -173,6 +173,8 @@ export function loadFeaturesFromPaths(
                 preloadFilePaths: {},
                 resolvedContexts: {},
                 isRoot: ownFeatureFilePaths.has(featureFilePath),
+                packageName: featurePackage.name,
+                directoryPath: featurePackage.directoryPath,
                 filePath: featureFilePath,
                 toJSON(this: IFeatureDefinition) {
                     return {
@@ -183,6 +185,7 @@ export function loadFeaturesFromPaths(
                         preloadFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preloadFilePaths),
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
+                        packageName: this.packageName,
                         scopedName,
                     };
                 },

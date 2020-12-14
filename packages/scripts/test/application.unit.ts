@@ -5,6 +5,8 @@ import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import type { Page } from 'puppeteer';
 import { Application } from '@wixc3/engine-scripts';
+import { join } from 'path';
+import rimraf from 'rimraf';
 
 function getBodyContent(page: Page) {
     return page.evaluate(() => (document.body.textContent || '').trim());
@@ -28,6 +30,8 @@ describe('Application', function () {
     };
 
     const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
+    const baseWebApplicationFixturePath = fs.join(__dirname, './fixtures/base-web-application');
+    const applicationExternalFixturePath = fs.join(__dirname, './fixtures/application-external');
     const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
     const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 
@@ -38,6 +42,15 @@ describe('Application', function () {
             disposables.add(() => app.clean());
 
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+        });
+        it('allows building features in external mode', async () => {
+            const app = new Application({ basePath: engineFeatureFixturePath });
+            await app.build({ external: true, featureName: 'engine-single/x' });
+            disposables.add(() => app.clean());
+            expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+            const contents = fs.readdirSync(app.outputPath);
+            expect(contents).to.include('main.web.js');
+            expect(contents).to.include('[feature]x.web.js');
         });
     });
 
@@ -197,6 +210,66 @@ describe('Application', function () {
                 const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
                 expect(parsedBodyConfig.value).to.eq(1);
             });
+        });
+
+        it('loads external features', async () => {
+            const externalFeatureName = 'application-external';
+            const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
+            const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
+                name: string;
+            };
+            const externalFeatureApp = new Application({
+                basePath: applicationExternalFixturePath,
+            });
+            const publicConfigsRoute = 'config';
+            await externalFeatureApp.build({
+                external: true,
+                featureName: externalFeatureName,
+                featureOutDir: 'dist',
+            });
+
+            fs.copyDirectorySync(applicationExternalFixturePath, join(pluginsFolderPath, name, 'dist'));
+            fs.copyDirectorySync(join(applicationExternalFixturePath, 'dist'), join(pluginsFolderPath, name, 'dist'));
+            disposables.add(() => externalFeatureApp.clean());
+            disposables.add(() => rimraf.sync(pluginsFolderPath));
+
+            const app = new Application({ basePath: baseWebApplicationFixturePath });
+            await app.build({
+                featureName: 'base-web-application',
+                singleFeature: true,
+                publicConfigsRoute: '/config',
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                serveExternalFeaturesPath: true,
+                externalFeatureDefinitions: [
+                    {
+                        packageName: name,
+                    },
+                ],
+                autoLaunch: true,
+                publicConfigsRoute,
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(
+                async () => {
+                    const bodyContent = await getBodyContent(page);
+                    expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
+                },
+                { timeout: 5_000 }
+            );
+            const button = await page.$('#server-slot');
+            await waitFor(
+                async () => {
+                    await button?.click();
+                    const elem = await page.$('#server-slot-value');
+                    expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
+                },
+                { timeout: 5_000 }
+            );
         });
     });
 

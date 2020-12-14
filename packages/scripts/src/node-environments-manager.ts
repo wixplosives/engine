@@ -13,12 +13,13 @@ import {
     IEnvironmentMessage,
     IEnvironmentStartMessage,
     IFeatureDefinition,
+    IExtenalFeatureDescriptor,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
     TopLevelConfigProvider,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
-import { filterEnvironments } from './utils/environments';
+import { getEnvironmntsForFeature } from './utils/environments';
 
 type RunningEnvironments = Record<string, number>;
 
@@ -44,6 +45,7 @@ export interface INodeEnvironmentsManagerOptions {
     port: number;
     inspect?: boolean;
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
+    externalFeatures: IExtenalFeatureDescriptor[];
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -58,6 +60,7 @@ export interface ILaunchEnvironmentOptions {
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
+    externalFeatures?: IExtenalFeatureDescriptor[];
 }
 
 export class NodeEnvironmentsManager {
@@ -78,11 +81,11 @@ export class NodeEnvironmentsManager {
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
-
         const topology: Record<string, string> = {};
         const runningEnvironments: Record<string, number> = {};
         const disposables = createDisposables();
         const { defaultRuntimeOptions, features } = this.options;
+        const nodeEnvironments = getEnvironmntsForFeature(featureName, features, 'node');
 
         // checking if already has running environments for this feature
         const runningEnv = this.runningEnvironments.get(featureId);
@@ -90,7 +93,7 @@ export class NodeEnvironmentsManager {
             // adding the topology of the already running environments for this feature
             Object.assign(topology, this.getTopologyForRunningEnvironments(runningEnv.runningEnvironments));
         }
-        for (const nodeEnv of filterEnvironments(featureName, features, 'node')) {
+        for (const nodeEnv of nodeEnvironments) {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
                 configName,
@@ -108,6 +111,7 @@ export class NodeEnvironmentsManager {
                     ...runtimeOptions,
                 },
                 mode,
+                externalFeatures: this.options.externalFeatures,
             });
             disposables.add(close);
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
@@ -163,7 +167,10 @@ export class NodeEnvironmentsManager {
         return runningFeatures;
     }
 
-    public async closeEnvironment({ featureName, configName }: RunEnvironmentOptions) {
+    public async closeEnvironment({
+        featureName,
+        configName,
+    }: Pick<RunEnvironmentOptions, 'featureName' | 'configName'>) {
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
 
         const runningEnvironment = this.runningEnvironments.get(featureId);
@@ -193,7 +200,14 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    private async launchEnvironment({ nodeEnv, featureName, config, options, mode }: ILaunchEnvironmentOptions) {
+    private async launchEnvironment({
+        nodeEnv,
+        featureName,
+        config,
+        options,
+        mode,
+        externalFeatures = [],
+    }: ILaunchEnvironmentOptions) {
         const { features, port, inspect } = this.options;
         const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
@@ -202,6 +216,7 @@ export class NodeEnvironmentsManager {
             features: Array.from(features.entries()),
             options: Object.entries(options),
             inspect,
+            externalFeatures,
         };
 
         if (inspect || mode === 'forked') {

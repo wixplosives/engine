@@ -1,6 +1,5 @@
 import type io from 'socket.io';
 import devServerFeature, { devServerEnv } from './dev-server.feature';
-import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import { TargetApplication } from '../application-proxy-service';
 import express from 'express';
 import {
@@ -8,11 +7,18 @@ import {
     createCommunicationMiddleware,
     createLiveConfigsMiddleware,
     createConfigMiddleware,
+    createFeaturesEngineRouter,
+    getExternalFeaturesMetadata,
+    launchHttpServer,
+    NodeEnvironmentsManager,
+    EXTERNAL_FEATURES_BASE_URI,
+    getExportedEnvironments,
+    getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
+import { dirname, join, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
@@ -60,8 +66,11 @@ devServerFeature.setup(
             overrideConfig,
             defaultRuntimeOptions,
             outputPath,
+            externalFeatureDefinitions: providedExternalDefinitions,
+            externalFeaturesPath: providedExternalFeaturesPath,
+            serveExternalFeaturesPath = true,
             featureDiscoveryRoot,
-            socketServerOptions,
+            socketServerOptions = {},
             webpackConfigPath,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
@@ -71,17 +80,26 @@ devServerFeature.setup(
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
-            const { require, socketServerOptions: configServerOptions, serveStatic } =
-                (await application.getEngineConfig()) ?? {};
+            const engineConfig = await application.getEngineConfig();
+
+            const {
+                externalFeatureDefinitions = [],
+                require,
+                socketServerOptions: configServerOptions = {},
+                externalFeaturesPath: configExternalFeaturesPath,
+                serveStatic = [],
+            } = engineConfig ?? {};
             if (require) {
                 await application.importModules(require);
             }
-
             const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
-                ...configServerOptions,
                 ...socketServerOptions,
+                ...configServerOptions,
             };
-
+            const externalFeaturesPath = resolve(
+                providedExternalFeaturesPath ?? configExternalFeaturesPath ?? join(basePath, 'node_modules')
+            );
+            externalFeatureDefinitions.push(...providedExternalDefinitions);
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
@@ -94,6 +112,13 @@ devServerFeature.setup(
             attachWSHost(socketServer, devServerEnv.env, communication);
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
+            const engineConfigPath = await application.getClosestEngineConfigPath();
+            const externalFeatures = getExternalFeaturesMetadata(
+                externalFeatureDefinitions,
+                engineConfigPath ? dirname(engineConfigPath) : basePath,
+                externalFeaturesPath
+            );
+
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
             application.setNodeEnvManager(
@@ -106,6 +131,7 @@ devServerFeature.setup(
                         port: actualPort,
                         inspect,
                         overrideConfig,
+                        externalFeatures,
                     },
                     resolvedSocketServerOptions
                 )
@@ -113,7 +139,25 @@ devServerFeature.setup(
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
-            if (serveStatic) {
+            if (serveExternalFeaturesPath) {
+                serveStatic.push({
+                    route: `/${EXTERNAL_FEATURES_BASE_URI}`,
+                    directoryPath: externalFeaturesPath,
+                });
+                for (const { packageName, packagePath } of externalFeatureDefinitions) {
+                    if (packagePath) {
+                        serveStatic.push({
+                            route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
+                            directoryPath: resolve(
+                                engineConfigPath ? dirname(engineConfigPath) : basePath,
+                                packagePath
+                            ),
+                        });
+                    }
+                }
+            }
+
+            if (serveStatic.length) {
                 for (const { route, directoryPath } of serveStatic) {
                     app.use(route, express.static(directoryPath));
                 }
@@ -139,8 +183,18 @@ devServerFeature.setup(
                 features,
                 staticBuild: false,
                 configurations,
+                isExternal: false,
+                externalFeatures,
                 webpackConfigPath,
+                useLocalExtenalFeaturesMapping: false,
+                environments: getResolvedEnvironments({
+                    featureName,
+                    features,
+                    filterContexts: singleFeature,
+                    environments: [...getExportedEnvironments(features)],
+                }),
             });
+
             for (const childCompiler of compiler.compilers) {
                 if (singleRun) {
                     // This hack is to squeeze some more performance, because we can server the output in memory
@@ -184,11 +238,11 @@ devServerFeature.setup(
                 });
             }
 
-            /* I create new compilers for the engineering config for 2 reasons
-             *  1. I don't want to couple the engineering build and the users application build
+            /* creating new compilers for the engineering config for 2 reasons
+             *  1. de-couple the engineering build and the users application build
              *  For example it's very likely that later down the line we will never watch here
              *  but we will keep on watching on the users applicatino
-             *  2. I the createCompiler function, which I can't extend with more configs with the current API
+             *  2. the createCompiler function is not extendable with more configs with the current API
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             for (const childCompiler of engineerCompilers.compilers) {

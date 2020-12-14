@@ -1,17 +1,21 @@
 import fs from '@file-services/node';
 import {
+    readFeatures,
+    evaluateConfig,
+    IExtenalFeatureDescriptor,
+    runNodeEnvironment,
+    IFeatureDefinition,
+} from '@wixc3/engine-scripts';
+import {
     TopLevelConfig,
     Environment,
-    runEngineApp,
     Feature,
-    RuntimeEngine,
     EntityRecord,
     DisposableContext,
+    RuntimeEngine,
     MapToProxyType,
-    FeatureLoadersRegistry,
     flattenTree,
 } from '@wixc3/engine-core';
-import { readFeatures, evaluateConfig, createFeatureLoaders, IFeatureDefinition } from '@wixc3/engine-scripts';
 
 export interface IRunNodeEnvironmentOptions {
     featureName: string;
@@ -28,6 +32,7 @@ export interface IRunNodeEnvironmentOptions {
      */
     featureDiscoveryRoot?: string;
     env: Environment;
+    externalFeatures?: IExtenalFeatureDescriptor[];
 }
 
 export interface IGetRuinnnigFeatureOptions<
@@ -46,6 +51,7 @@ export async function runEngineEnvironment({
     config = [],
     env,
     basePath = process.cwd(),
+    externalFeatures = [],
     featureDiscoveryRoot,
 }: IRunNodeEnvironmentOptions): Promise<{
     engine: RuntimeEngine;
@@ -57,11 +63,9 @@ export async function runEngineEnvironment({
     if (configName) {
         config = [...evaluateConfig(configName, configurations, name), ...config];
     }
-
     const featureDef = features.get(featureName);
 
     const childEnvName = featureDef?.resolvedContexts[name];
-
     if (childEnvName) {
         const env = locateEnvironment(featureDef!, features, name, childEnvName);
         if (!env) {
@@ -77,29 +81,15 @@ export async function runEngineEnvironment({
             );
         }
     }
-
-    const featureLoaders = createFeatureLoaders(features, {
+    return runNodeEnvironment({
+        featureName,
+        features: [...features.entries()],
         name,
-        childEnvName,
         type,
-    });
-    const rootFeatureLoader = featureLoaders[featureName];
-    if (!rootFeatureLoader) {
-        throw new Error(
-            "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
-        );
-    }
-    const { resolvedContexts = {} } = rootFeatureLoader;
-
-    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
-    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, runtimeOptions);
-
-    return runEngineApp({
+        childEnvName,
         config,
-        options: new Map(Object.entries(runtimeOptions)),
-        envName: name,
-        features: loadedFeatures,
-        resolvedContexts,
+        externalFeatures,
+        options: Object.entries(runtimeOptions),
     });
 }
 

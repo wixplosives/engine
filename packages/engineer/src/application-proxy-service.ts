@@ -34,6 +34,10 @@ export class TargetApplication extends Application {
         return super.getEngineConfig();
     }
 
+    public getClosestEngineConfigPath(): Promise<string | undefined> {
+        return super.getClosestEngineConfigPath();
+    }
+
     public getFeatures(
         singleFeature?: boolean,
         featureName?: string

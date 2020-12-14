@@ -18,7 +18,7 @@ export function run({ entryFeature, topLevelConfig = [], envName = '', runOption
 export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
 
 export interface IFeatureLoader {
-    load: (resolvedContexts: Record<string, string>) => Promise<Feature>;
+    load: (resolvedContexts: Record<string, string>) => Promise<Feature> | Feature;
     preload: (
         resolveContexts: Record<string, string>
     ) => Promise<Array<(runtimeOptions: Record<string, string | boolean>) => void | Promise<void>>> | undefined;
@@ -47,10 +47,8 @@ export function runEngineApp({
     features = [],
     resolvedContexts = {},
 }: IRunEngineAppOptions) {
-    const runningFeature = features[features.length - 1];
-
     const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    const runningPromise = engine.run(runningFeature, envName);
+    const runningPromise = engine.run(features, envName);
 
     return {
         engine,
@@ -95,7 +93,7 @@ export class FeatureLoadersRegistry {
      */
     async getLoadedFeatures(
         rootFeatureName: string,
-        runtimeOptions: Record<string, string | boolean>
+        runtimeOptions: Record<string, string | boolean> = {}
     ): Promise<Feature[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);

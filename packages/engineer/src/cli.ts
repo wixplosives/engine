@@ -109,6 +109,7 @@ program
     .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
     .option('--title <title>', 'application title to display in browser')
     .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+    .option('--external [true|false]', 'build feature as external', parseBoolean, false)
     .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts', '.')
     .allowUnknownOption(true)
     .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -122,6 +123,7 @@ program
             singleFeature,
             title,
             publicConfigsRoute,
+            external,
             featureDiscoveryRoot,
         } = cmd;
         try {
@@ -137,6 +139,7 @@ program
                 singleFeature,
                 title,
                 publicConfigsRoute,
+                external,
             });
             console.log(stats.toString('errors-warnings'));
         } catch (e) {
