@@ -23,8 +23,7 @@ export async function launchHttpServer({
     socketServerOptions,
 }: ILaunchHttpServerOptions) {
     const app = express();
-    const corsMiddleware = cors();
-    app.use(corsMiddleware);
+    app.use(cors());
     const openSockets = new Set<Socket>();
     const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
     httpServer.on('connection', (socket) => {
