@@ -429,7 +429,7 @@ export function remapFileRequest({
     packageName,
 }: Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'>): string {
     const fileExtname = extname(filePath);
-    const remappedFilePath = filePath.replace(directoryPath, packageName).replace(fileExtname, '');
+    const remappedFilePath = filePath.replace(directoryPath, packageName).replace(fileExtname, '').replace(/\\/g, '/');
     if (remappedFilePath === filePath) {
         throw new Error(
             'failed to re-map request for external feature while building. maybe caused because of link issues'

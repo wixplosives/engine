@@ -229,9 +229,9 @@ export class Application {
             const providedOutDir = featureOutDir ?? configFeatureOutDir;
             const relativeFeatureOutDir = providedOutDir
                 ? // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
-                  fs.posix.relative(this.outputPath, fs.posix.resolve(this.basePath, providedOutDir)) || '.'
+                  fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir)) || '.'
                 : '.';
-            const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
+                const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
             this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeFeatureOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
             getEnvEntrypoints(electronRendererEnvs.keys(), 'electron-renderer', entryPoints, outDir);
@@ -643,7 +643,7 @@ function getEnvEntrypoints(
     outDir: string
 ) {
     for (const envName of envs) {
-        entryPoints[envName] = { ...entryPoints[envName], [target]: join(outDir, `${envName}.${target}.js`) };
+        entryPoints[envName] = { ...entryPoints[envName], [target]: fs.posix.join(outDir, `${envName}.${target}.js`) };
     }
 }
 
