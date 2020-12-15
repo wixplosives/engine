@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "16.5.2-alpha.0",
+  "version": "16.5.2-alpha.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,9 +12,9 @@
   "dependencies": {
     "@file-services/node": "^5.2.0",
     "@file-services/types": "^5.2.0",
-    "@wixc3/cross-performance": "^16.5.2-alpha.0",
-    "@wixc3/engine-core": "^16.5.2-alpha.0",
-    "@wixc3/engine-core-node": "^16.5.2-alpha.0",
+    "@wixc3/cross-performance": "^16.5.2-alpha.1",
+    "@wixc3/engine-core": "^16.5.2-alpha.1",
+    "@wixc3/engine-core-node": "^16.5.2-alpha.1",
     "commander": "^6.2.1",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
