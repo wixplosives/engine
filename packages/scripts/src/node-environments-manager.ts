@@ -36,7 +36,7 @@ export interface RunEnvironmentOptions {
     mode?: LaunchEnvironmentMode;
 }
 
-const cliEntry = require.resolve('./cli');
+const cliEntry = require.resolve('./remote-node-entry');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
