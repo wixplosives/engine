@@ -11,9 +11,9 @@
     "react": ">=16"
   },
   "dependencies": {
-    "@stylable/runtime": "^3.11.9",
-    "@wixc3/engine-core": "^16.5.2-alpha.1",
-    "@wixc3/engine-scripts": "^16.5.2-alpha.1"
+"@stylable/runtime": "^3.11.10",
+"@wixc3/engine-core": "^16.5.2-alpha.1",
+"@wixc3/engine-scripts": "^16.5.2-alpha.1"
   },
   "files": [
     "dist",
