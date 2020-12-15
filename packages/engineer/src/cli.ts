@@ -8,15 +8,7 @@
 
 import program from 'commander';
 
-import {
-    cleanCommand,
-    buildCommand,
-    runCommand,
-    createCommand,
-    remoteCommand,
-    CliApplication,
-    startCommand,
-} from './cli-commands';
+import { cleanCommand, buildCommand, runCommand, createCommand, CliApplication, startCommand } from './cli-commands';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 program.version((require('../package.json') as { version: string }).version);
@@ -26,7 +18,6 @@ const cliApplication = new CliApplication(program, [
     buildCommand,
     createCommand,
     runCommand,
-    remoteCommand,
     cleanCommand,
 ]);
 

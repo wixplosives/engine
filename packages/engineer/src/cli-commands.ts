@@ -234,22 +234,7 @@ export function cleanCommand(program: typeof commander) {
         }
     });
 }
-export function remoteCommand(program: typeof commander) {
-    program
-        .command('remote [path]')
-        .option('-p --port <port>')
-        .action(async (path = process.cwd(), cmd: Record<string, string | undefined>) => {
-            const { port: preferredPort } = cmd;
-            try {
-                const basePath = resolve(path);
-                const app = new Application({ basePath });
-                const port = preferredPort ? parseInt(preferredPort, 10) : undefined;
-                await app.remote({ port });
-            } catch (e) {
-                printErrorAndExit(e);
-            }
-        });
-}
+
 export function createCommand(program: typeof commander) {
     program
         .command('create [featureName]')
