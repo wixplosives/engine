@@ -133,6 +133,12 @@ export function buildCommand(program: typeof commander) {
             '--featureOutDir <featureOutDir>',
             'the directory where the published feature file is located (relative to the base path). default: "."'
         )
+        .option('--withExternalFeatures [true|false]', 'include defined external features in the output', false)
+        .option(
+            '--fetchExternalFeatures [true|false]',
+            'fetch for receiving external features in the output application',
+            true
+        )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
             const {
@@ -148,6 +154,8 @@ export function buildCommand(program: typeof commander) {
                 webpackConfig,
                 external,
                 featureOutDir,
+                withExternalFeatures,
+                fetchExternalFeatures,
             } = cmd;
             try {
                 const basePath = resolve(path);
@@ -165,6 +173,8 @@ export function buildCommand(program: typeof commander) {
                     webpackConfigPath: webpackConfig,
                     external,
                     featureOutDir,
+                    withExternalFeatures,
+                    fetchExternalFeatures,
                 });
                 console.log(stats.toString('errors-warnings'));
             } catch (e) {
