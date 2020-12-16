@@ -1,6 +1,6 @@
 {
   "name": "@fixture/engine-node",
-  "version": "16.5.1",
+  "version": "16.5.2",
   "scripts": {
     "start": "engineer start"
   },
