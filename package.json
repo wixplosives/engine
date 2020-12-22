@@ -18,8 +18,8 @@
     "prettify": "npx prettier \"./**/*.{js,ts,tsx}\" --write"
   },
   "devDependencies": {
-    "@file-services/memory": "^5.2.0",
-    "@file-services/types": "^5.2.0",
+    "@file-services/memory": "^5.2.1",
+    "@file-services/types": "^5.2.1",
     "@stylable/cli": "^3.11.10",
     "@stylable/core": "^3.11.10",
     "@stylable/webpack-plugin": "^3.11.10",
@@ -44,8 +44,8 @@
     "@types/webpack-dev-middleware": "^3.7.2",
     "@types/webpack-sources": "^2.1.0",
     "@types/webpack-virtual-modules": "^0.1.0",
-    "@typescript-eslint/eslint-plugin": "^4.10.0",
-    "@typescript-eslint/parser": "^4.10.0",
+    "@typescript-eslint/eslint-plugin": "^4.11.0",
+    "@typescript-eslint/parser": "^4.11.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "eslint": "^7.16.0",
