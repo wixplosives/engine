@@ -325,6 +325,13 @@ export function computeUsedContext(featureName: string, features: Map<string, IF
 
     return Array.from(getFeaturesDeep(feature.exportedFeature))
         .reverse()
-        .map((f) => featureToDef.get(f)!)
+        .map((f) => {
+            if (!featureToDef.has(f)) {
+                throw new Error(
+                    `Cannot find feature definition for feature with id: ${f.id}. This usually occurs due to duplicate engine/feature versions. Check your lock file.`
+                );
+            }
+            return featureToDef.get(f)!;
+        })
         .reduce((acc, { usedContexts }) => Object.assign(acc, usedContexts), {} as Record<string, string>);
 }
