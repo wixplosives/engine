@@ -11,7 +11,6 @@ import {
     ICompilerOptions,
     OverrideConfig,
     INpmPackage,
-    EngineConfig,
 } from '@wixc3/engine-scripts';
 import type { SetMultiMap } from '@wixc3/engine-core';
 import performance from '@wixc3/cross-performance';
@@ -30,7 +29,7 @@ export class TargetApplication extends Application {
         this.nodeEnvironmentsMode = opts.nodeEnvironmentsMode;
     }
 
-    public getEngineConfig(): Promise<EngineConfig | undefined> {
+    public getEngineConfig() {
         return super.getEngineConfig();
     }
 

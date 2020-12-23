@@ -80,7 +80,7 @@ devServerFeature.setup(
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
-            const engineConfig = await application.getEngineConfig();
+            const { config: engineConfig, path: engineConfigPath } = await application.getEngineConfig();
 
             const {
                 externalFeatureDefinitions = [],
@@ -97,7 +97,9 @@ devServerFeature.setup(
                 ...configServerOptions,
             };
             const externalFeaturesPath = resolve(
-                providedExternalFeaturesPath ?? configExternalFeaturesPath ?? join(basePath, 'node_modules')
+                providedExternalFeaturesPath ??
+                    configExternalFeaturesPath ??
+                    join(engineConfigPath ? dirname(engineConfigPath) : basePath, 'node_modules')
             );
             externalFeatureDefinitions.push(...providedExternalDefinitions);
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
@@ -112,7 +114,6 @@ devServerFeature.setup(
             attachWSHost(socketServer, devServerEnv.env, communication);
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
-            const engineConfigPath = await application.getClosestEngineConfigPath();
             const externalFeatures = getExternalFeaturesMetadata(
                 externalFeatureDefinitions,
                 engineConfigPath ? dirname(engineConfigPath) : basePath,

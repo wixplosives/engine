@@ -151,18 +151,18 @@ export class Application {
         webpackConfigPath,
         featureOutDir,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
+        const { config, path: configPath } = await this.getEngineConfig();
         const {
             require,
             externalFeatureDefinitions,
-            externalFeaturesPath = join(this.basePath, 'node_modules'),
+            externalFeaturesPath = join(configPath ?? this.basePath, 'node_modules'),
             featureOutDir: configFeatureOutDir,
-        } = (await this.getEngineConfig()) ?? {};
+        } = config ?? {};
         if (require) {
             await this.importModules(require);
         }
 
         const entryPoints: Record<string, Record<string, string>> = {};
-        const engineConfigPath = await this.getClosestEngineConfigPath();
 
         if (external && !featureName) {
             throw new Error('You must specify a feature name when building a feature in external mode');
@@ -199,7 +199,7 @@ export class Application {
                 withExternalFeatures && externalFeatureDefinitions
                     ? getExternalFeaturesMetadata(
                           externalFeatureDefinitions,
-                          engineConfigPath ? fs.dirname(engineConfigPath) : this.basePath,
+                          configPath ? fs.dirname(configPath) : this.basePath,
                           externalFeaturesPath
                       )
                     : [],
@@ -231,7 +231,7 @@ export class Application {
                 ? // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
                   fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir)) || '.'
                 : '.';
-                const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
+            const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
             this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeFeatureOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
             getEnvEntrypoints(electronRendererEnvs.keys(), 'electron-renderer', entryPoints, outDir);
@@ -270,7 +270,7 @@ export class Application {
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
             socketServerOptions: runtimeSocketServerOptions,
         } = runOptions;
-        const engineConfig = await this.getEngineConfig();
+        const { config: engineConfig, path: configPath } = await this.getEngineConfig();
 
         const disposables = createDisposables();
         const configurations = await this.readConfigs();
@@ -292,7 +292,9 @@ export class Application {
         } = engineConfig ?? {};
 
         const resolvedExternalFeaturesPath = fs.resolve(
-            providedExternalFeatuersPath ?? baseExternalFeaturesPath ?? join(this.basePath, 'node_modules')
+            providedExternalFeatuersPath ??
+                baseExternalFeaturesPath ??
+                join(configPath ? fs.dirname(configPath) : this.basePath, 'node_modules')
         );
 
         if (serveExternalFeaturesPath) {
@@ -373,9 +375,9 @@ export class Application {
         if (!process.send) {
             throw new Error('"remote" command can only be used in a forked process');
         }
-        const engineConfig = await this.getEngineConfig();
-        if (engineConfig && engineConfig.require) {
-            await this.importModules(engineConfig.require);
+        const { config } = await this.getEngineConfig();
+        if (config && config.require) {
+            await this.importModules(config.require);
         }
         const { socketServer, close, port } = await launchHttpServer({
             staticDirPath: this.outputPath,
@@ -394,7 +396,7 @@ export class Application {
             throw new Error('Feature name is mandatory');
         }
 
-        const config = await this.getEngineConfig();
+        const { config } = await this.getEngineConfig();
 
         const targetPath = pathToFeaturesDirectory(fs, this.basePath, config?.featuresDirectory || featuresDir);
         const featureDirNameTemplate = config?.featureFolderNameTemplate;
@@ -412,16 +414,19 @@ export class Application {
         });
     }
 
-    protected async getEngineConfig() {
+    protected async getEngineConfig(): Promise<{ config?: EngineConfig; path?: string }> {
         const engineConfigFilePath = await this.getClosestEngineConfigPath();
         if (engineConfigFilePath) {
             try {
-                return (await import(engineConfigFilePath)) as EngineConfig;
+                return {
+                    config: (await import(engineConfigFilePath)) as EngineConfig,
+                    path: engineConfigFilePath,
+                };
             } catch (ex) {
                 throw new Error(`failed evaluating config file: ${engineConfigFilePath}`);
             }
         }
-        return undefined;
+        return { config: undefined, path: undefined };
     }
 
     protected getClosestEngineConfigPath() {
