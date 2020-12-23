@@ -76,15 +76,18 @@ export async function startDevServer({
     const app = new TargetApplication({
         basePath: targetApplicationPath,
     });
+    const { config: engineConfig, path: engineConfigPath } = await app.getEngineConfig();
+
     const { externalFeatureDefinitions: configDefs = [], externalFeaturesPath: configExternalPath, require } =
-        (await app.getEngineConfig()) ?? {};
+        engineConfig ?? {};
+
     const featurePaths = fs.findFilesSync(basePath, {
         filterFile: ({ name }) => isFeatureFile(name),
     });
     preRequire([...pathsToRequire, ...(require ?? [])], basePath);
 
     const features = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs).features;
-    const engineConfigPath = await app.getClosestEngineConfigPath();
+
     const externalFeatures = getExternalFeaturesMetadata(
         [...configDefs, ...externalFeatureDefinitions],
         engineConfigPath ? fs.dirname(engineConfigPath) : targetApplicationPath,
