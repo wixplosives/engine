@@ -250,6 +250,7 @@ describe('Application', function () {
                 ],
                 autoLaunch: true,
                 publicConfigsRoute,
+                externalFeaturesPath: join(baseWebApplicationFixturePath, 'node_modules'),
             });
             disposables.add(() => close());
 

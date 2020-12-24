@@ -511,6 +511,7 @@ describe('engineer:dev-server', function () {
                     packageName: '@fixture/application-external-feature',
                 },
             ],
+            externalFeaturesPath: pluginsFolderPath,
         });
         disposables.add(() => dispose());
 

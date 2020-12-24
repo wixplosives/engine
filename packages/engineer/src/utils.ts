@@ -86,7 +86,7 @@ export async function startDevServer({
     });
     preRequire([...pathsToRequire, ...(require ?? [])], basePath);
 
-    const features = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs).features;
+    const { features } = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs);
 
     const externalFeatures = getExternalFeaturesMetadata(
         [...configDefs, ...externalFeatureDefinitions],
