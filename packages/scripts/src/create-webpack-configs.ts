@@ -1,10 +1,10 @@
 import fs from '@file-services/node';
+import ts from 'typescript';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
-    remapFileRequest,
     webpackImportStatement,
     LOADED_FEATURE_MODULES_NAMESPACE,
 } from './create-entrypoint';
@@ -12,7 +12,7 @@ import { basename, join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
 import type webpack from 'webpack';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { Feature, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
 
@@ -219,37 +219,32 @@ export function createWebpackConfigForExteranlFeature({
     entry = {},
     featureName,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
+    const feature = features.get(featureName!);
+    if (!feature) {
+        throw new Error(`${featureName!} was not found after analyzing features`);
+    }
+
+    for (const [envName, childEnvs] of enviroments) {
+        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
+        entry[envName] = entryPath;
+        const publicPathParts = [EXTERNAL_FEATURES_BASE_URI, feature.packageName];
+        publicPathParts.push(basename(outputPath) + '/');
+        virtualModules[entryPath] = createExternalBrowserEntrypoint({
+            ...feature,
+            childEnvs,
+            envName,
+            publicPath: join(...publicPathParts),
+            loadStatement: webpackImportStatement,
+            target: target === 'webworker' ? 'webworker' : 'web',
+        });
+    }
     const externalFeatures: Record<string, string> = {
         '@wixc3/engine-core': 'EngineCore',
+        ...getExternalFeatures(featureName!, features),
     };
-    for (const feature of [...features.values()]) {
-        if (featureName === feature.scopedName) {
-            for (const [envName, childEnvs] of enviroments) {
-                const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
-                entry[envName] = entryPath;
-                const publicPathParts = [EXTERNAL_FEATURES_BASE_URI, feature.packageName];
-                publicPathParts.push(basename(outputPath) + '/');
-                virtualModules[entryPath] = createExternalBrowserEntrypoint({
-                    ...feature,
-                    childEnvs,
-                    envName,
-                    publicPath: join(...publicPathParts),
-                    loadStatement: webpackImportStatement,
-                    target: target === 'webworker' ? 'webworker' : 'web',
-                });
-            }
-        } else {
-            if (feature.packageName !== '@wixc3/engine-core') {
-                const featureFilePath = remapFileRequest(feature);
-                externalFeatures[featureFilePath] = `${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
-                    `${feature.packageName}_${feature.exportedFeature.id}`
-                )}]`;
-            }
-        }
-    }
+    const externals: webpack.ExternalsElement[] = [externalFeatures];
     const { packageName, name } = features.get(featureName!)!;
     const { plugins: basePlugins = [] } = baseConfig;
-    const externals: webpack.ExternalsElement[] = [externalFeatures];
 
     const userExternals = baseConfig.externals;
     if (userExternals) {
@@ -281,4 +276,33 @@ export function createWebpackConfigForExteranlFeature({
             moduleIds: 'named',
         },
     };
+}
+
+function getExternalFeatures(featureName: string, features: Map<string, IFeatureDefinition>) {
+    const externals: Record<string, string> = {};
+    const feature = features.get(featureName);
+    if (!feature) {
+        throw new Error(`feature ${featureName} wss not found`);
+    }
+    const dependencies = feature.dependencies.map((dep) => features.get(dep)!);
+
+    const { importedFiles } = ts.preProcessFile(fs.readFileSync(feature.filePath, 'utf8'), true, true);
+    for (const { fileName } of importedFiles) {
+        if (fileName.startsWith('.')) {
+            continue;
+        }
+        const resolvedRequest = require.resolve(fileName, { paths: [feature.filePath] });
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { default: featureExport } = require(resolvedRequest) as { default?: Feature };
+        if (featureExport) {
+            const evaluatedDep = dependencies.find(({ exportedFeature }) => exportedFeature === featureExport);
+            if (evaluatedDep) {
+                externals[fileName] = `${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
+                    `${evaluatedDep.packageName}_${evaluatedDep.exportedFeature.id}`
+                )}]`;
+                Object.assign(externals, getExternalFeatures(evaluatedDep.scopedName, features));
+            }
+        }
+    }
+    return externals;
 }
