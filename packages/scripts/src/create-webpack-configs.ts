@@ -1,23 +1,22 @@
 import fs from '@file-services/node';
-import ts from 'typescript';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
     webpackImportStatement,
-    LOADED_FEATURE_MODULES_NAMESPACE,
+    createExternalFeatureMapping,
 } from './create-entrypoint';
 import { basename, join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
-import type webpack from 'webpack';
-import type { Feature, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { ExternalsFunctionElement, Configuration, Plugin, Entry, ExternalsElement } from 'webpack';
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
 
 export interface ICreateWebpackConfigsOptions {
-    baseConfig?: webpack.Configuration;
+    baseConfig?: Configuration;
     featureName?: string;
     configName?: string;
     singleFeature?: boolean;
@@ -32,12 +31,12 @@ export interface ICreateWebpackConfigsOptions {
     staticBuild: boolean;
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
+    createWebpackConfig: (options: ICreateWebpackConfigOptions) => Configuration;
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
 }
 
-export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
+export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): Configuration[] {
     const {
         baseConfig = {},
         publicPath = '',
@@ -49,12 +48,12 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         baseConfig.output = {};
     }
     baseConfig.output.publicPath = publicPath;
-    const configurations: webpack.Configuration[] = [];
+    const configurations: Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
     if (webEnvs.size) {
-        const plugins: webpack.Plugin[] = [new VirtualModulesPlugin(virtualModules)];
-        const entry: webpack.Entry = {};
+        const plugins: Plugin[] = [new VirtualModulesPlugin(virtualModules)];
+        const entry: Entry = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -113,7 +112,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
 }
 
 interface ICreateWebpackConfigOptions {
-    baseConfig: webpack.Configuration;
+    baseConfig: Configuration;
     featureName?: string;
     configName?: string;
     features: Map<string, IFeatureDefinition>;
@@ -124,8 +123,8 @@ interface ICreateWebpackConfigOptions {
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
     virtualModules: Record<string, string>;
-    plugins?: webpack.Plugin[];
-    entry?: webpack.Entry;
+    plugins?: Plugin[];
+    entry?: Entry;
     title?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
@@ -156,7 +155,7 @@ export function createWebpackConfig({
     overrideConfig,
     externalFeatures,
     fetchFeatures,
-}: ICreateWebpackConfigOptions): webpack.Configuration {
+}: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
@@ -218,7 +217,7 @@ export function createWebpackConfigForExteranlFeature({
     plugins = [],
     entry = {},
     featureName,
-}: ICreateWebpackConfigOptions): webpack.Configuration {
+}: ICreateWebpackConfigOptions): Configuration {
     const feature = features.get(featureName!);
     if (!feature) {
         throw new Error(`${featureName!} was not found after analyzing features`);
@@ -240,10 +239,9 @@ export function createWebpackConfigForExteranlFeature({
     }
     const externalFeatures: Record<string, string> = {
         '@wixc3/engine-core': 'EngineCore',
-        ...getExternalFeatures(featureName!, features),
     };
-    const externals: webpack.ExternalsElement[] = [externalFeatures];
-    const { packageName, name } = features.get(featureName!)!;
+    const externals: ExternalsElement[] = [externalFeatures];
+    const { packageName, name, filePath } = feature;
     const { plugins: basePlugins = [] } = baseConfig;
 
     const userExternals = baseConfig.externals;
@@ -254,6 +252,9 @@ export function createWebpackConfigForExteranlFeature({
             externals.push(userExternals);
         }
     }
+    const virtualModulePaths = Object.keys(virtualModules);
+    externals.push(extractExternals(filePath, virtualModulePaths));
+
     return {
         ...baseConfig,
         target,
@@ -278,31 +279,25 @@ export function createWebpackConfigForExteranlFeature({
     };
 }
 
-function getExternalFeatures(featureName: string, features: Map<string, IFeatureDefinition>) {
-    const externals: Record<string, string> = {};
-    const feature = features.get(featureName);
-    if (!feature) {
-        throw new Error(`feature ${featureName} wss not found`);
-    }
-    const dependencies = feature.dependencies.map((dep) => features.get(dep)!);
-
-    const { importedFiles } = ts.preProcessFile(fs.readFileSync(feature.filePath, 'utf8'), true, true);
-    for (const { fileName } of importedFiles) {
-        if (fileName.startsWith('.')) {
-            continue;
+const extractExternals: (featurePath: string, ignoredRequests: Array<string>) => ExternalsFunctionElement = (
+    featurePath,
+    ignoredRequests
+) => (context, request, cb) => {
+    try {
+        if (ignoredRequests.includes(request)) {
+            return cb();
         }
-        const resolvedRequest = require.resolve(fileName, { paths: [feature.filePath] });
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { default: featureExport } = require(resolvedRequest) as { default?: Feature };
-        if (featureExport) {
-            const evaluatedDep = dependencies.find(({ exportedFeature }) => exportedFeature === featureExport);
-            if (evaluatedDep) {
-                externals[fileName] = `${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
-                    `${evaluatedDep.packageName}_${evaluatedDep.exportedFeature.id}`
-                )}]`;
-                Object.assign(externals, getExternalFeatures(evaluatedDep.scopedName, features));
+        const resolvedRequest = require.resolve(request, { paths: [context] });
+        if (resolvedRequest !== featurePath && fs.basename(resolvedRequest).includes('.feature.')) {
+            const packageJson = fs.findClosestFileSync(fs.dirname(resolvedRequest), 'package.json');
+            if (!packageJson) {
+                throw new Error(`could not find package.json for ${resolvedRequest}`);
             }
+            const { name } = fs.readJsonFileSync(packageJson) as { name: string };
+            return cb(null, createExternalFeatureMapping(name, resolvedRequest));
         }
+        cb();
+    } catch (err) {
+        cb(err);
     }
-    return externals;
-}
+};

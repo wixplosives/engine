@@ -1,5 +1,5 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { extname } from 'path';
+import { extname, parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition, IConfigDefinition, IExtenalFeatureDescriptor } from './types';
 
@@ -266,9 +266,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                     })};
                     ${
                         target !== 'node'
-                            ? `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
-                                  packageName
-                              )} + "_" + featureModule.default.id] = featureModule;`
+                            ? `self.${createExternalFeatureMapping(packageName, filePath)} = featureModule;`
                             : ''
                     }
                     return featureModule.default;
@@ -419,6 +417,11 @@ function loadScripts() {
 
         return Promise.all(scripts.map(loadScript))
     })`;
+}
+
+export function createExternalFeatureMapping(packageName: string, featurePath: string) {
+    const externalPath = `${packageName}_${parse(featurePath).name}`;
+    return `${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(externalPath)}]`;
 }
 
 //#endregion
