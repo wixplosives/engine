@@ -11,7 +11,7 @@ import {
     ICompilerOptions,
     OverrideConfig,
     INpmPackage,
-    EngineConfig,
+    IExternalDefinition,
 } from '@wixc3/engine-scripts';
 import type { SetMultiMap } from '@wixc3/engine-core';
 import performance from '@wixc3/cross-performance';
@@ -30,7 +30,7 @@ export class TargetApplication extends Application {
         this.nodeEnvironmentsMode = opts.nodeEnvironmentsMode;
     }
 
-    public getEngineConfig(): Promise<EngineConfig | undefined> {
+    public getEngineConfig() {
         return super.getEngineConfig();
     }
 
@@ -63,6 +63,20 @@ export class TargetApplication extends Application {
 
     public createCompiler(compilerArgs: ICompilerOptions) {
         return super.createCompiler(compilerArgs);
+    }
+
+    public normilizeDefinitionsPackagePath(
+        externalFeatureDefinitions: IExternalDefinition[],
+        providedExternalFeatuersPath?: string,
+        configExternalFeatuersPath?: string,
+        configPath?: string
+    ) {
+        return super.normilizeDefinitionsPackagePath(
+            externalFeatureDefinitions,
+            providedExternalFeatuersPath,
+            configExternalFeatuersPath,
+            configPath
+        );
     }
 
     public getFeatureEnvDefinitions(

@@ -485,7 +485,6 @@ describe('engineer:dev-server', function () {
         await externalFeatureApp.build({
             external: true,
             featureName: externalFeatureName,
-            featureOutDir: 'dist',
         });
 
         fs.copyDirectorySync(
@@ -511,6 +510,7 @@ describe('engineer:dev-server', function () {
                     packageName: '@fixture/application-external-feature',
                 },
             ],
+            externalFeaturesPath: pluginsFolderPath,
         });
         disposables.add(() => dispose());
 

@@ -14,7 +14,6 @@ import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';
 import { TargetApplication } from './application-proxy-service';
-import { join } from 'path';
 
 const basePath = fs.join(__dirname, './feature');
 
@@ -76,19 +75,25 @@ export async function startDevServer({
     const app = new TargetApplication({
         basePath: targetApplicationPath,
     });
+    const { config: engineConfig, path: engineConfigPath } = await app.getEngineConfig();
+
     const { externalFeatureDefinitions: configDefs = [], externalFeaturesPath: configExternalPath, require } =
-        (await app.getEngineConfig()) ?? {};
+        engineConfig ?? {};
+
     const featurePaths = fs.findFilesSync(basePath, {
         filterFile: ({ name }) => isFeatureFile(name),
     });
     preRequire([...pathsToRequire, ...(require ?? [])], basePath);
 
-    const features = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs).features;
-    const engineConfigPath = await app.getClosestEngineConfigPath();
+    const { features } = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs);
+
+    const resolvedExternalFeaturesPath = fs.resolve(
+        externalFeaturesPath ?? (configExternalPath ? fs.dirname(engineConfigPath!) : basePath)
+    );
+
     const externalFeatures = getExternalFeaturesMetadata(
-        [...configDefs, ...externalFeatureDefinitions],
-        engineConfigPath ? fs.dirname(engineConfigPath) : targetApplicationPath,
-        externalFeaturesPath ?? configExternalPath ?? join(targetApplicationPath, 'node_modules')
+        app.normilizeDefinitionsPackagePath([...configDefs, ...externalFeatureDefinitions]),
+        resolvedExternalFeaturesPath
     );
     const { engine, dispose } = await runNodeEnvironment({
         featureName: engineerEntry,

@@ -6,14 +6,13 @@ import type { IBuildManifest } from '../application';
 
 export function getExternalFeaturesMetadata(
     pluginDefinitions: IExternalDefinition[],
-    engineConfigPath: string,
-    pluginsBaseDirectory: string
+    basePath: string
 ): IExtenalFeatureDescriptor[] {
     // mapping a feature definition to the entries of each environment of that feature, per target
     return pluginDefinitions.map(({ packageName, outDir = 'dist', packagePath }) => {
         const packageBasePath = packagePath
-            ? fs.resolve(engineConfigPath, packagePath)
-            : join(pluginsBaseDirectory, packageName);
+            ? fs.resolve(basePath, packagePath)
+            : require.resolve(packageName, { paths: [basePath] });
         const { entryPoints, defaultFeatureName } = fs.readJsonFileSync(
             fs.join(packageBasePath, outDir, 'manifest.json')
         ) as IBuildManifest;
