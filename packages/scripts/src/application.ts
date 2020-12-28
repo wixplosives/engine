@@ -267,7 +267,7 @@ export class Application {
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
             externalFeaturesPath: providedExternalFeatuersPath,
-            serveExternalFeaturesPath: providedServeExternalFeaturesPath,
+            serveExternalFeaturesPath: providedServeExternalFeaturesPath = true,
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
             socketServerOptions: runtimeSocketServerOptions,
         } = runOptions;
