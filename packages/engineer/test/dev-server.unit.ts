@@ -485,7 +485,6 @@ describe('engineer:dev-server', function () {
         await externalFeatureApp.build({
             external: true,
             featureName: externalFeatureName,
-            featureOutDir: 'dist',
         });
 
         fs.copyDirectorySync(

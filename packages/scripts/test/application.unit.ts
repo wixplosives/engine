@@ -225,7 +225,6 @@ describe('Application', function () {
             await externalFeatureApp.build({
                 external: true,
                 featureName: externalFeatureName,
-                featureOutDir: 'dist',
             });
 
             fs.copyDirectorySync(applicationExternalFixturePath, join(pluginsFolderPath, name, 'dist'));
@@ -250,7 +249,6 @@ describe('Application', function () {
                 ],
                 autoLaunch: true,
                 publicConfigsRoute,
-                externalFeaturesPath: join(baseWebApplicationFixturePath, 'node_modules'),
             });
             disposables.add(() => close());
 

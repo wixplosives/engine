@@ -18,7 +18,7 @@ import {
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
-import { dirname, join, resolve } from 'path';
+import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
@@ -97,11 +97,17 @@ devServerFeature.setup(
                 ...configServerOptions,
             };
             const externalFeaturesPath = resolve(
-                providedExternalFeaturesPath ??
-                    configExternalFeaturesPath ??
-                    join(engineConfigPath ? dirname(engineConfigPath) : basePath, 'node_modules')
+                providedExternalFeaturesPath ?? (configExternalFeaturesPath ? dirname(engineConfigPath!) : basePath)
             );
+
             externalFeatureDefinitions.push(...providedExternalDefinitions);
+
+            const fixedExternalFeatureDefinitions = application.normilizeDefinitionsPackagePath(
+                externalFeatureDefinitions,
+                providedExternalFeaturesPath,
+                configExternalFeaturesPath,
+                engineConfigPath
+            );
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
@@ -114,11 +120,7 @@ devServerFeature.setup(
             attachWSHost(socketServer, devServerEnv.env, communication);
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
-            const externalFeatures = getExternalFeaturesMetadata(
-                externalFeatureDefinitions,
-                engineConfigPath ? dirname(engineConfigPath) : basePath,
-                externalFeaturesPath
-            );
+            const externalFeatures = getExternalFeaturesMetadata(fixedExternalFeatureDefinitions, externalFeaturesPath);
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
@@ -141,11 +143,7 @@ devServerFeature.setup(
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
             if (serveExternalFeaturesPath) {
-                serveStatic.push({
-                    route: `/${EXTERNAL_FEATURES_BASE_URI}`,
-                    directoryPath: externalFeaturesPath,
-                });
-                for (const { packageName, packagePath } of externalFeatureDefinitions) {
+                for (const { packageName, packagePath } of fixedExternalFeatureDefinitions) {
                     if (packagePath) {
                         serveStatic.push({
                             route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
