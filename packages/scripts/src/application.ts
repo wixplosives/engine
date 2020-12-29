@@ -147,8 +147,8 @@ export class Application {
         overrideConfig,
         external = false,
         staticBuild = true,
-        withExternalFeatures,
-        fetchExternalFeatures = !withExternalFeatures,
+        withExternalFeatures = false,
+        fetchExternalFeatures,
         webpackConfigPath,
         featureOutDir,
         externalFeaturesPath,
@@ -206,7 +206,7 @@ export class Application {
                     ? getExternalFeaturesMetadata(externalFeatureDefinitions, resolvedExternalFeaturesPath)
                     : [],
             // whether should fetch at runtime for the external features metadata
-            useLocalExtenalFeaturesMapping: fetchExternalFeatures,
+            useLocalExtenalFeaturesMapping: fetchExternalFeatures ?? !withExternalFeatures,
             webpackConfigPath,
             environments: resolvedEnvironments,
         });
