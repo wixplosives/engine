@@ -103,6 +103,8 @@ export function createMainEntrypoint({
     fetchFeatures,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
+    const injectedPublicPath = typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__';
+
     return `
 import * as EngineCore from '@wixc3/engine-core';
 if(!self.EngineCore) {
@@ -120,11 +122,9 @@ ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
     const envName = '${envName}';
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
-    const options = new URLSearchParams(topWindow.location.search);
+    const options = new URLSearchParams(topWindow.parentLocationSearch || topWindow.location.search);
 
-    const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
-        typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
-    };
+    const publicPath = options.has('publicPath') ? options.get('publicPath') : new URL(${injectedPublicPath}, topWindow.parentLocationHref || topWindow.location.href);
     __webpack_public_path__= publicPath;
 
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
@@ -335,9 +335,9 @@ function loadConfigFile(filePath: string, scopedName: string, configEnvName: str
 
 //#region configs
 function fetchConfigs(publicConfigsRoute: string, envName: string) {
-    return `config.push(...await (await fetch('${normalizeRoute(
+    return `config.push(...await (await fetch(new URL('${normalizeRoute(
         publicConfigsRoute
-    )!}' + configName + '?env=${envName}&feature=' + featureName)).json());`;
+    )!}' + configName + '?env=${envName}&feature=' + featureName, topWindow.parentLocationHref || topWindow.location.href))).json());`;
 }
 
 function addOverrideConfig(config: TopLevelConfig) {
