@@ -377,7 +377,7 @@ function loadExternalFeatures(
         };
         if(externalFeatures.length) {
             const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
-            await ${target === 'web' ? loadScripts() : importScripts()}(entryPaths);
+            await ${target === 'webworker' ? importScripts() : loadScripts()}(entryPaths);
 
             for (const { name } of externalFeatures) {
                 for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
@@ -392,10 +392,7 @@ function fetchExternalFeatures(externalFeaturesRoute: string) {
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
-    return `const { ipcRenderer } = require('electron')
-
-    await ipcRenderer.invoke(${externalFeaturesRoute});
-    `;
+    return `await require('electron').ipcRenderer.invoke('${externalFeaturesRoute}')`;
 }
 
 function importScripts() {

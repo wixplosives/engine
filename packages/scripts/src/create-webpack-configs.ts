@@ -172,7 +172,7 @@ export function createWebpackConfig({
             staticBuild,
             publicConfigsRoute,
             config,
-            target: target === 'webworker' ? target : 'web',
+            target,
             externalFeatures,
             fetchFeatures,
         });
