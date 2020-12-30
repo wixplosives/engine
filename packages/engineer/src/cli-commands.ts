@@ -139,6 +139,11 @@ export function buildCommand(program: typeof commander) {
             'fetch for receiving external features in the output application',
             true
         )
+        .option(
+            '--staticExternalsDescriptor <staticExternalsDescriptor>',
+            'relative path to a json file which retrieves all external feature descriptors',
+            true
+        )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
             const {
@@ -173,7 +178,7 @@ export function buildCommand(program: typeof commander) {
                     webpackConfigPath: webpackConfig,
                     external,
                     featureOutDir,
-                    withExternalFeatures,
+                    includeExternalFeatures: withExternalFeatures,
                     fetchExternalFeatures,
                 });
                 console.log(stats.toString('errors-warnings'));

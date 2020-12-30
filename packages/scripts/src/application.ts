@@ -66,10 +66,11 @@ export interface IRunApplicationOptions extends IFeatureTarget {
 export interface IBuildCommandOptions extends IRunApplicationOptions {
     external?: boolean;
     staticBuild?: boolean;
-    withExternalFeatures?: boolean;
+    externalFeaturesFilePath?: string;
     fetchExternalFeatures?: boolean;
     featureOutDir?: string;
     externalFeaturesPath?: string;
+    includeExternalFeatures?: boolean;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -111,7 +112,7 @@ export interface ICompilerOptions {
     singleFeature?: boolean;
     isExternal: boolean;
     externalFeatures: IExtenalFeatureDescriptor[];
-    useLocalExtenalFeaturesMapping?: boolean;
+    externalsFilePath?: string;
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
 }
@@ -147,10 +148,10 @@ export class Application {
         overrideConfig,
         external = false,
         staticBuild = true,
-        withExternalFeatures = false,
-        fetchExternalFeatures,
+        externalFeaturesFilePath,
         webpackConfigPath,
         featureOutDir,
+        includeExternalFeatures,
         externalFeaturesPath,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
@@ -202,11 +203,15 @@ export class Application {
             isExternal: external,
             // external features to prepend to the built output
             externalFeatures:
-                withExternalFeatures && externalFeatureDefinitions
+                includeExternalFeatures && externalFeatureDefinitions
                     ? getExternalFeaturesMetadata(externalFeatureDefinitions, resolvedExternalFeaturesPath)
                     : [],
             // whether should fetch at runtime for the external features metadata
-            useLocalExtenalFeaturesMapping: fetchExternalFeatures ?? !withExternalFeatures,
+            externalsFilePath: externalFeaturesFilePath?.startsWith('/')
+                ? externalFeaturesFilePath
+                : externalFeaturesFilePath
+                ? `/${externalFeaturesFilePath}`
+                : undefined,
             webpackConfigPath,
             environments: resolvedEnvironments,
         });
@@ -544,7 +549,7 @@ export class Application {
         singleFeature,
         isExternal,
         externalFeatures,
-        useLocalExtenalFeaturesMapping: fetchFeatures,
+        externalsFilePath,
         webpackConfigPath,
         environments,
     }: ICompilerOptions) {
@@ -577,7 +582,7 @@ export class Application {
             singleFeature,
             createWebpackConfig: isExternal ? createWebpackConfigForExteranlFeature : createWebpackConfig,
             externalFeatures,
-            fetchFeatures,
+            externalsFilePath,
         });
 
         const compiler = webpack(webpackConfigs);

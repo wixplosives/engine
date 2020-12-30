@@ -23,7 +23,7 @@ export interface ICreateEntrypointsOptions {
     config?: TopLevelConfig;
     target: 'webworker' | 'web' | 'electron-renderer';
     externalFeatures: IExtenalFeatureDescriptor[];
-    fetchFeatures?: boolean;
+    externalsFilePath?: string;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -100,7 +100,7 @@ export function createMainEntrypoint({
     config,
     target,
     externalFeatures,
-    fetchFeatures,
+    externalsFilePath,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -144,7 +144,7 @@ async function main() {
 
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
     const features = [loadedFeatures[loadedFeatures.length - 1]];
-    ${loadExternalFeatures(target, externalFeatures, fetchFeatures)}
+    ${loadExternalFeatures(target, externalFeatures, externalsFilePath)}
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
@@ -361,17 +361,17 @@ function importStaticConfigs() {
 function loadExternalFeatures(
     target: 'web' | 'webworker' | 'electron-renderer',
     externalFeatures: IExtenalFeatureDescriptor[],
-    fetchFeatures?: boolean
+    externalsFilePath?: string
 ) {
     return `
         self.runtimeFeatureLoader = featureLoader;
         const externalFeatures = ${JSON.stringify(externalFeatures)};
         ${
-            fetchFeatures
+            externalsFilePath
                 ? `externalFeatures.push(...${
                       target === 'electron-renderer'
-                          ? fetchFeaturesFromElectronProcess('/external')
-                          : fetchExternalFeatures('/external')
+                          ? fetchFeaturesFromElectronProcess(externalsFilePath)
+                          : fetchExternalFeatures(externalsFilePath)
                   })`
                 : ''
         };

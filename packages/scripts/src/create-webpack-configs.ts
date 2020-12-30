@@ -33,7 +33,7 @@ export interface ICreateWebpackConfigsOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => Configuration;
     externalFeatures: IExtenalFeatureDescriptor[];
-    fetchFeatures?: boolean;
+    externalsFilePath?: string;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): Configuration[] {
@@ -131,7 +131,7 @@ interface ICreateWebpackConfigOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     externalFeatures: IExtenalFeatureDescriptor[];
-    fetchFeatures?: boolean;
+    externalsFilePath?: string;
 }
 
 export function createWebpackConfig({
@@ -154,7 +154,7 @@ export function createWebpackConfig({
     publicConfigsRoute,
     overrideConfig,
     externalFeatures,
-    fetchFeatures,
+    externalsFilePath,
 }: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -174,7 +174,7 @@ export function createWebpackConfig({
             config,
             target,
             externalFeatures,
-            fetchFeatures,
+            externalsFilePath,
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
