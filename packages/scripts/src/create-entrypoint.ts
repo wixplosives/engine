@@ -124,7 +124,7 @@ async function main() {
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.parentLocationSearch || topWindow.location.search);
 
-    const publicPath = options.has('publicPath') ? options.get('publicPath') : new URL(${injectedPublicPath}, topWindow.parentLocationHref || topWindow.location.href);
+    const publicPath = options.has('publicPath') ? options.get('publicPath') : new URL(${injectedPublicPath}, new URL('.', topWindow.parentLocationHref || topWindow.location.href));
     __webpack_public_path__= publicPath;
 
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
@@ -337,7 +337,7 @@ function loadConfigFile(filePath: string, scopedName: string, configEnvName: str
 function fetchConfigs(publicConfigsRoute: string, envName: string) {
     return `config.push(...await (await fetch(new URL('${normalizeRoute(
         publicConfigsRoute
-    )!}' + configName + '?env=${envName}&feature=' + featureName, topWindow.parentLocationHref || topWindow.location.href))).json());`;
+    )}' + configName + '?env=${envName}&feature=' + featureName, topWindow.parentLocationHref || topWindow.location.href))).json());`;
 }
 
 function addOverrideConfig(config: TopLevelConfig) {
@@ -377,7 +377,7 @@ function loadExternalFeatures(
         };
         if(externalFeatures.length) {
             const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
-            await ${target === 'webworker' ? importScripts() : loadScripts()}(entryPaths);
+            await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
 
             for (const { name } of externalFeatures) {
                 for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
@@ -388,15 +388,13 @@ function loadExternalFeatures(
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
-    return `await (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json()`;
+    return `await (await fetch(new URL('${normalizeRoute(
+        externalFeaturesRoute
+    )}', topWindow.parentLocationHref || topWindow.location.href))).json()`;
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
     return `await require('electron').ipcRenderer.invoke('${externalFeaturesRoute}')`;
-}
-
-function importScripts() {
-    return 'importScripts';
 }
 
 function loadScripts() {
@@ -438,12 +436,8 @@ export function remapFileRequest({
     return remappedFilePath;
 }
 
-function normalizeRoute(route?: string) {
-    if (route && !route.endsWith('/')) {
-        return route + '/';
-    }
-
-    return route;
+function normalizeRoute(route: string) {
+    return route + (route && !route.endsWith('/') ? '/' : '');
 }
 
 export function normilizePackageName(packageName: string) {
