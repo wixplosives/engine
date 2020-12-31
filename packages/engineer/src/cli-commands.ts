@@ -141,7 +141,7 @@ export function buildCommand(program: typeof commander) {
         )
         .option(
             '--staticExternalsDescriptor <staticExternalsDescriptor>',
-            'relative path to a json file which retrieves all external feature descriptors',
+            'relative to the output directory - a path to a json file which retrieves all external feature descriptors',
             true
         )
         .allowUnknownOption(true)
