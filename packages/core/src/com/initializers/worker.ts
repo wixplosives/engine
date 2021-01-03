@@ -8,8 +8,7 @@ export function workerInitializer(): EnvironmentInitializer<{ id: string }> {
         const workerUrl = new URL(`${communication.getPublicPath()}${env}.webworker.js`, location.href);
         const workerBlob = new Blob(
             [
-                `self.parentLocationHref = ${JSON.stringify(location.href)};`,
-                `self.parentLocationSearch = ${JSON.stringify(location.search)};`,
+                `self.parentLocation = new URL(${JSON.stringify(location.href)});`,
                 `importScripts(${JSON.stringify(workerUrl)});`,
             ],
             {

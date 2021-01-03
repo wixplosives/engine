@@ -122,9 +122,12 @@ ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
     const envName = '${envName}';
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
-    const options = new URLSearchParams(topWindow.parentLocationSearch || topWindow.location.search);
+    const topLocation = topWindow.parentLocation || topWindow.location;
+    const options = new URLSearchParams(topLocation.search);
 
-    const publicPath = options.has('publicPath') ? options.get('publicPath') : new URL(${injectedPublicPath}, new URL('.', topWindow.parentLocationHref || topWindow.location.href));
+    const publicPath = options.has('publicPath') ?
+                       options.get('publicPath') :
+                       new URL(${injectedPublicPath}, new URL('.', topLocation.href));
     __webpack_public_path__= publicPath;
 
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
@@ -337,7 +340,7 @@ function loadConfigFile(filePath: string, scopedName: string, configEnvName: str
 function fetchConfigs(publicConfigsRoute: string, envName: string) {
     return `config.push(...await (await fetch(new URL('${normalizeRoute(
         publicConfigsRoute
-    )}' + configName + '?env=${envName}&feature=' + featureName, topWindow.parentLocationHref || topWindow.location.href))).json());`;
+    )}' + configName + '?env=${envName}&feature=' + featureName, topLocation.href))).json());`;
 }
 
 function addOverrideConfig(config: TopLevelConfig) {
@@ -388,9 +391,7 @@ function loadExternalFeatures(
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
-    return `await (await fetch(new URL('${normalizeRoute(
-        externalFeaturesRoute
-    )}', topWindow.parentLocationHref || topWindow.location.href))).json()`;
+    return `await (await fetch(new URL('${normalizeRoute(externalFeaturesRoute)}', topLocation.href))).json()`;
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
