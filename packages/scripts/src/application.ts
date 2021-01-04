@@ -270,14 +270,14 @@ export class Application {
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
 
-        const providedExternalFeatures = [];
+        const externalFeatures: IExtenalFeatureDescriptor[] = [];
         if (externalsFilePath && fs.existsSync(join(this.outputPath, externalsFilePath))) {
-            providedExternalFeatures.push([
+            externalFeatures.push(
                 ...(fs.readJsonFileSync(
                     join(this.outputPath, externalsFilePath),
                     'utf8'
-                ) as IExtenalFeatureDescriptor[]),
-            ]);
+                ) as IExtenalFeatureDescriptor[])
+            );
         }
 
         const {
@@ -338,6 +338,16 @@ export class Application {
             }
         }
 
+        const resolvedExternalFeaturesPath = fs.resolve(
+            providedExternalFeatuersPath ??
+                baseExternalFeaturesPath ??
+                (configPath ? fs.dirname(configPath) : this.basePath)
+        );
+
+        externalFeatures.push(
+            ...getExternalFeaturesMetadata(fixedExternalFeatureDefinitions, resolvedExternalFeaturesPath)
+        );
+
         if (externalsFilePath) {
             routeMiddlewares.push({
                 path: externalsFilePath,
@@ -355,12 +365,6 @@ export class Application {
         });
         disposables.add(close);
 
-        const resolvedExternalFeaturesPath = fs.resolve(
-            providedExternalFeatuersPath ??
-                baseExternalFeaturesPath ??
-                (configPath ? fs.dirname(configPath) : this.basePath)
-        );
-
         fixedExternalFeatureDefinitions.push(
             ...this.normilizeDefinitionsPackagePath(
                 providedExternalFeaturesDefinitions,
@@ -368,11 +372,6 @@ export class Application {
                 baseExternalFeaturesPath,
                 configPath
             )
-        );
-
-        const externalFeatures = getExternalFeaturesMetadata(
-            fixedExternalFeatureDefinitions,
-            resolvedExternalFeaturesPath
         );
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
