@@ -133,10 +133,16 @@ export function buildCommand(program: typeof commander) {
             '--featureOutDir <featureOutDir>',
             'the directory where the published feature file is located (relative to the base path). default: "."'
         )
-        .option('--withExternalFeatures [true|false]', 'include defined external features in the output', false)
+        .option(
+            '--withExternalFeatures [true|false]',
+            'include defined external features in the output',
+            parseBoolean,
+            false
+        )
         .option(
             '--fetchExternalFeatures [true|false]',
             'fetch for receiving external features in the output application',
+            parseBoolean,
             true
         )
         .allowUnknownOption(true)
