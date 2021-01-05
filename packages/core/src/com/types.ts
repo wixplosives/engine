@@ -51,10 +51,13 @@ export type UnknownFunction = (...args: unknown[]) => unknown;
 export type AsyncApi<T> = {
     [P in keyof T]: P extends keyof ServiceConfig<T>
         ? MultiTanentProxyFunction<T, P extends string ? P : never>
+        : T[P] extends (...args: any[]) => PromiseLike<any>
+        ? T[P]
         : T[P] extends (...args: infer Args) => infer R
-        ? (...args: Args) => ValuePromise<R>
+        ? (...args: Args) => Promise<R>
         : never;
 };
+
 export interface EnvironmentInstanceToken {
     id: string;
 }
