@@ -370,16 +370,8 @@ function loadExternalFeatures(
     const externalFeatures = ${JSON.stringify(externalFeatures)};
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
     
-    if(isMainEntrypoint) {
-        currentWindow.addEventListener('message', ({ data: { id }, source }) => {
-            if(id === '/external') {
-                source.postMessage({
-                    id,
-                    externalFeatures
-                })
-            }
-        })
-    }
+    ${addExternalsEventListenerForParentEnvironments()}
+    
     ${
         fetchFeatures
             ? `const fetchedExternalFeatures = ${
@@ -402,26 +394,43 @@ function loadExternalFeatures(
     }`;
 }
 
+function addExternalsEventListenerForParentEnvironments() {
+    return `if(isMainEntrypoint) {
+        currentWindow.addEventListener('message', ({ data: { id }, source }) => {
+            if(id === '/external') {
+                source.postMessage({
+                    id,
+                    externalFeatures
+                })
+            }
+        })
+    }`;
+}
+
 function fetchExternalFeaturesInBrowser(externalFeaturesRoute: string) {
     return `await (async () =>{
         if(!isMainEntrypoint) {
-            return new Promise((res) => {
-                const externalsHandler = ({ data: { id, externalFeatures } }) => {
-                    if(id === '${externalFeaturesRoute}') {
-                        currentWindow.removeEventListener('message', externalsHandler);
-                        res(externalFeatures);
-                    }
-                };
-                currentWindow.addEventListener('message', externalsHandler)
-                topWindow.postMessage({
-                    id: '${externalFeaturesRoute}'
-                });
-            })
+            ${getExternalFeaturesFromParent(externalFeaturesRoute)}   
         } else {
             ${fetchExternalFeatures(externalFeaturesRoute)}
         }
     })();
     `;
+}
+
+function getExternalFeaturesFromParent(externalFeaturesRoute: string) {
+    return `return new Promise((res) => {
+        const externalsHandler = ({ data: { id, externalFeatures } }) => {
+            if(id === '${externalFeaturesRoute}') {
+                currentWindow.removeEventListener('message', externalsHandler);
+                res(externalFeatures);
+            }
+        };
+        currentWindow.addEventListener('message', externalsHandler)
+        topWindow.postMessage({
+            id: '${externalFeaturesRoute}'
+        });
+    });`;
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
