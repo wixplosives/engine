@@ -122,7 +122,6 @@ self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
     const envName = '${envName}';
-    const target = '${target}';
     const currentWindow = typeof self !== 'undefined' ? self : window;
     const topWindow = getTopWindow(currentWindow);
     const topLocation = topWindow.parentLocation || topWindow.location;
