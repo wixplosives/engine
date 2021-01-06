@@ -15,9 +15,7 @@ function getBodyContent(page: Page | Frame) {
 describe('Application', function () {
     this.timeout(15_000);
     const disposables = createDisposables();
-    const browserProvider = createBrowserProvider({
-        devtools: true,
-    });
+    const browserProvider = createBrowserProvider();
 
     afterEach(function () {
         this.timeout(30_000);
