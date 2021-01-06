@@ -68,7 +68,7 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
     return `
     import { getTopWindow } from '@wixc3/engine-core';
     
-    const topWindow = getTopWindow(currentWindow);
+    const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
     const publicPath = options.has('externalPublicPath') ? options.get('externalPublicPath') : ${
         typeof args.publicPath === 'string' ? JSON.stringify(args.publicPath) : '__webpack_public_path__'
