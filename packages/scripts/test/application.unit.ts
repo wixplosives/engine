@@ -3,19 +3,21 @@ import { TopLevelConfig, createDisposables } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import type { Page } from 'puppeteer';
+import type { Frame, Page } from 'puppeteer';
 import { Application } from '@wixc3/engine-scripts';
 import { join } from 'path';
 import rimraf from 'rimraf';
 
-function getBodyContent(page: Page) {
+function getBodyContent(page: Page | Frame) {
     return page.evaluate(() => (document.body.textContent || '').trim());
 }
 
 describe('Application', function () {
     this.timeout(15_000);
     const disposables = createDisposables();
-    const browserProvider = createBrowserProvider();
+    const browserProvider = createBrowserProvider({
+        devtools: true,
+    });
 
     afterEach(function () {
         this.timeout(30_000);
@@ -266,6 +268,19 @@ describe('Application', function () {
                     await button?.click();
                     const elem = await page.$('#server-slot-value');
                     expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
+                },
+                { timeout: 5_000 }
+            );
+            const frames = page.frames();
+            await waitFor(
+                async () => {
+                    for (const iframe of frames) {
+                        const child = await iframe.$('#main-container');
+                        if (!child) {
+                            continue;
+                        }
+                        expect(await getBodyContent(iframe)).to.eq('hello external');
+                    }
                 },
                 { timeout: 5_000 }
             );
