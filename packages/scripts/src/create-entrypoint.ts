@@ -67,7 +67,6 @@ export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePa
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
     import { getTopWindow } from '@wixc3/engine-core';
-    
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
     const publicPath = options.has('externalPublicPath') ? options.get('externalPublicPath') : ${
@@ -405,28 +404,24 @@ function loadExternalFeatures(
 
 function fetchExternalFeaturesInBrowser(externalFeaturesRoute: string) {
     return `await (async () =>{
-    ${getExternalFeaturesInWebTarget(externalFeaturesRoute)}
-})();
+        if(!isMainEntrypoint) {
+            return new Promise((res) => {
+                const externalsHandler = ({ data: { id, externalFeatures } }) => {
+                    if(id === '${externalFeaturesRoute}') {
+                        currentWindow.removeEventListener('message', externalsHandler);
+                        res(externalFeatures);
+                    }
+                };
+                currentWindow.addEventListener('message', externalsHandler)
+                topWindow.postMessage({
+                    id: '${externalFeaturesRoute}'
+                });
+            })
+        } else {
+            ${fetchExternalFeatures(externalFeaturesRoute)}
+        }
+    })();
     `;
-}
-
-function getExternalFeaturesInWebTarget(externalFeaturesRoute: string) {
-    return `if(!isMainEntrypoint) {
-        return new Promise((res) => {
-            const externalsHandler = ({ data: { id, externalFeatures } }) => {
-                if(id === '${externalFeaturesRoute}') {
-                    currentWindow.removeEventListener('message', externalsHandler);
-                    res(externalFeatures);
-                }
-            };
-            currentWindow.addEventListener('message', externalsHandler)
-            topWindow.postMessage({
-                id: '${externalFeaturesRoute}'
-            });
-        })
-    } else {
-        ${fetchExternalFeatures(externalFeaturesRoute)}
-    }`;
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
