@@ -1,5 +1,5 @@
-import { socketServerInitializer } from '@wixc3/engine-core';
-import BaseAppFeature, { client, server } from './base-web-application.feature';
+import { socketServerInitializer, iframeInitializer } from '@wixc3/engine-core';
+import BaseAppFeature, { client, server, iframe } from './base-web-application.feature';
 
 BaseAppFeature.setup(client, ({ clientSlot, dataProvider }, { COM: { startEnvironment } }) => {
     startEnvironment(server, socketServerInitializer()).catch(console.error);
@@ -32,5 +32,22 @@ BaseAppFeature.setup(client, ({ clientSlot, dataProvider }, { COM: { startEnviro
     getSlotValues.innerText = 'Get server slot values';
     getSlotValues.id = 'server-slot';
 
-    document.body.append(clientSlotTitle, clientSlotValue, serverSlotTitle, serverSlotValue, getSlotValues);
+    const iframeElement = document.createElement('iframe');
+    iframeElement.id = 'iframe-container';
+
+    document.body.append(
+        clientSlotTitle,
+        clientSlotValue,
+        serverSlotTitle,
+        serverSlotValue,
+        getSlotValues,
+        iframeElement
+    );
+
+    startEnvironment(
+        iframe,
+        iframeInitializer({
+            iframeElement,
+        })
+    ).catch(console.error);
 });

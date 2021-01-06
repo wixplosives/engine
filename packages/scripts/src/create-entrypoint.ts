@@ -67,7 +67,6 @@ export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePa
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
     import { getTopWindow } from '@wixc3/engine-core';
-
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     const options = new URLSearchParams(topWindow.location.search);
     const publicPath = options.has('externalPublicPath') ? options.get('externalPublicPath') : ${
@@ -121,7 +120,8 @@ self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
     const envName = '${envName}';
-    const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
+    const currentWindow = typeof self !== 'undefined' ? self : window;
+    const topWindow = getTopWindow(currentWindow);
     const topLocation = topWindow.parentLocation || topWindow.location;
     const options = new URLSearchParams(topLocation.search);
 
@@ -366,32 +366,75 @@ function loadExternalFeatures(
     externalFeatures: IExtenalFeatureDescriptor[],
     fetchFeatures?: boolean
 ) {
-    return `
-        self.runtimeFeatureLoader = featureLoader;
-        const externalFeatures = ${JSON.stringify(externalFeatures)};
-        ${
-            fetchFeatures
-                ? `externalFeatures.push(...${
-                      target === 'electron-renderer'
-                          ? fetchFeaturesFromElectronProcess('/external')
-                          : fetchExternalFeatures('/external')
-                  })`
-                : ''
-        };
-        if(externalFeatures.length) {
-            const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
-            await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
+    return `self.runtimeFeatureLoader = featureLoader;
+    const externalFeatures = ${JSON.stringify(externalFeatures)};
+    const isMainEntrypoint = topWindow && currentWindow === topWindow;
+    
+    ${addExternalsEventListenerForParentEnvironments()}
+    
+    ${
+        fetchFeatures
+            ? `const fetchedExternalFeatures = ${
+                  target === 'electron-renderer'
+                      ? fetchFeaturesFromElectronProcess('/external')
+                      : fetchExternalFeaturesInBrowser('/external')
+              };
+            externalFeatures.push(...fetchedExternalFeatures)`
+            : ''
+    }
+    if(externalFeatures.length) {
+        const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
+        await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
 
-            for (const { name } of externalFeatures) {
-                for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
-                    features.push(loadedFeature);
-                }
+        for (const { name } of externalFeatures) {
+            for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
+                features.push(loadedFeature);
             }
-        }`;
+        }
+    }`;
+}
+
+function addExternalsEventListenerForParentEnvironments() {
+    return `if(isMainEntrypoint) {
+        currentWindow.addEventListener('message', ({ data: { id }, source }) => {
+            if(id === '/external') {
+                source.postMessage({
+                    id,
+                    externalFeatures
+                })
+            }
+        })
+    }`;
+}
+
+function fetchExternalFeaturesInBrowser(externalFeaturesRoute: string) {
+    return `await (async () =>{
+        if(!isMainEntrypoint) {
+            ${getExternalFeaturesFromParent(externalFeaturesRoute)}   
+        } else {
+            ${fetchExternalFeatures(externalFeaturesRoute)}
+        }
+    })();
+    `;
+}
+
+function getExternalFeaturesFromParent(externalFeaturesRoute: string) {
+    return `return new Promise((res) => {
+        const externalsHandler = ({ data: { id, externalFeatures } }) => {
+            if(id === '${externalFeaturesRoute}') {
+                currentWindow.removeEventListener('message', externalsHandler);
+                res(externalFeatures);
+            }
+        };
+        currentWindow.addEventListener('message', externalsHandler)
+        topWindow.postMessage({
+            id: '${externalFeaturesRoute}'
+        });
+    });`;
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
-    return `await (await fetch(new URL('${normalizeRoute(externalFeaturesRoute)}', topLocation.href))).json()`;
+    return `return (await fetch(new URL('${normalizeRoute(externalFeaturesRoute)}', topLocation.href))).json();`;
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
@@ -400,19 +443,19 @@ function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
 
 function loadScripts() {
     return `(function fetchScripts(scripts) {
-        const loadScript = (src) =>
-            new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = () => resolve();
-                script.onerror = reject;
-                script.crossOrigin = 'anonymous';
-                script.type = 'module';
-                document.head.appendChild(script);
-            });
+                const loadScript = (src) =>
+                    new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        script.onload = () => resolve();
+                        script.onerror = reject;
+                        script.crossOrigin = 'anonymous';
+                        script.type = 'module';
+                        document.head.appendChild(script);
+                    });
 
-        return Promise.all(scripts.map(loadScript))
-    })`;
+                return Promise.all(scripts.map(loadScript));
+            })`;
 }
 
 export function createExternalFeatureMapping(packageName: string, featurePath: string) {
