@@ -154,7 +154,7 @@ export class Application {
         webpackConfigPath,
         featureOutDir,
         externalFeaturesPath,
-        eagerEntrypoint = false,
+        eagerEntrypoint,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
