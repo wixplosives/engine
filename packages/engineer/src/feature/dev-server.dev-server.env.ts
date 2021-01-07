@@ -192,6 +192,7 @@ devServerFeature.setup(
                     filterContexts: singleFeature,
                     environments: [...getExportedEnvironments(features)],
                 }),
+                eagerEntrypoint: false,
             });
 
             for (const childCompiler of compiler.compilers) {

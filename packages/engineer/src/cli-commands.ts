@@ -128,7 +128,8 @@ export function buildCommand(program: typeof commander) {
         .option('--title <title>', 'application title to display in browser')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
-        .option('--external [true|false]', 'build feature as external')
+        .option('--external [true|false]', 'build feature as external', parseBoolean, false)
+        .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
         .option(
             '--featureOutDir <featureOutDir>',
             'the directory where the published feature file is located (relative to the base path). default: "."'
@@ -162,6 +163,7 @@ export function buildCommand(program: typeof commander) {
                 featureOutDir,
                 withExternalFeatures,
                 fetchExternalFeatures,
+                eagerEntrypoints,
             } = cmd;
             try {
                 const basePath = resolve(path);
@@ -181,6 +183,7 @@ export function buildCommand(program: typeof commander) {
                     featureOutDir,
                     withExternalFeatures,
                     fetchExternalFeatures,
+                    eagerEntrypoint: eagerEntrypoints,
                 });
                 console.log(stats.toString('errors-warnings'));
             } catch (e) {

@@ -24,6 +24,7 @@ export interface ICreateEntrypointsOptions {
     target: 'webworker' | 'web' | 'electron-renderer';
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
+    eagerEntrypoint: boolean;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -42,6 +43,7 @@ export interface ExternalBrowserEntrypoint extends ExternalEntrypoint {
 
 export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint {
     target: 'web' | 'webworker' | 'node' | 'electron-renderer';
+    eagerEntrypoint: boolean;
 }
 
 export type LoadStatement = Pick<
@@ -55,10 +57,12 @@ export type LoadStatement = Pick<
     | 'packageName'
     | 'directoryPath'
     | 'preloadFilePaths'
+    | 'eagerEntrypoint'
 >;
 
 export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'> {
     moduleIdentifier: string;
+    eagerEntrypoint: boolean;
 }
 //#endregion
 
@@ -80,7 +84,12 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
 
 export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
     return `module.exports = {
-        '${args.scopedName}': ${createLoaderInterface({ ...args, target: 'node', loadStatement: nodeImportStatement })}
+        '${args.scopedName}': ${createLoaderInterface({
+        ...args,
+        target: 'node',
+        loadStatement: nodeImportStatement,
+        eagerEntrypoint: false,
+    })}
 }
     `;
 }
@@ -100,6 +109,7 @@ export function createMainEntrypoint({
     target,
     externalFeatures,
     fetchFeatures,
+    eagerEntrypoint,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     const injectedPublicPath = typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__';
@@ -112,7 +122,7 @@ if(!self.EngineCore) {
 const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
 
 const featureLoaders = new Map(Object.entries({
-    ${createFeatureLoaders(features.values(), envName, childEnvs, target)}
+    ${createFeatureLoaders(features.values(), envName, childEnvs, target, eagerEntrypoint)}
 }));
 
 self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
@@ -163,8 +173,10 @@ main().catch(console.error);
 //#endregion
 
 //#region webpack import statements
-export function webpackImportStatement({ moduleIdentifier, filePath }: LoadStatementArguments) {
-    return `await import(/* webpackChunkName: "${moduleIdentifier}" */ ${stringify(filePath)});`;
+export function webpackImportStatement({ moduleIdentifier, filePath, eagerEntrypoint }: LoadStatementArguments) {
+    return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
+        eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
+    } ${stringify(filePath)});`;
 }
 
 export function nodeImportStatement(args: LoadStatementArguments) {
@@ -178,7 +190,8 @@ function createFeatureLoaders(
     features: Iterable<IFeatureDefinition>,
     envName: string,
     childEnvs: string[],
-    target: 'web' | 'webworker' | 'node' | 'electron-renderer'
+    target: 'web' | 'webworker' | 'node' | 'electron-renderer',
+    eagerEntrypoint: boolean
 ) {
     return Array.from(features)
         .map(
@@ -189,6 +202,7 @@ function createFeatureLoaders(
                     childEnvs,
                     loadStatement: target === 'node' ? nodeImportStatement : webpackImportStatement,
                     target,
+                    eagerEntrypoint,
                 })}`
         )
         .join(',\n');
@@ -204,6 +218,7 @@ function loadEnvAndContextFiles({
     directoryPath,
     packageName,
     preloadFilePaths,
+    eagerEntrypoint,
 }: LoadStatement) {
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
@@ -213,7 +228,13 @@ function loadEnvAndContextFiles({
         if (contextFilePath) {
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
-                ${loadStatement({ moduleIdentifier: name, filePath: contextFilePath, directoryPath, packageName })};
+                ${loadStatement({
+                    moduleIdentifier: name,
+                    filePath: contextFilePath,
+                    directoryPath,
+                    packageName,
+                    eagerEntrypoint,
+                })};
             }`);
         }
         const preloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
@@ -226,6 +247,7 @@ function loadEnvAndContextFiles({
                     filePath: preloadFilePath,
                     moduleIdentifier: name,
                     packageName,
+                    eagerEntrypoint,
                 })};
             }`);
         }
@@ -238,6 +260,7 @@ function loadEnvAndContextFiles({
                 filePath: envFilePath,
                 directoryPath,
                 packageName,
+                eagerEntrypoint,
             })
         );
     }
@@ -249,6 +272,7 @@ function loadEnvAndContextFiles({
                 filePath: preloadFilePath,
                 directoryPath,
                 packageName,
+                eagerEntrypoint,
             })
         );
     }
@@ -256,7 +280,17 @@ function loadEnvAndContextFiles({
 }
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
-    const { name, filePath, dependencies, resolvedContexts, loadStatement, packageName, directoryPath, target } = args;
+    const {
+        name,
+        filePath,
+        dependencies,
+        resolvedContexts,
+        loadStatement,
+        packageName,
+        directoryPath,
+        target,
+        eagerEntrypoint,
+    } = args;
     const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
     return `{
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
@@ -266,6 +300,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                         filePath,
                         directoryPath,
                         packageName,
+                        eagerEntrypoint,
                     })};
                     ${
                         target !== 'node'
