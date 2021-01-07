@@ -35,6 +35,7 @@ export interface ICreateWebpackConfigsOptions {
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => Configuration;
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
+    eagerEntrypoint?: boolean;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): Configuration[] {
@@ -133,6 +134,7 @@ interface ICreateWebpackConfigOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
+    eagerEntrypoint?: boolean;
 }
 
 export function createWebpackConfig({
@@ -156,6 +158,7 @@ export function createWebpackConfig({
     overrideConfig,
     externalFeatures,
     fetchFeatures,
+    eagerEntrypoint,
 }: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -176,6 +179,7 @@ export function createWebpackConfig({
             target,
             externalFeatures,
             fetchFeatures,
+            eagerEntrypoint,
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(

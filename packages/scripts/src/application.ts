@@ -70,6 +70,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     fetchExternalFeatures?: boolean;
     featureOutDir?: string;
     externalFeaturesPath?: string;
+    eagerEntrypoint?: boolean;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -114,6 +115,7 @@ export interface ICompilerOptions {
     useLocalExtenalFeaturesMapping?: boolean;
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
+    eagerEntrypoint?: boolean;
 }
 
 export class Application {
@@ -152,6 +154,7 @@ export class Application {
         webpackConfigPath,
         featureOutDir,
         externalFeaturesPath,
+        eagerEntrypoint,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
@@ -209,6 +212,7 @@ export class Application {
             useLocalExtenalFeaturesMapping: fetchExternalFeatures ?? !withExternalFeatures,
             webpackConfigPath,
             environments: resolvedEnvironments,
+            eagerEntrypoint,
         });
         const outDir = fs.basename(this.outputPath);
 
@@ -547,6 +551,7 @@ export class Application {
         useLocalExtenalFeaturesMapping: fetchFeatures,
         webpackConfigPath,
         environments,
+        eagerEntrypoint,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = webpackConfigPath
@@ -578,6 +583,7 @@ export class Application {
             createWebpackConfig: isExternal ? createWebpackConfigForExteranlFeature : createWebpackConfig,
             externalFeatures,
             fetchFeatures,
+            eagerEntrypoint,
         });
 
         const compiler = webpack(webpackConfigs);
