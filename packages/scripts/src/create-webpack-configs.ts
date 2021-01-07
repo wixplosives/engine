@@ -14,6 +14,7 @@ import type { ExternalsFunctionElement, Configuration, Plugin, Entry, ExternalsE
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
+import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
@@ -182,11 +183,18 @@ export function createWebpackConfig({
         });
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
-                new HtmlWebpackPlugin({
-                    filename: `${envName}.html`,
-                    chunks: [envName],
-                    title,
-                })
+                ...[
+                    new HtmlWebpackPlugin({
+                        filename: `${envName}.html`,
+                        chunks: [envName],
+                        title,
+                    }),
+                    new WebpackScriptAttributesPlugin({
+                        scriptAttributes: {
+                            crossorigin: 'anonymous',
+                        },
+                    }),
+                ]
             );
         }
     }
