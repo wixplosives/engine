@@ -35,7 +35,7 @@ export interface ICreateWebpackConfigsOptions {
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => Configuration;
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
-    eagerEntrypoint: boolean;
+    eagerEntrypoint?: boolean;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): Configuration[] {
@@ -134,7 +134,7 @@ interface ICreateWebpackConfigOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
-    eagerEntrypoint: boolean;
+    eagerEntrypoint?: boolean;
 }
 
 export function createWebpackConfig({
@@ -247,7 +247,6 @@ export function createWebpackConfigForExteranlFeature({
             publicPath: join(...publicPathParts),
             loadStatement: webpackImportStatement,
             target: target === 'webworker' ? 'webworker' : 'web',
-            eagerEntrypoint: false,
         });
     }
     const externalFeatures: Record<string, string> = {

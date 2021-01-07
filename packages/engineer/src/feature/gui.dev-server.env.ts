@@ -40,7 +40,6 @@ guiFeature.setup(
             featureName: 'engineer/gui',
             target: 'web',
             externalFeatures,
-            eagerEntrypoint: false,
         });
 
         engineerWebpackConfigs.register(

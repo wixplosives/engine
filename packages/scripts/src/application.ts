@@ -115,7 +115,7 @@ export interface ICompilerOptions {
     useLocalExtenalFeaturesMapping?: boolean;
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
-    eagerEntrypoint: boolean;
+    eagerEntrypoint?: boolean;
 }
 
 export class Application {

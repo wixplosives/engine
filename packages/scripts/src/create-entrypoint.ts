@@ -24,7 +24,7 @@ export interface ICreateEntrypointsOptions {
     target: 'webworker' | 'web' | 'electron-renderer';
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
-    eagerEntrypoint: boolean;
+    eagerEntrypoint?: boolean;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -43,7 +43,7 @@ export interface ExternalBrowserEntrypoint extends ExternalEntrypoint {
 
 export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint {
     target: 'web' | 'webworker' | 'node' | 'electron-renderer';
-    eagerEntrypoint: boolean;
+    eagerEntrypoint?: boolean;
 }
 
 export type LoadStatement = Pick<
@@ -62,7 +62,7 @@ export type LoadStatement = Pick<
 
 export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'> {
     moduleIdentifier: string;
-    eagerEntrypoint: boolean;
+    eagerEntrypoint?: boolean;
 }
 //#endregion
 
@@ -88,7 +88,6 @@ export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
         ...args,
         target: 'node',
         loadStatement: nodeImportStatement,
-        eagerEntrypoint: false,
     })}
 }
     `;
@@ -191,7 +190,7 @@ function createFeatureLoaders(
     envName: string,
     childEnvs: string[],
     target: 'web' | 'webworker' | 'node' | 'electron-renderer',
-    eagerEntrypoint: boolean
+    eagerEntrypoint?: boolean
 ) {
     return Array.from(features)
         .map(
