@@ -50,7 +50,6 @@ describe('Application', function () {
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
             const contents = fs.readdirSync(app.outputPath);
             expect(contents).to.include('main.web.js');
-            expect(contents).to.include('[feature]x.web.js');
         });
     });
 
