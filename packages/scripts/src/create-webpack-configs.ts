@@ -7,8 +7,6 @@ import {
     webpackImportStatement,
     createExternalFeatureMapping,
 } from './create-entrypoint';
-import { basename, join } from 'path';
-import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
 import type { ExternalsFunctionElement, Configuration, Plugin, Entry, ExternalsElement } from 'webpack';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
@@ -238,15 +236,13 @@ export function createWebpackConfigForExteranlFeature({
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
-        const publicPathParts = [EXTERNAL_FEATURES_BASE_URI, feature.packageName];
-        publicPathParts.push(basename(outputPath) + '/');
         virtualModules[entryPath] = createExternalBrowserEntrypoint({
             ...feature,
             childEnvs,
             envName,
-            publicPath: join(...publicPathParts),
             loadStatement: webpackImportStatement,
             target: target === 'webworker' ? 'webworker' : 'web',
+            eagerEntrypoint: true,
         });
     }
     const externalFeatures: Record<string, string> = {
