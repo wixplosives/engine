@@ -25,7 +25,7 @@
     "commander": "^6.2.1",
     "open": "^7.3.1",
     "socket.io": "^3.0.5",
-    "webpack-dev-middleware": "^4.0.2",
+    "webpack-dev-middleware": "^4.0.4",
     "webpack-virtual-modules": "^0.4.1"
   },
   "files": [
