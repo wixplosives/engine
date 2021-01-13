@@ -72,10 +72,7 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
     return `
     import { getTopWindow } from '@wixc3/engine-core';
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
-    const options = new URLSearchParams(topWindow.location.search);
-    const publicPath = options.has('externalPublicPath') ? options.get('externalPublicPath') : ${
-        typeof args.publicPath === 'string' ? JSON.stringify(args.publicPath) : '__webpack_public_path__'
-    };
+    ${setExternalPublicPath(args.envName, args.target, args.scopedName)}
     __webpack_public_path__= publicPath;
     self.runtimeFeatureLoader.register('${args.scopedName}', ${createLoaderInterface(args)});
     ;
@@ -417,6 +414,7 @@ function loadExternalFeatures(
             : ''
     }
     if(externalFeatures.length) {
+        self.externalFeatures = externalFeatures;
         const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
         await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
 
@@ -426,6 +424,16 @@ function loadExternalFeatures(
             }
         }
     }`;
+}
+
+function setExternalPublicPath(envName: string, target: string, featureName: string) {
+    return `const featureDef = topWindow.externalFeatures.find(({name}) => name === '${featureName}');
+    if(!featureDef) {
+        throw new Error('trying to load feature ' + '${featureName}' + ', but it is not defined');
+    }
+    const curerntUrl = featureDef.envEntries['${envName}']['${target}']
+    const publicPath =  curerntUrl.substring(0, curerntUrl.lastIndexOf('/') + 1);
+    `;
 }
 
 function addExternalsEventListenerForParentEnvironments() {
