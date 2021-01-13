@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engineer",
-  "version": "16.7.0",
+  "version": "16.7.1",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,8 +20,8 @@
     "@wixc3/cross-performance": "^16.6.0",
     "@wixc3/engine-core": "^16.6.3",
     "@wixc3/engine-core-node": "^16.6.3",
-    "@wixc3/engine-dashboard": "^16.7.0",
-    "@wixc3/engine-scripts": "^16.7.0",
+    "@wixc3/engine-dashboard": "^16.7.1",
+    "@wixc3/engine-scripts": "^16.7.1",
     "commander": "^6.2.1",
     "open": "^7.3.1",
     "socket.io": "^3.0.5",
