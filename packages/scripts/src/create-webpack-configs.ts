@@ -1,6 +1,8 @@
 import fs from '@file-services/node';
+import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
@@ -8,14 +10,12 @@ import {
     createExternalFeatureMapping,
 } from './create-entrypoint';
 
-import type { ExternalsFunctionElement, Configuration, Plugin, Entry, ExternalsElement } from 'webpack';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 
 export interface ICreateWebpackConfigsOptions {
-    baseConfig?: Configuration;
+    baseConfig?: webpack.Configuration;
     featureName?: string;
     configName?: string;
     singleFeature?: boolean;
@@ -30,13 +30,13 @@ export interface ICreateWebpackConfigsOptions {
     staticBuild: boolean;
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    createWebpackConfig: (options: ICreateWebpackConfigOptions) => Configuration;
+    createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
     externalFeatures: IExtenalFeatureDescriptor[];
     fetchFeatures?: boolean;
     eagerEntrypoint?: boolean;
 }
 
-export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): Configuration[] {
+export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
     const {
         baseConfig = {},
         publicPath = '',
@@ -48,12 +48,12 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): Con
         baseConfig.output = {};
     }
     baseConfig.output.publicPath = publicPath;
-    const configurations: Configuration[] = [];
+    const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
     if (webEnvs.size) {
-        const plugins: Plugin[] = [new VirtualModulesPlugin(virtualModules)];
-        const entry: Entry = {};
+        const plugins: webpack.WebpackPluginInstance[] = [new VirtualModulesPlugin(virtualModules)];
+        const entry: webpack.Entry = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -112,7 +112,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): Con
 }
 
 interface ICreateWebpackConfigOptions {
-    baseConfig: Configuration;
+    baseConfig: webpack.Configuration;
     featureName?: string;
     configName?: string;
     features: Map<string, IFeatureDefinition>;
@@ -123,8 +123,8 @@ interface ICreateWebpackConfigOptions {
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
     virtualModules: Record<string, string>;
-    plugins?: Plugin[];
-    entry?: Entry;
+    plugins?: webpack.Plugin[];
+    entry?: webpack.Entry;
     title?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
@@ -157,7 +157,7 @@ export function createWebpackConfig({
     externalFeatures,
     fetchFeatures,
     eagerEntrypoint,
-}: ICreateWebpackConfigOptions): Configuration {
+}: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
@@ -212,6 +212,7 @@ export function createWebpackConfig({
             chunkFilename: `[name].${target}.js`,
         },
         plugins: [...basePlugins, ...plugins],
+        stats: 'errors-warnings',
     };
 }
 
@@ -227,7 +228,7 @@ export function createWebpackConfigForExteranlFeature({
     plugins = [],
     entry = {},
     featureName,
-}: ICreateWebpackConfigOptions): Configuration {
+}: ICreateWebpackConfigOptions): webpack.Configuration {
     const feature = features.get(featureName!);
     if (!feature) {
         throw new Error(`${featureName!} was not found after analyzing features`);
@@ -248,7 +249,7 @@ export function createWebpackConfigForExteranlFeature({
     const externalFeatures: Record<string, string> = {
         '@wixc3/engine-core': 'EngineCore',
     };
-    const externals: ExternalsElement[] = [externalFeatures];
+    const externals: webpack.ExternalsElement[] = [externalFeatures];
     const { packageName, name, filePath } = feature;
     const { plugins: basePlugins = [] } = baseConfig;
 
@@ -284,10 +285,11 @@ export function createWebpackConfigForExteranlFeature({
             ...baseConfig.optimization,
             moduleIds: 'named',
         },
+        stats: 'errors-warnings',
     };
 }
 
-const extractExternals: (featurePath: string, ignoredRequests: Array<string>) => ExternalsFunctionElement = (
+const extractExternals: (featurePath: string, ignoredRequests: Array<string>) => webpack.ExternalsFunctionElement = (
     featurePath,
     ignoredRequests
 ) => (context, request, cb) => {
