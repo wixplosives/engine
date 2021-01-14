@@ -24,6 +24,7 @@
     "import-fresh": "^3.3.0",
     "rimraf": "^3.0.2",
     "socket.io": "^3.0.5",
+    "type-fest": "^0.20.2",
     "webpack-virtual-modules": "^0.4.1"
   },
   "files": [

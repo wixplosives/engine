@@ -1,3 +1,5 @@
+import { basename } from 'path';
+import type { PackageJson } from 'type-fest';
 import type { IFileSystemSync } from '@file-services/types';
 import {
     Environment,
@@ -6,10 +8,8 @@ import {
     getFeaturesDeep,
     SingleEndpointContextualEnvironment,
     SetMultiMap,
+    flattenTree,
 } from '@wixc3/engine-core';
-import { basename } from 'path';
-
-import { flattenTree } from '@wixc3/engine-core';
 import {
     isFeatureFile,
     parseConfigFileName,
@@ -19,10 +19,10 @@ import {
     parsePreloadFileName,
 } from './build-constants';
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
-import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { INpmPackage, IPackageJson } from './utils/resolve-packages';
+import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
+import type { INpmPackage } from './utils/resolve-packages';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -124,9 +124,7 @@ export function loadFeaturesFromPaths(
         if (!packageJsonPath) {
             throw new Error(`cannot find package.json ${featureDirectoryPath}`);
         }
-        const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(
-            packageJsonPath
-        ) as IPackageJson;
+        const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(packageJsonPath) as PackageJson;
         directoryToPackage.set(featureDirectoryPath, {
             simplifiedName: simplifyPackageName(name),
             directoryPath: fs.dirname(packageJsonPath),
