@@ -559,11 +559,6 @@ export class Application {
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
-        // @types/webpack (webpack@4) are missing this field. webpack@5 has it
-        // webpack@4 itself does support it
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        (baseConfig as any).infrastructureLogging = { level: 'warn' };
-
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
             context: basePath,

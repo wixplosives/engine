@@ -1,12 +1,11 @@
-import guiFeature, { mainDashboardEnv } from './gui.feature';
-import { devServerEnv } from './dev-server.feature';
-
-import fs from '@file-services/node';
 import type webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import { createMainEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
+import fs from '@file-services/node';
 import { SetMultiMap } from '@wixc3/engine-core';
+import { createMainEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
+import guiFeature, { mainDashboardEnv } from './gui.feature';
+import { devServerEnv } from './dev-server.feature';
 
 guiFeature.setup(
     devServerEnv,
@@ -25,7 +24,6 @@ guiFeature.setup(
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
         const virtualModules: Record<string, string> = {};
 
-        const { plugins: basePlugins = [] } = baseConfig;
         const entryPath = fs.join(__dirname, 'main-dashboard-web-entry.js');
         const configurations = new SetMultiMap<string, IConfigDefinition>();
 
@@ -46,7 +44,6 @@ guiFeature.setup(
             createDashboardConfig({
                 baseConfig,
                 entryPath,
-                basePlugins,
                 virtualModules,
                 title,
                 outputPath: application.outputPath,
@@ -63,19 +60,19 @@ guiFeature.setup(
 function createDashboardConfig({
     baseConfig,
     entryPath,
-    basePlugins,
     virtualModules,
     title,
     outputPath,
 }: {
     baseConfig: webpack.Configuration;
     entryPath: string;
-    basePlugins: webpack.Plugin[];
     virtualModules: Record<string, string>;
     title?: string;
     outputPath: string;
 }): webpack.Configuration {
-    const dashboardConfig: webpack.Configuration = {
+    const { plugins: basePlugins = [] } = baseConfig;
+
+    return {
         ...baseConfig,
         entry: {
             index: entryPath,
@@ -98,10 +95,6 @@ function createDashboardConfig({
             filename: `[name].web.js`,
             chunkFilename: `[name].web.js`,
         },
+        stats: 'errors-warnings',
     };
-    // @types/webpack (webpack@4) are missing this field. webpack@5 has it
-    // webpack@4 itself does support it
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (dashboardConfig as any).infrastructureLogging = { level: 'warn' };
-    return dashboardConfig;
 }
