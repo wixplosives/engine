@@ -231,7 +231,17 @@ export function withFeaturePlaywright(withFeatureOptions: IWithFeatureOptionsPla
 
                 // Emitted when the page opens a new tab or window
                 page.on('popup', trackPage);
-                page.on('console', console.log);
+                page.on('console', (m) => {
+                    const messageText = m.text();
+                    if (messageText === `JSHandle@error`) {
+                        const [handle] = m.args();
+                        if (handle) {
+                            handle.jsonValue().then(console.log, () => undefined);
+                        }
+                    } else {
+                        console.log(messageText);
+                    }
+                });
 
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
