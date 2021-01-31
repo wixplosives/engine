@@ -28,7 +28,7 @@ import type {
 
 import { SERVICE_CONFIG } from '../symbols';
 
-import { SetMultiMap, deferred } from '../helpers';
+import { SetMultiMap, deferred, serializeError } from '../helpers';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
@@ -651,7 +651,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                error: String(error),
+                error: serializeError(error),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
             });
@@ -676,7 +676,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                error: String((error as Error).stack),
+                error: serializeError(error),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
             });
@@ -685,8 +685,18 @@ export class Communication {
 
     private handleCallback(message: CallbackMessage): void {
         const rec = message.callbackId ? this.callbacks[message.callbackId] : null;
-        if (rec) {
-            message.error ? rec.reject(new Error(REMOTE_CALL_FAILED(message))) : rec.resolve(message.data);
+        if (rec && message.error) {
+            // If the error is not caught later, and logged to the console,
+            // it would be nice to indicate which environment the error came from.
+            // We shouldn't change the error message or the error name because
+            // those could be used by error-handling code. Fortunately, we can
+            // add metadata to the stack trace, and Chrome logs the entire stack
+            // property to the console. Unfortunately, Firefox doesn't.
+            const error = Object.assign(new Error(), message.error);
+            error.stack = REMOTE_CALL_FAILED(message.from, error.stack);
+            rec.reject(error);
+        } else if (rec) {
+            rec.resolve(message.data);
         } else {
             // TODO: only in dev mode
             if (message.callbackId) {
