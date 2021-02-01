@@ -13,6 +13,11 @@ export class TestService {
         }
         return data;
     }
+    public failWithError(): void {
+        const error = new Error();
+        Object.assign(error, testServiceError);
+        throw error;
+    }
     public listen(fn: (x: ITestServiceData) => void) {
         this.listeners.push(fn);
     }
@@ -48,3 +53,9 @@ export const testServiceId = 'TestService';
 export const multiTanentServiceId = 'MultiTanentService';
 
 export const hashParamsRetriever = 'HashParamsRetriever';
+
+export const testServiceError = {
+    name: 'TestServiceError',
+    message: 'test service error',
+    code: 1
+};
