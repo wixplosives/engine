@@ -15,6 +15,7 @@ import {
     testServiceId,
     HashParamsRetriever,
     hashParamsRetriever,
+    testServiceError,
 } from './test-api-service';
 
 describe('Communication API', function () {
@@ -57,6 +58,23 @@ describe('Communication API', function () {
         expect(res).to.eql({ echo: [1, 2, 3] });
     });
 
+    it('should proxy exceptions thrown in remote service api', async () => {
+        const com = disposables.add(new Communication(window, comId));
+
+        const env = await com.startEnvironment(
+            iframeEnv,
+            iframeInitializer({
+                iframeElement: createIframe(),
+            })
+        );
+
+        const api = com.apiProxy<TestService>(env, { id: testServiceId });
+        const error = await api.failWithError().catch((e: unknown) => e);
+
+        expect(error).to.be.instanceOf(Error);
+        expect(error).to.deep.include(testServiceError);
+    });
+
     it('should listen to remote api callbacks', async () => {
         const com = disposables.add(new Communication(window, comId));
 
@@ -97,7 +115,7 @@ describe('Communication API', function () {
         });
     });
 
-    it('handles a single tanent function in api services that have multi tanent functions', async () => {
+    it('handles a single tenant function in api services that have multi tenant functions', async () => {
         const com = disposables.add(new Communication(window, comId));
 
         const env = await com.startEnvironment(
