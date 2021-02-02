@@ -5,18 +5,7 @@ export function workerInitializer(): EnvironmentInitializer<{ id: string }> {
         const isSingleton = endpointType === 'single';
         const instanceId = isSingleton ? env : communication.generateEnvInstanceID(env);
 
-        const workerUrl = new URL(`${communication.getPublicPath()}${env}.webworker.js`, location.href);
-        const workerBlob = new Blob(
-            [
-                `self.parentLocation = new URL(${JSON.stringify(location.href)});`,
-                `importScripts(${JSON.stringify(workerUrl)});`,
-            ],
-            {
-                type: 'application/javascript',
-            }
-        );
-        const blobUrl = URL.createObjectURL(workerBlob);
-        const worker = new Worker(blobUrl, {
+        const worker = new Worker(`${communication.getPublicPath()}${env}.webworker.js${location.search}`, {
             name: instanceId,
         });
 
