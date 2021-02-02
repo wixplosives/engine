@@ -23,7 +23,7 @@
     "@wixc3/engine-dashboard": "^16.9.0",
     "@wixc3/engine-scripts": "^16.9.0",
     "commander": "^7.0.0",
-    "open": "^7.3.1",
+    "open": "^7.4.0",
     "socket.io": "^3.1.0",
     "webpack-dev-middleware": "^4.1.0",
     "webpack-virtual-modules": "^0.4.2"
