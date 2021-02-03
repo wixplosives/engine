@@ -1,17 +1,16 @@
-import guiFeature, { mainDashboardEnv } from './gui.feature';
-import { devServerEnv } from './dev-server.feature';
-
-import fs from '@file-services/node';
 import type webpack from 'webpack';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import { createEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
+import fs from '@file-services/node';
 import { SetMultiMap } from '@wixc3/engine-core';
+import { createMainEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
+import guiFeature, { mainDashboardEnv } from './gui.feature';
+import { devServerEnv } from './dev-server.feature';
 
 guiFeature.setup(
     devServerEnv,
     (
-        { engineerConfig: { features } },
+        { engineerConfig: { features, externalFeatures } },
         {
             buildFeature: {
                 engineerWebpackConfigs,
@@ -25,11 +24,10 @@ guiFeature.setup(
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
         const virtualModules: Record<string, string> = {};
 
-        const { plugins: basePlugins = [] } = baseConfig;
         const entryPath = fs.join(__dirname, 'main-dashboard-web-entry.js');
         const configurations = new SetMultiMap<string, IConfigDefinition>();
 
-        virtualModules[entryPath] = createEntrypoint({
+        virtualModules[entryPath] = createMainEntrypoint({
             features,
             childEnvs: [],
             envName: mainDashboardEnv.env,
@@ -38,13 +36,14 @@ guiFeature.setup(
             staticBuild: false,
             configurations,
             featureName: 'engineer/gui',
+            target: 'web',
+            externalFeatures,
         });
 
         engineerWebpackConfigs.register(
             createDashboardConfig({
                 baseConfig,
                 entryPath,
-                basePlugins,
                 virtualModules,
                 title,
                 outputPath: application.outputPath,
@@ -61,18 +60,18 @@ guiFeature.setup(
 function createDashboardConfig({
     baseConfig,
     entryPath,
-    basePlugins,
     virtualModules,
     title,
     outputPath,
 }: {
     baseConfig: webpack.Configuration;
     entryPath: string;
-    basePlugins: webpack.Plugin[];
     virtualModules: Record<string, string>;
     title?: string;
     outputPath: string;
 }): webpack.Configuration {
+    const { plugins: basePlugins = [] } = baseConfig;
+
     return {
         ...baseConfig,
         entry: {
@@ -96,5 +95,6 @@ function createDashboardConfig({
             filename: `[name].web.js`,
             chunkFilename: `[name].web.js`,
         },
+        stats: 'errors-warnings',
     };
 }

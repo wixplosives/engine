@@ -1,6 +1,6 @@
 {
   "name": "@example/multi-env",
-  "version": "15.2.0",
+  "version": "16.9.0",
   "scripts": {
     "start": "engineer start",
     "test": "yarn test:ix && yarn test:unit",

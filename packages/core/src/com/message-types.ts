@@ -10,7 +10,7 @@ export interface BaseMessage {
     to: string;
     from: string;
     callbackId?: string;
-    error?: string;
+    error?: Error;
     origin: string;
 }
 

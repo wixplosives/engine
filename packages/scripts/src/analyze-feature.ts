@@ -1,3 +1,5 @@
+import { basename } from 'path';
+import type { PackageJson } from 'type-fest';
 import type { IFileSystemSync } from '@file-services/types';
 import {
     Environment,
@@ -6,22 +8,21 @@ import {
     getFeaturesDeep,
     SingleEndpointContextualEnvironment,
     SetMultiMap,
+    flattenTree,
 } from '@wixc3/engine-core';
-import { basename } from 'path';
-
-import { flattenTree } from '@wixc3/engine-core';
 import {
     isFeatureFile,
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
     parseFeatureFileName,
+    parsePreloadFileName,
 } from './build-constants';
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
-import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { INpmPackage, IPackageJson } from './utils/resolve-packages';
+import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
+import type { INpmPackage } from './utils/resolve-packages';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -123,9 +124,7 @@ export function loadFeaturesFromPaths(
         if (!packageJsonPath) {
             throw new Error(`cannot find package.json ${featureDirectoryPath}`);
         }
-        const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(
-            packageJsonPath
-        ) as IPackageJson;
+        const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(packageJsonPath) as PackageJson;
         directoryToPackage.set(featureDirectoryPath, {
             simplifiedName: simplifyPackageName(name),
             directoryPath: fs.dirname(packageJsonPath),
@@ -137,7 +136,7 @@ export function loadFeaturesFromPaths(
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
     const featureToScopedName = new Map<Feature, string>();
 
-    for (const { directoryPath, features, configurations, envs, contexts } of featureDirectories) {
+    for (const { directoryPath, features, configurations, envs, contexts, preloads } of featureDirectories) {
         const featurePackage = directoryToPackage.get(directoryPath);
         if (!featurePackage) {
             throw new Error(`cannot find package name for ${directoryPath}`);
@@ -169,8 +168,11 @@ export function loadFeaturesFromPaths(
                 dependencies: [],
                 envFilePaths: {},
                 contextFilePaths: {},
+                preloadFilePaths: {},
                 resolvedContexts: {},
                 isRoot: ownFeatureFilePaths.has(featureFilePath),
+                packageName: featurePackage.name,
+                directoryPath: featurePackage.directoryPath,
                 filePath: featureFilePath,
                 toJSON(this: IFeatureDefinition) {
                     return {
@@ -178,8 +180,10 @@ export function loadFeaturesFromPaths(
                         dependencies: this.dependencies,
                         filePath: getFilePathInPackage(fs, featurePackage, this.filePath),
                         envFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.envFilePaths),
+                        preloadFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preloadFilePaths),
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
+                        packageName: this.packageName,
                         scopedName,
                     };
                 },
@@ -206,6 +210,15 @@ export function loadFeaturesFromPaths(
                 existingDefinition.contextFilePaths[contextualName] = contextFilePath;
             }
         }
+
+        for (const preloadFile of preloads) {
+            const { featureName, envName, childEnvName } = parsePreloadFileName(fs.basename(preloadFile));
+            const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
+            const contextualName = childEnvName ? `${envName}/${childEnvName}` : envName;
+            if (existingDefinition) {
+                existingDefinition.preloadFilePaths[contextualName] = preloadFile;
+            }
+        }
     }
 
     for (const [featureName, { dependencies, exportedFeature, resolvedContexts }] of foundFeatures) {
@@ -213,9 +226,7 @@ export function loadFeaturesFromPaths(
         Object.assign(resolvedContexts, computeUsedContext(featureName, foundFeatures));
 
         // compute dependencies
-        const deps = getFeaturesDeep(exportedFeature);
-        deps.delete(exportedFeature);
-        dependencies.push(...Array.from(deps).map((feature) => featureToScopedName.get(feature)!));
+        dependencies.push(...exportedFeature.dependencies.map((feature) => featureToScopedName.get(feature)!));
     }
 
     return { features: foundFeatures, configurations: foundConfigs };
@@ -312,6 +323,13 @@ export function computeUsedContext(featureName: string, features: Map<string, IF
 
     return Array.from(getFeaturesDeep(feature.exportedFeature))
         .reverse()
-        .map((f) => featureToDef.get(f)!)
+        .map((f) => {
+            if (!featureToDef.has(f)) {
+                throw new Error(
+                    `Cannot find feature definition for feature with id: ${f.id}. This usually occurs due to duplicate engine/feature versions. Check your lock file.`
+                );
+            }
+            return featureToDef.get(f)!;
+        })
         .reduce((acc, { usedContexts }) => Object.assign(acc, usedContexts), {} as Record<string, string>);
 }

@@ -3,7 +3,7 @@ import { delimiter } from 'path';
 
 import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
-import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
+import { COM, TopLevelConfig, SetMultiMap, createDisposables } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
@@ -13,12 +13,13 @@ import {
     IEnvironmentMessage,
     IEnvironmentStartMessage,
     IFeatureDefinition,
+    IExtenalFeatureDescriptor,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
     TopLevelConfigProvider,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
-import { filterEnvironments } from './utils/environments';
+import { getEnvironmntsForFeature } from './utils/environments';
 
 type RunningEnvironments = Record<string, number>;
 
@@ -35,7 +36,7 @@ export interface RunEnvironmentOptions {
     mode?: LaunchEnvironmentMode;
 }
 
-const cliEntry = require.resolve('./cli');
+const cliEntry = require.resolve('./remote-node-entry');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IFeatureDefinition>;
@@ -44,6 +45,7 @@ export interface INodeEnvironmentsManagerOptions {
     port: number;
     inspect?: boolean;
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
+    externalFeatures: IExtenalFeatureDescriptor[];
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -58,12 +60,17 @@ export interface ILaunchEnvironmentOptions {
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
+    externalFeatures?: IExtenalFeatureDescriptor[];
 }
 
 export class NodeEnvironmentsManager {
     private runningEnvironments = new Map<string, IRuntimeEnvironment>();
 
-    constructor(private socketServer: io.Server, private options: INodeEnvironmentsManagerOptions) {}
+    constructor(
+        private socketServer: io.Server,
+        private options: INodeEnvironmentsManagerOptions,
+        private socketServerOptions?: Partial<io.ServerOptions>
+    ) {}
 
     public async runServerEnvironments({
         featureName,
@@ -74,11 +81,11 @@ export class NodeEnvironmentsManager {
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
-
         const topology: Record<string, string> = {};
         const runningEnvironments: Record<string, number> = {};
-        const disposables: Array<() => unknown> = [];
+        const disposables = createDisposables();
         const { defaultRuntimeOptions, features } = this.options;
+        const nodeEnvironments = getEnvironmntsForFeature(featureName, features, 'node');
 
         // checking if already has running environments for this feature
         const runningEnv = this.runningEnvironments.get(featureId);
@@ -86,7 +93,7 @@ export class NodeEnvironmentsManager {
             // adding the topology of the already running environments for this feature
             Object.assign(topology, this.getTopologyForRunningEnvironments(runningEnv.runningEnvironments));
         }
-        for (const nodeEnv of filterEnvironments(featureName, features, 'node')) {
+        for (const nodeEnv of nodeEnvironments) {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
                 configName,
@@ -104,19 +111,15 @@ export class NodeEnvironmentsManager {
                     ...runtimeOptions,
                 },
                 mode,
+                externalFeatures: this.options.externalFeatures,
             });
-            disposables.push(() => close());
+            disposables.add(close);
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
             runningEnvironments[nodeEnv.name] = port;
         }
 
         const runningEnvironment: IRuntimeEnvironment = {
-            async close() {
-                for (const dispose of disposables) {
-                    await dispose();
-                }
-                disposables.length = 0;
-            },
+            close: disposables.dispose,
             runningEnvironments,
         };
 
@@ -164,7 +167,10 @@ export class NodeEnvironmentsManager {
         return runningFeatures;
     }
 
-    public async closeEnvironment({ featureName, configName }: RunEnvironmentOptions) {
+    public async closeEnvironment({
+        featureName,
+        configName,
+    }: Pick<RunEnvironmentOptions, 'featureName' | 'configName'>) {
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
 
         const runningEnvironment = this.runningEnvironments.get(featureId);
@@ -194,7 +200,14 @@ export class NodeEnvironmentsManager {
         this.runningEnvironments.clear();
     }
 
-    private async launchEnvironment({ nodeEnv, featureName, config, options, mode }: ILaunchEnvironmentOptions) {
+    private async launchEnvironment({
+        nodeEnv,
+        featureName,
+        config,
+        options,
+        mode,
+        externalFeatures = [],
+    }: ILaunchEnvironmentOptions) {
         const { features, port, inspect } = this.options;
         const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
@@ -203,6 +216,7 @@ export class NodeEnvironmentsManager {
             features: Array.from(features.entries()),
             options: Object.entries(options),
             inspect,
+            externalFeatures,
         };
 
         if (inspect || mode === 'forked') {
@@ -228,9 +242,8 @@ export class NodeEnvironmentsManager {
 
     private async runEnvironmentInNewServer(port: number, serverEnvironmentOptions: StartEnvironmentOptions) {
         const { httpServer, port: realPort } = await safeListeningHttpServer(port);
-        const socketServer = io(httpServer, {
-            pingTimeout: 15_000,
-        });
+        const socketServer = new io.Server(httpServer, { cors: {}, ...this.socketServerOptions });
+
         const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions);
         const openSockets = new Set<Socket>();
         const captureConnections = (socket: Socket): void => {
@@ -285,7 +298,7 @@ export class NodeEnvironmentsManager {
             port: this.options.port,
         });
         const port = await remoteNodeEnvironment.getRemotePort();
-        const startMessage = new Promise((resolve) => {
+        const startMessage = new Promise<void>((resolve) => {
             remoteNodeEnvironment.subscribe((message) => {
                 if (isEnvironmentStartMessage(message)) {
                     resolve();

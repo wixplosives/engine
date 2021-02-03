@@ -1,21 +1,32 @@
 import { expect } from 'chai';
-import type { Page } from 'puppeteer';
+import type { Frame, Page } from 'puppeteer';
 import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
-import type { TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import { Application, IExternalDefinition, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
+import { join } from 'path';
+import rimraf from 'rimraf';
 
 const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
 const engineRuntimeFeatureFixturePath = fs.join(__dirname, './fixtures/engine-run-options');
+const engineFeatureRoots = fs.join(__dirname, './fixtures/engine-feature-roots');
 const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
 const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
 const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 const useConfigsFeaturePath = fs.join(__dirname, './fixtures/using-config');
+const baseWebApplicationFixturePath = fs.join(
+    fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
+    'test/fixtures/base-web-application'
+);
+const applicationExternalFixturePath = fs.join(
+    fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
+    'test/fixtures/application-external'
+);
 
-function getBodyContent(page: Page) {
+function getBodyContent(page: Page | Frame) {
     return page.evaluate(() => document.body.textContent!.trim());
 }
 
@@ -34,6 +45,10 @@ describe('engineer:dev-server', function () {
         overrideConfig = [],
         outputPath,
         runtimeOptions = {},
+        externalFeatureDefinitions,
+        externalFeaturesPath,
+        singleFeature,
+        featureDiscoveryRoot,
     }: {
         featureName?: string;
         port?: number;
@@ -44,6 +59,10 @@ describe('engineer:dev-server', function () {
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
         outputPath?: string;
         runtimeOptions?: Record<string, string | boolean>;
+        externalFeatureDefinitions?: IExternalDefinition[];
+        externalFeaturesPath?: string;
+        singleFeature?: boolean;
+        featureDiscoveryRoot?: string;
     }): Promise<{
         dispose: () => Promise<void>;
         engine: RuntimeEngine;
@@ -62,12 +81,16 @@ describe('engineer:dev-server', function () {
             outputPath,
             singleRun: true,
             runtimeOptions,
+            externalFeatureDefinitions,
+            externalFeaturesPath,
+            singleFeature,
+            featureDiscoveryRoot,
         });
         const runningPort = await new Promise<number>((resolve) => {
             devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
         });
 
-        disposables.add(() => dispose());
+        disposables.add(dispose);
 
         return { dispose, engine, runtimeFeature: devServerFeature, config: { featureName, port: runningPort } };
     };
@@ -82,7 +105,7 @@ describe('engineer:dev-server', function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
-    after(() => browserProvider.dispose());
+    after(browserProvider.dispose);
 
     it(`serves and allows running a feature`, async () => {
         const {
@@ -94,6 +117,30 @@ describe('engineer:dev-server', function () {
         const text = await getBodyContent(page);
 
         expect(text).to.include('App is running');
+    });
+
+    it('serves a root feature without featureDiscoveryRoot ', async () => {
+        const {
+            config: { port },
+        } = await setup({ basePath: engineFeatureRoots });
+
+        const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/x`);
+
+        const text = await getBodyContent(page);
+
+        expect(text).to.include('Root Feature is running');
+    });
+
+    it('serves a build feature with featureDiscoveryRoot ', async () => {
+        const {
+            config: { port },
+        } = await setup({ basePath: engineFeatureRoots, featureDiscoveryRoot: './build' });
+
+        const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/y`);
+
+        const text = await getBodyContent(page);
+
+        expect(text).to.include('Build Feature is running');
     });
 
     it('serves a fixture feature', async () => {
@@ -427,6 +474,71 @@ describe('engineer:dev-server', function () {
 
         expect(text).to.include('{"foo":"bar"}');
     });
+
+    it('loads external features', async () => {
+        const externalFeatureName = 'application-external';
+        const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
+        const externalFeatureApp = new Application({
+            basePath: applicationExternalFixturePath,
+        });
+
+        await externalFeatureApp.build({
+            external: true,
+            featureName: externalFeatureName,
+        });
+
+        fs.copyDirectorySync(
+            join(applicationExternalFixturePath, 'dist'),
+            join(pluginsFolderPath, '@fixture/application-external-feature', 'dist')
+        );
+
+        fs.copyDirectorySync(
+            applicationExternalFixturePath,
+            join(pluginsFolderPath, '@fixture/application-external-feature', 'dist')
+        );
+
+        disposables.add(() => externalFeatureApp.clean());
+        disposables.add(() => rimraf.sync(pluginsFolderPath));
+        const {
+            dispose,
+            config: { port },
+        } = await setup({
+            basePath: baseWebApplicationFixturePath,
+            featureName: 'base-web-application',
+            externalFeatureDefinitions: [
+                {
+                    packageName: '@fixture/application-external-feature',
+                },
+            ],
+            externalFeaturesPath: pluginsFolderPath,
+        });
+        disposables.add(() => dispose());
+
+        const page = await loadPage(`http://localhost:${port}/main.html`);
+        await waitFor(async () => {
+            const bodyContent = await getBodyContent(page);
+            expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
+        });
+        const button = await page.$('#server-slot');
+        await waitFor(async () => {
+            await button?.click();
+            const elem = await page.$('#server-slot-value');
+            expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
+        });
+        const frames = page.frames();
+        await waitFor(
+            async () => {
+                for (const iframe of frames) {
+                    const child = await iframe.$('#main-container');
+                    if (!child) {
+                        continue;
+                    }
+                    expect(await getBodyContent(iframe)).to.eq('hello external');
+                }
+            },
+            { timeout: 5_000 }
+        );
+    }).timeout(30_000);
 });
 
 function getConfigFileContent(textText: string) {

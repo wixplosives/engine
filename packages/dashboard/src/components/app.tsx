@@ -1,6 +1,7 @@
 import React from 'react';
 import { Dashboard } from './dashboard';
-import { classes } from './styles.st.css';
+import { classes } from './app.st.css';
+import './reset.st.css';
 
 const fetchServerState = async () => (await fetch(`engine-state`)).json();
 

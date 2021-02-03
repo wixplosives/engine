@@ -75,6 +75,9 @@ export interface IWithFeatureOptions extends IFeatureExecutionOptions, puppeteer
 
     /** Passed down to `page.setViewport()` right after page creation. */
     defaultViewport?: puppeteer.Viewport;
+
+    /** Specify directory where features will be looked up within the package */
+    featureDiscoveryRoot?: string;
 }
 
 let browser: puppeteer.Browser | undefined = undefined;
@@ -111,6 +114,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         queryParams: suiteQueryParams,
         runningApplicationPort,
         config: suiteConfig,
+        featureDiscoveryRoot,
     } = withFeatureOptions;
 
     if (
@@ -128,7 +132,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         runningApplicationPort ??
         (process.env.ENGINE_APPLICATION_PORT ? parseInt(process.env.ENGINE_APPLICATION_PORT) : undefined);
 
-    executableApp = resolvedPort ? new AttachedApp(resolvedPort) : new DetachedApp(cliEntry, process.cwd());
+    executableApp = resolvedPort
+        ? new AttachedApp(resolvedPort)
+        : new DetachedApp(cliEntry, process.cwd(), featureDiscoveryRoot);
 
     before('launch puppeteer', async function () {
         if (!browser) {
@@ -137,7 +143,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             browser = await puppeteer.launch({
                 ...withFeatureOptions,
                 defaultViewport: undefined,
-                pipe: true,
             });
         }
     });

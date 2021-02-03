@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "15.2.1",
+  "version": "16.9.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "peerDependencies": {
@@ -8,10 +8,11 @@
     "typescript": ">=3.0.0"
   },
   "dependencies": {
-    "@wixc3/engine-scripts": "^15.2.1",
+    "@wixc3/engine-scripts": "^16.9.0",
     "is-ci": "^2.0.0",
+    "playwright-core": "^1.8.0",
     "promise-assist": "^1.3.0",
-    "sinon": "^9.2.0"
+    "sinon": "^9.2.4"
   },
   "files": [
     "dist",

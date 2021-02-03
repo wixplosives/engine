@@ -4,6 +4,7 @@ import path from 'path';
 export const FEATURE_FILENAME_HINT = '.feature.';
 export const CONFIG_FILENAME_HINT = '.config.';
 export const ENV_FILENAME_HINT = '.env.';
+export const PRELOAD_FILENAME_HINT = '.preload.';
 export const CONTEXT_FILENAME_HINT = '.context.';
 export const ENGINE_CONFIG_FILE_NAME = 'engine.config.js';
 
@@ -19,10 +20,15 @@ export const isCodeModule = (fileName: string) =>
     (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) || fileName.endsWith('.tsx') || fileName.endsWith('.js');
 export const isConfigFile = (fileName: string) => fileName.indexOf(CONFIG_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isEnvFile = (fileName: string) => fileName.indexOf(ENV_FILENAME_HINT) >= 1 && isCodeModule(fileName);
+export const isPreloadFile = (fileName: string) =>
+    fileName.indexOf(PRELOAD_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isFeatureFile = (fileName: string) =>
     fileName.indexOf(FEATURE_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isContextFile = (fileName: string) =>
     fileName.indexOf(CONTEXT_FILENAME_HINT) >= 1 && isCodeModule(fileName);
+
+// external features
+export const EXTERNAL_FEATURES_BASE_URI = 'external-features';
 
 export function parseFeatureFileName(fileName: string): string {
     return fileName.split(FEATURE_FILENAME_HINT).shift()!;
@@ -56,4 +62,14 @@ export function parseContextFileName(fileName: string) {
         throw new Error(`cannot parse context file: ${fileName}`);
     }
     return { featureName, envName, childEnvName };
+}
+
+export function parsePreloadFileName(fileName: string) {
+    const [featureName, envName, childEnvNameCandidate] = fileName.split(PRELOAD_FILENAME_HINT).shift()!.split('.');
+
+    if (!featureName || !envName) {
+        throw new Error(`cannot parse preload file: ${fileName}`);
+    }
+
+    return { featureName, envName, childEnvName: childEnvNameCandidate };
 }

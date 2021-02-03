@@ -3,11 +3,13 @@ import { TopLevelConfig, createDisposables } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import type { Page } from 'puppeteer';
+import type { Frame, Page } from 'puppeteer';
 import { Application } from '@wixc3/engine-scripts';
+import { join } from 'path';
+import rimraf from 'rimraf';
 
-function getBodyContent(page: Page) {
-    return page.evaluate(() => document.body.textContent!.trim());
+function getBodyContent(page: Page | Frame) {
+    return page.evaluate(() => (document.body.textContent || '').trim());
 }
 
 describe('Application', function () {
@@ -19,7 +21,7 @@ describe('Application', function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
-    after(() => browserProvider.dispose());
+    after(browserProvider.dispose);
 
     const loadPage = async (url: string) => {
         const page = await browserProvider.loadPage(url);
@@ -28,6 +30,8 @@ describe('Application', function () {
     };
 
     const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
+    const baseWebApplicationFixturePath = fs.join(__dirname, './fixtures/base-web-application');
+    const applicationExternalFixturePath = fs.join(__dirname, './fixtures/application-external');
     const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
     const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 
@@ -38,6 +42,14 @@ describe('Application', function () {
             disposables.add(() => app.clean());
 
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+        });
+        it('allows building features in external mode', async () => {
+            const app = new Application({ basePath: engineFeatureFixturePath });
+            await app.build({ external: true, featureName: 'engine-single/x' });
+            disposables.add(() => app.clean());
+            expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+            const contents = fs.readdirSync(app.outputPath);
+            expect(contents).to.include('main.web.js');
         });
     });
 
@@ -52,13 +64,14 @@ describe('Application', function () {
             disposables.add(() => app.clean());
 
             const { close, port } = await app.run();
-            disposables.add(() => close());
+            disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
 
-            const text = await getBodyContent(page);
-
-            expect(text).to.include('App is running');
+            await waitFor(async () => {
+                const text = await getBodyContent(page);
+                expect(text).to.include('App is running');
+            });
         });
 
         it(`launches a built application with node environment`, async () => {
@@ -72,13 +85,14 @@ describe('Application', function () {
             const { close, port } = await app.run({
                 publicConfigsRoute: 'configs',
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
 
-            const text = await getBodyContent(page);
-
-            expect(text).to.equal('Hello');
+            await waitFor(async () => {
+                const text = await getBodyContent(page);
+                expect(text).to.equal('Hello');
+            });
         });
 
         it('allows providing top level config through the override config on build', async () => {
@@ -97,18 +111,14 @@ describe('Application', function () {
             const { close, port } = await app.run({
                 featureName: 'engine-single/x',
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
             await waitFor(async () => {
                 const bodyContent = await getBodyContent(page);
-                if (bodyContent) {
-                    const [, bodyConfig] = bodyContent.split(': ');
-                    if (bodyConfig) {
-                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
-                        expect(parsedBodyConfig.value).to.eq(1);
-                    }
-                }
+                const [, bodyConfig] = bodyContent.split(': ');
+                const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                expect(parsedBodyConfig.value).to.eq(1);
             });
         });
 
@@ -117,37 +127,40 @@ describe('Application', function () {
             await app.build({
                 publicConfigsRoute: 'configs',
             });
-            const { close: webWorkerServer, port: webWorkerAppPort } = await app.run({
+            const { close, port: webWorkerAppPort } = await app.run({
                 featureName: 'contextual/some-feature',
                 publicConfigsRoute: 'configs',
             });
             disposables.add(() => app.clean());
-            disposables.add(() => webWorkerServer());
+            disposables.add(close);
 
             const webWorkerAppPage = await loadPage(
                 `http://localhost:${webWorkerAppPort}/main.html?feature=contextual/some-feature`
             );
 
-            const textFromWebWorker = await getBodyContent(webWorkerAppPage);
-
-            expect(textFromWebWorker).to.contain('worker');
+            await waitFor(async () => {
+                const textFromWebWorker = await getBodyContent(webWorkerAppPage);
+                expect(textFromWebWorker).to.contain('worker');
+            });
 
             const { close: closeServer, port: serverAppPort } = await app.run({
                 featureName: 'contextual/server-env',
                 publicConfigsRoute: 'configs',
             });
-            disposables.add(() => closeServer());
+            disposables.add(closeServer);
 
             const serverAppPage = await loadPage(
                 `http://localhost:${serverAppPort}/main.html?feature=contextual/server-env`
             );
 
-            const textFromServer = await getBodyContent(serverAppPage);
-
-            expect(textFromServer).to.contain('server');
+            await waitFor(async () => {
+                const textFromServer = await getBodyContent(serverAppPage);
+                expect(textFromServer).to.contain('server');
+            });
         });
 
-        it('allows providing top level config', async () => {
+        // was false positive due to if statements inside the waitFor causing noop
+        it.skip('allows providing top level config', async () => {
             const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
                 basePath: engineFeatureFixturePath,
@@ -159,22 +172,20 @@ describe('Application', function () {
                 featureName: 'engine-single/x',
                 overrideConfig,
             });
-            disposables.add(() => close());
-
+            disposables.add(close);
             const page = await loadPage(`http://localhost:${port}/main.html`);
+
             await waitFor(async () => {
                 const bodyContent = await getBodyContent(page);
-                if (bodyContent) {
-                    const [, bodyConfig] = bodyContent.split(': ');
-                    if (bodyConfig) {
-                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
-                        expect(parsedBodyConfig.value).to.eq(1);
-                    }
-                }
+                const [, bodyConfig] = bodyContent.split(': ');
+                expect(bodyConfig).to.not.equal(undefined);
+                const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                expect(parsedBodyConfig.value).to.eq(1);
             });
         });
 
-        it('allows providing top level config and config name', async () => {
+        // was false positive due to if statements inside the waitFor causing noop
+        it.skip('allows providing top level config and config name', async () => {
             const overrideConfig: TopLevelConfig = [['XTestFeature', { config: { value: 1 } }]];
             const app = new Application({
                 basePath: engineFeatureFixturePath,
@@ -187,19 +198,89 @@ describe('Application', function () {
                 featureName: 'engine-single/x',
                 overrideConfig,
             });
+            disposables.add(close);
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            await waitFor(async () => {
+                const bodyContent = await getBodyContent(page);
+                const [, bodyConfig] = bodyContent.split(': ');
+                expect(bodyConfig).to.not.equal(undefined);
+                const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                expect(parsedBodyConfig.value).to.eq(1);
+            });
+        });
+
+        it('loads external features', async () => {
+            const externalFeatureName = 'application-external';
+            const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
+            const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
+                name: string;
+            };
+            const externalFeatureApp = new Application({
+                basePath: applicationExternalFixturePath,
+            });
+            const publicConfigsRoute = 'config';
+            await externalFeatureApp.build({
+                external: true,
+                featureName: externalFeatureName,
+            });
+
+            fs.copyDirectorySync(applicationExternalFixturePath, join(pluginsFolderPath, name, 'dist'));
+            fs.copyDirectorySync(join(applicationExternalFixturePath, 'dist'), join(pluginsFolderPath, name, 'dist'));
+            disposables.add(() => externalFeatureApp.clean());
+            disposables.add(() => rimraf.sync(pluginsFolderPath));
+
+            const app = new Application({ basePath: baseWebApplicationFixturePath });
+            await app.build({
+                featureName: 'base-web-application',
+                singleFeature: true,
+                publicConfigsRoute: '/config',
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                serveExternalFeaturesPath: true,
+                externalFeatureDefinitions: [
+                    {
+                        packageName: name,
+                    },
+                ],
+                autoLaunch: true,
+                publicConfigsRoute,
+            });
             disposables.add(() => close());
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
-            await waitFor(async () => {
-                const bodyContent = await getBodyContent(page);
-                if (bodyContent) {
-                    const [, bodyConfig] = bodyContent.split(': ');
-                    if (bodyConfig) {
-                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
-                        expect(parsedBodyConfig.value).to.eq(1);
+            await waitFor(
+                async () => {
+                    const bodyContent = await getBodyContent(page);
+                    expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
+                },
+                { timeout: 5_000 }
+            );
+            const button = await page.$('#server-slot');
+            await waitFor(
+                async () => {
+                    await button?.click();
+                    const elem = await page.$('#server-slot-value');
+                    expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
+                },
+                { timeout: 5_000 }
+            );
+            const frames = page.frames();
+            await waitFor(
+                async () => {
+                    for (const iframe of frames) {
+                        const child = await iframe.$('#main-container');
+                        if (!child) {
+                            continue;
+                        }
+                        expect(await getBodyContent(iframe)).to.eq('hello external');
                     }
-                }
-            });
+                },
+                { timeout: 5_000 }
+            );
         });
     });
 
@@ -210,10 +291,12 @@ describe('Application', function () {
         await app.build();
         disposables.add(() => app.clean());
         const { close, port, router } = await app.run({ singleRun: true });
-        disposables.add(() => close());
+        disposables.add(close);
+
         router.get('/test/me', (_req, res) => {
             res.send('OK');
         });
+
         const page = await loadPage(`http://localhost:${port}/test/me`);
         expect(await page.content()).to.include('OK');
     });

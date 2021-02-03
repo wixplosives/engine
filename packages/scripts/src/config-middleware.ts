@@ -9,6 +9,10 @@ export interface OverrideConfig {
     overrideConfig: TopLevelConfig;
 }
 
+interface ConfigFileExports {
+    default: TopLevelConfig;
+}
+
 export function createLiveConfigsMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition | TopLevelConfig>,
     basePath: string,
@@ -42,9 +46,7 @@ export function createLiveConfigsMiddleware(
                             if (envName === reqEnv || !envName) {
                                 const resolvedPath = require.resolve(filePath, { paths: [basePath] });
                                 try {
-                                    const { default: configValue } = importFresh(resolvedPath) as {
-                                        default: TopLevelConfig;
-                                    };
+                                    const { default: configValue } = importFresh<ConfigFileExports>(resolvedPath);
                                     config.push(...configValue);
                                 } catch (e) {
                                     console.error(`Failed evaluating config file: ${filePath}`);

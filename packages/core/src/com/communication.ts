@@ -1,11 +1,4 @@
-import {
-    CALLBACK_TIMEOUT,
-    DUPLICATE_REGISTER,
-    MISSING_ENV,
-    REMOTE_CALL_FAILED,
-    reportError,
-    UNKNOWN_CALLBACK_ID,
-} from './errors';
+import { CALLBACK_TIMEOUT, DUPLICATE_REGISTER, REMOTE_CALL_FAILED, reportError, UNKNOWN_CALLBACK_ID } from './errors';
 import { isWindow, isWorkerContext, MultiCounter } from './helpers';
 import type {
     CallbackMessage,
@@ -35,7 +28,7 @@ import type {
 
 import { SERVICE_CONFIG } from '../symbols';
 
-import { SetMultiMap, deferred } from '../helpers';
+import { SetMultiMap, deferred, serializeError } from '../helpers';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
@@ -188,7 +181,7 @@ export class Communication {
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>
     ): Promise<unknown> {
-        return new Promise((res, rej) => {
+        return new Promise<void>((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
 
             if (this.isListenCall(args) || serviceComConfig[method]?.removeAllListeners) {
@@ -379,7 +372,7 @@ export class Communication {
     private async forwardListenMessage(message: ListenMessage): Promise<void> {
         const callbackId = this.idsCounter.next('c');
 
-        const data = await new Promise((res, rej) => {
+        const data = await new Promise<void>((res, rej) => {
             const handlerId = message.data.handlerId;
             this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
                 this.sendTo(message.from, {
@@ -501,7 +494,7 @@ export class Communication {
                     this.callWithCallback(envId, message, callbackId, res, rej);
                 }
             } else {
-                throw new Error(`cannot add listenr to unconfigured method ${api} ${method}`);
+                throw new Error(`cannot add listener to unconfigured method ${api} ${method}`);
             }
         }
     }
@@ -520,14 +513,10 @@ export class Communication {
         }
     }
     private sendTo(envId: string, message: Message): void {
-        const start = this.resolveMessageTarget(envId);
-        if (!start) {
-            throw new Error(MISSING_ENV(envId, Object.keys(this.environments)));
-        }
         if (this.pendingEnvs.get(envId)) {
-            this.pendingMessages.add(envId, () => this.post(start, message));
+            this.pendingMessages.add(envId, () => this.post(this.resolveMessageTarget(envId), message));
         } else {
-            this.post(start, message);
+            this.post(this.resolveMessageTarget(envId), message);
         }
     }
 
@@ -610,7 +599,7 @@ export class Communication {
         const handlerPrefix = `${message.from}__${message.to}_`;
         const { method, api } = this.parseHandlerId(message.data.handlerId, handlerPrefix);
 
-        const data = await new Promise((res, rej) =>
+        const data = await new Promise<void>((res, rej) =>
             this.addOrRemoveListener(
                 message.to,
                 api,
@@ -662,7 +651,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                error: String(error),
+                error: serializeError(error),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
             });
@@ -687,7 +676,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                error: String((error as Error).stack),
+                error: serializeError(error),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
             });
@@ -696,8 +685,18 @@ export class Communication {
 
     private handleCallback(message: CallbackMessage): void {
         const rec = message.callbackId ? this.callbacks[message.callbackId] : null;
-        if (rec) {
-            message.error ? rec.reject(new Error(REMOTE_CALL_FAILED(message))) : rec.resolve(message.data);
+        if (rec && message.error) {
+            // If the error is not caught later, and logged to the console,
+            // it would be nice to indicate which environment the error came from.
+            // We shouldn't change the error message or the error name because
+            // those could be used by error-handling code. Fortunately, we can
+            // add metadata to the stack trace, and Chrome logs the entire stack
+            // property to the console. Unfortunately, Firefox doesn't.
+            const error = Object.assign(new Error(), message.error);
+            error.stack = REMOTE_CALL_FAILED(message.from, error.stack);
+            rec.reject(error);
+        } else if (rec) {
+            rec.resolve(message.data);
         } else {
             // TODO: only in dev mode
             if (message.callbackId) {

@@ -1,10 +1,11 @@
+import type { SocketOptions } from 'socket.io-client';
 import { WsClientHost } from '../hosts/ws-client-host';
 import type { ReadyMessage } from '../message-types';
 import type { EnvironmentInitializer } from '../types';
 type listenFn = (cb: () => void) => void;
 
 export function socketServerInitializer(
-    options?: SocketIOClient.ConnectOpts
+    options?: Partial<SocketOptions>
 ): EnvironmentInitializer<{
     id: string;
     onDisconnect: listenFn;

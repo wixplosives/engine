@@ -69,6 +69,6 @@ describe('com emitter service', () => {
         expect(api.listeners.size).to.be.equal(0);
 
         api.dispatch('');
-        expect(testListenerStub.callCount, 'no listenr calls').to.be.equal(4);
+        expect(testListenerStub.callCount, 'no listener calls').to.be.equal(4);
     });
 });

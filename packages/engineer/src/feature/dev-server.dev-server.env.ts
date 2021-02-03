@@ -1,5 +1,5 @@
+import type io from 'socket.io';
 import devServerFeature, { devServerEnv } from './dev-server.feature';
-import { launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-scripts';
 import { TargetApplication } from '../application-proxy-service';
 import express from 'express';
 import {
@@ -7,12 +7,19 @@ import {
     createCommunicationMiddleware,
     createLiveConfigsMiddleware,
     createConfigMiddleware,
+    createFeaturesEngineRouter,
+    getExternalFeaturesMetadata,
+    launchHttpServer,
+    NodeEnvironmentsManager,
+    EXTERNAL_FEATURES_BASE_URI,
+    getExportedEnvironments,
+    getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
-import WebpackDevMiddleware from 'webpack-dev-middleware';
-import { createFeaturesEngineRouter } from '@wixc3/engine-scripts';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
-import type { Communication } from '@wixc3/engine-core';
+import { dirname, resolve } from 'path';
+import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks, template as graphTemplate } from '../feature-dependency-graph';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
@@ -31,7 +38,7 @@ function singleRunWatchFunction(compiler: webpack.Compiler) {
     };
 }
 
-const attachWSHost = (socketServer: SocketIO.Server, envName: string, communication: Communication) => {
+const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
 
     communication.clearEnvironment(envName);
@@ -60,58 +67,98 @@ devServerFeature.setup(
             overrideConfig,
             defaultRuntimeOptions,
             outputPath,
+            externalFeatureDefinitions: providedExternalDefinitions,
+            externalFeaturesPath: providedExternalFeaturesPath,
+            serveExternalFeaturesPath = true,
+            featureDiscoveryRoot,
+            socketServerOptions = {},
+            webpackConfigPath,
         } = devServerConfig;
-        const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath });
-        const disposables = new Set<() => unknown>();
+        const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
+        const disposables = createDisposables();
 
-        // Extract these into a service
-        const close = async () => {
-            // Using map instead of foreach so I could await each dispose
-            await Promise.resolve(
-                [...disposables].reverse().map(async (dispose) => {
-                    await dispose();
-                })
-            );
-            disposables.clear();
-        };
-
-        onDispose(close);
+        onDispose(disposables.dispose);
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
-            const engineConfig = await application.getEngineConfig();
-            if (engineConfig && engineConfig.require) {
-                await application.importModules(engineConfig.require);
-            }
+            const { config: engineConfig, path: engineConfigPath } = await application.getEngineConfig();
 
+            const {
+                externalFeatureDefinitions = [],
+                require,
+                socketServerOptions: configServerOptions = {},
+                externalFeaturesPath: configExternalFeaturesPath,
+                serveStatic = [],
+            } = engineConfig ?? {};
+            if (require) {
+                await application.importModules(require);
+            }
+            const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
+                ...socketServerOptions,
+                ...configServerOptions,
+            };
+            const externalFeaturesPath = resolve(
+                providedExternalFeaturesPath ?? (configExternalFeaturesPath ? dirname(engineConfigPath!) : basePath)
+            );
+
+            externalFeatureDefinitions.push(...providedExternalDefinitions);
+
+            const fixedExternalFeatureDefinitions = application.normilizeDefinitionsPackagePath(
+                externalFeatureDefinitions,
+                providedExternalFeaturesPath,
+                configExternalFeaturesPath,
+                engineConfigPath
+            );
             const { port: actualPort, app, close, socketServer } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
+                socketServerOptions: resolvedSocketServerOptions,
             });
-            disposables.add(() => close());
+            disposables.add(close);
 
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost
             attachWSHost(socketServer, devServerEnv.env, communication);
 
             const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
+            const externalFeatures = getExternalFeaturesMetadata(fixedExternalFeatureDefinitions, externalFeaturesPath);
+
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
-            // So potential dependants can rely on them in the topology
+            // So potential dependencies can rely on them in the topology
             application.setNodeEnvManager(
-                new NodeEnvironmentsManager(socketServer, {
-                    configurations,
-                    features,
-                    defaultRuntimeOptions,
-                    port: actualPort,
-                    inspect,
-                    overrideConfig,
-                })
+                new NodeEnvironmentsManager(
+                    socketServer,
+                    {
+                        configurations,
+                        features,
+                        defaultRuntimeOptions,
+                        port: actualPort,
+                        inspect,
+                        overrideConfig,
+                        externalFeatures,
+                    },
+                    resolvedSocketServerOptions
+                )
             );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
-            if (engineConfig?.serveStatic) {
-                for (const { route, directoryPath } of engineConfig.serveStatic) {
+            if (serveExternalFeaturesPath) {
+                for (const { packageName, packagePath } of fixedExternalFeatureDefinitions) {
+                    if (packagePath) {
+                        serveStatic.push({
+                            route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
+                            directoryPath: resolve(
+                                engineConfigPath ? dirname(engineConfigPath) : basePath,
+                                packagePath
+                            ),
+                        });
+                    }
+                }
+            }
+
+            if (serveStatic.length) {
+                for (const { route, directoryPath } of serveStatic) {
                     app.use(route, express.static(directoryPath));
                 }
             }
@@ -156,18 +203,28 @@ devServerFeature.setup(
                 features,
                 staticBuild: false,
                 configurations,
+                isExternal: false,
+                externalFeatures,
+                webpackConfigPath,
+                useLocalExtenalFeaturesMapping: false,
+                environments: getResolvedEnvironments({
+                    featureName,
+                    features,
+                    filterContexts: singleFeature,
+                    environments: [...getExportedEnvironments(features)],
+                }),
             });
+
             for (const childCompiler of compiler.compilers) {
                 if (singleRun) {
                     // This hack is to squeeze some more performance, because we can server the output in memory
                     // It was once a crash, which is no longer relevant
                     childCompiler.watch = singleRunWatchFunction(childCompiler);
                 }
-                const devMiddleware = WebpackDevMiddleware(childCompiler, {
-                    publicPath: '/',
-                    logLevel: 'silent',
-                });
-                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                const devMiddleware = webpackDevMiddleware(childCompiler);
+                disposables.add(
+                    () => new Promise<void>((res) => devMiddleware.close(res))
+                );
                 app.use(devMiddleware);
             }
 
@@ -201,19 +258,18 @@ devServerFeature.setup(
                 });
             }
 
-            /* I create new compilers for the engineering config for 2 reasons
-             *  1. I don't want to couple the engineering build and the users application build
+            /* creating new compilers for the engineering config for 2 reasons
+             *  1. de-couple the engineering build and the users application build
              *  For example it's very likely that later down the line we will never watch here
              *  but we will keep on watching on the users applicatino
-             *  2. I the createCompiler function, which I can't extend with more configs with the current API
+             *  2. the createCompiler function is not extendable with more configs with the current API
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             for (const childCompiler of engineerCompilers.compilers) {
-                const devMiddleware = WebpackDevMiddleware(childCompiler, {
-                    publicPath: '/',
-                    logLevel: 'silent',
-                });
-                disposables.add(() => new Promise((res) => devMiddleware.close(res)));
+                const devMiddleware = webpackDevMiddleware(childCompiler);
+                disposables.add(
+                    () => new Promise<void>((res) => devMiddleware.close(res))
+                );
                 app.use(devMiddleware);
             }
 
@@ -238,7 +294,7 @@ devServerFeature.setup(
         });
         return {
             application,
-            devServerActions: { close },
+            devServerActions: { close: disposables.dispose },
         };
     }
 );

@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "15.2.0",
+  "version": "16.9.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,7 +11,7 @@
     "prepack": "yarn build:umd"
   },
   "dependencies": {
-    "socket.io-client": "^2.3.1",
+    "socket.io-client": "^3.1.0",
     "typescript-type-utils": "^0.1.0"
   },
   "files": [
