@@ -11,7 +11,7 @@ export const buildFeatureLinks = (
     level: number
 ): Array<Link> => {
     const res = [] as Array<Link>;
-    const deps = entry.dependencies;
+    const deps = entry.dependencies as Array<Feature>;
     for (const dep of deps) {
         res.push({ source: entry.id, target: dep.id });
         if (!(dep.id in visitedFeatures)) {
