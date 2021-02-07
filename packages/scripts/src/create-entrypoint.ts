@@ -477,7 +477,7 @@ function fetchExternalFeatures(externalFeaturesRoute: string) {
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
-    return `return require('electron').ipcRenderer.invoke('${externalFeaturesRoute}')`;
+    return `await require('electron').ipcRenderer.invoke('${externalFeaturesRoute}')`;
 }
 
 function loadScripts() {
@@ -519,12 +519,8 @@ export function remapFileRequest({
     return remappedFilePath;
 }
 
-function normalizeRoute(route?: string) {
-    if (route && !route.endsWith('/')) {
-        return route + '/';
-    }
-
-    return route;
+function normalizeRoute(route: string) {
+    return route + (route && !route.endsWith('/') ? '/' : '');
 }
 
 export function normilizePackageName(packageName: string) {
