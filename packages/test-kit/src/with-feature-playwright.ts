@@ -5,6 +5,7 @@ import type { PerformanceMetrics } from '@wixc3/engine-scripts';
 import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
 import type { IExecutableApplication } from './types';
+import { hookPageConsole } from './hook-page-console-playwright';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
@@ -231,17 +232,7 @@ export function withFeaturePlaywright(withFeatureOptions: IWithFeatureOptionsPla
 
                 // Emitted when the page opens a new tab or window
                 page.on('popup', trackPage);
-                page.on('console', (m) => {
-                    const messageText = m.text();
-                    if (messageText === `JSHandle@error`) {
-                        const [handle] = m.args();
-                        if (handle) {
-                            handle.jsonValue().then(console.log, () => undefined);
-                        }
-                    } else {
-                        console.log(messageText);
-                    }
-                });
+                hookPageConsole(page);
 
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
