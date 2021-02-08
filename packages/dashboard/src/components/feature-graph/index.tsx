@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import * as d3 from 'd3';
+import d3, { HierarchyPointNode } from 'd3';
 import { classes } from './styles.st.css';
-import type { HierarchyPointNode } from 'd3';
 
 export interface Link {
     source: string | Node;
@@ -16,11 +15,7 @@ interface Node {
 }
 
 export interface GraphData {
-    nodes: {
-        name: string;
-        id: string;
-        group: number;
-    }[];
+    nodes: Node[];
     links: Link[];
 }
 
@@ -111,7 +106,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .on('mouseover', function (d) {
                 node.style('fill', null);
                 d3.select(this).selectAll('circle').style('fill', 'black');
-                var nodesToHighlight = paths
+                const nodesToHighlight = paths
                     .map(function (e) {
                         return e[0] === d ? e[e.length - 1] : e[e.length - 1] === d ? e[0] : 0;
                     })
@@ -138,7 +133,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .attr('r', 4)
             .attr('class', classes.node_circle)
             .append('title')
-            .text(function (d: any) {
+            .text(function (d) {
                 return d.data.name;
             });
 
@@ -153,7 +148,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .attr('transform', function (d) {
                 return 'rotate(' + (d.x < 180 ? d.x - 90 : d.x + 90) + ')';
             })
-            .text(function (d: any) {
+            .text(function (d) {
                 return `${d.data.group} - ${d.data.id}`;
             });
 

@@ -27,8 +27,3 @@
 .actionButton:hover {
     background: #dbdbdb;
 }
-
-.graphContainer {
-    flex: 1;
-    align-self: stretch;
-}
