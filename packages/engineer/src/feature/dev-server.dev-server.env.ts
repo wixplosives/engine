@@ -20,7 +20,7 @@ import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
-import { buildFeatureLinks, template as graphTemplate } from '../feature-dependency-graph';
+import { buildFeatureLinks } from '../feature-dependency-graph';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
     // This custom watch optimization only compiles once, but allows us to use webpack dev server
