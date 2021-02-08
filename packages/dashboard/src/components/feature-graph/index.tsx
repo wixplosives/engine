@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 import { classes } from './styles.st.css';
+import type { HierarchyPointNode } from 'd3';
 
 export interface Link {
     source: string | Node;
@@ -27,11 +28,6 @@ export interface IFeatureGraphProps {
     selectedFeatureGraph: GraphData;
 }
 
-interface Point {
-    x: number;
-    y: number;
-}
-
 export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
     useEffect(() => {
         const diameter = 600;
@@ -39,13 +35,13 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
         const innerRadius = radius - 70;
 
         const cluster = d3
-            .cluster()
+            .cluster<Node>()
             .size([360, innerRadius])
             .separation(function (a, b) {
                 return a.parent == b.parent ? 1 : a.parent?.parent == b.parent?.parent ? 2 : 4;
             });
 
-        const line = d3.line<Point>().x(xAccessor).y(yAccessor).curve(d3.curveBundle.beta(0.7));
+        const line = d3.line<HierarchyPointNode<Node>>().x(xAccessor).y(yAccessor).curve(d3.curveBundle.beta(0.7));
 
         const svg = d3
             .select('#graph_root')
@@ -65,7 +61,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             e.target = idToNode[e.target as string];
         });
 
-        const tree = cluster(d3.hierarchy<any>(chapterHierarchy(selectedFeatureGraph.nodes)));
+        const tree = cluster(d3.hierarchy<Node>(featureHierarchy(selectedFeatureGraph.nodes)));
 
         const leaves = tree.leaves();
 
@@ -151,39 +147,27 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .attr('x', function (d) {
                 return d.x < 180 ? 6 : -6;
             })
-            .style('text-anchor', function (d: Point) {
+            .style('text-anchor', function (d) {
                 return d.x < 180 ? 'start' : 'end';
             })
-            .attr('transform', function (d: Point) {
+            .attr('transform', function (d) {
                 return 'rotate(' + (d.x < 180 ? d.x - 90 : d.x + 90) + ')';
             })
             .text(function (d: any) {
                 return `${d.data.group} - ${d.data.id}`;
             });
 
-        function chapterHierarchy(characters: Array<Node>) {
+        function featureHierarchy(features: Array<Node>) {
             const hierarchy: any = {
                 root: { name: 'root', children: [] },
             };
 
-            characters.forEach(function (c) {
+            features.forEach(function (c) {
                 const chapter = c.group;
-                const book = 0;
-                const volume = 0;
-
-                if (!hierarchy[volume]) {
-                    hierarchy[volume] = { name: volume, children: [], parent: hierarchy['root'] };
-                    hierarchy['root'].children.push(hierarchy[volume]);
-                }
-
-                if (!hierarchy[book]) {
-                    hierarchy[book] = { name: book, children: [], parent: hierarchy[volume] };
-                    hierarchy[volume].children.push(hierarchy[book]);
-                }
 
                 if (!hierarchy[chapter]) {
-                    hierarchy[chapter] = { name: chapter, children: [], parent: hierarchy[book] };
-                    hierarchy[book].children.push(hierarchy[chapter]);
+                    hierarchy[chapter] = { name: chapter, children: [], parent: hierarchy['root'] };
+                    hierarchy['root'].children.push(hierarchy[chapter]);
                 }
 
                 c.parent = hierarchy[chapter];
@@ -193,18 +177,18 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             return hierarchy['root'];
         }
 
-        function xAccessor(d: Point) {
+        function xAccessor(d: HierarchyPointNode<Node>) {
             const angle = ((d.x - 90) / 180) * Math.PI,
                 radius = d.y;
             return radius * Math.cos(angle);
         }
 
-        function yAccessor(d: Point) {
+        function yAccessor(d: HierarchyPointNode<Node>) {
             const angle = ((d.x - 90) / 180) * Math.PI,
                 radius = d.y;
             return radius * Math.sin(angle);
         }
-    }, []);
+    });
     return <svg id="graph_root" />;
 };
 
