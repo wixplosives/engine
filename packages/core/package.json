@@ -7,7 +7,7 @@
     "build:umd": "node ./scripts/bundle",
     "test": "yarn test:node && yarn test:browser",
     "test:node": "mocha \"test/node/**/*.spec.ts?(x)\"",
-    "test:browser": "mocha-pup \"test/**/*.spec.ts?(x)\" -c ./test/webpack.config.js",
+    "test:browser": "mocha-play \"test/**/*.spec.ts?(x)\" -c ./test/webpack.config.js",
     "prepack": "yarn build:umd"
   },
   "dependencies": {
