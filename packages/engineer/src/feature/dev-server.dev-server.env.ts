@@ -196,26 +196,6 @@ devServerFeature.setup(
                 };
                 res.json(graph);
             });
-
-            app.get('/render-graph', (req, res) => {
-                const featureName = req.query['feature-name'] as string;
-
-                const visitedFeatures = {} as { [propName: string]: number };
-
-                const links = buildFeatureLinks(features.get(featureName)!.exportedFeature, visitedFeatures, 0);
-
-                const graph = {
-                    nodes: Object.keys(visitedFeatures)
-                        .map((name) => ({ name, id: name, group: visitedFeatures[name] }))
-                        .concat({
-                            name: features.get(featureName)!.exportedFeature.id,
-                            id: features.get(featureName)!.exportedFeature.id,
-                            group: 0,
-                        }),
-                    links,
-                };
-                res.send(graphTemplate(graph));
-            });
             // Write middleware for each of the apps
             const compiler = application.createCompiler({
                 ...devServerConfig,

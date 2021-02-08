@@ -121,14 +121,14 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
                 displayServerToggle={hasNodeEnvironments}
                 actionBtnClassName={classes.actionButton}
             />
-            {selectedFeature?.featureName && (
-                <div className={classes.graphContainer}>
-                    {selectedFeatureGraph ? (
-                        <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
-                    ) : (
-                        <div>Loading graph data</div>
-                    )}
-                </div>
+            {selectedFeature?.featureName ? (
+                selectedFeatureGraph ? (
+                    <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
+                ) : (
+                    <div>Loading graph data</div>
+                )
+            ) : (
+                <div>Select a feature to view it's dependency graph</div>
             )}
         </div>
     );
