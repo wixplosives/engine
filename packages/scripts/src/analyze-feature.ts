@@ -9,6 +9,7 @@ import {
     SingleEndpointContextualEnvironment,
     SetMultiMap,
     flattenTree,
+    ExternalDefinition,
 } from '@wixc3/engine-core';
 import {
     isFeatureFile,
@@ -269,10 +270,11 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
         exportedFeature,
         exportedEnvs: [],
         usedContexts: {},
+        externalDefinitions: [],
     };
 
     if (typeof exports === 'object' && exports !== null) {
-        const { exportedEnvs: envs, usedContexts } = featureFile;
+        const { exportedEnvs: envs, usedContexts, externalDefinitions } = featureFile;
         for (const exportValue of Object.values(exports)) {
             if (instanceOf(exportValue, Environment)) {
                 if (instanceOf(exportValue, SingleEndpointContextualEnvironment)) {
@@ -282,10 +284,26 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
                 }
             } else if (instanceOf(exportValue, EnvironmentContext)) {
                 usedContexts[exportValue.env] = exportValue.activeEnvironmentName;
+            } else if (isFeatureDefinition(exportValue)) {
+                externalDefinitions.push(exportValue);
+            } else if (isFeatureDefinitionArray(exportValue)) {
+                externalDefinitions.push(...exportValue);
             }
         }
     }
     return featureFile;
+}
+
+function isFeatureDefinition(value: any): value is ExternalDefinition {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return typeof value === 'object' && !Array.isArray(value) && !!value.request && !!value.globalName;
+}
+
+function isFeatureDefinitionArray(value: any): value is ExternalDefinition[] {
+    if (Array.isArray(value) && value.length) {
+        return isFeatureDefinition(value[0]);
+    }
+    return false;
 }
 
 const parseEnv = ({ env, envType }: InstanceType<typeof Environment>): IEnvironment => ({
