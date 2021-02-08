@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "16.9.0",
+  "version": "16.11.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,9 +13,9 @@
     "@file-services/node": "^5.3.0",
     "@file-services/types": "^5.3.0",
     "@types/express": "^4.17.11",
-    "@wixc3/cross-performance": "^16.9.0",
-    "@wixc3/engine-core": "^16.9.0",
-    "@wixc3/engine-core-node": "^16.9.0",
+    "@wixc3/cross-performance": "^16.10.0",
+    "@wixc3/engine-core": "^16.11.0",
+    "@wixc3/engine-core-node": "^16.11.0",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
     "express": "^4.17.1",
@@ -23,7 +23,7 @@
     "html-webpack-plugin": "^4.5.1",
     "import-fresh": "^3.3.0",
     "rimraf": "^3.0.2",
-    "socket.io": "^3.1.0",
+    "socket.io": "^3.1.1",
     "type-fest": "^0.20.2",
     "webpack-virtual-modules": "^0.4.2"
   },
