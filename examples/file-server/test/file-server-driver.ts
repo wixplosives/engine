@@ -1,4 +1,4 @@
-import type { Page } from 'puppeteer';
+import type { Page } from 'playwright-core';
 
 export class FileServerDriver {
     public static async getFromRoot(root: Page) {

@@ -3,7 +3,7 @@ import { TopLevelConfig, createDisposables } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import type { Frame, Page } from 'puppeteer';
+import type { Frame, Page } from 'playwright-core';
 import { Application } from '@wixc3/engine-scripts';
 import { join } from 'path';
 import rimraf from 'rimraf';

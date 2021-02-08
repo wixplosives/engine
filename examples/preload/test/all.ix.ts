@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { dirname } from 'path';
 import { createDisposables } from '@wixc3/engine-core';
 import { startServerNewProcess } from './utils';
-import type { Page } from 'puppeteer';
+import type { Page } from 'playwright-core';
 
 describe('All Environment', () => {
     const projectPath = dirname(require.resolve('../package.json'));

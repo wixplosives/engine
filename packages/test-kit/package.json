@@ -4,7 +4,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "peerDependencies": {
-    "puppeteer": ">=1",
     "typescript": ">=3.0.0"
   },
   "dependencies": {
