@@ -4,6 +4,7 @@ import { ServerState, isServerResponseMessage } from '../../server-types';
 import { classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';
+import { FeatureGraph, GraphData } from '../feature-graph';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
@@ -16,6 +17,7 @@ export interface IDashboardProps {
         isNodeEnvActive: boolean,
         runtimeOptions: Array<IRuntimeOption>
     ) => Promise<unknown>;
+    fetchGraphData: (featureName: string) => Promise<GraphData>;
 }
 
 interface SelectedFeature {
@@ -24,13 +26,14 @@ interface SelectedFeature {
     runtimeArguments?: string;
 }
 
-export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEnvironmentState }) => {
+export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEnvironmentState, fetchGraphData }) => {
     const [serverState, setServerState] = useState<ServerState>({
         featuresWithRunningNodeEnvs: [],
         features: {},
     });
 
     const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>({});
+    const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
 
     const [runtimeArguments, setRuntimeArguments] = useState<Array<IRuntimeOption>>([
         {
@@ -71,12 +74,16 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
 
     const selectedFeatureConfig = useCallback(
         (featureName?: string, configName?: string) => {
+            setSelectedFeatureGraph(null);
             if (!featureName) {
                 setRuntimeArguments([{ key: '', value: '' }]);
             }
             setSelectedFeature({ ...selectedFeature, featureName, configName });
+            if (featureName) {
+                void fetchGraphData(featureName).then(setSelectedFeatureGraph);
+            }
         },
-        [setSelectedFeature, selectedFeature]
+        [setSelectedFeature, selectedFeature, fetchGraphData]
     );
 
     const hasNodeEnvironments =
@@ -116,11 +123,11 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
             />
             {selectedFeature?.featureName && (
                 <div className={classes.graphContainer}>
-                    <iframe
-                        src={`/render-graph?feature-name=${selectedFeature.featureName}`}
-                        width="100%"
-                        height="100%"
-                    />
+                    {selectedFeatureGraph ? (
+                        <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
+                    ) : (
+                        <div>Loading graph data</div>
+                    )}
                 </div>
             )}
         </div>

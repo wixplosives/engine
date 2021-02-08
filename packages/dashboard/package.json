@@ -13,7 +13,8 @@
   "dependencies": {
     "@stylable/runtime": "^3.11.14",
     "@wixc3/engine-core": "^16.11.0",
-    "@wixc3/engine-scripts": "^16.11.0"
+    "@wixc3/engine-scripts": "^16.11.0",
+    "d3": "^6.5.0"
   },
   "files": [
     "dist",
@@ -23,5 +24,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@types/d3": "^6.3.0"
   }
 }

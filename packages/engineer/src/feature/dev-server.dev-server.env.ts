@@ -177,6 +177,26 @@ devServerFeature.setup(
                 createConfigMiddleware(overrideConfig),
             ]);
 
+            app.get('/feature-graph', (req, res) => {
+                const featureName = req.query['feature-name'] as string;
+
+                const visitedFeatures = {} as { [propName: string]: number };
+
+                const links = buildFeatureLinks(features.get(featureName)!.exportedFeature, visitedFeatures, 0);
+
+                const graph = {
+                    nodes: Object.keys(visitedFeatures)
+                        .map((name) => ({ name, id: name, group: visitedFeatures[name] }))
+                        .concat({
+                            name: features.get(featureName)!.exportedFeature.id,
+                            id: features.get(featureName)!.exportedFeature.id,
+                            group: 0,
+                        }),
+                    links,
+                };
+                res.json(graph);
+            });
+
             app.get('/render-graph', (req, res) => {
                 const featureName = req.query['feature-name'] as string;
 
