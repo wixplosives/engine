@@ -138,7 +138,7 @@ interface ICreateWebpackConfigOptions {
 export function createWebpackConfig({
     baseConfig,
     target,
-    environments: enviroments,
+    environments,
     virtualModules,
     featureName,
     configName,
@@ -158,7 +158,7 @@ export function createWebpackConfig({
     fetchFeatures,
     eagerEntrypoint,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
-    for (const [envName, childEnvs] of enviroments) {
+    for (const [envName, childEnvs] of environments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
@@ -219,7 +219,7 @@ export function createWebpackConfig({
 export function createWebpackConfigForExteranlFeature({
     baseConfig,
     target,
-    environments: enviroments,
+    environments,
     virtualModules,
     features,
     context,
@@ -234,7 +234,7 @@ export function createWebpackConfigForExteranlFeature({
         throw new Error(`${featureName!} was not found after analyzing features`);
     }
 
-    for (const [envName, childEnvs] of enviroments) {
+    for (const [envName, childEnvs] of environments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
         virtualModules[entryPath] = createExternalBrowserEntrypoint({
