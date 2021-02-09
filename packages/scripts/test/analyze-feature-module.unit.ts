@@ -6,32 +6,36 @@ import { join } from 'path';
 
 describe('analyzeFeatureModule', function () {
     it('analyzes a simple feature file', () => {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const module = evaluateModule(join(__dirname, './fixtures/engine-feature/feature/x.feature'));
-        const { name } = analyzeFeatureModule(module.children[0]);
+        const {
+            children: [featueModule],
+        } = evaluateModule(join(__dirname, './fixtures/engine-feature/feature/x.feature'));
+        const { name } = analyzeFeatureModule(featueModule);
         expect(name).to.eq('x');
     });
 
     it('located environment exports', () => {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const module = evaluateModule(join(__dirname, './fixtures/node-env/feature/x.feature'));
-        const { exportedEnvs } = analyzeFeatureModule(module.children[0]);
+        const {
+            children: [featueModule],
+        } = evaluateModule(join(__dirname, './fixtures/node-env/feature/x.feature'));
+        const { exportedEnvs } = analyzeFeatureModule(featueModule);
         expect(exportedEnvs).to.have.lengthOf(2);
         expect(exportedEnvs.map((e) => e.name)).to.eql(['main', 'server']);
     });
 
     it('locates used contexts', () => {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const module = evaluateModule(join(__dirname, './fixtures/contextual/fixtures/server-env.feature'));
-        const { usedContexts } = analyzeFeatureModule(module.children[0]);
+        const {
+            children: [featueModule],
+        } = evaluateModule(join(__dirname, './fixtures/contextual/fixtures/server-env.feature'));
+        const { usedContexts } = analyzeFeatureModule(featueModule);
         expect(usedContexts['contextual']).to.eql('server');
     });
 
     it('locates external dependencies', () => {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const moduleA = evaluateModule(join(__dirname, './fixtures/external-definitions/module-a.feature'));
-        const moduleB = evaluateModule(join(__dirname, './fixtures/external-definitions/module-b.feature'));
-        const { externalDefinitions } = analyzeFeatureModule(moduleA.children[0]);
+        const {
+            children: [featureAModule],
+        } = evaluateModule(join(__dirname, './fixtures/external-definitions/module-a.feature'));
+
+        const { externalDefinitions } = analyzeFeatureModule(featureAModule);
         expect(externalDefinitions).to.eql([
             {
                 request: 'my-module',
@@ -39,7 +43,10 @@ describe('analyzeFeatureModule', function () {
             },
         ]);
 
-        const { externalDefinitions: externalBDefinitions } = analyzeFeatureModule(moduleB.children[0]);
+        const {
+            children: [featureBModule],
+        } = evaluateModule(join(__dirname, './fixtures/external-definitions/module-b.feature'));
+        const { externalDefinitions: externalBDefinitions } = analyzeFeatureModule(featureBModule);
 
         expect(externalBDefinitions).to.eql([
             {
