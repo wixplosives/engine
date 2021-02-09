@@ -2,7 +2,7 @@ import fs from '@file-services/node';
 import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import { flattenTree, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
@@ -58,7 +58,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: webEnvs,
+                environments: webEnvs,
                 target: 'web',
                 virtualModules,
                 plugins,
@@ -72,7 +72,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: workerEnvs,
+                environments: workerEnvs,
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
@@ -85,7 +85,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: electronRendererEnvs,
+                environments: electronRendererEnvs,
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
@@ -119,7 +119,7 @@ interface ICreateWebpackConfigOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    enviroments: Map<string, string[]>;
+    environments: Map<string, string[]>;
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
     virtualModules: Record<string, string>;
@@ -138,7 +138,7 @@ interface ICreateWebpackConfigOptions {
 export function createWebpackConfig({
     baseConfig,
     target,
-    enviroments,
+    environments: enviroments,
     virtualModules,
     featureName,
     configName,
@@ -219,7 +219,7 @@ export function createWebpackConfig({
 export function createWebpackConfigForExteranlFeature({
     baseConfig,
     target,
-    enviroments,
+    environments: enviroments,
     virtualModules,
     features,
     context,
@@ -252,6 +252,8 @@ export function createWebpackConfigForExteranlFeature({
     const externals: webpack.ExternalsElement[] = [externalFeatures];
     const { packageName, name, filePath } = feature;
     const { plugins: basePlugins = [] } = baseConfig;
+
+    externals.push(getDefinedExternals(feature, features));
 
     const userExternals = baseConfig.externals;
     if (userExternals) {
@@ -311,3 +313,15 @@ const extractExternals: (featurePath: string, ignoredRequests: Array<string>) =>
         cb(err);
     }
 };
+function getDefinedExternals(feature: IFeatureDefinition, features: Map<string, IFeatureDefinition>) {
+    const externalDefinitions = [
+        ...flattenTree(feature, ({ dependencies }) => dependencies.map((dep) => features.get(dep)!)).values(),
+    ]
+        .map(({ externalDefinitions }) => externalDefinitions)
+        .flat();
+    const definedExternals: Record<string, string> = {};
+    for (const { globalName, request } of externalDefinitions) {
+        definedExternals[request] = globalName;
+    }
+    return definedExternals;
+}
