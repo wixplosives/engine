@@ -50,6 +50,6 @@ describe('translateNodeToHierarchy', () => {
                 },
             ]
         );
-        expect(root.children).to.eql(expectedRoot.children);
+        expect(root).to.eql(expectedRoot);
     });
 });
