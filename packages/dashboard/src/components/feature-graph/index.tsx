@@ -3,15 +3,15 @@ import { cluster, line, curveBundle, select, hierarchy, HierarchyPointNode } fro
 import { classes } from './styles.st.css';
 
 export interface Link {
-    source: string | Node;
-    target: string | Node;
+    source: string;
+    target: string;
 }
 
 interface Node {
     name: string;
     id: string;
     group: number;
-    parent?: Node;
+    parent?: GraphNode;
 }
 
 export interface GraphData {
@@ -23,19 +23,27 @@ export interface IFeatureGraphProps {
     selectedFeatureGraph: GraphData;
 }
 
+interface GraphNode {
+    id?: string;
+    name: string;
+    group: number;
+    children: Array<GraphNode | Node>;
+    parent?: GraphNode;
+}
+
 export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
     useEffect(() => {
         const diameter = 600;
         const radius = diameter / 2;
         const innerRadius = radius - 70;
 
-        const graphCluster = cluster<Node>()
+        const graphCluster = cluster<GraphNode>()
             .size([360, innerRadius])
             .separation(function (a, b) {
                 return a.parent == b.parent ? 1 : a.parent?.parent == b.parent?.parent ? 2 : 4;
             });
 
-        const graphLine = line<HierarchyPointNode<Node>>().x(xAccessor).y(yAccessor).curve(curveBundle.beta(0.7));
+        const graphLine = line<HierarchyPointNode<GraphNode>>().x(xAccessor).y(yAccessor).curve(curveBundle.beta(0.7));
 
         const svg = select('#graph_root')
             .attr('width', diameter)
@@ -43,22 +51,16 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .append('g')
             .attr('transform', 'translate(' + radius + ',' + radius + ')');
 
-        const idToNode: Record<string, Node> = {};
-
-        selectedFeatureGraph.nodes.forEach(function (n: Node) {
-            idToNode[n.id] = n;
-        });
-
-        selectedFeatureGraph.links.forEach(function (e: Link) {
-            e.source = idToNode[e.source as string];
-            e.target = idToNode[e.target as string];
-        });
-
-        const tree = graphCluster(hierarchy<Node>(featureHierarchy(selectedFeatureGraph.nodes)));
+        const { rootNode, idToNode } = featureHierarchy(selectedFeatureGraph.nodes);
+        const tree = graphCluster(hierarchy<GraphNode>(rootNode));
 
         const leaves = tree.leaves();
 
-        const paths = selectedFeatureGraph.links.map(function (l) {
+        const graphLinks = selectedFeatureGraph.links.map((e) => ({
+            source: idToNode[e.source],
+            target: idToNode[e.target],
+        }));
+        const paths = graphLinks.map(function (l) {
             var source = leaves.filter(function (d) {
                 return d.data === l.source;
             })[0];
@@ -149,32 +151,34 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             });
 
         function featureHierarchy(features: Array<Node>) {
-            const hierarchy: any = {
-                root: { name: 'root', children: [] },
+            const hierarchy: Record<string, GraphNode> = {
+                root: { name: 'root', children: [], group: 0 },
             };
+            const idToNode: Record<string, GraphNode | Node> = { root: hierarchy.root };
 
             features.forEach(function (c) {
-                const chapter = c.group;
+                const group = c.group.toString();
 
-                if (!hierarchy[chapter]) {
-                    hierarchy[chapter] = { name: chapter, children: [], parent: hierarchy['root'] };
-                    hierarchy['root'].children.push(hierarchy[chapter]);
+                if (!hierarchy[group]) {
+                    hierarchy[group] = { name: group, children: [], parent: hierarchy['root'], group: c.group };
+                    hierarchy['root'].children.push(hierarchy[group]);
                 }
 
-                c.parent = hierarchy[chapter];
-                hierarchy[chapter].children.push(c);
+                idToNode[c.id] = c;
+                c.parent = hierarchy[group];
+                hierarchy[group].children.push(c);
             });
 
-            return hierarchy['root'];
+            return { rootNode: hierarchy['root'], idToNode };
         }
 
-        function xAccessor(d: HierarchyPointNode<Node>) {
+        function xAccessor(d: HierarchyPointNode<GraphNode>) {
             const angle = ((d.x - 90) / 180) * Math.PI,
                 radius = d.y;
             return radius * Math.cos(angle);
         }
 
-        function yAccessor(d: HierarchyPointNode<Node>) {
+        function yAccessor(d: HierarchyPointNode<GraphNode>) {
             const angle = ((d.x - 90) / 180) * Math.PI,
                 radius = d.y;
             return radius * Math.sin(angle);
