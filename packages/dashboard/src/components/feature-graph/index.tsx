@@ -1,30 +1,8 @@
 import React, { useEffect } from 'react';
 import { cluster, line, curveBundle, select, hierarchy, HierarchyPointNode } from 'd3';
 import { classes } from './styles.st.css';
-
-export interface Link {
-    source: string;
-    target: string;
-}
-
-interface Node {
-    name: string;
-    group: number;
-}
-
-export interface GraphData {
-    nodes: Node[];
-    links: Link[];
-}
-
-export interface IFeatureGraphProps {
-    selectedFeatureGraph: GraphData;
-}
-
-interface GraphNode extends Node {
-    children: Array<GraphNode | Node>;
-    parent?: GraphNode;
-}
+import { translateNodeToHierarchy, xAccessor, yAccessor } from './utils';
+import type { GraphNode, Node, IFeatureGraphProps } from '../../graph-types';
 
 export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
     useEffect(() => {
@@ -149,34 +127,3 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
 };
 
 FeatureGraph.displayName = 'FeatureGraph';
-
-function translateNodeToHierarchy(features: Array<Node>) {
-    const hierarchy: Record<string, GraphNode> = {
-        root: { name: 'root', children: [], group: 0 },
-    };
-
-    features.forEach(function (c) {
-        const group = c.group.toString();
-
-        if (!hierarchy[group]) {
-            hierarchy[group] = { name: group, children: [], parent: hierarchy['root'], group: c.group };
-            hierarchy['root'].children.push(hierarchy[group]);
-        }
-
-        hierarchy[group].children.push(c);
-    });
-
-    return hierarchy['root'];
-}
-
-function xAccessor(d: HierarchyPointNode<Node>) {
-    const angle = ((d.x - 90) / 180) * Math.PI,
-        radius = d.y;
-    return radius * Math.cos(angle);
-}
-
-function yAccessor(d: HierarchyPointNode<Node>) {
-    const angle = ((d.x - 90) / 180) * Math.PI,
-        radius = d.y;
-    return radius * Math.sin(angle);
-}

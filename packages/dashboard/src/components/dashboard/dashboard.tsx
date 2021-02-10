@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback, memo } from 'react';
 import { FeaturesSelection } from './feature-selection';
 import { ServerState, isServerResponseMessage } from '../../server-types';
+import type { GraphData } from '../../graph-types';
 import { classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';
-import { FeatureGraph, GraphData } from '../feature-graph';
+import { FeatureGraph } from '../feature-graph';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
