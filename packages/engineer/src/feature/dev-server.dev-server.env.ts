@@ -20,7 +20,7 @@ import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
-import { buildFeatureLinks, FeatureDepth } from '../feature-dependency-graph';
+import { buildFeatureLinks } from '../feature-dependency-graph';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
     // This custom watch optimization only compiles once, but allows us to use webpack dev server
@@ -179,20 +179,13 @@ devServerFeature.setup(
 
             app.get('/feature-graph', (req, res) => {
                 const featureName = req.query['feature-name'] as string;
-
-                const visitedFeatures: FeatureDepth = {};
-
-                const links = buildFeatureLinks(features.get(featureName)!.exportedFeature, visitedFeatures, 0);
+                const { links, visitedFeatures } = buildFeatureLinks(features.get(featureName)!.exportedFeature);
 
                 const graph = {
-                    nodes: Object.keys(visitedFeatures)
-                        .map((name) => ({ name, id: name, group: visitedFeatures[name] }))
-                        // Add the root feature
-                        .concat({
-                            name: features.get(featureName)!.exportedFeature.id,
-                            id: features.get(featureName)!.exportedFeature.id,
-                            group: 0,
-                        }),
+                    nodes: Object.keys(visitedFeatures).map((name) => ({
+                        name,
+                        group: visitedFeatures[name],
+                    })),
                     links,
                 };
                 res.json(graph);
