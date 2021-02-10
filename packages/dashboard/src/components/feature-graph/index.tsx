@@ -136,7 +136,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
                 return graphNode.x < 180 ? 6 : -6;
             })
             .style('text-anchor', function (graphNode) {
-                return graphNode.x < 180 ? 'start' : 'engraphNode';
+                return graphNode.x < 180 ? 'start' : 'end';
             })
             .attr('transform', function (graphNode) {
                 return `rotate(${graphNode.x < 180 ? graphNode.x - 90 : graphNode.x + 90})`;
