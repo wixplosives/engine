@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import d3, { HierarchyPointNode } from 'd3';
+import { cluster, line, curveBundle, select, hierarchy, HierarchyPointNode } from 'd3';
 import { classes } from './styles.st.css';
 
 export interface Link {
@@ -29,17 +29,15 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
         const radius = diameter / 2;
         const innerRadius = radius - 70;
 
-        const cluster = d3
-            .cluster<Node>()
+        const graphCluster = cluster<Node>()
             .size([360, innerRadius])
             .separation(function (a, b) {
                 return a.parent == b.parent ? 1 : a.parent?.parent == b.parent?.parent ? 2 : 4;
             });
 
-        const line = d3.line<HierarchyPointNode<Node>>().x(xAccessor).y(yAccessor).curve(d3.curveBundle.beta(0.7));
+        const graphLine = line<HierarchyPointNode<Node>>().x(xAccessor).y(yAccessor).curve(curveBundle.beta(0.7));
 
-        const svg = d3
-            .select('#graph_root')
+        const svg = select('#graph_root')
             .attr('width', diameter)
             .attr('height', diameter)
             .append('g')
@@ -56,7 +54,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             e.target = idToNode[e.target as string];
         });
 
-        const tree = cluster(d3.hierarchy<Node>(featureHierarchy(selectedFeatureGraph.nodes)));
+        const tree = graphCluster(hierarchy<Node>(featureHierarchy(selectedFeatureGraph.nodes)));
 
         const leaves = tree.leaves();
 
@@ -76,12 +74,10 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .enter()
             .append('path')
             .attr('class', classes.link)
-            .attr('d', function (d) {
-                return line(d);
-            })
+            .attr('d', graphLine)
             .on('mouseover', function (l) {
                 link.style('stroke', null).style('stroke-opacity', null);
-                d3.select(this).style('stroke', '#d62333').style('stroke-opacity', 1);
+                select(this).style('stroke', '#d62333').style('stroke-opacity', 1);
                 node.selectAll('circle').style('fill', null);
                 node.filter(function (n) {
                     return n === l[0] || n === l[l.length - 1];
@@ -105,7 +101,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             })
             .on('mouseover', function (d) {
                 node.style('fill', null);
-                d3.select(this).selectAll('circle').style('fill', 'black');
+                select(this).selectAll('circle').style('fill', 'black');
                 const nodesToHighlight = paths
                     .map(function (e) {
                         return e[0] === d ? e[e.length - 1] : e[e.length - 1] === d ? e[0] : 0;
