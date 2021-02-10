@@ -17,36 +17,58 @@ const shareDepWithDepFeature = new Feature({
     dependencies: [noDepsFeature.asEntity, simpleDepFeature.asEntity],
     api: {},
 });
+const multiLevelFeature = new Feature({
+    id: 'multLevel',
+    dependencies: [simpleDepFeature.asEntity, shareDepWithDepFeature.asEntity],
+    api: {},
+});
 
-describe('buildFeatureLinks', () => {
+describe.only('buildFeatureLinks', () => {
     it('should handle feature with no dependencies', () => {
         expect(buildFeatureLinks(noDepsFeature)).to.eql({
-            visitedFeatures: {
-                [noDepsFeature.id]: 0,
+            nodes: {
+                [noDepsFeature.id]: { name: noDepsFeature.id, group: 0 },
             },
             links: [],
         });
     });
     it('should handle features with single direction depedencies', () => {
         expect(buildFeatureLinks(simpleDepFeature)).to.eql({
-            visitedFeatures: {
-                [simpleDepFeature.id]: 0,
-                [noDepsFeature.id]: 1,
+            nodes: {
+                [simpleDepFeature.id]: { name: simpleDepFeature.id, group: 0 },
+                [noDepsFeature.id]: { name: noDepsFeature.id, group: 1 },
             },
             links: [{ source: simpleDepFeature.id, target: noDepsFeature.id }],
         });
     });
     it('should handle features that share dependencies with their dependencies', () => {
         expect(buildFeatureLinks(shareDepWithDepFeature)).to.eql({
-            visitedFeatures: {
-                [shareDepWithDepFeature.id]: 0,
-                [noDepsFeature.id]: 1,
-                [simpleDepFeature.id]: 1,
+            nodes: {
+                [shareDepWithDepFeature.id]: { name: shareDepWithDepFeature.id, group: 0 },
+                [noDepsFeature.id]: { name: noDepsFeature.id, group: 1 },
+                [simpleDepFeature.id]: { name: simpleDepFeature.id, group: 1 },
             },
             links: [
                 { source: shareDepWithDepFeature.id, target: noDepsFeature.id },
                 { source: shareDepWithDepFeature.id, target: simpleDepFeature.id },
                 { source: simpleDepFeature.id, target: noDepsFeature.id },
+            ],
+        });
+    });
+    it('should handle multi level features with complex dependencies', () => {
+        expect(buildFeatureLinks(multiLevelFeature)).to.eql({
+            nodes: {
+                [multiLevelFeature.id]: { name: multiLevelFeature.id, group: 0 },
+                [shareDepWithDepFeature.id]: { name: shareDepWithDepFeature.id, group: 1 },
+                [simpleDepFeature.id]: { name: simpleDepFeature.id, group: 1 },
+                [noDepsFeature.id]: { name: noDepsFeature.id, group: 2 },
+            },
+            links: [
+                { source: multiLevelFeature.id, target: simpleDepFeature.id },
+                { source: multiLevelFeature.id, target: shareDepWithDepFeature.id },
+                { source: simpleDepFeature.id, target: noDepsFeature.id },
+                { source: shareDepWithDepFeature.id, target: noDepsFeature.id },
+                { source: shareDepWithDepFeature.id, target: simpleDepFeature.id },
             ],
         });
     });

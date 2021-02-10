@@ -179,13 +179,10 @@ devServerFeature.setup(
 
             app.get('/feature-graph', (req, res) => {
                 const featureName = req.query['feature-name'] as string;
-                const { links, visitedFeatures } = buildFeatureLinks(features.get(featureName)!.exportedFeature);
+                const { links, nodes } = buildFeatureLinks(features.get(featureName)!.exportedFeature);
 
                 const graph = {
-                    nodes: Object.keys(visitedFeatures).map((name) => ({
-                        name,
-                        group: visitedFeatures[name],
-                    })),
+                    nodes,
                     links,
                 };
                 res.json(graph);
