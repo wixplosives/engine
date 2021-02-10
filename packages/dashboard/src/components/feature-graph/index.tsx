@@ -44,7 +44,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .attr('width', diameter)
             .attr('height', diameter)
             .append('g')
-            .attr('transform', 'translate(' + radius + ',' + radius + ')');
+            .attr('transform', `translate(${radius},${radius})`);
 
         const { rootNode, idToNode } = featureHierarchy(selectedFeatureGraph.nodes);
         const tree = graphCluster(hierarchy<GraphNode>(rootNode));
@@ -56,10 +56,10 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             target: idToNode[e.target],
         }));
         const paths = graphLinks.map(function (l) {
-            var source = leaves.filter(function (d) {
+            const source = leaves.filter(function (d) {
                 return d.data === l.source;
             })[0];
-            var target = leaves.filter(function (d) {
+            const target = leaves.filter(function (d) {
                 return d.data === l.target;
             })[0];
             return source.path(target);
@@ -94,7 +94,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .append('g')
             .attr('class', 'node')
             .attr('transform', function (d) {
-                return 'translate(' + xAccessor(d) + ',' + yAccessor(d) + ')';
+                return `translate(${xAccessor(d)},${yAccessor(d)})`;
             })
             .on('mouseover', function (d) {
                 node.style('fill', null);
@@ -139,7 +139,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
                 return d.x < 180 ? 'start' : 'end';
             })
             .attr('transform', function (d) {
-                return 'rotate(' + (d.x < 180 ? d.x - 90 : d.x + 90) + ')';
+                return `rotate(${d.x < 180 ? d.x - 90 : d.x + 90})`;
             })
             .text(function (d) {
                 return `${d.data.group} - ${d.data.name}`;

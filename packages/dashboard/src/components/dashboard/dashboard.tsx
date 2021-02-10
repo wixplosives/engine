@@ -128,7 +128,7 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
                     <div>Loading graph data</div>
                 )
             ) : (
-                <div>Select a feature to view it's dependency graph</div>
+                <div>Select a feature to view its dependency graph</div>
             )}
         </div>
     );
