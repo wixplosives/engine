@@ -12,7 +12,7 @@ export type Nodes = Record<string, { name: string; group: number }>;
 export const buildFeatureLinks = (entry: Feature) => {
     const nodes: Nodes = {};
     const links = buildFeatureLinksHelper(entry, nodes, 0);
-    return { nodes, links };
+    return { nodes: Object.values(nodes), links };
 };
 
 const buildFeatureLinksHelper = (entry: Feature, visitedFeatures: Nodes, level: number) => {
