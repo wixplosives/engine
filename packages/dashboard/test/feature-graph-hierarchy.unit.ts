@@ -23,7 +23,7 @@ describe('translateNodeToHierarchy', () => {
         const root = translateNodeToHierarchy(nodes);
 
         // This mock root is to simulate the circular dependency needed for the parent key in each child
-        const expectedRoot: { children: any; name: 'root'; group: 0 } = {
+        const expectedRoot: { children: Array<GraphNode>; name: 'root'; group: 0 } = {
             children: [],
             name: 'root',
             group: 0,
