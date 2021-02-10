@@ -8761,10 +8761,10 @@ typescript-type-utils@^0.1.0:
   resolved "https://registry.yarnpkg.com/typescript-type-utils/-/typescript-type-utils-0.1.0.tgz#8ea40e5ceb41297184d36a2ef928932ad0f1e407"
   integrity sha512-UXvYaUWfkUuTf287zYi+AE9pRkdHVcDHXk1N02a/ZmonLH2xpJL8EGzNozT/HNkAF+POlR6Lcx1wgg0ljMLcrw==
 
-typescript@~4.1.3:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.1.3.tgz#519d582bd94cba0cf8934c7d8e8467e473f53bb7"
-  integrity sha512-B3ZIOf1IKeH2ixgHhj6la6xdwR9QrLC5d1VKeCSY4tvkqhF2eqd9O7txNlS0PO3GrBAFIdr3L1ndNwteUbZLYg==
+typescript@~4.1.4:
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.1.4.tgz#f058636e2f4f83f94ddaae07b20fd5e14598432f"
+  integrity sha512-+Uru0t8qIRgjuCpiSPpfGuhHecMllk5Zsazj5LZvVsEStEjmIRRBZe+jHjGQvsgS7M1wONy2PQXd67EMyV6acg==
 
 uglify-js@^3.1.4:
   version "3.12.7"
