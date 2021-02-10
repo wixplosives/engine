@@ -15,7 +15,7 @@ export const buildFeatureLinks = (entry: Feature) => {
     return { nodes: Object.values(nodes), links };
 };
 
-const buildFeatureLinksHelper = (entry: Feature, visitedFeatures: Nodes, level: number) => {
+const buildFeatureLinksHelper = (entry: Feature<string, Array<Feature>>, visitedFeatures: Nodes, level: number) => {
     const featureLinks: Array<{
         source: string;
         target: string;
