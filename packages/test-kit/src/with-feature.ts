@@ -1,13 +1,12 @@
 import { createDisposables, TopLevelConfig } from '@wixc3/engine-core';
 import isCI from 'is-ci';
-import puppeteer from 'puppeteer';
+import playwright from 'playwright-core';
+import type { PerformanceMetrics } from '@wixc3/engine-scripts';
 import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
 import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
-import type { PerformanceMetrics } from '@wixc3/engine-scripts';
 
-const [execDriverLetter] = process.argv0;
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
 export interface IFeatureExecutionOptions {
@@ -62,30 +61,27 @@ export interface IFeatureExecutionOptions {
      */
     config?: TopLevelConfig;
 
-    /** Passed down to `page.setViewport()` right after page creation. */
-    defaultViewport?: puppeteer.Viewport;
+    /** Passed down to `browser.newContext()` */
+    browserContextOptions?: playwright.BrowserContextOptions;
 }
 
-export interface IWithFeatureOptions extends IFeatureExecutionOptions, puppeteer.LaunchOptions {
+export interface IWithFeatureOptions extends IFeatureExecutionOptions, playwright.LaunchOptions {
     /**
      * If we want to test the engine against a running application, proveide the port of the application.
      * It can be extracted from the log printed after 'engineer start' or 'engine run'
      */
     runningApplicationPort?: number;
 
-    /** Passed down to `page.setViewport()` right after page creation. */
-    defaultViewport?: puppeteer.Viewport;
-
     /** Specify directory where features will be looked up within the package */
     featureDiscoveryRoot?: string;
 }
 
-let browser: puppeteer.Browser | undefined = undefined;
+let browser: playwright.Browser | undefined = undefined;
 let featureUrl = '';
 let executableApp: IExecutableApplication;
 
 if (typeof after !== 'undefined') {
-    after('close puppeteer browser, if open', async () => {
+    after('close browser, if open', async () => {
         if (browser && browser.isConnected) {
             await browser.close();
         }
@@ -107,7 +103,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         headless,
         devtools,
         slowMo,
-        defaultViewport: suiteDefaultViewport,
+        browserContextOptions: suiteBrowserContextOptions,
         featureName: suiteFeatureName,
         configName: suiteConfigName,
         runOptions: suiteOptions = {},
@@ -136,14 +132,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         ? new AttachedApp(resolvedPort)
         : new DetachedApp(cliEntry, process.cwd(), featureDiscoveryRoot);
 
-    before('launch puppeteer', async function () {
+    before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            // to allow parallel testing, we set the viewport size via page.setViewport()
-            browser = await puppeteer.launch({
-                ...withFeatureOptions,
-                defaultViewport: undefined,
-            });
+            browser = await playwright.chromium.launch(withFeatureOptions);
         }
     });
 
@@ -157,14 +149,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     afterEach(disposeAfterEach.dispose);
 
-    const pages = new Set<puppeteer.Page>();
+    const browserContexts = new Set<playwright.BrowserContext>();
     afterEach('close pages', async () => {
-        for (const page of pages) {
-            if (!page.isClosed()) {
-                await page.close();
-            }
+        for (const browserContext of browserContexts) {
+            await browserContext.close();
         }
-        pages.clear();
+        browserContexts.clear();
     });
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
@@ -182,9 +172,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 runOptions = suiteOptions,
                 queryParams = suiteQueryParams,
                 config = suiteConfig,
-                defaultViewport = suiteDefaultViewport,
+                browserContextOptions = suiteBrowserContextOptions,
             }: IFeatureExecutionOptions = {},
-            navigationOptions?: puppeteer.DirectNavigationOptions
+            navigationOptions?: Parameters<playwright.Page['goto']>[1]
         ) {
             if (!browser) {
                 throw new Error('Browser is not open!');
@@ -213,31 +203,24 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams,
             });
 
-            const featurePage = await browser.newPage();
+            const browserContext = await browser.newContext(browserContextOptions);
+            browserContexts.add(browserContext);
+            const featurePage = await browserContext.newPage();
             trackPage(featurePage);
 
-            if (defaultViewport) {
-                await featurePage.setViewport(defaultViewport);
-            }
-
-            function trackPage(page: puppeteer.Page) {
-                pages.add(page);
-
+            function trackPage(page: playwright.Page) {
+                hookPageConsole(page, isNonReactDevMessage);
+                page.setDefaultNavigationTimeout(30_000);
+                page.setDefaultTimeout(10_000);
                 page.on('pageerror', (e) => {
                     capturedErrors.push(e);
                     console.error(e);
                 });
-
-                // Emitted when the page opens a new tab or window
                 page.on('popup', trackPage);
-                hookPageConsole(page);
-
-                page.setDefaultNavigationTimeout(30_000);
-                page.setDefaultTimeout(10_000);
             }
 
             const response = await featurePage.goto(featureUrl + search, {
-                waitUntil: 'networkidle0',
+                waitUntil: 'networkidle',
                 ...navigationOptions,
             });
 
@@ -284,15 +267,6 @@ function toSearchQuery({ featureName, configName, queryParams }: IWithFeatureOpt
     return queryStr;
 }
 
-/**
- * Ensures the drive letter has correct casing, as webpack fails to use
- * canonical path (to lower-case on Windows) causing duplicate modules (in certain
- * win32 node executions; e.g. vscode debugger).
- */
-export function correctWin32DriveLetter(absolutePath: string): string {
-    const [driveLetter, secondChar] = absolutePath;
-    if (secondChar === ':' && driveLetter !== execDriverLetter && driveLetter === execDriverLetter.toLowerCase()) {
-        absolutePath = absolutePath[0].toUpperCase() + absolutePath.slice(1);
-    }
-    return absolutePath;
+function isNonReactDevMessage(type: string, [firstArg]: unknown[]) {
+    return type !== 'info' || typeof firstArg !== 'string' || !firstArg.startsWith('%cDownload the React DevTools');
 }

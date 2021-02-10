@@ -1,19 +1,20 @@
-import type puppeteer from 'puppeteer';
-import { deferred } from 'promise-assist';
-
-export const defaultIgnoredMessages = ['Download the React DevTools'];
-const isString = (value: unknown): value is string => typeof value === 'string';
+import type playwright from 'playwright-core';
+import { deferred } from '@wixc3/engine-core';
 
 /**
- * Hooks the console of a `puppeteer.Page` to Node's console,
+ * Hooks the console of a `playwright.Page` to Node's console,
  * printing anything from the page in Node.
  */
-export function hookPageConsole(page: puppeteer.Page, ignoredMessages = defaultIgnoredMessages): void {
+export function hookPageConsole(
+    page: playwright.Page,
+    filterMessage: (msgType: string, args: unknown[]) => boolean = () => true
+): void {
     let currentMessage: Promise<void> = Promise.resolve();
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     page.on('console', async (msg) => {
-        const consoleFn = messageTypeToConsoleFn[msg.type()];
+        const messageType = msg.type();
+        const consoleFn = messageTypeToConsoleFn[messageType];
         if (!consoleFn) {
             return;
         }
@@ -22,10 +23,9 @@ export function hookPageConsole(page: puppeteer.Page, ignoredMessages = defaultI
         const previousMessage = currentMessage;
         currentMessage = promise;
         try {
-            const msgArgs = await Promise.all(msg.args().map((arg) => extractErrorMessage(arg) || arg.jsonValue()));
+            const msgArgs = await Promise.all(msg.args().map((arg) => arg.jsonValue()));
             await previousMessage;
-            const joinedTextParts = msgArgs.filter(isString).join('');
-            if (!ignoredMessages.some((ignoredMessage) => joinedTextParts.includes(ignoredMessage))) {
+            if (filterMessage(messageType, msgArgs)) {
                 consoleFn.apply(console, msgArgs);
             }
         } catch (e) {
@@ -36,7 +36,8 @@ export function hookPageConsole(page: puppeteer.Page, ignoredMessages = defaultI
     });
 }
 
-const messageTypeToConsoleFn: { [key in puppeteer.ConsoleMessageType]?: ((...args: any[]) => void) | undefined } = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const messageTypeToConsoleFn: { [key: string]: (...args: any[]) => void } = {
     log: console.log,
     warning: console.warn,
     error: console.error,
@@ -58,11 +59,3 @@ const messageTypeToConsoleFn: { [key in puppeteer.ConsoleMessageType]?: ((...arg
     // we ignore calls to console.clear, as we don't want the page to clear our terminal
     // clear: console.clear
 };
-
-// workaround to get hidden description
-// jsonValue() on errors returns {}
-function extractErrorMessage(arg: unknown): string | undefined {
-    return (arg as { _remoteObject?: { subtype?: string } })?._remoteObject?.subtype === 'error'
-        ? (arg as { _remoteObject: { description?: string } })._remoteObject.description
-        : undefined;
-}

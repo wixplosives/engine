@@ -1,4 +1,4 @@
-import type puppeteer from 'puppeteer';
+import type playwright from 'playwright-core';
 import { startDevServer } from '@wixc3/engineer';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 
@@ -6,7 +6,7 @@ export interface StartServerNewProcessOptions {
     projectPath: string;
     featureName: string;
     runtimeOptions?: Record<string, string | boolean>;
-    launchOptions?: puppeteer.LaunchOptions;
+    launchOptions?: playwright.LaunchOptions;
 }
 
 export const startServerNewProcess = async ({

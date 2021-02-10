@@ -1,13 +1,13 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "16.11.0",
+  "version": "17.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build:umd": "node ./scripts/bundle",
     "test": "yarn test:node && yarn test:browser",
     "test:node": "mocha \"test/node/**/*.spec.ts?(x)\"",
-    "test:browser": "mocha-pup \"test/**/*.spec.ts?(x)\" -c ./test/webpack.config.js",
+    "test:browser": "mocha-play \"test/**/*.spec.ts?(x)\" -c ./test/webpack.config.js",
     "prepack": "yarn build:umd"
   },
   "dependencies": {

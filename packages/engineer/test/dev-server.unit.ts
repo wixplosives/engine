@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import type { Frame, Page } from 'puppeteer';
+import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
@@ -252,7 +252,7 @@ describe('engineer:dev-server', function () {
             async () => {
                 // reload the page (to see if the config file was changed, without re-running the application)
                 await page.reload({
-                    waitUntil: 'networkidle2',
+                    waitUntil: 'networkidle',
                 });
                 expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
             },
