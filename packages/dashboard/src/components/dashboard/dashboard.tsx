@@ -73,14 +73,15 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
     }, [fetchServerState]);
 
     const selectedFeatureConfig = useCallback(
-        (featureName?: string, configName?: string) => {
+        async (featureName?: string, configName?: string) => {
             setSelectedFeatureGraph(null);
             if (!featureName) {
                 setRuntimeArguments([{ key: '', value: '' }]);
             }
             setSelectedFeature({ ...selectedFeature, featureName, configName });
             if (featureName) {
-                void fetchGraphData(featureName).then(setSelectedFeatureGraph);
+                const graphData = await fetchGraphData(featureName);
+                setSelectedFeatureGraph(graphData);
             }
         },
         [setSelectedFeature, selectedFeature, fetchGraphData]
@@ -125,7 +126,7 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
                 selectedFeatureGraph ? (
                     <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
                 ) : (
-                    <div>Loading graph data</div>
+                    <div>Loading graph data...</div>
                 )
             ) : (
                 <div>Select a feature to view its dependency graph</div>
