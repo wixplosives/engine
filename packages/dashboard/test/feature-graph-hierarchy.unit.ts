@@ -21,10 +21,35 @@ describe('translateNodeToHierarchy', () => {
             { name: 'd', group: 3 },
         ];
         const root = translateNodeToHierarchy(nodes);
-        expect(root.children).to.eql([
-            getGroupNodes(nodes, 1, root),
-            getGroupNodes(nodes, 2, root),
-            getGroupNodes(nodes, 3, root),
-        ]);
+
+        // This mock root is to simulate the circular dependency needed for the parent key in each child
+        const expectedRoot: { children: any; name: 'root'; group: 0 } = {
+            children: [],
+            name: 'root',
+            group: 0,
+        };
+        expectedRoot.children.push(
+            ...[
+                {
+                    name: '1',
+                    group: 1,
+                    children: [nodes[0]],
+                    parent: expectedRoot,
+                },
+                {
+                    name: '2',
+                    group: 2,
+                    children: [nodes[1], nodes[2]],
+                    parent: expectedRoot,
+                },
+                {
+                    name: '3'.toString(),
+                    group: 3,
+                    children: [nodes[3]],
+                    parent: expectedRoot,
+                },
+            ]
+        );
+        expect(root.children).to.eql(expectedRoot.children);
     });
 });
