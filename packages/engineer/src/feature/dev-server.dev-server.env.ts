@@ -20,6 +20,7 @@ import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
+import { buildFeatureLinks } from '../feature-dependency-graph';
 
 function singleRunWatchFunction(compiler: webpack.Compiler) {
     // This custom watch optimization only compiles once, but allows us to use webpack dev server
@@ -176,6 +177,16 @@ devServerFeature.setup(
                 createConfigMiddleware(overrideConfig),
             ]);
 
+            app.get('/feature-graph', (req, res) => {
+                const featureName = req.query['feature-name'] as string;
+                const { links, nodes } = buildFeatureLinks(features.get(featureName)!.exportedFeature);
+
+                const graph = {
+                    nodes,
+                    links,
+                };
+                res.json(graph);
+            });
             // Write middleware for each of the apps
             const compiler = application.createCompiler({
                 ...devServerConfig,

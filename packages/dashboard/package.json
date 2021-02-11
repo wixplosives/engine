@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build:stylable": "stc --srcDir=\"src\" --outDir=\"dist\" --stcss --no-cjs --diagnostics"
+    "build:stylable": "stc --srcDir=\"src\" --outDir=\"dist\" --stcss --no-cjs --diagnostics",
+    "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "peerDependencies": {
     "react": ">=16"
@@ -13,7 +14,8 @@
   "dependencies": {
     "@stylable/runtime": "^3.11.14",
     "@wixc3/engine-core": "^17.0.0",
-    "@wixc3/engine-scripts": "^17.0.0"
+    "@wixc3/engine-scripts": "^17.0.0",
+    "d3": "5.16.0"
   },
   "files": [
     "dist",
