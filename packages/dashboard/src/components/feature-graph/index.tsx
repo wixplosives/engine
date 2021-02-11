@@ -49,7 +49,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .append('path')
             .attr('class', classes.link)
             .attr('d', graphLine)
-            .on('mouseover', function (linkedNodes) {
+            .on('mouseover', function (_, linkedNodes) {
                 link.style('stroke', null).style('stroke-opacity', null);
                 select(this).style('stroke', '#d62333').style('stroke-opacity', 1);
                 node.selectAll('circle').style('fill', null);
@@ -74,7 +74,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .attr('transform', function (graphNode) {
                 return `translate(${xAccessor(graphNode)},${yAccessor(graphNode)})`;
             })
-            .on('mouseover', function (graphNode) {
+            .on('mouseover', function (_, graphNode) {
                 node.style('fill', null);
                 select(this).selectAll('circle').style('fill', 'black');
                 const nodesToHighlight = paths
