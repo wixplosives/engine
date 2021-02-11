@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
-import { cluster, line, curveBundle, select, hierarchy, HierarchyPointNode } from 'd3';
+import { hierarchy, cluster, HierarchyPointNode } from 'd3-hierarchy';
+import { line, curveBundle } from 'd3-shape';
+import { select } from 'd3-selection';
 import { classes } from './styles.st.css';
 import { translateNodeToHierarchy, xAccessor, yAccessor } from './utils';
 import type { GraphNode, Node, IFeatureGraphProps } from '../../graph-types';
