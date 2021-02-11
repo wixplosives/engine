@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engineer",
-  "version": "17.0.0",
+  "version": "17.1.0",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
     "@wixc3/cross-performance": "^17.0.0",
     "@wixc3/engine-core": "^17.0.0",
     "@wixc3/engine-core-node": "^17.0.0",
-    "@wixc3/engine-dashboard": "^17.0.0",
+    "@wixc3/engine-dashboard": "^17.1.0",
     "@wixc3/engine-scripts": "^17.0.0",
     "commander": "^7.0.0",
     "open": "^7.4.0",
