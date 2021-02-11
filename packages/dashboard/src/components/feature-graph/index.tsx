@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
-import { cluster, line, curveBundle, select, hierarchy, HierarchyPointNode } from 'd3';
+import { hierarchy, cluster, HierarchyPointNode } from 'd3-hierarchy';
+import { line, curveBundle } from 'd3-shape';
+import { select } from 'd3-selection';
 import { classes } from './styles.st.css';
 import { translateNodeToHierarchy, xAccessor, yAccessor } from './utils';
 import type { GraphNode, Node, IFeatureGraphProps } from '../../graph-types';
@@ -72,7 +74,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .attr('transform', function (graphNode) {
                 return `translate(${xAccessor(graphNode)},${yAccessor(graphNode)})`;
             })
-            .on('mouseover', function (graphNode) {
+            .on('mouseover', function (_e, graphNode) {
                 node.style('fill', null);
                 select(this).selectAll('circle').style('fill', 'black');
                 const nodesToHighlight = paths
