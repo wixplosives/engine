@@ -68,7 +68,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .data(leaves)
             .enter()
             .append('g')
-            .attr('class', 'node')
+            .attr('class', classes.node)
             .attr('transform', function (graphNode) {
                 return `translate(${xAccessor(graphNode)},${yAccessor(graphNode)})`;
             })
