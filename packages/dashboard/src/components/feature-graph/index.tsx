@@ -47,7 +47,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .append('path')
             .attr('class', classes.link)
             .attr('d', graphLine)
-            .on('mouseover', function (linkedNodes) {
+            .on('mouseover', function (_e, linkedNodes) {
                 link.style('stroke', null).style('stroke-opacity', null);
                 select(this).style('stroke', '#d62333').style('stroke-opacity', 1);
                 node.selectAll('circle').style('fill', null);
