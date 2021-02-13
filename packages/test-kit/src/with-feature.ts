@@ -205,19 +205,17 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const browserContext = await browser.newContext(browserContextOptions);
             browserContexts.add(browserContext);
-            const featurePage = await browserContext.newPage();
-            trackPage(featurePage);
-
-            function trackPage(page: playwright.Page) {
-                hookPageConsole(page, isNonReactDevMessage);
+            browserContext.on('page', (page) => {
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
                 page.on('pageerror', (e) => {
                     capturedErrors.push(e);
                     console.error(e);
                 });
-                page.on('popup', trackPage);
-            }
+                hookPageConsole(page, isNonReactDevMessage);
+            });
+
+            const featurePage = await browserContext.newPage();
 
             const response = await featurePage.goto(featureUrl + search, {
                 waitUntil: 'networkidle',
