@@ -351,6 +351,7 @@ export class Application {
                 configurations,
                 externalFeatures,
             },
+            this.basePath,
             { ...socketServerOptions, ...configSocketServerOptions }
         );
 

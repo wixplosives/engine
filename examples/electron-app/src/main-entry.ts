@@ -34,6 +34,7 @@ export default function runEnv() {
         name: 'main',
         type: 'electron-renderer',
         host: new ElectronClientHost(ipcRenderer),
+        context: basePath,
     });
 }
 

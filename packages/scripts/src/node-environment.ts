@@ -7,6 +7,8 @@ import {
     FeatureLoadersRegistry,
     IPreloadModule,
 } from '@wixc3/engine-core';
+import appModulePath from 'app-module-path';
+import { dirname } from 'path';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
@@ -20,6 +22,7 @@ export async function runNodeEnvironment({
     options,
     host,
     externalFeatures = [],
+    context,
 }: StartEnvironmentOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -59,9 +62,12 @@ export async function runNodeEnvironment({
 
     for (const { name: externalFeatureName, envEntries } of externalFeatures) {
         if (envEntries[name] && envEntries[name]['node']) {
+            appModulePath.addPath(context);
+            appModulePath.enableForDir(dirname(envEntries[name]['node']));
             const externalFeatureLoaders = (await import(envEntries[name]['node'])) as {
                 [featureName: string]: IFeatureLoader;
             };
+            appModulePath.removePath(context);
 
             for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
                 featureLoader.register(name, loader);

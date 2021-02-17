@@ -401,7 +401,7 @@ function loadExternalFeatures(
     ${addExternalsEventListenerForParentEnvironments()}
     
     ${
-        fetchFeatures
+        fetchFeatures || target === 'electron-renderer'
             ? `const fetchedExternalFeatures = ${
                   target === 'electron-renderer'
                       ? fetchFeaturesFromElectronProcess('/external')

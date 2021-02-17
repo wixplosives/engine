@@ -69,6 +69,7 @@ export class NodeEnvironmentsManager {
     constructor(
         private socketServer: io.Server,
         private options: INodeEnvironmentsManagerOptions,
+        private context: string,
         private socketServerOptions?: Partial<io.ServerOptions>
     ) {}
 
@@ -217,6 +218,7 @@ export class NodeEnvironmentsManager {
             options: Object.entries(options),
             inspect,
             externalFeatures,
+            context: this.context,
         };
 
         if (inspect || mode === 'forked') {
