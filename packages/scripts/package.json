@@ -7,7 +7,8 @@
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "peerDependencies": {
-    "webpack": "^4.0.0"
+    "html-webpack-plugin": "^4.0.0 || ^5.0.0",
+    "webpack": "^4.0.0 || ^5.0.0"
   },
   "dependencies": {
     "@file-services/node": "^5.3.0",
@@ -20,7 +21,6 @@
     "create-listening-server": "^1.0.0",
     "express": "^4.17.1",
     "glob": "^7.1.6",
-    "html-webpack-plugin": "^4.5.1",
     "import-fresh": "^3.3.0",
     "rimraf": "^3.0.2",
     "socket.io": "^3.1.1",
