@@ -78,7 +78,6 @@ export interface IRunCommandOptions extends IRunApplicationOptions {
     serveExternalFeaturesPath?: boolean;
     externalFeaturesPath?: string;
     externalFeatureDefinitions?: IExternalDefinition[];
-    resolveLocalNodePaths?: boolean;
 }
 
 export interface IBuildManifest {
