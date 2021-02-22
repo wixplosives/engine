@@ -131,7 +131,7 @@ export function buildCommand(program: typeof commander) {
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
         .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
         .option(
-            '--libOutDir --featureOutDir <featureOutDir>',
+            '--featureOutDir <featureOutDir>',
             'the directory where the feature library will be published at (relative to the base path). default: "."'
         )
         .option(

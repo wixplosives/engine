@@ -68,11 +68,9 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     staticBuild?: boolean;
     withExternalFeatures?: boolean;
     fetchExternalFeatures?: boolean;
-    /**@deprecated use libOutDir*/
     featureOutDir?: string;
     externalFeaturesPath?: string;
     eagerEntrypoint?: boolean;
-    libOutDir?: string;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -158,14 +156,13 @@ export class Application {
         featureOutDir,
         externalFeaturesPath,
         eagerEntrypoint,
-        libOutDir = featureOutDir,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
             require,
             externalFeatureDefinitions,
             externalFeaturesPath: configExternalFeaturesPath,
-            libOutDir: configFeatureLibDir = config?.featureOutDir,
+            featureOutDir: configFeatureOutDir,
         } = config ?? {};
         if (require) {
             await this.importModules(require);
@@ -232,10 +229,9 @@ export class Application {
             })
         );
 
-        // in order to properly resolve the user's node environments code, we need the user to tell us the built output will be located (libOutDir).
-        const providedOutDir = libOutDir || configFeatureLibDir || '.';
         if (external) {
-            // The node entry, on the other hand is created inside the outDir, and requires the mentioned feature file (as well as environment files)
+            const providedOutDir = featureOutDir || configFeatureOutDir || '.';
+            // The node entry is created inside the outDir, and requires the mentioned feature file (as well as environment files)
             // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
             const relativeFeatureOutDir =
                 // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
