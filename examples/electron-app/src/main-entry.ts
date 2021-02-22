@@ -8,7 +8,7 @@ import { IpcRenderer, ipcRenderer } from 'electron';
 
 const basePath = resolve('../');
 const packages = resolvePackages(basePath);
-const { features } = loadFeaturesFromPackages(packages, fs);
+const { features } = loadFeaturesFromPackages(packages, fs, basePath);
 
 class ElectronClientHost extends BaseHost {
     constructor(private host: IpcRenderer) {
@@ -34,6 +34,7 @@ export default function runEnv() {
         name: 'main',
         type: 'electron-renderer',
         host: new ElectronClientHost(ipcRenderer),
+        context: basePath,
     });
 }
 

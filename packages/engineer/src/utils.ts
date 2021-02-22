@@ -85,7 +85,7 @@ export async function startDevServer({
     });
     preRequire([...pathsToRequire, ...(require ?? [])], basePath);
 
-    const { features } = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs);
+    const { features } = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs, basePath);
 
     const resolvedExternalFeaturesPath = fs.resolve(
         externalFeaturesPath ?? (configExternalPath ? fs.dirname(engineConfigPath!) : basePath)
@@ -134,6 +134,7 @@ export async function startDevServer({
                 },
             }),
         ],
+        context: fs.join(__dirname, '..'),
         externalFeatures,
     });
     return {

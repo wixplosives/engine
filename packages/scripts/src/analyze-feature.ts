@@ -32,29 +32,43 @@ interface IPackageDescriptor {
 
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
-function getFilePathInPackage(fs: IFileSystemSync, featurePackage: IPackageDescriptor, filePath: string) {
-    const relativeFilePath = fs.relative(featurePackage.directoryPath, filePath);
-    return fs
-        .join(
-            featurePackage.name,
-            fs.dirname(relativeFilePath),
-            fs.basename(relativeFilePath, fs.extname(relativeFilePath))
-        )
+function getFilePathInPackage(
+    fs: IFileSystemSync,
+    packageName: string,
+    context: string,
+    filePath: string,
+    isRoot: boolean
+) {
+    const relativeFilePath = fs.relative(context, filePath);
+    const relativeRequest = fs
+        .join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath, fs.extname(relativeFilePath)))
         .replace(/\\/g, '/');
+    return isRoot
+        ? relativeRequest.startsWith('.')
+            ? relativeRequest
+            : './' + relativeRequest
+        : fs.posix.join(packageName, relativeRequest);
 }
 
 function scopeFilePathsToPackage(
     fs: IFileSystemSync,
-    featurePackage: IPackageDescriptor,
-    envFiles: Record<string, string>
+    packageName: string,
+    context: string,
+    envFiles: Record<string, string>,
+    isRoot: boolean
 ) {
     return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
-        acc[envName] = getFilePathInPackage(fs, featurePackage, filePath);
+        acc[envName] = getFilePathInPackage(fs, packageName, context, filePath, isRoot);
         return acc;
     }, {});
 }
 
-export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, rootOwnFeaturesDir = '.') {
+export function loadFeaturesFromPackages(
+    npmPackages: INpmPackage[],
+    fs: IFileSystemSync,
+    context: string,
+    rootOwnFeaturesDir = '.'
+) {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
 
@@ -86,13 +100,14 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
             }
         }
     }
-    return loadFeaturesFromPaths(ownFeatureFilePaths, ownFeatureDirectoryPaths, fs);
+    return loadFeaturesFromPaths(ownFeatureFilePaths, ownFeatureDirectoryPaths, fs, context);
 }
 
 export function loadFeaturesFromPaths(
     ownFeatureFilePaths: Set<string>,
     ownFeatureDirectoryPaths: Set<string>,
-    fs: IFileSystemSync
+    fs: IFileSystemSync,
+    context: string
 ) {
     const foundFeatureFilePaths = new Set<string>(ownFeatureFilePaths);
     // find all require()'ed feature files from initial ones
@@ -176,11 +191,35 @@ export function loadFeaturesFromPaths(
                 filePath: featureFilePath,
                 toJSON(this: IFeatureDefinition) {
                     return {
-                        contextFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.contextFilePaths),
+                        contextFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            this.packageName,
+                            this.isRoot ? context : this.directoryPath,
+                            this.contextFilePaths,
+                            this.isRoot
+                        ),
                         dependencies: this.dependencies,
-                        filePath: getFilePathInPackage(fs, featurePackage, this.filePath),
-                        envFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.envFilePaths),
-                        preloadFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preloadFilePaths),
+                        filePath: getFilePathInPackage(
+                            fs,
+                            this.packageName,
+                            this.isRoot ? context : this.directoryPath,
+                            this.filePath,
+                            this.isRoot
+                        ),
+                        envFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            this.packageName,
+                            this.isRoot ? context : this.directoryPath,
+                            this.envFilePaths,
+                            this.isRoot
+                        ),
+                        preloadFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            this.packageName,
+                            this.isRoot ? context : this.directoryPath,
+                            this.preloadFilePaths,
+                            this.isRoot
+                        ),
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         packageName: this.packageName,

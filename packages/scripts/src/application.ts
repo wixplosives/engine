@@ -38,7 +38,6 @@ import { launchHttpServer } from './launch-http-server';
 import { getExternalFeaturesMetadata } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
-import type { PackageJson } from 'type-fest';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -88,7 +87,6 @@ export interface IBuildManifest {
     defaultFeatureName?: string;
     defaultConfigName?: string;
     entryPoints: Record<string, Record<string, string>>;
-    libOutDir: string;
 }
 
 export interface ICreateOptions {
@@ -255,7 +253,6 @@ export class Application {
             featureName,
             configName,
             entryPoints,
-            libOutDir: providedOutDir,
         });
 
         return stats;
@@ -264,7 +261,7 @@ export class Application {
     public async run(runOptions: IRunCommandOptions = {}) {
         const manifest = (await fs.promises.readJsonFile(join(this.outputPath, 'manifest.json'))) as IBuildManifest;
 
-        const { defaultConfigName, defaultFeatureName, libOutDir } = manifest;
+        const { defaultConfigName, defaultFeatureName } = manifest;
 
         const {
             configName = defaultConfigName,
@@ -281,11 +278,10 @@ export class Application {
             serveExternalFeaturesPath: providedServeExternalFeaturesPath = true,
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
             socketServerOptions: runtimeSocketServerOptions,
-            resolveLocalNodePaths = false,
         } = runOptions;
         const { config: engineConfig, path: configPath } = await this.getEngineConfig();
 
-        const providedFeatures = new Map(manifest.features);
+        const features = new Map(manifest.features);
 
         const disposables = createDisposables();
         const configurations = await this.readConfigs();
@@ -350,18 +346,6 @@ export class Application {
             resolvedExternalFeaturesPath
         );
 
-        const packageJsonPath = await fs.promises.findClosestFile(this.outputPath, 'package.json');
-
-        const features =
-            resolveLocalNodePaths && packageJsonPath
-                ? this.normalizeFeatures(
-                      providedFeatures,
-                      (await fs.promises.readJsonFile(packageJsonPath)) as PackageJson,
-                      fs.dirname(packageJsonPath),
-                      libOutDir
-                  )
-                : providedFeatures;
-
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
@@ -373,6 +357,7 @@ export class Application {
                 configurations,
                 externalFeatures,
             },
+            this.outputPath,
             { ...socketServerOptions, ...configSocketServerOptions }
         );
 
@@ -403,34 +388,6 @@ export class Application {
             nodeEnvironmentManager,
             close: disposables.dispose,
         };
-    }
-
-    protected normalizeFeatures(
-        features: Map<string, IFeatureDefinition>,
-        packageJson: PackageJson,
-        basePath: string,
-        libOutDir: string
-    ): Map<string, IFeatureDefinition> {
-        for (const feature of features.values()) {
-            if (feature.packageName === packageJson.name) {
-                const getAbsFilePathFromRequest = (path: string) =>
-                    require.resolve(path.replace(packageJson.name!, '.'), { paths: [fs.join(basePath, libOutDir)] });
-                if (feature) {
-                    feature.filePath = getAbsFilePathFromRequest(feature.filePath);
-                    for (const [envName, envFile] of Object.entries(feature.envFilePaths)) {
-                        feature.envFilePaths[envName] = getAbsFilePathFromRequest(envFile);
-                    }
-                    for (const [envName, preloadFile] of Object.entries(feature.preloadFilePaths)) {
-                        feature.preloadFilePaths[envName] = getAbsFilePathFromRequest(preloadFile);
-                    }
-                    for (const [envName, contextFile] of Object.entries(feature.contextFilePaths)) {
-                        feature.contextFilePaths[envName] = getAbsFilePathFromRequest(contextFile);
-                    }
-                }
-            }
-        }
-
-        return features;
     }
 
     protected normilizeDefinitionsPackagePath(
@@ -567,20 +524,17 @@ export class Application {
         featureName,
         configName,
         entryPoints,
-        libOutDir,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
         entryPoints: Record<string, Record<string, string>>;
-        libOutDir: string;
     }) {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
             entryPoints,
-            libOutDir,
         };
 
         await fs.promises.ensureDirectory(this.outputPath);
@@ -644,7 +598,7 @@ export class Application {
 
         console.time(`Analyzing Features`);
         const packages = resolvePackages(basePath);
-        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
+        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, this.outputPath, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features');
         return { ...featuresAndConfigs, packages };
     }

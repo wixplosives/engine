@@ -6,7 +6,7 @@ import { resolvePackages, loadFeaturesFromPackages, runIPCEnvironment } from '@w
 
 const basePath = resolve('../');
 const packages = resolvePackages(basePath);
-const { features } = loadFeaturesFromPackages(packages, fs);
+const { features } = loadFeaturesFromPackages(packages, fs, basePath);
 
 export default function runEnv() {
     return runIPCEnvironment({
@@ -14,6 +14,7 @@ export default function runEnv() {
         features: [...features.entries()],
         name: 'server',
         type: 'node',
+        context: basePath,
     }).catch(console.error);
 }
 

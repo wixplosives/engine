@@ -146,6 +146,11 @@ export function buildCommand(program: typeof commander) {
             parseBoolean,
             true
         )
+        .option(
+            '--featureDiscoveryRoot <featureDiscoveryRoot>',
+            'package subdirectory where feature discovery starts',
+            '.'
+        )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
             const {
@@ -164,12 +169,13 @@ export function buildCommand(program: typeof commander) {
                 withExternalFeatures,
                 fetchExternalFeatures,
                 eagerEntrypoints,
+                featureDiscoveryRoot,
             } = cmd;
             try {
                 const basePath = resolve(path);
                 preRequire(pathsToRequire, basePath);
                 const outputPath = resolve(outDir);
-                const app = new Application({ basePath, outputPath });
+                const app = new Application({ basePath, outputPath, featureDiscoveryRoot });
                 const stats = await app.build({
                     featureName,
                     configName,

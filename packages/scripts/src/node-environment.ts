@@ -20,6 +20,7 @@ export async function runNodeEnvironment({
     options,
     host,
     externalFeatures = [],
+    context,
 }: StartEnvironmentOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -35,11 +36,15 @@ export async function runNodeEnvironment({
         );
     }
 
-    const featureLoaders = createFeatureLoaders(new Map(features), {
-        name,
-        childEnvName,
-        type,
-    });
+    const featureLoaders = createFeatureLoaders(
+        new Map(features),
+        {
+            name,
+            childEnvName,
+            type,
+        },
+        context
+    );
     const rootFeatureLoader = featureLoaders[featureName];
     if (!rootFeatureLoader) {
         throw new Error(
@@ -84,7 +89,8 @@ export async function runNodeEnvironment({
 
 export function createFeatureLoaders(
     features: Map<string, IFeatureDefinition>,
-    { name: envName, childEnvName }: IEnvironment
+    { name: envName, childEnvName }: IEnvironment,
+    context: string
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {
@@ -101,8 +107,11 @@ export function createFeatureLoaders(
                 const initFunctions = [];
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+
                     if (contextPreloadFilePath) {
-                        const preloadedContextModule = (await import(contextPreloadFilePath)) as IPreloadModule;
+                        const preloadedContextModule = (await import(
+                            require.resolve(contextPreloadFilePath, { paths: [context] })
+                        )) as IPreloadModule;
                         if (preloadedContextModule.init) {
                             initFunctions.push(preloadedContextModule.init);
                         }
@@ -110,7 +119,9 @@ export function createFeatureLoaders(
                 }
                 const preloadFilePath = preloadFilePaths[envName];
                 if (preloadFilePath) {
-                    const preloadedModule = (await import(preloadFilePath)) as IPreloadModule;
+                    const preloadedModule = (await import(
+                        require.resolve(preloadFilePath, { paths: [context] })
+                    )) as IPreloadModule;
                     if (preloadedModule.init) {
                         initFunctions.push(preloadedModule.init);
                     }
@@ -121,15 +132,16 @@ export function createFeatureLoaders(
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
                     if (contextFilePath) {
-                        await import(contextFilePath);
+                        await import(require.resolve(contextFilePath, { paths: [context] }));
                     }
                 }
 
                 const envFilePath = envFilePaths[envName];
                 if (envFilePath) {
-                    await import(envFilePath);
+                    await import(require.resolve(envFilePath, { paths: [context] }));
                 }
-                return ((await import(filePath)) as { default: Feature }).default;
+                return ((await import(require.resolve(filePath, { paths: [context] }))) as { default: Feature })
+                    .default;
             },
             depFeatures: dependencies,
             resolvedContexts,
