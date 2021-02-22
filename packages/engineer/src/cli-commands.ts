@@ -131,8 +131,8 @@ export function buildCommand(program: typeof commander) {
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
         .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
         .option(
-            '--featureOutDir <featureOutDir>',
-            'the directory where the published feature file is located (relative to the base path). default: "."'
+            '--libOutDir --featureOutDir <featureOutDir>',
+            'the directory where the feature library will be published at (relative to the base path). default: "."'
         )
         .option(
             '--withExternalFeatures [true|false]',
@@ -208,6 +208,10 @@ export function runCommand(program: typeof commander) {
             true
         )
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+        .option(
+            '--resolveLocalNodePaths <resolveLocalNodePaths>',
+            `resolve file paths when running current engine application. should provide this flag if the command is not running from a context where it's installed in node_modules. in that case it will resolve to {package_root}/{featureOutDir(defined during build)}`
+        )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
             const {
@@ -219,6 +223,7 @@ export function runCommand(program: typeof commander) {
                 publicPath,
                 autoLaunch,
                 publicConfigsRoute,
+                resolveLocalNodePaths,
             } = cmd;
             try {
                 const basePath = resolve(path);
@@ -233,6 +238,7 @@ export function runCommand(program: typeof commander) {
                     publicPath,
                     autoLaunch,
                     publicConfigsRoute,
+                    resolveLocalNodePaths,
                 });
                 console.log(`Listening:`);
                 console.log(`http://localhost:${port}/main.html`);

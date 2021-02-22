@@ -295,5 +295,7 @@ export interface EngineConfig {
     externalFeaturesPath?: string;
     serveExternalFeaturesPath?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
+    /**@deprecated */
     featureOutDir?: string;
+    libOutDir?: string;
 }

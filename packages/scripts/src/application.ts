@@ -38,6 +38,7 @@ import { launchHttpServer } from './launch-http-server';
 import { getExternalFeaturesMetadata } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+import type { PackageJson } from 'type-fest';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -68,15 +69,18 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     staticBuild?: boolean;
     withExternalFeatures?: boolean;
     fetchExternalFeatures?: boolean;
+    /**@deprecated use libOutDir*/
     featureOutDir?: string;
     externalFeaturesPath?: string;
     eagerEntrypoint?: boolean;
+    libOutDir?: string;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
     serveExternalFeaturesPath?: boolean;
     externalFeaturesPath?: string;
     externalFeatureDefinitions?: IExternalDefinition[];
+    resolveLocalNodePaths?: boolean;
 }
 
 export interface IBuildManifest {
@@ -84,6 +88,7 @@ export interface IBuildManifest {
     defaultFeatureName?: string;
     defaultConfigName?: string;
     entryPoints: Record<string, Record<string, string>>;
+    libOutDir: string;
 }
 
 export interface ICreateOptions {
@@ -155,13 +160,14 @@ export class Application {
         featureOutDir,
         externalFeaturesPath,
         eagerEntrypoint,
+        libOutDir = featureOutDir,
     }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
             require,
             externalFeatureDefinitions,
             externalFeaturesPath: configExternalFeaturesPath,
-            featureOutDir: configFeatureOutDir,
+            libOutDir: configFeatureLibDir = config?.featureOutDir,
         } = config ?? {};
         if (require) {
             await this.importModules(require);
@@ -228,14 +234,13 @@ export class Application {
             })
         );
 
+        // in order to understand where the target feature file is located, we need the user to tell us (featureOutDir).
+        // The node entry, on the other hand is created inside the outDir, and requires the mentioned feature file (as well as environment files)
+        // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
+        const providedOutDir = libOutDir || configFeatureLibDir || '.';
+        // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
+        const relativeFeatureOutDir = fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir)) || '.';
         if (external) {
-            // in order to understand where the target feature file is located, we need the user to tell us (featureOutDir).
-            // The node entry, on the other hand is created inside the outDir, and requires the mentioned feature file (as well as environment files)
-            // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
-            const providedOutDir = featureOutDir ?? configFeatureOutDir;
-            // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
-            const relativeFeatureOutDir =
-                fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir ?? '.')) || '.';
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
             this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeFeatureOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
@@ -249,15 +254,16 @@ export class Application {
             featureName,
             configName,
             entryPoints,
+            libOutDir: providedOutDir,
         });
 
         return stats;
     }
 
     public async run(runOptions: IRunCommandOptions = {}) {
-        const { features, defaultConfigName, defaultFeatureName } = (await fs.promises.readJsonFile(
-            join(this.outputPath, 'manifest.json')
-        )) as IBuildManifest;
+        const manifest = (await fs.promises.readJsonFile(join(this.outputPath, 'manifest.json'))) as IBuildManifest;
+
+        const { defaultConfigName, defaultFeatureName, libOutDir } = manifest;
 
         const {
             configName = defaultConfigName,
@@ -274,8 +280,11 @@ export class Application {
             serveExternalFeaturesPath: providedServeExternalFeaturesPath = true,
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
             socketServerOptions: runtimeSocketServerOptions,
+            resolveLocalNodePaths = false,
         } = runOptions;
         const { config: engineConfig, path: configPath } = await this.getEngineConfig();
+
+        const providedFeatures = new Map(manifest.features);
 
         const disposables = createDisposables();
         const configurations = await this.readConfigs();
@@ -340,10 +349,22 @@ export class Application {
             resolvedExternalFeaturesPath
         );
 
+        const packageJsonPath = await fs.promises.findClosestFile(this.outputPath, 'package.json');
+
+        const features =
+            resolveLocalNodePaths && packageJsonPath
+                ? this.normalizeFeatures(
+                      providedFeatures,
+                      (await fs.promises.readJsonFile(packageJsonPath)) as PackageJson,
+                      fs.dirname(packageJsonPath),
+                      libOutDir
+                  )
+                : providedFeatures;
+
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
-                features: new Map(features),
+                features,
                 port,
                 defaultRuntimeOptions,
                 inspect,
@@ -381,6 +402,34 @@ export class Application {
             nodeEnvironmentManager,
             close: disposables.dispose,
         };
+    }
+
+    protected normalizeFeatures(
+        features: Map<string, IFeatureDefinition>,
+        packageJson: PackageJson,
+        basePath: string,
+        libOutDir: string
+    ): Map<string, IFeatureDefinition> {
+        for (const feature of features.values()) {
+            if (feature.packageName === packageJson.name) {
+                const getAbsFilePathFromRequest = (path: string) =>
+                    require.resolve(path.replace(packageJson.name!, '.'), { paths: [fs.join(basePath, libOutDir)] });
+                if (feature) {
+                    feature.filePath = getAbsFilePathFromRequest(feature.filePath);
+                    for (const [envName, envFile] of Object.entries(feature.envFilePaths)) {
+                        feature.envFilePaths[envName] = getAbsFilePathFromRequest(envFile);
+                    }
+                    for (const [envName, preloadFile] of Object.entries(feature.preloadFilePaths)) {
+                        feature.preloadFilePaths[envName] = getAbsFilePathFromRequest(preloadFile);
+                    }
+                    for (const [envName, contextFile] of Object.entries(feature.contextFilePaths)) {
+                        feature.contextFilePaths[envName] = getAbsFilePathFromRequest(contextFile);
+                    }
+                }
+            }
+        }
+
+        return features;
     }
 
     protected normilizeDefinitionsPackagePath(
@@ -517,17 +566,20 @@ export class Application {
         featureName,
         configName,
         entryPoints,
+        libOutDir,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
         entryPoints: Record<string, Record<string, string>>;
+        libOutDir: string;
     }) {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
             entryPoints,
+            libOutDir,
         };
 
         await fs.promises.ensureDirectory(this.outputPath);
