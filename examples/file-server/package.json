@@ -8,8 +8,8 @@
     "test:unit": "mocha \"test/**/*.unit.ts\""
   },
   "dependencies": {
-    "@file-services/directory": "^5.3.0",
-    "@file-services/node": "^5.3.0"
+    "@file-services/directory": "^5.3.1",
+    "@file-services/node": "^5.3.1"
   },
   "license": "UNLICENSED",
   "private": true
