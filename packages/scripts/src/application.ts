@@ -259,19 +259,7 @@ export class Application {
 
         const { defaultConfigName, defaultFeatureName } = manifest;
 
-        const features = new Map<string, IFeatureDefinition>();
-        for (const [featureName, featureDef] of manifest.features) {
-            const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
-            const featureDefinition = { ...featureDef };
-            features.set(featureName, featureDefinition);
-            features.set(featureName, {
-                ...featureDef,
-                filePath: require.resolve(filePath, { paths: [this.outputPath] }),
-                envFilePaths: this.resolveManifestPaths(envFilePaths),
-                contextFilePaths: this.resolveManifestPaths(contextFilePaths),
-                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths),
-            });
-        }
+        const features = this.remapManifestFeaturePaths(manifest.features);
 
         const {
             configName = defaultConfigName,
@@ -395,6 +383,23 @@ export class Application {
             nodeEnvironmentManager,
             close: disposables.dispose,
         };
+    }
+
+    private remapManifestFeaturePaths(manifestFeatures: [string, IFeatureDefinition][]) {
+        const features = new Map<string, IFeatureDefinition>();
+        for (const [featureName, featureDef] of manifestFeatures) {
+            const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
+            const featureDefinition = { ...featureDef };
+            features.set(featureName, featureDefinition);
+            features.set(featureName, {
+                ...featureDef,
+                filePath: require.resolve(filePath, { paths: [this.outputPath] }),
+                envFilePaths: this.resolveManifestPaths(envFilePaths),
+                contextFilePaths: this.resolveManifestPaths(contextFilePaths),
+                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths),
+            });
+        }
+        return features;
     }
 
     private resolveManifestPaths(envFilePaths: Record<string, string>): Record<string, string> {
@@ -566,7 +571,6 @@ export class Application {
                 ]) => [
                     featureName,
                     {
-                        isRoot,
                         scopedName,
                         filePath: getFilePathInPackage(
                             fs,

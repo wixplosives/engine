@@ -163,7 +163,6 @@ export function loadFeaturesFromPaths(
                         resolvedContexts: this.resolvedContexts,
                         packageName: this.packageName,
                         scopedName,
-                        isRoot: this.isRoot,
                     };
                 },
             });
