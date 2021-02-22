@@ -8,7 +8,7 @@ import { IpcRenderer, ipcRenderer } from 'electron';
 
 const basePath = resolve('../');
 const packages = resolvePackages(basePath);
-const { features } = loadFeaturesFromPackages(packages, fs, basePath);
+const { features } = loadFeaturesFromPackages(packages, fs);
 
 class ElectronClientHost extends BaseHost {
     constructor(private host: IpcRenderer) {

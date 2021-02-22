@@ -6,7 +6,7 @@ import { resolvePackages, loadFeaturesFromPackages, runIPCEnvironment } from '@w
 
 const basePath = resolve('../');
 const packages = resolvePackages(basePath);
-const { features } = loadFeaturesFromPackages(packages, fs, basePath);
+const { features } = loadFeaturesFromPackages(packages, fs);
 
 export default function runEnv() {
     return runIPCEnvironment({
