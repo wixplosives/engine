@@ -234,13 +234,14 @@ export class Application {
             })
         );
 
-        // in order to understand where the target feature file is located, we need the user to tell us (featureOutDir).
-        // The node entry, on the other hand is created inside the outDir, and requires the mentioned feature file (as well as environment files)
-        // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
+        // in order to properly resolve the user's node environments code, we need the user to tell us the built output will be located (libOutDir).
         const providedOutDir = libOutDir || configFeatureLibDir || '.';
-        // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
-        const relativeFeatureOutDir = fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir)) || '.';
         if (external) {
+            // The node entry, on the other hand is created inside the outDir, and requires the mentioned feature file (as well as environment files)
+            // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
+            const relativeFeatureOutDir =
+                // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
+                fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir)) || '.';
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
             this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeFeatureOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
