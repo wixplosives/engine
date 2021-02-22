@@ -32,43 +32,7 @@ interface IPackageDescriptor {
 
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
-function getFilePathInPackage(
-    fs: IFileSystemSync,
-    packageName: string,
-    context: string,
-    filePath: string,
-    isRoot: boolean
-) {
-    const relativeFilePath = fs.relative(context, filePath);
-    const relativeRequest = fs
-        .join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath, fs.extname(relativeFilePath)))
-        .replace(/\\/g, '/');
-    return isRoot
-        ? relativeRequest.startsWith('.')
-            ? relativeRequest
-            : './' + relativeRequest
-        : fs.posix.join(packageName, relativeRequest);
-}
-
-function scopeFilePathsToPackage(
-    fs: IFileSystemSync,
-    packageName: string,
-    context: string,
-    envFiles: Record<string, string>,
-    isRoot: boolean
-) {
-    return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
-        acc[envName] = getFilePathInPackage(fs, packageName, context, filePath, isRoot);
-        return acc;
-    }, {});
-}
-
-export function loadFeaturesFromPackages(
-    npmPackages: INpmPackage[],
-    fs: IFileSystemSync,
-    context: string,
-    rootOwnFeaturesDir = '.'
-) {
+export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, rootOwnFeaturesDir = '.') {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
 
@@ -100,14 +64,13 @@ export function loadFeaturesFromPackages(
             }
         }
     }
-    return loadFeaturesFromPaths(ownFeatureFilePaths, ownFeatureDirectoryPaths, fs, context);
+    return loadFeaturesFromPaths(ownFeatureFilePaths, ownFeatureDirectoryPaths, fs);
 }
 
 export function loadFeaturesFromPaths(
     ownFeatureFilePaths: Set<string>,
     ownFeatureDirectoryPaths: Set<string>,
-    fs: IFileSystemSync,
-    context: string
+    fs: IFileSystemSync
 ) {
     const foundFeatureFilePaths = new Set<string>(ownFeatureFilePaths);
     // find all require()'ed feature files from initial ones
@@ -191,35 +154,11 @@ export function loadFeaturesFromPaths(
                 filePath: featureFilePath,
                 toJSON(this: IFeatureDefinition) {
                     return {
-                        contextFilePaths: scopeFilePathsToPackage(
-                            fs,
-                            this.packageName,
-                            this.isRoot ? context : this.directoryPath,
-                            this.contextFilePaths,
-                            this.isRoot
-                        ),
+                        contextFilePaths: this.contextFilePaths,
                         dependencies: this.dependencies,
-                        filePath: getFilePathInPackage(
-                            fs,
-                            this.packageName,
-                            this.isRoot ? context : this.directoryPath,
-                            this.filePath,
-                            this.isRoot
-                        ),
-                        envFilePaths: scopeFilePathsToPackage(
-                            fs,
-                            this.packageName,
-                            this.isRoot ? context : this.directoryPath,
-                            this.envFilePaths,
-                            this.isRoot
-                        ),
-                        preloadFilePaths: scopeFilePathsToPackage(
-                            fs,
-                            this.packageName,
-                            this.isRoot ? context : this.directoryPath,
-                            this.preloadFilePaths,
-                            this.isRoot
-                        ),
+                        filePath: this.filePath,
+                        envFilePaths: this.envFilePaths,
+                        preloadFilePaths: this.preloadFilePaths,
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         packageName: this.packageName,

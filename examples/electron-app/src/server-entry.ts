@@ -14,7 +14,6 @@ export default function runEnv() {
         features: [...features.entries()],
         name: 'server',
         type: 'node',
-        context: basePath,
     }).catch(console.error);
 }
 

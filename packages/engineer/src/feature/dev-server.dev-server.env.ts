@@ -137,7 +137,6 @@ devServerFeature.setup(
                         overrideConfig,
                         externalFeatures,
                     },
-                    application.outputPath,
                     resolvedSocketServerOptions
                 )
             );

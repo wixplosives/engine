@@ -90,7 +90,6 @@ export async function runEngineEnvironment({
         config,
         externalFeatures,
         options: Object.entries(runtimeOptions),
-        context: basePath,
     });
 }
 

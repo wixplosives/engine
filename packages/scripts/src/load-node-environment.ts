@@ -7,7 +7,7 @@ import { resolvePackages } from './utils/resolve-packages';
 export function readFeatures(fs: IFileSystem, basePath: string, featuresDirectory?: string) {
     const packages = resolvePackages(basePath);
 
-    return loadFeaturesFromPackages(packages, fs, basePath, featuresDirectory);
+    return loadFeaturesFromPackages(packages, fs, featuresDirectory);
 }
 
 export function evaluateConfig(

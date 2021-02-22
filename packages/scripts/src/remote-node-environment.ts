@@ -6,12 +6,11 @@ import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '
 export interface IStartRemoteNodeEnvironmentOptions {
     port: number;
     inspect?: boolean;
-    context: string;
 }
 
 export async function startRemoteNodeEnvironment(
     entryFilePath: string,
-    { inspect, port, context }: IStartRemoteNodeEnvironmentOptions
+    { inspect, port }: IStartRemoteNodeEnvironmentOptions
 ) {
     // Roman: add this lines after worker threads will be debuggable
     // the current behavior should be a fallback
@@ -21,7 +20,7 @@ export async function startRemoteNodeEnvironment(
     // return new RemoteNodeEnvironment(new WorkerThreadsModule.Worker(entityFilePath, {}));
     // } catch {
     const execArgv = inspect ? ['--inspect'] : [];
-    const childProc = fork(entryFilePath, ['remote', '-p', `${port}`, '--featureDiscoveryRoot', context], {
+    const childProc = fork(entryFilePath, ['remote', '-p', `${port}`], {
         execArgv,
     });
     await once(childProc, 'message');

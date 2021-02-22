@@ -38,6 +38,7 @@ import { launchHttpServer } from './launch-http-server';
 import { getExternalFeaturesMetadata } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+import type { IFileSystemSync } from '@file-services/types';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -259,6 +260,20 @@ export class Application {
 
         const { defaultConfigName, defaultFeatureName } = manifest;
 
+        const features = new Map<string, IFeatureDefinition>();
+        for (const [featureName, featureDef] of manifest.features) {
+            const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
+            const featureDefinition = { ...featureDef };
+            features.set(featureName, featureDefinition);
+            features.set(featureName, {
+                ...featureDef,
+                filePath: require.resolve(filePath, { paths: [this.outputPath] }),
+                envFilePaths: this.resolveManifestPaths(envFilePaths),
+                contextFilePaths: this.resolveManifestPaths(contextFilePaths),
+                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths),
+            });
+        }
+
         const {
             configName = defaultConfigName,
             featureName = defaultFeatureName,
@@ -276,8 +291,6 @@ export class Application {
             socketServerOptions: runtimeSocketServerOptions,
         } = runOptions;
         const { config: engineConfig, path: configPath } = await this.getEngineConfig();
-
-        const features = new Map(manifest.features);
 
         const disposables = createDisposables();
         const configurations = await this.readConfigs();
@@ -353,7 +366,6 @@ export class Application {
                 configurations,
                 externalFeatures,
             },
-            this.outputPath,
             { ...socketServerOptions, ...configSocketServerOptions }
         );
 
@@ -384,6 +396,15 @@ export class Application {
             nodeEnvironmentManager,
             close: disposables.dispose,
         };
+    }
+
+    private resolveManifestPaths(envFilePaths: Record<string, string>): Record<string, string> {
+        return Object.fromEntries(
+            Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
+                envName,
+                require.resolve(filePath, { paths: [this.outputPath] }),
+            ])
+        );
     }
 
     protected normilizeDefinitionsPackagePath(
@@ -527,7 +548,62 @@ export class Application {
         entryPoints: Record<string, Record<string, string>>;
     }) {
         const manifest: IBuildManifest = {
-            features: Array.from(features.entries()),
+            features: Array.from(features.entries()).map(
+                ([
+                    featureName,
+                    {
+                        scopedName,
+                        isRoot,
+                        filePath,
+                        envFilePaths,
+                        contextFilePaths,
+                        preloadFilePaths,
+                        packageName,
+                        dependencies,
+                        exportedEnvs,
+                        resolvedContexts,
+                        directoryPath,
+                    },
+                ]) => [
+                    featureName,
+                    {
+                        isRoot,
+                        scopedName,
+                        filePath: getFilePathInPackage(
+                            fs,
+                            packageName,
+                            isRoot ? this.outputPath : directoryPath,
+                            filePath,
+                            isRoot
+                        ),
+                        envFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            packageName,
+                            isRoot ? this.outputPath : directoryPath,
+                            envFilePaths,
+                            isRoot
+                        ),
+                        contextFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            packageName,
+                            isRoot ? this.outputPath : directoryPath,
+                            contextFilePaths,
+                            isRoot
+                        ),
+                        preloadFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            packageName,
+                            isRoot ? this.outputPath : directoryPath,
+                            preloadFilePaths,
+                            isRoot
+                        ),
+                        dependencies: dependencies,
+                        exportedEnvs: exportedEnvs,
+                        resolvedContexts: resolvedContexts,
+                        packageName,
+                    } as IFeatureDefinition,
+                ]
+            ),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
             entryPoints,
@@ -594,7 +670,7 @@ export class Application {
 
         console.time(`Analyzing Features`);
         const packages = resolvePackages(basePath);
-        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, this.outputPath, featureDiscoveryRoot);
+        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features');
         return { ...featuresAndConfigs, packages };
     }
@@ -673,6 +749,37 @@ export class Application {
             }
         }
     }
+}
+
+function getFilePathInPackage(
+    fs: IFileSystemSync,
+    packageName: string,
+    context: string,
+    filePath: string,
+    isRoot: boolean
+) {
+    const relativeFilePath = fs.relative(context, filePath);
+    const relativeRequest = fs
+        .join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath, fs.extname(relativeFilePath)))
+        .replace(/\\/g, '/');
+    return isRoot
+        ? relativeRequest.startsWith('.')
+            ? relativeRequest
+            : './' + relativeRequest
+        : fs.posix.join(packageName, relativeRequest);
+}
+
+function scopeFilePathsToPackage(
+    fs: IFileSystemSync,
+    packageName: string,
+    context: string,
+    envFiles: Record<string, string>,
+    isRoot: boolean
+) {
+    return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
+        acc[envName] = getFilePathInPackage(fs, packageName, context, filePath, isRoot);
+        return acc;
+    }, {});
 }
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
