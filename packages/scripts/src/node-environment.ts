@@ -1,3 +1,4 @@
+import { resolve } from 'path';
 import {
     COM,
     Feature,
@@ -101,6 +102,7 @@ export function createFeatureLoaders(
         contextFilePaths,
         resolvedContexts,
         preloadFilePaths,
+        isRoot,
     } of features.values()) {
         featureLoaders[scopedName] = {
             preload: async (currentContext) => {
@@ -110,7 +112,7 @@ export function createFeatureLoaders(
 
                     if (contextPreloadFilePath) {
                         const preloadedContextModule = (await import(
-                            require.resolve(contextPreloadFilePath, { paths: [context] })
+                            isRoot ? resolve(context, contextPreloadFilePath) : contextPreloadFilePath
                         )) as IPreloadModule;
                         if (preloadedContextModule.init) {
                             initFunctions.push(preloadedContextModule.init);
@@ -120,7 +122,7 @@ export function createFeatureLoaders(
                 const preloadFilePath = preloadFilePaths[envName];
                 if (preloadFilePath) {
                     const preloadedModule = (await import(
-                        require.resolve(preloadFilePath, { paths: [context] })
+                        isRoot ? resolve(context, preloadFilePath) : preloadFilePath
                     )) as IPreloadModule;
                     if (preloadedModule.init) {
                         initFunctions.push(preloadedModule.init);
@@ -132,16 +134,15 @@ export function createFeatureLoaders(
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
                     if (contextFilePath) {
-                        await import(require.resolve(contextFilePath, { paths: [context] }));
+                        await import(isRoot ? resolve(context, contextFilePath) : contextFilePath);
                     }
                 }
 
                 const envFilePath = envFilePaths[envName];
                 if (envFilePath) {
-                    await import(require.resolve(envFilePath, { paths: [context] }));
+                    await import(isRoot ? resolve(context, envFilePath) : envFilePath);
                 }
-                return ((await import(require.resolve(filePath, { paths: [context] }))) as { default: Feature })
-                    .default;
+                return ((await import(isRoot ? resolve(context, filePath) : filePath)) as { default: Feature }).default;
             },
             depFeatures: dependencies,
             resolvedContexts,

@@ -298,6 +298,7 @@ export class NodeEnvironmentsManager {
         const remoteNodeEnvironment = await startRemoteNodeEnvironment(cliEntry, {
             inspect: this.options.inspect,
             port: this.options.port,
+            context: this.context,
         });
         const port = await remoteNodeEnvironment.getRemotePort();
         const startMessage = new Promise<void>((resolve) => {
