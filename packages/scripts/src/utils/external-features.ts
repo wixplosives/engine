@@ -1,19 +1,19 @@
 import { join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from '../build-constants';
-import type { IExtenalFeatureDescriptor, IExternalDefinition } from '../types';
+import type { IExternalDefinition, IExternalFeatureNodeDescriptor, IFeatureDefinition } from '../types';
 import fs from '@file-services/node';
 import type { IBuildManifest } from '../application';
 
 export function getExternalFeaturesMetadata(
     pluginDefinitions: IExternalDefinition[],
     basePath: string
-): IExtenalFeatureDescriptor[] {
+): IExternalFeatureNodeDescriptor[] {
     // mapping a feature definition to the entries of each environment of that feature, per target
     return pluginDefinitions.map(({ packageName, outDir = 'dist', packagePath }) => {
         const packageBasePath = packagePath
             ? fs.resolve(basePath, packagePath)
             : require.resolve(packageName, { paths: [basePath] });
-        const { entryPoints, defaultFeatureName } = fs.readJsonFileSync(
+        const { entryPoints, defaultFeatureName, features } = fs.readJsonFileSync(
             fs.join(packageBasePath, outDir, 'manifest.json')
         ) as IBuildManifest;
         const envEntries: Record<string, Record<string, string>> = {};
@@ -33,6 +33,29 @@ export function getExternalFeaturesMetadata(
         return {
             name: defaultFeatureName!,
             envEntries,
+            externalRequests: extractDependencyMapping(defaultFeatureName!, features),
         };
     });
+}
+
+export function extractDependencyMapping(
+    featureName: string,
+    features: [featureName: string, featureDef: IFeatureDefinition][]
+): Record<string, string[]> {
+    const dependencyRequests: Record<string, string[]> = {};
+    for (const [
+        currentFeatureName,
+        { filePath, envFilePaths, contextFilePaths, preloadFilePaths, packageName },
+    ] of features) {
+        if (currentFeatureName === featureName) {
+            const files = [
+                filePath,
+                ...Object.values(envFilePaths),
+                ...Object.values(contextFilePaths),
+                ...Object.values(preloadFilePaths),
+            ];
+            dependencyRequests[packageName] = files;
+        }
+    }
+    return dependencyRequests;
 }

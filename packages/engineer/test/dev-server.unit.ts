@@ -475,7 +475,7 @@ describe('engineer:dev-server', function () {
         expect(text).to.include('{"foo":"bar"}');
     });
 
-    it.only('loads external features', async () => {
+    it('loads external features', async () => {
         const externalFeatureName = 'application-external';
         const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
         const externalFeatureApp = new Application({

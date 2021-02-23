@@ -24,6 +24,13 @@ export interface IExtenalFeatureDescriptor {
     envEntries: Record<string, Record<string, string>>;
 }
 
+export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor {
+    /**
+     * map of feature package name to engine files (.feature., .env. etc...)
+     */
+    externalRequests: Record<string, string[]>;
+}
+
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
@@ -31,7 +38,7 @@ export interface StartEnvironmentOptions extends IEnvironment {
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: Target;
-    externalFeatures?: IExtenalFeatureDescriptor[];
+    externalFeatures?: IExternalFeatureNodeDescriptor[];
     context: string;
 }
 export interface VirtualEntry {

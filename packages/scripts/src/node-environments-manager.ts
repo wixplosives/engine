@@ -13,10 +13,10 @@ import {
     IEnvironmentMessage,
     IEnvironmentStartMessage,
     IFeatureDefinition,
-    IExtenalFeatureDescriptor,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
     TopLevelConfigProvider,
+    IExternalFeatureNodeDescriptor,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
 import { getEnvironmntsForFeature } from './utils/environments';
@@ -45,7 +45,7 @@ export interface INodeEnvironmentsManagerOptions {
     port: number;
     inspect?: boolean;
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
-    externalFeatures: IExtenalFeatureDescriptor[];
+    externalFeatures: IExternalFeatureNodeDescriptor[];
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -60,7 +60,7 @@ export interface ILaunchEnvironmentOptions {
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
-    externalFeatures?: IExtenalFeatureDescriptor[];
+    externalFeatures?: IExternalFeatureNodeDescriptor[];
 }
 
 export class NodeEnvironmentsManager {

@@ -7,8 +7,7 @@ import {
     FeatureLoadersRegistry,
     IPreloadModule,
 } from '@wixc3/engine-core';
-import appModulePath from 'app-module-path';
-import { dirname } from 'path';
+import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
 
@@ -59,16 +58,22 @@ export async function runNodeEnvironment({
     }
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]];
+    const allExternalRequests = externalFeatures
+        .map(({ externalRequests }) => [
+            ...Object.keys(externalRequests),
+            ...[...Object.values(externalRequests)].flat(),
+        ])
+        .flat();
 
+    for (const externalRequest of allExternalRequests) {
+        remapToUserLibrary(externalRequest);
+    }
+    init(context);
     for (const { name: externalFeatureName, envEntries } of externalFeatures) {
         if (envEntries[name] && envEntries[name]['node']) {
-            appModulePath.addPath(context);
-            appModulePath.enableForDir(dirname(envEntries[name]['node']));
             const externalFeatureLoaders = (await import(envEntries[name]['node'])) as {
                 [featureName: string]: IFeatureLoader;
             };
-            appModulePath.removePath(context);
-
             for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
                 featureLoader.register(name, loader);
             }
@@ -77,6 +82,7 @@ export async function runNodeEnvironment({
             }
         }
     }
+    clear();
     const runtimeEngine = runEngineApp({
         config,
         options: new Map(options),
