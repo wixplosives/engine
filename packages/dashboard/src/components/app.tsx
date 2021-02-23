@@ -4,6 +4,7 @@ import { classes } from './app.st.css';
 import './reset.st.css';
 
 const fetchServerState = async () => (await fetch(`engine-state`)).json();
+const fetchGraphData = async (featureName: string) => (await fetch(`feature-graph?feature-name=${featureName}`)).json();
 
 const changeNodeEnvironmentState = async (
     featureName: string,
@@ -34,6 +35,7 @@ export const App: React.FC = () => {
             <Dashboard
                 fetchServerState={fetchServerState}
                 changeNodeEnvironmentState={changeNodeEnvironmentState}
+                fetchGraphData={fetchGraphData}
             ></Dashboard>
         </div>
     );
