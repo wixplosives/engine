@@ -75,7 +75,7 @@ async function useIframe(
     // this we add an unused URL param '?not-blank'.
 
     if (!iframe.contentWindow.location.href.startsWith('about:blank')) {
-        iframe.contentWindow.location.href = 'about:blank?not-blank';
+        iframe.contentWindow.location.replace('about:blank?not-blank');
         await Promise.race([waitForCancel, waitForLoad(iframe)]);
     }
 
@@ -90,8 +90,7 @@ async function useIframe(
         const contentWindow = iframe.contentWindow;
         contentWindow.name = instanceId;
         com.registerEnv(instanceId, contentWindow);
-        contentWindow.location.href = href;
-
+        contentWindow.location.replace(href);
         await Promise.race([waitForCancel, waitForLoad(iframe)]);
 
         if (iframe.contentWindow !== contentWindow || iframe.contentWindow.location.href !== href) {
