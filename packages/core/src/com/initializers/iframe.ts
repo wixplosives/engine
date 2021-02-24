@@ -16,8 +16,6 @@ export function iframeInitializer({
     managed,
     src,
 }: IIframeInitializerOptions): EnvironmentInitializer<{ id: string }> {
-    console.log('test');
-
     return async (com, { env, endpointType }) => {
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
         const publicPath = com.getPublicPath();
@@ -77,7 +75,7 @@ async function useIframe(
     // this we add an unused URL param '?not-blank'.
 
     if (!iframe.contentWindow.location.href.startsWith('about:blank')) {
-        iframe.contentWindow.location.href = 'about:blank?not-blank';
+        iframe.contentWindow.location.replace('about:blank?not-blank');
         await Promise.race([waitForCancel, waitForLoad(iframe)]);
     }
 
@@ -93,8 +91,6 @@ async function useIframe(
         contentWindow.name = instanceId;
         com.registerEnv(instanceId, contentWindow);
         contentWindow.location.replace(href);
-        alert('test');
-        console.log('test');
         await Promise.race([waitForCancel, waitForLoad(iframe)]);
 
         if (iframe.contentWindow !== contentWindow || iframe.contentWindow.location.href !== href) {
