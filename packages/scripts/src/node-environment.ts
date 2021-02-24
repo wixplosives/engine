@@ -101,6 +101,7 @@ export function createFeatureLoaders(
                 const initFunctions = [];
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+
                     if (contextPreloadFilePath) {
                         const preloadedContextModule = (await import(contextPreloadFilePath)) as IPreloadModule;
                         if (preloadedContextModule.init) {

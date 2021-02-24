@@ -38,6 +38,7 @@ import { launchHttpServer } from './launch-http-server';
 import { getExternalFeaturesMetadata } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+import type { IFileSystemSync } from '@file-services/types';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -229,13 +230,12 @@ export class Application {
         );
 
         if (external) {
-            // in order to understand where the target feature file is located, we need the user to tell us (featureOutDir).
-            // The node entry, on the other hand is created inside the outDir, and requires the mentioned feature file (as well as environment files)
+            const providedOutDir = featureOutDir || configFeatureOutDir || '.';
+            // The node entry is created inside the outDir, and requires the mentioned feature file (as well as environment files)
             // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
-            const providedOutDir = featureOutDir ?? configFeatureOutDir;
-            // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
             const relativeFeatureOutDir =
-                fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir ?? '.')) || '.';
+                // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
+                fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir)) || '.';
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
             this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeFeatureOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
@@ -255,9 +255,11 @@ export class Application {
     }
 
     public async run(runOptions: IRunCommandOptions = {}) {
-        const { features, defaultConfigName, defaultFeatureName } = (await fs.promises.readJsonFile(
+        const { defaultConfigName, defaultFeatureName, features: manifestFeatures } = (await fs.promises.readJsonFile(
             join(this.outputPath, 'manifest.json')
         )) as IBuildManifest;
+
+        const features = this.remapManifestFeaturePaths(manifestFeatures);
 
         const {
             configName = defaultConfigName,
@@ -343,7 +345,7 @@ export class Application {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
-                features: new Map(features),
+                features,
                 port,
                 defaultRuntimeOptions,
                 inspect,
@@ -381,6 +383,30 @@ export class Application {
             nodeEnvironmentManager,
             close: disposables.dispose,
         };
+    }
+
+    private remapManifestFeaturePaths(manifestFeatures: [string, IFeatureDefinition][]) {
+        const features = new Map<string, IFeatureDefinition>();
+        for (const [featureName, featureDef] of manifestFeatures) {
+            const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
+            features.set(featureName, {
+                ...featureDef,
+                filePath: require.resolve(filePath, { paths: [this.outputPath] }),
+                envFilePaths: this.resolveManifestPaths(envFilePaths),
+                contextFilePaths: this.resolveManifestPaths(contextFilePaths),
+                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths),
+            });
+        }
+        return features;
+    }
+
+    private resolveManifestPaths(envFilePaths: Record<string, string>): Record<string, string> {
+        return Object.fromEntries(
+            Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
+                envName,
+                require.resolve(filePath, { paths: [this.outputPath] }),
+            ])
+        );
     }
 
     protected normilizeDefinitionsPackagePath(
@@ -524,7 +550,61 @@ export class Application {
         entryPoints: Record<string, Record<string, string>>;
     }) {
         const manifest: IBuildManifest = {
-            features: Array.from(features.entries()),
+            features: Array.from(features.entries()).map(
+                ([
+                    featureName,
+                    {
+                        scopedName,
+                        isRoot,
+                        filePath,
+                        envFilePaths,
+                        contextFilePaths,
+                        preloadFilePaths,
+                        packageName,
+                        dependencies,
+                        exportedEnvs,
+                        resolvedContexts,
+                        directoryPath,
+                    },
+                ]) => [
+                    featureName,
+                    {
+                        scopedName,
+                        filePath: getFilePathInPackage(
+                            fs,
+                            packageName,
+                            isRoot ? this.outputPath : directoryPath,
+                            filePath,
+                            isRoot
+                        ),
+                        envFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            packageName,
+                            isRoot ? this.outputPath : directoryPath,
+                            envFilePaths,
+                            isRoot
+                        ),
+                        contextFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            packageName,
+                            isRoot ? this.outputPath : directoryPath,
+                            contextFilePaths,
+                            isRoot
+                        ),
+                        preloadFilePaths: scopeFilePathsToPackage(
+                            fs,
+                            packageName,
+                            isRoot ? this.outputPath : directoryPath,
+                            preloadFilePaths,
+                            isRoot
+                        ),
+                        dependencies: dependencies,
+                        exportedEnvs: exportedEnvs,
+                        resolvedContexts: resolvedContexts,
+                        packageName,
+                    } as IFeatureDefinition,
+                ]
+            ),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
             entryPoints,
@@ -670,6 +750,37 @@ export class Application {
             }
         }
     }
+}
+
+function getFilePathInPackage(
+    fs: IFileSystemSync,
+    packageName: string,
+    context: string,
+    filePath: string,
+    isRoot: boolean
+) {
+    const relativeFilePath = fs.relative(context, filePath);
+    const relativeRequest = fs
+        .join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath, fs.extname(relativeFilePath)))
+        .replace(/\\/g, '/');
+    return isRoot
+        ? relativeRequest.startsWith('.')
+            ? relativeRequest
+            : './' + relativeRequest
+        : fs.posix.join(packageName, relativeRequest);
+}
+
+function scopeFilePathsToPackage(
+    fs: IFileSystemSync,
+    packageName: string,
+    context: string,
+    envFiles: Record<string, string>,
+    isRoot: boolean
+) {
+    return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
+        acc[envName] = getFilePathInPackage(fs, packageName, context, filePath, isRoot);
+        return acc;
+    }, {});
 }
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>

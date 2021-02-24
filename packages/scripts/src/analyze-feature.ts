@@ -32,28 +32,6 @@ interface IPackageDescriptor {
 
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
-function getFilePathInPackage(fs: IFileSystemSync, featurePackage: IPackageDescriptor, filePath: string) {
-    const relativeFilePath = fs.relative(featurePackage.directoryPath, filePath);
-    return fs
-        .join(
-            featurePackage.name,
-            fs.dirname(relativeFilePath),
-            fs.basename(relativeFilePath, fs.extname(relativeFilePath))
-        )
-        .replace(/\\/g, '/');
-}
-
-function scopeFilePathsToPackage(
-    fs: IFileSystemSync,
-    featurePackage: IPackageDescriptor,
-    envFiles: Record<string, string>
-) {
-    return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
-        acc[envName] = getFilePathInPackage(fs, featurePackage, filePath);
-        return acc;
-    }, {});
-}
-
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, rootOwnFeaturesDir = '.') {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
@@ -176,11 +154,11 @@ export function loadFeaturesFromPaths(
                 filePath: featureFilePath,
                 toJSON(this: IFeatureDefinition) {
                     return {
-                        contextFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.contextFilePaths),
+                        contextFilePaths: this.contextFilePaths,
                         dependencies: this.dependencies,
-                        filePath: getFilePathInPackage(fs, featurePackage, this.filePath),
-                        envFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.envFilePaths),
-                        preloadFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preloadFilePaths),
+                        filePath: this.filePath,
+                        envFilePaths: this.envFilePaths,
+                        preloadFilePaths: this.preloadFilePaths,
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         packageName: this.packageName,

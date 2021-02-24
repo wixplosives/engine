@@ -22,6 +22,7 @@
     { "path": "./examples/file-server" },
     { "path": "./examples/multi-env" },
     { "path": "./examples/playground" },
+    { "path": "./examples/preload" },
     { "path": "./examples/reloaded-iframe" },
     { "path": "./examples/dashboard-extention" }
   ]
