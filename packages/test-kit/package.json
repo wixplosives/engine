@@ -3,9 +3,6 @@
   "version": "17.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "peerDependencies": {
-    "typescript": ">=3.0.0"
-  },
   "dependencies": {
     "@wixc3/engine-scripts": "^17.0.0",
     "is-ci": "^3.0.0",
