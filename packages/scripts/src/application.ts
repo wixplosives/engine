@@ -255,11 +255,11 @@ export class Application {
     }
 
     public async run(runOptions: IRunCommandOptions = {}) {
-        const manifest = (await fs.promises.readJsonFile(join(this.outputPath, 'manifest.json'))) as IBuildManifest;
+        const { defaultConfigName, defaultFeatureName, features: manifestFeatures } = (await fs.promises.readJsonFile(
+            join(this.outputPath, 'manifest.json')
+        )) as IBuildManifest;
 
-        const { defaultConfigName, defaultFeatureName } = manifest;
-
-        const features = this.remapManifestFeaturePaths(manifest.features);
+        const features = this.remapManifestFeaturePaths(manifestFeatures);
 
         const {
             configName = defaultConfigName,
@@ -389,8 +389,6 @@ export class Application {
         const features = new Map<string, IFeatureDefinition>();
         for (const [featureName, featureDef] of manifestFeatures) {
             const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
-            const featureDefinition = { ...featureDef };
-            features.set(featureName, featureDefinition);
             features.set(featureName, {
                 ...featureDef,
                 filePath: require.resolve(filePath, { paths: [this.outputPath] }),
