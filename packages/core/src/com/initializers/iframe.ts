@@ -16,6 +16,8 @@ export function iframeInitializer({
     managed,
     src,
 }: IIframeInitializerOptions): EnvironmentInitializer<{ id: string }> {
+    console.log('test');
+
     return async (com, { env, endpointType }) => {
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
         const publicPath = com.getPublicPath();
@@ -90,8 +92,9 @@ async function useIframe(
         const contentWindow = iframe.contentWindow;
         contentWindow.name = instanceId;
         com.registerEnv(instanceId, contentWindow);
-        contentWindow.location.href = href;
-
+        contentWindow.location.replace(href);
+        alert('test');
+        console.log('test');
         await Promise.race([waitForCancel, waitForLoad(iframe)]);
 
         if (iframe.contentWindow !== contentWindow || iframe.contentWindow.location.href !== href) {
