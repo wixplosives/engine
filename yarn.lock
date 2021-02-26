@@ -999,14 +999,14 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/cli@^3.12.1":
-  version "3.12.1"
-  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-3.12.1.tgz#9ad7bd15662231d6082863b1092c014d7d6b9932"
-  integrity sha512-qvt/jBzGFvaSp+QlJiHzIDWdHwe1OF0N3F2BMPhJS/hn0tErgs6JQXtc/iJ3JJanOEH5WRLFkw9ZNKqe+SB8/w==
+"@stylable/cli@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-4.0.1.tgz#186576b84f27d9bd3290c4f72630ac3dbd02a17c"
+  integrity sha512-i5SYNY5zZRQyI6Y/ayWmMAxsoSwzMUlG6tL7V4UoPRBTJuobY0BWls0yQmytD2kwhXkvVvJE4ZZFiwQ9n19Zdg==
   dependencies:
-    "@stylable/core" "^3.12.1"
-    "@stylable/node" "^3.12.1"
-    "@stylable/optimizer" "^3.12.1"
+    "@stylable/core" "^4.0.1"
+    "@stylable/node" "^4.0.1"
+    "@stylable/optimizer" "^4.0.1"
     lodash.camelcase "^4.3.0"
     lodash.upperfirst "^4.3.1"
     yargs "^16.2.0"
@@ -1033,12 +1033,40 @@
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
+"@stylable/core@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.0.1.tgz#375035a7477d28dca287e73de2c928b8c4f475e5"
+  integrity sha512-x8vPIDU54uaXqhtRqK55fjYn0gnImZshSJ9aRvN7yAbKNMnmjIqJbVUxUMvORmJBOrCiG7D7Mn7h7ihyP4vIVw==
+  dependencies:
+    css-selector-tokenizer "^0.7.3"
+    deindent "^0.1.0"
+    enhanced-resolve "^5.7.0"
+    is-url-superb "^5.0.0"
+    is-vendor-prefixed "^4.0.0"
+    jest-docblock "^26.0.0"
+    lodash.clonedeep "^4.5.0"
+    lodash.clonedeepwith "^4.5.0"
+    postcss "^8.2.6"
+    postcss-js "^3.0.3"
+    postcss-nested "^5.0.3"
+    postcss-safe-parser "^5.0.2"
+    postcss-selector-matches "^4.0.0"
+    postcss-value-parser "^4.1.0"
+    toky "^0.1.0"
+
 "@stylable/module-utils@^3.12.1":
   version "3.12.1"
   resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-3.12.1.tgz#3df14bef4ebd65830f6823e18c76adae88bf348e"
   integrity sha512-ETihCs2TsaGcsE7fb2pFJJvTZPU5ScvGSWbgw20LL9XTRbzpM4ZIAObq/6V/aZNvE4CQ0G67GBmWp5eKU1bDew==
   dependencies:
     "@stylable/core" "^3.12.1"
+
+"@stylable/module-utils@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-4.0.1.tgz#b02e9cf029fbed5f0f39546b5652f73a22895daf"
+  integrity sha512-r3Tqz5Z8UVeYpNIxyv4qq5d99dTD2tY69TkiaWGXlmQnr7kUZzLHWGyUCHMKN35Llek6enrFc4G+x5sPaSL/+A==
+  dependencies:
+    "@stylable/core" "^4.0.1"
 
 "@stylable/node@^3.12.1":
   version "3.12.1"
@@ -1049,12 +1077,30 @@
     "@stylable/module-utils" "^3.12.1"
     find-config "^1.0.0"
 
+"@stylable/node@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-4.0.1.tgz#2b859e6774f5b7233917cc7c2c28751e4411e092"
+  integrity sha512-LChq4Y/fT1TERmIYjOt7HdahhdQuNl/pLP999KwN6dfHVfUOj/YYk2bi59RXjyFvcz4zEgD4VSBoxcHUMiiDvA==
+  dependencies:
+    "@stylable/core" "^4.0.1"
+    "@stylable/module-utils" "^4.0.1"
+    find-config "^1.0.0"
+
 "@stylable/optimizer@^3.12.1":
   version "3.12.1"
   resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-3.12.1.tgz#8f2a4002fadfe7dbcc657c6d45bcb3d8b1ab2625"
   integrity sha512-BPAFmLbw6lzhNw90oZdGu7cwOsW/R+C+Q6jkpskcsOQW6yFXGduVsjzFIEX0QY/34zJRz8luEzkErKA4YLcFjg==
   dependencies:
     "@stylable/core" "^3.12.1"
+    csso "^4.2.0"
+    postcss "^8.2.6"
+
+"@stylable/optimizer@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-4.0.1.tgz#9e5a84c109371962ae1a6e0acd776ecb7330fd7c"
+  integrity sha512-xiIdalXgWpnUD/Hr6AckRmZ/fxx74jFJLeH1TXyGmkAw34s9sZYbJqA/DjKFWJ1lIxaoOYR2HQAfcMqU16OWQQ==
+  dependencies:
+    "@stylable/core" "^4.0.1"
     csso "^4.2.0"
     postcss "^8.2.6"
 
@@ -3447,6 +3493,14 @@ enhanced-resolve@^4.5.0:
     graceful-fs "^4.1.2"
     memory-fs "^0.5.0"
     tapable "^1.0.0"
+
+enhanced-resolve@^5.7.0:
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.7.0.tgz#525c5d856680fbd5052de453ac83e32049958b5c"
+  integrity sha512-6njwt/NsZFUKhM6j9U8hzVyD4E4r0x7NQzhTCbcWOJ0IQjNSAoalWmb0AE51Wn+fwan5qVESWi7t2ToBxs9vrw==
+  dependencies:
+    graceful-fs "^4.2.4"
+    tapable "^2.2.0"
 
 enquirer@^2.3.5:
   version "2.3.6"
@@ -8477,6 +8531,11 @@ tapable@^1.0.0, tapable@^1.1.3:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-1.1.3.tgz#a1fccc06b58db61fd7a45da2da44f5f3a3e67ba2"
   integrity sha512-4WK/bYZmj8xLr+HUCODHGF1ZFzsYffasLUgEiMBY4fgtltdO6B4WJtlSbPaDTLpYTcGVwM2qLnFTICEcNxs3kA==
+
+tapable@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.0.tgz#5c373d281d9c672848213d0e037d1c4165ab426b"
+  integrity sha512-FBk4IesMV1rBxX2tfiK8RAmogtWn53puLOQlvO8XuwlgxcYbP4mVPS9Ph4aeamSyyVjOl24aYWAuc8U5kCVwMw==
 
 tar@^4.4.12:
   version "4.4.13"
