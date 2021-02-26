@@ -57,5 +57,5 @@ export const hashParamsRetriever = 'HashParamsRetriever';
 export const testServiceError = {
     name: 'TestServiceError',
     message: 'test service error',
-    code: 1
+    code: 1,
 };
