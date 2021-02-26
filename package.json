@@ -15,7 +15,7 @@
     "pretest": "yarn build && yarn lint",
     "test": "yarn test:unit",
     "test:unit": "lerna run test --stream --concurrency=1",
-    "prettify": "npx prettier \"./**/*.{js,ts,tsx}\" --write"
+    "prettify": "npx prettier . --write"
   },
   "devDependencies": {
     "@file-services/memory": "^5.3.1",
