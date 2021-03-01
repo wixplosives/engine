@@ -2,7 +2,6 @@ import fs from '@file-services/node';
 import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import { flattenTree, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
@@ -10,9 +9,11 @@ import {
     createExternalFeatureMapping,
 } from './create-entrypoint';
 
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+import { getDefinedExternals } from './utils';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -313,15 +314,3 @@ const extractExternals: (featurePath: string, ignoredRequests: Array<string>) =>
         cb(err);
     }
 };
-function getDefinedExternals(feature: IFeatureDefinition, features: Map<string, IFeatureDefinition>) {
-    const externalDefinitions = [
-        ...flattenTree(feature, ({ dependencies }) => dependencies.map((dep) => features.get(dep)!)).values(),
-    ]
-        .map(({ externalDefinitions }) => externalDefinitions)
-        .flat();
-    const definedExternals: Record<string, string> = {};
-    for (const { globalName, request } of externalDefinitions) {
-        definedExternals[request] = globalName;
-    }
-    return definedExternals;
-}
