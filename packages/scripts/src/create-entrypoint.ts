@@ -150,7 +150,7 @@ async function main() {
 
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
     const features = [loadedFeatures[loadedFeatures.length - 1]];
-    ${loadExternalFeatures(target, externalFeatures, fetchFeatures)}
+    ${loadExternalFeatures(target, externalFeatures, fetchFeatures || target === 'electron-renderer')}
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
@@ -401,7 +401,7 @@ function loadExternalFeatures(
     ${addExternalsEventListenerForParentEnvironments()}
     
     ${
-        fetchFeatures || target === 'electron-renderer'
+        fetchFeatures
             ? `const fetchedExternalFeatures = ${
                   target === 'electron-renderer'
                       ? fetchFeaturesFromElectronProcess('/external')
