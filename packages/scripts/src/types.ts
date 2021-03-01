@@ -296,4 +296,5 @@ export interface EngineConfig {
     serveExternalFeaturesPath?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
     featureOutDir?: string;
+    favicon?: string;
 }

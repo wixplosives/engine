@@ -53,6 +53,7 @@ export const startCommand: Command = (program) =>
             true
         )
         .option('--title <title>', 'application title to display in browser')
+        .option('--favicon <favicon>', 'application favicon to display in browser')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
@@ -74,6 +75,7 @@ export const startCommand: Command = (program) =>
                 publicPath = defaultPublicPath,
                 mode,
                 title,
+                favicon,
                 publicConfigsRoute,
                 autoLaunch,
                 engineerEntry,
@@ -83,6 +85,10 @@ export const startCommand: Command = (program) =>
             } = cmd;
 
             try {
+                const basePath = resolve(path);
+                preRequire(pathsToRequire, basePath);
+                const faviconPath = favicon ? resolve(basePath, favicon) : undefined;
+
                 const { devServerFeature } = await startDevServer({
                     featureName,
                     configName,
@@ -93,6 +99,7 @@ export const startCommand: Command = (program) =>
                     publicPath,
                     mode,
                     title,
+                    favicon: faviconPath,
                     publicConfigsRoute,
                     autoLaunch,
                     engineerEntry,
@@ -126,6 +133,7 @@ export function buildCommand(program: typeof commander) {
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
         .option('--title <title>', 'application title to display in browser')
+        .option('--favicon <favicon>', 'application favicon to display in browser')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
@@ -162,6 +170,7 @@ export function buildCommand(program: typeof commander) {
                 mode,
                 singleFeature,
                 title,
+                favicon,
                 publicConfigsRoute,
                 webpackConfig,
                 external,
@@ -174,6 +183,7 @@ export function buildCommand(program: typeof commander) {
             try {
                 const basePath = resolve(path);
                 preRequire(pathsToRequire, basePath);
+                const faviconPath = favicon ? resolve(basePath, favicon) : undefined;
                 const outputPath = resolve(outDir);
                 const app = new Application({ basePath, outputPath, featureDiscoveryRoot });
                 const stats = await app.build({
@@ -183,6 +193,7 @@ export function buildCommand(program: typeof commander) {
                     mode,
                     singleFeature,
                     title,
+                    favicon: faviconPath,
                     publicConfigsRoute,
                     webpackConfigPath: webpackConfig,
                     external,

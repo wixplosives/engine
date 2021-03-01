@@ -26,6 +26,7 @@ export interface ICreateWebpackConfigsOptions {
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'webEnvs' | 'workerEnvs' | 'electronRendererEnvs'>;
     publicPath?: string;
     title?: string;
+    favicon?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
