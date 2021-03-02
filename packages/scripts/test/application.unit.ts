@@ -51,6 +51,15 @@ describe('Application', function () {
             const contents = fs.readdirSync(app.outputPath);
             expect(contents).to.include('main.web.js');
         });
+
+        it(`allows building feature with given favicon`, async () => {
+            const app = new Application({ basePath: engineFeatureFixturePath });
+            await app.build({ favicon: 'assets/favicon.ico' });
+            disposables.add(() => app.clean());
+            expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+            const contents = fs.readdirSync(app.outputPath);
+            expect(contents).to.include('favicon.ico');
+        });
     });
 
     describe('run', function () {
@@ -72,6 +81,21 @@ describe('Application', function () {
                 const text = await getBodyContent(page);
                 expect(text).to.include('App is running');
             });
+        });
+        it(`launches a built application with web environment and given favicon`, async () => {
+            const app = new Application({ basePath: engineFeatureFixturePath });
+            await app.build({
+                featureName: 'engine-single/x',
+                favicon: 'assets/favicon.ico',
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run();
+            disposables.add(close);
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            const faviconHref = await page.$eval('head > link[rel="icon"]', (el) => el.getAttribute('href'));
+            expect(faviconHref).to.equal('favicon.ico');
         });
 
         it(`launches a built application with node environment`, async () => {

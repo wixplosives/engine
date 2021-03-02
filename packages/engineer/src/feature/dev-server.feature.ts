@@ -13,6 +13,7 @@ export interface DevServerConfig {
     configName?: string;
     publicPath?: string;
     title?: string;
+    favicon?: string;
     publicConfigsRoute: string;
     singleRun: boolean;
     inspect: boolean;

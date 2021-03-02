@@ -29,6 +29,7 @@ export interface IStartOptions {
     pathsToRequire?: string[];
     mode?: 'development' | 'production';
     title?: string;
+    favicon?: string;
     publicConfigsRoute?: string;
     autoLaunch?: boolean;
     engineerEntry?: string;
@@ -53,6 +54,7 @@ export async function startDevServer({
     publicPath = '/',
     mode = 'development',
     title,
+    favicon,
     publicConfigsRoute = 'configs/',
     autoLaunch = true,
     targetApplicationPath,
@@ -77,8 +79,12 @@ export async function startDevServer({
     });
     const { config: engineConfig, path: engineConfigPath } = await app.getEngineConfig();
 
-    const { externalFeatureDefinitions: configDefs = [], externalFeaturesPath: configExternalPath, require } =
-        engineConfig ?? {};
+    const {
+        externalFeatureDefinitions: configDefs = [],
+        externalFeaturesPath: configExternalPath,
+        require,
+        favicon: configFavicon,
+    } = engineConfig ?? {};
 
     const featurePaths = fs.findFilesSync(basePath, {
         filterFile: ({ name }) => isFeatureFile(name),
@@ -112,6 +118,7 @@ export async function startDevServer({
                     mode,
                     configName,
                     title,
+                    favicon: favicon ?? configFavicon,
                     publicConfigsRoute,
                     autoLaunch,
                     basePath: targetApplicationPath,
