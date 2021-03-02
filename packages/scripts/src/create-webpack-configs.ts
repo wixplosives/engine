@@ -26,7 +26,6 @@ export interface ICreateWebpackConfigsOptions {
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'webEnvs' | 'workerEnvs' | 'electronRendererEnvs'>;
     publicPath?: string;
     title?: string;
-    favicon?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -127,7 +126,6 @@ interface ICreateWebpackConfigOptions {
     plugins?: webpack.Plugin[];
     entry?: webpack.Entry;
     title?: string;
-    favicon?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -159,7 +157,6 @@ export function createWebpackConfig({
     externalFeatures,
     fetchFeatures,
     eagerEntrypoint,
-    favicon,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -189,7 +186,6 @@ export function createWebpackConfig({
                         filename: `${envName}.html`,
                         chunks: [envName],
                         title,
-                        favicon,
                     }),
                     new WebpackScriptAttributesPlugin({
                         scriptAttributes: {

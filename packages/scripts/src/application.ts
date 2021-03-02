@@ -72,7 +72,6 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     featureOutDir?: string;
     externalFeaturesPath?: string;
     eagerEntrypoint?: boolean;
-    favicon?: string;
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -107,7 +106,6 @@ export interface ICompilerOptions {
     publicPath?: string;
     mode?: 'production' | 'development';
     title?: string;
-    favicon?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -148,7 +146,6 @@ export class Application {
         mode = 'production',
         singleFeature,
         title,
-        favicon,
         publicConfigsRoute,
         overrideConfig,
         external = false,
@@ -166,11 +163,11 @@ export class Application {
             externalFeatureDefinitions,
             externalFeaturesPath: configExternalFeaturesPath,
             featureOutDir: configFeatureOutDir,
-            favicon: configFavicon,
         } = config ?? {};
         if (require) {
             await this.importModules(require);
         }
+
         const entryPoints: Record<string, Record<string, string>> = {};
 
         if (external && !featureName) {
@@ -200,7 +197,6 @@ export class Application {
             configName,
             publicPath,
             title,
-            favicon: favicon ?? configFavicon,
             configurations,
             staticBuild,
             publicConfigsRoute,
@@ -625,7 +621,6 @@ export class Application {
         publicPath,
         mode,
         title,
-        favicon,
         configurations,
         staticBuild,
         publicConfigsRoute,
@@ -655,7 +650,6 @@ export class Application {
             configName,
             publicPath,
             title,
-            favicon,
             configurations,
             staticBuild,
             publicConfigsRoute,
