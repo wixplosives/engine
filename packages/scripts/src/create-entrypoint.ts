@@ -320,7 +320,7 @@ const getAllValidConfigurations = (configurations: [string, IConfigDefinition][]
             configNameToFiles[configName] = [];
         }
         if (!configEnvName || configEnvName === envName) {
-            configNameToFiles[configName].push({ filePath, configEnvName });
+            configNameToFiles[configName]!.push({ filePath, configEnvName });
         }
     });
 
@@ -347,7 +347,7 @@ function createConfigLoadersObject(configs: Record<string, IConfigFileMapping[]>
 function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
     return Object.keys(configs)
         .map((scopedName) => {
-            const importedConfigPaths = configs[scopedName].map(({ filePath, configEnvName }) =>
+            const importedConfigPaths = configs[scopedName]!.map(({ filePath, configEnvName }) =>
                 loadConfigFile(filePath, scopedName, configEnvName)
             );
             return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;

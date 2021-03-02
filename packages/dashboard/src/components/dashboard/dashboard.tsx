@@ -89,9 +89,7 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
     );
 
     const hasNodeEnvironments =
-        !!selectedFeature.featureName &&
-        !!serverState.features[selectedFeature.featureName] &&
-        !!serverState.features[selectedFeature.featureName].hasServerEnvironments;
+        !!selectedFeature.featureName && !!serverState.features[selectedFeature.featureName]?.hasServerEnvironments;
 
     const addRuntimeOption = useCallback(() => setRuntimeArguments([...runtimeArguments, { key: '', value: '' }]), [
         runtimeArguments,

@@ -81,7 +81,7 @@ export class RuntimeEngine {
             for (const [configId, value] of Object.entries(multiValue)) {
                 const key = this.entityID(featureId, configId);
                 configMap[key] = configMap[key] || [];
-                configMap[key].push(value);
+                configMap[key]!.push(value);
             }
         }
         return configMap;

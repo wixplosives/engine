@@ -31,7 +31,7 @@ const buildFeatureLinksHelper = (entry: Feature<string, Array<Feature>>, visited
         }
     }
     for (const dep of dependencies) {
-        if (visitedFeatures[dep.id].group === level + 1) {
+        if (visitedFeatures[dep.id]!.group === level + 1) {
             featureLinks.push(...buildFeatureLinksHelper(dep, visitedFeatures, level + 1));
         }
     }

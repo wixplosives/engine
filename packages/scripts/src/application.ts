@@ -526,7 +526,7 @@ export class Application {
                         const fileExtention = extname(possibleConfigFile.name);
                         if (possibleConfigFile.isFile() && fileExtention === '.json') {
                             const configFileName = basename(possibleConfigFile.name, fileExtention);
-                            const [configName] = configFileName.split('.');
+                            const [configName] = configFileName.split('.') as [string];
 
                             const config = (await fs.promises.readJsonFile(
                                 join(featureConfigsDirectory, possibleConfigFile.name)
@@ -717,7 +717,7 @@ export class Application {
         > = {};
 
         for (const { scopedName } of rootFeatures) {
-            const [rootFeatureName] = scopedName.split('/');
+            const [rootFeatureName] = scopedName.split('/') as [string];
             featureEnvDefinitions[scopedName] = {
                 configurations: configNames.filter((name) => name.includes(rootFeatureName)),
                 hasServerEnvironments: getEnvironmntsForFeature(scopedName, features, 'node').size > 0,

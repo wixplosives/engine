@@ -141,7 +141,7 @@ describe('Application', function () {
             await waitFor(async () => {
                 const bodyContent = await getBodyContent(page);
                 const [, bodyConfig] = bodyContent.split(': ');
-                const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                const parsedBodyConfig = JSON.parse(bodyConfig!.trim()) as { value: number };
                 expect(parsedBodyConfig.value).to.eq(1);
             });
         });
@@ -203,7 +203,7 @@ describe('Application', function () {
                 const bodyContent = await getBodyContent(page);
                 const [, bodyConfig] = bodyContent.split(': ');
                 expect(bodyConfig).to.not.equal(undefined);
-                const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                const parsedBodyConfig = JSON.parse(bodyConfig!.trim()) as { value: number };
                 expect(parsedBodyConfig.value).to.eq(1);
             });
         });
@@ -230,7 +230,7 @@ describe('Application', function () {
                 const bodyContent = await getBodyContent(page);
                 const [, bodyConfig] = bodyContent.split(': ');
                 expect(bodyConfig).to.not.equal(undefined);
-                const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                const parsedBodyConfig = JSON.parse(bodyConfig!.trim()) as { value: number };
                 expect(parsedBodyConfig.value).to.eq(1);
             });
         });

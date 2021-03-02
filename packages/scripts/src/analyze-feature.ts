@@ -134,7 +134,7 @@ export function loadFeaturesFromPaths(
         // pick up features
         for (const featureFilePath of features) {
             const [evaluatedFeature] = evaluateModule(featureFilePath).children;
-            const featureModule = analyzeFeatureModule(evaluatedFeature);
+            const featureModule = analyzeFeatureModule(evaluatedFeature!);
             const featureName = featureModule.name;
             if (!foundFeatureFilePaths.has(featureFilePath)) {
                 continue;
