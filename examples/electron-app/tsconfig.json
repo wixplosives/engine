@@ -4,14 +4,8 @@
     "outDir": "./dist"
   },
   "references": [
-    {
-      "path": "../../packages/core/src"
-    },
-    {
-      "path": "../../packages/core-node/src"
-    },
-    {
-      "path": "../../packages/scripts/src"
-    }
+    { "path": "../../packages/core/src" },
+    { "path": "../../packages/core-node/src" },
+    { "path": "../../packages/scripts/src" }
   ]
 }
