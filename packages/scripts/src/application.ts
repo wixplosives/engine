@@ -549,6 +549,7 @@ export class Application {
         configName?: string;
         entryPoints: Record<string, Record<string, string>>;
     }) {
+        const outputDirInBasePath = this.outputPath.includes(this.basePath);
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()).map(
                 ([
@@ -573,28 +574,28 @@ export class Application {
                         filePath: getFilePathInPackage(
                             fs,
                             packageName,
-                            isRoot ? this.outputPath : directoryPath,
+                            isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
                             filePath,
                             isRoot
                         ),
                         envFilePaths: scopeFilePathsToPackage(
                             fs,
                             packageName,
-                            isRoot ? this.outputPath : directoryPath,
+                            isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
                             envFilePaths,
                             isRoot
                         ),
                         contextFilePaths: scopeFilePathsToPackage(
                             fs,
                             packageName,
-                            isRoot ? this.outputPath : directoryPath,
+                            isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
                             contextFilePaths,
                             isRoot
                         ),
                         preloadFilePaths: scopeFilePathsToPackage(
                             fs,
                             packageName,
-                            isRoot ? this.outputPath : directoryPath,
+                            isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
                             preloadFilePaths,
                             isRoot
                         ),
