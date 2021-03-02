@@ -549,7 +549,7 @@ export class Application {
         configName?: string;
         entryPoints: Record<string, Record<string, string>>;
     }) {
-        const outputDirInBasePath = this.outputPath.includes(this.basePath);
+        const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()).map(
                 ([
