@@ -15,7 +15,7 @@ import {
 } from './config-middleware';
 import {
     createWebpackConfig,
-    createWebpackConfigForExteranlFeature,
+    createWebpackConfigForExternalFeature,
     createWebpackConfigs,
 } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
@@ -662,7 +662,7 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
-            createWebpackConfig: isExternal ? createWebpackConfigForExteranlFeature : createWebpackConfig,
+            createWebpackConfig: isExternal ? createWebpackConfigForExternalFeature : createWebpackConfig,
             externalFeatures,
             fetchFeatures,
             eagerEntrypoint,

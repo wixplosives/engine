@@ -220,7 +220,7 @@ export function createWebpackConfig({
     };
 }
 
-export function createWebpackConfigForExteranlFeature({
+export function createWebpackConfigForExternalFeature({
     baseConfig,
     target,
     enviroments,
