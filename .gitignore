@@ -3,6 +3,7 @@ cjs
 esm
 umd
 _wcs
+.vscode/settings.json
 
 # OSX indexing
 .DS_Store
