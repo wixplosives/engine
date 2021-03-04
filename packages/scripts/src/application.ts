@@ -580,28 +580,28 @@ export class Application {
                             packageName,
                             isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
                             filePath,
-                            isRoot
+                            isRoot && outputDirInBasePath
                         ),
                         envFilePaths: scopeFilePathsToPackage(
                             fs,
                             packageName,
                             isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
                             envFilePaths,
-                            isRoot
+                            isRoot && outputDirInBasePath
                         ),
                         contextFilePaths: scopeFilePathsToPackage(
                             fs,
                             packageName,
                             isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
                             contextFilePaths,
-                            isRoot
+                            isRoot && outputDirInBasePath
                         ),
                         preloadFilePaths: scopeFilePathsToPackage(
                             fs,
                             packageName,
                             isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
                             preloadFilePaths,
-                            isRoot
+                            isRoot && outputDirInBasePath
                         ),
                         dependencies: dependencies,
                         exportedEnvs: exportedEnvs,
@@ -764,13 +764,13 @@ function getFilePathInPackage(
     packageName: string,
     context: string,
     filePath: string,
-    isRoot: boolean
+    isRelativeRequest: boolean
 ) {
     const relativeFilePath = fs.relative(context, filePath);
     const relativeRequest = fs
         .join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath, fs.extname(relativeFilePath)))
         .replace(/\\/g, '/');
-    return isRoot
+    return isRelativeRequest
         ? relativeRequest.startsWith('.')
             ? relativeRequest
             : './' + relativeRequest
