@@ -18,7 +18,6 @@
 
     { "path": "./packages/test-kit/src" },
 
-    { "path": "./examples/electron-app" },
     { "path": "./examples/file-server" },
     { "path": "./examples/multi-env" },
     { "path": "./examples/playground" },

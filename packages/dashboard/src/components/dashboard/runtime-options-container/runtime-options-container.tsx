@@ -11,7 +11,7 @@ export interface IRuntimeOptionsProps {
     onOptionAdded: () => void;
     runtimeOptions: IRuntimeOption[];
     setRuntimeArguments: (options: IRuntimeOption[]) => void;
-    actionBtnClassName: string;
+    actionBtnClassName?: string;
 }
 
 export const RuntimeOptionsContainer = memo<IRuntimeOptionsProps>(

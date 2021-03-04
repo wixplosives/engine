@@ -14,7 +14,7 @@ export function parseCliArguments(args: string[]) {
             argumentQueue.push(kebabCaseToCamelCase(currentArgument.slice(2)));
         } else if (argumentQueue.length) {
             argumentQueue.push(currentArgument);
-        } else if (args.length && !args[0].startsWith('--')) {
+        } else if (args.length && !args[0]!.startsWith('--')) {
             args.shift();
         }
     }

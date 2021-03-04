@@ -5,7 +5,7 @@ export default function topLevelConfigLoader(this: webpackLoader.LoaderContext) 
 
     const fileName = params.get('scopedName');
     const envName = params.get('envName');
-    const cachedModule = require.cache[this.resourcePath] as NodeModule | undefined;
+    const cachedModule = require.cache[this.resourcePath];
     const imported = requireDeepHack(this.resourcePath, this.rootContext);
     if (cachedModule) {
         walkChildModules(cachedModule, ({ filename }) => {
@@ -44,9 +44,9 @@ function walkChildModules(nodeJsModule: NodeModule, visitor: (module: NodeModule
  */
 function requireDeepHack(resourcePath: string, rootContext: string): unknown {
     const previousCache: Record<string, NodeModule> = {};
-    walkChildModules(require.cache[resourcePath], ({ filename }) => {
+    walkChildModules(require.cache[resourcePath]!, ({ filename }) => {
         if (!filename.includes('node_modules') && filename.includes(rootContext)) {
-            previousCache[filename] = require.cache[filename];
+            previousCache[filename] = require.cache[filename]!;
             delete require.cache[filename];
         }
     });

@@ -31,7 +31,7 @@ function mkCompare<T>(params: SlotOrdering<T>): Compare<T> {
     // eslint-disable-next-line @typescript-eslint/no-for-in-array
     for (const p in params) {
         if (hasOwnProperty.call(params, p)) {
-            const [key, mode] = params[p];
+            const [key, mode] = params[p]!;
             if (mode === true) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 func = composeCompare<T>(func, (a: any, b: any) => compareAny(b[key], a[key]));
