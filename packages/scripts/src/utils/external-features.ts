@@ -1,8 +1,9 @@
 import { join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from '../build-constants';
-import type { IExtenalFeatureDescriptor, IExternalDefinition } from '../types';
+import type { IExtenalFeatureDescriptor, IExternalDefinition, IFeatureDefinition } from '../types';
 import fs from '@file-services/node';
 import type { IBuildManifest } from '../application';
+import { flattenTree } from '@wixc3/engine-core';
 
 export function getExternalFeaturesMetadata(
     pluginDefinitions: IExternalDefinition[],
@@ -35,4 +36,17 @@ export function getExternalFeaturesMetadata(
             envEntries,
         };
     });
+}
+
+export function getDefinedExternals(feature: IFeatureDefinition, features: Map<string, IFeatureDefinition>) {
+    const externalDefinitions = [
+        ...flattenTree(feature, ({ dependencies }) => dependencies.map((dep) => features.get(dep)!)).values(),
+    ]
+        .map(({ externalDefinitions }) => externalDefinitions)
+        .flat();
+    const definedExternals: Record<string, string> = {};
+    for (const { globalName, request } of externalDefinitions) {
+        definedExternals[request] = globalName;
+    }
+    return definedExternals;
 }

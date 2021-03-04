@@ -2,7 +2,6 @@ import fs from '@file-services/node';
 import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
@@ -10,9 +9,11 @@ import {
     createExternalFeatureMapping,
 } from './create-entrypoint';
 
+import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+import { getDefinedExternals } from './utils';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -59,7 +60,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: webEnvs,
+                environments: webEnvs,
                 target: 'web',
                 virtualModules,
                 plugins,
@@ -73,7 +74,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: workerEnvs,
+                environments: workerEnvs,
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
@@ -86,7 +87,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: electronRendererEnvs,
+                environments: electronRendererEnvs,
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
@@ -120,7 +121,7 @@ interface ICreateWebpackConfigOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    enviroments: Map<string, string[]>;
+    environments: Map<string, string[]>;
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
     virtualModules: Record<string, string>;
@@ -140,7 +141,7 @@ interface ICreateWebpackConfigOptions {
 export function createWebpackConfig({
     baseConfig,
     target,
-    enviroments,
+    environments,
     virtualModules,
     featureName,
     configName,
@@ -161,7 +162,7 @@ export function createWebpackConfig({
     eagerEntrypoint,
     favicon,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
-    for (const [envName, childEnvs] of enviroments) {
+    for (const [envName, childEnvs] of environments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
@@ -223,7 +224,7 @@ export function createWebpackConfig({
 export function createWebpackConfigForExternalFeature({
     baseConfig,
     target,
-    enviroments,
+    environments,
     virtualModules,
     features,
     context,
@@ -238,7 +239,7 @@ export function createWebpackConfigForExternalFeature({
         throw new Error(`${featureName!} was not found after analyzing features`);
     }
 
-    for (const [envName, childEnvs] of enviroments) {
+    for (const [envName, childEnvs] of environments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
         virtualModules[entryPath] = createExternalBrowserEntrypoint({
@@ -256,6 +257,8 @@ export function createWebpackConfigForExternalFeature({
     const externals: webpack.ExternalsElement[] = [externalFeatures];
     const { packageName, name, filePath } = feature;
     const { plugins: basePlugins = [] } = baseConfig;
+
+    externals.push(getDefinedExternals(feature, features));
 
     const userExternals = baseConfig.externals;
     if (userExternals) {

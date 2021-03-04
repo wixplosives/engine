@@ -6,6 +6,7 @@ import type {
     TopLevelConfig,
     Feature,
     Target,
+    ExternalDefinition,
 } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
@@ -220,6 +221,11 @@ export interface IFeatureModule {
      * it will be set as `'processing': 'worker'`
      */
     usedContexts: Record<string, string>;
+
+    /**
+     * exported external definitions (request that will be externalized by the application when bundling)
+     */
+    externalDefinitions: ExternalDefinition[];
 }
 
 export interface IEnvironment {
