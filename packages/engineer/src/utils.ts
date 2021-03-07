@@ -24,7 +24,6 @@ export interface IStartOptions {
     featureName?: string;
     configName?: string;
     httpServerPort?: number;
-    singleRun?: boolean;
     singleFeature?: boolean;
     pathsToRequire?: string[];
     mode?: 'development' | 'production';
@@ -48,7 +47,6 @@ export async function startDevServer({
     featureName,
     configName,
     httpServerPort = 3000,
-    singleRun,
     singleFeature,
     pathsToRequire = [],
     publicPath = '/',
@@ -112,7 +110,6 @@ export async function startDevServer({
                 devServerConfig: {
                     httpServerPort,
                     featureName,
-                    singleRun,
                     singleFeature,
                     publicPath,
                     mode,

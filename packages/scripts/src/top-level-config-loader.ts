@@ -1,7 +1,13 @@
-import type { loader as webpackLoader } from 'webpack';
+export interface PartialWebpackLoaderContext {
+    query: string
+    resourcePath: string
+    rootContext: string
+    addDependency(filePath: string): void
+    emitFile(filePath: string, contents: string, sourcemap: boolean): void
+}
 
-export default function topLevelConfigLoader(this: webpackLoader.LoaderContext) {
-    const params = new URLSearchParams((this.query as string).slice(1));
+export default function topLevelConfigLoader(this: PartialWebpackLoaderContext) {
+    const params = new URLSearchParams((this.query).slice(1));
 
     const fileName = params.get('scopedName');
     const envName = params.get('envName');

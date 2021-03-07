@@ -50,7 +50,6 @@ export interface IRunFeatureOptions extends IFeatureTarget {
 }
 
 export interface IRunApplicationOptions extends IFeatureTarget {
-    singleRun?: boolean;
     singleFeature?: boolean;
     inspect?: boolean;
     port?: number;
@@ -73,6 +72,14 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     externalFeaturesPath?: string;
     eagerEntrypoint?: boolean;
     favicon?: string;
+}
+
+// inlined to stay type-compatible with @types/webpack
+export interface WebpackMultiStats {
+    hasWarnings(): boolean;
+    hasErrors(): boolean;
+    toString(mode?: string): string;
+    stats: webpack.Stats[];
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -159,7 +166,7 @@ export class Application {
         featureOutDir,
         externalFeaturesPath,
         eagerEntrypoint,
-    }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
+    }: IBuildCommandOptions = {}): Promise<WebpackMultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
             require,
@@ -221,14 +228,14 @@ export class Application {
         });
         const outDir = fs.basename(this.outputPath);
 
-        const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
+        const stats = await new Promise<webpack.MultiStats>((resolve, reject) =>
             compiler.run((e, s) => {
                 if (e) {
                     reject(e);
-                } else if (s.hasErrors()) {
-                    reject(new Error(s.toString('errors-warnings')));
+                } else if (s!.hasErrors()) {
+                    reject(new Error(s!.toString('errors-warnings')));
                 } else {
-                    resolve(s);
+                    resolve(s!);
                 }
             })
         );
@@ -824,6 +831,5 @@ function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
                 console.log(childStats.toString('errors-warnings'));
             }
         }
-        console.log('Done bundling.');
     });
 }

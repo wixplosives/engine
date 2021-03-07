@@ -79,7 +79,6 @@ describe('engineer:dev-server', function () {
             inspect,
             overrideConfig,
             outputPath,
-            singleRun: true,
             runtimeOptions,
             externalFeatureDefinitions,
             externalFeaturesPath,
