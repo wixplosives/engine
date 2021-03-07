@@ -19,7 +19,7 @@ describe('Node environments manager', function () {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         await app.build();
         disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
+        const { close, nodeEnvironmentManager } = await app.run();
         disposables.add(close);
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
@@ -34,7 +34,7 @@ describe('Node environments manager', function () {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         await app.build();
         disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
+        const { close, nodeEnvironmentManager } = await app.run();
         disposables.add(close);
 
         const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
@@ -53,7 +53,7 @@ describe('Node environments manager', function () {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         await app.build();
         disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
+        const { close, nodeEnvironmentManager } = await app.run();
         disposables.add(close);
 
         await expect(
@@ -67,7 +67,7 @@ describe('Node environments manager', function () {
         const app = new Application({ basePath: nodeEnvironmentFixturePath });
         await app.build();
         disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager } = await app.run({ singleRun: true });
+        const { close, nodeEnvironmentManager } = await app.run();
         disposables.add(close);
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);

@@ -1,7 +1,8 @@
 import fs from '@file-services/node';
-import type webpack from 'webpack';
+import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
+import semverLessThan from 'semver/functions/lt';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
     createMainEntrypoint,
@@ -124,8 +125,8 @@ interface ICreateWebpackConfigOptions {
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
     virtualModules: Record<string, string>;
-    plugins?: webpack.Plugin[];
-    entry?: webpack.Entry;
+    plugins?: webpack.WebpackPluginInstance[];
+    entry?: webpack.EntryObject;
     title?: string;
     favicon?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
@@ -253,8 +254,9 @@ export function createWebpackConfigForExternalFeature({
     const externalFeatures: Record<string, string> = {
         '@wixc3/engine-core': 'EngineCore',
     };
-    const externals: webpack.ExternalsElement[] = [externalFeatures];
+    const externals: webpack.Configuration['externals'] = [externalFeatures];
     const { packageName, name, filePath } = feature;
+
     const { plugins: basePlugins = [] } = baseConfig;
 
     const userExternals = baseConfig.externals;
@@ -268,7 +270,7 @@ export function createWebpackConfigForExternalFeature({
     const virtualModulePaths = Object.keys(virtualModules);
     externals.push(extractExternals(filePath, virtualModulePaths));
 
-    return {
+    const webpackConfig: webpack.Configuration = {
         ...baseConfig,
         target,
         entry,
@@ -280,8 +282,6 @@ export function createWebpackConfigForExternalFeature({
             path: outputPath,
             filename: `[name].${target}.js`,
             chunkFilename: `[name].${target}.js`,
-            libraryTarget: 'var',
-            jsonpFunction: packageName + name,
         },
         plugins: [...basePlugins, ...plugins],
         externals,
@@ -291,14 +291,19 @@ export function createWebpackConfigForExternalFeature({
         },
         stats: 'errors-warnings',
     };
+    if (semverLessThan(webpack.version, '5.0.0')) {
+        webpackConfig.output!.libraryTarget = 'var';
+        (webpackConfig.output as { jsonpFunction: string }).jsonpFunction = packageName + name;
+    }
+    return webpackConfig;
 }
 
-const extractExternals: (featurePath: string, ignoredRequests: Array<string>) => webpack.ExternalsFunctionElement = (
-    featurePath,
-    ignoredRequests
-) => (context, request, cb) => {
+const extractExternals = (featurePath: string, ignoredRequests: string[]) => (
+    { context, request }: { context?: string; request?: string },
+    cb: (e?: Error, target?: string) => void
+) => {
     try {
-        if (ignoredRequests.includes(request)) {
+        if (!request || !context || ignoredRequests.includes(request)) {
             return cb();
         }
         const resolvedRequest = require.resolve(request, { paths: [context] });
@@ -308,7 +313,7 @@ const extractExternals: (featurePath: string, ignoredRequests: Array<string>) =>
                 throw new Error(`could not find package.json for ${resolvedRequest}`);
             }
             const { name } = fs.readJsonFileSync(packageJson) as { name: string };
-            return cb(null, createExternalFeatureMapping(name, resolvedRequest));
+            return cb(undefined, createExternalFeatureMapping(name, resolvedRequest));
         }
         cb();
     } catch (err) {

@@ -127,7 +127,6 @@ describe('Application', function () {
 
             await app.build({
                 featureName: 'engine-single/x',
-                singleRun: true,
                 overrideConfig: () => mainConfig,
             });
             disposables.add(() => app.clean());
@@ -314,7 +313,7 @@ describe('Application', function () {
         });
         await app.build();
         disposables.add(() => app.clean());
-        const { close, port, router } = await app.run({ singleRun: true });
+        const { close, port, router } = await app.run();
         disposables.add(close);
 
         router.get('/test/me', (_req, res) => {

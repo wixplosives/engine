@@ -42,7 +42,6 @@ export const startCommand: Command = (program) =>
         .option('--mode <production|development>', 'mode passed to webpack', 'development')
         .option('--inspect')
         .option('-p ,--port <port>')
-        .option('--singleRun', 'when enabled, webpack will not watch files', false)
         .option('--singleFeature', 'build only the feature set by --feature', false)
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--open <open>')
@@ -68,7 +67,6 @@ export const startCommand: Command = (program) =>
                 feature: featureName,
                 config: configName,
                 port: httpServerPort = 3000,
-                singleRun,
                 singleFeature,
                 open: openBrowser = 'true',
                 require: pathsToRequire,
@@ -92,7 +90,6 @@ export const startCommand: Command = (program) =>
                     featureName,
                     configName,
                     httpServerPort,
-                    singleRun,
                     singleFeature,
                     pathsToRequire,
                     publicPath,

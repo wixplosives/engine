@@ -13,7 +13,7 @@
   "peerDependencies": {
     "react": ">=16",
     "react-dom": ">=16",
-    "webpack": "^4.0.0"
+    "webpack": "^4.0.0 || ^5.0.0"
   },
   "dependencies": {
     "@file-services/node": "^5.3.1",
