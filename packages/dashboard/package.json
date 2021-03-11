@@ -17,7 +17,7 @@
     "@wixc3/engine-scripts": "^17.4.1",
     "d3-hierarchy": "^2.0.0",
     "d3-selection": "^2.0.0",
-    "d3-shape": "^2.0.0"
+    "d3-shape": "^2.1.0"
   },
   "files": [
     "dist",
