@@ -24,7 +24,7 @@
     "@wixc3/engine-scripts": "^17.4.1",
     "commander": "^7.1.0",
     "open": "^8.0.2",
-    "socket.io": "^3.1.2",
+    "socket.io": "^4.0.0",
     "webpack-dev-middleware": "^4.1.0",
     "webpack-virtual-modules": "^0.4.2"
   },
