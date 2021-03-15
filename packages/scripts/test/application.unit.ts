@@ -117,7 +117,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.be.undefined;
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('./feature/x.feature');
+                expect(filePath).to.eq('../feature/x.feature');
             });
 
             it('maps own feature requests to relative requests to custom featureOutDir if output path inside base path', async () => {
@@ -126,7 +126,7 @@ describe('Application', function () {
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
                 await app.build({
                     featureName: 'engine-single/x',
-                    featureOutDir: 'dist',
+                    featureOutDir: 'lib',
                 });
                 disposables.add(() => app.clean());
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
@@ -134,7 +134,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.be.undefined;
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('./dist/feature/x.feature');
+                expect(filePath).to.eq('../lib/feature/x.feature');
             });
 
             it('maps to own feature request to package requests if output path outside base path', async () => {
@@ -191,19 +191,32 @@ describe('Application', function () {
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
                 expect(manifest.entryPoints['server']).to.not.be.undefined;
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const nodeEntryModule = require(fs.join(
-                    nodeFeatureFixturePath,
-                    manifest.entryPoints['server']!['node']!
+                const nodeEntryModule = (await import(
+                    fs.join(nodeFeatureFixturePath, manifest.entryPoints['server']!['node']!)
                 )) as Record<string, IFeatureLoader>;
+
                 expect(nodeEntryModule['engine-node/x']).to.not.be.undefined;
                 const loadedModule = await nodeEntryModule['engine-node/x']?.load({});
                 expect(loadedModule).to.not.eq({});
             });
 
             it('creates a node entry with re-mapped sources', async () => {
-                const app = new Application({ basePath: nodeFeatureFixturePath });
-                await app.build({ external: true, featureName: 'engine-node/x', featureOutDir: 'dist' });
+                const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
+                fs.copyDirectorySync(nodeFeatureFixturePath, tempDirPath);
+                disposables.add(() => rimraf.sync(tempDirPath));
+                fs.symlinkSync(
+                    fs.join(__dirname, '../../../node_modules'),
+                    fs.join(tempDirPath, 'node_modules'),
+                    'junction'
+                );
+                fs.symlinkSync(
+                    fs.join(__dirname, '../../../webpack.config.js'),
+                    fs.join(tempDirPath, 'webpack.config.js'),
+                    'file'
+                );
+
+                const app = new Application({ basePath: tempDirPath });
+                await app.build({ external: true, featureName: 'engine-node/x', featureOutDir: 'lib' });
 
                 disposables.add(() => app.clean());
 
@@ -211,17 +224,13 @@ describe('Application', function () {
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
                 expect(manifest.entryPoints['server']).to.not.be.undefined;
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const nodeEntryModule = require(fs.join(
-                    nodeFeatureFixturePath,
-                    manifest.entryPoints['server']!['node']!
+                const nodeEntryModule = (await import(
+                    fs.join(tempDirPath, manifest.entryPoints['server']!['node']!)
                 )) as Record<string, IFeatureLoader>;
                 expect(nodeEntryModule['engine-node/x']).to.not.be.undefined;
 
                 await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.be.rejected;
-                fs.copyDirectorySync(
-                    fs.join(nodeFeatureFixturePath, 'feature'),
-                    fs.join(nodeFeatureFixturePath, 'dist/feature')
-                );
+                fs.copyDirectorySync(fs.join(tempDirPath, 'feature'), fs.join(tempDirPath, 'lib/feature'));
                 await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.not.be.rejected;
             });
         });

@@ -263,7 +263,7 @@ export class Application {
             featureName,
             configName,
             entryPoints,
-            featureOutDir: fs.resolve(this.basePath, bundledSourcesRoot),
+            featureOutDir: bundledSourcesRoot,
         });
 
         return stats;
@@ -597,6 +597,7 @@ export class Application {
                             envFilePaths[envName] = filePath.replace(directoryPath, featureOutDir);
                         }
                     }
+                    const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
                     return [
                         featureName,
                         {
@@ -604,28 +605,28 @@ export class Application {
                             filePath: getFilePathInPackage(
                                 fs,
                                 packageName,
-                                directoryPath,
+                                context,
                                 filePath,
                                 isRoot && outputDirInBasePath
                             ),
                             envFilePaths: scopeFilePathsToPackage(
                                 fs,
                                 packageName,
-                                directoryPath,
+                                context,
                                 envFilePaths,
                                 isRoot && outputDirInBasePath
                             ),
                             contextFilePaths: scopeFilePathsToPackage(
                                 fs,
                                 packageName,
-                                directoryPath,
+                                context,
                                 contextFilePaths,
                                 isRoot && outputDirInBasePath
                             ),
                             preloadFilePaths: scopeFilePathsToPackage(
                                 fs,
                                 packageName,
-                                directoryPath,
+                                context,
                                 preloadFilePaths,
                                 isRoot && outputDirInBasePath
                             ),
