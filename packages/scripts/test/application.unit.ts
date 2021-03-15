@@ -59,22 +59,21 @@ describe('Application', function () {
         });
 
         describe('manifest generation', () => {
-            it('generates  manifest', async () => {
+            it('generates manifest', async () => {
                 const app = new Application({ basePath: engineFeatureFixturePath });
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
                 await app.build();
                 disposables.add(() => app.clean());
 
-                expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
                 expect(fs.fileExistsSync(manifestFilePath), 'manifest file exist').to.equal(true);
 
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-
-                expect(manifest.features).have.lengthOf(2);
+                expect(manifest.features).to.have.length.gt(0);
+                expect(manifest.features[0]![0]).have.eq('engine-single/x');
             });
 
-            it('include provided values in maniest file', async () => {
+            it('includes provided feature name in manifest file', async () => {
                 const app = new Application({ basePath: engineFeatureFixturePath });
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
@@ -87,7 +86,7 @@ describe('Application', function () {
                 expect(manifest.defaultFeatureName).to.eq('engine-single/x');
             });
 
-            it('includes entrypoint directions when built externally', async () => {
+            it('includes entrypoint locations when built externally', async () => {
                 const app = new Application({ basePath: engineFeatureFixturePath });
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
@@ -98,13 +97,13 @@ describe('Application', function () {
                 disposables.add(() => app.clean());
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
 
-                expect(manifest.entryPoints).to.not.be.undefined;
+                expect(manifest.entryPoints).to.not.eq(undefined);
                 expect(Object.keys(manifest.entryPoints)).have.lengthOf(1);
-                expect(manifest.entryPoints['main']).to.not.be.undefined;
+                expect(manifest.entryPoints['main']).to.not.eq(undefined);
                 expect(manifest.entryPoints['main']!['web']).to.eq('dist/main.web.js');
             });
 
-            it('maps own feature requests to relative requests if output path inside base path', async () => {
+            it('maps own feature requests to relative requests if output path inside package directory', async () => {
                 const app = new Application({ basePath: engineFeatureFixturePath });
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
@@ -115,12 +114,12 @@ describe('Application', function () {
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
 
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
-                expect(featureDefinition).to.not.be.undefined;
+                expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
                 expect(filePath).to.eq('../feature/x.feature');
             });
 
-            it('maps own feature requests to relative requests to custom featureOutDir if output path inside base path', async () => {
+            it('uses sourcesRoot when building to the output path which is inside package directory', async () => {
                 const app = new Application({ basePath: engineFeatureFixturePath });
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
@@ -132,12 +131,12 @@ describe('Application', function () {
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
 
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
-                expect(featureDefinition).to.not.be.undefined;
+                expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
                 expect(filePath).to.eq('../lib/feature/x.feature');
             });
 
-            it('maps to own feature request to package requests if output path outside base path', async () => {
+            it('maps to own feature request to package requests if output path outside package directory', async () => {
                 const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
                 const app = new Application({ basePath: engineFeatureFixturePath, outputPath: tempDirPath });
 
@@ -149,12 +148,12 @@ describe('Application', function () {
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
 
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
-                expect(featureDefinition).to.not.be.undefined;
+                expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
                 expect(filePath).to.eq('@fixture/engine-single-feature/feature/x.feature');
             });
 
-            it('maps to own feature request to package requests to custom featureOutDir if output path outside base path', async () => {
+            it('uses package requests when output path is outside package path', async () => {
                 const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
                 const app = new Application({ basePath: engineFeatureFixturePath, outputPath: tempDirPath });
 
@@ -167,7 +166,7 @@ describe('Application', function () {
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
 
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
-                expect(featureDefinition).to.not.be.undefined;
+                expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
                 expect(filePath).to.eq('@fixture/engine-single-feature/lib/feature/x.feature');
             });
@@ -190,12 +189,12 @@ describe('Application', function () {
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-                expect(manifest.entryPoints['server']).to.not.be.undefined;
+                expect(manifest.entryPoints['server']).to.not.eq(undefined);
                 const nodeEntryModule = (await import(
                     fs.join(nodeFeatureFixturePath, manifest.entryPoints['server']!['node']!)
                 )) as Record<string, IFeatureLoader>;
 
-                expect(nodeEntryModule['engine-node/x']).to.not.be.undefined;
+                expect(nodeEntryModule['engine-node/x']).to.not.eq(undefined);
                 const loadedModule = await nodeEntryModule['engine-node/x']?.load({});
                 expect(loadedModule).to.not.eq({});
             });
@@ -222,16 +221,15 @@ describe('Application', function () {
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-                expect(manifest.entryPoints['server']).to.not.be.undefined;
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                expect(manifest.entryPoints['server']).to.not.eq(undefined);
                 const nodeEntryModule = (await import(
                     fs.join(tempDirPath, manifest.entryPoints['server']!['node']!)
                 )) as Record<string, IFeatureLoader>;
-                expect(nodeEntryModule['engine-node/x']).to.not.be.undefined;
+                expect(nodeEntryModule['engine-node/x']).to.not.eq(undefined);
 
-                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.be.rejected;
+                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.be.rejectedWith();
                 fs.copyDirectorySync(fs.join(tempDirPath, 'feature'), fs.join(tempDirPath, 'lib/feature'));
-                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.not.be.rejected;
+                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.not.be.rejectedWith();
             });
         });
     });
