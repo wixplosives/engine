@@ -596,7 +596,6 @@ export class Application {
                         for (const [envName, filePath] of Object.entries(preloadFilePaths)) {
                             envFilePaths[envName] = filePath.replace(directoryPath, featureOutDir);
                         }
-                        // directoryPath = featureOutDir;
                     }
                     return [
                         featureName,
