@@ -135,7 +135,7 @@ export function buildCommand(program: typeof commander) {
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
         .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
         .option(
-            '--featureOutDir <featureOutDir>',
+            '--sourcesRoot <sourcesRoot>',
             'the directory where the feature library will be published at (relative to the base path). default: "."'
         )
         .option(
@@ -170,7 +170,7 @@ export function buildCommand(program: typeof commander) {
                 publicConfigsRoute,
                 webpackConfig,
                 external,
-                featureOutDir,
+                sourcesRoot,
                 withExternalFeatures,
                 fetchExternalFeatures,
                 eagerEntrypoints,
@@ -193,7 +193,7 @@ export function buildCommand(program: typeof commander) {
                     publicConfigsRoute,
                     webpackConfigPath: webpackConfig,
                     external,
-                    featureOutDir,
+                    sourcesRoot,
                     withExternalFeatures,
                     fetchExternalFeatures,
                     eagerEntrypoint: eagerEntrypoints,

@@ -68,7 +68,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     staticBuild?: boolean;
     withExternalFeatures?: boolean;
     fetchExternalFeatures?: boolean;
-    featureOutDir?: string;
+    sourcesRoot?: string;
     externalFeaturesPath?: string;
     eagerEntrypoint?: boolean;
     favicon?: string;
@@ -131,12 +131,12 @@ export interface ICompilerOptions {
 export class Application {
     public outputPath: string;
     protected basePath: string;
-    protected featureDiscoveryRoot?: string;
+    protected featureDiscoveryRoot: string;
 
     constructor({
         basePath = process.cwd(),
         outputPath = fs.join(basePath, 'dist'),
-        featureDiscoveryRoot,
+        featureDiscoveryRoot = '.',
     }: IApplicationOptions) {
         this.basePath = basePath;
         this.outputPath = outputPath;
@@ -163,7 +163,7 @@ export class Application {
         withExternalFeatures = false,
         fetchExternalFeatures,
         webpackConfigPath,
-        featureOutDir,
+        sourcesRoot: providedSourcesRoot,
         externalFeaturesPath,
         eagerEntrypoint,
     }: IBuildCommandOptions = {}): Promise<WebpackMultiStats> {
@@ -172,7 +172,7 @@ export class Application {
             require,
             externalFeatureDefinitions,
             externalFeaturesPath: configExternalFeaturesPath,
-            featureOutDir: configFeatureOutDir,
+            sourcesRoot: configSourcesRoot,
             favicon: configFavicon,
         } = config ?? {};
         if (require) {
@@ -240,15 +240,17 @@ export class Application {
             })
         );
 
+        const sourceRoot = providedSourcesRoot ?? configSourcesRoot ?? this.featureDiscoveryRoot;
         if (external) {
-            const providedOutDir = featureOutDir || configFeatureOutDir || '.';
+            const feature = features.get(featureName!)!;
             // The node entry is created inside the outDir, and requires the mentioned feature file (as well as environment files)
-            // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
-            const relativeFeatureOutDir =
-                // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
-                fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir)) || '.';
+            // in order to properly import from the entry the required files, we are resolving the sourcesRoot with the directoryPath of the feature (the root of the package) and the outDir - the location where the node entry will be created to
+            // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
+            const relativeBundledSourcesOutDir =
+                fs.relative(this.outputPath, fs.resolve(feature.directoryPath, sourceRoot)) ||
+                this.featureDiscoveryRoot;
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
-            this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeFeatureOutDir);
+            this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeBundledSourcesOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
             getEnvEntrypoints(electronRendererEnvs.keys(), 'electron-renderer', entryPoints, outDir);
             getEnvEntrypoints(webEnvs.keys(), 'web', entryPoints, outDir);
@@ -260,6 +262,7 @@ export class Application {
             featureName,
             configName,
             entryPoints,
+            pathToSources: sourceRoot,
         });
 
         return stats;
@@ -554,11 +557,13 @@ export class Application {
         featureName,
         configName,
         entryPoints,
+        pathToSources,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
         entryPoints: Record<string, Record<string, string>>;
+        pathToSources: string;
     }) {
         const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
         const manifest: IBuildManifest = {
@@ -578,44 +583,60 @@ export class Application {
                         resolvedContexts,
                         directoryPath,
                     },
-                ]) => [
-                    featureName,
-                    {
-                        scopedName,
-                        filePath: getFilePathInPackage(
-                            fs,
+                ]) => {
+                    const sourcesRoot = fs.resolve(directoryPath, pathToSources);
+                    if (isRoot) {
+                        filePath = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
+                        for (const [envName, filePath] of Object.entries(envFilePaths)) {
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
+                        }
+                        for (const [envName, filePath] of Object.entries(contextFilePaths)) {
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
+                        }
+                        for (const [envName, filePath] of Object.entries(preloadFilePaths)) {
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
+                        }
+                    }
+                    const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
+                    return [
+                        featureName,
+                        {
+                            scopedName,
+                            filePath: getFilePathInPackage(
+                                fs,
+                                packageName,
+                                context,
+                                filePath,
+                                isRoot && outputDirInBasePath
+                            ),
+                            envFilePaths: scopeFilePathsToPackage(
+                                fs,
+                                packageName,
+                                context,
+                                envFilePaths,
+                                isRoot && outputDirInBasePath
+                            ),
+                            contextFilePaths: scopeFilePathsToPackage(
+                                fs,
+                                packageName,
+                                context,
+                                contextFilePaths,
+                                isRoot && outputDirInBasePath
+                            ),
+                            preloadFilePaths: scopeFilePathsToPackage(
+                                fs,
+                                packageName,
+                                context,
+                                preloadFilePaths,
+                                isRoot && outputDirInBasePath
+                            ),
+                            dependencies: dependencies,
+                            exportedEnvs: exportedEnvs,
+                            resolvedContexts: resolvedContexts,
                             packageName,
-                            isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
-                            filePath,
-                            isRoot && outputDirInBasePath
-                        ),
-                        envFilePaths: scopeFilePathsToPackage(
-                            fs,
-                            packageName,
-                            isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
-                            envFilePaths,
-                            isRoot && outputDirInBasePath
-                        ),
-                        contextFilePaths: scopeFilePathsToPackage(
-                            fs,
-                            packageName,
-                            isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
-                            contextFilePaths,
-                            isRoot && outputDirInBasePath
-                        ),
-                        preloadFilePaths: scopeFilePathsToPackage(
-                            fs,
-                            packageName,
-                            isRoot && outputDirInBasePath ? this.outputPath : directoryPath,
-                            preloadFilePaths,
-                            isRoot && outputDirInBasePath
-                        ),
-                        dependencies: dependencies,
-                        exportedEnvs: exportedEnvs,
-                        resolvedContexts: resolvedContexts,
-                        packageName,
-                    } as IFeatureDefinition,
-                ]
+                        } as IFeatureDefinition,
+                    ];
+                }
             ),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
