@@ -240,14 +240,15 @@ export class Application {
             })
         );
 
-        // The node entry is created inside the outDir, and requires the mentioned feature file (as well as environment files)
-        // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
-        // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
-        const sources = providedSourcesRoot || configSourcesRoot || this.featureDiscoveryRoot;
+        const sourceRoot = providedSourcesRoot ?? configSourcesRoot ?? this.featureDiscoveryRoot;
         if (external) {
             const feature = features.get(featureName!)!;
+            // The node entry is created inside the outDir, and requires the mentioned feature file (as well as environment files)
+            // in order to properly import from the entry the required files, we are resolving the sourcesRoot with the directoryPath of the feature (the root of the package) and the outDir - the location where the node entry will be created to
+            // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
             const relativeBundledSourcesOutDir =
-                fs.relative(this.outputPath, fs.resolve(feature.directoryPath, sources)) || this.featureDiscoveryRoot;
+                fs.relative(this.outputPath, fs.resolve(feature.directoryPath, sourceRoot)) ||
+                this.featureDiscoveryRoot;
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
             this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeBundledSourcesOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
@@ -261,7 +262,7 @@ export class Application {
             featureName,
             configName,
             entryPoints,
-            pathToSources: sources,
+            pathToSources: sourceRoot,
         });
 
         return stats;
@@ -585,15 +586,15 @@ export class Application {
                 ]) => {
                     const sourcesRoot = fs.resolve(directoryPath, pathToSources);
                     if (isRoot) {
-                        filePath = filePath.replace(directoryPath, sourcesRoot);
+                        filePath = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
                         for (const [envName, filePath] of Object.entries(envFilePaths)) {
-                            envFilePaths[envName] = filePath.replace(directoryPath, sourcesRoot);
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
                         }
                         for (const [envName, filePath] of Object.entries(contextFilePaths)) {
-                            envFilePaths[envName] = filePath.replace(directoryPath, sourcesRoot);
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
                         }
                         for (const [envName, filePath] of Object.entries(preloadFilePaths)) {
-                            envFilePaths[envName] = filePath.replace(directoryPath, sourcesRoot);
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
                         }
                     }
                     const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
