@@ -201,19 +201,13 @@ describe('Application', function () {
 
             it('creates a node entry with re-mapped sources', async () => {
                 const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
-                fs.copyDirectorySync(nodeFeatureFixturePath, tempDirPath);
-                disposables.add(() => rimraf.sync(tempDirPath));
-                fs.symlinkSync(
-                    fs.join(__dirname, '../../../node_modules'),
-                    fs.join(tempDirPath, 'node_modules'),
-                    'junction'
-                );
-                fs.copyFileSync(
-                    fs.join(__dirname, '../../../webpack.config.js'),
-                    fs.join(tempDirPath, 'webpack.config.js')
-                );
 
-                const app = new Application({ basePath: tempDirPath });
+                disposables.add(() => rimraf.sync(tempDirPath));
+
+                const app = new Application({
+                    basePath: nodeFeatureFixturePath,
+                    outputPath: fs.join(tempDirPath, 'dist'),
+                });
                 await app.build({ external: true, featureName: 'engine-node/x', sourcesRoot: 'lib' });
 
                 disposables.add(() => app.clean());
@@ -226,8 +220,14 @@ describe('Application', function () {
                 )) as Record<string, IFeatureLoader>;
                 expect(nodeEntryModule['engine-node/x']).to.not.eq(undefined);
 
+                fs.symlinkSync(
+                    fs.join(__dirname, '../../../node_modules'),
+                    fs.join(tempDirPath, 'node_modules'),
+                    'junction'
+                );
+
                 await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.be.rejectedWith();
-                fs.copyDirectorySync(fs.join(tempDirPath, 'feature'), fs.join(tempDirPath, 'lib/feature'));
+                fs.copyDirectorySync(fs.join(nodeFeatureFixturePath, 'feature'), fs.join(tempDirPath, 'lib/feature'));
                 await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.not.be.rejectedWith();
             });
         });
