@@ -199,7 +199,7 @@ describe('Application', function () {
                 expect(loadedModule).to.not.eq({});
             });
 
-            it('creates a node entry with re-mapped sources', async () => {
+            it.only('creates a node entry with re-mapped sources', async () => {
                 const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
                 fs.copyDirectorySync(nodeFeatureFixturePath, tempDirPath);
                 disposables.add(() => rimraf.sync(tempDirPath));
@@ -208,10 +208,9 @@ describe('Application', function () {
                     fs.join(tempDirPath, 'node_modules'),
                     'junction'
                 );
-                fs.symlinkSync(
+                fs.copyFileSync(
                     fs.join(__dirname, '../../../webpack.config.js'),
-                    fs.join(tempDirPath, 'webpack.config.js'),
-                    'file'
+                    fs.join(tempDirPath, 'webpack.config.js')
                 );
 
                 const app = new Application({ basePath: tempDirPath });
