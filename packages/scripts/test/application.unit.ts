@@ -1,13 +1,16 @@
 import fs from '@file-services/node';
-import { TopLevelConfig, createDisposables } from '@wixc3/engine-core';
+import { TopLevelConfig, createDisposables, IFeatureLoader } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import type { Frame, Page } from 'playwright-core';
-import { Application } from '@wixc3/engine-scripts';
+import { Application, IBuildManifest } from '@wixc3/engine-scripts';
 import { join } from 'path';
 import rimraf from 'rimraf';
-
+import { mkdtempSync } from 'fs';
+import os from 'os';
+import chaiAsPromised from 'chai-as-promised';
+chai.use(chaiAsPromised);
 function getBodyContent(page: Page | Frame) {
     return page.evaluate(() => (document.body.textContent || '').trim());
 }
@@ -36,20 +39,14 @@ describe('Application', function () {
     const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 
     describe('build', () => {
+        const manifestFileName = 'manifest.json';
+
         it(`supports building features with a single fixture`, async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build();
             disposables.add(() => app.clean());
 
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
-        });
-        it('allows building features in external mode', async () => {
-            const app = new Application({ basePath: engineFeatureFixturePath });
-            await app.build({ external: true, featureName: 'engine-single/x' });
-            disposables.add(() => app.clean());
-            expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
-            const contents = fs.readdirSync(app.outputPath);
-            expect(contents).to.include('main.web.js');
         });
 
         it(`allows building feature with given favicon`, async () => {
@@ -59,6 +56,174 @@ describe('Application', function () {
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
             const contents = fs.readdirSync(app.outputPath);
             expect(contents).to.include('favicon.ico');
+        });
+
+        describe('manifest generation', () => {
+            it('generates  manifest', async () => {
+                const app = new Application({ basePath: engineFeatureFixturePath });
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                await app.build();
+                disposables.add(() => app.clean());
+
+                expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+                expect(fs.fileExistsSync(manifestFilePath), 'manifest file exist').to.equal(true);
+
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+
+                expect(manifest.features).have.lengthOf(2);
+            });
+
+            it('include provided values in maniest file', async () => {
+                const app = new Application({ basePath: engineFeatureFixturePath });
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                await app.build({
+                    featureName: 'engine-single/x',
+                });
+                disposables.add(() => app.clean());
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+
+                expect(manifest.defaultFeatureName).to.eq('engine-single/x');
+            });
+
+            it('includes entrypoint directions when built externally', async () => {
+                const app = new Application({ basePath: engineFeatureFixturePath });
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                await app.build({
+                    featureName: 'engine-single/x',
+                    external: true,
+                });
+                disposables.add(() => app.clean());
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+
+                expect(manifest.entryPoints).to.not.be.undefined;
+                expect(Object.keys(manifest.entryPoints)).have.lengthOf(1);
+                expect(manifest.entryPoints['main']).to.not.be.undefined;
+                expect(manifest.entryPoints['main']!['web']).to.eq('dist/main.web.js');
+            });
+
+            it('maps own feature requests to relative requests if output path inside base path', async () => {
+                const app = new Application({ basePath: engineFeatureFixturePath });
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                await app.build({
+                    featureName: 'engine-single/x',
+                });
+                disposables.add(() => app.clean());
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+
+                const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
+                expect(featureDefinition).to.not.be.undefined;
+                const [, { filePath }] = featureDefinition!;
+                expect(filePath).to.eq('./feature/x.feature');
+            });
+
+            it('maps own feature requests to relative requests to custom featureOutDir if output path inside base path', async () => {
+                const app = new Application({ basePath: engineFeatureFixturePath });
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                await app.build({
+                    featureName: 'engine-single/x',
+                    featureOutDir: 'dist',
+                });
+                disposables.add(() => app.clean());
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+
+                const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
+                expect(featureDefinition).to.not.be.undefined;
+                const [, { filePath }] = featureDefinition!;
+                expect(filePath).to.eq('./dist/feature/x.feature');
+            });
+
+            it('maps to own feature request to package requests if output path outside base path', async () => {
+                const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
+                const app = new Application({ basePath: engineFeatureFixturePath, outputPath: tempDirPath });
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                await app.build({
+                    featureName: 'engine-single/x',
+                });
+                disposables.add(() => app.clean());
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+
+                const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
+                expect(featureDefinition).to.not.be.undefined;
+                const [, { filePath }] = featureDefinition!;
+                expect(filePath).to.eq('@fixture/engine-single-feature/feature/x.feature');
+            });
+
+            it('maps to own feature request to package requests to custom featureOutDir if output path outside base path', async () => {
+                const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
+                const app = new Application({ basePath: engineFeatureFixturePath, outputPath: tempDirPath });
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                await app.build({
+                    featureName: 'engine-single/x',
+                    featureOutDir: 'dist',
+                });
+                disposables.add(() => app.clean());
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+
+                const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
+                expect(featureDefinition).to.not.be.undefined;
+                const [, { filePath }] = featureDefinition!;
+                expect(filePath).to.eq('@fixture/engine-single-feature/dist/feature/x.feature');
+            });
+        });
+
+        describe('external mode', () => {
+            it('allows building features in external mode', async () => {
+                const app = new Application({ basePath: engineFeatureFixturePath });
+                await app.build({ external: true, featureName: 'engine-single/x' });
+                disposables.add(() => app.clean());
+                expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
+                const contents = fs.readdirSync(app.outputPath);
+                expect(contents).to.include('main.web.js');
+            });
+
+            it('creates a node entry', async () => {
+                const app = new Application({ basePath: nodeFeatureFixturePath });
+                await app.build({ external: true, featureName: 'engine-node/x' });
+                disposables.add(() => app.clean());
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+                expect(manifest.entryPoints['server']).to.not.be.undefined;
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                const nodeEntryModule = require(fs.join(
+                    nodeFeatureFixturePath,
+                    manifest.entryPoints['server']!['node']!
+                )) as Record<string, IFeatureLoader>;
+                expect(nodeEntryModule['engine-node/x']).to.not.be.undefined;
+                const loadedModule = await nodeEntryModule['engine-node/x']?.load({});
+                expect(loadedModule).to.not.eq({});
+            });
+
+            it('creates a node entry with re-mapped sources', async () => {
+                const app = new Application({ basePath: nodeFeatureFixturePath });
+                await app.build({ external: true, featureName: 'engine-node/x', featureOutDir: 'dist' });
+
+                disposables.add(() => app.clean());
+
+                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
+                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
+                expect(manifest.entryPoints['server']).to.not.be.undefined;
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                const nodeEntryModule = require(fs.join(
+                    nodeFeatureFixturePath,
+                    manifest.entryPoints['server']!['node']!
+                )) as Record<string, IFeatureLoader>;
+                expect(nodeEntryModule['engine-node/x']).to.not.be.undefined;
+
+                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.be.rejected;
+                fs.copyDirectorySync(
+                    fs.join(nodeFeatureFixturePath, 'feature'),
+                    fs.join(nodeFeatureFixturePath, 'dist/feature')
+                );
+                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.not.be.rejected;
+            });
         });
     });
 
