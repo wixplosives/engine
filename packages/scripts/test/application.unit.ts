@@ -126,7 +126,7 @@ describe('Application', function () {
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
                 await app.build({
                     featureName: 'engine-single/x',
-                    featureOutDir: 'lib',
+                    sourcesRoot: 'lib',
                 });
                 disposables.add(() => app.clean());
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
@@ -161,7 +161,7 @@ describe('Application', function () {
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
                 await app.build({
                     featureName: 'engine-single/x',
-                    featureOutDir: 'dist',
+                    sourcesRoot: 'lib',
                 });
                 disposables.add(() => app.clean());
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
@@ -169,7 +169,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.be.undefined;
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('@fixture/engine-single-feature/dist/feature/x.feature');
+                expect(filePath).to.eq('@fixture/engine-single-feature/lib/feature/x.feature');
             });
         });
 
@@ -216,7 +216,7 @@ describe('Application', function () {
                 );
 
                 const app = new Application({ basePath: tempDirPath });
-                await app.build({ external: true, featureName: 'engine-node/x', featureOutDir: 'lib' });
+                await app.build({ external: true, featureName: 'engine-node/x', sourcesRoot: 'lib' });
 
                 disposables.add(() => app.clean());
 

@@ -68,7 +68,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     staticBuild?: boolean;
     withExternalFeatures?: boolean;
     fetchExternalFeatures?: boolean;
-    featureOutDir?: string;
+    sourcesRoot?: string;
     externalFeaturesPath?: string;
     eagerEntrypoint?: boolean;
     favicon?: string;
@@ -163,7 +163,7 @@ export class Application {
         withExternalFeatures = false,
         fetchExternalFeatures,
         webpackConfigPath,
-        featureOutDir,
+        sourcesRoot: providedSourcesRoot,
         externalFeaturesPath,
         eagerEntrypoint,
     }: IBuildCommandOptions = {}): Promise<WebpackMultiStats> {
@@ -172,7 +172,7 @@ export class Application {
             require,
             externalFeatureDefinitions,
             externalFeaturesPath: configExternalFeaturesPath,
-            featureOutDir: configFeatureOutDir,
+            sourcesRoot: configSourcesRoot,
             favicon: configFavicon,
         } = config ?? {};
         if (require) {
@@ -240,16 +240,14 @@ export class Application {
             })
         );
 
-        const bundledSourcesRoot = fs.resolve(
-            this.basePath,
-            featureOutDir || configFeatureOutDir || this.featureDiscoveryRoot
-        );
         // The node entry is created inside the outDir, and requires the mentioned feature file (as well as environment files)
         // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
         // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
+        const sources = providedSourcesRoot || configSourcesRoot || this.featureDiscoveryRoot;
         if (external) {
+            const feature = features.get(featureName!)!;
             const relativeBundledSourcesOutDir =
-                fs.relative(this.outputPath, bundledSourcesRoot) || this.featureDiscoveryRoot;
+                fs.relative(this.outputPath, fs.resolve(feature.directoryPath, sources)) || this.featureDiscoveryRoot;
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
             this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeBundledSourcesOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
@@ -263,7 +261,7 @@ export class Application {
             featureName,
             configName,
             entryPoints,
-            featureOutDir: bundledSourcesRoot,
+            pathToSources: sources,
         });
 
         return stats;
@@ -558,13 +556,13 @@ export class Application {
         featureName,
         configName,
         entryPoints,
-        featureOutDir,
+        pathToSources,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
         entryPoints: Record<string, Record<string, string>>;
-        featureOutDir: string;
+        pathToSources: string;
     }) {
         const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
         const manifest: IBuildManifest = {
@@ -585,16 +583,17 @@ export class Application {
                         directoryPath,
                     },
                 ]) => {
+                    const sourcesRoot = fs.resolve(directoryPath, pathToSources);
                     if (isRoot) {
-                        filePath = filePath.replace(directoryPath, featureOutDir);
+                        filePath = filePath.replace(directoryPath, sourcesRoot);
                         for (const [envName, filePath] of Object.entries(envFilePaths)) {
-                            envFilePaths[envName] = filePath.replace(directoryPath, featureOutDir);
+                            envFilePaths[envName] = filePath.replace(directoryPath, sourcesRoot);
                         }
                         for (const [envName, filePath] of Object.entries(contextFilePaths)) {
-                            envFilePaths[envName] = filePath.replace(directoryPath, featureOutDir);
+                            envFilePaths[envName] = filePath.replace(directoryPath, sourcesRoot);
                         }
                         for (const [envName, filePath] of Object.entries(preloadFilePaths)) {
-                            envFilePaths[envName] = filePath.replace(directoryPath, featureOutDir);
+                            envFilePaths[envName] = filePath.replace(directoryPath, sourcesRoot);
                         }
                     }
                     const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
