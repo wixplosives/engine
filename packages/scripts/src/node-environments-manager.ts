@@ -284,6 +284,7 @@ export class NodeEnvironmentsManager {
         }
 
         const host = baseHost.open();
+        host.name = nodeEnv.name;
         com.registerEnv(nodeEnv.name, host);
 
         if (mode === 'new-server') {

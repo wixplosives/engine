@@ -12,8 +12,18 @@ export function runWSEnvironment(socketServer: Server, startEnvironmentOptions: 
     return {
         start: async () => {
             const wsHost = new WsServerHost(socketServerNamespace);
-            wsHost.parent = host;
-            const runtimeEngine = await runNodeEnvironment({ ...startEnvironmentOptions, host: wsHost });
+
+            const runtimeEngine = await runNodeEnvironment({ ...startEnvironmentOptions, host });
+            const {
+                api: { communication },
+            } = runtimeEngine.engine.getCOM();
+            communication.registerMessageHandler(wsHost);
+            wsHost.addEventListener('message', ({ data: { from } }) => {
+                if (!communication.getEnvironmentHost(from)) {
+                    communication.registerEnv(from, wsHost);
+                }
+            });
+
             return {
                 runtimeEngine: runtimeEngine.engine,
                 close: async () => {
