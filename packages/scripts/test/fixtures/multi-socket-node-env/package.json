@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/engine-multi-socket-node",
+  "version": "17.4.1",
+  "scripts": {
+    "start": "engineer start"
+  },
+  "private": true
+}

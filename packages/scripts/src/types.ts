@@ -231,7 +231,7 @@ export interface IEnvironment {
 export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
     message.id === 'start';
 
-export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
+export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmentMessage =>
     message.id === 'close';
 
 export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>

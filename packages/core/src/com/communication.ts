@@ -253,6 +253,7 @@ export class Communication {
         for (const { host } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
+                host.dispose();
             }
             host.removeEventListener('message', this.handleEvent, true);
         }

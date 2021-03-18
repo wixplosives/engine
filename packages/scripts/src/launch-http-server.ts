@@ -39,12 +39,18 @@ export async function launchHttpServer({
 
     return {
         close: async () => {
-            await new Promise((res) => {
+            await new Promise<void>((res, rej) => {
                 for (const connection of openSockets) {
                     connection.destroy();
                 }
                 openSockets.clear();
-                socketServer.close(res);
+                socketServer.close((e) => {
+                    if (e) {
+                        rej(e);
+                    } else {
+                        res();
+                    }
+                });
             });
         },
         port,
