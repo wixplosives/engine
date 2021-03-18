@@ -5,7 +5,7 @@ import type {
     EnvironmentTypes,
     TopLevelConfig,
     Feature,
-    Target,
+    BaseHost,
 } from '@wixc3/engine-core';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
@@ -30,7 +30,7 @@ export interface StartEnvironmentOptions extends IEnvironment {
     features: Array<[string, IFeatureDefinition]>;
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
-    host?: Target;
+    host?: BaseHost;
     externalFeatures?: IExtenalFeatureDescriptor[];
 }
 export interface VirtualEntry {

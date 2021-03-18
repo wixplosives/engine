@@ -1,5 +1,5 @@
 import type io from 'socket.io';
-import { BaseHost, Communication, IDisposable, Message } from '@wixc3/engine-core';
+import { BaseHost, IDisposable, Message } from '@wixc3/engine-core';
 
 export class WsHost extends BaseHost {
     constructor(private socket: io.Socket) {
@@ -20,7 +20,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
     private socketToEnvId = new Map<string, { socket: io.Socket; clientID: string }>();
     private disposed = false;
 
-    constructor(private server: io.Namespace, private communication: Communication) {
+    constructor(private server: io.Namespace) {
         super();
         this.server.on('connection', this.onConnection);
     }
@@ -61,9 +61,6 @@ export class WsServerHost extends BaseHost implements IDisposable {
             // maybe we can notify from client about the new connected id
             const originId = `${socket.id}/${message.origin}`;
             const fromId = `${socket.id}/${message.from}`;
-            if (!this.communication.getEnvironmentHost(fromId)) {
-                this.communication.registerEnv(fromId, this);
-            }
             if (message.type === 'listen') {
                 message.data.handlerId += originId;
             }
