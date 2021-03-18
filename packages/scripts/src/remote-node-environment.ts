@@ -25,9 +25,6 @@ export async function startRemoteNodeEnvironment(
     });
     await once(childProc, 'message');
     childProc.on('error', (e) => console.error(`error in forked process`, e));
-    childProc.stdout?.on('data', (c) => {
-        console.log(c);
-    });
     return { remoteNodeEnvironment: new RemoteNodeEnvironment(new ForkedProcess(childProc)), process: childProc };
 }
 
