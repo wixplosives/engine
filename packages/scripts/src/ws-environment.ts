@@ -18,9 +18,13 @@ export function runWSEnvironment(socketServer: Server, startEnvironmentOptions: 
                 api: { communication },
             } = runtimeEngine.engine.getCOM();
             communication.registerMessageHandler(wsHost);
-            wsHost.addEventListener('message', ({ data: { from } }) => {
+            wsHost.addEventListener('message', ({ data: { from, origin } }) => {
+                // we map both the from and the to, because we change mapping in the host itself, it re-mapps both the origin and the from, for multi-tenancy
                 if (!communication.getEnvironmentHost(from)) {
                     communication.registerEnv(from, wsHost);
+                }
+                if (!communication.getEnvironmentHost(origin)) {
+                    communication.registerEnv(origin, wsHost);
                 }
             });
 
