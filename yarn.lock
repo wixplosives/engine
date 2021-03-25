@@ -989,10 +989,10 @@
     lodash.upperfirst "^4.3.1"
     yargs "^16.2.0"
 
-"@stylable/core@^4.0.2":
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.0.2.tgz#406c6dac5b545e77c9458810ffaf40cb086ca79f"
-  integrity sha512-GHIhhDXuViuH7FSH7vV1nHEO4sn9GyXSsGloxFfyT0+qKjSM2lBCh9m5dPZ3v8ByLhUOBf6mVjDRsD7qoxDqkw==
+"@stylable/core@^4.0.2", "@stylable/core@^4.0.4":
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.0.4.tgz#5495d12fe688d26de707503605e245fc633108d4"
+  integrity sha512-BGYvS+dSaNE2Y/3Baao7t7VC0woIctAkeynpX7tG4KgNwtsF8TJk4XRO5DGrROlxv7armrfDQyvAo51L8jPY0Q==
   dependencies:
     css-selector-tokenizer "^0.7.3"
     deindent "^0.1.0"
