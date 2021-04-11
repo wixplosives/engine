@@ -58,9 +58,9 @@ export function writeDirectoryContentsSync(fs: IFileSystem, directoryContents: I
     });
 }
 
-function walkRecordValues<T, U>(obj: Record<string, T>, mappingMethod: (value: T) => U): Record<string, U> {
-    return Object.entries(obj).reduce((acc, [key, value]) => {
+function walkRecordValues<T, U, K extends string>(obj: Record<K, T>, mappingMethod: (value: T) => U): Record<K, U> {
+    return (Object.entries<T>(obj) as Array<[K, T]>).reduce((acc, [key, value]) => {
         acc[key] = mappingMethod(value);
         return acc;
-    }, {} as Record<string, U>);
+    }, {} as Record<K, U>);
 }

@@ -1,19 +1,23 @@
 {
   "name": "@wixc3/engine-dashboard",
-  "version": "16.5.7",
+  "version": "17.5.1",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build:stylable": "stc --srcDir=\"src\" --outDir=\"dist\" --stcss --cjs=false"
+    "build:stylable": "stc --srcDir=\"src\" --outDir=\"dist\" --stcss --no-cjs --diagnostics",
+    "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "peerDependencies": {
     "react": ">=16"
   },
   "dependencies": {
-    "@stylable/runtime": "^3.11.10",
-    "@wixc3/engine-core": "^16.5.2",
-    "@wixc3/engine-scripts": "^16.5.7"
+    "@stylable/runtime": "^4.0.4",
+    "@wixc3/engine-core": "^17.5.0",
+    "@wixc3/engine-scripts": "^17.5.1",
+    "d3-hierarchy": "^2.0.0",
+    "d3-selection": "^2.0.0",
+    "d3-shape": "^2.1.0"
   },
   "files": [
     "dist",

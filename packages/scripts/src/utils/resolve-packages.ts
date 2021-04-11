@@ -1,25 +1,15 @@
-import fs from '@file-services/node';
-import glob from 'glob';
 import path from 'path';
+import type { PackageJson } from 'type-fest';
+import glob from 'glob';
+import fs from '@file-services/node';
 
 const PACKAGE_JSON = 'package.json';
-const isValidPackageJson = (value: unknown): value is IPackageJson => typeof value === 'object' && value !== null;
-
-export interface IPackageJson {
-    name?: string;
-    version?: string;
-    scripts?: Record<string, string>;
-    workspaces?: string | string[];
-    dependencies?: Record<string, string>;
-    devDependencies?: Record<string, string>;
-    peerDependencies?: Record<string, string>;
-    private?: boolean;
-}
+const isValidPackageJson = (value: unknown): value is PackageJson => typeof value === 'object' && value !== null;
 
 export interface INpmPackage {
     directoryPath: string;
     packageJsonPath: string;
-    packageJson: IPackageJson;
+    packageJson: PackageJson;
 }
 
 export function resolvePackages(basePath: string): INpmPackage[] {
@@ -44,6 +34,13 @@ export function resolvePackages(basePath: string): INpmPackage[] {
         return resolveWorkspacePackages(directoryPath, [workspaces]);
     } else if (Array.isArray(workspaces)) {
         return resolveWorkspacePackages(directoryPath, workspaces);
+    } else if (
+        typeof workspaces === 'object' &&
+        workspaces !== null &&
+        workspaces.packages &&
+        Array.isArray(workspaces.packages)
+    ) {
+        return resolveWorkspacePackages(directoryPath, workspaces.packages);
     } else {
         throw new Error(`"workspaces" key has unknown type: ${typeof workspaces}`);
     }
@@ -63,7 +60,7 @@ export function resolveWorkspacePackages(basePath: string, workspaces: string[])
         for (const packageJsonPath of glob.sync(packageJsonGlob, globOptions).map(path.normalize)) {
             foundPackages.push({
                 packageJsonPath,
-                packageJson: fs.readJsonFileSync(packageJsonPath) as IPackageJson,
+                packageJson: fs.readJsonFileSync(packageJsonPath) as PackageJson,
                 directoryPath: path.dirname(packageJsonPath),
             });
         }

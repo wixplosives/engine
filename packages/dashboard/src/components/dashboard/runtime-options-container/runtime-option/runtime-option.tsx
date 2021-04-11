@@ -8,15 +8,15 @@ export interface IRuntimeOptionProps {
     index: number;
     runtimeArguments: Array<{ key: string; value: string }>;
     onChange: (runtimeArgiments: Array<{ key: string; value: string }>) => unknown;
-    className: string;
+    className?: string;
 }
 
 export const RuntimeOption = memo<IRuntimeOptionProps>(({ runtimeArguments, index, onChange, className }) => {
-    const { key, value } = runtimeArguments[index];
+    const { key, value } = runtimeArguments[index]!;
 
     const onValueChange = useCallback<(key: string) => InputChangeEvent>(
         (key: string) => ({ target: { value: runtimeValue } }) => {
-            runtimeArguments.splice(index, 1, { ...runtimeArguments[index], [key]: runtimeValue });
+            runtimeArguments.splice(index, 1, { ...runtimeArguments[index]!, [key]: runtimeValue });
             onChange([...runtimeArguments]);
         },
         [runtimeArguments, index, onChange]

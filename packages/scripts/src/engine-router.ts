@@ -15,9 +15,12 @@ export function createFeaturesEngineRouter(
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     router.put('/', async (req, res) => {
-        const { configName, featureName, runtimeOptions: options, overrideConfig } = req.body as Required<
-            IFeatureTarget
-        >;
+        const {
+            configName,
+            featureName,
+            runtimeOptions: options,
+            overrideConfig,
+        } = req.body as Required<IFeatureTarget>;
         try {
             let providedConfigName = configName;
             if (overrideConfig && Array.isArray(overrideConfig)) {

@@ -42,7 +42,6 @@ export const startCommand: Command = (program) =>
         .option('--mode <production|development>', 'mode passed to webpack', 'development')
         .option('--inspect')
         .option('-p ,--port <port>')
-        .option('--singleRun', 'when enabled, webpack will not watch files', false)
         .option('--singleFeature', 'build only the feature set by --feature', false)
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--open <open>')
@@ -53,6 +52,7 @@ export const startCommand: Command = (program) =>
             true
         )
         .option('--title <title>', 'application title to display in browser')
+        .option('--favicon <faviconPath>', 'path to favicon to be displayed in browser environments')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
@@ -67,13 +67,13 @@ export const startCommand: Command = (program) =>
                 feature: featureName,
                 config: configName,
                 port: httpServerPort = 3000,
-                singleRun,
                 singleFeature,
                 open: openBrowser = 'true',
                 require: pathsToRequire,
                 publicPath = defaultPublicPath,
                 mode,
                 title,
+                faviconPath,
                 publicConfigsRoute,
                 autoLaunch,
                 engineerEntry,
@@ -83,16 +83,19 @@ export const startCommand: Command = (program) =>
             } = cmd;
 
             try {
+                const basePath = resolve(path);
+                const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
+
                 const { devServerFeature } = await startDevServer({
                     featureName,
                     configName,
                     httpServerPort,
-                    singleRun,
                     singleFeature,
                     pathsToRequire,
                     publicPath,
                     mode,
                     title,
+                    favicon,
                     publicConfigsRoute,
                     autoLaunch,
                     engineerEntry,
@@ -126,23 +129,30 @@ export function buildCommand(program: typeof commander) {
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
         .option('--title <title>', 'application title to display in browser')
+        .option('--favicon <faviconPath>', 'path to favicon to be displayed in browser environments')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
-        .option('--external [true|false]', 'build feature as external')
+        .option('--external [true|false]', 'build feature as external', parseBoolean, false)
+        .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
         .option(
-            '--featureOutDir <featureOutDir>',
-            'the directory where the published feature file is located (relative to the base path). default: "."'
+            '--sourcesRoot <sourcesRoot>',
+            'the directory where the feature library will be published at (relative to the base path). default: "."'
         )
-        .option('--withExternalFeatures [true|false]', 'include defined external features in the output', false)
         .option(
             '--fetchExternalFeatures [true|false]',
             'fetch for receiving external features in the output application',
+            parseBoolean,
             true
         )
         .option(
             '--staticExternalsDescriptor <staticExternalsDescriptor>',
             'relative to the output directory - a path to a json file which retrieves all external feature descriptors',
             true
+        )
+        .option(
+            '--featureDiscoveryRoot <featureDiscoveryRoot>',
+            'package subdirectory where feature discovery starts',
+            '.'
         )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -155,18 +165,22 @@ export function buildCommand(program: typeof commander) {
                 mode,
                 singleFeature,
                 title,
+                faviconPath,
                 publicConfigsRoute,
                 webpackConfig,
                 external,
-                featureOutDir,
-                withExternalFeatures,
+                sourcesRoot,
                 fetchExternalFeatures,
+                eagerEntrypoints,
+                featureDiscoveryRoot,
+                staticExternalsDescriptor = '/externals.json',
             } = cmd;
             try {
                 const basePath = resolve(path);
                 preRequire(pathsToRequire, basePath);
+                const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
                 const outputPath = resolve(outDir);
-                const app = new Application({ basePath, outputPath });
+                const app = new Application({ basePath, outputPath, featureDiscoveryRoot });
                 const stats = await app.build({
                     featureName,
                     configName,
@@ -174,12 +188,14 @@ export function buildCommand(program: typeof commander) {
                     mode,
                     singleFeature,
                     title,
+                    favicon,
                     publicConfigsRoute,
                     webpackConfigPath: webpackConfig,
                     external,
-                    featureOutDir,
-                    includeExternalFeatures: withExternalFeatures,
+                    sourcesRoot,
+                    staticExternalFeaturesPath: staticExternalsDescriptor,
                     fetchExternalFeatures,
+                    eagerEntrypoint: eagerEntrypoints,
                 });
                 console.log(stats.toString('errors-warnings'));
             } catch (e) {

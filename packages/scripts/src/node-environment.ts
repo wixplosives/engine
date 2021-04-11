@@ -55,11 +55,11 @@ export async function runNodeEnvironment({
         optionsRecord[key] = val;
     }
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
-    const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]];
+    const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
 
     for (const { name: externalFeatureName, envEntries } of externalFeatures) {
-        if (envEntries[name] && envEntries[name]['node']) {
-            const externalFeatureLoaders = (await import(envEntries[name]['node'])) as {
+        if (envEntries[name] && envEntries[name]!['node']) {
+            const externalFeatureLoaders = (await import(envEntries[name]!['node']!)) as {
                 [featureName: string]: IFeatureLoader;
             };
 
@@ -101,6 +101,7 @@ export function createFeatureLoaders(
                 const initFunctions = [];
                 if (childEnvName && currentContext[envName] === childEnvName) {
                     const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+
                     if (contextPreloadFilePath) {
                         const preloadedContextModule = (await import(contextPreloadFilePath)) as IPreloadModule;
                         if (preloadedContextModule.init) {

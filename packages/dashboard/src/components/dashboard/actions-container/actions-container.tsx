@@ -8,7 +8,7 @@ export interface IActionsContainerProps {
     onToggleChange: (toggleStatus: boolean) => void;
     featureName?: string;
     configName?: string;
-    actionBtnClassName: string;
+    actionBtnClassName?: string;
 }
 
 export const ActionsContainer = memo<IActionsContainerProps>(

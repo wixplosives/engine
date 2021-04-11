@@ -25,7 +25,7 @@ function toJSON() {
         name: this.name,
         startTime: this.startTime,
         duration: this.duration,
-        entryType: this.type
+        entryType: this.type,
     };
 }
 

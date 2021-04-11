@@ -17,7 +17,7 @@ export const FeaturesSelection = memo<FeaturesSelectionProps>(({ features, onSel
         selectedFeatureName,
     ]);
     const [firstConfigName] = configNames;
-    const [selectedConfigName, setSelectedConfigName] = useState<string>(firstConfigName);
+    const [selectedConfigName, setSelectedConfigName] = useState(firstConfigName);
 
     const onFeatureChange: React.ChangeEventHandler<HTMLSelectElement> = useCallback(
         ({ currentTarget }) => {

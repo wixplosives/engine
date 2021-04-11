@@ -1,3 +1,5 @@
+import { basename } from 'path';
+import type { PackageJson } from 'type-fest';
 import type { IFileSystemSync } from '@file-services/types';
 import {
     Environment,
@@ -6,10 +8,8 @@ import {
     getFeaturesDeep,
     SingleEndpointContextualEnvironment,
     SetMultiMap,
+    flattenTree,
 } from '@wixc3/engine-core';
-import { basename } from 'path';
-
-import { flattenTree } from '@wixc3/engine-core';
 import {
     isFeatureFile,
     parseConfigFileName,
@@ -19,10 +19,10 @@ import {
     parsePreloadFileName,
 } from './build-constants';
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
-import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { INpmPackage, IPackageJson } from './utils/resolve-packages';
+import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
+import type { INpmPackage } from './utils/resolve-packages';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -31,28 +31,6 @@ interface IPackageDescriptor {
 }
 
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
-
-function getFilePathInPackage(fs: IFileSystemSync, featurePackage: IPackageDescriptor, filePath: string) {
-    const relativeFilePath = fs.relative(featurePackage.directoryPath, filePath);
-    return fs
-        .join(
-            featurePackage.name,
-            fs.dirname(relativeFilePath),
-            fs.basename(relativeFilePath, fs.extname(relativeFilePath))
-        )
-        .replace(/\\/g, '/');
-}
-
-function scopeFilePathsToPackage(
-    fs: IFileSystemSync,
-    featurePackage: IPackageDescriptor,
-    envFiles: Record<string, string>
-) {
-    return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
-        acc[envName] = getFilePathInPackage(fs, featurePackage, filePath);
-        return acc;
-    }, {});
-}
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, rootOwnFeaturesDir = '.') {
     const ownFeatureFilePaths = new Set<string>();
@@ -124,9 +102,7 @@ export function loadFeaturesFromPaths(
         if (!packageJsonPath) {
             throw new Error(`cannot find package.json ${featureDirectoryPath}`);
         }
-        const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(
-            packageJsonPath
-        ) as IPackageJson;
+        const { name = fs.basename(fs.dirname(packageJsonPath)) } = fs.readJsonFileSync(packageJsonPath) as PackageJson;
         directoryToPackage.set(featureDirectoryPath, {
             simplifiedName: simplifyPackageName(name),
             directoryPath: fs.dirname(packageJsonPath),
@@ -158,7 +134,7 @@ export function loadFeaturesFromPaths(
         // pick up features
         for (const featureFilePath of features) {
             const [evaluatedFeature] = evaluateModule(featureFilePath).children;
-            const featureModule = analyzeFeatureModule(evaluatedFeature);
+            const featureModule = analyzeFeatureModule(evaluatedFeature!);
             const featureName = featureModule.name;
             if (!foundFeatureFilePaths.has(featureFilePath)) {
                 continue;
@@ -178,11 +154,11 @@ export function loadFeaturesFromPaths(
                 filePath: featureFilePath,
                 toJSON(this: IFeatureDefinition) {
                     return {
-                        contextFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.contextFilePaths),
+                        contextFilePaths: this.contextFilePaths,
                         dependencies: this.dependencies,
-                        filePath: getFilePathInPackage(fs, featurePackage, this.filePath),
-                        envFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.envFilePaths),
-                        preloadFilePaths: scopeFilePathsToPackage(fs, featurePackage, this.preloadFilePaths),
+                        filePath: this.filePath,
+                        envFilePaths: this.envFilePaths,
+                        preloadFilePaths: this.preloadFilePaths,
                         exportedEnvs: this.exportedEnvs,
                         resolvedContexts: this.resolvedContexts,
                         packageName: this.packageName,

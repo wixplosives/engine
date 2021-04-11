@@ -1,3 +1,4 @@
+import process from 'process';
 import { BaseHost } from './com/hosts/base-host';
 import { Communication, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
@@ -59,8 +60,7 @@ export default new Feature({
         runningEnvironmentName,
         onDispose,
     }) => {
-        // TODO: find better way to detect node runtime
-        const isNode = typeof process !== 'undefined' && process.title !== 'browser' && process.type !== 'renderer';
+        const isNode = !!process.versions?.node && process.title !== 'browser' && process.type !== 'renderer';
 
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.

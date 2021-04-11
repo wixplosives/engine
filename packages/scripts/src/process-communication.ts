@@ -35,7 +35,7 @@ export function createIPC(
             environments[message.envName] = await runWSEnvironment(socketServer, message.data);
             remoteProcess.postMessage({ id: 'start' });
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
-            await environments[message.envName].close();
+            await environments[message.envName]!.close();
             remoteProcess.postMessage({ id: 'close' });
             remoteProcess.off('message', messageHandler);
             performance.clearMarks();

@@ -13,8 +13,8 @@ export interface DevServerConfig {
     configName?: string;
     publicPath?: string;
     title?: string;
+    favicon?: string;
     publicConfigsRoute: string;
-    singleRun: boolean;
     inspect: boolean;
     autoLaunch: boolean;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
@@ -56,7 +56,6 @@ export default new Feature({
         devServerConfig: new Config<DevServerConfig>({
             httpServerPort: 3000,
             singleFeature: false,
-            singleRun: false,
             inspect: false,
             autoLaunch: true,
             mode: 'development',

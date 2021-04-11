@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useCallback, memo } from 'react';
 import { FeaturesSelection } from './feature-selection';
 import { ServerState, isServerResponseMessage } from '../../server-types';
+import type { GraphData } from '../../graph-types';
 import { classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';
+import { FeatureGraph } from '../feature-graph';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
@@ -16,6 +18,7 @@ export interface IDashboardProps {
         isNodeEnvActive: boolean,
         runtimeOptions: Array<IRuntimeOption>
     ) => Promise<unknown>;
+    fetchGraphData: (featureName: string) => Promise<GraphData>;
 }
 
 interface SelectedFeature {
@@ -24,13 +27,14 @@ interface SelectedFeature {
     runtimeArguments?: string;
 }
 
-export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEnvironmentState }) => {
+export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEnvironmentState, fetchGraphData }) => {
     const [serverState, setServerState] = useState<ServerState>({
         featuresWithRunningNodeEnvs: [],
         features: {},
     });
 
     const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>({});
+    const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
 
     const [runtimeArguments, setRuntimeArguments] = useState<Array<IRuntimeOption>>([
         {
@@ -70,19 +74,22 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
     }, [fetchServerState]);
 
     const selectedFeatureConfig = useCallback(
-        (featureName?: string, configName?: string) => {
+        async (featureName?: string, configName?: string) => {
+            setSelectedFeatureGraph(null);
             if (!featureName) {
                 setRuntimeArguments([{ key: '', value: '' }]);
             }
             setSelectedFeature({ ...selectedFeature, featureName, configName });
+            if (featureName) {
+                const graphData = await fetchGraphData(featureName);
+                setSelectedFeatureGraph(graphData);
+            }
         },
-        [setSelectedFeature, selectedFeature]
+        [setSelectedFeature, selectedFeature, fetchGraphData]
     );
 
     const hasNodeEnvironments =
-        !!selectedFeature.featureName &&
-        !!serverState.features[selectedFeature.featureName] &&
-        !!serverState.features[selectedFeature.featureName].hasServerEnvironments;
+        !!selectedFeature.featureName && !!serverState.features[selectedFeature.featureName]?.hasServerEnvironments;
 
     const addRuntimeOption = useCallback(() => setRuntimeArguments([...runtimeArguments, { key: '', value: '' }]), [
         runtimeArguments,
@@ -114,6 +121,15 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
                 displayServerToggle={hasNodeEnvironments}
                 actionBtnClassName={classes.actionButton}
             />
+            {selectedFeature?.featureName ? (
+                selectedFeatureGraph ? (
+                    <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
+                ) : (
+                    <div>Loading graph data...</div>
+                )
+            ) : (
+                <div>Select a feature to view its dependency graph</div>
+            )}
         </div>
     );
 });

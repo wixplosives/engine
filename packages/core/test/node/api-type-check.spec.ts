@@ -72,6 +72,14 @@ const gui = new Feature({
     },
 });
 
+interface SomeApi {
+    someMethod: () => boolean;
+}
+
+type SomeApiPromisified = AsyncApi<SomeApi>;
+
+typeCheck((_: EQUAL<SomeApiPromisified, { someMethod(): Promise<boolean> }>) => true);
+
 typeCheck(
     (
         _runningDependencies: EQUAL<

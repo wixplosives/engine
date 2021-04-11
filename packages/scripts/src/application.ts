@@ -15,7 +15,7 @@ import {
 } from './config-middleware';
 import {
     createWebpackConfig,
-    createWebpackConfigForExteranlFeature,
+    createWebpackConfigForExternalFeature,
     createWebpackConfigs,
 } from './create-webpack-configs';
 import { ForkedProcess } from './forked-process';
@@ -38,6 +38,7 @@ import { launchHttpServer, RouteMiddleware } from './launch-http-server';
 import { getExternalFeaturesMetadata } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+import type { IFileSystemSync } from '@file-services/types';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -49,7 +50,6 @@ export interface IRunFeatureOptions extends IFeatureTarget {
 }
 
 export interface IRunApplicationOptions extends IFeatureTarget {
-    singleRun?: boolean;
     singleFeature?: boolean;
     inspect?: boolean;
     port?: number;
@@ -68,9 +68,20 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     staticBuild?: boolean;
     externalFeaturesFilePath?: string;
     fetchExternalFeatures?: boolean;
-    featureOutDir?: string;
-    externalFeaturesPath?: string;
+    sourcesRoot?: string;
+    staticExternalFeaturesPath?: string;
     includeExternalFeatures?: boolean;
+    eagerEntrypoint?: boolean;
+    favicon?: string;
+    externalFeaturesBasePath?: string;
+}
+
+// inlined to stay type-compatible with @types/webpack
+export interface WebpackMultiStats {
+    hasWarnings(): boolean;
+    hasErrors(): boolean;
+    toString(mode?: string): string;
+    stats: webpack.Stats[];
 }
 
 export interface IRunCommandOptions extends IRunApplicationOptions {
@@ -106,6 +117,7 @@ export interface ICompilerOptions {
     publicPath?: string;
     mode?: 'production' | 'development';
     title?: string;
+    favicon?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -116,17 +128,18 @@ export interface ICompilerOptions {
     externalsFilePath?: string;
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
+    eagerEntrypoint?: boolean;
 }
 
 export class Application {
     public outputPath: string;
     protected basePath: string;
-    protected featureDiscoveryRoot?: string;
+    protected featureDiscoveryRoot: string;
 
     constructor({
         basePath = process.cwd(),
         outputPath = fs.join(basePath, 'dist'),
-        featureDiscoveryRoot,
+        featureDiscoveryRoot = '.',
     }: IApplicationOptions) {
         this.basePath = basePath;
         this.outputPath = outputPath;
@@ -145,27 +158,29 @@ export class Application {
         mode = 'production',
         singleFeature,
         title,
+        favicon,
         publicConfigsRoute,
         overrideConfig,
         external = false,
         staticBuild = true,
-        externalFeaturesFilePath = 'externals.json',
+        staticExternalFeaturesPath,
         webpackConfigPath,
-        featureOutDir,
         includeExternalFeatures,
-        externalFeaturesPath,
-    }: IBuildCommandOptions = {}): Promise<webpack.compilation.MultiStats> {
+        sourcesRoot: providedSourcesRoot,
+        eagerEntrypoint,
+        externalFeaturesBasePath,
+    }: IBuildCommandOptions = {}): Promise<WebpackMultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
             require,
             externalFeatureDefinitions,
-            externalFeaturesPath: configExternalFeaturesPath,
-            featureOutDir: configFeatureOutDir,
+            externalFeaturesBasePath: configExternalFeaturesBasePath,
+            sourcesRoot: configSourcesRoot,
+            favicon: configFavicon,
         } = config ?? {};
         if (require) {
             await this.importModules(require);
         }
-
         const entryPoints: Record<string, Record<string, string>> = {};
 
         if (external && !featureName) {
@@ -184,19 +199,19 @@ export class Application {
             environments: [...getExportedEnvironments(features)],
         });
 
-        const resolvedExternalFeaturesPath = fs.resolve(
-            externalFeaturesPath ?? (configExternalFeaturesPath ? fs.dirname(configPath!) : this.basePath)
+        const resolvedExternalFeaturesBasePath = fs.resolve(
+            externalFeaturesBasePath ?? (configExternalFeaturesBasePath ? fs.dirname(configPath!) : this.basePath)
         );
 
-        const externalsFilePath = externalFeaturesFilePath?.startsWith('/')
-            ? externalFeaturesFilePath
-            : externalFeaturesFilePath
-            ? `/${externalFeaturesFilePath}`
+        const externalsFilePath = staticExternalFeaturesPath?.startsWith('/')
+            ? staticExternalFeaturesPath
+            : staticExternalFeaturesPath
+            ? `/${staticExternalFeaturesPath}`
             : undefined;
 
         const externalFeatures =
             includeExternalFeatures && externalFeatureDefinitions
-                ? getExternalFeaturesMetadata(externalFeatureDefinitions, resolvedExternalFeaturesPath)
+                ? getExternalFeaturesMetadata(externalFeatureDefinitions, resolvedExternalFeaturesBasePath)
                 : [];
 
         const compiler = this.createCompiler({
@@ -206,6 +221,7 @@ export class Application {
             configName,
             publicPath,
             title,
+            favicon: favicon ?? configFavicon,
             configurations,
             staticBuild,
             publicConfigsRoute,
@@ -219,31 +235,33 @@ export class Application {
             externalsFilePath,
             webpackConfigPath,
             environments: resolvedEnvironments,
+            eagerEntrypoint,
         });
         const outDir = fs.basename(this.outputPath);
 
-        const stats = await new Promise<webpack.compilation.MultiStats>((resolve, reject) =>
+        const stats = await new Promise<webpack.MultiStats>((resolve, reject) =>
             compiler.run((e, s) => {
                 if (e) {
                     reject(e);
-                } else if (s.hasErrors()) {
-                    reject(new Error(s.toString('errors-warnings')));
+                } else if (s!.hasErrors()) {
+                    reject(new Error(s!.toString('errors-warnings')));
                 } else {
-                    resolve(s);
+                    resolve(s!);
                 }
             })
         );
 
+        const sourceRoot = providedSourcesRoot ?? configSourcesRoot ?? this.featureDiscoveryRoot;
         if (external) {
-            // in order to understand where the target feature file is located, we need the user to tell us (featureOutDir).
-            // The node entry, on the other hand is created inside the outDir, and requires the mentioned feature file (as well as environment files)
-            // in order to properly import from the entry the required files, we are resolving the featureOutDir with the basePath (the root of the package) and the outDir - the location where the node entry will be created to
-            const providedOutDir = featureOutDir ?? configFeatureOutDir;
+            const feature = features.get(featureName!)!;
+            // The node entry is created inside the outDir, and requires the mentioned feature file (as well as environment files)
+            // in order to properly import from the entry the required files, we are resolving the sourcesRoot with the directoryPath of the feature (the root of the package) and the outDir - the location where the node entry will be created to
             // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
-            const relativeFeatureOutDir =
-                fs.relative(this.outputPath, fs.resolve(this.basePath, providedOutDir ?? '.')) || '.';
+            const relativeBundledSourcesOutDir =
+                fs.relative(this.outputPath, fs.resolve(feature.directoryPath, sourceRoot)) ||
+                this.featureDiscoveryRoot;
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
-            this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeFeatureOutDir);
+            this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeBundledSourcesOutDir);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
             getEnvEntrypoints(electronRendererEnvs.keys(), 'electron-renderer', entryPoints, outDir);
             getEnvEntrypoints(webEnvs.keys(), 'web', entryPoints, outDir);
@@ -260,15 +278,19 @@ export class Application {
             configName,
             entryPoints,
             externalsFilePath,
+            pathToSources: sourceRoot,
         });
 
         return stats;
     }
 
     public async run(runOptions: IRunCommandOptions = {}) {
-        const { features, defaultConfigName, defaultFeatureName, externalsFilePath } = (await fs.promises.readJsonFile(
-            join(this.outputPath, 'manifest.json')
-        )) as IBuildManifest;
+        const {
+            features: manifestFeatures,
+            defaultConfigName,
+            defaultFeatureName,
+            externalsFilePath,
+        } = (await fs.promises.readJsonFile(join(this.outputPath, 'manifest.json'))) as IBuildManifest;
 
         const externalFeatures: IExtenalFeatureDescriptor[] = [];
         if (externalsFilePath && fs.existsSync(join(this.outputPath, externalsFilePath))) {
@@ -279,6 +301,7 @@ export class Application {
                 ) as IExtenalFeatureDescriptor[])
             );
         }
+        const features = this.remapManifestFeaturePaths(manifestFeatures);
 
         const {
             configName = defaultConfigName,
@@ -306,7 +329,7 @@ export class Application {
 
         const {
             externalFeatureDefinitions = [],
-            externalFeaturesPath: baseExternalFeaturesPath,
+            externalFeaturesBasePath: baseExternalFeaturesPath,
             serveExternalFeaturesPath = providedServeExternalFeaturesPath,
             serveStatic = [],
             socketServerOptions: configSocketServerOptions,
@@ -351,7 +374,7 @@ export class Application {
         if (externalsFilePath) {
             routeMiddlewares.push({
                 path: externalsFilePath,
-                handlers: (_, res) => {
+                handlers: (_, res: express.Response) => {
                     res.json(externalFeatures);
                 },
             });
@@ -377,7 +400,7 @@ export class Application {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
-                features: new Map(features),
+                features,
                 port,
                 defaultRuntimeOptions,
                 inspect,
@@ -411,6 +434,30 @@ export class Application {
             nodeEnvironmentManager,
             close: disposables.dispose,
         };
+    }
+
+    private remapManifestFeaturePaths(manifestFeatures: [string, IFeatureDefinition][]) {
+        const features = new Map<string, IFeatureDefinition>();
+        for (const [featureName, featureDef] of manifestFeatures) {
+            const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
+            features.set(featureName, {
+                ...featureDef,
+                filePath: require.resolve(filePath, { paths: [this.outputPath] }),
+                envFilePaths: this.resolveManifestPaths(envFilePaths),
+                contextFilePaths: this.resolveManifestPaths(contextFilePaths),
+                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths),
+            });
+        }
+        return features;
+    }
+
+    private resolveManifestPaths(envFilePaths: Record<string, string>): Record<string, string> {
+        return Object.fromEntries(
+            Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
+                envName,
+                require.resolve(filePath, { paths: [this.outputPath] }),
+            ])
+        );
     }
 
     protected normilizeDefinitionsPackagePath(
@@ -526,7 +573,7 @@ export class Application {
                         const fileExtention = extname(possibleConfigFile.name);
                         if (possibleConfigFile.isFile() && fileExtention === '.json') {
                             const configFileName = basename(possibleConfigFile.name, fileExtention);
-                            const [configName] = configFileName.split('.');
+                            const [configName] = configFileName.split('.') as [string];
 
                             const config = (await fs.promises.readJsonFile(
                                 join(featureConfigsDirectory, possibleConfigFile.name)
@@ -548,15 +595,88 @@ export class Application {
         configName,
         entryPoints,
         externalsFilePath,
+        pathToSources,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
         externalsFilePath?: string;
         entryPoints: Record<string, Record<string, string>>;
+        pathToSources: string;
     }) {
+        const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
         const manifest: IBuildManifest = {
-            features: Array.from(features.entries()),
+            features: Array.from(features.entries()).map(
+                ([
+                    featureName,
+                    {
+                        scopedName,
+                        isRoot,
+                        filePath,
+                        envFilePaths,
+                        contextFilePaths,
+                        preloadFilePaths,
+                        packageName,
+                        dependencies,
+                        exportedEnvs,
+                        resolvedContexts,
+                        directoryPath,
+                    },
+                ]) => {
+                    const sourcesRoot = fs.resolve(directoryPath, pathToSources);
+                    if (isRoot) {
+                        filePath = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
+                        for (const [envName, filePath] of Object.entries(envFilePaths)) {
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
+                        }
+                        for (const [envName, filePath] of Object.entries(contextFilePaths)) {
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
+                        }
+                        for (const [envName, filePath] of Object.entries(preloadFilePaths)) {
+                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
+                        }
+                    }
+                    const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
+                    return [
+                        featureName,
+                        {
+                            scopedName,
+                            filePath: getFilePathInPackage(
+                                fs,
+                                packageName,
+                                context,
+                                filePath,
+                                isRoot && outputDirInBasePath
+                            ),
+                            envFilePaths: scopeFilePathsToPackage(
+                                fs,
+                                packageName,
+                                context,
+                                envFilePaths,
+                                isRoot && outputDirInBasePath
+                            ),
+                            contextFilePaths: scopeFilePathsToPackage(
+                                fs,
+                                packageName,
+                                context,
+                                contextFilePaths,
+                                isRoot && outputDirInBasePath
+                            ),
+                            preloadFilePaths: scopeFilePathsToPackage(
+                                fs,
+                                packageName,
+                                context,
+                                preloadFilePaths,
+                                isRoot && outputDirInBasePath
+                            ),
+                            dependencies: dependencies,
+                            exportedEnvs: exportedEnvs,
+                            resolvedContexts: resolvedContexts,
+                            packageName,
+                        } as IFeatureDefinition,
+                    ];
+                }
+            ),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
             entryPoints,
@@ -574,6 +694,7 @@ export class Application {
         publicPath,
         mode,
         title,
+        favicon,
         configurations,
         staticBuild,
         publicConfigsRoute,
@@ -584,17 +705,13 @@ export class Application {
         externalsFilePath,
         webpackConfigPath,
         environments,
+        eagerEntrypoint,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = webpackConfigPath
             ? fs.resolve(webpackConfigPath)
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
-
-        // @types/webpack (webpack@4) are missing this field. webpack@5 has it
-        // webpack@4 itself does support it
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        (baseConfig as any).infrastructureLogging = { level: 'warn' };
 
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
@@ -607,14 +724,16 @@ export class Application {
             configName,
             publicPath,
             title,
+            favicon,
             configurations,
             staticBuild,
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
-            createWebpackConfig: isExternal ? createWebpackConfigForExteranlFeature : createWebpackConfig,
+            createWebpackConfig: isExternal ? createWebpackConfigForExternalFeature : createWebpackConfig,
             externalFeatures,
             externalsFilePath,
+            eagerEntrypoint,
         });
 
         const compiler = webpack(webpackConfigs);
@@ -666,7 +785,7 @@ export class Application {
         > = {};
 
         for (const { scopedName } of rootFeatures) {
-            const [rootFeatureName] = scopedName.split('/');
+            const [rootFeatureName] = scopedName.split('/') as [string];
             featureEnvDefinitions[scopedName] = {
                 configurations: configNames.filter((name) => name.includes(rootFeatureName)),
                 hasServerEnvironments: getEnvironmntsForFeature(scopedName, features, 'node').size > 0,
@@ -708,6 +827,37 @@ export class Application {
     }
 }
 
+function getFilePathInPackage(
+    fs: IFileSystemSync,
+    packageName: string,
+    context: string,
+    filePath: string,
+    isRelativeRequest: boolean
+) {
+    const relativeFilePath = fs.relative(context, filePath);
+    const relativeRequest = fs
+        .join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath, fs.extname(relativeFilePath)))
+        .replace(/\\/g, '/');
+    return isRelativeRequest
+        ? relativeRequest.startsWith('.')
+            ? relativeRequest
+            : './' + relativeRequest
+        : fs.posix.join(packageName, relativeRequest);
+}
+
+function scopeFilePathsToPackage(
+    fs: IFileSystemSync,
+    packageName: string,
+    context: string,
+    envFiles: Record<string, string>,
+    isRoot: boolean
+) {
+    return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
+        acc[envName] = getFilePathInPackage(fs, packageName, context, filePath, isRoot);
+        return acc;
+    }, {});
+}
+
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
 
@@ -742,6 +892,5 @@ function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
                 console.log(childStats.toString('errors-warnings'));
             }
         }
-        console.log('Done bundling.');
     });
 }

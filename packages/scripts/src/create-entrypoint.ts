@@ -24,6 +24,7 @@ export interface ICreateEntrypointsOptions {
     target: 'webworker' | 'web' | 'electron-renderer';
     externalFeatures: IExtenalFeatureDescriptor[];
     externalsFilePath?: string;
+    eagerEntrypoint?: boolean;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -42,6 +43,7 @@ export interface ExternalBrowserEntrypoint extends ExternalEntrypoint {
 
 export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint {
     target: 'web' | 'webworker' | 'node' | 'electron-renderer';
+    eagerEntrypoint?: boolean;
 }
 
 export type LoadStatement = Pick<
@@ -55,10 +57,12 @@ export type LoadStatement = Pick<
     | 'packageName'
     | 'directoryPath'
     | 'preloadFilePaths'
+    | 'eagerEntrypoint'
 >;
 
 export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'> {
     moduleIdentifier: string;
+    eagerEntrypoint?: boolean;
 }
 //#endregion
 
@@ -67,12 +71,8 @@ export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePa
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
     import { getTopWindow } from '@wixc3/engine-core';
-
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
-    const options = new URLSearchParams(topWindow.location.search);
-    const publicPath = options.has('externalPublicPath') ? options.get('externalPublicPath') : ${
-        typeof args.publicPath === 'string' ? JSON.stringify(args.publicPath) : '__webpack_public_path__'
-    };
+    ${setExternalPublicPath(args.envName, args.target, args.scopedName)}
     __webpack_public_path__= publicPath;
     self.runtimeFeatureLoader.register('${args.scopedName}', ${createLoaderInterface(args)});
     ;
@@ -81,7 +81,11 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
 
 export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
     return `module.exports = {
-        '${args.scopedName}': ${createLoaderInterface({ ...args, target: 'node', loadStatement: nodeImportStatement })}
+        '${args.scopedName}': ${createLoaderInterface({
+        ...args,
+        target: 'node',
+        loadStatement: nodeImportStatement,
+    })}
 }
     `;
 }
@@ -101,6 +105,7 @@ export function createMainEntrypoint({
     target,
     externalFeatures,
     externalsFilePath,
+    eagerEntrypoint,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -111,7 +116,7 @@ if(!self.EngineCore) {
 const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
 
 const featureLoaders = new Map(Object.entries({
-    ${createFeatureLoaders(features.values(), envName, childEnvs, target)}
+    ${createFeatureLoaders(features.values(), envName, childEnvs, target, eagerEntrypoint)}
 }));
 
 self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
@@ -119,7 +124,8 @@ self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
     const envName = '${envName}';
-    const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
+    const currentWindow = typeof self !== 'undefined' ? self : window;
+    const topWindow = getTopWindow(currentWindow);
     const options = new URLSearchParams(topWindow.location.search);
 
     const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
@@ -160,8 +166,10 @@ main().catch(console.error);
 //#endregion
 
 //#region webpack import statements
-export function webpackImportStatement({ moduleIdentifier, filePath }: LoadStatementArguments) {
-    return `await import(/* webpackChunkName: "${moduleIdentifier}" */ ${stringify(filePath)});`;
+export function webpackImportStatement({ moduleIdentifier, filePath, eagerEntrypoint }: LoadStatementArguments) {
+    return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
+        eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
+    } ${stringify(filePath)});`;
 }
 
 export function nodeImportStatement(args: LoadStatementArguments) {
@@ -175,7 +183,8 @@ function createFeatureLoaders(
     features: Iterable<IFeatureDefinition>,
     envName: string,
     childEnvs: string[],
-    target: 'web' | 'webworker' | 'node' | 'electron-renderer'
+    target: 'web' | 'webworker' | 'node' | 'electron-renderer',
+    eagerEntrypoint?: boolean
 ) {
     return Array.from(features)
         .map(
@@ -186,6 +195,7 @@ function createFeatureLoaders(
                     childEnvs,
                     loadStatement: target === 'node' ? nodeImportStatement : webpackImportStatement,
                     target,
+                    eagerEntrypoint,
                 })}`
         )
         .join(',\n');
@@ -201,6 +211,7 @@ function loadEnvAndContextFiles({
     directoryPath,
     packageName,
     preloadFilePaths,
+    eagerEntrypoint,
 }: LoadStatement) {
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
@@ -210,7 +221,13 @@ function loadEnvAndContextFiles({
         if (contextFilePath) {
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
-                ${loadStatement({ moduleIdentifier: name, filePath: contextFilePath, directoryPath, packageName })};
+                ${loadStatement({
+                    moduleIdentifier: name,
+                    filePath: contextFilePath,
+                    directoryPath,
+                    packageName,
+                    eagerEntrypoint,
+                })};
             }`);
         }
         const preloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
@@ -223,6 +240,7 @@ function loadEnvAndContextFiles({
                     filePath: preloadFilePath,
                     moduleIdentifier: name,
                     packageName,
+                    eagerEntrypoint,
                 })};
             }`);
         }
@@ -235,6 +253,7 @@ function loadEnvAndContextFiles({
                 filePath: envFilePath,
                 directoryPath,
                 packageName,
+                eagerEntrypoint,
             })
         );
     }
@@ -246,6 +265,7 @@ function loadEnvAndContextFiles({
                 filePath: preloadFilePath,
                 directoryPath,
                 packageName,
+                eagerEntrypoint,
             })
         );
     }
@@ -253,7 +273,17 @@ function loadEnvAndContextFiles({
 }
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
-    const { name, filePath, dependencies, resolvedContexts, loadStatement, packageName, directoryPath, target } = args;
+    const {
+        name,
+        filePath,
+        dependencies,
+        resolvedContexts,
+        loadStatement,
+        packageName,
+        directoryPath,
+        target,
+        eagerEntrypoint,
+    } = args;
     const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
     return `{
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
@@ -263,6 +293,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                         filePath,
                         directoryPath,
                         packageName,
+                        eagerEntrypoint,
                     })};
                     ${
                         target !== 'node'
@@ -289,7 +320,7 @@ const getAllValidConfigurations = (configurations: [string, IConfigDefinition][]
             configNameToFiles[configName] = [];
         }
         if (!configEnvName || configEnvName === envName) {
-            configNameToFiles[configName].push({ filePath, configEnvName });
+            configNameToFiles[configName]!.push({ filePath, configEnvName });
         }
     });
 
@@ -316,7 +347,7 @@ function createConfigLoadersObject(configs: Record<string, IConfigFileMapping[]>
 function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
     return Object.keys(configs)
         .map((scopedName) => {
-            const importedConfigPaths = configs[scopedName].map(({ filePath, configEnvName }) =>
+            const importedConfigPaths = configs[scopedName]!.map(({ filePath, configEnvName }) =>
                 loadConfigFile(filePath, scopedName, configEnvName)
             );
             return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;
@@ -363,57 +394,107 @@ function loadExternalFeatures(
     externalFeatures: IExtenalFeatureDescriptor[],
     externalsFilePath?: string
 ) {
-    return `
-        self.runtimeFeatureLoader = featureLoader;
-        const externalFeatures = ${JSON.stringify(externalFeatures)};
-        ${
-            externalsFilePath
-                ? `externalFeatures.push(...${
-                      target === 'electron-renderer'
-                          ? fetchFeaturesFromElectronProcess(externalsFilePath)
-                          : fetchExternalFeatures(externalsFilePath)
-                  })`
-                : ''
-        };
-        if(externalFeatures.length) {
-            const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
-            await ${target === 'webworker' ? importScripts() : loadScripts()}(entryPaths);
+    return `self.runtimeFeatureLoader = featureLoader;
+    const externalFeatures = ${JSON.stringify(externalFeatures)};
+    const isMainEntrypoint = topWindow && currentWindow === topWindow;
+    
+    ${addExternalsEventListenerForParentEnvironments()}
+    
+    ${
+        externalsFilePath
+            ? `const fetchedExternalFeatures = ${
+                  target === 'electron-renderer'
+                      ? fetchFeaturesFromElectronProcess(externalsFilePath)
+                      : fetchExternalFeaturesInBrowser(externalsFilePath)
+              };
+            externalFeatures.push(...fetchedExternalFeatures)`
+            : ''
+    }
+    if(externalFeatures.length) {
+        self.externalFeatures = externalFeatures;
+        const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
+        await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
 
-            for (const { name } of externalFeatures) {
-                for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
-                    features.push(loadedFeature);
-                }
+        for (const { name } of externalFeatures) {
+            for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
+                features.push(loadedFeature);
             }
-        }`;
+        }
+    }`;
+}
+
+function setExternalPublicPath(envName: string, target: string, featureName: string) {
+    return `const featureDef = topWindow.externalFeatures.find(({name}) => name === '${featureName}');
+    if(!featureDef) {
+        throw new Error('trying to load feature ' + '${featureName}' + ', but it is not defined');
+    }
+    const curerntUrl = featureDef.envEntries['${envName}']['${target}']
+    const publicPath =  curerntUrl.substring(0, curerntUrl.lastIndexOf('/') + 1);
+    `;
+}
+
+function addExternalsEventListenerForParentEnvironments() {
+    return `if(isMainEntrypoint) {
+        currentWindow.addEventListener('message', ({ data: { id }, source }) => {
+            if(id === '/external') {
+                source.postMessage({
+                    id,
+                    externalFeatures
+                })
+            }
+        })
+    }`;
+}
+
+function fetchExternalFeaturesInBrowser(externalFeaturesRoute: string) {
+    return `await (async () =>{
+        if(!isMainEntrypoint) {
+            ${getExternalFeaturesFromParent(externalFeaturesRoute)}   
+        } else {
+            ${fetchExternalFeatures(externalFeaturesRoute)}
+        }
+    })();
+    `;
+}
+
+function getExternalFeaturesFromParent(externalFeaturesRoute: string) {
+    return `return new Promise((res) => {
+        const externalsHandler = ({ data: { id, externalFeatures } }) => {
+            if(id === '${externalFeaturesRoute}') {
+                currentWindow.removeEventListener('message', externalsHandler);
+                res(externalFeatures);
+            }
+        };
+        currentWindow.addEventListener('message', externalsHandler)
+        topWindow.postMessage({
+            id: '${externalFeaturesRoute}'
+        });
+    });`;
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
-    return `await (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json()`;
+    return `return (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json()`;
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
     return `await require('electron').ipcRenderer.invoke('${externalFeaturesRoute}')`;
 }
 
-function importScripts() {
-    return 'importScripts';
-}
-
 function loadScripts() {
     return `(function fetchScripts(scripts) {
-        const loadScript = (src) =>
-            new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = () => resolve();
-                script.onerror = reject;
-                script.crossOrigin = 'anonymous';
-                script.type = 'module';
-                document.head.appendChild(script);
-            });
+                const loadScript = (src) =>
+                    new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        script.onload = () => resolve();
+                        script.onerror = reject;
+                        script.crossOrigin = 'anonymous';
+                        script.type = 'module';
+                        document.head.appendChild(script);
+                    });
 
-        return Promise.all(scripts.map(loadScript))
-    })`;
+                return Promise.all(scripts.map(loadScript));
+            })`;
 }
 
 export function createExternalFeatureMapping(packageName: string, featurePath: string) {
@@ -438,12 +519,8 @@ export function remapFileRequest({
     return remappedFilePath;
 }
 
-function normalizeRoute(route?: string) {
-    if (route && !route.endsWith('/')) {
-        return route + '/';
-    }
-
-    return route;
+function normalizeRoute(route: string) {
+    return route + (route && !route.endsWith('/') ? '/' : '');
 }
 
 export function normilizePackageName(packageName: string) {

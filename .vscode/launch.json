@@ -15,9 +15,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Pup Current",
-      "program": "${workspaceFolder}/node_modules/mocha-pup/bin/mocha-pup.js",
-      "args": ["${file}", "--dev"],
+      "name": "mocha-play Current",
+      "program": "${workspaceFolder}/node_modules/mocha-play/bin/mocha-play.js",
+      "args": ["${file}", "-w"],
       "outputCapture": "std",
       "internalConsoleOptions": "openOnSessionStart"
     },

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import type { Page } from 'puppeteer';
+import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
@@ -26,7 +26,7 @@ const applicationExternalFixturePath = fs.join(
     'test/fixtures/application-external'
 );
 
-function getBodyContent(page: Page) {
+function getBodyContent(page: Page | Frame) {
     return page.evaluate(() => document.body.textContent!.trim());
 }
 
@@ -79,7 +79,6 @@ describe('engineer:dev-server', function () {
             inspect,
             overrideConfig,
             outputPath,
-            singleRun: true,
             runtimeOptions,
             externalFeatureDefinitions,
             externalFeaturesPath,
@@ -252,7 +251,7 @@ describe('engineer:dev-server', function () {
             async () => {
                 // reload the page (to see if the config file was changed, without re-running the application)
                 await page.reload({
-                    waitUntil: 'networkidle2',
+                    waitUntil: 'networkidle',
                 });
                 expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
             },
@@ -265,7 +264,11 @@ describe('engineer:dev-server', function () {
         this.timeout(25_000);
         const {
             config: { port },
-        } = await setup({ basePath: nodeFeatureFixturePath, featureName: 'engine-node/x', inspect: true });
+        } = await setup({
+            basePath: nodeFeatureFixturePath,
+            featureName: 'engine-node/x',
+            inspect: true,
+        });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
@@ -525,6 +528,19 @@ describe('engineer:dev-server', function () {
             const elem = await page.$('#server-slot-value');
             expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
         });
+        const frames = page.frames();
+        await waitFor(
+            async () => {
+                for (const iframe of frames) {
+                    const child = await iframe.$('#main-container');
+                    if (!child) {
+                        continue;
+                    }
+                    expect(await getBodyContent(iframe)).to.eq('hello external');
+                }
+            },
+            { timeout: 5_000 }
+        );
     }).timeout(30_000);
 });
 

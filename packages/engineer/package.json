@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engineer",
-  "version": "16.5.7",
+  "version": "17.5.1",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,20 +13,20 @@
   "peerDependencies": {
     "react": ">=16",
     "react-dom": ">=16",
-    "webpack": "^4.0.0"
+    "webpack": "^4.0.0 || ^5.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^5.3.0",
-    "@wixc3/cross-performance": "^16.5.2",
-    "@wixc3/engine-core": "^16.5.2",
-    "@wixc3/engine-core-node": "^16.5.2",
-    "@wixc3/engine-dashboard": "^16.5.7",
-    "@wixc3/engine-scripts": "^16.5.7",
-    "commander": "^6.2.1",
-    "open": "^7.3.0",
-    "socket.io": "^3.0.4",
-    "webpack-dev-middleware": "^4.0.2",
-    "webpack-virtual-modules": "^0.4.1"
+    "@file-services/node": "^5.3.1",
+    "@wixc3/cross-performance": "^17.4.1",
+    "@wixc3/engine-core": "^17.5.0",
+    "@wixc3/engine-core-node": "^17.5.0",
+    "@wixc3/engine-dashboard": "^17.5.1",
+    "@wixc3/engine-scripts": "^17.5.1",
+    "commander": "^7.2.0",
+    "open": "^8.0.5",
+    "socket.io": "^4.0.1",
+    "webpack-dev-middleware": "^4.1.0",
+    "webpack-virtual-modules": "^0.4.2"
   },
   "files": [
     "bin",
