@@ -163,7 +163,7 @@ export class Application {
         overrideConfig,
         external = false,
         staticBuild = true,
-        staticExternalFeaturesFileName = 'provided-external-features.json',
+        staticExternalFeaturesFileName = 'external-features.json',
         webpackConfigPath,
         includeExternalFeatures,
         sourcesRoot: providedSourcesRoot,
@@ -174,7 +174,7 @@ export class Application {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
             require,
-            externalFeatureDefinitions = [],
+            externalFeatureDefinitions: configExternalFeatureDefinitions = [],
             externalFeaturesBasePath: configExternalFeaturesBasePath,
             sourcesRoot: configSourcesRoot,
             favicon: configFavicon,
@@ -213,9 +213,9 @@ export class Application {
             resolvedExternalFeaturesBasePath
         );
 
-        if (includeExternalFeatures && providedExternalFeatureDefinitions) {
+        if (includeExternalFeatures && configExternalFeatureDefinitions.length) {
             externalFeatures.push(
-                ...getExternalFeaturesMetadata(externalFeatureDefinitions, resolvedExternalFeaturesBasePath)
+                ...getExternalFeaturesMetadata(configExternalFeatureDefinitions, resolvedExternalFeaturesBasePath)
             );
         }
 
@@ -284,7 +284,10 @@ export class Application {
             );
 
             const externalFeaturesPath = fs.join(this.outputPath, EXTERNAL_FEATURES_BASE_URI);
-            for (const { packageName, packagePath } of providedExternalFeatureDefinitions || []) {
+            for (const { packageName, packagePath } of [
+                ...providedExternalFeatureDefinitions,
+                ...configExternalFeatureDefinitions,
+            ]) {
                 const packageBaseDir = getExternalFeatureBasePath({
                     packageName,
                     basePath: resolvedExternalFeaturesBasePath,
@@ -380,12 +383,6 @@ export class Application {
 
         const routeMiddlewares: RouteMiddleware[] = [];
 
-        if (serveStatic.length) {
-            for (const { route, directoryPath } of serveStatic) {
-                routeMiddlewares.push({ path: route, handlers: express.static(directoryPath) });
-            }
-        }
-
         const resolvedExternalFeaturesPath = fs.resolve(
             providedExternalFeatuersPath ??
                 baseExternalFeaturesPath ??
@@ -395,6 +392,13 @@ export class Application {
         externalFeatures.push(
             ...getExternalFeaturesMetadata(fixedExternalFeatureDefinitions, resolvedExternalFeaturesPath)
         );
+
+        // adding the route middlewares here because the launchHttpServer statically serves the 'staticDirPath'. but we want to add handlers to existing files there, so we want the custom middleware to be applied on an existing route
+        if (serveStatic.length) {
+            for (const { route, directoryPath } of serveStatic) {
+                routeMiddlewares.push({ path: route, handlers: express.static(directoryPath) });
+            }
+        }
 
         routeMiddlewares.push({
             path: externalsFilePath,
@@ -410,6 +414,8 @@ export class Application {
             routeMiddlewares,
         });
         disposables.add(close);
+
+        app.get(externalsFilePath);
 
         fixedExternalFeatureDefinitions.push(
             ...this.normilizeDefinitionsPackagePath(
