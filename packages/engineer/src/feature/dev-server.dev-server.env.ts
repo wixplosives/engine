@@ -76,7 +76,7 @@ devServerFeature.setup(
                 externalFeatureDefinitions = [],
                 require,
                 socketServerOptions: configServerOptions = {},
-                externalFeaturesPath: configExternalFeaturesPath,
+                externalFeaturesBasePath: configExternalFeaturesPath,
                 serveStatic = [],
             } = engineConfig ?? {};
             if (require) {
