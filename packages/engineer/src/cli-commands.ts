@@ -139,15 +139,15 @@ export function buildCommand(program: typeof commander) {
             'the directory where the feature library will be published at (relative to the base path). default: "."'
         )
         .option(
-            '--fetchExternalFeatures [true|false]',
-            'fetch for receiving external features in the output application',
-            parseBoolean,
-            true
-        )
-        .option(
             '--staticExternalsDescriptor <staticExternalsDescriptor>',
             'relative to the output directory - a path to a json file which retrieves all external feature descriptors',
             true
+        )
+        .option(
+            '--includeExternalFeatures <includeExternalFeatures>',
+            'should include defined external features in the built output',
+            parseBoolean,
+            false
         )
         .option(
             '--featureDiscoveryRoot <featureDiscoveryRoot>',
@@ -170,10 +170,10 @@ export function buildCommand(program: typeof commander) {
                 webpackConfig,
                 external,
                 sourcesRoot,
-                fetchExternalFeatures,
                 eagerEntrypoints,
                 featureDiscoveryRoot,
                 staticExternalsDescriptor,
+                includeExternalFeatures,
             } = cmd;
             try {
                 const basePath = resolve(path);
@@ -194,8 +194,8 @@ export function buildCommand(program: typeof commander) {
                     external,
                     sourcesRoot,
                     staticExternalFeaturesFileName: staticExternalsDescriptor,
-                    fetchExternalFeatures,
                     eagerEntrypoint: eagerEntrypoints,
+                    includeExternalFeatures,
                 });
                 console.log(stats.toString('errors-warnings'));
             } catch (e) {

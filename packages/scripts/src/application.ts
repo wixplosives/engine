@@ -67,7 +67,6 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     external?: boolean;
     staticBuild?: boolean;
     externalFeaturesFilePath?: string;
-    fetchExternalFeatures?: boolean;
     sourcesRoot?: string;
     staticExternalFeaturesFileName?: string;
     includeExternalFeatures?: boolean;
@@ -200,24 +199,9 @@ export class Application {
             environments: [...getExportedEnvironments(features)],
         });
 
-        const resolvedExternalFeaturesBasePath = fs.resolve(
-            externalFeaturesBasePath ?? (configExternalFeaturesBasePath ? fs.dirname(configPath!) : this.basePath)
-        );
-
         const externalsFilePath = staticExternalFeaturesFileName.startsWith('/')
             ? staticExternalFeaturesFileName
             : `/${staticExternalFeaturesFileName}`;
-
-        const externalFeatures = getExternalFeaturesMetadata(
-            providedExternalFeatureDefinitions,
-            resolvedExternalFeaturesBasePath
-        );
-
-        if (includeExternalFeatures && configExternalFeatureDefinitions.length) {
-            externalFeatures.push(
-                ...getExternalFeaturesMetadata(configExternalFeatureDefinitions, resolvedExternalFeaturesBasePath)
-            );
-        }
 
         const compiler = this.createCompiler({
             mode,
@@ -271,6 +255,20 @@ export class Application {
             getEnvEntrypoints(workerEnvs.keys(), 'webworker', entryPoints, outDir);
         }
 
+        const resolvedExternalFeaturesBasePath = fs.resolve(
+            externalFeaturesBasePath ?? (configExternalFeaturesBasePath ? fs.dirname(configPath!) : this.basePath)
+        );
+
+        const externalFeatures = getExternalFeaturesMetadata(
+            providedExternalFeatureDefinitions,
+            resolvedExternalFeaturesBasePath
+        );
+
+        if (includeExternalFeatures && configExternalFeatureDefinitions.length) {
+            externalFeatures.push(
+                ...getExternalFeaturesMetadata(configExternalFeatureDefinitions, resolvedExternalFeaturesBasePath)
+            );
+        }
         // only if building this feature as a static build, we want to create a folder that will match the external feature definition. meaning that we will copy all external feature root folders into EXTERNAL_FEATURES_BASE_URI. This is correct beceuase the mapping for each feature inside the externalFeatures onkect, will hold the following mapping for each web entry: `${EXTERNAL_FEATURES_BASE_URI}/${externalFeaturePackageName}/${externalFeatureOutDir}/entry-file.js`
         if (externalFeatures.length && staticBuild) {
             fs.writeFileSync(
