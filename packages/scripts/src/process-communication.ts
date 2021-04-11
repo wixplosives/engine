@@ -13,7 +13,6 @@ import {
     isEnvironmentMetricsRequestMessage,
     IEnvironmentMetricsResponse,
 } from './types';
-import { BaseHost } from '@wixc3/engine-core';
 
 export interface ICreateCommunicationOptions {
     port: number;
@@ -35,13 +34,10 @@ export function createIPC(
             performance.clearMarks();
             performance.clearMeasures();
             const ipcHost = new IPCHost(process);
-            const host = new BaseHost();
-            host.parent = ipcHost;
-            const { runtimeEngine, close } = await runWSEnvironment(socketServer, {
+            const { close } = await runWSEnvironment(socketServer, {
                 ...message.data,
-                host,
+                host: ipcHost,
             }).start();
-            runtimeEngine.getCOM().api.communication.registerMessageHandler(ipcHost);
             environments[message.envName] = close;
             remoteProcess.postMessage({ id: 'start' });
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {

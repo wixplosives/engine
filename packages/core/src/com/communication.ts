@@ -57,8 +57,13 @@ export class Communication {
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<ICommunicationOptions>;
-    private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private readyEnvs = new Set<string>();
+    private environments: { [environmentId: string]: EnvironmentRecord } = {};
+
+    /**
+     * use base host's parent for resolving message target for provided
+     */
+    private resolveTargetParentHost: Record<string, boolean> = {};
 
     constructor(
         host: Target,
@@ -120,6 +125,11 @@ export class Communication {
 
     public setTopology(envName: string, envUrl: string) {
         this.topology[envName] = envUrl;
+    }
+
+    public addEnvironmentResolutionDefinition(envName: string, options: { resolveToParentHost: boolean }) {
+        const { resolveToParentHost } = options;
+        this.resolveTargetParentHost[envName] = resolveToParentHost;
     }
 
     /**
@@ -541,7 +551,7 @@ export class Communication {
             }
             const target = env.host;
             if (target instanceof BaseHost) {
-                return target.parent || target;
+                return this.resolveTargetParentHost[env.id] === false ? target : target.parent || target;
             }
             return this.getPostEndpoint(target);
         }

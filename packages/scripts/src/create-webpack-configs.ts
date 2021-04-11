@@ -1,6 +1,6 @@
 import fs from '@file-services/node';
 import webpack from 'webpack';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
+import type HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import semverLessThan from 'semver/functions/lt';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
@@ -183,10 +183,14 @@ export function createWebpackConfig({
             fetchFeatures,
             eagerEntrypoint,
         });
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const htmlWebpackPlugin = require(require.resolve('html-webpack-plugin', {
+            paths: [context],
+        })) as typeof HtmlWebpackPlugin;
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 ...[
-                    new HtmlWebpackPlugin({
+                    new htmlWebpackPlugin({
                         filename: `${envName}.html`,
                         chunks: [envName],
                         title,

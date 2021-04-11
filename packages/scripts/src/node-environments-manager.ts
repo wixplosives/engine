@@ -3,7 +3,7 @@ import { delimiter } from 'path';
 
 import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
-import { TopLevelConfig, SetMultiMap, Communication, BaseHost, COM } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, Communication, BaseHost, COM, Message } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
@@ -40,6 +40,29 @@ type DeclaredEnvironmentRecord = Record<
 
 export interface IRuntimeEnvironment {
     runningEnvironments: RunningEnvironmentRecord[];
+}
+
+export class ChildBaseHost extends BaseHost {
+    constructor(public parent: BaseHost) {
+        super();
+    }
+
+    public postMessage(message: Message) {
+        this.parent.postMessage(message);
+    }
+
+    public postToSelf(message: Message) {
+        this.emitMessageHandlers(message);
+    }
+}
+
+class ChildHostWrapper extends BaseHost {
+    constructor(private host: ChildBaseHost) {
+        super();
+    }
+    postMessage(message: Message) {
+        this.host.postToSelf(message);
+    }
 }
 
 export interface RunEnvironmentOptions {
@@ -283,14 +306,12 @@ export class NodeEnvironmentsManager {
             };
         }
 
-        const host = baseHost.open();
-        host.name = nodeEnv.name;
-        com.registerEnv(nodeEnv.name, host);
+        const host = new ChildBaseHost(baseHost);
 
+        com.registerEnv(nodeEnv.name, new ChildHostWrapper(host));
         if (mode === 'new-server') {
             return await this.runEnvironmentInNewServer(port, { ...nodeEnvironmentOptions, host });
         }
-
         const { start } = runWSEnvironment(this.socketServer, { ...nodeEnvironmentOptions, host });
 
         return {
