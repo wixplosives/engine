@@ -173,7 +173,7 @@ export function buildCommand(program: typeof commander) {
                 fetchExternalFeatures,
                 eagerEntrypoints,
                 featureDiscoveryRoot,
-                staticExternalsDescriptor = '/externals.json',
+                staticExternalsDescriptor,
             } = cmd;
             try {
                 const basePath = resolve(path);
@@ -193,7 +193,7 @@ export function buildCommand(program: typeof commander) {
                     webpackConfigPath: webpackConfig,
                     external,
                     sourcesRoot,
-                    staticExternalFeaturesPath: staticExternalsDescriptor,
+                    staticExternalFeaturesFileName: staticExternalsDescriptor,
                     fetchExternalFeatures,
                     eagerEntrypoint: eagerEntrypoints,
                 });

@@ -34,7 +34,9 @@ describe('Application', function () {
 
     const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
     const baseWebApplicationFixturePath = fs.join(__dirname, './fixtures/base-web-application');
+    const staticBaseWebApplicationFixturePath = fs.join(__dirname, './fixtures/static-base-web-application');
     const applicationExternalFixturePath = fs.join(__dirname, './fixtures/application-external');
+    const staticApplicationExternalFixturePath = fs.join(__dirname, './fixtures/static-application-external');
     const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
     const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
 
@@ -471,6 +473,75 @@ describe('Application', function () {
                             continue;
                         }
                         expect(await getBodyContent(iframe)).to.eq('hello external');
+                    }
+                },
+                { timeout: 5_000 }
+            );
+        });
+
+        it('loads external features after static build', async () => {
+            const externalFeatureName = 'static-application-external/application-external';
+            const pluginsFolderPath = join(staticBaseWebApplicationFixturePath, 'node_modules');
+            const { name } = fs.readJsonFileSync(join(staticApplicationExternalFixturePath, 'package.json')) as {
+                name: string;
+            };
+            const externalFeatureApp = new Application({
+                basePath: staticApplicationExternalFixturePath,
+            });
+            const publicConfigsRoute = 'config';
+            await externalFeatureApp.build({
+                external: true,
+                featureName: externalFeatureName,
+            });
+
+            fs.copyDirectorySync(staticApplicationExternalFixturePath, join(pluginsFolderPath, name, 'dist'));
+            fs.copyDirectorySync(
+                join(staticApplicationExternalFixturePath, 'dist'),
+                join(pluginsFolderPath, name, 'dist')
+            );
+            disposables.add(() => externalFeatureApp.clean());
+            disposables.add(() => rimraf.sync(pluginsFolderPath));
+
+            const app = new Application({ basePath: staticBaseWebApplicationFixturePath });
+            await app.build({
+                featureName: 'static-base-web-application/base-web-application',
+                singleFeature: true,
+                publicConfigsRoute: '/config',
+                staticBuild: true,
+                externalFeatureDefinitions: [
+                    {
+                        packageName: name,
+                    },
+                ],
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                publicConfigsRoute,
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            await waitFor(
+                async () => {
+                    const bodyContent = await getBodyContent(page);
+                    expect(bodyContent, `external feature is not loaded in the browser`).include(
+                        'client from external'
+                    );
+                },
+                { timeout: 5_000 }
+            );
+            const frames = page.frames();
+            await waitFor(
+                async () => {
+                    for (const iframe of frames) {
+                        const child = await iframe.$('#main-container');
+                        if (!child) {
+                            continue;
+                        }
+                        expect(await getBodyContent(iframe), `external feature is not loaded in the iframe`).to.eq(
+                            'iframe from external'
+                        );
                     }
                 },
                 { timeout: 5_000 }

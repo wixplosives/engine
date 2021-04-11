@@ -79,7 +79,7 @@ export async function startDevServer({
 
     const {
         externalFeatureDefinitions: configDefs = [],
-        externalFeaturesPath: configExternalPath,
+        externalFeaturesBasePath: configExternalPath,
         require,
         favicon: configFavicon,
     } = engineConfig ?? {};

@@ -34,7 +34,7 @@ export interface ICreateWebpackConfigsOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
     externalFeatures: IExtenalFeatureDescriptor[];
-    externalsFilePath?: string;
+    externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
 }
 
@@ -65,7 +65,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
-                externalFeatures: filterExternalFeatures(webEnvs, 'web'),
             })
         );
     }
@@ -78,7 +77,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                externalFeatures: filterExternalFeatures(workerEnvs, 'webworker'),
             })
         );
     }
@@ -91,26 +89,11 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                externalFeatures: filterExternalFeatures(workerEnvs, 'electron-renderer'),
             })
         );
     }
 
     return configurations;
-
-    function filterExternalFeatures(
-        envs: Map<string, string[]>,
-        target: 'web' | 'webworker' | 'electron-renderer'
-    ): IExtenalFeatureDescriptor[] {
-        return options.externalFeatures.map<IExtenalFeatureDescriptor>((descriptor) => ({
-            ...descriptor,
-            envEntries: Object.fromEntries(
-                Object.entries(descriptor.envEntries).filter(
-                    ([envName, envEntries]) => envs.has(envName) && !!envEntries[target]
-                )
-            ),
-        }));
-    }
 }
 
 interface ICreateWebpackConfigOptions {
@@ -133,8 +116,7 @@ interface ICreateWebpackConfigOptions {
     staticBuild: boolean;
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    externalFeatures: IExtenalFeatureDescriptor[];
-    externalsFilePath?: string;
+    externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
 }
 
@@ -157,8 +139,7 @@ export function createWebpackConfig({
     staticBuild,
     publicConfigsRoute,
     overrideConfig,
-    externalFeatures,
-    externalsFilePath,
+    externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
 }: ICreateWebpackConfigOptions): Configuration {
@@ -179,8 +160,7 @@ export function createWebpackConfig({
             publicConfigsRoute,
             config,
             target,
-            externalFeatures,
-            externalsFilePath,
+            externalFeaturesRoute,
             eagerEntrypoint,
         });
         if (target === 'web' || target === 'electron-renderer') {
