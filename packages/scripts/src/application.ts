@@ -125,7 +125,6 @@ export interface ICompilerOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     singleFeature?: boolean;
     isExternal: boolean;
-    externalFeatures: IExtenalFeatureDescriptor[];
     externalFeaturesRoute: string;
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
@@ -235,7 +234,6 @@ export class Application {
             singleFeature,
             // should build this feature in external mode
             isExternal: external,
-            externalFeatures: [],
             // whether should fetch at runtime for the external features metadata
             externalFeaturesRoute: externalsFilePath,
             webpackConfigPath,
@@ -726,7 +724,6 @@ export class Application {
         overrideConfig,
         singleFeature,
         isExternal,
-        externalFeatures,
         externalFeaturesRoute,
         webpackConfigPath,
         environments,
@@ -756,7 +753,6 @@ export class Application {
             overrideConfig,
             singleFeature,
             createWebpackConfig: isExternal ? createWebpackConfigForExternalFeature : createWebpackConfig,
-            externalFeatures,
             externalFeaturesRoute,
             eagerEntrypoint,
         });

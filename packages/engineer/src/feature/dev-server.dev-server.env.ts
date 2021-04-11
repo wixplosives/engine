@@ -189,7 +189,6 @@ devServerFeature.setup(
                 staticBuild: false,
                 configurations,
                 isExternal: false,
-                externalFeatures: [],
                 webpackConfigPath,
                 environments: getResolvedEnvironments({
                     featureName,

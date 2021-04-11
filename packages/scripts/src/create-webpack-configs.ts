@@ -12,7 +12,7 @@ import {
 } from './create-entrypoint';
 
 import type { getResolvedEnvironments } from './utils/environments';
-import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
+import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 
 export interface ICreateWebpackConfigsOptions {
@@ -33,7 +33,6 @@ export interface ICreateWebpackConfigsOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
-    externalFeatures: IExtenalFeatureDescriptor[];
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
 }
