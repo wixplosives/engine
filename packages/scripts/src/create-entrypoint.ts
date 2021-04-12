@@ -464,7 +464,7 @@ function getExternalFeaturesFromParent(externalFeaturesRoute: string) {
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
-    return `return (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json()`;
+    return `return (await fetch('${externalFeaturesRoute}')).json()`;
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
