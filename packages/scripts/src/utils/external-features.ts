@@ -10,9 +10,7 @@ export function getExternalFeaturesMetadata(
 ): IExtenalFeatureDescriptor[] {
     // mapping a feature definition to the entries of each environment of that feature, per target
     return pluginDefinitions.map(({ packageName, outDir = 'dist', packagePath }) => {
-        const packageBasePath = packagePath
-            ? fs.resolve(basePath, packagePath)
-            : require.resolve(packageName, { paths: [basePath] });
+        const packageBasePath = getExternalFeatureBasePath({ packagePath, basePath, packageName });
         const { entryPoints, defaultFeatureName } = fs.readJsonFileSync(
             fs.join(packageBasePath, outDir, 'manifest.json')
         ) as IBuildManifest;
@@ -35,4 +33,17 @@ export function getExternalFeaturesMetadata(
             envEntries,
         };
     });
+}
+export function getExternalFeatureBasePath({
+    packagePath,
+    basePath,
+    packageName,
+}: {
+    packagePath?: string;
+    basePath: string;
+    packageName: string;
+}) {
+    return packagePath
+        ? fs.resolve(basePath, packagePath)
+        : fs.dirname(require.resolve(fs.join(packageName, 'package.json'), { paths: [basePath] }));
 }

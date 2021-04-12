@@ -10,11 +10,11 @@ import { devServerEnv } from './dev-server.feature';
 guiFeature.setup(
     devServerEnv,
     (
-        { engineerConfig: { features, externalFeatures } },
+        { engineerConfig: { features } },
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { title, favicon, publicConfigsRoute },
+                devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute },
                 serverListeningHandlerSlot,
                 application,
             },
@@ -37,7 +37,7 @@ guiFeature.setup(
             configurations,
             featureName: 'engineer/gui',
             target: 'web',
-            externalFeatures,
+            externalFeaturesRoute,
         });
 
         engineerWebpackConfigs.register(

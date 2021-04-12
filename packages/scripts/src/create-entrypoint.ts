@@ -1,7 +1,7 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import { extname, parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
-import type { IFeatureDefinition, IConfigDefinition, IExtenalFeatureDescriptor } from './types';
+import type { IFeatureDefinition, IConfigDefinition } from './types';
 
 const { stringify } = JSON;
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
@@ -22,8 +22,7 @@ export interface ICreateEntrypointsOptions {
     publicConfigsRoute?: string;
     config?: TopLevelConfig;
     target: 'webworker' | 'web' | 'electron-renderer';
-    externalFeatures: IExtenalFeatureDescriptor[];
-    fetchFeatures?: boolean;
+    externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
 }
 interface IConfigFileMapping {
@@ -103,8 +102,7 @@ export function createMainEntrypoint({
     publicConfigsRoute,
     config,
     target,
-    externalFeatures,
-    fetchFeatures,
+    externalFeaturesRoute,
     eagerEntrypoint,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
@@ -150,7 +148,7 @@ async function main() {
 
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
     const features = [loadedFeatures[loadedFeatures.length - 1]];
-    ${loadExternalFeatures(target, externalFeatures, fetchFeatures)}
+    ${loadExternalFeatures(target, externalFeaturesRoute)}
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
@@ -389,27 +387,20 @@ function importStaticConfigs() {
 //#endregion
 
 //#region loading 3rd party features
-function loadExternalFeatures(
-    target: 'web' | 'webworker' | 'electron-renderer',
-    externalFeatures: IExtenalFeatureDescriptor[],
-    fetchFeatures?: boolean
-) {
+function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer', externalsFilePath: string) {
     return `self.runtimeFeatureLoader = featureLoader;
-    const externalFeatures = ${JSON.stringify(externalFeatures)};
+    const externalFeatures = [];
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
     
     ${addExternalsEventListenerForParentEnvironments()}
     
-    ${
-        fetchFeatures
-            ? `const fetchedExternalFeatures = ${
-                  target === 'electron-renderer'
-                      ? fetchFeaturesFromElectronProcess('/external')
-                      : fetchExternalFeaturesInBrowser('/external')
-              };
-            externalFeatures.push(...fetchedExternalFeatures)`
-            : ''
-    }
+    const fetchedExternalFeatures = ${
+        target === 'electron-renderer'
+            ? fetchFeaturesFromElectronProcess(externalsFilePath)
+            : fetchExternalFeaturesInBrowser(externalsFilePath)
+    };
+    externalFeatures.push(...fetchedExternalFeatures)
+    
     if(externalFeatures.length) {
         self.externalFeatures = externalFeatures;
         const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);

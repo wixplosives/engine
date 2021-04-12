@@ -11,18 +11,28 @@ const noContentHandler: express.RequestHandler = (_req, res) => {
     res.end();
 };
 
+export interface RouteMiddleware {
+    path: string;
+    handlers: express.RequestHandler | express.RequestHandler[];
+}
+
 export interface ILaunchHttpServerOptions {
     staticDirPath: string;
     httpServerPort?: number;
     socketServerOptions?: Partial<io.ServerOptions>;
+    routeMiddlewares?: Array<RouteMiddleware>;
 }
 
 export async function launchHttpServer({
     staticDirPath,
     httpServerPort = DEFAULT_PORT,
     socketServerOptions,
+    routeMiddlewares = [],
 }: ILaunchHttpServerOptions) {
     const app = express();
+    for (const { path, handlers } of routeMiddlewares) {
+        app.use(path, handlers);
+    }
     app.use(cors());
     const openSockets = new Set<Socket>();
     const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);

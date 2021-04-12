@@ -62,6 +62,7 @@ devServerFeature.setup(
             featureDiscoveryRoot,
             socketServerOptions = {},
             webpackConfigPath,
+            externalFeaturesRoute,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -76,7 +77,7 @@ devServerFeature.setup(
                 externalFeatureDefinitions = [],
                 require,
                 socketServerOptions: configServerOptions = {},
-                externalFeaturesPath: configExternalFeaturesPath,
+                externalFeaturesBasePath: configExternalFeaturesPath,
                 serveStatic = [],
             } = engineConfig ?? {};
             if (require) {
@@ -176,6 +177,11 @@ devServerFeature.setup(
                 };
                 res.json(graph);
             });
+
+            app.get(externalFeaturesRoute, (_, res) => {
+                res.json(externalFeatures);
+            });
+
             // Write middleware for each of the apps
             const compiler = application.createCompiler({
                 ...devServerConfig,
@@ -183,15 +189,14 @@ devServerFeature.setup(
                 staticBuild: false,
                 configurations,
                 isExternal: false,
-                externalFeatures,
                 webpackConfigPath,
-                useLocalExtenalFeaturesMapping: false,
                 environments: getResolvedEnvironments({
                     featureName,
                     features,
                     filterContexts: singleFeature,
                     environments: [...getExportedEnvironments(features)],
                 }),
+                externalFeaturesRoute,
             });
 
             for (const childCompiler of compiler.compilers) {
