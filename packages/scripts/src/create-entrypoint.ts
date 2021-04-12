@@ -392,7 +392,7 @@ function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer',
     const externalFeatures = [];
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
     
-    ${addExternalsEventListenerForParentEnvironments()}
+    ${addExternalsEventListenerForParentEnvironments(externalsFilePath)}
     
     const fetchedExternalFeatures = ${
         target === 'electron-renderer'
@@ -424,10 +424,10 @@ function setExternalPublicPath(envName: string, target: string, featureName: str
     `;
 }
 
-function addExternalsEventListenerForParentEnvironments() {
+function addExternalsEventListenerForParentEnvironments(externalsFilePath: string) {
     return `if(isMainEntrypoint) {
         currentWindow.addEventListener('message', ({ data: { id }, source }) => {
-            if(id === '/external') {
+            if(id === '${externalsFilePath}') {
                 source.postMessage({
                     id,
                     externalFeatures

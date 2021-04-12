@@ -539,7 +539,7 @@ describe('Application', function () {
                         if (!child) {
                             continue;
                         }
-                        expect(await getBodyContent(iframe), `external feature is not loaded in the iframe`).to.eq(
+                        expect(await getBodyContent(iframe), `external feature is not loaded in the iframe`).to.contain(
                             'iframe from external'
                         );
                     }
