@@ -95,7 +95,7 @@ export interface IBuildManifest {
     defaultFeatureName?: string;
     defaultConfigName?: string;
     entryPoints: Record<string, Record<string, string>>;
-    externalsFilePath: string;
+    externalsFilePath?: string;
 }
 
 export interface ICreateOptions {
@@ -130,6 +130,8 @@ export interface ICompilerOptions {
     eagerEntrypoint?: boolean;
 }
 
+const DEFAULT_EXTERNAL_FEATURES_PATH = 'external-features.json';
+
 export class Application {
     public outputPath: string;
     protected basePath: string;
@@ -162,7 +164,7 @@ export class Application {
         overrideConfig,
         external = false,
         staticBuild = true,
-        staticExternalFeaturesFileName = 'external-features.json',
+        staticExternalFeaturesFileName = DEFAULT_EXTERNAL_FEATURES_PATH,
         webpackConfigPath,
         includeExternalFeatures,
         sourcesRoot: providedSourcesRoot,
@@ -312,7 +314,7 @@ export class Application {
             features: manifestFeatures,
             defaultConfigName,
             defaultFeatureName,
-            externalsFilePath,
+            externalsFilePath = DEFAULT_EXTERNAL_FEATURES_PATH,
         } = (await fs.promises.readJsonFile(join(this.outputPath, 'manifest.json'))) as IBuildManifest;
 
         const externalFeatures: IExtenalFeatureDescriptor[] = [];
@@ -370,7 +372,7 @@ export class Application {
         }
 
         // this will only be true when application is built statically (without node environments)
-        if (fs.existsSync(join(this.outputPath, externalsFilePath))) {
+        if (externalsFilePath && fs.existsSync(join(this.outputPath, externalsFilePath))) {
             externalFeatures.push(
                 ...(fs.readJsonFileSync(
                     join(this.outputPath, externalsFilePath),
@@ -399,7 +401,7 @@ export class Application {
         }
 
         routeMiddlewares.push({
-            path: externalsFilePath,
+            path: externalsFilePath.startsWith('/') ? externalsFilePath : `/${externalsFilePath}`,
             handlers: (_, res: express.Response) => {
                 res.json(externalFeatures);
             },
@@ -412,8 +414,6 @@ export class Application {
             routeMiddlewares,
         });
         disposables.add(close);
-
-        app.get(externalsFilePath);
 
         fixedExternalFeatureDefinitions.push(
             ...this.normilizeDefinitionsPackagePath(
