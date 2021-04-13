@@ -247,7 +247,7 @@ export function createWebpackConfigForExternalFeature({
         }
     }
     const virtualModulePaths = Object.keys(virtualModules);
-    externals.push(extractExternals(filePath, virtualModulePaths));
+    const extractExternalsMethod = extractExternals(filePath, virtualModulePaths);
 
     const webpackConfig: webpack.Configuration = {
         ...baseConfig,
@@ -273,6 +273,14 @@ export function createWebpackConfigForExternalFeature({
     if (semverLessThan(webpack.version, '5.0.0')) {
         webpackConfig.output!.libraryTarget = 'var';
         (webpackConfig.output as { jsonpFunction: string }).jsonpFunction = packageName + name;
+        const webpack4ExtractExternalsAdaptation: any = (
+            context: string,
+            request: string,
+            cb: (e?: Error, target?: string) => void
+        ) => extractExternalsMethod({ context, request }, cb);
+        externals.push(webpack4ExtractExternalsAdaptation);
+    } else {
+        externals.push(extractExternalsMethod);
     }
     return webpackConfig;
 }
