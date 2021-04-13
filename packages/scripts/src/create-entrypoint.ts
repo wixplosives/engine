@@ -403,12 +403,15 @@ function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer',
     
     if(externalFeatures.length) {
         self.externalFeatures = externalFeatures;
-        const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
-        await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
-
-        for (const { name } of externalFeatures) {
-            for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
-                features.push(loadedFeature);
+        const filteredExternals = externalFeatures.filter(({name, envEntries}) => envEntries[envName] && envEntries[envName]['${target}']);
+        const entryPaths = filteredExternals.map(({ name, envEntries }) => (envEntries[envName]['${target}']));
+        if(filteredExternals.length) {
+            await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
+    
+            for (const { name } of filteredExternals) {
+                for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
+                    features.push(loadedFeature);
+                }
             }
         }
     }`;
