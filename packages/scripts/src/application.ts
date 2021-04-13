@@ -415,6 +415,13 @@ export class Application {
         });
         disposables.add(close);
 
+        // since the latest release was a patch, We need to be backward compatible with broken changes.
+        // adding backward compatibility for previous engine versions.
+        // todo: remove this on next major
+        app.get('/external', (_, res) => {
+            res.json(externalFeatures);
+        });
+
         fixedExternalFeatureDefinitions.push(
             ...this.normilizeDefinitionsPackagePath(
                 providedExternalFeaturesDefinitions,
