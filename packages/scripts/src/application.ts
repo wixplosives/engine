@@ -401,7 +401,7 @@ export class Application {
         }
 
         routeMiddlewares.push({
-            path: externalsFilePath,
+            path: externalsFilePath.startsWith('/') ? externalsFilePath : `/${externalsFilePath}`,
             handlers: (_, res: express.Response) => {
                 res.json(externalFeatures);
             },
@@ -414,8 +414,6 @@ export class Application {
             routeMiddlewares,
         });
         disposables.add(close);
-
-        app.get(externalsFilePath);
 
         fixedExternalFeatureDefinitions.push(
             ...this.normilizeDefinitionsPackagePath(
