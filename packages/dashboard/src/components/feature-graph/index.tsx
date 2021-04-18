@@ -34,10 +34,10 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
         const paths = selectedFeatureGraph.links.map(function (l) {
             const source = leaves.filter(function (graphNode) {
                 return graphNode.data.name === l.source;
-            })[0];
+            })[0]!;
             const target = leaves.filter(function (graphNode) {
                 return graphNode.data.name === l.target;
-            })[0];
+            })[0]!;
             return source.path(target);
         });
 
@@ -47,7 +47,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .data(paths)
             .enter()
             .append('path')
-            .attr('class', classes.link)
+            .attr('class', classes.link!)
             .attr('d', graphLine)
             .on('mouseover', function (_e, linkedNodes) {
                 link.style('stroke', null).style('stroke-opacity', null);
@@ -70,7 +70,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             .data(leaves)
             .enter()
             .append('g')
-            .attr('class', classes.node)
+            .attr('class', classes.node!)
             .attr('transform', function (graphNode) {
                 return `translate(${xAccessor(graphNode)},${yAccessor(graphNode)})`;
             })
@@ -107,7 +107,7 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             });
 
         // Render node title
-        node.append('circle').attr('r', 4).attr('class', classes.node_circle);
+        node.append('circle').attr('r', 4).attr('class', classes.node_circle!);
 
         // Render node text
         node.append('text')

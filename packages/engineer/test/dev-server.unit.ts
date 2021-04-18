@@ -79,7 +79,6 @@ describe('engineer:dev-server', function () {
             inspect,
             overrideConfig,
             outputPath,
-            singleRun: true,
             runtimeOptions,
             externalFeatureDefinitions,
             externalFeaturesPath,
@@ -265,7 +264,11 @@ describe('engineer:dev-server', function () {
         this.timeout(25_000);
         const {
             config: { port },
-        } = await setup({ basePath: nodeFeatureFixturePath, featureName: 'engine-node/x', inspect: true });
+        } = await setup({
+            basePath: nodeFeatureFixturePath,
+            featureName: 'engine-node/x',
+            inspect: true,
+        });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 

@@ -15,27 +15,17 @@ import {
     getExportedEnvironments,
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
-import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 
-function singleRunWatchFunction(compiler: webpack.Compiler) {
-    // This custom watch optimization only compiles once, but allows us to use webpack dev server
-    // and serve the output from memory
-    return function watch(_: unknown, handler: webpack.ICompiler.Handler) {
-        compiler.run(handler);
-        return {
-            close(cb?: () => void) {
-                if (cb) {
-                    cb();
-                }
-            },
-            invalidate: () => undefined,
-        };
-    };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const webpackDevMiddleware = require('webpack-dev-middleware') as (compiler: webpack.Compiler) => WebpackDevMiddleware;
+
+interface WebpackDevMiddleware extends express.Handler {
+    close(cb?: () => void): void;
 }
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
@@ -59,7 +49,6 @@ devServerFeature.setup(
             publicConfigsRoute,
             publicPath,
             configName,
-            singleRun,
             inspect,
             autoLaunch,
             nodeEnvironmentsMode,
@@ -73,6 +62,7 @@ devServerFeature.setup(
             featureDiscoveryRoot,
             socketServerOptions = {},
             webpackConfigPath,
+            externalFeaturesRoute,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -87,7 +77,7 @@ devServerFeature.setup(
                 externalFeatureDefinitions = [],
                 require,
                 socketServerOptions: configServerOptions = {},
-                externalFeaturesPath: configExternalFeaturesPath,
+                externalFeaturesBasePath: configExternalFeaturesPath,
                 serveStatic = [],
             } = engineConfig ?? {};
             if (require) {
@@ -188,6 +178,11 @@ devServerFeature.setup(
                 };
                 res.json(graph);
             });
+
+            app.get(externalFeaturesRoute, (_, res) => {
+                res.json(externalFeatures);
+            });
+
             // Write middleware for each of the apps
             const compiler = application.createCompiler({
                 ...devServerConfig,
@@ -195,23 +190,17 @@ devServerFeature.setup(
                 staticBuild: false,
                 configurations,
                 isExternal: false,
-                externalFeatures,
                 webpackConfigPath,
-                useLocalExtenalFeaturesMapping: false,
                 environments: getResolvedEnvironments({
                     featureName,
                     features,
                     filterContexts: singleFeature,
                     environments: [...getExportedEnvironments(features)],
                 }),
+                externalFeaturesRoute,
             });
 
             for (const childCompiler of compiler.compilers) {
-                if (singleRun) {
-                    // This hack is to squeeze some more performance, because we can server the output in memory
-                    // It was once a crash, which is no longer relevant
-                    childCompiler.watch = singleRunWatchFunction(childCompiler);
-                }
                 const devMiddleware = webpackDevMiddleware(childCompiler);
                 disposables.add(
                     () => new Promise<void>((res) => devMiddleware.close(res))

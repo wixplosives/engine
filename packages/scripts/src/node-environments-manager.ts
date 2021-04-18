@@ -162,7 +162,7 @@ export class NodeEnvironmentsManager {
     public getRunningFeatures() {
         const runningFeatures = new Map<RunningFeatureIdentification, RunningEnvironments>();
         for (const [featureId, runningEnvs] of this.runningEnvironments) {
-            const [featureName, configName] = featureId.split(delimiter);
+            const [featureName, configName] = featureId.split(delimiter) as [string, ...(string | undefined)[]];
             runningFeatures.set({ featureName, configName }, runningEnvs.runningEnvironments);
         }
         return runningFeatures;

@@ -11,13 +11,13 @@ export function translateNodeToHierarchy(features: Array<Node>) {
 
         if (!hierarchy[group]) {
             hierarchy[group] = { name: group, children: [], parent: hierarchy['root'], group: c.group };
-            hierarchy['root'].children.push(hierarchy[group]);
+            hierarchy['root']!.children.push(hierarchy[group]!);
         }
 
-        hierarchy[group].children.push(c);
+        hierarchy[group]!.children.push(c);
     });
 
-    return hierarchy['root'];
+    return hierarchy['root']!;
 }
 
 export function xAccessor(d: HierarchyPointNode<Node>) {

@@ -70,7 +70,7 @@ export class Communication {
     ) {
         this.options = { warnOnSlow: false, publicPath: '', ...options };
         this.rootEnvId = id;
-        this.rootEnvName = id.split('/')[0];
+        this.rootEnvName = id.split('/')[0]!;
         this.registerMessageHandler(host);
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
@@ -276,7 +276,7 @@ export class Communication {
     }
 
     private parseHandlerId(handlerId: string, prelude: string) {
-        const [api, method] = handlerId.slice(prelude.length).split('@');
+        const [api, method] = handlerId.slice(prelude.length).split('@') as [string, string];
         return {
             api,
             method,
@@ -314,9 +314,9 @@ export class Communication {
         if (serviceConfig) {
             this.apisOverrides[id] = {};
             for (const methodName of Object.keys(serviceConfig)) {
-                const config = serviceConfig[methodName](api);
+                const config = serviceConfig[methodName]!(api);
                 if (config.proxyFunction) {
-                    this.apisOverrides[id][methodName] = config.proxyFunction;
+                    this.apisOverrides[id]![methodName] = config.proxyFunction;
                 }
             }
         }
@@ -374,7 +374,7 @@ export class Communication {
 
         const data = await new Promise<void>((res, rej) => {
             const handlerId = message.data.handlerId;
-            this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
+            const handler = (...args: SerializableArguments) => {
                 this.sendTo(message.from, {
                     to: message.from,
                     from: message.to,
@@ -384,6 +384,7 @@ export class Communication {
                     origin: message.from,
                 });
             };
+            this.eventDispatchers[handlerId] = handler;
 
             this.addOrRemoveListener(
                 message.to,
@@ -392,7 +393,7 @@ export class Communication {
                 callbackId,
                 message.origin,
                 { [message.data.method]: { listener: true } },
-                this.eventDispatchers[handlerId],
+                handler,
                 res,
                 rej
             );
@@ -411,10 +412,10 @@ export class Communication {
     }
 
     private apiCall(origin: string, api: string, method: string, args: unknown[]): unknown {
-        if (this.apisOverrides[api] && this.apisOverrides[api][method]) {
-            return this.apisOverrides[api][method](...[origin, ...args]);
+        if (this.apisOverrides[api]?.[method]) {
+            return this.apisOverrides[api]![method]!(...[origin, ...args]);
         }
-        return this.apis[api][method](...args);
+        return this.apis[api]![method]!(...args);
     }
 
     private unhandledMessage(_message: Message): void {
@@ -530,12 +531,12 @@ export class Communication {
 
     private resolveMessageTarget(envId: string): Target {
         // TODO: make this more logical
-        let env = this.environments[envId];
+        let env = this.environments[envId]!;
         if (env && env.id !== this.rootEnvId) {
             return env.host;
         } else {
             if (!env) {
-                env = this.environments[this.rootEnvId];
+                env = this.environments[this.rootEnvId]!;
             }
             const target = env.host;
             if (target instanceof BaseHost) {
@@ -611,7 +612,7 @@ export class Communication {
                         removeListener: method,
                     },
                 },
-                this.eventDispatchers[message.data.handlerId],
+                this.eventDispatchers[message.data.handlerId]!,
                 res,
                 rej
             )

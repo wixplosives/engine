@@ -300,8 +300,9 @@ export interface EngineConfig {
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
     externalFeatureDefinitions: Array<IExternalDefinition>;
-    externalFeaturesPath?: string;
+    externalFeaturesBasePath?: string;
     serveExternalFeaturesPath?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
-    featureOutDir?: string;
+    sourcesRoot?: string;
+    favicon?: string;
 }

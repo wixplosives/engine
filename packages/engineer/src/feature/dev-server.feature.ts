@@ -13,8 +13,8 @@ export interface DevServerConfig {
     configName?: string;
     publicPath?: string;
     title?: string;
+    favicon?: string;
     publicConfigsRoute: string;
-    singleRun: boolean;
     inspect: boolean;
     autoLaunch: boolean;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
@@ -29,6 +29,7 @@ export interface DevServerConfig {
     featureDiscoveryRoot?: string;
     socketServerOptions?: Partial<io.ServerOptions>;
     webpackConfigPath?: string;
+    externalFeaturesRoute: string;
 }
 
 export interface DevServerActions {
@@ -56,7 +57,6 @@ export default new Feature({
         devServerConfig: new Config<DevServerConfig>({
             httpServerPort: 3000,
             singleFeature: false,
-            singleRun: false,
             inspect: false,
             autoLaunch: true,
             mode: 'development',
@@ -64,6 +64,7 @@ export default new Feature({
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
             externalFeatureDefinitions: [],
+            externalFeaturesRoute: '/external-features.json',
         }),
         /**
          * a slot for registering callback that will be called when the devserver is listening

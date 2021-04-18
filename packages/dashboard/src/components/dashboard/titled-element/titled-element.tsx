@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { classes, style } from './titled-element.st.css';
 
 export interface TitledElementProps {
-    className: string;
+    className?: string;
     title?: string;
     children: React.ReactNode;
 }

@@ -10,11 +10,11 @@ import { devServerEnv } from './dev-server.feature';
 guiFeature.setup(
     devServerEnv,
     (
-        { engineerConfig: { features, externalFeatures } },
+        { engineerConfig: { features } },
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { title, publicConfigsRoute },
+                devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute },
                 serverListeningHandlerSlot,
                 application,
             },
@@ -37,7 +37,7 @@ guiFeature.setup(
             configurations,
             featureName: 'engineer/gui',
             target: 'web',
-            externalFeatures,
+            externalFeaturesRoute,
         });
 
         engineerWebpackConfigs.register(
@@ -46,6 +46,7 @@ guiFeature.setup(
                 entryPath,
                 virtualModules,
                 title,
+                favicon,
                 outputPath: application.outputPath,
             })
         );
@@ -61,17 +62,18 @@ function createDashboardConfig({
     baseConfig,
     entryPath,
     virtualModules,
-    title,
     outputPath,
+    title,
+    favicon,
 }: {
     baseConfig: webpack.Configuration;
     entryPath: string;
     virtualModules: Record<string, string>;
     title?: string;
+    favicon?: string;
     outputPath: string;
 }): webpack.Configuration {
     const { plugins: basePlugins = [] } = baseConfig;
-
     return {
         ...baseConfig,
         entry: {
@@ -84,6 +86,7 @@ function createDashboardConfig({
                 filename: `${mainDashboardEnv.env}.html`,
                 chunks: ['index'],
                 title,
+                favicon,
             }),
             new VirtualModulesPlugin(virtualModules),
         ],

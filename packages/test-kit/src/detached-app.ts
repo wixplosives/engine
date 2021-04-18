@@ -21,7 +21,7 @@ export class DetachedApp implements IExecutableApplication {
         }
         const execArgv = process.argv.some((arg) => arg.startsWith('--inspect')) ? ['--inspect'] : [];
 
-        const args = ['start', '--singleRun', '--engineerEntry', 'engineer/managed'];
+        const args = ['start', '--engineerEntry', 'engineer/managed'];
 
         if (this.featureDiscoveryRoot) {
             args.push('--featureDiscoveryRoot');
