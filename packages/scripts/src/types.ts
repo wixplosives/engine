@@ -20,16 +20,10 @@ export interface IFeatureTarget {
 }
 
 export interface IExtenalFeatureDescriptor {
-    name: string;
     envEntries: Record<string, Record<string, string>>;
 }
 
-export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor {
-    /**
-     * map of feature package name to engine files (.feature., .env. etc...)
-     */
-    externalRequests: Record<string, string[]>;
-}
+export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IFeatureDefinition {}
 
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;

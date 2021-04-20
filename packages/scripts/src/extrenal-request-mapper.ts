@@ -1,9 +1,7 @@
 /* eslint-disable prefer-rest-params */
-import path from 'path';
 import Module from 'module';
 
-const libsToRemap = new Set<string>();
-const pathsToRemap = new Set<string>();
+const libsToRemap = new Map<string, string>();
 
 /**
  * Libraries registered here will load from user project.
@@ -11,15 +9,8 @@ const pathsToRemap = new Set<string>();
  *
  * @example "typescript"
  */
-export function remapToUserLibrary(libName: string) {
-    libsToRemap.add(libName);
-}
-
-/**
- * path to try to resolve the remaped user libraries from
- */
-export function addPath(libName: string) {
-    pathsToRemap.add(libName);
+export function remapToUserLibrary(libName: string, resolutionContext: string) {
+    libsToRemap.set(libName, resolutionContext);
 }
 
 interface StaticModule {
@@ -35,11 +26,12 @@ function _resolveFilenameWithMapping(this: unknown) {
     const [request] = (arguments as unknown) as string[];
 
     // bails quickly on relative requests to avoid checking map
-    if (request && request[0] !== '.' && [...libsToRemap].find((userLib) => request.includes(userLib))) {
+    if (request && request[0] !== '.' && libsToRemap.has(request)) {
         try {
+            const resolutionContext = libsToRemap.get(request)!;
             // for this resolution we need to use only the original resolveFilename method
             ((Module as unknown) as StaticModule)._resolveFilename = originalResolveFilename;
-            arguments[0] = require.resolve(request, { paths: [...pathsToRemap] });
+            arguments[0] = require.resolve(request, { paths: [resolutionContext] });
         } catch {
             /** */
         } finally {
@@ -49,10 +41,7 @@ function _resolveFilenameWithMapping(this: unknown) {
     return originalResolveFilename.apply(this, arguments as any);
 }
 
-export function init(resolveFrom?: string) {
-    const baseUrl = resolveFrom ? path.resolve(resolveFrom) : process.cwd();
-    addPath(baseUrl);
-
+export function init() {
     if (!isMapperRegistered && ((Module as unknown) as StaticModule)._resolveFilename !== _resolveFilenameWithMapping) {
         ((Module as unknown) as StaticModule)._resolveFilename = _resolveFilenameWithMapping;
         isMapperRegistered = true;
@@ -62,7 +51,6 @@ export function init(resolveFrom?: string) {
 export function clear() {
     if (isMapperRegistered) {
         libsToRemap.clear();
-        pathsToRemap.clear();
         ((Module as unknown) as StaticModule)._resolveFilename = originalResolveFilename;
         isMapperRegistered = false;
     }

@@ -7,6 +7,7 @@ import {
     FeatureLoadersRegistry,
     IPreloadModule,
 } from '@wixc3/engine-core';
+import { dirname } from 'path';
 import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
@@ -58,17 +59,28 @@ export async function runNodeEnvironment({
     }
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
-    const allExternalRequests = externalFeatures
-        .map(({ externalRequests }) => [
-            ...Object.keys(externalRequests),
-            ...[...Object.values(externalRequests)].flat(),
-        ])
-        .flat();
 
-    for (const externalRequest of allExternalRequests) {
-        remapToUserLibrary(externalRequest);
+    // mapping all found feature file requests to the current running context, so that external features, when importing feature files, will evaluate the files under the current context
+    const contextedRequests = [...features.values()].reduce(
+        (acc, [, featureDef]) => {
+            acc[context]!.push(...extractAllRequests(featureDef));
+            return acc;
+        },
+        { [context]: [] } as Record<string, string[]>
+    );
+
+    // mapping all features to be evaluated from the context of their package location
+    externalFeatures.reduce((acc, featureDef) => {
+        acc[dirname(require.resolve(featureDef.packageName + '/package.json'))] = extractAllRequests(featureDef);
+        return acc;
+    }, contextedRequests);
+
+    for (const [resolutionContext, requests] of Object.entries(contextedRequests)) {
+        for (const request of requests) {
+            remapToUserLibrary(request, resolutionContext);
+        }
     }
-    init(context);
+    init();
     for (const { name: externalFeatureName, envEntries } of externalFeatures) {
         if (envEntries[name] && envEntries[name]!['node']) {
             const externalFeatureLoaders = (await import(envEntries[name]!['node']!)) as {
@@ -92,6 +104,22 @@ export async function runNodeEnvironment({
     });
 
     return runtimeEngine;
+}
+
+function extractAllRequests({
+    filePath,
+    envFilePaths,
+    contextFilePaths,
+    preloadFilePaths,
+    packageName,
+}: IFeatureDefinition) {
+    return [
+        filePath,
+        ...Object.values(envFilePaths),
+        ...Object.values(contextFilePaths),
+        ...Object.values(preloadFilePaths),
+        packageName,
+    ];
 }
 
 export function createFeatureLoaders(

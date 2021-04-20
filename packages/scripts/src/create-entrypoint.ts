@@ -418,7 +418,7 @@ function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer',
 }
 
 function setExternalPublicPath(envName: string, target: string, featureName: string) {
-    return `const featureDef = topWindow.externalFeatures.find(({name}) => name === '${featureName}');
+    return `const featureDef = topWindow.externalFeatures.find(({ name }) => name === '${featureName}');
     if(!featureDef) {
         throw new Error('trying to load feature ' + '${featureName}' + ', but it is not defined');
     }
