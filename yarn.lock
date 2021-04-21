@@ -993,15 +993,14 @@
     lodash.upperfirst "^4.3.1"
     yargs "^16.2.0"
 
-"@stylable/core@^4.0.6":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.0.6.tgz#a1c951fb46d00d7103aa97d8f5ca220155ecaadd"
-  integrity sha512-QwxqHlizdLAT+aCKiNemhlMGDndv/UeGZuxGSZW/YHw0DE+WAqW2rDDYCJcSNl8M/artpNexj6mOQz0PwmlcLQ==
+"@stylable/core@^4.0.6", "@stylable/core@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.1.0.tgz#b8859f8daa108b7c49913f132062fdacd39cbe37"
+  integrity sha512-FhIerRaMU+baFJKq9m5NJoFW4rsFPcZ5gIDm2w/j/B7F7CBb4Wecp3vuj3GJtfbmn5Q1NHch5Ddn27S3zn1JlA==
   dependencies:
     css-selector-tokenizer "^0.7.3"
     deindent "^0.1.0"
-    enhanced-resolve "^5.7.0"
-    is-url-superb "^5.0.0"
+    enhanced-resolve "^5.8.0"
     is-vendor-prefixed "^4.0.0"
     jest-docblock "^26.0.0"
     lodash.clonedeep "^4.5.0"
@@ -2880,7 +2879,7 @@ engine.io@~5.0.0:
     engine.io-parser "~4.0.0"
     ws "~7.4.2"
 
-enhanced-resolve@^5.7.0, enhanced-resolve@^5.8.0:
+enhanced-resolve@^5.8.0:
   version "5.8.0"
   resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.8.0.tgz#d9deae58f9d3773b6a111a5a46831da5be5c9ac0"
   integrity sha512-Sl3KRpJA8OpprrtaIswVki3cWPiPKxXuFxJXBp+zNb6s6VwNWwFRUdtmzd2ReUut8n+sCPx7QCtQ7w5wfJhSgQ==
@@ -4185,11 +4184,6 @@ is-typedarray@^1.0.0, is-typedarray@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/is-typedarray/-/is-typedarray-1.0.0.tgz#e479c80858df0c1b11ddda6940f96011fcda4a9a"
   integrity sha1-5HnICFjfDBsR3dppQPlgEfzaSpo=
-
-is-url-superb@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/is-url-superb/-/is-url-superb-5.0.0.tgz#8b3c0ce1ceacaa7561fefb9510018106091dccf5"
-  integrity sha512-jGkG59ra7/JlcV8ap3dsc0M79IgpuFU/obfsSf6X5D0z1NVvFTFuzt4ob7nfBTZEPbTwjGXVKNQDfWfPghapKQ==
 
 is-utf8@^0.2.0:
   version "0.2.1"
