@@ -1014,28 +1014,48 @@
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
-"@stylable/module-utils@^4.0.6":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-4.0.6.tgz#8419242b29be4032539b6bc99d06e2686daf9f3d"
-  integrity sha512-A1v1Au2FP7JCBw6hg2+QrAUGpwWgwUtKI3KpUivge6XNnwSgK/8tikOfB0hKPnu6gWJy90iGN+FwUF4Gx2OxmQ==
+"@stylable/core@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.1.0.tgz#b8859f8daa108b7c49913f132062fdacd39cbe37"
+  integrity sha512-FhIerRaMU+baFJKq9m5NJoFW4rsFPcZ5gIDm2w/j/B7F7CBb4Wecp3vuj3GJtfbmn5Q1NHch5Ddn27S3zn1JlA==
   dependencies:
-    "@stylable/core" "^4.0.6"
+    css-selector-tokenizer "^0.7.3"
+    deindent "^0.1.0"
+    enhanced-resolve "^5.8.0"
+    is-vendor-prefixed "^4.0.0"
+    jest-docblock "^26.0.0"
+    lodash.clonedeep "^4.5.0"
+    lodash.clonedeepwith "^4.5.0"
+    postcss "^8.2.10"
+    postcss-js "^3.0.3"
+    postcss-nested "^5.0.5"
+    postcss-safe-parser "^5.0.2"
+    postcss-selector-matches "^4.0.0"
+    postcss-value-parser "^4.1.0"
+    toky "^0.1.0"
 
-"@stylable/node@^4.0.6":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-4.0.6.tgz#82c4ef9efccd9b7301bf586f9ff906999a137f49"
-  integrity sha512-Eyf+E+PWGRXAJPDGUDU07YHbLZsewg2x6Hv5/FftvRUB3qeOzCsqw24i4el5f4EBKRuzNYh+8vULuAmZKi0GrQ==
+"@stylable/module-utils@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-4.1.0.tgz#d7f7db728540972e36cf02e34017a32bfa788a51"
+  integrity sha512-oPDqLoqRhxMorJYJ8mivHFbYkA5+pNSoUP3uhFvxsCXDYpfi00LL8M1jcmW9Is7tbj5m+8AnPhOarixXcbZy0Q==
   dependencies:
-    "@stylable/core" "^4.0.6"
-    "@stylable/module-utils" "^4.0.6"
+    "@stylable/core" "^4.1.0"
+
+"@stylable/node@^4.0.6", "@stylable/node@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-4.1.0.tgz#f004871d7346883045ae16b83e312cd435275c38"
+  integrity sha512-ot3vKe1Z1ExnqpLyrqUtStHRZBN1AppFrZd028DZ+PRatlillkU7OBya2bS/ASnOL250D6sfDOZ4I5cTaapcOw==
+  dependencies:
+    "@stylable/core" "^4.1.0"
+    "@stylable/module-utils" "^4.1.0"
     find-config "^1.0.0"
 
-"@stylable/optimizer@^4.0.6":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-4.0.6.tgz#385753fe49b12aec7749b99900a53eb59eb85181"
-  integrity sha512-y5bXXv1Cy//IlOdoflyYkBqd8fup6wzFp0HI4RdFRPiG1Pn5hcA3BjPI15BXSRlsllqtu+JAPkZwAc1bxADGtw==
+"@stylable/optimizer@^4.0.6", "@stylable/optimizer@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-4.1.0.tgz#77bc24bbd2c4959d81ba503ed8f6a3ec04668293"
+  integrity sha512-QIM3F/GOX0H0WXslhBkrv5HZlnF82/hue2jtg/090p/kp+uVKLQ7TGh2FQjOye+iThXYhnuB1UHHRtIpgvI8Pg==
   dependencies:
-    "@stylable/core" "^4.0.6"
+    "@stylable/core" "^4.1.0"
     csso "^4.2.0"
     postcss "^8.2.10"
 
@@ -1044,14 +1064,14 @@
   resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-4.0.6.tgz#0296cd884d0e68336e6ed7c65da225cf9f073176"
   integrity sha512-GBB2BD/xFwbIxP9ippxhr4JUdO4KQO3sG8bUV9gxaitJzoCl2n4yMXl9YaOLsdlAiRD6MrHjEwVde8jKD9W0GQ==
 
-"@stylable/webpack-plugin@^4.0.6":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@stylable/webpack-plugin/-/webpack-plugin-4.0.6.tgz#92cca1fa50e3e769a3bc1b88cdf0eb133dd501e5"
-  integrity sha512-qFcRYuwABolZblXWIpERVBpN2LKm8usnRxalaALaD+t9eW9+EjFRNZJsiOhZznxa/tBbuuQv0IbroRFHKOw4Zg==
+"@stylable/webpack-plugin@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@stylable/webpack-plugin/-/webpack-plugin-4.1.0.tgz#5cb406c46e09bf13034da5f95c7a499e1b82d51e"
+  integrity sha512-g0Sjn3qZ1hYZnwjPVCwBNzDiOQr+uKLXDKcjNQbHVvs7g5H3zRaaSmwsiLfi5AwXlNJOnftogzd5UAMn/ccWvw==
   dependencies:
-    "@stylable/module-utils" "^4.0.6"
-    "@stylable/node" "^4.0.6"
-    "@stylable/optimizer" "^4.0.6"
+    "@stylable/module-utils" "^4.1.0"
+    "@stylable/node" "^4.1.0"
+    "@stylable/optimizer" "^4.1.0"
     decache "^4.6.0"
     find-config "^1.0.0"
     lodash.clonedeep "^4.5.0"
