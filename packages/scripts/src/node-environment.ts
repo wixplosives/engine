@@ -7,7 +7,6 @@ import {
     FeatureLoadersRegistry,
     IPreloadModule,
 } from '@wixc3/engine-core';
-import { dirname } from 'path';
 import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
 
 import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
@@ -61,25 +60,22 @@ export async function runNodeEnvironment({
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
 
     // mapping all found feature file requests to the current running context, so that external features, when importing feature files, will evaluate the files under the current context
-    const contextedRequests = [...features.values()].reduce(
-        (acc, [, featureDef]) => {
-            acc[context]!.push(...extractAllRequests(featureDef));
-            return acc;
-        },
-        { [context]: [] } as Record<string, string[]>
+    [...features.values()].map(([, { packageName }]) =>
+        remapToUserLibrary({
+            test: (request) => request.includes(packageName),
+            context,
+        })
     );
 
     // mapping all features to be evaluated from the context of their package location
-    externalFeatures.reduce((acc, featureDef) => {
-        acc[dirname(require.resolve(featureDef.packageName + '/package.json'))] = extractAllRequests(featureDef);
-        return acc;
-    }, contextedRequests);
+    externalFeatures.map(({ packageName, packageBasePath }) =>
+        remapToUserLibrary({
+            test: (request) => request.includes(packageName),
+            context: packageBasePath,
+        })
+    );
 
-    for (const [resolutionContext, requests] of Object.entries(contextedRequests)) {
-        for (const request of requests) {
-            remapToUserLibrary(request, resolutionContext);
-        }
-    }
+    // initializing our module system tricks to be able to load all features from their proper context, so that features will not be loaded twice
     init();
     for (const { name: externalFeatureName, envEntries } of externalFeatures) {
         if (envEntries[name] && envEntries[name]!['node']) {
@@ -95,6 +91,7 @@ export async function runNodeEnvironment({
         }
     }
     clear();
+
     const runtimeEngine = runEngineApp({
         config,
         options: new Map(options),
@@ -104,22 +101,6 @@ export async function runNodeEnvironment({
     });
 
     return runtimeEngine;
-}
-
-function extractAllRequests({
-    filePath,
-    envFilePaths,
-    contextFilePaths,
-    preloadFilePaths,
-    packageName,
-}: IFeatureDefinition) {
-    return [
-        filePath,
-        ...Object.values(envFilePaths),
-        ...Object.values(contextFilePaths),
-        ...Object.values(preloadFilePaths),
-        packageName,
-    ];
 }
 
 export function createFeatureLoaders(

@@ -1,16 +1,18 @@
 /* eslint-disable prefer-rest-params */
 import Module from 'module';
 
-const libsToRemap = new Map<string, string>();
+interface ContextProviderItem {
+    test: (request: string) => boolean;
+    context: string;
+}
+
+const requestContextProviders = new Set<ContextProviderItem>();
 
 /**
- * Libraries registered here will load from user project.
- * this API is only meant to be used from other `live-server.preload` files.
- *
- * @example "typescript"
+ * Add a context provider that will decide, if a request matches it's pattern, the resolution context for that request
  */
-export function remapToUserLibrary(libName: string, resolutionContext: string) {
-    libsToRemap.set(libName, resolutionContext);
+export function remapToUserLibrary(contextProviderItem: ContextProviderItem) {
+    requestContextProviders.add(contextProviderItem);
 }
 
 interface StaticModule {
@@ -26,12 +28,15 @@ function _resolveFilenameWithMapping(this: unknown) {
     const [request] = (arguments as unknown) as string[];
 
     // bails quickly on relative requests to avoid checking map
-    if (request && request[0] !== '.' && libsToRemap.has(request)) {
+    if (request && request[0] !== '.') {
         try {
-            const resolutionContext = libsToRemap.get(request)!;
-            // for this resolution we need to use only the original resolveFilename method
-            ((Module as unknown) as StaticModule)._resolveFilename = originalResolveFilename;
-            arguments[0] = require.resolve(request, { paths: [resolutionContext] });
+            for (const { test, context } of requestContextProviders) {
+                if (test(request)) {
+                    ((Module as unknown) as StaticModule)._resolveFilename = originalResolveFilename;
+                    arguments[0] = require.resolve(request, { paths: [context] });
+                    break;
+                }
+            }
         } catch {
             /** */
         } finally {
@@ -50,7 +55,7 @@ export function init() {
 
 export function clear() {
     if (isMapperRegistered) {
-        libsToRemap.clear();
+        requestContextProviders.clear();
         ((Module as unknown) as StaticModule)._resolveFilename = originalResolveFilename;
         isMapperRegistered = false;
     }

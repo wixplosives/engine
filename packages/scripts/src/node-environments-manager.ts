@@ -61,6 +61,7 @@ export interface ILaunchEnvironmentOptions {
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
     externalFeatures?: IExternalFeatureNodeDescriptor[];
+    features: Map<string, IFeatureDefinition>;
 }
 
 export class NodeEnvironmentsManager {
@@ -113,6 +114,7 @@ export class NodeEnvironmentsManager {
                 },
                 mode,
                 externalFeatures: this.options.externalFeatures,
+                features,
             });
             disposables.add(close);
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
@@ -208,8 +210,10 @@ export class NodeEnvironmentsManager {
         options,
         mode,
         externalFeatures = [],
+        features,
     }: ILaunchEnvironmentOptions) {
-        const { features, port, inspect } = this.options;
+        const { port, inspect } = this.options;
+
         const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
             config,

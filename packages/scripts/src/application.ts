@@ -35,10 +35,14 @@ import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import { getEnvironmntsForFeature, getResolvedEnvironments } from './utils/environments';
 import { launchHttpServer, RouteMiddleware } from './launch-http-server';
-import { getExternalFeatureBasePath, getExternalFeaturesMetadata } from './utils';
+import {
+    getExternalFeatureBasePath,
+    getExternalFeaturesMetadata,
+    getFilePathInPackage,
+    scopeFilePathsToPackage,
+} from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
-import type { IFileSystemSync } from '@file-services/types';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -243,14 +247,8 @@ export class Application {
         const sourceRoot = providedSourcesRoot ?? configSourcesRoot ?? this.featureDiscoveryRoot;
         if (external) {
             const feature = features.get(featureName!)!;
-            // The node entry is created inside the outDir, and requires the mentioned feature file (as well as environment files)
-            // in order to properly import from the entry the required files, we are resolving the sourcesRoot with the directoryPath of the feature (the root of the package) and the outDir - the location where the node entry will be created to
-            // if a === b then fs.relative(a, b) === ''. this is why a fallback to "."
-            const relativeBundledSourcesOutDir =
-                fs.relative(this.outputPath, fs.resolve(feature.directoryPath, sourceRoot)) ||
-                this.featureDiscoveryRoot;
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
-            this.createNodeEntries(features, featureName!, resolvedEnvironments.nodeEnvs, relativeBundledSourcesOutDir);
+            this.createNodeEntry(feature, resolvedEnvironments.nodeEnvs, sourceRoot);
             getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
             getEnvEntrypoints(electronRendererEnvs.keys(), 'electron-renderer', entryPoints, outDir);
             getEnvEntrypoints(webEnvs.keys(), 'web', entryPoints, outDir);
@@ -318,8 +316,6 @@ export class Application {
         } = (await fs.promises.readJsonFile(join(this.outputPath, 'manifest.json'))) as IBuildManifest;
 
         const externalFeatures: IExternalFeatureNodeDescriptor[] = [];
-
-        const features = this.remapManifestFeaturePaths(manifestFeatures);
 
         const {
             configName = defaultConfigName,
@@ -434,7 +430,7 @@ export class Application {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
-                features,
+                features: this.remapManifestFeaturePaths(manifestFeatures),
                 port,
                 defaultRuntimeOptions,
                 inspect,
@@ -639,79 +635,10 @@ export class Application {
         entryPoints: Record<string, Record<string, string>>;
         pathToSources: string;
     }) {
-        const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
         const manifest: IBuildManifest = {
-            features: Array.from(features.entries()).map(
-                ([
-                    featureName,
-                    {
-                        scopedName,
-                        isRoot,
-                        filePath,
-                        envFilePaths,
-                        contextFilePaths,
-                        preloadFilePaths,
-                        packageName,
-                        dependencies,
-                        exportedEnvs,
-                        resolvedContexts,
-                        directoryPath,
-                    },
-                ]) => {
-                    const sourcesRoot = fs.resolve(directoryPath, pathToSources);
-                    if (isRoot) {
-                        filePath = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
-                        for (const [envName, filePath] of Object.entries(envFilePaths)) {
-                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
-                        }
-                        for (const [envName, filePath] of Object.entries(contextFilePaths)) {
-                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
-                        }
-                        for (const [envName, filePath] of Object.entries(preloadFilePaths)) {
-                            envFilePaths[envName] = fs.join(sourcesRoot, fs.relative(directoryPath, filePath));
-                        }
-                    }
-                    const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
-                    return [
-                        featureName,
-                        {
-                            scopedName,
-                            filePath: getFilePathInPackage(
-                                fs,
-                                packageName,
-                                context,
-                                filePath,
-                                isRoot && outputDirInBasePath
-                            ),
-                            envFilePaths: scopeFilePathsToPackage(
-                                fs,
-                                packageName,
-                                context,
-                                envFilePaths,
-                                isRoot && outputDirInBasePath
-                            ),
-                            contextFilePaths: scopeFilePathsToPackage(
-                                fs,
-                                packageName,
-                                context,
-                                contextFilePaths,
-                                isRoot && outputDirInBasePath
-                            ),
-                            preloadFilePaths: scopeFilePathsToPackage(
-                                fs,
-                                packageName,
-                                context,
-                                preloadFilePaths,
-                                isRoot && outputDirInBasePath
-                            ),
-                            dependencies: dependencies,
-                            exportedEnvs: exportedEnvs,
-                            resolvedContexts: resolvedContexts,
-                            packageName,
-                        } as IFeatureDefinition,
-                    ];
-                }
-            ),
+            features: Array.from(features.entries()).map(([featureName, featureDef]) => {
+                return this.generateReMappedFeature(featureDef, pathToSources, featureName);
+            }),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
             entryPoints,
@@ -720,6 +647,94 @@ export class Application {
 
         await fs.promises.ensureDirectory(this.outputPath);
         await fs.promises.writeFile(join(this.outputPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
+    }
+
+    private generateReMappedFeature(
+        featureDef: IFeatureDefinition,
+        pathToSources: string,
+        featureName: string
+    ): [featureName: string, featureDefinition: IFeatureDefinition] {
+        const sourcesRoot = fs.resolve(featureDef.directoryPath, pathToSources);
+        return [
+            featureName,
+            {
+                ...{ ...featureDef },
+                ...this.mapFeatureFiles(featureDef, sourcesRoot),
+            } as IFeatureDefinition,
+        ];
+    }
+
+    private mapFeatureFiles(
+        {
+            envFilePaths,
+            contextFilePaths,
+            filePath,
+            packageName,
+            preloadFilePaths,
+            isRoot,
+            directoryPath,
+        }: IFeatureDefinition,
+        sourcesRoot: string
+    ) {
+        if (isRoot) {
+            // mapping all paths to the sources folder
+            filePath = this.remapPathToSourcesFolder(sourcesRoot, filePath, directoryPath);
+            Object.keys(envFilePaths).map(
+                (key) =>
+                    (envFilePaths[key] = this.remapPathToSourcesFolder(sourcesRoot, envFilePaths[key]!, directoryPath))
+            );
+            Object.keys(contextFilePaths).map(
+                (key) =>
+                    (contextFilePaths[key] = this.remapPathToSourcesFolder(
+                        sourcesRoot,
+                        contextFilePaths[key]!,
+                        directoryPath
+                    ))
+            );
+            Object.keys(preloadFilePaths).map(
+                (key) =>
+                    (preloadFilePaths[key] = this.remapPathToSourcesFolder(
+                        sourcesRoot,
+                        preloadFilePaths[key]!,
+                        directoryPath
+                    ))
+            );
+        }
+        const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
+        const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
+
+        return {
+            filePath: getFilePathInPackage(fs, packageName, context, filePath, isRoot && outputDirInBasePath),
+            envFilePaths: scopeFilePathsToPackage(
+                fs,
+                packageName,
+                context,
+                envFilePaths,
+                isRoot && outputDirInBasePath
+            ),
+            contextFilePaths: scopeFilePathsToPackage(
+                fs,
+                packageName,
+                context,
+                contextFilePaths,
+                isRoot && outputDirInBasePath
+            ),
+            preloadFilePaths: scopeFilePathsToPackage(
+                fs,
+                packageName,
+                context,
+                preloadFilePaths,
+                isRoot && outputDirInBasePath
+            ),
+        };
+    }
+
+    private remapPathToSourcesFolder(sourcesRoot: string, filePath: string, packageBasePath: string): string {
+        if (filePath.includes(sourcesRoot)) {
+            return filePath;
+        }
+        const relativeRequestToFile = fs.relative(packageBasePath, filePath);
+        return fs.join(sourcesRoot, relativeRequestToFile);
     }
 
     protected createCompiler({
@@ -784,25 +799,16 @@ export class Application {
         return { ...featuresAndConfigs, packages };
     }
 
-    protected createNodeEntries(
-        features: Map<string, IFeatureDefinition>,
-        featureName: string,
-        nodeEnvs: Map<string, string[]>,
-        featureOutPath: string
-    ) {
-        for (const feature of features.values()) {
-            if (featureName === feature.scopedName) {
-                for (const [envName, childEnvs] of nodeEnvs) {
-                    const entryPath = join(this.outputPath, `${envName}.node.js`);
-                    const entryCode = createExternalNodeEntrypoint({
-                        ...feature,
-                        childEnvs,
-                        envName,
-                        packageName: featureOutPath,
-                    });
-                    fs.writeFileSync(entryPath, entryCode);
-                }
-            }
+    protected createNodeEntry(feature: IFeatureDefinition, nodeEnvs: Map<string, string[]>, pathToSources: string) {
+        for (const [envName, childEnvs] of nodeEnvs) {
+            const entryPath = join(this.outputPath, `${envName}.node.js`);
+            const [, reMappedFeature] = this.generateReMappedFeature({ ...feature }, pathToSources, feature.scopedName);
+            const entryCode = createExternalNodeEntrypoint({
+                ...reMappedFeature,
+                childEnvs,
+                envName,
+            });
+            fs.writeFileSync(entryPath, entryCode);
         }
     }
 
@@ -858,37 +864,6 @@ export class Application {
             }
         }
     }
-}
-
-function getFilePathInPackage(
-    fs: IFileSystemSync,
-    packageName: string,
-    context: string,
-    filePath: string,
-    isRelativeRequest: boolean
-) {
-    const relativeFilePath = fs.relative(context, filePath);
-    const relativeRequest = fs
-        .join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath, fs.extname(relativeFilePath)))
-        .replace(/\\/g, '/');
-    return isRelativeRequest
-        ? relativeRequest.startsWith('.')
-            ? relativeRequest
-            : './' + relativeRequest
-        : fs.posix.join(packageName, relativeRequest);
-}
-
-function scopeFilePathsToPackage(
-    fs: IFileSystemSync,
-    packageName: string,
-    context: string,
-    envFiles: Record<string, string>,
-    isRoot: boolean
-) {
-    return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
-        acc[envName] = getFilePathInPackage(fs, packageName, context, filePath, isRoot);
-        return acc;
-    }, {});
 }
 
 const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>

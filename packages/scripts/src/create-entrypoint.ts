@@ -1,5 +1,5 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { extname, parse } from 'path';
+import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition, IConfigDefinition } from './types';
 
@@ -59,7 +59,8 @@ export type LoadStatement = Pick<
     | 'eagerEntrypoint'
 >;
 
-export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'> {
+export interface LoadStatementArguments
+    extends Pick<WebpackFeatureLoaderArguments, 'filePath' | 'directoryPath' | 'packageName'> {
     moduleIdentifier: string;
     eagerEntrypoint?: boolean;
 }
@@ -170,8 +171,8 @@ export function webpackImportStatement({ moduleIdentifier, filePath, eagerEntryp
     } ${stringify(filePath)});`;
 }
 
-export function nodeImportStatement(args: LoadStatementArguments) {
-    return `require(${stringify(remapFileRequest(args))})`;
+export function nodeImportStatement({ filePath }: LoadStatementArguments) {
+    return `require(${stringify(filePath)})`;
 }
 
 //#endregion
@@ -191,7 +192,7 @@ function createFeatureLoaders(
                     ...args,
                     envName,
                     childEnvs,
-                    loadStatement: target === 'node' ? nodeImportStatement : webpackImportStatement,
+                    loadStatement: webpackImportStatement,
                     target,
                     eagerEntrypoint,
                 })}`
@@ -497,22 +498,6 @@ export function createExternalFeatureMapping(packageName: string, featurePath: s
 }
 
 //#endregion
-
-export function remapFileRequest({
-    directoryPath,
-    filePath,
-    packageName,
-}: Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'>): string {
-    const fileExtname = extname(filePath);
-    const remappedFilePath = filePath.replace(directoryPath, packageName).replace(fileExtname, '').replace(/\\/g, '/');
-    if (remappedFilePath === filePath) {
-        throw new Error(
-            'failed to re-map request for external feature while building. maybe caused because of link issues'
-        );
-    }
-    return remappedFilePath;
-}
-
 function normalizeRoute(route: string) {
     return route + (route && !route.endsWith('/') ? '/' : '');
 }

@@ -33,6 +33,7 @@ export function getExternalFeaturesMetadata(
             envEntries,
             ...externalFeatureDefinition,
             name: externalFeatureDefinition.scopedName,
+            packageBasePath,
         };
     });
 }

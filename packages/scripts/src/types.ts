@@ -21,6 +21,7 @@ export interface IFeatureTarget {
 
 export interface IExtenalFeatureDescriptor {
     envEntries: Record<string, Record<string, string>>;
+    packageBasePath: string;
 }
 
 export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IFeatureDefinition {}
