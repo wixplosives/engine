@@ -430,14 +430,15 @@ function setExternalPublicPath(envName: string, target: string, featureName: str
 
 function addExternalsEventListenerForParentEnvironments(externalsFilePath: string) {
     return `if(isMainEntrypoint) {
-        currentWindow.addEventListener('message', ({ data: { id }, source }) => {
-            if(id === '${externalsFilePath}') {
+        const externalFeaturesEventListener = ({ data: { id }, source }) => {
+            if(source && id === '${externalsFilePath}') {
                 source.postMessage({
                     id,
                     externalFeatures
                 })
             }
-        })
+        }
+        currentWindow.addEventListener('message', externalFeaturesEventListener);
     }`;
 }
 
