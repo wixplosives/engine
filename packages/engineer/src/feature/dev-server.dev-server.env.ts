@@ -23,6 +23,11 @@ import { buildFeatureLinks } from '../feature-dependency-graph';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackDevMiddleware = require('webpack-dev-middleware') as (compiler: webpack.Compiler) => WebpackDevMiddleware;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const webpackHotMiddleware = require('webpack-hot-middleware') as (
+    compiler: webpack.Compiler,
+    opts: {}
+) => WebpackDevMiddleware;
 
 interface WebpackDevMiddleware extends express.Handler {
     close(cb?: () => void): void;
@@ -205,6 +210,11 @@ devServerFeature.setup(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );
                 app.use(devMiddleware);
+                app.use(
+                    webpackHotMiddleware(childCompiler, {
+                        log: console.log,
+                    })
+                );
             }
 
             await new Promise((resolve) => {

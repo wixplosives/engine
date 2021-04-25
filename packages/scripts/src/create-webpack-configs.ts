@@ -14,6 +14,10 @@ import {
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+// import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
+
+// const webpackDevClientEntry = require.resolve('react-dev-utils/webpackHotDevClient');
+// const reactRefreshOverlayEntry = require.resolve('react-dev-utils/refreshOverlayInterop');
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
@@ -64,6 +68,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
+                hot: true,
             })
         );
     }
@@ -117,6 +122,8 @@ interface ICreateWebpackConfigOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
+    watch?: boolean;
+    hot?: boolean;
 }
 
 export function createWebpackConfig({
@@ -141,11 +148,12 @@ export function createWebpackConfig({
     externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
+    hot = false,
 }: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
-        entry[envName] = entryPath;
+        entry[envName] = hot ? ['webpack-hot-middleware/client?path=/__webpack_hmr', entryPath] : [entryPath];
         virtualModules[entryPath] = createMainEntrypoint({
             features,
             childEnvs,
@@ -178,6 +186,23 @@ export function createWebpackConfig({
                     }),
                 ]
             );
+        }
+        if (hot) {
+            plugins.push(new webpack.HotModuleReplacementPlugin());
+            // plugins.push(new ReactRefreshWebpackPlugin());
+            // plugins.push(
+            //     new ReactRefreshWebpackPlugin({
+            //         overlay: {
+            //             entry: webpackDevClientEntry,
+            //             // The expected exports are slightly different from what the overlay exports,
+            //             // so an interop is included here to enable feedback on module-level errors.
+            //             module: reactRefreshOverlayEntry,
+            //             // Since we ship a custom dev client and overlay integration,
+            //             // the bundled socket handling logic can be eliminated.
+            //             sockIntegration: false,
+            //         },
+            //     })
+            // );
         }
     }
     const { plugins: basePlugins = [] } = baseConfig;
