@@ -34,7 +34,7 @@ export interface StartEnvironmentOptions extends IEnvironment {
     inspect?: boolean;
     host?: Target;
     externalFeatures?: IExternalFeatureNodeDescriptor[];
-    context: string;
+    context?: string;
 }
 export interface VirtualEntry {
     source: string;
