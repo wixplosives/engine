@@ -138,6 +138,7 @@ export async function startDevServer({
                 },
             }),
         ],
+        context: targetApplicationPath,
         externalFeatures,
     });
     return {

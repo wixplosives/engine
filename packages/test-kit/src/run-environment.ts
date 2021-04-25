@@ -2,9 +2,9 @@ import fs from '@file-services/node';
 import {
     readFeatures,
     evaluateConfig,
-    IExtenalFeatureDescriptor,
     runNodeEnvironment,
     IFeatureDefinition,
+    IExternalFeatureNodeDescriptor,
 } from '@wixc3/engine-scripts';
 import {
     TopLevelConfig,
@@ -32,7 +32,7 @@ export interface IRunNodeEnvironmentOptions {
      */
     featureDiscoveryRoot?: string;
     env: Environment;
-    externalFeatures?: IExtenalFeatureDescriptor[];
+    externalFeatures?: IExternalFeatureNodeDescriptor[];
 }
 
 export interface IGetRuinnnigFeatureOptions<
@@ -90,6 +90,7 @@ export async function runEngineEnvironment({
         config,
         externalFeatures,
         options: Object.entries(runtimeOptions),
+        context: basePath,
     });
 }
 
