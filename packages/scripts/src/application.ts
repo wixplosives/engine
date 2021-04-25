@@ -636,9 +636,9 @@ export class Application {
         pathToSources: string;
     }) {
         const manifest: IBuildManifest = {
-            features: Array.from(features.entries()).map(([featureName, featureDef]) => {
-                return this.generateReMappedFeature(featureDef, pathToSources, featureName);
-            }),
+            features: Array.from(features.entries()).map(([featureName, featureDef]) =>
+                this.generateReMappedFeature(featureDef, pathToSources, featureName)
+            ),
             defaultConfigName: configName,
             defaultFeatureName: featureName,
             entryPoints,
