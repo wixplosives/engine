@@ -59,24 +59,27 @@ export async function runNodeEnvironment({
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
 
-    // mapping all found feature file requests to the current running context, so that external features, when importing feature files, will evaluate the files under the current context
-    [...features.values()].map(([, { packageName }]) =>
-        remapToUserLibrary({
-            test: (request) => request.includes(packageName),
-            context,
-        })
-    );
+    // if context is not provided, environment will not load external features
+    if (context) {
+        // mapping all found feature file requests to the current running context, so that external features, when importing feature files, will evaluate the files under the current context
+        [...features.values()].map(([, { packageName }]) =>
+            remapToUserLibrary({
+                test: (request) => request.includes(packageName),
+                context,
+            })
+        );
 
-    // mapping all features to be evaluated from the context of their package location
-    externalFeatures.map(({ packageName, packageBasePath }) =>
-        remapToUserLibrary({
-            test: (request) => request.includes(packageName),
-            context: packageBasePath,
-        })
-    );
+        // mapping all features to be evaluated from the context of their package location
+        externalFeatures.map(({ packageName, packageBasePath }) =>
+            remapToUserLibrary({
+                test: (request) => request.includes(packageName),
+                context: packageBasePath,
+            })
+        );
+        // initializing our module system tricks to be able to load all features from their proper context, so that features will not be loaded twice
+        init();
+    }
 
-    // initializing our module system tricks to be able to load all features from their proper context, so that features will not be loaded twice
-    init();
     for (const { name: externalFeatureName, envEntries } of externalFeatures) {
         if (envEntries[name] && envEntries[name]!['node']) {
             const externalFeatureLoaders = (await import(envEntries[name]!['node']!)) as {
@@ -90,7 +93,9 @@ export async function runNodeEnvironment({
             }
         }
     }
-    clear();
+    if (context) {
+        clear();
+    }
 
     const runtimeEngine = runEngineApp({
         config,
