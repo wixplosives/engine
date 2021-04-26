@@ -56,7 +56,9 @@ export function getResolvedEnvironments({
     const resolvedContexts =
         featureName && filterContexts
             ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
-            : getAllResolvedContexts(features);
+            : filterContexts
+            ? getAllResolvedContexts(features)
+            : getPossibleContexts(features);
     for (const env of environments) {
         const { name, childEnvName, type } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
@@ -92,6 +94,18 @@ function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
     const allContexts = new SetMultiMap<string, string>();
     for (const { resolvedContexts } of features.values()) {
         convertEnvRecordToSetMultiMap(resolvedContexts, allContexts);
+    }
+    return allContexts;
+}
+
+function getPossibleContexts(features: Map<string, IFeatureDefinition>) {
+    const allContexts = new SetMultiMap<string, string>();
+    for (const { exportedEnvs } of features.values()) {
+        for (const env of exportedEnvs) {
+            if (env.childEnvName) {
+                allContexts.add(env.name, env.childEnvName);
+            }
+        }
     }
     return allContexts;
 }

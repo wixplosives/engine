@@ -13,10 +13,10 @@ import {
     IEnvironmentMessage,
     IEnvironmentStartMessage,
     IFeatureDefinition,
-    IExtenalFeatureDescriptor,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
     TopLevelConfigProvider,
+    IExternalFeatureNodeDescriptor,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
 import { getEnvironmntsForFeature } from './utils/environments';
@@ -45,7 +45,7 @@ export interface INodeEnvironmentsManagerOptions {
     port: number;
     inspect?: boolean;
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
-    externalFeatures: IExtenalFeatureDescriptor[];
+    externalFeatures: IExternalFeatureNodeDescriptor[];
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -60,7 +60,8 @@ export interface ILaunchEnvironmentOptions {
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
-    externalFeatures?: IExtenalFeatureDescriptor[];
+    externalFeatures?: IExternalFeatureNodeDescriptor[];
+    features: Map<string, IFeatureDefinition>;
 }
 
 export class NodeEnvironmentsManager {
@@ -69,6 +70,7 @@ export class NodeEnvironmentsManager {
     constructor(
         private socketServer: io.Server,
         private options: INodeEnvironmentsManagerOptions,
+        private context: string,
         private socketServerOptions?: Partial<io.ServerOptions>
     ) {}
 
@@ -112,6 +114,7 @@ export class NodeEnvironmentsManager {
                 },
                 mode,
                 externalFeatures: this.options.externalFeatures,
+                features,
             });
             disposables.add(close);
             topology[nodeEnv.name] = `http://localhost:${port}/${nodeEnv.name}`;
@@ -207,8 +210,10 @@ export class NodeEnvironmentsManager {
         options,
         mode,
         externalFeatures = [],
+        features,
     }: ILaunchEnvironmentOptions) {
-        const { features, port, inspect } = this.options;
+        const { port, inspect } = this.options;
+
         const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
             config,
@@ -217,6 +222,7 @@ export class NodeEnvironmentsManager {
             options: Object.entries(options),
             inspect,
             externalFeatures,
+            context: this.context,
         };
 
         if (inspect || mode === 'forked') {
