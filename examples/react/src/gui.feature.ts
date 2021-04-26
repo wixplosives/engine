@@ -6,6 +6,6 @@ export default new Feature({
     id: 'guiFeature',
     dependencies: [reactRendererFeature.asEntity],
     api: {
-        extentionSlot: Slot.withType<React.FunctionComponent>().defineEntity(MainEnv),
+        extentionSlot: Slot.withType<React.ReactElement>().defineEntity(MainEnv),
     },
 });
