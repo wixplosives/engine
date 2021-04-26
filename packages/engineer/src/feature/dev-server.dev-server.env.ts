@@ -22,14 +22,11 @@ import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const webpackDevMiddleware = require('webpack-dev-middleware') as (compiler: webpack.Compiler) => WebpackDevMiddleware;
+const webpackDevMiddleware = require('webpack-dev-middleware') as (compiler: webpack.Compiler) => WebpackMiddleware;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const webpackHotMiddleware = require('webpack-hot-middleware') as (
-    compiler: webpack.Compiler,
-    opts: {}
-) => WebpackDevMiddleware;
+const webpackHotMiddleware = require('webpack-hot-middleware') as (compiler: webpack.Compiler) => WebpackMiddleware;
 
-interface WebpackDevMiddleware extends express.Handler {
+interface WebpackMiddleware extends express.Handler {
     close(cb?: () => void): void;
 }
 
@@ -207,15 +204,15 @@ devServerFeature.setup(
 
             for (const childCompiler of compiler.compilers) {
                 const devMiddleware = webpackDevMiddleware(childCompiler);
+                const hotMiddleware = webpackHotMiddleware(childCompiler);
                 disposables.add(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );
-                app.use(devMiddleware);
-                app.use(
-                    webpackHotMiddleware(childCompiler, {
-                        log: console.log,
-                    })
+                disposables.add(
+                    () => new Promise<void>((res) => hotMiddleware.close(res))
                 );
+                app.use(devMiddleware);
+                app.use(hotMiddleware);
             }
 
             await new Promise((resolve) => {

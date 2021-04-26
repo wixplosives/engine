@@ -65,7 +65,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
-                hot: true,
+                hot: options.mode === 'development',
             })
         );
     }
@@ -150,7 +150,7 @@ export function createWebpackConfig({
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
-        entry[envName] = hot ? ['webpack-hot-middleware/client?path=/__webpack_hmr', entryPath] : [entryPath];
+        entry[envName] = entryPath;
         virtualModules[entryPath] = createMainEntrypoint({
             features,
             childEnvs,
@@ -185,11 +185,14 @@ export function createWebpackConfig({
             );
         }
         if (hot) {
+            // we need the hot middleware client into the env entry
+            entry[envName] = ['webpack-hot-middleware/client', entryPath];
             plugins.push(new webpack.HotModuleReplacementPlugin());
             plugins.push(
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 new ReactRefreshWebpackPlugin({
                     overlay: {
+                        // whm means use webpack-hot-middleware for updates
                         sockIntegration: 'whm',
                     },
                 })
