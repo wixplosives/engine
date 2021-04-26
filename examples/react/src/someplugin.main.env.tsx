@@ -7,7 +7,3 @@ somepluginFeature.setup(MainEnv, ({}, { guiFeature: { extentionSlot } }) => {
     extentionSlot.register(<li key={somepluginFeature.id}>thiss registered</li>);
     extentionSlot.register(<Comp key="cosmp" />);
 });
-
-if (module.hot) {
-    module.hot.accept();
-}
