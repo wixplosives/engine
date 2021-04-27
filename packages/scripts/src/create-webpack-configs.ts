@@ -188,15 +188,6 @@ export function createWebpackConfig({
             // we need the hot middleware client into the env entry
             entry[envName] = ['webpack-hot-middleware/client', entryPath];
             plugins.push(new webpack.HotModuleReplacementPlugin());
-            plugins.push(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                new ReactRefreshWebpackPlugin({
-                    overlay: {
-                        // whm means use webpack-hot-middleware for updates
-                        sockIntegration: 'whm',
-                    },
-                })
-            );
         }
     }
     const { plugins: basePlugins = [] } = baseConfig;

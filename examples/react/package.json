@@ -2,5 +2,9 @@
   "name": "react",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "yarn engineer start -f react/someplugin --singleFeature",
+    "start:hot": "yarn start --webpackConfig webpack.config.hot.js --webpackHot"
+  }
 }
