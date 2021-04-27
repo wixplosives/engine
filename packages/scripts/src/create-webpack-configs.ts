@@ -36,6 +36,7 @@ export interface ICreateWebpackConfigsOptions {
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
+    webpackHot?: boolean;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -65,7 +66,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
-                hot: options.mode === 'development',
             })
         );
     }
@@ -120,7 +120,7 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     watch?: boolean;
-    hot?: boolean;
+    webpackHot?: boolean;
 }
 
 export function createWebpackConfig({
@@ -145,7 +145,7 @@ export function createWebpackConfig({
     externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
-    hot = false,
+    webpackHot = false,
 }: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
@@ -184,7 +184,7 @@ export function createWebpackConfig({
                 ]
             );
         }
-        if (hot) {
+        if (webpackHot) {
             // we need the hot middleware client into the env entry
             entry[envName] = ['webpack-hot-middleware/client', entryPath];
             plugins.push(new webpack.HotModuleReplacementPlugin());

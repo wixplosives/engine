@@ -1,5 +1,4 @@
 const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
-const ReactRefreshTypeScript = require('react-refresh-typescript');
 
 /** @type {import('webpack').Configuration} */
 module.exports = {
@@ -18,11 +17,6 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 loader: '@ts-tools/webpack-loader',
-                options: {
-                    transformers: {
-                        before: [ReactRefreshTypeScript()],
-                    },
-                },
             },
             {
                 test: /\.css$/,

@@ -65,6 +65,7 @@ devServerFeature.setup(
             socketServerOptions = {},
             webpackConfigPath,
             externalFeaturesRoute,
+            webpackHot = false,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -204,15 +205,16 @@ devServerFeature.setup(
 
             for (const childCompiler of compiler.compilers) {
                 const devMiddleware = webpackDevMiddleware(childCompiler);
-                const hotMiddleware = webpackHotMiddleware(childCompiler);
                 disposables.add(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );
-                disposables.add(
-                    () => new Promise<void>((res) => hotMiddleware.close(res))
-                );
                 app.use(devMiddleware);
-                app.use(hotMiddleware);
+
+                if (webpackHot) {
+                    const hotMiddleware = webpackHotMiddleware(childCompiler);
+                    disposables.add(hotMiddleware.close);
+                    app.use(hotMiddleware);
+                }
             }
 
             await new Promise((resolve) => {
