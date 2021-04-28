@@ -200,7 +200,7 @@ devServerFeature.setup(
                 externalFeaturesRoute,
             });
 
-            const compilationPromises = [];
+            const compilationPromises: Promise<void>[] = [];
             for (const childCompiler of compiler.compilers) {
                 const devMiddleware = webpackDevMiddleware(childCompiler);
                 disposables.add(
@@ -208,8 +208,8 @@ devServerFeature.setup(
                 );
                 app.use(devMiddleware);
                 compilationPromises.push(
-                    new Promise((resolve) => {
-                        childCompiler.hooks.done.tap('compiled', resolve);
+                    new Promise<void>((resolve) => {
+                        childCompiler.hooks.done.tap('compiled', () => resolve());
                     })
                 );
             }
