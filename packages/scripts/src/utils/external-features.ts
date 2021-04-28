@@ -1,19 +1,17 @@
 import { join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from '../build-constants';
-import type { IExtenalFeatureDescriptor, IExternalDefinition } from '../types';
+import type { IExternalDefinition, IExternalFeatureNodeDescriptor } from '../types';
 import fs from '@file-services/node';
 import type { IBuildManifest } from '../application';
 
 export function getExternalFeaturesMetadata(
     pluginDefinitions: IExternalDefinition[],
     basePath: string
-): IExtenalFeatureDescriptor[] {
+): IExternalFeatureNodeDescriptor[] {
     // mapping a feature definition to the entries of each environment of that feature, per target
     return pluginDefinitions.map(({ packageName, outDir = 'dist', packagePath }) => {
-        const packageBasePath = packagePath
-            ? fs.resolve(basePath, packagePath)
-            : require.resolve(packageName, { paths: [basePath] });
-        const { entryPoints, defaultFeatureName } = fs.readJsonFileSync(
+        const packageBasePath = getExternalFeatureBasePath({ packagePath, basePath, packageName });
+        const { entryPoints, defaultFeatureName, features } = fs.readJsonFileSync(
             fs.join(packageBasePath, outDir, 'manifest.json')
         ) as IBuildManifest;
         const envEntries: Record<string, Record<string, string>> = {};
@@ -30,9 +28,26 @@ export function getExternalFeaturesMetadata(
                 };
             }
         }
+        const [, externalFeatureDefinition] = features.find(([featureName]) => featureName === defaultFeatureName!)!;
         return {
-            name: defaultFeatureName!,
             envEntries,
+            ...externalFeatureDefinition,
+            name: externalFeatureDefinition.scopedName,
+            packageBasePath,
         };
     });
+}
+
+export function getExternalFeatureBasePath({
+    packagePath,
+    basePath,
+    packageName,
+}: {
+    packagePath?: string;
+    basePath: string;
+    packageName: string;
+}) {
+    return packagePath
+        ? fs.resolve(basePath, packagePath)
+        : fs.dirname(require.resolve(fs.join(packageName, 'package.json'), { paths: [basePath] }));
 }

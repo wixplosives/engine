@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import webpack from 'webpack';
+import webpack, { Configuration } from 'webpack';
 import type HtmlWebpackPlugin from 'html-webpack-plugin';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import semverLessThan from 'semver/functions/lt';
@@ -12,11 +12,11 @@ import {
 } from './create-entrypoint';
 
 import type { getResolvedEnvironments } from './utils/environments';
-import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider, IExtenalFeatureDescriptor } from './types';
+import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 
 export interface ICreateWebpackConfigsOptions {
-    baseConfig?: webpack.Configuration;
+    baseConfig?: Configuration;
     featureName?: string;
     configName?: string;
     singleFeature?: boolean;
@@ -33,8 +33,7 @@ export interface ICreateWebpackConfigsOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
-    externalFeatures: IExtenalFeatureDescriptor[];
-    fetchFeatures?: boolean;
+    externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
 }
 
@@ -65,7 +64,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 virtualModules,
                 plugins,
                 entry,
-                externalFeatures: filterExternalFeatures(webEnvs, 'web'),
             })
         );
     }
@@ -78,7 +76,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'webworker',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                externalFeatures: filterExternalFeatures(workerEnvs, 'webworker'),
             })
         );
     }
@@ -91,26 +88,11 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-renderer',
                 virtualModules,
                 plugins: [new VirtualModulesPlugin(virtualModules)],
-                externalFeatures: filterExternalFeatures(workerEnvs, 'electron-renderer'),
             })
         );
     }
 
     return configurations;
-
-    function filterExternalFeatures(
-        envs: Map<string, string[]>,
-        target: 'web' | 'webworker' | 'electron-renderer'
-    ): IExtenalFeatureDescriptor[] {
-        return options.externalFeatures.map<IExtenalFeatureDescriptor>((descriptor) => ({
-            ...descriptor,
-            envEntries: Object.fromEntries(
-                Object.entries(descriptor.envEntries).filter(
-                    ([envName, envEntries]) => envs.has(envName) && !!envEntries[target]
-                )
-            ),
-        }));
-    }
 }
 
 interface ICreateWebpackConfigOptions {
@@ -133,8 +115,7 @@ interface ICreateWebpackConfigOptions {
     staticBuild: boolean;
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    externalFeatures: IExtenalFeatureDescriptor[];
-    fetchFeatures?: boolean;
+    externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
 }
 
@@ -157,11 +138,10 @@ export function createWebpackConfig({
     staticBuild,
     publicConfigsRoute,
     overrideConfig,
-    externalFeatures,
-    fetchFeatures,
+    externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
-}: ICreateWebpackConfigOptions): webpack.Configuration {
+}: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
@@ -179,8 +159,7 @@ export function createWebpackConfig({
             publicConfigsRoute,
             config,
             target,
-            externalFeatures,
-            fetchFeatures,
+            externalFeaturesRoute,
             eagerEntrypoint,
         });
         // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -272,7 +251,7 @@ export function createWebpackConfigForExternalFeature({
         }
     }
     const virtualModulePaths = Object.keys(virtualModules);
-    externals.push(extractExternals(filePath, virtualModulePaths));
+    const extractExternalsMethod = extractExternals(filePath, virtualModulePaths);
 
     const webpackConfig: webpack.Configuration = {
         ...baseConfig,
@@ -298,6 +277,14 @@ export function createWebpackConfigForExternalFeature({
     if (semverLessThan(webpack.version, '5.0.0')) {
         webpackConfig.output!.libraryTarget = 'var';
         (webpackConfig.output as { jsonpFunction: string }).jsonpFunction = packageName + name;
+        const webpack4ExtractExternalsAdaptation: any = (
+            context: string,
+            request: string,
+            cb: (e?: Error, target?: string) => void
+        ) => extractExternalsMethod({ context, request }, cb);
+        externals.push(webpack4ExtractExternalsAdaptation);
+    } else {
+        externals.push(extractExternalsMethod);
     }
     return webpackConfig;
 }

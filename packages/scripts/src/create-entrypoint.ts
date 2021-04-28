@@ -1,7 +1,7 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import { extname, parse } from 'path';
+import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
-import type { IFeatureDefinition, IConfigDefinition, IExtenalFeatureDescriptor } from './types';
+import type { IFeatureDefinition, IConfigDefinition } from './types';
 
 const { stringify } = JSON;
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
@@ -22,8 +22,7 @@ export interface ICreateEntrypointsOptions {
     publicConfigsRoute?: string;
     config?: TopLevelConfig;
     target: 'webworker' | 'web' | 'electron-renderer';
-    externalFeatures: IExtenalFeatureDescriptor[];
-    fetchFeatures?: boolean;
+    externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
 }
 interface IConfigFileMapping {
@@ -60,7 +59,8 @@ export type LoadStatement = Pick<
     | 'eagerEntrypoint'
 >;
 
-export interface LoadStatementArguments extends Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'> {
+export interface LoadStatementArguments
+    extends Pick<WebpackFeatureLoaderArguments, 'filePath' | 'directoryPath' | 'packageName'> {
     moduleIdentifier: string;
     eagerEntrypoint?: boolean;
 }
@@ -103,8 +103,7 @@ export function createMainEntrypoint({
     publicConfigsRoute,
     config,
     target,
-    externalFeatures,
-    fetchFeatures,
+    externalFeaturesRoute,
     eagerEntrypoint,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
@@ -150,7 +149,7 @@ async function main() {
 
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
     const features = [loadedFeatures[loadedFeatures.length - 1]];
-    ${loadExternalFeatures(target, externalFeatures, fetchFeatures)}
+    ${loadExternalFeatures(target, externalFeaturesRoute)}
 
     const runtimeEngine = runEngineApp(
         { config, options, envName, publicPath, features, resolvedContexts }
@@ -172,8 +171,8 @@ export function webpackImportStatement({ moduleIdentifier, filePath, eagerEntryp
     } ${stringify(filePath)});`;
 }
 
-export function nodeImportStatement(args: LoadStatementArguments) {
-    return `require(${stringify(remapFileRequest(args))})`;
+export function nodeImportStatement({ filePath }: LoadStatementArguments) {
+    return `require(${stringify(filePath)})`;
 }
 
 //#endregion
@@ -193,7 +192,7 @@ function createFeatureLoaders(
                     ...args,
                     envName,
                     childEnvs,
-                    loadStatement: target === 'node' ? nodeImportStatement : webpackImportStatement,
+                    loadStatement: webpackImportStatement,
                     target,
                     eagerEntrypoint,
                 })}`
@@ -389,42 +388,38 @@ function importStaticConfigs() {
 //#endregion
 
 //#region loading 3rd party features
-function loadExternalFeatures(
-    target: 'web' | 'webworker' | 'electron-renderer',
-    externalFeatures: IExtenalFeatureDescriptor[],
-    fetchFeatures?: boolean
-) {
+function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer', externalsFilePath: string) {
     return `self.runtimeFeatureLoader = featureLoader;
-    const externalFeatures = ${JSON.stringify(externalFeatures)};
+    const externalFeatures = [];
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
     
-    ${addExternalsEventListenerForParentEnvironments()}
+    ${addExternalsEventListenerForParentEnvironments(externalsFilePath)}
     
-    ${
-        fetchFeatures
-            ? `const fetchedExternalFeatures = ${
-                  target === 'electron-renderer'
-                      ? fetchFeaturesFromElectronProcess('/external')
-                      : fetchExternalFeaturesInBrowser('/external')
-              };
-            externalFeatures.push(...fetchedExternalFeatures)`
-            : ''
-    }
+    const fetchedExternalFeatures = ${
+        target === 'electron-renderer'
+            ? fetchFeaturesFromElectronProcess(externalsFilePath)
+            : fetchExternalFeaturesInBrowser(externalsFilePath)
+    };
+    externalFeatures.push(...fetchedExternalFeatures)
+    
     if(externalFeatures.length) {
         self.externalFeatures = externalFeatures;
-        const entryPaths = externalFeatures.map(({ name, envEntries }) => (envEntries[envName] ? envEntries[envName]['${target}'] : undefined)).filter(Boolean);
-        await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
-
-        for (const { name } of externalFeatures) {
-            for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
-                features.push(loadedFeature);
+        const filteredExternals = externalFeatures.filter(({name, envEntries}) => envEntries[envName] && envEntries[envName]['${target}']);
+        const entryPaths = filteredExternals.map(({ name, envEntries }) => (envEntries[envName]['${target}']));
+        if(filteredExternals.length) {
+            await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
+    
+            for (const { name } of filteredExternals) {
+                for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
+                    features.push(loadedFeature);
+                }
             }
         }
     }`;
 }
 
 function setExternalPublicPath(envName: string, target: string, featureName: string) {
-    return `const featureDef = topWindow.externalFeatures.find(({name}) => name === '${featureName}');
+    return `const featureDef = topWindow.externalFeatures.find(({ name }) => name === '${featureName}');
     if(!featureDef) {
         throw new Error('trying to load feature ' + '${featureName}' + ', but it is not defined');
     }
@@ -433,16 +428,17 @@ function setExternalPublicPath(envName: string, target: string, featureName: str
     `;
 }
 
-function addExternalsEventListenerForParentEnvironments() {
+function addExternalsEventListenerForParentEnvironments(externalsFilePath: string) {
     return `if(isMainEntrypoint) {
-        currentWindow.addEventListener('message', ({ data: { id }, source }) => {
-            if(id === '/external') {
+        const externalFeaturesEventListener = ({ data: { id }, source }) => {
+            if(source && id === '${externalsFilePath}') {
                 source.postMessage({
                     id,
                     externalFeatures
                 })
             }
-        })
+        }
+        currentWindow.addEventListener('message', externalFeaturesEventListener);
     }`;
 }
 
@@ -473,7 +469,7 @@ function getExternalFeaturesFromParent(externalFeaturesRoute: string) {
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
-    return `return (await fetch('${normalizeRoute(externalFeaturesRoute)!}')).json()`;
+    return `return (await fetch('${externalFeaturesRoute}')).json()`;
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
@@ -503,22 +499,6 @@ export function createExternalFeatureMapping(packageName: string, featurePath: s
 }
 
 //#endregion
-
-export function remapFileRequest({
-    directoryPath,
-    filePath,
-    packageName,
-}: Pick<IFeatureDefinition, 'filePath' | 'directoryPath' | 'packageName'>): string {
-    const fileExtname = extname(filePath);
-    const remappedFilePath = filePath.replace(directoryPath, packageName).replace(fileExtname, '').replace(/\\/g, '/');
-    if (remappedFilePath === filePath) {
-        throw new Error(
-            'failed to re-map request for external feature while building. maybe caused because of link issues'
-        );
-    }
-    return remappedFilePath;
-}
-
 function normalizeRoute(route: string) {
     return route + (route && !route.endsWith('/') ? '/' : '');
 }

@@ -13,20 +13,20 @@ import {
     IEnvironmentMessage,
     IEnvironmentStartMessage,
     IFeatureDefinition,
-    IExtenalFeatureDescriptor,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
     TopLevelConfigProvider,
     ICommunicationMessage,
+    IExternalFeatureNodeDescriptor,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
 import { getEnvironmntsForFeature } from './utils/environments';
 import { IPCHost } from '@wixc3/engine-core-node';
 
-type RunningEnvironment = {
+export interface RunningEnvironment {
     port: number;
     close: () => Promise<void>;
-};
+}
 
 type RunningEnvironmentRecord = Record<string, RunningEnvironment>;
 
@@ -82,7 +82,7 @@ export interface INodeEnvironmentsManagerOptions {
     port: number;
     inspect?: boolean;
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
-    externalFeatures: IExtenalFeatureDescriptor[];
+    externalFeatures: IExternalFeatureNodeDescriptor[];
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -97,9 +97,10 @@ export interface ILaunchEnvironmentOptions {
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
-    externalFeatures?: IExtenalFeatureDescriptor[];
+    externalFeatures?: IExternalFeatureNodeDescriptor[];
     com: Communication;
     baseHost: BaseHost;
+    features: Map<string, IFeatureDefinition>;
 }
 export const ENGINE_COMMUNICATION_NAME = '_engine_node_env_manager_';
 
@@ -109,6 +110,7 @@ export class NodeEnvironmentsManager {
     constructor(
         private socketServer: io.Server,
         private options: INodeEnvironmentsManagerOptions,
+        private context: string,
         private socketServerOptions?: Partial<io.ServerOptions>
     ) {}
 
@@ -165,6 +167,7 @@ export class NodeEnvironmentsManager {
                 externalFeatures: this.options.externalFeatures,
                 com,
                 baseHost,
+                features,
             });
             topology[nodeEnv.name] = `http://localhost:${env.port}/${nodeEnv.name}`;
             preparedEnvironments[nodeEnv.name] = env;
@@ -275,8 +278,9 @@ export class NodeEnvironmentsManager {
         externalFeatures = [],
         com,
         baseHost,
+        features,
     }: ILaunchEnvironmentOptions) {
-        const { features, port, inspect } = this.options;
+        const { port, inspect } = this.options;
 
         const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
@@ -286,6 +290,7 @@ export class NodeEnvironmentsManager {
             options: Object.entries(options),
             inspect,
             externalFeatures,
+            context: this.context,
         };
 
         if (inspect || mode === 'forked') {

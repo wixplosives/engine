@@ -139,16 +139,14 @@ export function buildCommand(program: typeof commander) {
             'the directory where the feature library will be published at (relative to the base path). default: "."'
         )
         .option(
-            '--withExternalFeatures [true|false]',
-            'include defined external features in the output',
-            parseBoolean,
-            false
+            '--staticExternalsDescriptor <staticExternalsDescriptor>',
+            'relative to the output directory - a path to a json file which retrieves all external feature descriptors'
         )
         .option(
-            '--fetchExternalFeatures [true|false]',
-            'fetch for receiving external features in the output application',
+            '--includeExternalFeatures <includeExternalFeatures>',
+            'should include defined external features in the built output',
             parseBoolean,
-            true
+            false
         )
         .option(
             '--featureDiscoveryRoot <featureDiscoveryRoot>',
@@ -171,10 +169,10 @@ export function buildCommand(program: typeof commander) {
                 webpackConfig,
                 external,
                 sourcesRoot,
-                withExternalFeatures,
-                fetchExternalFeatures,
                 eagerEntrypoints,
                 featureDiscoveryRoot,
+                staticExternalsDescriptor,
+                includeExternalFeatures,
             } = cmd;
             try {
                 const basePath = resolve(path);
@@ -194,9 +192,9 @@ export function buildCommand(program: typeof commander) {
                     webpackConfigPath: webpackConfig,
                     external,
                     sourcesRoot,
-                    withExternalFeatures,
-                    fetchExternalFeatures,
+                    staticExternalFeaturesFileName: staticExternalsDescriptor,
                     eagerEntrypoint: eagerEntrypoints,
+                    includeExternalFeatures,
                 });
                 console.log(stats.toString('errors-warnings'));
             } catch (e) {

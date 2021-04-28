@@ -3,6 +3,7 @@ import type webpack from 'webpack';
 import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
 import type { IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import type { TargetApplication } from '../application-proxy-service';
+import type { Express } from 'express';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
 
@@ -29,6 +30,7 @@ export interface DevServerConfig {
     featureDiscoveryRoot?: string;
     socketServerOptions?: Partial<io.ServerOptions>;
     webpackConfigPath?: string;
+    externalFeaturesRoute: string;
 }
 
 export interface DevServerActions {
@@ -38,6 +40,7 @@ export interface DevServerActions {
 export interface ServerListeningParams {
     port: number;
     host: string;
+    router: Express;
 }
 
 export type ServerListeningHandler = (params: ServerListeningParams) => void | Promise<void>;
@@ -63,6 +66,7 @@ export default new Feature({
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
             externalFeatureDefinitions: [],
+            externalFeaturesRoute: '/external-features.json',
         }),
         /**
          * a slot for registering callback that will be called when the devserver is listening

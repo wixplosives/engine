@@ -20,9 +20,11 @@ export interface IFeatureTarget {
 }
 
 export interface IExtenalFeatureDescriptor {
-    name: string;
     envEntries: Record<string, Record<string, string>>;
+    packageBasePath: string;
 }
+
+export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IFeatureDefinition {}
 
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
@@ -31,7 +33,8 @@ export interface StartEnvironmentOptions extends IEnvironment {
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: BaseHost;
-    externalFeatures?: IExtenalFeatureDescriptor[];
+    externalFeatures?: IExternalFeatureNodeDescriptor[];
+    context?: string;
 }
 export interface VirtualEntry {
     source: string;
@@ -292,7 +295,7 @@ export interface EngineConfig {
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
     externalFeatureDefinitions: Array<IExternalDefinition>;
-    externalFeaturesPath?: string;
+    externalFeaturesBasePath?: string;
     serveExternalFeaturesPath?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
     sourcesRoot?: string;
