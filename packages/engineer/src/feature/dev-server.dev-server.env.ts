@@ -200,17 +200,21 @@ devServerFeature.setup(
                 externalFeaturesRoute,
             });
 
+            const compilationPromises = [];
             for (const childCompiler of compiler.compilers) {
                 const devMiddleware = webpackDevMiddleware(childCompiler);
                 disposables.add(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );
                 app.use(devMiddleware);
+                compilationPromises.push(
+                    new Promise((resolve) => {
+                        childCompiler.hooks.done.tap('compiled', resolve);
+                    })
+                );
             }
 
-            await new Promise((resolve) => {
-                compiler.hooks.done.tap('compiled', resolve);
-            });
+            await Promise.all(compilationPromises);
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
