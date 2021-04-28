@@ -203,6 +203,7 @@ devServerFeature.setup(
                 externalFeaturesRoute,
             });
 
+            const compilationPromises: Promise<void>[] = [];
             for (const childCompiler of compiler.compilers) {
                 const devMiddleware = webpackDevMiddleware(childCompiler);
                 disposables.add(
@@ -215,11 +216,14 @@ devServerFeature.setup(
                     disposables.add(hotMiddleware.close);
                     app.use(hotMiddleware);
                 }
+                compilationPromises.push(
+                    new Promise<void>((resolve) => {
+                        childCompiler.hooks.done.tap('compiled', () => resolve());
+                    })
+                );
             }
 
-            await new Promise((resolve) => {
-                compiler.hooks.done.tap('compiled', resolve);
-            });
+            await Promise.all(compilationPromises);
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
@@ -263,7 +267,7 @@ devServerFeature.setup(
             }
 
             for (const handler of serverListeningHandlerSlot) {
-                await handler({ port: actualPort, host: 'localhost' });
+                await handler({ port: actualPort, host: 'localhost', router: app });
             }
 
             const mainUrl = `http://localhost:${actualPort}/`;

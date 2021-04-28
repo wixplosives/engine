@@ -1,0 +1,10 @@
+{
+  "name": "@example/node-only",
+  "version": "17.8.1",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "engineer start"
+  }
+}
