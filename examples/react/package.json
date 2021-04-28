@@ -2,7 +2,6 @@
   "name": "react",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
   "scripts": {
     "start": "yarn engineer start -f react/someplugin --singleFeature",
     "start:hot": "yarn start --webpackConfig webpack.config.hot.js --webpackHot",
@@ -13,5 +12,7 @@
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "react-refresh": "^0.10.0",
     "react-refresh-typescript": "^2.0.0"
-  }
+  },
+  "license": "UNLICENSED",
+  "private": true
 }
