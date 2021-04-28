@@ -1,6 +1,10 @@
 {
-  "name": "node-only",
+  "name": "@example/node-only",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "engineer start"
+  }
 }
