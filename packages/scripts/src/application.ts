@@ -1,7 +1,7 @@
 import { promisify } from 'util';
 import express from 'express';
 import rimrafCb from 'rimraf';
-import type webpack from 'webpack';
+import webpack from 'webpack';
 import fs from '@file-services/node';
 import type io from 'socket.io';
 import { TopLevelConfig, SetMultiMap, flattenTree, createDisposables } from '@wixc3/engine-core';
@@ -783,11 +783,7 @@ export class Application {
             externalFeaturesRoute,
             eagerEntrypoint,
         });
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const wp = require(require.resolve('webpack', {
-            paths: [basePath],
-        })) as typeof webpack;
-        const compiler = wp(webpackConfigs);
+        const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
         return compiler;
     }
