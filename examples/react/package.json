@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "yarn engineer start -f react/someplugin --singleFeature",
-    "start:hot": "yarn start --webpackConfig webpack.config.hot.js --webpackHot true",
+    "start:hot": "yarn start --webpackConfig webpack.config.hot.js --webpackHot",
     "test": "yarn test:ix",
     "test:ix": "mocha \"test/**/*.ix.ts?(x)\""
   },
