@@ -84,8 +84,6 @@ export const startCommand: Command = (program) =>
                 webpackHot,
             } = cmd;
 
-            console.log(webpackHot);
-
             try {
                 const basePath = resolve(path);
                 const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
