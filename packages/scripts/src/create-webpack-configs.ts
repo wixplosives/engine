@@ -117,7 +117,6 @@ interface ICreateWebpackConfigOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
-    watch?: boolean;
     webpackHot?: boolean;
 }
 
