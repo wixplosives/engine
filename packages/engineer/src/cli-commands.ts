@@ -56,7 +56,7 @@ export const startCommand: Command = (program) =>
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
-        .option('--webpackHot <reactHot>', 'Start dev server with webpackHot hot reloading', false)
+        .option('--webpackHot <webpackHot>', 'Start dev server with webpackHot hot reloading', false)
         .option(
             '--featureDiscoveryRoot <featureDiscoveryRoot>',
             'package subdirectory where feature discovery starts',
