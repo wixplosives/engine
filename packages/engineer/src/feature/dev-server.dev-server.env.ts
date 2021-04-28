@@ -14,6 +14,7 @@ import {
     EXTERNAL_FEATURES_BASE_URI,
     getExportedEnvironments,
     getResolvedEnvironments,
+    createCommunicationWithHost,
 } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
@@ -30,18 +31,14 @@ interface WebpackDevMiddleware extends express.Handler {
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
-    host.addEventListener('message', ({ data: { from, origin } }) => {
-        // we map both the from and the to, because we change mapping in the host itself, it re-mapps both the origin and the from, for multi-tenancy
-        if (!communication.getEnvironmentHost(from)) {
-            communication.registerEnv(from, host);
-        }
-        if (!communication.getEnvironmentHost(origin)) {
-            communication.registerEnv(origin, host);
-        }
-    });
     communication.clearEnvironment(envName);
     communication.registerMessageHandler(host);
-    communication.registerEnv(envName, host);
+    const disposeCommunicationFromHost = createCommunicationWithHost(host, communication);
+
+    return () => {
+        disposeCommunicationFromHost();
+        communication.clearEnvironment(envName);
+    };
 };
 
 devServerFeature.setup(

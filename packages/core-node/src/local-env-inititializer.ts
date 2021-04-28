@@ -1,6 +1,6 @@
 import { BaseHost, EnvironmentInitializer } from '@wixc3/engine-core';
 
-export const localNodeEnvironmentInitializer: EnvironmentInitializer<{ id: string }> = async (com, env) => {
+export const localNodeEnvironmentInitializer: EnvironmentInitializer<{ id: string }> = (com, env) => {
     // an environment is always set up with a host, this will always exist
     const baseEnvHost = com.getEnvironmentHost(com.getEnvironmentId())!;
 
@@ -13,7 +13,7 @@ export const localNodeEnvironmentInitializer: EnvironmentInitializer<{ id: strin
         com.registerEnv(env.env, baseEnvHost.parent);
     }
 
-    return Promise.resolve({
+    return {
         id: env.env,
-    });
+    };
 };

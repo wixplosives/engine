@@ -3,6 +3,7 @@ import { WsServerHost } from '@wixc3/engine-core-node';
 
 import type { StartEnvironmentOptions } from './types';
 import { runNodeEnvironment } from './node-environment';
+import type { Communication, Message } from '@wixc3/engine-core';
 
 export function runWSEnvironment(socketServer: io.Server, startEnvironmentOptions: StartEnvironmentOptions) {
     const { host } = startEnvironmentOptions;
@@ -22,19 +23,12 @@ export function runWSEnvironment(socketServer: io.Server, startEnvironmentOption
             if (host) {
                 communication.registerMessageHandler(host);
             }
-            wsHost.addEventListener('message', ({ data: { from, origin } }) => {
-                // we map both the from and the to, because we change mapping in the host itself, it re-mapps both the origin and the from, for multi-tenancy
-                if (!communication.getEnvironmentHost(from)) {
-                    communication.registerEnv(from, wsHost);
-                }
-                if (!communication.getEnvironmentHost(origin)) {
-                    communication.registerEnv(origin, wsHost);
-                }
-            });
+            const disposeCommunicationFromHost = createCommunicationWithHost(wsHost, communication);
 
             return {
                 runtimeEngine: runtimeEngine.engine,
                 close: async () => {
+                    disposeCommunicationFromHost();
                     wsHost.dispose();
                     await runtimeEngine.dispose();
                 },
@@ -42,4 +36,18 @@ export function runWSEnvironment(socketServer: io.Server, startEnvironmentOption
             };
         },
     };
+}
+export function createCommunicationWithHost(wsHost: WsServerHost, communication: Communication) {
+    const messageHandler = ({ data: { from, origin } }: { data: Message }): void => {
+        // we map both the from and the to, because we change mapping in the host itself, it re-mapps both the origin and the from, for multi-tenancy
+        if (!communication.getEnvironmentHost(from)) {
+            communication.registerEnv(from, wsHost);
+        }
+        if (!communication.getEnvironmentHost(origin)) {
+            communication.registerEnv(origin, wsHost);
+        }
+    };
+    wsHost.addEventListener('message', messageHandler);
+
+    return () => wsHost.removeEventListener('message', messageHandler);
 }

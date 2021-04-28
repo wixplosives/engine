@@ -54,13 +54,7 @@ export async function launchHttpServer({
                     connection.destroy();
                 }
                 openSockets.clear();
-                socketServer.close((e) => {
-                    if (e) {
-                        rej(e);
-                    } else {
-                        res();
-                    }
-                });
+                socketServer.close((e) => (e ? rej(e) : res()));
             });
         },
         port,
