@@ -8,5 +8,10 @@
     "start:hot": "yarn start --webpackConfig webpack.config.hot.js --webpackHot true",
     "test": "yarn test:ix",
     "test:ix": "mocha \"test/**/*.ix.ts?(x)\""
+  },
+  "devDependencies": {
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
+    "react-refresh": "^0.10.0",
+    "react-refresh-typescript": "^2.0.0"
   }
 }
