@@ -5,7 +5,7 @@ import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
-import { Application, IExternalDefinition, TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import { Application, IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
 import { join } from 'path';
 import rimraf from 'rimraf';
@@ -25,6 +25,7 @@ const applicationExternalFixturePath = fs.join(
     fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
     'test/fixtures/application-external'
 );
+const engineConfigFixturePath = fs.join(__dirname, './fixtures/engine-config');
 
 function getBodyContent(page: Page | Frame) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -49,6 +50,7 @@ describe('engineer:dev-server', function () {
         externalFeaturesPath,
         singleFeature,
         featureDiscoveryRoot,
+        nodeEnvironmentsMode,
     }: {
         featureName?: string;
         port?: number;
@@ -63,6 +65,7 @@ describe('engineer:dev-server', function () {
         externalFeaturesPath?: string;
         singleFeature?: boolean;
         featureDiscoveryRoot?: string;
+        nodeEnvironmentsMode?: LaunchEnvironmentMode;
     }): Promise<{
         dispose: () => Promise<void>;
         engine: RuntimeEngine;
@@ -84,6 +87,7 @@ describe('engineer:dev-server', function () {
             externalFeaturesPath,
             singleFeature,
             featureDiscoveryRoot,
+            nodeEnvironmentsMode,
         });
         const runningPort = await new Promise<number>((resolve) => {
             devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
@@ -542,6 +546,42 @@ describe('engineer:dev-server', function () {
             { timeout: 5_000 }
         );
     }).timeout(30_000);
+
+    it.only('allows setting up node env mode via config file', async () => {
+        const {
+            config: { port },
+        } = await setup({
+            basePath: engineConfigFixturePath,
+            featureName: 'engine-config/x',
+        });
+
+        const page = await loadPage(`http://localhost:${port}/main.html`);
+
+        const text = await getBodyContent(page);
+        const [pid1, pid2] = text.split(';').map(Number);
+
+        expect(pid1).not.to.eq(pid2);
+        expect(pid1).not.to.eq(process.pid);
+        expect(pid2).not.to.eq(process.pid);
+    });
+
+    it.only('allows runtime options to take precedent over engine config', async () => {
+        const {
+            config: { port },
+        } = await setup({
+            basePath: engineConfigFixturePath,
+            featureName: 'engine-config/x',
+            nodeEnvironmentsMode: 'same-server',
+        });
+
+        const page = await loadPage(`http://localhost:${port}/main.html`);
+
+        const text = await getBodyContent(page);
+        const [pid1, pid2] = text.split(';').map(Number);
+
+        expect(pid1).to.eq(pid2);
+        expect(pid1).to.eq(process.pid);
+    });
 });
 
 function getConfigFileContent(textText: string) {
