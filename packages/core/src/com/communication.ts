@@ -65,10 +65,6 @@ export class Communication {
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
 
-    /**
-     * use base host's parent for resolving message target for provided
-     */
-
     constructor(
         host: Target,
         id: string,
@@ -78,14 +74,6 @@ export class Communication {
         options?: ICommunicationOptions
     ) {
         this.options = { warnOnSlow: false, publicPath: '', connectedEnvironments: {}, ...options };
-        for (const { host: connectedHost, registerMessageHandler } of Object.values(
-            this.options.connectedEnvironments
-        )) {
-            if (registerMessageHandler) {
-                this.registerMessageHandler(connectedHost);
-            }
-        }
-        this.environments = { ...this.options.connectedEnvironments };
         this.rootEnvId = id;
         this.rootEnvName = id.split('/')[0]!;
         this.registerMessageHandler(host);
@@ -93,6 +81,13 @@ export class Communication {
         this.environments['*'] = { id, host };
 
         this.post(this.getPostEndpoint(host), { type: 'ready', from: id, to: '*', origin: id });
+
+        for (const [id, envEntry] of Object.entries(this.options.connectedEnvironments)) {
+            if (envEntry.registerMessageHandler) {
+                this.registerMessageHandler(envEntry.host);
+            }
+            this.environments[id] = envEntry;
+        }
     }
 
     /**

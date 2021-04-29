@@ -140,25 +140,41 @@ export class NodeEnvironmentsManager {
             // adding the topology of the already running environments for this feature
             Object.assign(topology, this.getTopologyForRunningEnvironments(runningEnv.runningEnvironments));
         }
+
         const runningEnvironments: RunningEnvironmentRecord = {};
         const preparedEnvironments: DeclaredEnvironmentRecord = {};
 
-        // creating a "top level" communication instance for all running node environment, to serve as a router between them.
-        // to this communication all environments will be registered using wither a base host which decends from 'baseHost' (baseHost.open() is triggered later), either IPCHost (in cases when node environments are launched in forked mode).
-        // in the other side, when node environment a wants to communicate with node environment b, is declares that the host of environment b is the parent of the base hpst of environment a, which is 'baseHost' itself.
-        // we can just use the 'localNodeEnvironmentInitializer' exported from '@wixc3/engine-core'
+        /**
+         * creating a "top level" communication instance for all running node environments, to serve as a router between them.
+         *
+         * to this communication all environments will be registered using either a base host which uses 'baseHost' as a parent, either IPCHost (in cases when node environments are launched in forked mode).
+         *
+         * all node environments will receive a "connectedEnvironments" configuration to the communication feature, to provide access to all node environments. (note: this means that when running engine applications using the Applciation API from engine-scripts, node environments communication is implicit. BUT, we do need to encourage the users to still use the COM's startEnvironment API in the 'initiating' environment for both concictensy and correctness. If the user would like to change a connection method to an environment, not having the 'startEnvironment' there might cause confusion).
+         *
+         * in the other side, when a node environment a wants to communicate with node environment b using this mechanism, it uses the 'localNodeEnvironmentInitializer' exported from '@wixc3/engine-core', as the initializer for communicating with environment b (from a).
+         *
+         * the communication flow is as follows:
+         *
+         * 'a' sets up a connection to 'b', using 'localNodeEnvironmentInitializer'.
+         * 'a' makes an api call to a service provided from 'b'
+         * 'a' locates the host to 'b' and sends the message.
+         * message arrives to this top level communication
+         * message gets re-routed to 'b'
+         * 'b' responds back to top level communication which then forwards the message to 'a'
+         *
+         * if 'b' wants to call an api provided from 'a', it's implicity will do the same thing, but without the need to explicitly call the COM's startEnvironment API
+         */
+
         const baseHost = new BaseHost();
         const com = new Communication(baseHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID, undefined, undefined, true);
 
-        // retrieving all future topology of the node environments
-        // doing this so that node environments will be launched only after topology is populated
-        // so they will receive the full topology and be able to connect to the new environment through a socket connection - if desired.
         const envHostMapping = new Map<IEnvironment, ChildBaseHost>();
         for (const nodeEnv of nodeEnvironments) {
             const host = new ChildBaseHost(baseHost);
             envHostMapping.set(nodeEnv, host);
             com.registerEnv(nodeEnv.name, new ChildHostWrapper(host));
         }
+
         for (const nodeEnv of nodeEnvironments) {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
@@ -178,9 +194,10 @@ export class NodeEnvironmentsManager {
                     };
                 }
             }
+
             config.push(COM.use({ config: { topology, connectedEnvironments } }));
             config.push(...(await this.getConfig(originalConfigName)), ...overrideConfigs);
-            const env = await this.prepareEnvironment({
+            const preparedEnvironment = await this.prepareEnvironment({
                 nodeEnv,
                 featureName,
                 config,
@@ -194,17 +211,17 @@ export class NodeEnvironmentsManager {
                 baseHost,
                 features,
             });
-            topology[nodeEnv.name] = `http://localhost:${env.port}/${nodeEnv.name}`;
-            preparedEnvironments[nodeEnv.name] = env;
+            topology[nodeEnv.name] = `http://localhost:${preparedEnvironment.port}/${nodeEnv.name}`;
+            preparedEnvironments[nodeEnv.name] = preparedEnvironment;
         }
 
-        for (const [envName, env] of Object.entries(preparedEnvironments)) {
+        for (const [envName, preparedEnvironment] of Object.entries(preparedEnvironments)) {
             if (runningEnvironments[envName]) {
                 throw new Error(`${envName} is already running`);
             }
             runningEnvironments[envName] = {
-                close: (await env.start()).close,
-                port: env.port,
+                ...(await preparedEnvironment.start()),
+                port: preparedEnvironment.port,
             };
         }
 
