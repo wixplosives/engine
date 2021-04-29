@@ -547,7 +547,7 @@ describe('engineer:dev-server', function () {
         );
     }).timeout(30_000);
 
-    it.only('allows setting up node env mode via config file', async () => {
+    it('allows setting up node env mode via config file', async () => {
         const {
             config: { port },
         } = await setup({
@@ -565,7 +565,7 @@ describe('engineer:dev-server', function () {
         expect(pid2).not.to.eq(process.pid);
     });
 
-    it.only('allows runtime options to take precedent over engine config', async () => {
+    it('allows runtime options to take precedent over engine config', async () => {
         const {
             config: { port },
         } = await setup({
