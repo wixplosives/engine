@@ -34,9 +34,14 @@ import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
 
+export interface ConfigEnvironmentRecord extends EnvironmentRecord {
+    registerMessageHandler?: boolean;
+}
+
 export interface ICommunicationOptions {
     warnOnSlow?: boolean;
     publicPath?: string;
+    connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
 }
 
 /**
@@ -63,7 +68,6 @@ export class Communication {
     /**
      * use base host's parent for resolving message target for provided
      */
-    private resolveTargetParentHost: Record<string, boolean> = {};
 
     constructor(
         host: Target,
@@ -73,7 +77,15 @@ export class Communication {
         public isServer = false,
         options?: ICommunicationOptions
     ) {
-        this.options = { warnOnSlow: false, publicPath: '', ...options };
+        this.options = { warnOnSlow: false, publicPath: '', connectedEnvironments: {}, ...options };
+        for (const { host: connectedHost, registerMessageHandler } of Object.values(
+            this.options.connectedEnvironments
+        )) {
+            if (registerMessageHandler) {
+                this.registerMessageHandler(connectedHost);
+            }
+        }
+        this.environments = { ...this.options.connectedEnvironments };
         this.rootEnvId = id;
         this.rootEnvName = id.split('/')[0]!;
         this.registerMessageHandler(host);
@@ -125,11 +137,6 @@ export class Communication {
 
     public setTopology(envName: string, envUrl: string) {
         this.topology[envName] = envUrl;
-    }
-
-    public addEnvironmentResolutionDefinition(envName: string, options: { resolveToParentHost: boolean }) {
-        const { resolveToParentHost } = options;
-        this.resolveTargetParentHost[envName] = resolveToParentHost;
     }
 
     /**
@@ -551,7 +558,7 @@ export class Communication {
             }
             const target = env.host;
             if (target instanceof BaseHost) {
-                return this.resolveTargetParentHost[env.id] === false ? target : target.parent || target;
+                return target.parent || target;
             }
             return this.getPostEndpoint(target);
         }

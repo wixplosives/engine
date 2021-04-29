@@ -1,5 +1,6 @@
 import type io from 'socket.io';
-import { IPCHost } from '@wixc3/engine-core-node';
+import { COM, ConfigEnvironmentRecord, PartialFeatureConfig } from '@wixc3/engine-core';
+import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
 import performance from '@wixc3/cross-performance';
 performance.clearMeasures;
 import { runWSEnvironment } from './ws-environment';
@@ -34,10 +35,42 @@ export function createIPC(
             performance.clearMarks();
             performance.clearMeasures();
             const ipcHost = new IPCHost(process);
+            // re-mapping all provided connected environments to use the IPC host, to allow, through the parent process, access other node environments
+            const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
+            for (const [envName, config] of message.data.config ?? []) {
+                if (envName === COM.id) {
+                    const typedConfig = (config as PartialFeatureConfig<typeof COM['api']>).config ?? {};
+                    const { connectedEnvironments: definedConnectedEnvironments } = typedConfig;
+                    if (definedConnectedEnvironments) {
+                        for (const [envToken, envRecord] of Object.entries(definedConnectedEnvironments)) {
+                            if (!connectedEnvironments[envToken]) {
+                                connectedEnvironments[envToken] = {
+                                    ...envRecord,
+                                    host: ipcHost,
+                                };
+                            }
+                        }
+                        delete typedConfig?.connectedEnvironments;
+                    }
+                }
+            }
+            connectedEnvironments[LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID] = {
+                host: ipcHost,
+                id: LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID,
+                registerMessageHandler: true,
+            };
             const { close } = await runWSEnvironment(socketServer, {
                 ...message.data,
-                host: ipcHost,
+                config: [
+                    ...(message.data.config ?? []),
+                    COM.use({
+                        config: {
+                            connectedEnvironments,
+                        },
+                    }),
+                ],
             }).start();
+
             environments[message.envName] = close;
             remoteProcess.postMessage({ id: 'start' });
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {

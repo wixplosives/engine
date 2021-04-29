@@ -3,7 +3,15 @@ import { delimiter } from 'path';
 
 import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
-import { TopLevelConfig, SetMultiMap, Communication, BaseHost, COM, Message } from '@wixc3/engine-core';
+import {
+    TopLevelConfig,
+    SetMultiMap,
+    Communication,
+    BaseHost,
+    COM,
+    Message,
+    ConfigEnvironmentRecord,
+} from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
@@ -21,7 +29,7 @@ import {
 } from './types';
 import type { OverrideConfig } from './config-middleware';
 import { getEnvironmntsForFeature } from './utils/environments';
-import { IPCHost } from '@wixc3/engine-core-node';
+import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
 
 export interface RunningEnvironment {
     port: number;
@@ -102,7 +110,6 @@ export interface ILaunchEnvironmentOptions {
     baseHost: BaseHost;
     features: Map<string, IFeatureDefinition>;
 }
-export const ENGINE_COMMUNICATION_NAME = '_engine_node_env_manager_';
 
 export class NodeEnvironmentsManager {
     private runningFeatures = new Map<string, { com: Communication; runningEnvironments: RunningEnvironmentRecord }>();
@@ -141,11 +148,17 @@ export class NodeEnvironmentsManager {
         // in the other side, when node environment a wants to communicate with node environment b, is declares that the host of environment b is the parent of the base hpst of environment a, which is 'baseHost' itself.
         // we can just use the 'localNodeEnvironmentInitializer' exported from '@wixc3/engine-core'
         const baseHost = new BaseHost();
-        const com = new Communication(baseHost, ENGINE_COMMUNICATION_NAME, undefined, undefined, true);
+        const com = new Communication(baseHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID, undefined, undefined, true);
 
         // retrieving all future topology of the node environments
         // doing this so that node environments will be launched only after topology is populated
         // so they will receive the full topology and be able to connect to the new environment through a socket connection - if desired.
+        const envHostMapping = new Map<IEnvironment, ChildBaseHost>();
+        for (const nodeEnv of nodeEnvironments) {
+            const host = new ChildBaseHost(baseHost);
+            envHostMapping.set(nodeEnv, host);
+            com.registerEnv(nodeEnv.name, new ChildHostWrapper(host));
+        }
         for (const nodeEnv of nodeEnvironments) {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
@@ -153,7 +166,19 @@ export class NodeEnvironmentsManager {
                 nodeEnv.name
             );
             const config: TopLevelConfig = [];
-            config.push(COM.use({ config: { topology } }));
+            const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
+            for (const [env, host] of envHostMapping) {
+                if (env !== nodeEnv) {
+                    connectedEnvironments[env.name] = { id: env.name, host };
+                } else {
+                    connectedEnvironments[LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID] = {
+                        id: LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID,
+                        host,
+                        registerMessageHandler: true,
+                    };
+                }
+            }
+            config.push(COM.use({ config: { topology, connectedEnvironments } }));
             config.push(...(await this.getConfig(originalConfigName)), ...overrideConfigs);
             const env = await this.prepareEnvironment({
                 nodeEnv,
@@ -277,7 +302,6 @@ export class NodeEnvironmentsManager {
         mode,
         externalFeatures = [],
         com,
-        baseHost,
         features,
     }: ILaunchEnvironmentOptions) {
         const { port, inspect } = this.options;
@@ -303,6 +327,8 @@ export class NodeEnvironmentsManager {
             const { childProcess, port, start } = await this.runRemoteNodeEnvironment(nodeEnvironmentOptions);
 
             const ipcHost = new IPCHost(childProcess);
+            // change previous host registration
+            com.clearEnvironment(nodeEnv.name);
             com.registerEnv(nodeEnv.name, ipcHost);
             com.registerMessageHandler(ipcHost);
             return {
@@ -311,13 +337,11 @@ export class NodeEnvironmentsManager {
             };
         }
 
-        const host = new ChildBaseHost(baseHost);
-
-        com.registerEnv(nodeEnv.name, new ChildHostWrapper(host));
         if (mode === 'new-server') {
-            return await this.runEnvironmentInNewServer(port, { ...nodeEnvironmentOptions, host });
+            return await this.runEnvironmentInNewServer(port, nodeEnvironmentOptions);
         }
-        const { start } = runWSEnvironment(this.socketServer, { ...nodeEnvironmentOptions, host });
+
+        const { start } = runWSEnvironment(this.socketServer, nodeEnvironmentOptions);
 
         return {
             start,

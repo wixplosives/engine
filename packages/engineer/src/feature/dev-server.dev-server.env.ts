@@ -14,7 +14,6 @@ import {
     EXTERNAL_FEATURES_BASE_URI,
     getExportedEnvironments,
     getResolvedEnvironments,
-    createCommunicationWithHost,
 } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
@@ -33,10 +32,8 @@ const attachWSHost = (socketServer: io.Server, envName: string, communication: C
     const host = new WsServerHost(socketServer.of(`/${envName}`));
     communication.clearEnvironment(envName);
     communication.registerMessageHandler(host);
-    const disposeCommunicationFromHost = createCommunicationWithHost(host, communication);
 
     return () => {
-        disposeCommunicationFromHost();
         communication.clearEnvironment(envName);
     };
 };
