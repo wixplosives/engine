@@ -82,7 +82,6 @@ export class TargetApplication extends Application {
     }
 
     public setNodeEnvManager(nem: NodeEnvironmentsManager, nodeEnvironmentsMode?: LaunchEnvironmentMode) {
-        console.log(nodeEnvironmentsMode);
         this.nodeEnvironmentsMode = nodeEnvironmentsMode;
         this.nodeEnvManager = nem;
     }
