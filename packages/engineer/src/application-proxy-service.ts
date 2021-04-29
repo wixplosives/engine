@@ -16,18 +16,13 @@ import {
 import type { SetMultiMap } from '@wixc3/engine-core';
 import performance from '@wixc3/cross-performance';
 
-export interface IApplicationProxyOptions extends IApplicationOptions {
-    nodeEnvironmentsMode?: LaunchEnvironmentMode;
-}
-
 export class TargetApplication extends Application {
     public nodeEnvironmentsMode?: LaunchEnvironmentMode;
     private nodeEnvManager?: NodeEnvironmentsManager;
     private overrideConfigsMap: Map<string, OverrideConfig> = new Map<string, OverrideConfig>();
 
-    constructor(opts: IApplicationProxyOptions) {
+    constructor(opts: IApplicationOptions) {
         super(opts);
-        this.nodeEnvironmentsMode = opts.nodeEnvironmentsMode;
     }
 
     public getEngineConfig() {
@@ -86,7 +81,9 @@ export class TargetApplication extends Application {
         return super.getFeatureEnvDefinitions(features, configurations);
     }
 
-    public setNodeEnvManager(nem: NodeEnvironmentsManager) {
+    public setNodeEnvManager(nem: NodeEnvironmentsManager, nodeEnvironmentsMode?: LaunchEnvironmentMode) {
+        console.log(nodeEnvironmentsMode);
+        this.nodeEnvironmentsMode = nodeEnvironmentsMode;
         this.nodeEnvManager = nem;
     }
 
