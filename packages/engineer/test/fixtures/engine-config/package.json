@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/engine-config-feature",
+  "version": "16.0.0",
+  "scripts": {
+    "start": "engineer start"
+  },
+  "private": true
+}
