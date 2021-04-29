@@ -7,6 +7,7 @@ import type {
     Feature,
     Target,
 } from '@wixc3/engine-core';
+import type { LaunchEnvironmentMode } from './node-environments-manager';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -300,4 +301,5 @@ export interface EngineConfig {
     socketServerOptions?: Partial<io.ServerOptions>;
     sourcesRoot?: string;
     favicon?: string;
+    nodeEnvironmentsMode?: LaunchEnvironmentMode;
 }
