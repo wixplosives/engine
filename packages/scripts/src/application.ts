@@ -455,7 +455,7 @@ export class Application {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
-                mode: nodeEnvironmentsMode,
+                mode: nodeEnvironmentsMode ?? engineConfig?.nodeEnvironmentsMode,
             });
         }
 
