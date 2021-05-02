@@ -56,6 +56,7 @@ export const startCommand: Command = (program) =>
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
+        .option('--webpackHot', 'Start dev server with webpackHot hot reloading', false)
         .option(
             '--nodeEnvironmentsMode <nodeEnvironmentsMode>',
             'one of "new-server", "same-server" or "forked" for choosing how to launch node envs'
@@ -84,6 +85,7 @@ export const startCommand: Command = (program) =>
                 inspect,
                 featureDiscoveryRoot,
                 webpackConfig,
+                webpackHot,
                 nodeEnvironmentsMode,
             } = cmd;
 
@@ -109,6 +111,7 @@ export const startCommand: Command = (program) =>
                     inspect,
                     featureDiscoveryRoot,
                     webpackConfigPath: webpackConfig,
+                    webpackHot,
                     nodeEnvironmentsMode,
                 });
 
