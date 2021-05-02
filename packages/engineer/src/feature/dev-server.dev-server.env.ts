@@ -66,7 +66,7 @@ devServerFeature.setup(
             webpackConfigPath,
             externalFeaturesRoute,
         } = devServerConfig;
-        const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
+        const application = new TargetApplication({ basePath, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
 
         onDispose(disposables.dispose);
@@ -117,6 +117,7 @@ devServerFeature.setup(
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
+
             application.setNodeEnvManager(
                 new NodeEnvironmentsManager(
                     socketServer,
@@ -131,7 +132,8 @@ devServerFeature.setup(
                     },
                     basePath,
                     resolvedSocketServerOptions
-                )
+                ),
+                nodeEnvironmentsMode || engineConfig?.nodeEnvironmentsMode
             );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
@@ -202,17 +204,21 @@ devServerFeature.setup(
                 externalFeaturesRoute,
             });
 
+            const compilationPromises: Promise<void>[] = [];
             for (const childCompiler of compiler.compilers) {
                 const devMiddleware = webpackDevMiddleware(childCompiler);
                 disposables.add(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );
                 app.use(devMiddleware);
+                compilationPromises.push(
+                    new Promise<void>((resolve) => {
+                        childCompiler.hooks.done.tap('compiled', () => resolve());
+                    })
+                );
             }
 
-            await new Promise((resolve) => {
-                compiler.hooks.done.tap('compiled', resolve);
-            });
+            await Promise.all(compilationPromises);
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 

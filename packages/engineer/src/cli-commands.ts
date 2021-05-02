@@ -57,6 +57,10 @@ export const startCommand: Command = (program) =>
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
         .option(
+            '--nodeEnvironmentsMode <nodeEnvironmentsMode>',
+            'one of "new-server", "same-server" or "forked" for choosing how to launch node envs'
+        )
+        .option(
             '--featureDiscoveryRoot <featureDiscoveryRoot>',
             'package subdirectory where feature discovery starts',
             '.'
@@ -80,6 +84,7 @@ export const startCommand: Command = (program) =>
                 inspect,
                 featureDiscoveryRoot,
                 webpackConfig,
+                nodeEnvironmentsMode,
             } = cmd;
 
             try {
@@ -104,6 +109,7 @@ export const startCommand: Command = (program) =>
                     inspect,
                     featureDiscoveryRoot,
                     webpackConfigPath: webpackConfig,
+                    nodeEnvironmentsMode,
                 });
 
                 const { port } = await new Promise((resolve) => {

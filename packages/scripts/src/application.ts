@@ -227,7 +227,7 @@ export class Application {
             // should build this feature in external mode
             isExternal: external,
             // whether should fetch at runtime for the external features metadata
-            externalFeaturesRoute: externalsFilePath,
+            externalFeaturesRoute: staticExternalFeaturesFileName,
             webpackConfigPath,
             environments: resolvedEnvironments,
             eagerEntrypoint,
@@ -457,7 +457,7 @@ export class Application {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
-                mode: nodeEnvironmentsMode,
+                mode: nodeEnvironmentsMode ?? engineConfig?.nodeEnvironmentsMode,
             });
         }
 

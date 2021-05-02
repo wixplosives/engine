@@ -469,7 +469,11 @@ function getExternalFeaturesFromParent(externalFeaturesRoute: string) {
 }
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
-    return `return (await fetch('${externalFeaturesRoute}')).json()`;
+    return `const externalFeaturesRoute = '${externalFeaturesRoute}';
+            const path = publicPath + publicPath && !publicPath.endsWith('/') ? '/' : '';
+            const normalizedExternalFeaturesRoute = !externalFeaturesRoute.startsWith('/') ? externalFeaturesRoute : externalFeaturesRoute.slice(1);
+            return (await fetch(path + normalizedExternalFeaturesRoute)).json();
+            `;
 }
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
