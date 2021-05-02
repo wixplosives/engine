@@ -30,6 +30,8 @@ import type {
     IExternalDefinition,
     TopLevelConfigProvider,
     IExternalFeatureNodeDescriptor,
+    FeatureLoaderMeta,
+    IRuntimeFeatureDefinition,
 } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
@@ -655,12 +657,30 @@ export class Application {
         featureName: string
     ): [featureName: string, featureDefinition: IFeatureDefinition] {
         const sourcesRoot = fs.resolve(featureDef.directoryPath, pathToSources);
+        const {
+            exportedEnvs,
+            resolvedContexts,
+            usedContexts,
+            dependencies,
+            scopedName,
+            isRoot,
+            packageName,
+            directoryPath,
+        } = featureDef;
         return [
             featureName,
             {
-                ...{ ...featureDef },
+                exportedEnvs,
+                resolvedContexts,
+                usedContexts,
+                dependencies,
+                scopedName,
+                isRoot,
+                packageName,
+                directoryPath,
                 ...this.mapFeatureFiles(featureDef, sourcesRoot),
-            } as IFeatureDefinition,
+                name: featureName,
+            },
         ];
     }
 
@@ -673,7 +693,7 @@ export class Application {
             preloadFilePaths,
             isRoot,
             directoryPath,
-        }: IFeatureDefinition,
+        }: FeatureLoaderMeta,
         sourcesRoot: string
     ) {
         if (isRoot) {
@@ -834,7 +854,7 @@ export class Application {
         return featureEnvDefinitions;
     }
 
-    protected filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+    protected filterByFeatureName(features: Map<string, IRuntimeFeatureDefinition>, featureName: string) {
         const foundFeature = features.get(featureName);
         if (!foundFeature) {
             throw new Error(`cannot find feature: ${featureName}`);
@@ -846,7 +866,7 @@ export class Application {
                     const feature = features.get(dependencyName);
                     if (!feature) {
                         nonFoundDependencies.push(dependencyName);
-                        return {} as IFeatureDefinition;
+                        return {} as IRuntimeFeatureDefinition;
                     }
                     return feature;
                 })

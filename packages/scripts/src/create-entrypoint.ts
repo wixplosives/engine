@@ -1,7 +1,7 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
-import type { IFeatureDefinition, IConfigDefinition } from './types';
+import type { IConfigDefinition, FeatureLoaderMeta } from './types';
 
 const { stringify } = JSON;
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
@@ -10,7 +10,7 @@ export const LOADED_FEATURE_MODULES_NAMESPACE = '_engine_';
 //#region types
 
 export interface ICreateEntrypointsOptions {
-    features: ReadonlyMap<string, IFeatureDefinition>;
+    features: ReadonlyMap<string, FeatureLoaderMeta>;
     envName: string;
     childEnvs: string[];
     featureName?: string;
@@ -30,7 +30,7 @@ interface IConfigFileMapping {
     configEnvName?: string;
 }
 
-export interface ExternalEntrypoint extends IFeatureDefinition {
+export interface ExternalEntrypoint extends FeatureLoaderMeta {
     childEnvs: string[];
     envName: string;
     publicPath?: string;
@@ -51,7 +51,7 @@ export type LoadStatement = Pick<
     | 'envName'
     | 'contextFilePaths'
     | 'envFilePaths'
-    | 'name'
+    | 'scopedName'
     | 'loadStatement'
     | 'packageName'
     | 'directoryPath'
@@ -179,7 +179,7 @@ export function nodeImportStatement({ filePath }: LoadStatementArguments) {
 
 //#region feature loaders generation
 function createFeatureLoaders(
-    features: Iterable<IFeatureDefinition>,
+    features: Iterable<FeatureLoaderMeta>,
     envName: string,
     childEnvs: string[],
     target: 'web' | 'webworker' | 'node' | 'electron-renderer',
@@ -204,7 +204,7 @@ function loadEnvAndContextFiles({
     childEnvs,
     contextFilePaths,
     envName,
-    name,
+    scopedName,
     envFilePaths,
     loadStatement,
     directoryPath,
@@ -221,7 +221,7 @@ function loadEnvAndContextFiles({
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
                 ${loadStatement({
-                    moduleIdentifier: name,
+                    moduleIdentifier: scopedName,
                     filePath: contextFilePath,
                     directoryPath,
                     packageName,
@@ -237,7 +237,7 @@ function loadEnvAndContextFiles({
                 ${webpackImportStatement({
                     directoryPath,
                     filePath: preloadFilePath,
-                    moduleIdentifier: name,
+                    moduleIdentifier: scopedName,
                     packageName,
                     eagerEntrypoint,
                 })};
@@ -248,7 +248,7 @@ function loadEnvAndContextFiles({
     if (envFilePath) {
         loadStatements.push(
             loadStatement({
-                moduleIdentifier: `[${envName}]${name}`,
+                moduleIdentifier: `[${envName}]${scopedName}`,
                 filePath: envFilePath,
                 directoryPath,
                 packageName,
@@ -260,7 +260,7 @@ function loadEnvAndContextFiles({
     if (preloadFilePath) {
         preloadStatements.push(
             webpackImportStatement({
-                moduleIdentifier: `[${envName}]${name}`,
+                moduleIdentifier: `[${envName}]${scopedName}`,
                 filePath: preloadFilePath,
                 directoryPath,
                 packageName,
@@ -273,7 +273,7 @@ function loadEnvAndContextFiles({
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
     const {
-        name,
+        scopedName,
         filePath,
         dependencies,
         resolvedContexts,
@@ -288,7 +288,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                     ${loadStatements.length ? loadStatements.join(';\n') : ''}
                     const featureModule = ${loadStatement({
-                        moduleIdentifier: `[feature]${name}`,
+                        moduleIdentifier: `[feature]${scopedName}`,
                         filePath,
                         directoryPath,
                         packageName,
@@ -404,13 +404,13 @@ function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer',
     
     if(externalFeatures.length) {
         self.externalFeatures = externalFeatures;
-        const filteredExternals = externalFeatures.filter(({name, envEntries}) => envEntries[envName] && envEntries[envName]['${target}']);
-        const entryPaths = filteredExternals.map(({ name, envEntries }) => (envEntries[envName]['${target}']));
+        const filteredExternals = externalFeatures.filter(({ envEntries }) => envEntries[envName] && envEntries[envName]['${target}']);
         if(filteredExternals.length) {
+            const entryPaths = filteredExternals.map(({ envEntries }) => (envEntries[envName]['${target}']));
             await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
     
-            for (const { name } of filteredExternals) {
-                for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
+            for (const { scopedName } of filteredExternals) {
+                for (const loadedFeature of await featureLoader.getLoadedFeatures(scopedName)) {
                     features.push(loadedFeature);
                 }
             }

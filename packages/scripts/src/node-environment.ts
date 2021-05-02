@@ -9,7 +9,7 @@ import {
 } from '@wixc3/engine-core';
 import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
 
-import type { IEnvironment, IFeatureDefinition, StartEnvironmentOptions } from './types';
+import type { FeatureLoaderMeta, IEnvironment, StartEnvironmentOptions } from './types';
 
 export async function runNodeEnvironment({
     featureName,
@@ -37,7 +37,7 @@ export async function runNodeEnvironment({
         );
     }
 
-    const featureLoaders = createFeatureLoaders(new Map(features), {
+    const featureLoaders = createFeatureLoaders(new Map(Object.entries(features)), {
         name,
         childEnvName,
         type,
@@ -62,7 +62,7 @@ export async function runNodeEnvironment({
     // if context is not provided, environment will not load external features
     if (context) {
         // mapping all found feature file requests to the current running context, so that external features, when importing feature files, will evaluate the files under the current context
-        [...features.values()].map(([, { packageName }]) =>
+        Object.values(features).map(({ packageName }) =>
             remapToUserLibrary({
                 test: (request) => request.includes(packageName),
                 context,
@@ -80,7 +80,7 @@ export async function runNodeEnvironment({
         init();
     }
 
-    for (const { name: externalFeatureName, envEntries } of externalFeatures) {
+    for (const { scopedName: externalFeatureName, envEntries } of externalFeatures) {
         if (envEntries[name] && envEntries[name]!['node']) {
             const externalFeatureLoaders = (await import(envEntries[name]!['node']!)) as {
                 [featureName: string]: IFeatureLoader;
@@ -109,7 +109,7 @@ export async function runNodeEnvironment({
 }
 
 export function createFeatureLoaders(
-    features: Map<string, IFeatureDefinition>,
+    features: Map<string, FeatureLoaderMeta>,
     { name: envName, childEnvName }: IEnvironment
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};

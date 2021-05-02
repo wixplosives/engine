@@ -24,12 +24,12 @@ export interface IExtenalFeatureDescriptor {
     packageBasePath: string;
 }
 
-export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IFeatureDefinition {}
+export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, FeatureLoaderMeta {}
 
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
-    features: Array<[string, IFeatureDefinition]>;
+    features: Record<string, FeatureLoaderMeta>;
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: BaseHost;
@@ -196,7 +196,14 @@ export interface RemoteProcess {
     off: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
 }
 
-export interface IFeatureModule {
+export interface IFeatureModule extends ISerizalizableFeatureModule {
+    /**
+     * Actual evaluated Feature instance exported from the file.
+     */
+    exportedFeature: Feature;
+}
+
+export interface ISerizalizableFeatureModule {
     /**
      * Feature name.
      * @example "gui" for "gui.feature.ts"
@@ -207,11 +214,6 @@ export interface IFeatureModule {
      * Absolute path pointing to the feature file.
      */
     filePath: string;
-
-    /**
-     * Actual evaluated Feature instance exported from the file.
-     */
-    exportedFeature: Feature;
 
     /**
      * Exported environments from module.
@@ -254,7 +256,7 @@ export interface IConfigDefinition {
     filePath: string;
 }
 
-export interface IFeatureDefinition extends IFeatureModule {
+export interface FeatureLoaderMeta {
     contextFilePaths: Record<string, string>;
     envFilePaths: Record<string, string>;
     preloadFilePaths: Record<string, string>;
@@ -264,8 +266,13 @@ export interface IFeatureDefinition extends IFeatureModule {
     isRoot: boolean;
     packageName: string;
     directoryPath: string;
-    toJSON(): unknown;
+    filePath: string;
 }
+
+export interface IFeatureDefinition extends ISerizalizableFeatureModule, FeatureLoaderMeta {}
+
+export interface IRuntimeFeatureDefinition extends IFeatureModule, FeatureLoaderMeta {}
+
 export interface StaticConfig {
     route: string;
     directoryPath: string;

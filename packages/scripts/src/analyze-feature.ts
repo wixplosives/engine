@@ -21,7 +21,7 @@ import {
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
+import type { IConfigDefinition, IEnvironment, IFeatureModule, IRuntimeFeatureDefinition } from './types';
 import type { INpmPackage } from './utils/resolve-packages';
 
 interface IPackageDescriptor {
@@ -110,7 +110,7 @@ export function loadFeaturesFromPaths(
         });
     }
 
-    const foundFeatures = new Map<string, IFeatureDefinition>();
+    const foundFeatures = new Map<string, IRuntimeFeatureDefinition>();
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
     const featureToScopedName = new Map<Feature, string>();
 
@@ -152,19 +152,6 @@ export function loadFeaturesFromPaths(
                 packageName: featurePackage.name,
                 directoryPath: featurePackage.directoryPath,
                 filePath: featureFilePath,
-                toJSON(this: IFeatureDefinition) {
-                    return {
-                        contextFilePaths: this.contextFilePaths,
-                        dependencies: this.dependencies,
-                        filePath: this.filePath,
-                        envFilePaths: this.envFilePaths,
-                        preloadFilePaths: this.preloadFilePaths,
-                        exportedEnvs: this.exportedEnvs,
-                        resolvedContexts: this.resolvedContexts,
-                        packageName: this.packageName,
-                        scopedName,
-                    };
-                },
             });
             featureToScopedName.set(featureModule.exportedFeature, scopedName);
         }
@@ -288,8 +275,8 @@ export const getFeatureModules = (module: NodeJS.Module) =>
         (m) => isFeatureFile(basename(m.filename))
     );
 
-export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
-    const featureToDef = new Map<Feature, IFeatureDefinition>();
+export function computeUsedContext(featureName: string, features: Map<string, IRuntimeFeatureDefinition>) {
+    const featureToDef = new Map<Feature, IRuntimeFeatureDefinition>();
     for (const featureDef of features.values()) {
         featureToDef.set(featureDef.exportedFeature, featureDef);
     }

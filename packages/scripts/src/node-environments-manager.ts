@@ -26,6 +26,7 @@ import {
     TopLevelConfigProvider,
     ICommunicationMessage,
     IExternalFeatureNodeDescriptor,
+    FeatureLoaderMeta,
 } from './types';
 import type { OverrideConfig } from './config-middleware';
 import { getEnvironmntsForFeature } from './utils/environments';
@@ -108,7 +109,7 @@ export interface ILaunchEnvironmentOptions {
     externalFeatures?: IExternalFeatureNodeDescriptor[];
     com: Communication;
     baseHost: BaseHost;
-    features: Map<string, IFeatureDefinition>;
+    features: Map<string, FeatureLoaderMeta>;
 }
 
 export class NodeEnvironmentsManager {
@@ -327,7 +328,7 @@ export class NodeEnvironmentsManager {
             ...nodeEnv,
             config,
             featureName,
-            features: Array.from(features.entries()),
+            features: Object.fromEntries(features.entries()),
             options: Object.entries(options),
             inspect,
             externalFeatures,

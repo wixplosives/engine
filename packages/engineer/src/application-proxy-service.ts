@@ -12,6 +12,7 @@ import {
     OverrideConfig,
     INpmPackage,
     IExternalDefinition,
+    IRuntimeFeatureDefinition,
 } from '@wixc3/engine-scripts';
 import type { SetMultiMap } from '@wixc3/engine-core';
 import performance from '@wixc3/cross-performance';
@@ -43,7 +44,7 @@ export class TargetApplication extends Application {
         featureName?: string
     ): {
         packages: INpmPackage[];
-        features: Map<string, IFeatureDefinition>;
+        features: Map<string, IRuntimeFeatureDefinition>;
         configurations: SetMultiMap<string, IConfigDefinition>;
     } {
         const { features, configurations, packages } = super.analyzeFeatures();
@@ -53,7 +54,7 @@ export class TargetApplication extends Application {
         return { features, configurations, packages };
     }
 
-    public filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+    public filterByFeatureName(features: Map<string, IRuntimeFeatureDefinition>, featureName: string) {
         return super.filterByFeatureName(features, featureName);
     }
 

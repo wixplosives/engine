@@ -83,7 +83,7 @@ export async function runEngineEnvironment({
     }
     return runNodeEnvironment({
         featureName,
-        features: [...features.entries()],
+        features: Object.fromEntries(features.entries()),
         name,
         type,
         childEnvName,

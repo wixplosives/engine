@@ -12,7 +12,7 @@ import {
 } from './create-entrypoint';
 
 import type { getResolvedEnvironments } from './utils/environments';
-import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
+import type { IConfigDefinition, TopLevelConfigProvider, FeatureLoaderMeta } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 
 export interface ICreateWebpackConfigsOptions {
@@ -20,7 +20,7 @@ export interface ICreateWebpackConfigsOptions {
     featureName?: string;
     configName?: string;
     singleFeature?: boolean;
-    features: Map<string, IFeatureDefinition>;
+    features: Map<string, FeatureLoaderMeta>;
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
@@ -99,7 +99,7 @@ interface ICreateWebpackConfigOptions {
     baseConfig: webpack.Configuration;
     featureName?: string;
     configName?: string;
-    features: Map<string, IFeatureDefinition>;
+    features: Map<string, FeatureLoaderMeta>;
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
@@ -234,7 +234,7 @@ export function createWebpackConfigForExternalFeature({
         '@wixc3/engine-core': 'EngineCore',
     };
     const externals: webpack.Configuration['externals'] = [externalFeatures];
-    const { packageName, name, filePath } = feature;
+    const { packageName, scopedName, filePath } = feature;
 
     const { plugins: basePlugins = [] } = baseConfig;
 
@@ -272,7 +272,7 @@ export function createWebpackConfigForExternalFeature({
     };
     if (semverLessThan(webpack.version, '5.0.0')) {
         webpackConfig.output!.libraryTarget = 'var';
-        (webpackConfig.output as { jsonpFunction: string }).jsonpFunction = packageName + name;
+        (webpackConfig.output as { jsonpFunction: string }).jsonpFunction = packageName + scopedName;
         const webpack4ExtractExternalsAdaptation: any = (
             context: string,
             request: string,

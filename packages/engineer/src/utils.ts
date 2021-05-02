@@ -101,7 +101,7 @@ export async function startDevServer({
     );
     const { engine, dispose } = await runNodeEnvironment({
         featureName: engineerEntry,
-        features: [...features],
+        features: Object.fromEntries(features.entries()),
         name: devServerEnv.env,
         type: 'node',
         host: new BaseHost(),
