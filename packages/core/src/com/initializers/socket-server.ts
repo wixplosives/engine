@@ -18,10 +18,14 @@ export function socketServerInitializer(
         }
         const instanceId = env;
         const host = new WsClientHost(url, options);
+        if (communication.getEnvironmentHost(instanceId)) {
+            communication.clearEnvironment(instanceId);
+        }
         communication.registerMessageHandler(host);
         communication.registerEnv(instanceId, host);
         await host.connected;
         communication.handleReady({ from: instanceId } as ReadyMessage);
+
         return {
             id: instanceId,
             onDisconnect: (cb: () => void) => {

@@ -1,6 +1,6 @@
 import process from 'process';
 import { BaseHost } from './com/hosts/base-host';
-import { Communication, ICommunicationOptions } from './com/communication';
+import { Communication, ConfigEnvironmentRecord, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
 import type { Target } from './com/types';
 import { Config } from './entities/config';
@@ -20,6 +20,7 @@ export interface IComConfig {
     logToConsole?: boolean;
     maxLogMessages: number;
     publicPath?: string;
+    connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
 }
 
 export default new Feature({
@@ -44,6 +45,10 @@ export default new Feature({
                     ...a.resolvedContexts,
                     ...b.resolvedContexts,
                 },
+                connectedEnvironments: {
+                    ...a.connectedEnvironments,
+                    ...b.connectedEnvironments,
+                },
             })
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
@@ -54,7 +59,17 @@ export default new Feature({
 }).setup(
     Universal,
     ({
-        config: { host, id, topology, maxLogMessages, loggerSeverity, logToConsole, resolvedContexts, publicPath },
+        config: {
+            host,
+            id,
+            topology,
+            maxLogMessages,
+            loggerSeverity,
+            logToConsole,
+            resolvedContexts,
+            publicPath,
+            connectedEnvironments = {},
+        },
         loggerTransports,
         [RUN_OPTIONS]: runOptions,
         runningEnvironmentName,
@@ -70,6 +85,7 @@ export default new Feature({
         const comOptions: ICommunicationOptions = {
             warnOnSlow: runOptions.has('warnOnSlow'),
             publicPath,
+            connectedEnvironments,
         };
 
         const communication = new Communication(

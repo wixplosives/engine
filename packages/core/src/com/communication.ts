@@ -34,9 +34,14 @@ import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
 
+export interface ConfigEnvironmentRecord extends EnvironmentRecord {
+    registerMessageHandler?: boolean;
+}
+
 export interface ICommunicationOptions {
     warnOnSlow?: boolean;
     publicPath?: string;
+    connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
 }
 
 /**
@@ -57,8 +62,8 @@ export class Communication {
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<ICommunicationOptions>;
-    private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private readyEnvs = new Set<string>();
+    private environments: { [environmentId: string]: EnvironmentRecord } = {};
 
     constructor(
         host: Target,
@@ -68,7 +73,7 @@ export class Communication {
         public isServer = false,
         options?: ICommunicationOptions
     ) {
-        this.options = { warnOnSlow: false, publicPath: '', ...options };
+        this.options = { warnOnSlow: false, publicPath: '', connectedEnvironments: {}, ...options };
         this.rootEnvId = id;
         this.rootEnvName = id.split('/')[0]!;
         this.registerMessageHandler(host);
@@ -76,6 +81,13 @@ export class Communication {
         this.environments['*'] = { id, host };
 
         this.post(this.getPostEndpoint(host), { type: 'ready', from: id, to: '*', origin: id });
+
+        for (const [id, envEntry] of Object.entries(this.options.connectedEnvironments)) {
+            if (envEntry.registerMessageHandler) {
+                this.registerMessageHandler(envEntry.host);
+            }
+            this.environments[id] = envEntry;
+        }
     }
 
     /**
@@ -253,6 +265,7 @@ export class Communication {
         for (const { host } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
+                host.dispose();
             }
             host.removeEventListener('message', this.handleEvent, true);
         }

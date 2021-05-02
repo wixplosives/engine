@@ -783,7 +783,6 @@ export class Application {
             externalFeaturesRoute,
             eagerEntrypoint,
         });
-
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
         return compiler;

@@ -30,10 +30,12 @@ interface WebpackDevMiddleware extends express.Handler {
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
-
     communication.clearEnvironment(envName);
     communication.registerMessageHandler(host);
     communication.registerEnv(envName, host);
+    return () => {
+        communication.clearEnvironment(envName);
+    };
 };
 
 devServerFeature.setup(

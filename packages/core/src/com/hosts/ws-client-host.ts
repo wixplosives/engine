@@ -38,4 +38,9 @@ export class WsClientHost extends BaseHost {
     public postMessage(data: any) {
         this.socketClient.emit('message', data);
     }
+
+    public dispose() {
+        this.subscribers.clear();
+        this.socketClient.close();
+    }
 }
