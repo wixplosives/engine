@@ -470,7 +470,7 @@ function getExternalFeaturesFromParent(externalFeaturesRoute: string) {
 
 function fetchExternalFeatures(externalFeaturesRoute: string) {
     return `const externalFeaturesRoute = '${externalFeaturesRoute}';
-            const path = publicPath + !publicPath.endsWith('/') ? '/' : '';
+            const path = publicPath + publicPath && !publicPath.endsWith('/') ? '/' : '';
             const normalizedExternalFeaturesRoute = !externalFeaturesRoute.startsWith('/') ? externalFeaturesRoute : externalFeaturesRoute.slice(1);
             return (await fetch(path + normalizedExternalFeaturesRoute)).json();
             `;
