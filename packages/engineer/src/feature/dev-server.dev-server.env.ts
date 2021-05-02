@@ -22,9 +22,11 @@ import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const webpackDevMiddleware = require('webpack-dev-middleware') as (compiler: webpack.Compiler) => WebpackDevMiddleware;
+const webpackDevMiddleware = require('webpack-dev-middleware') as (compiler: webpack.Compiler) => WebpackMiddleware;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const webpackHotMiddleware = require('webpack-hot-middleware') as (compiler: webpack.Compiler) => WebpackMiddleware;
 
-interface WebpackDevMiddleware extends express.Handler {
+interface WebpackMiddleware extends express.Handler {
     close(cb?: () => void): void;
 }
 
@@ -65,6 +67,7 @@ devServerFeature.setup(
             socketServerOptions = {},
             webpackConfigPath,
             externalFeaturesRoute,
+            webpackHot = false,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
@@ -211,6 +214,12 @@ devServerFeature.setup(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );
                 app.use(devMiddleware);
+
+                if (webpackHot) {
+                    const hotMiddleware = webpackHotMiddleware(childCompiler);
+                    disposables.add(hotMiddleware.close);
+                    app.use(hotMiddleware);
+                }
                 compilationPromises.push(
                     new Promise<void>((resolve) => {
                         childCompiler.hooks.done.tap('compiled', () => resolve());

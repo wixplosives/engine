@@ -132,6 +132,7 @@ export interface ICompilerOptions {
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
     eagerEntrypoint?: boolean;
+    webpackHot?: boolean;
 }
 
 const DEFAULT_EXTERNAL_FEATURES_PATH = 'external-features.json';
@@ -755,6 +756,7 @@ export class Application {
         webpackConfigPath,
         environments,
         eagerEntrypoint,
+        webpackHot = false,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = webpackConfigPath
@@ -782,6 +784,7 @@ export class Application {
             createWebpackConfig: isExternal ? createWebpackConfigForExternalFeature : createWebpackConfig,
             externalFeaturesRoute,
             eagerEntrypoint,
+            webpackHot,
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
