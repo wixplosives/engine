@@ -5,8 +5,9 @@ import type {
     EnvironmentTypes,
     TopLevelConfig,
     Feature,
-    Target,
+    BaseHost,
 } from '@wixc3/engine-core';
+import type { LaunchEnvironmentMode } from './node-environments-manager';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -32,7 +33,7 @@ export interface StartEnvironmentOptions extends IEnvironment {
     features: Array<[string, IFeatureDefinition]>;
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
-    host?: Target;
+    host?: BaseHost;
     externalFeatures?: IExternalFeatureNodeDescriptor[];
     context?: string;
 }
@@ -234,7 +235,7 @@ export interface IEnvironment {
 export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
     message.id === 'start';
 
-export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
+export const isEnvironmentCloseMessage = (message: ICommunicationMessage): message is IEnvironmentMessage =>
     message.id === 'close';
 
 export const isEnvironmentPortMessage = (message: ICommunicationMessage): message is IEnvironmentPortMessage =>
@@ -300,4 +301,5 @@ export interface EngineConfig {
     socketServerOptions?: Partial<io.ServerOptions>;
     sourcesRoot?: string;
     favicon?: string;
+    nodeEnvironmentsMode?: LaunchEnvironmentMode;
 }

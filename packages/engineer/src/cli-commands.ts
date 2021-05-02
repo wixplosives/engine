@@ -58,6 +58,10 @@ export const startCommand: Command = (program) =>
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
         .option('--webpackHot', 'Start dev server with webpackHot hot reloading', false)
         .option(
+            '--nodeEnvironmentsMode <nodeEnvironmentsMode>',
+            'one of "new-server", "same-server" or "forked" for choosing how to launch node envs'
+        )
+        .option(
             '--featureDiscoveryRoot <featureDiscoveryRoot>',
             'package subdirectory where feature discovery starts',
             '.'
@@ -82,6 +86,7 @@ export const startCommand: Command = (program) =>
                 featureDiscoveryRoot,
                 webpackConfig,
                 webpackHot,
+                nodeEnvironmentsMode,
             } = cmd;
 
             try {
@@ -107,6 +112,7 @@ export const startCommand: Command = (program) =>
                     featureDiscoveryRoot,
                     webpackConfigPath: webpackConfig,
                     webpackHot,
+                    nodeEnvironmentsMode,
                 });
 
                 const { port } = await new Promise((resolve) => {

@@ -32,10 +32,12 @@ interface WebpackMiddleware extends express.Handler {
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
-
     communication.clearEnvironment(envName);
     communication.registerMessageHandler(host);
     communication.registerEnv(envName, host);
+    return () => {
+        communication.clearEnvironment(envName);
+    };
 };
 
 devServerFeature.setup(
@@ -67,7 +69,7 @@ devServerFeature.setup(
             externalFeaturesRoute,
             webpackHot = false,
         } = devServerConfig;
-        const application = new TargetApplication({ basePath, nodeEnvironmentsMode, outputPath, featureDiscoveryRoot });
+        const application = new TargetApplication({ basePath, outputPath, featureDiscoveryRoot });
         const disposables = createDisposables();
 
         onDispose(disposables.dispose);
@@ -118,6 +120,7 @@ devServerFeature.setup(
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
+
             application.setNodeEnvManager(
                 new NodeEnvironmentsManager(
                     socketServer,
@@ -132,7 +135,8 @@ devServerFeature.setup(
                     },
                     basePath,
                     resolvedSocketServerOptions
-                )
+                ),
+                nodeEnvironmentsMode || engineConfig?.nodeEnvironmentsMode
             );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
