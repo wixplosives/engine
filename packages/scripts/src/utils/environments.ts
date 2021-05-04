@@ -39,6 +39,7 @@ export interface GetResolveEnvironmentsParams {
     filterContexts?: boolean;
     features: Map<string, IFeatureDefinition>;
     environments: IEnvironment[];
+    findAllEnviromnents?: boolean;
 }
 
 export function getResolvedEnvironments({
@@ -46,6 +47,7 @@ export function getResolvedEnvironments({
     filterContexts,
     features,
     environments,
+    findAllEnviromnents,
 }: GetResolveEnvironmentsParams) {
     const webEnvs = new Map<string, string[]>();
     const workerEnvs = new Map<string, string[]>();
@@ -53,12 +55,11 @@ export function getResolvedEnvironments({
     const nodeEnvs = new Map<string, string[]>();
     const electronMainEnvs = new Map<string, string[]>();
 
-    const resolvedContexts =
-        featureName && filterContexts
-            ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
-            : filterContexts
-            ? getAllResolvedContexts(features)
-            : getPossibleContexts(features);
+    const resolvedContexts = findAllEnviromnents
+        ? getPossibleContexts(features)
+        : featureName && filterContexts
+        ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
+        : getAllResolvedContexts(features);
     for (const env of environments) {
         const { name, childEnvName, type } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
