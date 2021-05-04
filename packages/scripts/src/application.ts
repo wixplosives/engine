@@ -202,7 +202,7 @@ export class Application {
         const resolvedEnvironments = getResolvedEnvironments({
             featureName,
             features,
-            filterContexts: external ? false : singleFeature,
+            filterContexts: !external && singleFeature,
             environments: [...getExportedEnvironments(features)],
         });
 
