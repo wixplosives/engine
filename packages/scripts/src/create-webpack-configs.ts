@@ -168,7 +168,7 @@ export function createWebpackConfig({
             plugins.push(
                 ...[
                     new HtmlWebpackPlugin({
-                        filename: `${envName}.html`,
+                        filename: `${envName}.${target}.html`,
                         chunks: [envName],
                         title,
                         favicon,
