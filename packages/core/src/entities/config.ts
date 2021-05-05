@@ -23,7 +23,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
         };
     }
 
-    public [CONFIGURABLE]: true;
+    public [CONFIGURABLE]: T;
     constructor(
         public defaultValue: Readonly<T>,
         public mergeConfig: MergeConfigHook<T> = (a: T, b: Partial<T>) => ({ ...a, ...b }),

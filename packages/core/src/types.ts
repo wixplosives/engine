@@ -232,8 +232,7 @@ export type ContextHandler<
 > = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
 
 export interface Configurable<T> {
-    [CONFIGURABLE]: true;
-    defaultValue: Readonly<T>;
+    [CONFIGURABLE]: T;
 }
 
 export type PartialFeatureConfig<API> = {
