@@ -14,6 +14,7 @@ import {
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+import { configLoader, virtualEntry } from './utils/generate-loader';
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
     featureName?: string;
@@ -124,7 +125,6 @@ export function createWebpackConfig({
     baseConfig,
     target,
     enviroments,
-    virtualModules,
     featureName,
     configName,
     features,
@@ -145,25 +145,31 @@ export function createWebpackConfig({
     webpackHot = false,
 }: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
+        const entryPath = virtualEntry(fs.join(context, `${envName}-${target}-entry.js`), envName);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
-        virtualModules[entryPath] = createMainEntrypoint({
-            features,
-            childEnvs,
-            envName,
-            featureName,
-            configName,
-            publicPath,
-            configurations,
-            mode,
-            staticBuild,
-            publicConfigsRoute,
-            config,
-            target,
-            externalFeaturesRoute,
-            eagerEntrypoint,
-        });
+        baseConfig.module?.rules?.push(
+            configLoader({
+                generate() {
+                    return createMainEntrypoint({
+                        features,
+                        childEnvs,
+                        envName,
+                        featureName,
+                        configName,
+                        publicPath,
+                        configurations,
+                        mode,
+                        staticBuild,
+                        publicConfigsRoute,
+                        config,
+                        target,
+                        externalFeaturesRoute,
+                        eagerEntrypoint,
+                    });
+                },
+            })
+        );
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 ...[
