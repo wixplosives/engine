@@ -227,7 +227,16 @@ devServerFeature.setup(
                 );
             }
 
-            await Promise.all(compilationPromises);
+            if (compiler.compilers.length > 0) {
+                compilationPromises.push(
+                    new Promise<void>((resolve) => {
+                        compiler.hooks.done.tap('compiled', () => {
+                            console.log('compiler done');
+                            resolve();
+                        });
+                    })
+                );
+            }
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
@@ -270,9 +279,15 @@ devServerFeature.setup(
                 app.use(devMiddleware);
             }
 
-            for (const handler of serverListeningHandlerSlot) {
-                await handler({ port: actualPort, host: 'localhost', router: app });
+            if (engineerCompilers.compilers.length > 0) {
+                compilationPromises.push(
+                    new Promise<void>((resolve) => {
+                        engineerCompilers.hooks.done.tap('compiled', () => resolve());
+                    })
+                );
             }
+
+            await Promise.all(compilationPromises);
 
             const mainUrl = `http://localhost:${actualPort}/`;
             if (featureName) {
@@ -287,6 +302,9 @@ devServerFeature.setup(
                         console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
                     }
                 }
+            }
+            for (const handler of serverListeningHandlerSlot) {
+                await handler({ port: actualPort, host: 'localhost', router: app });
             }
         });
         return {
