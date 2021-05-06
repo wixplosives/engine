@@ -14,6 +14,8 @@ import {
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+import findCacheDir from 'find-cache-dir';
+
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
     featureName?: string;
@@ -43,17 +45,19 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         publicPath = '',
         createWebpackConfig,
         environments: { electronRendererEnvs, webEnvs, workerEnvs },
+        context,
     } = options;
 
     if (!baseConfig.output) {
         baseConfig.output = {};
     }
     baseConfig.output.publicPath = publicPath;
+
+    const projectCacheDir = findCacheDir({ name: '@wixc3/engine-scripts', cwd: context, create: true });
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
     if (webEnvs.size) {
-        const plugins: webpack.WebpackPluginInstance[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
         configurations.push(
             createWebpackConfig({
@@ -62,12 +66,14 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: webEnvs,
                 target: 'web',
                 virtualModules,
-                plugins,
+                plugins: [],
                 entry,
+                projectCacheDir,
             })
         );
     }
     if (workerEnvs.size) {
+        const virtualModules: Record<string, string> = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -75,11 +81,13 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: workerEnvs,
                 target: 'webworker',
                 virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)],
+                plugins: [],
+                projectCacheDir,
             })
         );
     }
     if (electronRendererEnvs.size) {
+        const virtualModules: Record<string, string> = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
@@ -87,7 +95,8 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
                 virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)],
+                plugins: [],
+                projectCacheDir,
             })
         );
     }
@@ -118,6 +127,7 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
+    projectCacheDir?: string;
 }
 
 export function createWebpackConfig({
@@ -143,12 +153,15 @@ export function createWebpackConfig({
     eagerEntrypoint,
     favicon,
     webpackHot = false,
+    projectCacheDir = undefined,
 }: ICreateWebpackConfigOptions): Configuration {
+    const useVirtualModules = !projectCacheDir; // If we cannot use the cache dir for some reason
+    const buildOutputDir = useVirtualModules ? context : projectCacheDir!; // We already make sure it's not undefined when setting the flag
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(buildOutputDir, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
-        virtualModules[entryPath] = createMainEntrypoint({
+        const entrypointContent = createMainEntrypoint({
             features,
             childEnvs,
             envName,
@@ -164,6 +177,13 @@ export function createWebpackConfig({
             externalFeaturesRoute,
             eagerEntrypoint,
         });
+        if (useVirtualModules) {
+            console.warn('Cannot use cache, falling back to using virtual modules');
+            virtualModules[entryPath] = entrypointContent;
+            plugins.push(new VirtualModulesPlugin(virtualModules));
+        } else {
+            fs.writeFileSync(entryPath, entrypointContent);
+        }
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 ...[
@@ -193,6 +213,7 @@ export function createWebpackConfig({
         ...baseConfig,
         target,
         entry,
+        name: target,
         mode,
         devtool: mode === 'development' ? 'source-map' : false,
         context,
@@ -204,6 +225,9 @@ export function createWebpackConfig({
         },
         plugins: [...basePlugins, ...plugins],
         stats: 'errors-warnings',
+        watchOptions: {
+            ignored: useVirtualModules ? Object.keys(virtualModules) : [projectCacheDir!],
+        },
     };
 }
 
@@ -269,7 +293,7 @@ export function createWebpackConfigForExternalFeature({
             filename: `[name].${target}.js`,
             chunkFilename: `[name].${target}.js`,
         },
-        plugins: [...basePlugins, ...plugins],
+        plugins: [...basePlugins, ...plugins, new VirtualModulesPlugin(virtualModules)],
         externals,
         optimization: {
             ...baseConfig.optimization,
