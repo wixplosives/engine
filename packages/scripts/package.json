@@ -20,7 +20,7 @@
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
     "express": "^4.17.1",
-    "glob": "^7.1.6",
+    "glob": "^7.1.7",
     "import-fresh": "^3.3.0",
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
