@@ -45,7 +45,7 @@ describe('Application', function () {
 
         it(`supports building features with a single fixture`, async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
-            await app.build();
+            await app.build({ mode: 'development' });
             disposables.add(() => app.clean());
 
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
@@ -53,7 +53,7 @@ describe('Application', function () {
 
         it(`allows building feature with given favicon`, async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
-            await app.build({ favicon: 'assets/favicon.ico' });
+            await app.build({ favicon: 'assets/favicon.ico', mode: 'development' });
             disposables.add(() => app.clean());
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
             const contents = fs.readdirSync(app.outputPath);

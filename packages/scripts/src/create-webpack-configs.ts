@@ -13,7 +13,7 @@ import {
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
-import { configLoader, virtualEntry, addVirtualModule } from './utils/generate-loader';
+import { configVirtualModuleLoader, virtualEntry, addVirtualModule } from './utils/generate-loader';
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
     featureName?: string;
@@ -187,8 +187,8 @@ export function createWebpackConfig({
         }
     }
 
-    baseConfig.module?.rules?.push(configLoader());
-    const { plugins: basePlugins = [] } = baseConfig;
+    const { plugins: basePlugins = [], module: baseModule = {} } = baseConfig;
+    const { rules: baseRules = [] } = baseModule;
 
     return {
         ...baseConfig,
@@ -205,6 +205,10 @@ export function createWebpackConfig({
         },
         plugins: [...basePlugins, ...plugins],
         stats: 'errors-warnings',
+        module: {
+            ...baseModule,
+            rules: [...baseRules, configVirtualModuleLoader()],
+        },
     };
 }
 
@@ -247,9 +251,9 @@ export function createWebpackConfigForExternalFeature({
     };
     const externals: webpack.Configuration['externals'] = [externalFeatures];
     const { packageName, name, filePath } = feature;
-    baseConfig.module?.rules?.push(configLoader());
 
-    const { plugins: basePlugins = [] } = baseConfig;
+    const { plugins: basePlugins = [], module: baseModule = {} } = baseConfig;
+    const { rules: baseRules = [] } = baseModule;
 
     const userExternals = baseConfig.externals;
     if (userExternals) {
@@ -281,6 +285,10 @@ export function createWebpackConfigForExternalFeature({
             moduleIds: 'named',
         },
         stats: 'errors-warnings',
+        module: {
+            ...baseModule,
+            rules: [...baseRules, configVirtualModuleLoader()],
+        },
     };
     if (semverLessThan(webpack.version, '5.0.0')) {
         webpackConfig.output!.libraryTarget = 'var';

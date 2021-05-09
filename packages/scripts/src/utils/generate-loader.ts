@@ -19,26 +19,26 @@ interface WebpackLoaderContext {
     resourceQuery: string;
 }
 
-interface GenerateFileConfigurationOptions {
-    generate?: (ctx: WebpackLoaderContext) => string;
-}
-
 export default function loader(this: WebpackLoaderContext) {
     this.addContextDependency(this.rootContext);
     this._module.context = this.rootContext;
+
+    // The query comes with the ? - we need to slice it out
     const fileName = this.resourceQuery.slice(1);
     const generatedModule = virtualModules[fileName];
     if (generatedModule === undefined) {
         throw new Error(`No content was generated for virtual module ${this.resourceQuery}`);
     }
+
+    // The virtual module is no longer needed once it's loaded into the module system
+    // No reason to keep on holding it
     delete virtualModules.fileName;
     return generatedModule;
 }
 
-export function configLoader(options?: GenerateFileConfigurationOptions) {
+export function configVirtualModuleLoader() {
     return {
         loader: __filename,
-        options,
         resourceQuery: resourceMatcher,
     };
 }
