@@ -1,6 +1,6 @@
 import type webpack from 'webpack';
 
-const resourceMatcher = /^\?generate-loader-(\w+)$/g;
+const resourceMatcher = ;
 const virtualModules: Record<string, string> = {};
 interface WebpackLoaderContext {
     /**
@@ -37,7 +37,10 @@ export default function loader(this: WebpackLoaderContext) {
 export function configVirtualModuleLoader() {
     return {
         loader: __filename,
-        resourceQuery: resourceMatcher,
+        // Need to provide an options key to webpack, but we don't have any
+        // So just pass an empty object
+        options: {},
+        resourceQuery: /^\?generate-loader-(\w+)$/g,
     };
 }
 
