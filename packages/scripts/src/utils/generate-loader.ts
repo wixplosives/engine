@@ -1,7 +1,7 @@
 import type webpack from 'webpack';
 
 const resourceMatcher = /^\?generate-loader-(\w+)$/g;
-
+const virtualModules: Record<string, string> = {};
 interface WebpackLoaderContext {
     /**
      * Add a directory as dependency of the loader result.
@@ -15,18 +15,27 @@ interface WebpackLoaderContext {
      * https://github.com/TypeStrong/ts-loader/blob/e3a30c090a90ffc4f2bb21ed1d08ea98f361ac25/src/interfaces.ts#L346
      */
     _module: webpack.NormalModule;
+    rootContext: string;
+    resourceQuery: string;
 }
 
 interface GenerateFileConfigurationOptions {
-    generate: (ctx: WebpackLoaderContext) => string;
+    generate?: (ctx: WebpackLoaderContext) => string;
 }
 
 export default function loader(this: WebpackLoaderContext) {
-    const options = this.getOptions();
-    return options.generate(this);
+    this.addContextDependency(this.rootContext);
+    this._module.context = this.rootContext;
+    const fileName = this.resourceQuery.slice(1);
+    const generatedModule = virtualModules[fileName];
+    if (generatedModule === undefined) {
+        throw new Error(`No content was generated for virtual module ${this.resourceQuery}`);
+    }
+    delete virtualModules.fileName;
+    return generatedModule;
 }
 
-export function configLoader(options: GenerateFileConfigurationOptions) {
+export function configLoader(options?: GenerateFileConfigurationOptions) {
     return {
         loader: __filename,
         options,
@@ -35,5 +44,9 @@ export function configLoader(options: GenerateFileConfigurationOptions) {
 }
 
 export function virtualEntry(filename: string, id = 'entry') {
-    return `${filename}?generate-loader-${id}!=!${__filename}`;
+    return `${filename}?generate-loader-${id}!=!${__filename}?${filename}`;
+}
+
+export function addVirtualModule(moduleName: string, content: string) {
+    virtualModules[moduleName] = content;
 }
