@@ -45,7 +45,7 @@ describe('Application', function () {
 
         it(`supports building features with a single fixture`, async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
-            await app.build({ mode: 'development' });
+            await app.build();
             disposables.add(() => app.clean());
 
             expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
