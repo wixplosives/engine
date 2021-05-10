@@ -23,7 +23,8 @@ import { buildFeatureLinks } from '../feature-dependency-graph';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackDevMiddleware = require('webpack-dev-middleware') as (
-    compiler: webpack.MultiCompiler
+    compiler: webpack.MultiCompiler,
+    options?: { index?: string }
 ) => WebpackDevMiddleware;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackHotMiddleware = require('webpack-hot-middleware') as (
@@ -271,7 +272,7 @@ devServerFeature.setup(
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             if (engineerCompilers.compilers.length > 0) {
-                const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers);
+                const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers, { index: 'main-dashboard.html' });
                 disposables.add(
                     () => new Promise<void>((res) => engineerDevMiddleware.close(res))
                 );
