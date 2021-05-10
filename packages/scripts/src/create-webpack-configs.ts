@@ -14,6 +14,7 @@ import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 import findCacheDir from 'find-cache-dir';
+import { resolvePackages } from './utils';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
@@ -52,7 +53,14 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     }
     baseConfig.output.publicPath = publicPath;
 
-    const projectCacheDir = findCacheDir({ name: '@wixc3/engine-scripts', cwd: context, create: true });
+    const packageJsonPath = fs.findClosestFileSync(__dirname, 'package.json'); // We want "our" package to extract the package name;
+    if (!packageJsonPath) {
+        // Should never happen
+        throw new Error('Cannot find package.json for determening cache dir');
+    }
+    const packageJson = fs.readJsonFileSync(packageJsonPath) as { name: string };
+
+    const projectCacheDir = findCacheDir({ name: packageJson.name, cwd: context, create: true });
     if (!projectCacheDir) {
         // We cannot write to the cache dir for some reason, usually access we just throw
         throw new Error('Please make sure you have a package.json file and have right access to node modules');
