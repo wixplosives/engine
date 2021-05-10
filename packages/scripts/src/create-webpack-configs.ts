@@ -14,7 +14,6 @@ import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 import findCacheDir from 'find-cache-dir';
-import { resolvePackages } from './utils';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
