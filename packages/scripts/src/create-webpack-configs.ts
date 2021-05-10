@@ -1,7 +1,6 @@
 import fs from '@file-services/node';
 import webpack, { Configuration } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import VirtualModulesPlugin from 'webpack-virtual-modules';
 import semverLessThan from 'semver/functions/lt';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
@@ -59,7 +58,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         throw new Error('Please make sure you have a package.json file and have right access to node modules');
     }
     const configurations: webpack.Configuration[] = [];
-    const virtualModules: Record<string, string> = {};
 
     if (webEnvs.size) {
         const entry: webpack.Entry = {};
@@ -69,7 +67,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: webEnvs,
                 target: 'web',
-                virtualModules,
                 plugins: [],
                 entry,
                 projectCacheDir,
@@ -77,28 +74,24 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         );
     }
     if (workerEnvs.size) {
-        const virtualModules: Record<string, string> = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
-                virtualModules,
                 plugins: [],
                 projectCacheDir,
             })
         );
     }
     if (electronRendererEnvs.size) {
-        const virtualModules: Record<string, string> = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                virtualModules,
                 plugins: [],
                 projectCacheDir,
             })
@@ -119,7 +112,6 @@ interface ICreateWebpackConfigOptions {
     enviroments: Map<string, string[]>;
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
-    virtualModules: Record<string, string>;
     plugins?: webpack.WebpackPluginInstance[];
     entry?: webpack.EntryObject;
     title?: string;
@@ -138,7 +130,6 @@ export function createWebpackConfig({
     baseConfig,
     target,
     enviroments,
-    virtualModules,
     featureName,
     configName,
     features,
@@ -232,7 +223,6 @@ export function createWebpackConfigForExternalFeature({
     baseConfig,
     target,
     enviroments,
-    virtualModules,
     features,
     context,
     mode = 'development',
@@ -240,23 +230,29 @@ export function createWebpackConfigForExternalFeature({
     plugins = [],
     entry = {},
     featureName,
+    projectCacheDir,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const feature = features.get(featureName!);
     if (!feature) {
         throw new Error(`${featureName!} was not found after analyzing features`);
     }
 
+    const entryPaths = [];
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(projectCacheDir, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
-        virtualModules[entryPath] = createExternalBrowserEntrypoint({
-            ...feature,
-            childEnvs,
-            envName,
-            loadStatement: webpackImportStatement,
-            target: target === 'webworker' ? 'webworker' : 'web',
-            eagerEntrypoint: true,
-        });
+        entryPaths.push(entryPath);
+        fs.writeFileSync(
+            entryPath,
+            createExternalBrowserEntrypoint({
+                ...feature,
+                childEnvs,
+                envName,
+                loadStatement: webpackImportStatement,
+                target: target === 'webworker' ? 'webworker' : 'web',
+                eagerEntrypoint: true,
+            })
+        );
     }
     const externalFeatures: Record<string, string> = {
         '@wixc3/engine-core': 'EngineCore',
@@ -274,8 +270,7 @@ export function createWebpackConfigForExternalFeature({
             externals.push(userExternals);
         }
     }
-    const virtualModulePaths = Object.keys(virtualModules);
-    const extractExternalsMethod = extractExternals(filePath, virtualModulePaths);
+    const extractExternalsMethod = extractExternals(filePath, entryPaths);
 
     const webpackConfig: webpack.Configuration = {
         ...baseConfig,
@@ -290,7 +285,7 @@ export function createWebpackConfigForExternalFeature({
             filename: `[name].${target}.js`,
             chunkFilename: `[name].${target}.js`,
         },
-        plugins: [...basePlugins, ...plugins, new VirtualModulesPlugin(virtualModules)],
+        plugins: [...basePlugins, ...plugins],
         externals,
         optimization: {
             ...baseConfig.optimization,
