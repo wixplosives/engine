@@ -54,6 +54,10 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     baseConfig.output.publicPath = publicPath;
 
     const projectCacheDir = findCacheDir({ name: '@wixc3/engine-scripts', cwd: context, create: true });
+    if (!projectCacheDir) {
+        // We cannot write to the cache dir for some reason, usually access we just throw
+        throw new Error('Please make sure you have a package.json file and have right access to node modules');
+    }
     const configurations: webpack.Configuration[] = [];
     const virtualModules: Record<string, string> = {};
 
@@ -127,7 +131,7 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
-    projectCacheDir?: string;
+    projectCacheDir: string;
 }
 
 export function createWebpackConfig({
@@ -153,12 +157,10 @@ export function createWebpackConfig({
     eagerEntrypoint,
     favicon,
     webpackHot = false,
-    projectCacheDir = undefined,
+    projectCacheDir,
 }: ICreateWebpackConfigOptions): Configuration {
-    const useVirtualModules = !projectCacheDir; // If we cannot use the cache dir for some reason
-    const buildOutputDir = useVirtualModules ? context : projectCacheDir!; // We already make sure it's not undefined when setting the flag
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(buildOutputDir, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(projectCacheDir, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
         const entrypointContent = createMainEntrypoint({
@@ -177,13 +179,8 @@ export function createWebpackConfig({
             externalFeaturesRoute,
             eagerEntrypoint,
         });
-        if (useVirtualModules) {
-            console.warn('Cannot use cache, falling back to using virtual modules');
-            virtualModules[entryPath] = entrypointContent;
-            plugins.push(new VirtualModulesPlugin(virtualModules));
-        } else {
-            fs.writeFileSync(entryPath, entrypointContent);
-        }
+
+        fs.writeFileSync(entryPath, entrypointContent);
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 ...[
@@ -226,7 +223,7 @@ export function createWebpackConfig({
         plugins: [...basePlugins, ...plugins],
         stats: 'errors-warnings',
         watchOptions: {
-            ignored: useVirtualModules ? Object.keys(virtualModules) : [projectCacheDir!],
+            ignored: [projectCacheDir],
         },
     };
 }
