@@ -22,11 +22,19 @@ import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const webpackDevMiddleware = require('webpack-dev-middleware') as (compiler: webpack.Compiler) => WebpackMiddleware;
+const webpackDevMiddleware = require('webpack-dev-middleware') as (
+    compiler: webpack.MultiCompiler
+) => WebpackDevMiddleware;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const webpackHotMiddleware = require('webpack-hot-middleware') as (compiler: webpack.Compiler) => WebpackMiddleware;
+const webpackHotMiddleware = require('webpack-hot-middleware') as (
+    compiler: webpack.MultiCompiler
+) => WebpackHotMiddleware;
 
-interface WebpackMiddleware extends express.Handler {
+interface WebpackDevMiddleware extends express.Handler {
+    close(cb?: () => void): void;
+    waitUntilValid(cb: () => void): void;
+}
+interface WebpackHotMiddleware extends express.Handler {
     close(cb?: () => void): void;
 }
 
@@ -208,34 +216,23 @@ devServerFeature.setup(
             });
 
             const compilationPromises: Promise<void>[] = [];
-            for (const childCompiler of compiler.compilers) {
-                const devMiddleware = webpackDevMiddleware(childCompiler);
+
+            if (compiler.compilers.length > 0) {
+                const devMiddleware = webpackDevMiddleware(compiler);
                 disposables.add(
                     () => new Promise<void>((res) => devMiddleware.close(res))
                 );
                 app.use(devMiddleware);
-
+                compilationPromises.push(
+                    new Promise<void>((resolve) => {
+                        devMiddleware.waitUntilValid(() => resolve());
+                    })
+                );
                 if (webpackHot) {
-                    const hotMiddleware = webpackHotMiddleware(childCompiler);
+                    const hotMiddleware = webpackHotMiddleware(compiler);
                     disposables.add(hotMiddleware.close);
                     app.use(hotMiddleware);
                 }
-                compilationPromises.push(
-                    new Promise<void>((resolve) => {
-                        childCompiler.hooks.done.tap('compiled', () => resolve());
-                    })
-                );
-            }
-
-            if (compiler.compilers.length > 0) {
-                compilationPromises.push(
-                    new Promise<void>((resolve) => {
-                        compiler.hooks.done.tap('compiled', () => {
-                            console.log('compiler done');
-                            resolve();
-                        });
-                    })
-                );
             }
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
@@ -271,18 +268,15 @@ devServerFeature.setup(
              *  2. the createCompiler function is not extendable with more configs with the current API
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
-            for (const childCompiler of engineerCompilers.compilers) {
-                const devMiddleware = webpackDevMiddleware(childCompiler);
-                disposables.add(
-                    () => new Promise<void>((res) => devMiddleware.close(res))
-                );
-                app.use(devMiddleware);
-            }
-
             if (engineerCompilers.compilers.length > 0) {
+                const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers);
+                disposables.add(
+                    () => new Promise<void>((res) => engineerDevMiddleware.close(res))
+                );
+                app.use(engineerDevMiddleware);
                 compilationPromises.push(
                     new Promise<void>((resolve) => {
-                        engineerCompilers.hooks.done.tap('compiled', () => resolve());
+                        engineerDevMiddleware.waitUntilValid(() => resolve());
                     })
                 );
             }

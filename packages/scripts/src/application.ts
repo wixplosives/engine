@@ -202,8 +202,9 @@ export class Application {
         const resolvedEnvironments = getResolvedEnvironments({
             featureName,
             features,
-            filterContexts: external ? false : singleFeature,
+            filterContexts: singleFeature,
             environments: [...getExportedEnvironments(features)],
+            findAllEnviromnents: external,
         });
 
         const externalsFilePath = staticExternalFeaturesFileName.startsWith('/')
