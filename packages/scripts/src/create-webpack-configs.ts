@@ -52,6 +52,8 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     }
     baseConfig.output.publicPath = publicPath;
 
+    const virtualModules: Record<string, string> = {};
+
     const packageJsonPath = fs.findClosestFileSync(__dirname, 'package.json'); // We want "our" package to extract the package name;
     if (!packageJsonPath) {
         // Should never happen
@@ -77,6 +79,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 plugins: [],
                 entry,
                 projectCacheDir,
+                virtualModules,
             })
         );
     }
@@ -89,6 +92,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'webworker',
                 plugins: [],
                 projectCacheDir,
+                virtualModules,
             })
         );
     }
@@ -101,8 +105,13 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 target: 'electron-renderer',
                 plugins: [],
                 projectCacheDir,
+                virtualModules,
             })
         );
+    }
+
+    for (const [fileName, content] of Object.entries(virtualModules)) {
+        fs.writeFileSync(fileName, content);
     }
 
     return configurations;
@@ -131,6 +140,7 @@ interface ICreateWebpackConfigOptions {
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
     projectCacheDir: string;
+    virtualModules: Record<string, string>;
 }
 
 export function createWebpackConfig({
@@ -156,6 +166,7 @@ export function createWebpackConfig({
     favicon,
     webpackHot = false,
     projectCacheDir,
+    virtualModules,
 }: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(projectCacheDir, `${envName}-${target}-entry.js`);
@@ -178,7 +189,7 @@ export function createWebpackConfig({
             eagerEntrypoint,
         });
 
-        fs.writeFileSync(entryPath, entrypointContent);
+        virtualModules[entryPath] = entrypointContent;
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 ...[
@@ -238,6 +249,7 @@ export function createWebpackConfigForExternalFeature({
     entry = {},
     featureName,
     projectCacheDir,
+    virtualModules,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const feature = features.get(featureName!);
     if (!feature) {
@@ -249,17 +261,14 @@ export function createWebpackConfigForExternalFeature({
         const entryPath = fs.join(projectCacheDir, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
         entryPaths.push(entryPath);
-        fs.writeFileSync(
-            entryPath,
-            createExternalBrowserEntrypoint({
-                ...feature,
-                childEnvs,
-                envName,
-                loadStatement: webpackImportStatement,
-                target: target === 'webworker' ? 'webworker' : 'web',
-                eagerEntrypoint: true,
-            })
-        );
+        virtualModules[entryPath] = createExternalBrowserEntrypoint({
+            ...feature,
+            childEnvs,
+            envName,
+            loadStatement: webpackImportStatement,
+            target: target === 'webworker' ? 'webworker' : 'web',
+            eagerEntrypoint: true,
+        });
     }
     const externalFeatures: Record<string, string> = {
         '@wixc3/engine-core': 'EngineCore',
