@@ -297,6 +297,7 @@ devServerFeature.setup(
                     }
                 }
             }
+
             for (const handler of serverListeningHandlerSlot) {
                 await handler({ port: actualPort, host: 'localhost', router: app });
             }
