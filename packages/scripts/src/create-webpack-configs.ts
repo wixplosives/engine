@@ -54,12 +54,10 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
 
     const virtualModules: Record<string, string> = {};
 
-    const packageJsonPath = fs.findClosestFileSync(__dirname, 'package.json'); // We want "our" package to extract the package name;
-    if (!packageJsonPath) {
-        // Should never happen
-        throw new Error('Cannot find package.json for determening cache dir');
-    }
-    const packageJson = fs.readJsonFileSync(packageJsonPath) as { name: string };
+    // We want "our" package to extract the package name;
+    const packageJson = fs.readJsonFileSync(require.resolve(fs.findClosestFileSync(__dirname, 'package.json')!)) as {
+        name: string;
+    };
 
     const projectCacheDir = findCacheDir({ name: packageJson.name, cwd: context, create: true });
     if (!projectCacheDir) {
