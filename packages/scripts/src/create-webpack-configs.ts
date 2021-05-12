@@ -76,7 +76,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: webEnvs,
                 target: 'web',
-                plugins: [],
                 entry,
                 projectCacheDir,
                 virtualModules,
@@ -90,7 +89,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
-                plugins: [],
                 projectCacheDir,
                 virtualModules,
             })
@@ -103,7 +101,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                plugins: [],
                 projectCacheDir,
                 virtualModules,
             })
@@ -128,7 +125,6 @@ interface ICreateWebpackConfigOptions {
     enviroments: Map<string, string[]>;
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
-    plugins?: webpack.WebpackPluginInstance[];
     entry?: webpack.EntryObject;
     title?: string;
     favicon?: string;
@@ -153,7 +149,6 @@ export function createWebpackConfig({
     context,
     mode = 'development',
     outputPath,
-    plugins = [],
     entry = {},
     publicPath,
     title,
@@ -168,6 +163,7 @@ export function createWebpackConfig({
     projectCacheDir,
     virtualModules,
 }: ICreateWebpackConfigOptions): Configuration {
+    const plugins: webpack.WebpackPluginInstance[] = [];
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(projectCacheDir, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
@@ -245,7 +241,6 @@ export function createWebpackConfigForExternalFeature({
     context,
     mode = 'development',
     outputPath,
-    plugins = [],
     entry = {},
     featureName,
     projectCacheDir,
@@ -276,8 +271,6 @@ export function createWebpackConfigForExternalFeature({
     const externals: webpack.Configuration['externals'] = [externalFeatures];
     const { packageName, name, filePath } = feature;
 
-    const { plugins: basePlugins = [] } = baseConfig;
-
     const userExternals = baseConfig.externals;
     if (userExternals) {
         if (Array.isArray(userExternals)) {
@@ -301,7 +294,6 @@ export function createWebpackConfigForExternalFeature({
             filename: `[name].${target}.js`,
             chunkFilename: `[name].${target}.js`,
         },
-        plugins: [...basePlugins, ...plugins],
         externals,
         optimization: {
             ...baseConfig.optimization,
