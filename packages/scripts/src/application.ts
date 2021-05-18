@@ -43,6 +43,7 @@ import {
 } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+import nativeFs from 'fs';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -765,6 +766,10 @@ export class Application {
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
+        // We must use a path within the same context of the project for proper module resolutions from the entrypoint
+        const modulesPath = fs.resolve(basePath, 'node_modules');
+        const tmpDirPath = nativeFs.mkdtempSync(fs.join(modulesPath, 'engine-entry'), 'utf8');
+
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
             context: basePath,
@@ -786,8 +791,12 @@ export class Application {
             externalFeaturesRoute,
             eagerEntrypoint,
             webpackHot,
+            entryTempDir: tmpDirPath,
         });
         const compiler = webpack(webpackConfigs);
+        compiler.hooks.done.tap('cleanup-temp-entries', () => {
+            fs.removeSync(tmpDirPath);
+        });
         hookCompilerToConsole(compiler);
         return compiler;
     }

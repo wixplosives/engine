@@ -13,7 +13,6 @@ import {
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
-import findCacheDir from 'find-cache-dir';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
@@ -36,6 +35,7 @@ export interface ICreateWebpackConfigsOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
+    entryTempDir: string;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -44,7 +44,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         publicPath = '',
         createWebpackConfig,
         environments: { electronRendererEnvs, webEnvs, workerEnvs },
-        context,
     } = options;
 
     if (!baseConfig.output) {
@@ -54,16 +53,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
 
     const tempEntryModules: Record<string, string> = {};
 
-    // We want "our" package to extract the package name;
-    const packageJson = fs.readJsonFileSync(require.resolve(fs.findClosestFileSync(__dirname, 'package.json')!)) as {
-        name: string;
-    };
-
-    const projectCacheDir = findCacheDir({ name: packageJson.name, cwd: context, create: true });
-    if (!projectCacheDir) {
-        // We cannot write to the cache dir for some reason, usually access we just throw
-        throw new Error('Please make sure you have a package.json file and have right access to node modules');
-    }
     const configurations: webpack.Configuration[] = [];
 
     if (webEnvs.size) {
@@ -75,7 +64,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: webEnvs,
                 target: 'web',
                 entry,
-                projectCacheDir,
                 tempEntryModules,
             })
         );
@@ -87,7 +75,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
-                projectCacheDir,
                 tempEntryModules,
             })
         );
@@ -99,7 +86,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                projectCacheDir,
                 tempEntryModules,
             })
         );
@@ -133,7 +119,7 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
-    projectCacheDir: string;
+    entryTempDir: string;
     tempEntryModules: Record<string, string>;
 }
 
@@ -158,12 +144,12 @@ export function createWebpackConfig({
     eagerEntrypoint,
     favicon,
     webpackHot = false,
-    projectCacheDir,
+    entryTempDir,
     tempEntryModules,
 }: ICreateWebpackConfigOptions): Configuration {
     const plugins: webpack.WebpackPluginInstance[] = [];
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(projectCacheDir, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(entryTempDir, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
         const entrypointContent = createMainEntrypoint({
@@ -226,7 +212,7 @@ export function createWebpackConfig({
         plugins: [...basePlugins, ...plugins],
         stats: 'errors-warnings',
         watchOptions: {
-            ignored: [projectCacheDir],
+            ignored: [entryTempDir],
         },
     };
 }
@@ -241,7 +227,7 @@ export function createWebpackConfigForExternalFeature({
     outputPath,
     entry = {},
     featureName,
-    projectCacheDir,
+    entryTempDir,
     tempEntryModules,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const feature = features.get(featureName!);
@@ -251,7 +237,7 @@ export function createWebpackConfigForExternalFeature({
 
     const entryPaths = [];
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(projectCacheDir, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(entryTempDir, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
         entryPaths.push(entryPath);
         tempEntryModules[entryPath] = createExternalBrowserEntrypoint({
