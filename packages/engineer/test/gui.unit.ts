@@ -53,6 +53,19 @@ describe('engineer:gui', function () {
             config: { port },
         } = await setup({ basePath: engineFeatureFixturePath });
 
+        const page = await loadPage(`http://localhost:${port}/`);
+
+        const text = await page.evaluate(() => document.body.textContent!.trim());
+
+        expect(text).to.include('Feature');
+        expect(text).to.include('Config');
+    });
+
+    it('should allow visit of dashboard gui through full path', async () => {
+        const {
+            config: { port },
+        } = await setup({ basePath: engineFeatureFixturePath });
+
         const page = await loadPage(`http://localhost:${port}/main-dashboard.html?feature=engineer/gui`);
 
         const text = await page.evaluate(() => document.body.textContent!.trim());

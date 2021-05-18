@@ -23,7 +23,8 @@ import { buildFeatureLinks } from '../feature-dependency-graph';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackDevMiddleware = require('webpack-dev-middleware') as (
-    compiler: webpack.MultiCompiler
+    compiler: webpack.MultiCompiler,
+    options?: { index?: string }
 ) => WebpackDevMiddleware;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackHotMiddleware = require('webpack-hot-middleware') as (
@@ -271,7 +272,10 @@ devServerFeature.setup(
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             if (engineerCompilers.compilers.length > 0) {
-                const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers);
+                // This assumes we have only one engineer config - for the dashboard
+                // If we decide to create more engineers one day we might need to rethink the index file
+                // In any case it's a fallback, full paths should still work as usual
+                const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers, { index: 'main-dashboard.html' });
                 disposables.add(
                     () => new Promise<void>((res) => engineerDevMiddleware.close(res))
                 );
