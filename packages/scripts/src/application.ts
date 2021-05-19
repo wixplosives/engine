@@ -799,12 +799,12 @@ export class Application {
             entryTempDir: tmpDirPath,
         });
         const compiler = webpack(webpackConfigs);
-        compiler.hooks.watchClose.tap('cleanup-temp-entries', () => {
-            console.log('reached watchClose hook');
-            if (fs.directoryExistsSync(tmpDirPath)) {
-                fs.removeSync(tmpDirPath);
-            }
-        });
+        // compiler.hooks.watchClose.tap('cleanup-temp-entries', () => {
+        //     console.log('reached watchClose hook');
+        //     if (fs.directoryExistsSync(tmpDirPath)) {
+        //         fs.removeSync(tmpDirPath);
+        //     }
+        // });
         hookCompilerToConsole(compiler);
         return compiler;
     }
