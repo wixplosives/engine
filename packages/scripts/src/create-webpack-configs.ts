@@ -93,6 +93,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
 
     for (const [fileName, content] of Object.entries(tempEntryModules)) {
         fs.writeFileSync(fileName, content);
+        require.resolve(fileName);
     }
 
     return configurations;
