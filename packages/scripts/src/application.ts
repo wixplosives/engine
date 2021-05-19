@@ -799,8 +799,8 @@ export class Application {
             entryTempDir: tmpDirPath,
         });
         const compiler = webpack(webpackConfigs);
-        compiler.hooks.done.tap('cleanup-temp-entries', () => {
-            console.log('reached done hook');
+        compiler.hooks.watchClose.tap('cleanup-temp-entries', () => {
+            console.log('reached watchClose hook');
             if (fs.directoryExistsSync(tmpDirPath)) {
                 fs.removeSync(tmpDirPath);
             }
