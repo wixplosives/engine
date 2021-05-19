@@ -768,6 +768,9 @@ export class Application {
 
         // We must use a path within the same context of the project for proper module resolutions from the entrypoint
         const modulesPath = fs.resolve(basePath, 'node_modules');
+        if (!fs.directoryExistsSync(modulesPath)) {
+            fs.mkdirSync(modulesPath);
+        }
         const tmpDirPath = nativeFs.mkdtempSync(fs.join(modulesPath, 'engine-entry'), 'utf8');
 
         const webpackConfigs = createWebpackConfigs({
