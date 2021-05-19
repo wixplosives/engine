@@ -773,7 +773,7 @@ export class Application {
             // If this is the case we want to know that we created the node modules dir so we can clean it up later
             fs.mkdirSync(modulesPath);
         }
-        const tmpDirPath = nativeFs.mkdtempSync(fs.join(modulesPath, 'engine-entry'), 'utf8');
+        const tmpDirPath = nativeFs.mkdtempSync(fs.join(modulesPath, 'engine-entry-'), 'utf8');
 
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
