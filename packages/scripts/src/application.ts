@@ -800,7 +800,9 @@ export class Application {
         });
         const compiler = webpack(webpackConfigs);
         compiler.hooks.done.tap('cleanup-temp-entries', () => {
-            fs.removeSync(tmpDirPath);
+            if (fs.directoryExistsSync(tmpDirPath)) {
+                fs.removeSync(tmpDirPath);
+            }
         });
         hookCompilerToConsole(compiler);
         return compiler;
