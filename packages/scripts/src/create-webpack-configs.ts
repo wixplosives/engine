@@ -235,11 +235,9 @@ export function createWebpackConfigForExternalFeature({
         throw new Error(`${featureName!} was not found after analyzing features`);
     }
 
-    const entryPaths = [];
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(entryTempDir, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
-        entryPaths.push(entryPath);
         tempEntryModules[entryPath] = createExternalBrowserEntrypoint({
             ...feature,
             childEnvs,
@@ -263,7 +261,7 @@ export function createWebpackConfigForExternalFeature({
             externals.push(userExternals);
         }
     }
-    const extractExternalsMethod = extractExternals(filePath, entryPaths);
+    const extractExternalsMethod = extractExternals(filePath, Object.keys(tempEntryModules));
 
     const webpackConfig: webpack.Configuration = {
         ...baseConfig,
