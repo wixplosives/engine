@@ -768,8 +768,12 @@ export class Application {
 
         // We must use a path within the same context of the project for proper module resolutions from the entrypoint
         const modulesPath = fs.resolve(basePath, 'node_modules');
+        let modulesDirCreated = false;
         if (!fs.directoryExistsSync(modulesPath)) {
+            // This might happen in cases where the base path is part of a monorepo for example
+            // If this is the case we want to know that we created the node modules dir so we can clean it up later
             fs.mkdirSync(modulesPath);
+            modulesDirCreated = true;
         }
         const tmpDirPath = nativeFs.mkdtempSync(fs.join(modulesPath, 'engine-entry'), 'utf8');
 
@@ -798,7 +802,7 @@ export class Application {
         });
         const compiler = webpack(webpackConfigs);
         compiler.hooks.done.tap('cleanup-temp-entries', () => {
-            fs.removeSync(tmpDirPath);
+            fs.removeSync(modulesDirCreated ? modulesPath : tmpDirPath);
         });
         hookCompilerToConsole(compiler);
         return compiler;
