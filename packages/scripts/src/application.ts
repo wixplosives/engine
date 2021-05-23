@@ -776,6 +776,11 @@ export class Application {
             createdNodeModules = true;
         }
         const tmpDirPath = nativeFs.mkdtempSync(fs.join(modulesPath, 'engine-entry-'), 'utf8');
+        // Since this is technically a module, it needs to have a package.json
+        fs.writeFileSync(
+            fs.resolve(tmpDirPath, 'package.json'),
+            JSON.stringify({ name: `${fs.basename(tmpDirPath)}` })
+        );
 
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
