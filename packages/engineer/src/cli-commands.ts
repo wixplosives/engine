@@ -115,11 +115,11 @@ export const startCommand: Command = (program) =>
                     nodeEnvironmentsMode,
                 });
 
-                process.on('SIGINT', dispose);
-
                 const { port } = await new Promise((resolve) => {
                     devServerFeature.serverListeningHandlerSlot.register(resolve);
                 });
+
+                process.on('SIGINT', dispose);
 
                 if (!process.send && featureName && configName && openBrowser === 'true') {
                     await open(`http://localhost:${port as string}/main.html`);
