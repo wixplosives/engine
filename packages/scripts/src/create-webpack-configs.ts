@@ -1,7 +1,6 @@
 import fs from '@file-services/node';
 import webpack, { Configuration } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import VirtualModulesPlugin from 'webpack-virtual-modules';
 import semverLessThan from 'semver/functions/lt';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
@@ -14,6 +13,7 @@ import {
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: Configuration;
     featureName?: string;
@@ -35,6 +35,7 @@ export interface ICreateWebpackConfigsOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
+    entryTempDir: string;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -49,11 +50,12 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         baseConfig.output = {};
     }
     baseConfig.output.publicPath = publicPath;
+
+    const tempEntryModules: Record<string, string> = {};
+
     const configurations: webpack.Configuration[] = [];
-    const virtualModules: Record<string, string> = {};
 
     if (webEnvs.size) {
-        const plugins: webpack.WebpackPluginInstance[] = [new VirtualModulesPlugin(virtualModules)];
         const entry: webpack.Entry = {};
         configurations.push(
             createWebpackConfig({
@@ -61,9 +63,8 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: webEnvs,
                 target: 'web',
-                virtualModules,
-                plugins,
                 entry,
+                tempEntryModules,
             })
         );
     }
@@ -74,8 +75,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
-                virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)],
+                tempEntryModules,
             })
         );
     }
@@ -86,10 +86,13 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)],
+                tempEntryModules,
             })
         );
+    }
+
+    for (const [fileName, content] of Object.entries(tempEntryModules)) {
+        fs.writeFileSync(fileName, content);
     }
 
     return configurations;
@@ -106,8 +109,6 @@ interface ICreateWebpackConfigOptions {
     enviroments: Map<string, string[]>;
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
-    virtualModules: Record<string, string>;
-    plugins?: webpack.WebpackPluginInstance[];
     entry?: webpack.EntryObject;
     title?: string;
     favicon?: string;
@@ -118,20 +119,20 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
+    entryTempDir: string;
+    tempEntryModules: Record<string, string>;
 }
 
 export function createWebpackConfig({
     baseConfig,
     target,
     enviroments,
-    virtualModules,
     featureName,
     configName,
     features,
     context,
     mode = 'development',
     outputPath,
-    plugins = [],
     entry = {},
     publicPath,
     title,
@@ -143,12 +144,15 @@ export function createWebpackConfig({
     eagerEntrypoint,
     favicon,
     webpackHot = false,
+    entryTempDir,
+    tempEntryModules,
 }: ICreateWebpackConfigOptions): Configuration {
+    const plugins: webpack.WebpackPluginInstance[] = [];
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(entryTempDir, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
-        virtualModules[entryPath] = createMainEntrypoint({
+        const entrypointContent = createMainEntrypoint({
             features,
             childEnvs,
             envName,
@@ -164,6 +168,8 @@ export function createWebpackConfig({
             externalFeaturesRoute,
             eagerEntrypoint,
         });
+
+        tempEntryModules[entryPath] = entrypointContent;
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 ...[
@@ -193,6 +199,7 @@ export function createWebpackConfig({
         ...baseConfig,
         target,
         entry,
+        name: target,
         mode,
         devtool: mode === 'development' ? 'source-map' : false,
         context,
@@ -204,6 +211,9 @@ export function createWebpackConfig({
         },
         plugins: [...basePlugins, ...plugins],
         stats: 'errors-warnings',
+        watchOptions: {
+            ignored: [entryTempDir],
+        },
     };
 }
 
@@ -211,14 +221,14 @@ export function createWebpackConfigForExternalFeature({
     baseConfig,
     target,
     enviroments,
-    virtualModules,
     features,
     context,
     mode = 'development',
     outputPath,
-    plugins = [],
     entry = {},
     featureName,
+    entryTempDir,
+    tempEntryModules,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const feature = features.get(featureName!);
     if (!feature) {
@@ -226,9 +236,9 @@ export function createWebpackConfigForExternalFeature({
     }
 
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(entryTempDir, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
-        virtualModules[entryPath] = createExternalBrowserEntrypoint({
+        tempEntryModules[entryPath] = createExternalBrowserEntrypoint({
             ...feature,
             childEnvs,
             envName,
@@ -243,8 +253,6 @@ export function createWebpackConfigForExternalFeature({
     const externals: webpack.Configuration['externals'] = [externalFeatures];
     const { packageName, name, filePath } = feature;
 
-    const { plugins: basePlugins = [] } = baseConfig;
-
     const userExternals = baseConfig.externals;
     if (userExternals) {
         if (Array.isArray(userExternals)) {
@@ -253,8 +261,7 @@ export function createWebpackConfigForExternalFeature({
             externals.push(userExternals);
         }
     }
-    const virtualModulePaths = Object.keys(virtualModules);
-    const extractExternalsMethod = extractExternals(filePath, virtualModulePaths);
+    const extractExternalsMethod = extractExternals(filePath, Object.keys(tempEntryModules));
 
     const webpackConfig: webpack.Configuration = {
         ...baseConfig,
@@ -269,7 +276,6 @@ export function createWebpackConfigForExternalFeature({
             filename: `[name].${target}.js`,
             chunkFilename: `[name].${target}.js`,
         },
-        plugins: [...basePlugins, ...plugins],
         externals,
         optimization: {
             ...baseConfig.optimization,

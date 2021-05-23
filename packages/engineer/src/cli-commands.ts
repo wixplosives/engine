@@ -93,7 +93,7 @@ export const startCommand: Command = (program) =>
                 const basePath = resolve(path);
                 const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
 
-                const { devServerFeature } = await startDevServer({
+                const { devServerFeature, dispose } = await startDevServer({
                     featureName,
                     configName,
                     httpServerPort,
@@ -114,6 +114,8 @@ export const startCommand: Command = (program) =>
                     webpackHot,
                     nodeEnvironmentsMode,
                 });
+
+                process.on('SIGINT', dispose);
 
                 const { port } = await new Promise((resolve) => {
                     devServerFeature.serverListeningHandlerSlot.register(resolve);
