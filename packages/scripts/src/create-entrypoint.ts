@@ -108,7 +108,7 @@ export function createMainEntrypoint({
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
-import * as EngineCore from '@wixc3/engine-core';
+import * as EngineCore from '${require.resolve('@wixc3/engine-core')}';
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
