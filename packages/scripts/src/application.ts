@@ -43,10 +43,10 @@ import {
 } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
-import nativeFs from 'fs';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
+import { createTempDirectorySync } from 'create-temp-directory';
 
 const builtinTemplatesPath = fs.join(__dirname, '../templates');
 
@@ -766,16 +766,7 @@ export class Application {
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
-        // We must use a path within the same context of the project for proper module resolutions from the entrypoint
-        const modulesPath = fs.resolve(basePath, 'node_modules');
-        let createdNodeModules = false;
-        if (!fs.directoryExistsSync(modulesPath)) {
-            // This might happen in cases where the base path is part of a monorepo for example
-            // If this is the case we want to know that we created the node modules dir so we can clean it up later
-            fs.mkdirSync(modulesPath);
-            createdNodeModules = true;
-        }
-        const tmpDirPath = nativeFs.mkdtempSync(fs.join(modulesPath, 'engine-entry-'), 'utf8');
+        const tempDir = createTempDirectorySync('engine-entry');
 
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
@@ -798,14 +789,11 @@ export class Application {
             externalFeaturesRoute,
             eagerEntrypoint,
             webpackHot,
-            entryTempDir: tmpDirPath,
+            entryTempDir: tempDir.path,
         });
         const compiler = webpack(webpackConfigs);
         compiler.hooks.watchClose.tap('cleanup-temp-entries', () => {
-            const pathToDelete = createdNodeModules ? modulesPath : tmpDirPath;
-            if (fs.directoryExistsSync(pathToDelete)) {
-                fs.removeSync(pathToDelete);
-            }
+            tempDir.remove();
         });
         hookCompilerToConsole(compiler);
         return compiler;
