@@ -471,8 +471,8 @@ export class Application {
         };
     }
 
-    private remapManifestFeaturePaths(manifestFeatures: [string, IFeatureDefinition][]) {
-        const features = new Map<string, IFeatureDefinition>();
+    private remapManifestFeaturePaths<T extends FeatureLoaderMeta>(manifestFeatures: [string, T][]) {
+        const features = new Map<string, T>();
         for (const [featureName, featureDef] of manifestFeatures) {
             const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
             features.set(featureName, {
