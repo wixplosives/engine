@@ -302,9 +302,8 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
-                        'main'
-                    ),
+                    retrieveService:
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity('main'),
                 },
             }).setup('main', ({ mapSlot }) => {
                 return {
@@ -336,9 +335,8 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
-                        envName
-                    ),
+                    retrieveService:
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(envName),
                 },
             }).setup(envName, ({ mapSlot }) => {
                 return {
@@ -378,9 +376,8 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(envName),
-                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
-                        envName
-                    ),
+                    retrieveService:
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(envName),
                 },
             }).setup(envName, ({ mapSlot }) => {
                 return {
@@ -631,6 +628,28 @@ describe('feature disposal', () => {
 
         expect(disposeFirst).to.have.have.callCount(1);
         expect(disposeSecond).to.have.have.callCount(1);
+    });
+
+    it('disposes a feature only once', async () => {
+        const envName = 'main';
+        const mainEnv = new Environment(envName, 'window', 'single');
+        const entryFeature = new Feature({
+            id: 'test',
+            api: {},
+        });
+        const dispose = spy(() => new Promise((res) => setTimeout(res, 0)));
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
+            onDispose(dispose);
+        });
+
+        const engine = await runEngine({
+            entryFeature,
+            envName,
+        });
+
+        await Promise.all([engine.dispose(entryFeature, 'main'), engine.dispose(entryFeature, 'main')]);
+
+        expect(dispose).to.have.have.callCount(1);
     });
 });
 
