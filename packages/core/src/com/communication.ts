@@ -560,7 +560,7 @@ export class Communication {
     }
 
     private getPostEndpoint(target: Target): Window | Worker {
-        return isWindow(target) ? (target.opener as Window | null) || target.parent : (target as Worker);
+        return isWindow(target) ? target.opener || target.parent : (target as Worker);
     }
 
     private handleEventMessage(message: EventMessage): void {
