@@ -241,7 +241,7 @@ devServerFeature.setup(
                 }
             }
 
-            disposables.add(disposeCompiler);
+            compiler.hooks.watchClose.tap('cleanup-compiler-artefacts', disposeCompiler);
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
