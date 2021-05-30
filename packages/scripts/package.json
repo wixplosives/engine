@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "19.0.1",
+  "version": "19.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -19,6 +19,7 @@
     "@wixc3/engine-core-node": "^19.0.1",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
+    "create-temp-directory": "^1.1.1",
     "express": "^4.17.1",
     "glob": "^7.1.7",
     "import-fresh": "^3.3.0",
