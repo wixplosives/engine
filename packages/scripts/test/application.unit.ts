@@ -60,15 +60,6 @@ describe('Application', function () {
             expect(contents).to.include('favicon.ico');
         });
 
-        it('allows building feature with given metadata', async () => {
-            const app = new Application({ basePath: engineFeatureFixturePath });
-            await app.build({ meta: { some_metadata: 'test metadata' } });
-            disposables.add(() => app.clean());
-            expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
-            const contents = fs.readdirSync(app.outputPath);
-            expect(contents).to.include('some_metadata="test metadata"');
-        });
-
         describe('manifest generation', () => {
             it('generates manifest', async () => {
                 const app = new Application({ basePath: engineFeatureFixturePath });
@@ -280,7 +271,7 @@ describe('Application', function () {
             expect(faviconHref).to.equal('favicon.ico');
         });
 
-        it('launches a built application with web environment and given metadata', async () => {
+        it.only('launches a built application with web environment and given metadata', async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build({
                 featureName: 'engine-single/x',
