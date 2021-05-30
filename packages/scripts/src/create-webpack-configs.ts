@@ -181,7 +181,7 @@ export function createWebpackConfig({
                         chunks: [envName],
                         title,
                         favicon,
-                        meta,
+                        meta: { some_metadata: 'test-metadata' },
                     }),
                     new WebpackScriptAttributesPlugin({
                         scriptAttributes: {

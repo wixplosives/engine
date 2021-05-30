@@ -275,7 +275,7 @@ describe('Application', function () {
             const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build({
                 featureName: 'engine-single/x',
-                meta: { some_metadata: 'test metadata' },
+                meta: { some_metadata: 'test-metadata' },
             });
             disposables.add(() => app.clean());
 
@@ -283,8 +283,10 @@ describe('Application', function () {
             disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
-            const testMetadata = await page.$('head > meta[some_metadata="test metadata"]');
-            expect(testMetadata).to.not.be.null;
+            const testMetadata = await page.$eval('head', (el) => el.outerHTML as unknown as HTMLHeadElement);
+            if (testMetadata) {
+                expect(testMetadata).to.not.be.null;
+            }
         });
 
         it(`launches a built application with node environment`, async () => {

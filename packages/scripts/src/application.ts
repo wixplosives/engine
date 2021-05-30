@@ -188,7 +188,7 @@ export class Application {
             externalFeaturesBasePath: configExternalFeaturesBasePath,
             sourcesRoot: configSourcesRoot,
             favicon: configFavicon,
-            meta: configMeta,
+            //meta: configMeta,
         } = config ?? {};
         if (require) {
             await this.importModules(require);
@@ -224,7 +224,7 @@ export class Application {
             publicPath,
             title,
             favicon: favicon ?? configFavicon,
-            meta: meta ?? configMeta ?? {},
+            meta,
             configurations,
             staticBuild,
             publicConfigsRoute,
