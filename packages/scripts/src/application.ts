@@ -212,7 +212,7 @@ export class Application {
             ? staticExternalFeaturesFileName
             : `/${staticExternalFeaturesFileName}`;
 
-        const compiler = this.createCompiler({
+        const { compiler, dispose } = this.createCompiler({
             mode,
             features,
             featureName,
@@ -242,6 +242,7 @@ export class Application {
                 } else if (s!.hasErrors()) {
                     reject(new Error(s!.toString('errors-warnings')));
                 } else {
+                    dispose();
                     resolve(s!);
                 }
             })
@@ -792,11 +793,15 @@ export class Application {
             entryTempDir: tempDir.path,
         });
         const compiler = webpack(webpackConfigs);
-        compiler.hooks.watchClose.tap('cleanup-temp-entries', () => {
-            tempDir.remove();
-        });
         hookCompilerToConsole(compiler);
-        return compiler;
+        return {
+            compiler,
+            dispose: () => {
+                if (fs.directoryExistsSync(tempDir)) {
+                    fs.removeSync(tempDir);
+                }
+            },
+        };
     }
 
     protected analyzeFeatures() {
