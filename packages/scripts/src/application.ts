@@ -768,7 +768,6 @@ export class Application {
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
         const tempDir = createTempDirectorySync('engine-entry');
-        console.log({ real: fs.realpathSync(tempDir.path), original: tempDir.path });
 
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
@@ -791,7 +790,7 @@ export class Application {
             externalFeaturesRoute,
             eagerEntrypoint,
             webpackHot,
-            entryTempDir: fs.realpathSync(tempDir.path),
+            entryTempDir: tempDir.path,
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
