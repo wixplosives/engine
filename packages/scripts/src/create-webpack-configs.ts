@@ -149,7 +149,7 @@ export function createWebpackConfig({
 }: ICreateWebpackConfigOptions): Configuration {
     const plugins: webpack.WebpackPluginInstance[] = [];
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.resolve(entryTempDir, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(entryTempDir, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         entry[envName] = entryPath;
         const entrypointContent = createMainEntrypoint({
@@ -236,7 +236,7 @@ export function createWebpackConfigForExternalFeature({
     }
 
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.resolve(entryTempDir, `${envName}-${target}-entry.js`);
+        const entryPath = fs.join(entryTempDir, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
         tempEntryModules[entryPath] = createExternalBrowserEntrypoint({
             ...feature,
