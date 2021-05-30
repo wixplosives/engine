@@ -106,6 +106,7 @@ export function createMainEntrypoint({
     externalFeaturesRoute,
     eagerEntrypoint,
 }: ICreateEntrypointsOptions) {
+    console.log({ engineCore: require.resolve('@wixc3/engine-core') });
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import * as EngineCore from '${require.resolve('@wixc3/engine-core')}';
