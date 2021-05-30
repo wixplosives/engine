@@ -790,16 +790,14 @@ export class Application {
             externalFeaturesRoute,
             eagerEntrypoint,
             webpackHot,
-            entryTempDir: tempDir.path,
+            entryTempDir: fs.realpathSync(tempDir.path),
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
         return {
             compiler,
             dispose: () => {
-                if (fs.directoryExistsSync(tempDir)) {
-                    fs.removeSync(tempDir);
-                }
+                tempDir.remove();
             },
         };
     }
