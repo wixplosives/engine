@@ -301,5 +301,6 @@ export interface EngineConfig {
     socketServerOptions?: Partial<io.ServerOptions>;
     sourcesRoot?: string;
     favicon?: string;
+    meta: Record<string, string>;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
 }

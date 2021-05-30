@@ -15,6 +15,7 @@ export interface DevServerConfig {
     publicPath?: string;
     title?: string;
     favicon?: string;
+    meta?: Record<string, string>;
     publicConfigsRoute: string;
     inspect: boolean;
     autoLaunch: boolean;

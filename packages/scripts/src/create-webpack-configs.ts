@@ -27,6 +27,7 @@ export interface ICreateWebpackConfigsOptions {
     publicPath?: string;
     title?: string;
     favicon?: string;
+    meta?: Record<string, string>;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -112,6 +113,7 @@ interface ICreateWebpackConfigOptions {
     entry?: webpack.EntryObject;
     title?: string;
     favicon?: string;
+    meta?: Record<string, string>;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -143,6 +145,7 @@ export function createWebpackConfig({
     externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
+    meta,
     webpackHot = false,
     entryTempDir,
     tempEntryModules,
@@ -178,6 +181,7 @@ export function createWebpackConfig({
                         chunks: [envName],
                         title,
                         favicon,
+                        meta,
                     }),
                     new WebpackScriptAttributesPlugin({
                         scriptAttributes: {
@@ -298,25 +302,24 @@ export function createWebpackConfigForExternalFeature({
     return webpackConfig;
 }
 
-const extractExternals = (featurePath: string, ignoredRequests: string[]) => (
-    { context, request }: { context?: string; request?: string },
-    cb: (e?: Error, target?: string) => void
-) => {
-    try {
-        if (!request || !context || ignoredRequests.includes(request)) {
-            return cb();
-        }
-        const resolvedRequest = require.resolve(request, { paths: [context] });
-        if (resolvedRequest !== featurePath && fs.basename(resolvedRequest).includes('.feature.')) {
-            const packageJson = fs.findClosestFileSync(fs.dirname(resolvedRequest), 'package.json');
-            if (!packageJson) {
-                throw new Error(`could not find package.json for ${resolvedRequest}`);
+const extractExternals =
+    (featurePath: string, ignoredRequests: string[]) =>
+    ({ context, request }: { context?: string; request?: string }, cb: (e?: Error, target?: string) => void) => {
+        try {
+            if (!request || !context || ignoredRequests.includes(request)) {
+                return cb();
             }
-            const { name } = fs.readJsonFileSync(packageJson) as { name: string };
-            return cb(undefined, createExternalFeatureMapping(name, resolvedRequest));
+            const resolvedRequest = require.resolve(request, { paths: [context] });
+            if (resolvedRequest !== featurePath && fs.basename(resolvedRequest).includes('.feature.')) {
+                const packageJson = fs.findClosestFileSync(fs.dirname(resolvedRequest), 'package.json');
+                if (!packageJson) {
+                    throw new Error(`could not find package.json for ${resolvedRequest}`);
+                }
+                const { name } = fs.readJsonFileSync(packageJson) as { name: string };
+                return cb(undefined, createExternalFeatureMapping(name, resolvedRequest));
+            }
+            cb();
+        } catch (err) {
+            cb(err);
         }
-        cb();
-    } catch (err) {
-        cb(err);
-    }
-};
+    };

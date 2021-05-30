@@ -77,6 +77,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     includeExternalFeatures?: boolean;
     eagerEntrypoint?: boolean;
     favicon?: string;
+    meta?: Record<string, string>;
     externalFeaturesBasePath?: string;
     externalFeatureDefinitions?: IExternalDefinition[];
 }
@@ -123,6 +124,7 @@ export interface ICompilerOptions {
     mode?: 'production' | 'development';
     title?: string;
     favicon?: string;
+    meta?: Record<string, string>;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -166,6 +168,7 @@ export class Application {
         singleFeature,
         title,
         favicon,
+        meta,
         publicConfigsRoute,
         overrideConfig,
         external = false,
@@ -185,6 +188,7 @@ export class Application {
             externalFeaturesBasePath: configExternalFeaturesBasePath,
             sourcesRoot: configSourcesRoot,
             favicon: configFavicon,
+            meta: configMeta,
         } = config ?? {};
         if (require) {
             await this.importModules(require);
@@ -220,6 +224,7 @@ export class Application {
             publicPath,
             title,
             favicon: favicon ?? configFavicon,
+            meta: meta ?? configMeta ?? {},
             configurations,
             staticBuild,
             publicConfigsRoute,
@@ -749,6 +754,7 @@ export class Application {
         mode,
         title,
         favicon,
+        meta,
         configurations,
         staticBuild,
         publicConfigsRoute,
@@ -790,6 +796,7 @@ export class Application {
             publicPath,
             title,
             favicon,
+            meta,
             configurations,
             staticBuild,
             publicConfigsRoute,
