@@ -70,7 +70,7 @@ export interface LoadStatementArguments
 
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
-    import { getTopWindow } from '${JSON.stringify(require.resolve('@wixc3/engine-core'))}';
+    import { getTopWindow } from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     ${setExternalPublicPath(args.envName, args.target, args.scopedName)}
     __webpack_public_path__= publicPath;
