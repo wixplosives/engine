@@ -3,4 +3,5 @@
  */
 module.exports = {
     require: ['@ts-tools/node/r'],
+    meta: { 'theme-color': '#4285f4' },
 };

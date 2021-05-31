@@ -14,7 +14,7 @@ guiFeature.setup(
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute },
+                devServerConfig: { title, favicon, meta, publicConfigsRoute, externalFeaturesRoute },
                 serverListeningHandlerSlot,
                 application,
             },
@@ -47,6 +47,7 @@ guiFeature.setup(
                 virtualModules,
                 title,
                 favicon,
+                meta,
                 outputPath: application.outputPath,
             })
         );
@@ -65,12 +66,14 @@ function createDashboardConfig({
     outputPath,
     title,
     favicon,
+    meta,
 }: {
     baseConfig: webpack.Configuration;
     entryPath: string;
     virtualModules: Record<string, string>;
     title?: string;
     favicon?: string;
+    meta?: Record<string, string>;
     outputPath: string;
 }): webpack.Configuration {
     const { plugins: basePlugins = [] } = baseConfig;
@@ -87,6 +90,7 @@ function createDashboardConfig({
                 chunks: ['index'],
                 title,
                 favicon,
+                meta,
             }),
             new VirtualModulesPlugin(virtualModules),
         ],

@@ -121,7 +121,7 @@ export async function startDevServer({
                     configName,
                     title,
                     favicon: favicon ?? configFavicon,
-                    meta: meta ?? configMeta ?? {},
+                    meta: meta ?? configMeta,
                     publicConfigsRoute,
                     autoLaunch,
                     basePath: targetApplicationPath,
