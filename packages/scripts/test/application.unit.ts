@@ -275,7 +275,6 @@ describe('Application', function () {
             const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build({
                 featureName: 'engine-single/x',
-                //meta: { some_metadata: 'test-metadata' },
             });
             disposables.add(() => app.clean());
 
