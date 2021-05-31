@@ -284,9 +284,7 @@ describe('Application', function () {
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
             const testMetadata = await page.$('meta[name="unit_test"][content="test_data"]');
-            if (testMetadata) {
-                expect(testMetadata).to.not.be.null;
-            }
+            expect(testMetadata).to.not.be.null;
         });
 
         it(`launches a built application with node environment`, async () => {
