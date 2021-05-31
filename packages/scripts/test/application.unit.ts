@@ -271,10 +271,11 @@ describe('Application', function () {
             expect(faviconHref).to.equal('favicon.ico');
         });
 
-        it.only('launches a built application with web environment and given metadata', async () => {
+        it('launches a built application with web environment and given metadata', async () => {
             const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build({
                 featureName: 'engine-single/x',
+                meta: { unit_test: 'test_data' },
             });
             disposables.add(() => app.clean());
 
@@ -282,7 +283,7 @@ describe('Application', function () {
             disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
-            const testMetadata = await page.$eval('head', (el) => el.outerHTML as unknown as HTMLHeadElement);
+            const testMetadata = await page.$('meta[name="unit_test"][content="test_data"]');
             if (testMetadata) {
                 expect(testMetadata).to.not.be.null;
             }
