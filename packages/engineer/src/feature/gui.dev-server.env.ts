@@ -90,7 +90,7 @@ function createDashboardConfig({
                 chunks: ['index'],
                 title,
                 favicon,
-                meta,
+                meta: meta ?? {},
             }),
             new VirtualModulesPlugin(virtualModules),
         ],
