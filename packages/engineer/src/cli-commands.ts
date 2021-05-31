@@ -53,7 +53,6 @@ export const startCommand: Command = (program) =>
         )
         .option('--title <title>', 'application title to display in browser')
         .option('--favicon <faviconPath>', 'path to favicon to be displayed in browser environments')
-        .option('--meta <meta>', 'metadata to add to head')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
@@ -80,7 +79,6 @@ export const startCommand: Command = (program) =>
                 mode,
                 title,
                 faviconPath,
-                meta,
                 publicConfigsRoute,
                 autoLaunch,
                 engineerEntry,
@@ -105,7 +103,6 @@ export const startCommand: Command = (program) =>
                     mode,
                     title,
                     favicon,
-                    meta,
                     publicConfigsRoute,
                     autoLaunch,
                     engineerEntry,
@@ -144,7 +141,6 @@ export function buildCommand(program: typeof commander) {
         .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
         .option('--title <title>', 'application title to display in browser')
         .option('--favicon <faviconPath>', 'path to favicon to be displayed in browser environments')
-        .option('--meta <meta>', 'metadata to add to head')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
@@ -180,7 +176,6 @@ export function buildCommand(program: typeof commander) {
                 singleFeature,
                 title,
                 faviconPath,
-                meta,
                 publicConfigsRoute,
                 webpackConfig,
                 external,
@@ -204,7 +199,6 @@ export function buildCommand(program: typeof commander) {
                     singleFeature,
                     title,
                     favicon,
-                    meta,
                     publicConfigsRoute,
                     webpackConfigPath: webpackConfig,
                     external,
