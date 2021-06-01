@@ -29,7 +29,7 @@ export interface IStartOptions {
     mode?: 'development' | 'production';
     title?: string;
     favicon?: string;
-    meta?: Record<string, string>;
+    htmlMeta?: Record<string, string>;
     publicConfigsRoute?: string;
     autoLaunch?: boolean;
     engineerEntry?: string;
@@ -55,7 +55,7 @@ export async function startDevServer({
     mode = 'development',
     title,
     favicon,
-    meta,
+    htmlMeta,
     publicConfigsRoute = 'configs/',
     autoLaunch = true,
     targetApplicationPath,
@@ -86,7 +86,7 @@ export async function startDevServer({
         externalFeaturesBasePath: configExternalPath,
         require,
         favicon: configFavicon,
-        meta: configMeta,
+        htmlMeta: configHtmlMeta,
     } = engineConfig ?? {};
 
     const featurePaths = fs.findFilesSync(basePath, {
@@ -121,7 +121,7 @@ export async function startDevServer({
                     configName,
                     title,
                     favicon: favicon ?? configFavicon,
-                    meta: meta ?? configMeta,
+                    htmlMeta: htmlMeta ?? configHtmlMeta,
                     publicConfigsRoute,
                     autoLaunch,
                     basePath: targetApplicationPath,

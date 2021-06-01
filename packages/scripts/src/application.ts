@@ -77,7 +77,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     includeExternalFeatures?: boolean;
     eagerEntrypoint?: boolean;
     favicon?: string;
-    meta?: Record<string, string>;
+    htmlMeta?: Record<string, string>;
     externalFeaturesBasePath?: string;
     externalFeatureDefinitions?: IExternalDefinition[];
 }
@@ -124,7 +124,7 @@ export interface ICompilerOptions {
     mode?: 'production' | 'development';
     title?: string;
     favicon?: string;
-    meta?: Record<string, string>;
+    htmlMeta?: Record<string, string>;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -168,7 +168,7 @@ export class Application {
         singleFeature,
         title,
         favicon,
-        meta,
+        htmlMeta,
         publicConfigsRoute,
         overrideConfig,
         external = false,
@@ -188,7 +188,7 @@ export class Application {
             externalFeaturesBasePath: configExternalFeaturesBasePath,
             sourcesRoot: configSourcesRoot,
             favicon: configFavicon,
-            meta: configMeta,
+            htmlMeta: configHtmlMeta,
         } = config ?? {};
         if (require) {
             await this.importModules(require);
@@ -224,7 +224,7 @@ export class Application {
             publicPath,
             title,
             favicon: favicon ?? configFavicon,
-            meta: meta ?? configMeta,
+            htmlMeta: htmlMeta ?? configHtmlMeta,
             configurations,
             staticBuild,
             publicConfigsRoute,
@@ -754,7 +754,7 @@ export class Application {
         mode,
         title,
         favicon,
-        meta,
+        htmlMeta,
         configurations,
         staticBuild,
         publicConfigsRoute,
@@ -787,7 +787,7 @@ export class Application {
             publicPath,
             title,
             favicon,
-            meta,
+            htmlMeta,
             configurations,
             staticBuild,
             publicConfigsRoute,

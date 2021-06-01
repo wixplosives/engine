@@ -27,7 +27,7 @@ export interface ICreateWebpackConfigsOptions {
     publicPath?: string;
     title?: string;
     favicon?: string;
-    meta?: Record<string, string>;
+    htmlMeta?: Record<string, string>;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -113,7 +113,7 @@ interface ICreateWebpackConfigOptions {
     entry?: webpack.EntryObject;
     title?: string;
     favicon?: string;
-    meta?: Record<string, string>;
+    htmlMeta?: Record<string, string>;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -145,7 +145,7 @@ export function createWebpackConfig({
     externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
-    meta,
+    htmlMeta,
     webpackHot = false,
     entryTempDir,
     tempEntryModules,
@@ -181,7 +181,7 @@ export function createWebpackConfig({
                         chunks: [envName],
                         title,
                         favicon,
-                        meta: meta ?? {},
+                        meta: htmlMeta ?? {},
                     }),
                     new WebpackScriptAttributesPlugin({
                         scriptAttributes: {

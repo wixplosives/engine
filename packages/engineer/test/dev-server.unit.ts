@@ -51,7 +51,7 @@ describe('engineer:dev-server', function () {
         singleFeature,
         featureDiscoveryRoot,
         nodeEnvironmentsMode,
-        meta,
+        htmlMeta,
     }: {
         featureName?: string;
         port?: number;
@@ -67,7 +67,7 @@ describe('engineer:dev-server', function () {
         singleFeature?: boolean;
         featureDiscoveryRoot?: string;
         nodeEnvironmentsMode?: LaunchEnvironmentMode;
-        meta?: Record<string, string>;
+        htmlMeta?: Record<string, string>;
     }): Promise<{
         dispose: () => Promise<void>;
         engine: RuntimeEngine;
@@ -90,7 +90,7 @@ describe('engineer:dev-server', function () {
             singleFeature,
             featureDiscoveryRoot,
             nodeEnvironmentsMode,
-            meta,
+            htmlMeta,
         });
         const runningPort = await new Promise<number>((resolve) => {
             devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
@@ -592,12 +592,12 @@ describe('engineer:dev-server', function () {
         } = await setup({
             basePath: engineConfigFixturePath,
             featureName: 'engine-config/x',
-            meta: { unit_test: 'test_data' },
+            htmlMeta: { unit_test: 'test_data' },
         });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        const testMetadata = await page.$('meta[name="unit_test"][content="test_data"]');
+        const testMetadata = await page.$('head > meta[name="unit_test"][content="test_data"]');
         expect(testMetadata).to.not.be.null;
     });
 });

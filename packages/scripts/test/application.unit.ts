@@ -275,7 +275,7 @@ describe('Application', function () {
             const app = new Application({ basePath: engineFeatureFixturePath });
             await app.build({
                 featureName: 'engine-single/x',
-                meta: { unit_test: 'test_data' },
+                htmlMeta: { unit_test: 'test_data' },
             });
             disposables.add(() => app.clean());
 
@@ -283,8 +283,8 @@ describe('Application', function () {
             disposables.add(close);
 
             const page = await loadPage(`http://localhost:${port}/main.html`);
-            const testMetadata = await page.$('meta[name="unit_test"][content="test_data"]');
-            expect(testMetadata).to.not.be.null;
+            const testMetadata = await page.$('head > meta[name="unit_test"][content="test_data"]');
+            expect(testMetadata).to.not.equal(null);
         });
 
         it(`launches a built application with node environment`, async () => {
