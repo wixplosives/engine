@@ -46,7 +46,6 @@ import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
-import { createTempDirectorySync } from 'create-temp-directory';
 
 const builtinTemplatesPath = fs.join(__dirname, '../templates');
 
@@ -212,7 +211,7 @@ export class Application {
             ? staticExternalFeaturesFileName
             : `/${staticExternalFeaturesFileName}`;
 
-        const { compiler, dispose } = this.createCompiler({
+        const { compiler } = this.createCompiler({
             mode,
             features,
             featureName,
@@ -242,7 +241,6 @@ export class Application {
                 } else if (s!.hasErrors()) {
                     reject(new Error(s!.toString('errors-warnings')));
                 } else {
-                    dispose();
                     resolve(s!);
                 }
             })
@@ -767,8 +765,6 @@ export class Application {
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
 
-        const tempDir = createTempDirectorySync('engine-entry');
-
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
             context: basePath,
@@ -790,15 +786,11 @@ export class Application {
             externalFeaturesRoute,
             eagerEntrypoint,
             webpackHot,
-            entryTempDir: tempDir.path,
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
         return {
             compiler,
-            dispose: () => {
-                tempDir.remove();
-            },
         };
     }
 

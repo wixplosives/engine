@@ -206,7 +206,7 @@ devServerFeature.setup(
             });
 
             // Write middleware for each of the apps
-            const { compiler, dispose: disposeCompiler } = application.createCompiler({
+            const { compiler } = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
@@ -240,8 +240,6 @@ devServerFeature.setup(
                     app.use(hotMiddleware);
                 }
             }
-
-            compiler.hooks.watchClose.tap('cleanup-compiler-artefacts', disposeCompiler);
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
