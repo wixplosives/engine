@@ -210,9 +210,6 @@ export function createWebpackConfig({
         },
         plugins: [...basePlugins, ...plugins],
         stats: 'errors-warnings',
-        watchOptions: {
-            ignored: Object.keys(tempEntryModules),
-        },
     };
 }
 
