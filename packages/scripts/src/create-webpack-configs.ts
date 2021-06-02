@@ -54,7 +54,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
     const configurations: webpack.Configuration[] = [];
 
     if (webEnvs.size) {
-        const tempEntryModules: Record<string, string> = {};
+        const entryModules: Record<string, string> = {};
         const entry: webpack.Entry = {};
         configurations.push(
             createWebpackConfig({
@@ -63,34 +63,34 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 enviroments: webEnvs,
                 target: 'web',
                 entry,
-                tempEntryModules,
-                plugins: [new VirtualModulesPlugin(tempEntryModules)],
+                entryModules,
+                plugins: [new VirtualModulesPlugin(entryModules)],
             })
         );
     }
     if (workerEnvs.size) {
-        const tempEntryModules: Record<string, string> = {};
+        const entryModules: Record<string, string> = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
-                tempEntryModules,
-                plugins: [new VirtualModulesPlugin(tempEntryModules)],
+                entryModules,
+                plugins: [new VirtualModulesPlugin(entryModules)],
             })
         );
     }
     if (electronRendererEnvs.size) {
-        const tempEntryModules: Record<string, string> = {};
+        const entryModules: Record<string, string> = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                tempEntryModules,
-                plugins: [new VirtualModulesPlugin(tempEntryModules)],
+                entryModules,
+                plugins: [new VirtualModulesPlugin(entryModules)],
             })
         );
     }
@@ -119,7 +119,7 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
-    tempEntryModules: Record<string, string>;
+    entryModules: Record<string, string>;
     plugins: Array<WebpackPluginInstance>;
 }
 
@@ -144,7 +144,7 @@ export function createWebpackConfig({
     eagerEntrypoint,
     favicon,
     webpackHot = false,
-    tempEntryModules,
+    entryModules,
     plugins,
 }: ICreateWebpackConfigOptions): Configuration {
     for (const [envName, childEnvs] of enviroments) {
@@ -168,7 +168,7 @@ export function createWebpackConfig({
             eagerEntrypoint,
         });
 
-        tempEntryModules[entryPath] = entrypointContent;
+        entryModules[entryPath] = entrypointContent;
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 ...[
@@ -223,7 +223,7 @@ export function createWebpackConfigForExternalFeature({
     outputPath,
     entry = {},
     featureName,
-    tempEntryModules,
+    entryModules,
     plugins,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const feature = features.get(featureName!);
@@ -234,7 +234,7 @@ export function createWebpackConfigForExternalFeature({
     for (const [envName, childEnvs] of enviroments) {
         const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         entry[envName] = entryPath;
-        tempEntryModules[entryPath] = createExternalBrowserEntrypoint({
+        entryModules[entryPath] = createExternalBrowserEntrypoint({
             ...feature,
             childEnvs,
             envName,
@@ -257,7 +257,7 @@ export function createWebpackConfigForExternalFeature({
             externals.push(userExternals);
         }
     }
-    const extractExternalsMethod = extractExternals(filePath, Object.keys(tempEntryModules));
+    const extractExternalsMethod = extractExternals(filePath, Object.keys(entryModules));
 
     const { plugins: basePlugins = [] } = baseConfig;
 
