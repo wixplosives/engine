@@ -10,25 +10,15 @@ export interface IIframeInitializerOptions {
     managed?: boolean;
 }
 
-export function iframeInitializer({
-    hashParams,
-    iframeElement,
-    managed,
-    src,
-}: IIframeInitializerOptions): EnvironmentInitializer<{ id: string }> {
-    return async (com, { env, endpointType }) => {
-        const instanceId = com.getEnvironmentInstanceId(env, endpointType);
-        const publicPath = com.getPublicPath();
-        const id = managed
-            ? await startManagedIframe(
-                  com,
-                  iframeElement,
-                  instanceId,
-                  src ?? defaultHtmlSourceFactory(env, publicPath, hashParams)
-              )
-            : await startIframe(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
-
-        return { id };
+export function iframeInitializer(
+    initializerOptions: IIframeInitializerOptions
+): EnvironmentInitializer<{ id: string }> {
+    return async (com, env) => {
+        const { initialize } = await iframeDelayedInitializer()(com, env);
+        const id = await initialize(initializerOptions);
+        return {
+            id,
+        };
     };
 }
 
@@ -38,11 +28,11 @@ export function iframeDelayedInitializer(): EnvironmentInitializer<{
 }> {
     return (com, { env, endpointType }) => {
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
-        const publicPath = com.getPublicPath();
 
         return {
             id: instanceId,
             initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
+                const publicPath = com.getPublicPath();
                 return managed
                     ? startManagedIframe(
                           com,
