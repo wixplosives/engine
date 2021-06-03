@@ -14,7 +14,7 @@ export function iframeInitializer(
     initializerOptions: IIframeInitializerOptions
 ): EnvironmentInitializer<{ id: string }> {
     return async (com, env) => {
-        const { initialize } = await iframeDelayedInitializer()(com, env);
+        const { initialize } = await deferredIframeInitializer()(com, env);
         const id = await initialize(initializerOptions);
         return {
             id,
@@ -22,7 +22,7 @@ export function iframeInitializer(
     };
 }
 
-export function iframeDelayedInitializer(): EnvironmentInitializer<{
+export function deferredIframeInitializer(): EnvironmentInitializer<{
     id: string;
     initialize: (params: IIframeInitializerOptions) => Promise<string>;
 }> {
@@ -33,38 +33,64 @@ export function iframeDelayedInitializer(): EnvironmentInitializer<{
             id: instanceId,
             initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
                 const publicPath = com.getPublicPath();
+                const baseStartIframeParams: StartIframeBaseParams = {
+                    com,
+                    envReadyPromise: com.envReady(instanceId),
+                    instanceId,
+                    src:
+                        src ?? managed
+                            ? defaultHtmlSourceFactory(env, publicPath, hashParams)
+                            : defaultSourceFactory(env, publicPath),
+                };
                 return managed
-                    ? startManagedIframe(
-                          com,
-                          iframeElement,
-                          instanceId,
-                          src ?? defaultHtmlSourceFactory(env, publicPath, hashParams)
-                      )
-                    : startIframe(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
+                    ? startManagedIframe({
+                          ...baseStartIframeParams,
+                          iframe: iframeElement,
+                      })
+                    : startIframe({
+                          ...baseStartIframeParams,
+                          host: iframeElement,
+                      });
             },
         };
     };
 }
 
-async function startIframe(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<string> {
+interface StartIframeBaseParams {
+    com: Communication;
+    instanceId: string;
+    src: string;
+    envReadyPromise: Promise<void>;
+}
+
+interface StartIframeParams extends StartIframeBaseParams {
+    host: WindowHost;
+}
+
+interface StartManagedIframeParams extends StartIframeBaseParams {
+    iframe: HTMLIFrameElement;
+}
+
+export async function startIframe({ com, host, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
     const win = isIframe(host) ? host.contentWindow : host;
     if (!win) {
         throw new Error('cannot spawn detached iframe.');
     }
     com.registerEnv(instanceId, win);
     await injectScript(win, instanceId, src);
-    await com.envReady(instanceId);
+    await envReadyPromise;
     return instanceId;
 }
 
 const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
-async function startManagedIframe(
-    com: Communication,
-    iframe: HTMLIFrameElement,
-    instanceId: string,
-    src: string
-): Promise<string> {
+export async function startManagedIframe({
+    com,
+    iframe,
+    instanceId,
+    src,
+    envReadyPromise,
+}: StartManagedIframeParams): Promise<string> {
     if (!iframe.contentWindow) {
         throw new Error('Cannot initialize environment in a detached iframe');
     }
@@ -112,7 +138,7 @@ async function startManagedIframe(
         }
 
         contentWindow.addEventListener('unload', cleanup);
-        await Promise.race([waitForCancel, com.envReady(instanceId)]);
+        await Promise.race([waitForCancel, envReadyPromise]);
 
         cancellationTriggers.delete(iframe);
         return instanceId;

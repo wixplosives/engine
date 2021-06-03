@@ -560,6 +560,7 @@ export class Communication {
     }
 
     private getPostEndpoint(target: Target): Window | Worker {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return isWindow(target) ? target.opener || target.parent : (target as Worker);
     }
 
