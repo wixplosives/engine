@@ -20,19 +20,43 @@ export function iframeInitializer({
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
         const publicPath = com.getPublicPath();
         const id = managed
-            ? await useIframe(
+            ? await startManagedIframe(
                   com,
                   iframeElement,
                   instanceId,
                   src ?? defaultHtmlSourceFactory(env, publicPath, hashParams)
               )
-            : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
+            : await startIframe(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
 
         return { id };
     };
 }
 
-async function useWindow(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<string> {
+export function iframeDelayedInitializer(): EnvironmentInitializer<{
+    id: string;
+    initialize: (params: IIframeInitializerOptions) => Promise<string>;
+}> {
+    return (com, { env, endpointType }) => {
+        const instanceId = com.getEnvironmentInstanceId(env, endpointType);
+        const publicPath = com.getPublicPath();
+
+        return {
+            id: instanceId,
+            initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
+                return managed
+                    ? startManagedIframe(
+                          com,
+                          iframeElement,
+                          instanceId,
+                          src ?? defaultHtmlSourceFactory(env, publicPath, hashParams)
+                      )
+                    : startIframe(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
+            },
+        };
+    };
+}
+
+async function startIframe(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<string> {
     const win = isIframe(host) ? host.contentWindow : host;
     if (!win) {
         throw new Error('cannot spawn detached iframe.');
@@ -45,7 +69,7 @@ async function useWindow(com: Communication, host: WindowHost, instanceId: strin
 
 const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
-async function useIframe(
+async function startManagedIframe(
     com: Communication,
     iframe: HTMLIFrameElement,
     instanceId: string,

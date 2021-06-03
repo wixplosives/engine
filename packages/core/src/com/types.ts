@@ -25,7 +25,7 @@ export interface IActiveEnvironment {
 export type EnvironmentInitializer<T extends IActiveEnvironment> = (
     communication: Communication,
     env: Environment
-) => Promise<T>;
+) => T | Promise<T>;
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {
     name?: string;
