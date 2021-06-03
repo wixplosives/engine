@@ -1341,10 +1341,10 @@
     "@types/chai" "*"
     "@types/sinon" "*"
 
-"@types/sinon@*", "@types/sinon@^10.0.1":
-  version "10.0.1"
-  resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-10.0.1.tgz#97ccb0482b750f5140ffdc661240ebbbe6e28d75"
-  integrity sha512-tZulsvuJwif5ddTBtscflI7gJcd+RpENcNZ7QCp0jKEl0bZY3Pu6PbJs4GR3SfQkGgsUa+FrlKsKQ0XyGNvDuA==
+"@types/sinon@*", "@types/sinon@^10.0.2":
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-10.0.2.tgz#f360d2f189c0fd433d14aeb97b9d705d7e4cc0e4"
+  integrity sha512-BHn8Bpkapj8Wdfxvh2jWIUoaYB/9/XhsL0oOvBfRagJtKlSl9NWPcFOz2lRukI9szwGxFtYZCTejJSqsGDbdmw==
   dependencies:
     "@sinonjs/fake-timers" "^7.1.0"
 
@@ -2468,13 +2468,6 @@ create-listening-server@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/create-listening-server/-/create-listening-server-1.0.0.tgz#d33d93a8a71b613bb937ab27a54a82b0f6079661"
   integrity sha512-Nb94WAhopCcWAmCzlAy+rJ8lsCojeZP/1YLcReOdsi5i9mXgC+TDKAjZQYMmEvlEGq/qKvt44EdH9RAxEMRr6A==
-
-create-temp-directory@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/create-temp-directory/-/create-temp-directory-1.1.1.tgz#ace3bd7824a6a02dbeacca2dce237a8a89568d9f"
-  integrity sha512-bNtvi7dSehzBHbwB1Irugv4/5NdX5cOpEIiH+O09KjBbn9VXtrlFdNesJsUkpypCanifSRMYzlRQXh8IAeiAGA==
-  dependencies:
-    rimraf "^3.0.0"
 
 cross-spawn@^7.0.2, cross-spawn@^7.0.3:
   version "7.0.3"
@@ -6369,7 +6362,7 @@ rimraf@^2.6.3:
   dependencies:
     glob "^7.1.3"
 
-rimraf@^3.0.0, rimraf@^3.0.2:
+rimraf@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-3.0.2.tgz#f1a5402ba6220ad52cc1282bac1ae3aa49fd061a"
   integrity sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==
