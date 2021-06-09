@@ -1,6 +1,6 @@
 import type { EnvironmentInitializer } from '../types';
 
-export function ipcInitializer(): EnvironmentInitializer<{ id: string }> {
+export function ipcInitializer(): EnvironmentInitializer<Promise<{ id: string }>> {
     return async (communication, { env, endpointType }) => {
         const instanceId = communication.getEnvironmentInstanceId(env, endpointType);
 

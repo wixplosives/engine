@@ -43,7 +43,6 @@ BaseAppFeature.setup(client, ({ clientSlot, dataProvider }, { COM: { startEnviro
         getSlotValues,
         iframeElement
     );
-
     startEnvironment(
         iframe,
         iframeInitializer({

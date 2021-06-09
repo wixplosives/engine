@@ -1,17 +1,16 @@
 import type { SocketOptions } from 'socket.io-client';
+import type { Environment } from '../../entities';
+import type { Communication } from '../communication';
 import { WsClientHost } from '../hosts/ws-client-host';
 import type { ReadyMessage } from '../message-types';
 import type { EnvironmentInitializer } from '../types';
-type listenFn = (cb: () => void) => void;
 
 export function socketServerInitializer(
     options?: Partial<SocketOptions>
-): EnvironmentInitializer<{
-    id: string;
-    onDisconnect: listenFn;
-    onReconnect: listenFn;
-}> {
-    return async (communication, { env }) => {
+): EnvironmentInitializer<
+    Promise<{ id: string; onDisconnect: (cb: () => void) => void; onReconnect: (cb: () => void) => void }>
+> {
+    return async (communication: Communication, { env }: Environment) => {
         const url = communication.topology[env];
         if (!url) {
             throw new Error(`Could not find node topology for ${env} environment`);

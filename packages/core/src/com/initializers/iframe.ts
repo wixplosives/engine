@@ -2,6 +2,7 @@ import type { EnvironmentInitializer, WindowHost } from '../types';
 import type { Communication } from '../communication';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
+import type { Environment } from '../..';
 
 export interface IIframeInitializerOptions {
     iframeElement: HTMLIFrameElement;
@@ -12,9 +13,9 @@ export interface IIframeInitializerOptions {
 
 export function iframeInitializer(
     initializerOptions: IIframeInitializerOptions
-): EnvironmentInitializer<{ id: string }> {
+): EnvironmentInitializer<Promise<{ id: string }>> {
     return async (com, env) => {
-        const { initialize } = await deferredIframeInitializer()(com, env);
+        const { initialize } = deferredIframeInitializer()(com, env);
         const id = await initialize(initializerOptions);
         return {
             id,
@@ -22,11 +23,8 @@ export function iframeInitializer(
     };
 }
 
-export function deferredIframeInitializer(): EnvironmentInitializer<{
-    id: string;
-    initialize: (params: IIframeInitializerOptions) => Promise<string>;
-}> {
-    return (com, { env, endpointType }) => {
+export function deferredIframeInitializer() {
+    return (com: Communication, { env, endpointType }: Environment) => {
         const instanceId = com.getEnvironmentInstanceId(env, endpointType);
 
         return {

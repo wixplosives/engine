@@ -1,6 +1,6 @@
 import type { EnvironmentInitializer } from '../types';
 
-export function workerInitializer(): EnvironmentInitializer<{ id: string }> {
+export function workerInitializer(): EnvironmentInitializer<Promise<{ id: string }>> {
     return async (communication, { env, endpointType }) => {
         const isSingleton = endpointType === 'single';
         const instanceId = isSingleton ? env : communication.generateEnvInstanceID(env);

@@ -23,7 +23,6 @@ import type {
     AnyServiceMethodOptions,
     ServiceComConfig,
     EnvironmentInitializer,
-    IActiveEnvironment,
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -126,8 +125,8 @@ export class Communication {
         return this.options.publicPath;
     }
 
-    public startEnvironment<T extends IActiveEnvironment>(env: Environment, initializer: EnvironmentInitializer<T>) {
-        return initializer(this, env);
+    public startEnvironment<K extends EnvironmentInitializer>(env: Environment, initializer: K): ReturnType<K> {
+        return initializer(this, env) as ReturnType<K>;
     }
 
     public setTopology(envName: string, envUrl: string) {

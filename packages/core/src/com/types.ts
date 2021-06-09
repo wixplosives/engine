@@ -22,10 +22,7 @@ export interface IActiveEnvironment {
     onReconnect?: (cb: () => void) => void;
 }
 
-export type EnvironmentInitializer<T extends IActiveEnvironment> = (
-    communication: Communication,
-    env: Environment
-) => T | Promise<T>;
+export type EnvironmentInitializer<T = unknown> = (communication: Communication, env: Environment) => T;
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {
     name?: string;

@@ -6,7 +6,7 @@ interface WindowInitializerOptions {
     host?: WindowHost;
 }
 
-export function windowInitializer({ host }: WindowInitializerOptions): EnvironmentInitializer<{ id: string }> {
+export function windowInitializer({ host }: WindowInitializerOptions): EnvironmentInitializer<Promise<{ id: string }>> {
     return async (communication, { env, endpointType }) => {
         const instanceId = communication.getEnvironmentInstanceId(env, endpointType);
         const win = isIframe(host) ? host.contentWindow : host;

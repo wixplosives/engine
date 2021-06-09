@@ -17,7 +17,7 @@ export const localNodeEnvironmentInitializer: EnvironmentInitializer<{ id: strin
         com.registerEnv(env.env, baseEnvHost);
     }
 
-    return Promise.resolve({
+    return {
         id: env.env,
-    });
+    };
 };
