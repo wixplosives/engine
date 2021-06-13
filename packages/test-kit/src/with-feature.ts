@@ -81,10 +81,10 @@ export interface IWithFeatureOptions extends IWithFeatureOptionsBase, playwright
 export interface Tracing {
     /**
      * path to the location of the trace file.
-     * can be either the path to the fuile itself (include the .zip extension), or to the base directory where the file will be created
+     * can be either the path to the file itself (include the .zip extension), or to the base directory where the file will be created
      * @default process.cwd()
      */
-    tracePath?: string;
+    outPath?: string;
     /**
      * should trace include screenshots
      * @default true
@@ -96,14 +96,14 @@ export interface Tracing {
      */
     snapshots?: boolean;
     /**
-     * name of the zip file if not provided in tracePath
+     * name of the zip file if not provided in outPath
      */
-    traceName?: string;
+    name?: string;
 }
 
 export interface IFeatureExecutionOptions
     extends Omit<IWithFeatureOptionsBase, 'runningApplicationPort' | 'featureDiscoveryRoot'> {
-    tracing?: Tracing;
+    tracing?: boolean | Tracing;
 }
 
 let browser: playwright.Browser | undefined = undefined;
@@ -236,12 +236,15 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const browserContext = await browser.newContext(browserContextOptions);
             if (tracing) {
-                const traceDirPath = fs.resolve(tracing.tracePath ?? process.cwd());
+                if (typeof tracing === 'boolean') {
+                    tracing = {};
+                }
+                const traceDirPath = fs.resolve(tracing.outPath ?? process.cwd());
                 const { screenshots, snapshots } = { ...tracing, screenshots: true, snapshots: true };
                 await browserContext.tracing.start({ screenshots, snapshots });
                 disposeAfterEach.add(() =>
                     browserContext.tracing.stop({
-                        path: ensureTracePath({ filePath: traceDirPath, fs, fallbackName: tracing.traceName }),
+                        path: ensureTracePath({ filePath: traceDirPath, fs, fallbackName: (tracing as Tracing).name }),
                     })
                 );
             }
