@@ -11,7 +11,7 @@ import { hookPageConsole } from './hook-page-console';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
-export interface IWithFeatureOptionsBase {
+export interface IFeatureExecutionOptions {
     /**
      * feature file name scoped to feature root directory.
      * if feature name is the same as folder name, scoping is unnecessary.
@@ -29,7 +29,6 @@ export interface IWithFeatureOptionsBase {
      * `my-feature/my-feature-fixture`
      */
     featureName?: string;
-
     /**
      * configuration file name scoped to feature root directory.
      *
@@ -46,17 +45,14 @@ export interface IWithFeatureOptionsBase {
      *
      */
     configName?: string;
-
     /**
      * query parameters to open the page with
      */
     queryParams?: Record<string, string>;
-
     /**
      * runtime options that will be provided to the node environments
      */
     runOptions?: Record<string, string>;
-
     /**
      * Allows providing a Top level config
      * If configName was provided, the matching configurations will be overriden by the config provided
@@ -67,16 +63,20 @@ export interface IWithFeatureOptionsBase {
     browserContextOptions?: playwright.BrowserContextOptions;
 
     /**
+     * Creates a playwright trace file for the test
+     */
+    tracing?: boolean | Tracing;
+}
+
+export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
+    /**
      * If we want to test the engine against a running application, proveide the port of the application.
      * It can be extracted from the log printed after 'engineer start' or 'engine run'
      */
     runningApplicationPort?: number;
-
     /** Specify directory where features will be looked up within the package */
     featureDiscoveryRoot?: string;
 }
-
-export interface IWithFeatureOptions extends IWithFeatureOptionsBase, playwright.LaunchOptions {}
 
 export interface Tracing {
     /**
@@ -99,11 +99,6 @@ export interface Tracing {
      * @default random string
      */
     name?: string;
-}
-
-export interface IFeatureExecutionOptions
-    extends Omit<IWithFeatureOptionsBase, 'runningApplicationPort' | 'featureDiscoveryRoot'> {
-    tracing?: boolean | Tracing;
 }
 
 let browser: playwright.Browser | undefined = undefined;
