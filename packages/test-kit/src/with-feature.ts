@@ -239,12 +239,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 if (typeof tracing === 'boolean') {
                     tracing = {};
                 }
-                const traceDirPath = fs.resolve(tracing.outPath ?? process.cwd());
-                const { screenshots, snapshots } = { ...tracing, screenshots: true, snapshots: true };
+                const { screenshots, snapshots, name, outPath } = {
+                    ...tracing,
+                    screenshots: true,
+                    snapshots: true,
+                    outPath: process.cwd(),
+                };
                 await browserContext.tracing.start({ screenshots, snapshots });
                 disposeAfterEach.add(() =>
                     browserContext.tracing.stop({
-                        path: ensureTracePath({ filePath: traceDirPath, fs, fallbackName: (tracing as Tracing).name }),
+                        path: ensureTracePath({ outPath, fs, name }),
                     })
                 );
             }
