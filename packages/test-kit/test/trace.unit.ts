@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { createMemoryFs } from '@file-services/memory';
-import { ensureTracePath } from '../src/utils/trace';
-const zipExt = '.zip';
+import { ensureTracePath, TRACE_FILE_EXT } from '../src/utils';
 
 describe('ensure trace path', () => {
     const fs = createMemoryFs({
@@ -13,32 +12,28 @@ describe('ensure trace path', () => {
         },
     });
 
-    it('ensures directory if directory doesnt exist', () => {
-        const outPath = '/a/b/d';
-        const name = `b${zipExt}`;
-        expect(
-            ensureTracePath({
-                fs,
-                outPath,
-                name,
-            })
-        ).to.eq(fs.join(outPath, name));
-        expect(fs.directoryExistsSync(outPath)).to.eq(true);
+    it('generates a random file name if not provided', () => {
+        const filePath = '/a/b';
+        const traceFilePath = ensureTracePath({
+            fs,
+            outPath: filePath,
+        });
+        expect(traceFilePath.endsWith(TRACE_FILE_EXT)).to.eq(true);
+        expect(fs.dirname(traceFilePath)).to.eq(filePath);
     });
 
-    it('uses fallback names', () => {
+    it('uses provided name', () => {
         const fallbackNameWithoutSpaces = 'filename';
-        const fallbackNameWithSpaces = 'with spaces';
         const filePath = '/a/b/';
 
         expect(
             ensureTracePath({
                 fs,
                 outPath: filePath,
-                name: fallbackNameWithoutSpaces + zipExt,
+                name: fallbackNameWithoutSpaces + TRACE_FILE_EXT,
             }),
-            `fails for ${fallbackNameWithoutSpaces}${zipExt}`
-        ).to.eq(filePath + fallbackNameWithoutSpaces + zipExt);
+            `fails for ${fallbackNameWithoutSpaces}${TRACE_FILE_EXT}`
+        ).to.eq(filePath + fallbackNameWithoutSpaces + TRACE_FILE_EXT);
 
         expect(
             ensureTracePath({
@@ -47,34 +42,19 @@ describe('ensure trace path', () => {
                 name: fallbackNameWithoutSpaces,
             }),
             `fails for ${fallbackNameWithoutSpaces}`
-        ).to.eq(filePath + fallbackNameWithoutSpaces + zipExt);
-
-        expect(
-            ensureTracePath({
-                fs,
-                outPath: filePath,
-                name: fallbackNameWithSpaces + zipExt,
-            }),
-            `fails for ${fallbackNameWithSpaces}${zipExt}`
-        ).to.eq(filePath + fallbackNameWithSpaces.replace(' ', '_') + zipExt);
-
-        expect(
-            ensureTracePath({
-                fs,
-                outPath: filePath,
-                name: fallbackNameWithSpaces,
-            }),
-            `fails for ${fallbackNameWithSpaces}`
-        ).to.eq(filePath + fallbackNameWithSpaces.replace(' ', '_') + zipExt);
+        ).to.eq(filePath + fallbackNameWithoutSpaces + TRACE_FILE_EXT);
     });
 
-    it('generates new file name if not provided', () => {
-        const filePath = '/a/b';
-        const traceFilePath = ensureTracePath({
-            fs,
-            outPath: filePath,
-        });
-        expect(traceFilePath.endsWith(zipExt)).to.eq(true);
-        expect(fs.dirname(traceFilePath)).to.eq(filePath);
+    it('ensures directory exists', () => {
+        const outPath = '/a/b/d';
+        const name = `b${TRACE_FILE_EXT}`;
+        expect(
+            ensureTracePath({
+                fs,
+                outPath,
+                name,
+            })
+        ).to.eq(fs.join(outPath, name));
+        expect(fs.directoryExistsSync(outPath)).to.eq(true);
     });
 });
