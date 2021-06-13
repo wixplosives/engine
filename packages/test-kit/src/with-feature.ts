@@ -80,8 +80,7 @@ export interface IWithFeatureOptions extends IWithFeatureOptionsBase, playwright
 
 export interface Tracing {
     /**
-     * path to the location of the trace file.
-     * can be either the path to the file itself (include the .zip extension), or to the base directory where the file will be created
+     * path to a directory where the trace file will be saved
      * @default process.cwd()
      */
     outPath?: string;
@@ -96,7 +95,8 @@ export interface Tracing {
      */
     snapshots?: boolean;
     /**
-     * name of the zip file if not provided in outPath
+     * name of the trace file
+     * @default random string
      */
     name?: string;
 }
