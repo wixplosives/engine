@@ -1,15 +1,17 @@
 import { createDisposables, TopLevelConfig } from '@wixc3/engine-core';
 import isCI from 'is-ci';
+import fs from '@file-services/node';
 import playwright from 'playwright-core';
 import type { PerformanceMetrics } from '@wixc3/engine-scripts';
 import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
+import { ensureTracePath } from './utils';
 import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
-export interface IFeatureExecutionOptions {
+export interface IWithFeatureOptionsBase {
     /**
      * feature file name scoped to feature root directory.
      * if feature name is the same as folder name, scoping is unnecessary.
@@ -63,9 +65,7 @@ export interface IFeatureExecutionOptions {
 
     /** Passed down to `browser.newContext()` */
     browserContextOptions?: playwright.BrowserContextOptions;
-}
 
-export interface IWithFeatureOptions extends IFeatureExecutionOptions, playwright.LaunchOptions {
     /**
      * If we want to test the engine against a running application, proveide the port of the application.
      * It can be extracted from the log printed after 'engineer start' or 'engine run'
@@ -74,6 +74,36 @@ export interface IWithFeatureOptions extends IFeatureExecutionOptions, playwrigh
 
     /** Specify directory where features will be looked up within the package */
     featureDiscoveryRoot?: string;
+}
+
+export interface IWithFeatureOptions extends IWithFeatureOptionsBase, playwright.LaunchOptions {}
+
+export interface Tracing {
+    /**
+     * path to the location of the trace file.
+     * can be either the path to the fuile itself (include the .zip extension), or to the base directory where the file will be created
+     * @default process.cwd()
+     */
+    tracePath?: string;
+    /**
+     * should trace include screenshots
+     * @default true
+     */
+    screenshots?: boolean;
+    /**
+     * should trace include snapshots
+     * @default true
+     */
+    snapshots?: boolean;
+    /**
+     * name of the zip file if not provided in tracePath
+     */
+    traceName?: string;
+}
+
+export interface IFeatureExecutionOptions
+    extends Omit<IWithFeatureOptionsBase, 'runningApplicationPort' | 'featureDiscoveryRoot'> {
+    tracing?: Tracing;
 }
 
 let browser: playwright.Browser | undefined = undefined;
@@ -173,6 +203,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams = suiteQueryParams,
                 config = suiteConfig,
                 browserContextOptions = suiteBrowserContextOptions,
+                tracing,
             }: IFeatureExecutionOptions = {},
             navigationOptions?: Parameters<playwright.Page['goto']>[1]
         ) {
@@ -204,6 +235,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             });
 
             const browserContext = await browser.newContext(browserContextOptions);
+            if (tracing) {
+                const traceDirPath = fs.resolve(tracing.tracePath ?? process.cwd());
+                const { screenshots, snapshots } = { ...tracing, screenshots: true, snapshots: true };
+                await browserContext.tracing.start({ screenshots, snapshots });
+                disposeAfterEach.add(() =>
+                    browserContext.tracing.stop({
+                        path: ensureTracePath({ filePath: traceDirPath, fs, fallbackName: tracing.traceName }),
+                    })
+                );
+            }
             browserContexts.add(browserContext);
             browserContext.on('page', (page) => {
                 page.setDefaultNavigationTimeout(30_000);

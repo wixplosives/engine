@@ -3,6 +3,9 @@
   "version": "19.0.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "mocha \"test/**/*.unit.ts?(x)\""
+  },
   "dependencies": {
     "@wixc3/engine-scripts": "^19.0.3",
     "is-ci": "^3.0.0",
