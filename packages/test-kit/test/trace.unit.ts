@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { createMemoryFs } from '@file-services/memory';
-import { ensureTracePath, TRACE_FILE_EXT } from '../src/utils';
+import { ensureTracePath, TRACE_FILE_EXT } from '@wixc3/engine-test-kit/dist/utils';
 
 describe('ensure trace path', () => {
     const fs = createMemoryFs({
