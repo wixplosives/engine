@@ -1,9 +1,8 @@
 import type webpack from 'webpack';
-import VirtualModulesPlugin from 'webpack-virtual-modules';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import fs from '@file-services/node';
 import { SetMultiMap } from '@wixc3/engine-core';
-import { createMainEntrypoint, IConfigDefinition } from '@wixc3/engine-scripts';
+import { createMainEntrypoint, createVirtualEntries, IConfigDefinition } from '@wixc3/engine-scripts';
 import guiFeature, { mainDashboardEnv } from './gui.feature';
 import { devServerEnv } from './dev-server.feature';
 
@@ -24,10 +23,9 @@ guiFeature.setup(
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
         const virtualModules: Record<string, string> = {};
 
-        const entryPath = fs.join(__dirname, 'main-dashboard-web-entry.js');
         const configurations = new SetMultiMap<string, IConfigDefinition>();
 
-        virtualModules[entryPath] = createMainEntrypoint({
+        virtualModules['index'] = createMainEntrypoint({
             features,
             childEnvs: [],
             envName: mainDashboardEnv.env,
@@ -43,7 +41,6 @@ guiFeature.setup(
         engineerWebpackConfigs.register(
             createDashboardConfig({
                 baseConfig,
-                entryPath,
                 virtualModules,
                 title,
                 favicon,
@@ -60,25 +57,25 @@ guiFeature.setup(
 
 function createDashboardConfig({
     baseConfig,
-    entryPath,
     virtualModules,
     outputPath,
     title,
     favicon,
 }: {
     baseConfig: webpack.Configuration;
-    entryPath: string;
     virtualModules: Record<string, string>;
     title?: string;
     favicon?: string;
     outputPath: string;
 }): webpack.Configuration {
-    const { plugins: basePlugins = [] } = baseConfig;
+    const { module: baseModule = {}, plugins: basePlugins = [] } = baseConfig;
+    const { rules: baseRules = [] } = baseModule;
+    const { loaderRule, entries } = createVirtualEntries(virtualModules);
+
     return {
         ...baseConfig,
-        entry: {
-            index: entryPath,
-        },
+        mode: 'development',
+        entry: entries,
         target: 'web',
         plugins: [
             ...basePlugins,
@@ -88,9 +85,8 @@ function createDashboardConfig({
                 title,
                 favicon,
             }),
-            new VirtualModulesPlugin(virtualModules),
         ],
-        mode: 'development',
+        module: { ...baseModule, rules: [...baseRules, loaderRule] },
         devtool: 'source-map',
         output: {
             ...baseConfig.output,
