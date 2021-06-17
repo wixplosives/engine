@@ -201,8 +201,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    const defaultTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
-
     return {
         async getLoadedFeature(
             {
@@ -212,7 +210,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams = suiteQueryParams,
                 config = suiteConfig,
                 browserContextOptions = suiteBrowserContextOptions,
-                tracing,
+                tracing = suiteTracing,
             }: IFeatureExecutionOptions = {},
             navigationOptions?: Parameters<playwright.Page['goto']>[1]
         ) {
@@ -243,13 +241,13 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams,
             });
             const browserContext = await browser.newContext(browserContextOptions);
-            if (defaultTracing || tracing) {
-                if (typeof tracing === 'boolean') {
-                    tracing = {};
-                }
+            const sanitizedSuiteTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+            const sanitizedTracing = typeof tracing === 'boolean' ? {} : tracing;
+
+            if (sanitizedTracing) {
                 const { screenshots, snapshots, name, outPath } = {
-                    ...defaultTracing,
-                    ...tracing,
+                    ...sanitizedTracing,
+                    ...sanitizedSuiteTracing,
                     screenshots: true,
                     snapshots: true,
                     outPath: process.cwd(),
