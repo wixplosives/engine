@@ -141,7 +141,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         runningApplicationPort,
         config: suiteConfig,
         featureDiscoveryRoot,
-        tracing: suiteTracing = process.env.TRACING ? true : undefined,
+        tracing: suiteTracing = process.env.TRACING_PATH ? true : undefined,
     } = withFeatureOptions;
 
     if (
@@ -249,7 +249,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     ...tracing,
                     screenshots: true,
                     snapshots: true,
-                    outPath: process.env.TRACING ?? process.cwd(),
+                    outPath: process.env.TRACING_PATH ?? process.cwd(),
                 };
                 await browserContext.tracing.start({ screenshots, snapshots });
                 disposeAfterEach.add((mochaContext) => {
