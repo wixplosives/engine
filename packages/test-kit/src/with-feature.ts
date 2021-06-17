@@ -261,7 +261,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         path: ensureTracePath({
                             outPath,
                             fs,
-                            name: name ?? testName?.replace(/(\W+)/gi, '-'),
+                            name: name ?? testName?.replace(/(\W+)/gi, '-').slice(1),
                         }),
                     });
                 });
