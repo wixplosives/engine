@@ -236,7 +236,7 @@ devServerFeature.setup(
                 );
                 if (webpackHot) {
                     const hotMiddleware = webpackHotMiddleware(compiler);
-                    disposables.add(() => hotMiddleware.close());
+                    disposables.add(hotMiddleware.close);
                     app.use(hotMiddleware);
                 }
             }
@@ -311,7 +311,7 @@ devServerFeature.setup(
         });
         return {
             application,
-            devServerActions: { close: () => disposables.dispose() },
+            devServerActions: { close: disposables.dispose },
         };
     }
 );

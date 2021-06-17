@@ -178,6 +178,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
+    afterEach(disposeAfterEach.dispose);
+
     const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
     const browserContexts = new Set<playwright.BrowserContext>();
     afterEach('close pages', async function () {
@@ -190,7 +192,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
         browserContexts.clear();
     });
-    afterEach(disposeAfterEach.dispose);
 
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
