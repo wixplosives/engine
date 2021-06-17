@@ -311,7 +311,7 @@ devServerFeature.setup(
         });
         return {
             application,
-            devServerActions: { close: disposables.dispose },
+            devServerActions: { close: () => disposables.dispose() },
         };
     }
 );

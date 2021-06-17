@@ -128,7 +128,7 @@ if (typeof after !== 'undefined') {
 }
 
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
-    const disposeAfterEach = createDisposables<Mocha.Context>();
+    const disposeAfterEach = createDisposables();
     const {
         headless,
         devtools,
@@ -141,7 +141,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         runningApplicationPort,
         config: suiteConfig,
         featureDiscoveryRoot,
-        tracing: suiteTracing = process.env.TRACING_PATH ? true : undefined,
+        tracing: suiteTracing = process.env.TRACING ? true : undefined,
     } = withFeatureOptions;
 
     if (
@@ -178,17 +178,20 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    afterEach(function () {
-        return disposeAfterEach.dispose(this);
-    });
-
+    const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
     const browserContexts = new Set<playwright.BrowserContext>();
-    afterEach('close pages', async () => {
+    afterEach('close pages', async function () {
+        for (const tracingDisposable of tracingDisposables) {
+            await tracingDisposable(this.test?.title);
+        }
+        tracingDisposables.clear();
         for (const browserContext of browserContexts) {
             await browserContext.close();
         }
         browserContexts.clear();
     });
+    afterEach(disposeAfterEach.dispose);
+
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
             const errorsText = capturedErrors.join('\n');
@@ -197,7 +200,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    const defaultTracoing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+    const defaultTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
 
     return {
         async getLoadedFeature(
@@ -238,26 +241,26 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 configName: newConfigName,
                 queryParams,
             });
-
             const browserContext = await browser.newContext(browserContextOptions);
-            if (defaultTracoing || tracing) {
+            if (defaultTracing || tracing) {
                 if (typeof tracing === 'boolean') {
                     tracing = {};
                 }
                 const { screenshots, snapshots, name, outPath } = {
-                    ...defaultTracoing,
+                    ...defaultTracing,
                     ...tracing,
                     screenshots: true,
                     snapshots: true,
-                    outPath: process.env.TRACING_PATH ?? process.cwd(),
+                    outPath:
+                        process.env.TRACING && process.env.TRACING !== 'true' ? process.env.TRACING : process.cwd(),
                 };
                 await browserContext.tracing.start({ screenshots, snapshots });
-                disposeAfterEach.add((mochaContext) => {
+                tracingDisposables.add((testName) => {
                     return browserContext.tracing.stop({
                         path: ensureTracePath({
                             outPath,
                             fs,
-                            name: name ?? mochaContext?.currentTest?.title?.replace(/(\W+)/gi, '-'),
+                            name: name ?? testName?.replace(/(\W+)/gi, '-'),
                         }),
                     });
                 });

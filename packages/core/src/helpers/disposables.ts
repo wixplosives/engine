@@ -1,21 +1,19 @@
-export function createDisposables<Context extends unknown>() {
-    const disposables = new Set<(disposeContext?: Context) => unknown>();
+export function createDisposables() {
+    const disposables = new Set<() => unknown>();
 
     return {
-        async dispose(disposeContext?: Context) {
+        async dispose() {
             const toDispose = new Set(Array.from(disposables).reverse());
             disposables.clear();
             for (const dispose of toDispose) {
-                await dispose(disposeContext);
+                await dispose();
             }
         },
-        add<T extends { dispose(disposeContext?: Context): unknown } | ((disposeContext?: Context) => unknown)>(
-            disposable: T
-        ): T {
+        add<T extends { dispose(): unknown } | (() => unknown)>(disposable: T): T {
             if (typeof disposable === 'function') {
                 disposables.add(disposable);
             } else {
-                disposables.add((params) => disposable.dispose(params));
+                disposables.add(() => disposable.dispose());
             }
             return disposable;
         },
