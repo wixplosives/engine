@@ -236,7 +236,7 @@ devServerFeature.setup(
                 );
                 if (webpackHot) {
                     const hotMiddleware = webpackHotMiddleware(compiler);
-                    disposables.add(() => new Promise<void>((res) => hotMiddleware.close(res)));
+                    disposables.add(() => hotMiddleware.close());
                     app.use(hotMiddleware);
                 }
             }
