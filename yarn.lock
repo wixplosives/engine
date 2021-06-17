@@ -987,30 +987,32 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@stylable/build-tools@^4.2.5":
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/@stylable/build-tools/-/build-tools-4.2.5.tgz#3678a5004e0874a7f5a214eb7cee5a98dece4c8a"
-  integrity sha512-xDUhpPk9SGWZDz2ayutP377Mq8nRFK0ueZGxmFQTCyVbnD3LQLqcOsU20MmhkJuU6s9V4CgGAkEJ7gpGeqNCgw==
+"@stylable/build-tools@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/build-tools/-/build-tools-4.3.0.tgz#dc3f462f7e729615dfb2dc7e1710f6e8cea95941"
+  integrity sha512-WTeWO5kCnv9+ZL6oJJzNyg+eHWH1HjXmAOQU+67IQLc3RlM0Ck0GYP9pXoIxIx92Yah595Q1h46BZx6KwLXHgQ==
   dependencies:
-    "@stylable/core" "^4.2.5"
+    "@stylable/core" "^4.3.0"
     find-config "^1.0.0"
 
-"@stylable/cli@^4.2.5":
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-4.2.5.tgz#4f1d68b339b445529b32c2d707dc945630e88285"
-  integrity sha512-WiuiCvmktPYdzE72/tAq4jCqTGOMUllHKf3T+3hzTLkcU+qyzkd8uMM71TzY/tDo2jpM32cFcF9I4z9JxrbIxQ==
+"@stylable/cli@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-4.3.0.tgz#d906be63ad3673ddc7bcd548197610afc67d5563"
+  integrity sha512-i+AA4MMWfCvWzmWk8PcFRXEvMJK9c5bJ3/XmyM91FFHeC11KYNjFI6mNdAp3R1aY43MOP2gVkamqTY5WMjY3IQ==
   dependencies:
-    "@stylable/core" "^4.2.5"
-    "@stylable/node" "^4.2.5"
-    "@stylable/optimizer" "^4.2.5"
+    "@file-services/node" "^5.3.1"
+    "@file-services/types" "^5.3.1"
+    "@stylable/core" "^4.3.0"
+    "@stylable/node" "^4.3.0"
+    "@stylable/optimizer" "^4.3.0"
     lodash.camelcase "^4.3.0"
     lodash.upperfirst "^4.3.1"
     yargs "^17.0.1"
 
-"@stylable/core@^4.2.5":
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.2.5.tgz#0be1edfd2e2c5abadc05be4d59dbf94a31ad90f0"
-  integrity sha512-fQ4KqVRNDxjWPc6UJpE7WLONTBfPVcO97UQiUv7fPVGM/4VU1GyporsLYjYmmP1y1L55NFKowsBnBD1UHf1//g==
+"@stylable/core@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.3.0.tgz#e21571c5c24a28fb6a73e25d7af21bf96a873ae0"
+  integrity sha512-nHAVPeEIPcFG6qYv5xZthDeXGfXgUfqPjdCXeb6SLxhs1SY0slwrKQMtFNfmhfbxbbrBMorOdSV0F7VNAPIdNw==
   dependencies:
     balanced-match "^2.0.0"
     css-selector-tokenizer "^0.8.0"
@@ -1019,53 +1021,55 @@
     is-vendor-prefixed "^4.0.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
-    postcss "^8.3.0"
+    postcss "^8.3.4"
     postcss-js "^3.0.3"
     postcss-nested "^5.0.5"
-    postcss-safe-parser "^5.0.2"
+    postcss-safe-parser "^6.0.0"
     postcss-value-parser "^4.1.0"
     toky "^0.1.0"
 
-"@stylable/module-utils@^4.2.5":
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-4.2.5.tgz#5a6905e5ff4d4dc51a67f1ce164c119fac94971e"
-  integrity sha512-2X0kJrqTeANgt0SbuJUftbYNEXKDaBkddbzCfk7gKBEBMWTuYGdUVxNIzgr2WuxQkC9XAOjeo5zVwMCEbqHD/g==
+"@stylable/module-utils@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-4.3.0.tgz#b0ee4bea63ffbf28f27b2974a121a540fb9b7b8c"
+  integrity sha512-aSVqyNMQne7zI1nHkppCFPB7L4hG0PCs8H/swJx7x8Eo1gOVXsMcm6+Ou81OWu4bInkHfG/vMQU4LGHbsMEhkg==
   dependencies:
-    "@stylable/core" "^4.2.5"
+    "@stylable/core" "^4.3.0"
+    toky "^0.1.0"
+    vlq "^1.0.1"
 
-"@stylable/node@^4.2.5":
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-4.2.5.tgz#4f0c1d84a5f9da8de22ebae514ab955223fbea7b"
-  integrity sha512-97xkb+MuVkE83aXrQHd71u65tHRfaOlF3q+LQwgW+A+ta2r9w/M9ZnZuQzc8r9W6dBWM2r3wM0+OnRAWeHKtJA==
+"@stylable/node@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-4.3.0.tgz#7ed9ce7b8fc67f9082a6ffbd314d1cd824e5c7eb"
+  integrity sha512-MOKtSTsxuCpZ/d/h5lz29EvdPwsieBo5fBNMUJik6xCHRqjRBt7lLn8DItzOmvk8ZLVsnS903JT5hFq52I/+4Q==
   dependencies:
-    "@stylable/core" "^4.2.5"
-    "@stylable/module-utils" "^4.2.5"
+    "@stylable/core" "^4.3.0"
+    "@stylable/module-utils" "^4.3.0"
     find-config "^1.0.0"
 
-"@stylable/optimizer@^4.2.5":
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-4.2.5.tgz#91df4b2b618a4f57e1b4097af9fe8c3755b30f5c"
-  integrity sha512-XJ9sRFJIG2lNtFoVgd0WCTNBTgzLhbMmN2BwUYi++M7Gqhk/5NjzI/+pN08/cGIatTTOh/jNsujQ23oVtySh6A==
+"@stylable/optimizer@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-4.3.0.tgz#0f2c81579f56da671f4c93248866e2f9b99ca2e4"
+  integrity sha512-dAO32sNUxepXLpcehBSdQKzw8P5lbKBethmb+xji4yGhrTvybE0yYwV3F/ktuRufuScna840K5g+j4h2zqY45A==
   dependencies:
-    "@stylable/core" "^4.2.5"
+    "@stylable/core" "^4.3.0"
     csso "^4.2.0"
-    postcss "^8.3.0"
+    postcss "^8.3.4"
 
-"@stylable/runtime@^4.2.5":
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-4.2.5.tgz#7ad78c601f8b9326a811da8704e4077ef5858e71"
-  integrity sha512-xeH3xUBI57UkPk/dft8SR5NF8LVf0rv2qpuUYgHC870GEJ5EHsm+o20/nwxA/xPFZyqAejUEq0sBVGRMjUZtZw==
+"@stylable/runtime@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-4.3.0.tgz#7358203bee814f8530f5c0f07929c282f73b3a58"
+  integrity sha512-pCPPiG8hZkusnSwCR7GhZpq1VpkElGXkrGn05KWOEC3/FVYuGPuct7qFB0Uj+1H0LlBIOUG44TPaOBo+TLUZ4w==
 
-"@stylable/webpack-plugin@^4.2.5":
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/@stylable/webpack-plugin/-/webpack-plugin-4.2.5.tgz#cdf21fe4c564b585a10884bf02b21f45278f951b"
-  integrity sha512-PDRFUd2IQmQpB708s554/pkAKZLoGLsaMmzeorniJqFwuzOuwL/Zuj9qxgsGUfw+5AXSLenGGOPLSAb7FsYNig==
+"@stylable/webpack-plugin@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stylable/webpack-plugin/-/webpack-plugin-4.3.0.tgz#6743d3d265aff2b3879016e3dbd463ae3ff27a43"
+  integrity sha512-/P0zDzmpCEzk1jXwU+a+Othli+fw6xl9nvR47rSvlYDOOyu3i1jwlyVdRvYRAo+HT6AXkob9GN7aADfJxUe3vg==
   dependencies:
-    "@stylable/build-tools" "^4.2.5"
-    "@stylable/module-utils" "^4.2.5"
-    "@stylable/node" "^4.2.5"
-    "@stylable/optimizer" "^4.2.5"
-    "@stylable/runtime" "^4.2.5"
+    "@stylable/build-tools" "^4.3.0"
+    "@stylable/module-utils" "^4.3.0"
+    "@stylable/node" "^4.3.0"
+    "@stylable/optimizer" "^4.3.0"
+    "@stylable/runtime" "^4.3.0"
     decache "^4.6.0"
     find-config "^1.0.0"
     lodash.clonedeep "^4.5.0"
@@ -3634,9 +3638,9 @@ globals@^13.6.0, globals@^13.9.0:
     type-fest "^0.20.2"
 
 globby@^11.0.2, globby@^11.0.3:
-  version "11.0.3"
-  resolved "https://registry.yarnpkg.com/globby/-/globby-11.0.3.tgz#9b1f0cb523e171dd1ad8c7b2a9fb4b644b9593cb"
-  integrity sha512-ffdmosjA807y7+lA1NM0jELARVmYul/715xiILEjo3hBLPTcirgQNnXECn5g3mtR8TOLCVbkfua1Hpen25/Xcg==
+  version "11.0.4"
+  resolved "https://registry.yarnpkg.com/globby/-/globby-11.0.4.tgz#2cbaff77c2f2a62e71e9b2813a67b97a3a3001a5"
+  integrity sha512-9O4MVG9ioZJ08ffbcyVYyLOJLk5JQ688pJ4eMGLpdWLHq/Wr1D9BlriLQyL0E+jbkuePVZXYFj47QM/v093wHg==
   dependencies:
     array-union "^2.1.0"
     dir-glob "^3.0.1"
@@ -4646,9 +4650,9 @@ make-fetch-happen@^8.0.9:
     ssri "^8.0.0"
 
 make-fetch-happen@^9.0.1:
-  version "9.0.2"
-  resolved "https://registry.yarnpkg.com/make-fetch-happen/-/make-fetch-happen-9.0.2.tgz#aa8c0e4a5e3a5f2be86c54d3abed44fe5a32ad5d"
-  integrity sha512-UkAWAuXPXSSlVviTjH2We20mtj1NnZW2Qq/oTY2dyMbRQ5CR3Xed3akCDMnM7j6axrMY80lhgM7loNE132PfAw==
+  version "9.0.3"
+  resolved "https://registry.yarnpkg.com/make-fetch-happen/-/make-fetch-happen-9.0.3.tgz#57bbfb5b859807cd28005ca85aa6a72568675e24"
+  integrity sha512-uZ/9Cf2vKqsSWZyXhZ9wHHyckBrkntgbnqV68Bfe8zZenlf7D6yuGMXvHZQ+jSnzPkjosuNP1HGasj1J4h8OlQ==
   dependencies:
     agentkeepalive "^4.1.3"
     cacache "^15.2.0"
@@ -5175,9 +5179,9 @@ npm-normalize-package-bin@^1.0.0, npm-normalize-package-bin@^1.0.1:
   integrity sha512-EPfafl6JL5/rU+ot6P3gRSCpPDW5VmIzX959Ob1+ySFUuuYHWHekXpwdUZcKP5C+DS4GEtdJluwBjnsNDl+fSA==
 
 npm-package-arg@^8.0.0, npm-package-arg@^8.0.1, npm-package-arg@^8.1.0, npm-package-arg@^8.1.2:
-  version "8.1.4"
-  resolved "https://registry.yarnpkg.com/npm-package-arg/-/npm-package-arg-8.1.4.tgz#8001cdbc4363997b8ef6c6cf7aaf543c5805879d"
-  integrity sha512-xLokoCFqj/rPdr3LvcdDL6Kj6ipXGEDHD/QGpzwU6/pibYUOXmp5DBmg76yukFyx4ZDbrXNOTn+BPyd8TD4Jlw==
+  version "8.1.5"
+  resolved "https://registry.yarnpkg.com/npm-package-arg/-/npm-package-arg-8.1.5.tgz#3369b2d5fe8fdc674baa7f1786514ddc15466e44"
+  integrity sha512-LhgZrg0n0VgvzVdSm1oiZworPbTxYHUJCgtsJW8mGvlDpxTM1vSJc3m5QZeUkhAHIzbz3VCHd/R4osi1L1Tg/Q==
   dependencies:
     hosted-git-info "^4.0.1"
     semver "^7.3.4"
@@ -5816,12 +5820,10 @@ postcss-nested@^5.0.5:
   dependencies:
     postcss-selector-parser "^6.0.4"
 
-postcss-safe-parser@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/postcss-safe-parser/-/postcss-safe-parser-5.0.2.tgz#459dd27df6bc2ba64608824ba39e45dacf5e852d"
-  integrity sha512-jDUfCPJbKOABhwpUKcqCVbbXiloe/QXMcbJ6Iipf3sDIihEzTqRCeMBfRaOHxhBuTYqtASrI1KJWxzztZU4qUQ==
-  dependencies:
-    postcss "^8.1.0"
+postcss-safe-parser@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/postcss-safe-parser/-/postcss-safe-parser-6.0.0.tgz#bb4c29894171a94bc5c996b9a30317ef402adaa1"
+  integrity sha512-FARHN8pwH+WiS2OPCxJI8FuRJpTVnn6ZNFiqAM2aeW2LwTHWWmWgIyKC6cUo0L8aeKiF/14MNvnpls6R2PBeMQ==
 
 postcss-selector-parser@^6.0.2, postcss-selector-parser@^6.0.4:
   version "6.0.6"
@@ -5836,10 +5838,10 @@ postcss-value-parser@^4.1.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.1.0.tgz#443f6a20ced6481a2bda4fa8532a6e55d789a2cb"
   integrity sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
 
-postcss@^8.1.0, postcss@^8.1.6, postcss@^8.2.15, postcss@^8.3.0:
-  version "8.3.4"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.3.4.tgz#41ece1c43f2f7c74dc7d90144047ce052757b822"
-  integrity sha512-/tZY0PXExXXnNhKv3TOvZAOUYRyuqcCbBm2c17YMDK0PlVII3K7/LKdt3ScHL+hhouddjUWi+1sKDf9xXW+8YA==
+postcss@^8.1.6, postcss@^8.2.15, postcss@^8.3.4:
+  version "8.3.5"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.3.5.tgz#982216b113412bc20a86289e91eb994952a5b709"
+  integrity sha512-NxTuJocUhYGsMiMFHDUkmjSKT3EdH4/WbGF6GCi1NDGk+vbcUTun4fpbOqaPtD8IIsztA2ilZm2DhYCuyN58gA==
   dependencies:
     colorette "^1.2.2"
     nanoid "^3.1.23"
@@ -7354,6 +7356,11 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
+vlq@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/vlq/-/vlq-1.0.1.tgz#c003f6e7c0b4c1edd623fd6ee50bbc0d6a1de468"
+  integrity sha512-gQpnTgkubC6hQgdIcRdYGDSDc+SaujOdyesZQMv6JlfQee/9Mp0Qhnys6WxDWvQnL5WZdT7o2Ul187aSt0Rq+w==
+
 watchpack@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-2.2.0.tgz#47d78f5415fe550ecd740f99fe2882323a58b1ce"
@@ -7416,10 +7423,10 @@ webpack-sources@^2.3.0:
     source-list-map "^2.0.1"
     source-map "^0.6.1"
 
-webpack@^5.39.0:
-  version "5.39.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.39.0.tgz#37d6899f1f40c31d5901abc0f39bc8cc7224138c"
-  integrity sha512-25CHmuDj+oOTyteI13sUqNlCnjCnySuhiKWE/cRYPQYeoQ3ijHgyWX27CiyUKLNGq27v8S0mrksyTreT/xo7pg==
+webpack@^5.39.1:
+  version "5.39.1"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.39.1.tgz#d1e014b6d71e1aef385316ad528f21cd5b1f9784"
+  integrity sha512-ulOvoNCh2PvTUa+zbpRuEb1VPeQnhxpnHleMPVVCq3QqnaFogjsLyps+o42OviQFoaGtTQYrUqDXu1QNkvUPzw==
   dependencies:
     "@types/eslint-scope" "^3.7.0"
     "@types/estree" "^0.0.47"
@@ -7580,7 +7587,12 @@ write-pkg@^4.0.0:
     type-fest "^0.4.1"
     write-json-file "^3.2.0"
 
-ws@^7.4.6, ws@~7.4.2:
+ws@^7.4.6:
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.0.tgz#0033bafea031fb9df041b2026fc72a571ca44691"
+  integrity sha512-6ezXvzOZupqKj4jUqbQ9tXuJNo+BR2gU8fFRk3XCP3e0G6WT414u5ELe6Y0vtp7kmSJ3F7YWObSNr1ESsgi4vw==
+
+ws@~7.4.2:
   version "7.4.6"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==

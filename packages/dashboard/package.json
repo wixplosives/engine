@@ -12,7 +12,7 @@
     "react": ">=16"
   },
   "dependencies": {
-    "@stylable/runtime": "^4.2.5",
+    "@stylable/runtime": "^4.3.0",
     "@wixc3/engine-core": "^19.0.1",
     "@wixc3/engine-scripts": "^19.0.3",
     "d3-hierarchy": "^3.0.1",
