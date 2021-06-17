@@ -76,6 +76,11 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     runningApplicationPort?: number;
     /** Specify directory where features will be looked up within the package */
     featureDiscoveryRoot?: string;
+
+    /**
+     * add tracing for the entire suite, the name of the test will be used as the zip name
+     */
+    tracing?: boolean | Omit<Tracing, 'name'>;
 }
 
 export interface Tracing {
@@ -123,7 +128,7 @@ if (typeof after !== 'undefined') {
 }
 
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
-    const disposeAfterEach = createDisposables();
+    const disposeAfterEach = createDisposables<Mocha.Context>();
     const {
         headless,
         devtools,
@@ -136,6 +141,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         runningApplicationPort,
         config: suiteConfig,
         featureDiscoveryRoot,
+        tracing: suiteTracing = process.env.TRACING ? true : undefined,
     } = withFeatureOptions;
 
     if (
@@ -172,7 +178,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    afterEach(disposeAfterEach.dispose);
+    afterEach(function () {
+        return disposeAfterEach.dispose(this);
+    });
 
     const browserContexts = new Set<playwright.BrowserContext>();
     afterEach('close pages', async () => {
@@ -188,6 +196,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
         }
     });
+
+    const defaultTracoing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
 
     return {
         async getLoadedFeature(
@@ -230,22 +240,27 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             });
 
             const browserContext = await browser.newContext(browserContextOptions);
-            if (tracing) {
+            if (defaultTracoing || tracing) {
                 if (typeof tracing === 'boolean') {
                     tracing = {};
                 }
                 const { screenshots, snapshots, name, outPath } = {
+                    ...defaultTracoing,
                     ...tracing,
                     screenshots: true,
                     snapshots: true,
-                    outPath: process.cwd(),
+                    outPath: process.env.TRACING ?? process.cwd(),
                 };
                 await browserContext.tracing.start({ screenshots, snapshots });
-                disposeAfterEach.add(() =>
-                    browserContext.tracing.stop({
-                        path: ensureTracePath({ outPath, fs, name }),
-                    })
-                );
+                disposeAfterEach.add((mochaContext) => {
+                    return browserContext.tracing.stop({
+                        path: ensureTracePath({
+                            outPath,
+                            fs,
+                            name: name ?? mochaContext?.currentTest?.title?.replace(/(\W+)/gi, '-'),
+                        }),
+                    });
+                });
             }
             browserContexts.add(browserContext);
             browserContext.on('page', (page) => {
