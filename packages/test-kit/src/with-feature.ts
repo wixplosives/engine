@@ -252,8 +252,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     ...tracing,
                     screenshots: true,
                     snapshots: true,
-                    outPath:
-                        process.env.TRACING && process.env.TRACING !== 'true' ? process.env.TRACING : process.cwd(),
+                    outPath: process.cwd(),
                 };
                 await browserContext.tracing.start({ screenshots, snapshots });
                 tracingDisposables.add((testName) => {
@@ -261,7 +260,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         path: ensureTracePath({
                             outPath,
                             fs,
-                            name: name ?? testName?.replace(/(\W+)/gi, '-').slice(1),
+                            name:
+                                process.env.TRACING && process.env.TRACING !== 'true'
+                                    ? process.env.TRACING
+                                    : name ?? testName?.replace(/(\W+)/gi, '-').slice(1),
                         }),
                     });
                 });
