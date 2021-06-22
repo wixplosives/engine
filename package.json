@@ -67,7 +67,7 @@
     "source-map-loader": "^3.0.0",
     "typescript": "~4.3.4",
     "util": "^0.12.4",
-    "webpack": "^5.39.1"
+    "webpack": "^5.40.0"
   },
   "license": "MIT",
   "private": true
