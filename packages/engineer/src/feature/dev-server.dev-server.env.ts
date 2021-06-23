@@ -230,9 +230,7 @@ devServerFeature.setup(
                 disposables.add(() => new Promise<void>((res) => devMiddleware.close(res)));
                 app.use(devMiddleware);
                 compilationPromises.push(
-                    new Promise<void>((resolve) => {
-                        devMiddleware.waitUntilValid(() => resolve());
-                    })
+                    new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve()))
                 );
                 if (webpackHot) {
                     const hotMiddleware = webpackHotMiddleware(compiler);
@@ -282,9 +280,9 @@ devServerFeature.setup(
                 disposables.add(() => new Promise<void>((res) => engineerDevMiddleware.close(res)));
                 app.use(engineerDevMiddleware);
                 compilationPromises.push(
-                    new Promise<void>((resolve) => {
-                        engineerDevMiddleware.waitUntilValid(() => resolve());
-                    })
+                    new Promise<void>((resolve) =>
+                        engineerCompilers.hooks.done.tap('engineer dashboard', () => resolve())
+                    )
                 );
             }
 
