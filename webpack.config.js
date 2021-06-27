@@ -19,16 +19,8 @@ module.exports = {
                 loader: '@ts-tools/webpack-loader',
             },
             {
-                test: /\.css$/,
-                exclude: /\.st\.css$/,
-                use: ['style-loader', 'css-loader'],
-            },
-            {
                 test: /\.(png|jpg|gif|svg)$/i,
-                loader: 'url-loader',
-                options: {
-                    limit: 2048,
-                },
+                type: 'asset',
             },
         ],
     },
