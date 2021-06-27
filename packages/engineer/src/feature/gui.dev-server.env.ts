@@ -50,7 +50,7 @@ guiFeature.setup(
 
         serverListeningHandlerSlot.register(({ port, host }) => {
             console.log(`Dashboard Listening:`);
-            console.log(`Dashboard URL: http://${host}:${port}/${mainDashboardEnv.env}.html`);
+            console.log(`Dashboard URL: http://${host}:${port}/`);
         });
     }
 );
