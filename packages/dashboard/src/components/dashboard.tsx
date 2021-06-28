@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useCallback, memo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { FeaturesSelection } from './feature-selection';
-import { ServerState, isServerResponseMessage } from '../../server-types';
-import type { GraphData } from '../../graph-types';
+import { ServerState, isServerResponseMessage } from '../server-types';
+import type { GraphData } from '../graph-types';
 import { classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';
-import { FeatureGraph } from '../feature-graph';
+import { FeatureGraph } from './feature-graph';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
@@ -21,13 +21,17 @@ export interface IDashboardProps {
     fetchGraphData: (featureName: string) => Promise<GraphData>;
 }
 
-interface SelectedFeature {
+export interface SelectedFeature {
     featureName?: string;
     configName?: string;
     runtimeArguments?: string;
 }
 
-export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEnvironmentState, fetchGraphData }) => {
+export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
+    fetchServerState,
+    changeNodeEnvironmentState,
+    fetchGraphData,
+}) {
     const [serverState, setServerState] = useState<ServerState>({
         featuresWithRunningNodeEnvs: [],
         features: {},

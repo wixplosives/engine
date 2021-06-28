@@ -1,24 +1,28 @@
-import React, { useCallback, memo } from 'react';
-import { TitledElement } from '../../titled-element/titled-element';
+import React, { useCallback } from 'react';
+import { TitledElement } from './titled-element';
 import { classes, style } from './runtime-option.st.css';
 
-type InputChangeEvent = (event: React.ChangeEvent<HTMLInputElement>) => void;
-
-export interface IRuntimeOptionProps {
+export interface RuntimeOptionProps {
     index: number;
     runtimeArguments: Array<{ key: string; value: string }>;
     onChange: (runtimeArgiments: Array<{ key: string; value: string }>) => unknown;
     className?: string;
 }
 
-export const RuntimeOption = memo<IRuntimeOptionProps>(({ runtimeArguments, index, onChange, className }) => {
+export const RuntimeOption = React.memo<RuntimeOptionProps>(function RuntimeOption({
+    runtimeArguments,
+    index,
+    onChange,
+    className,
+}) {
     const { key, value } = runtimeArguments[index]!;
 
-    const onValueChange = useCallback<(key: string) => InputChangeEvent>(
-        (key: string) => ({ target: { value: runtimeValue } }) => {
-            runtimeArguments.splice(index, 1, { ...runtimeArguments[index]!, [key]: runtimeValue });
-            onChange([...runtimeArguments]);
-        },
+    const onValueChange = useCallback<(key: string) => React.ChangeEventHandler<HTMLInputElement>>(
+        (key: string) =>
+            ({ target: { value: runtimeValue } }) => {
+                runtimeArguments.splice(index, 1, { ...runtimeArguments[index]!, [key]: runtimeValue });
+                onChange([...runtimeArguments]);
+            },
         [runtimeArguments, index, onChange]
     );
     return (
@@ -32,5 +36,3 @@ export const RuntimeOption = memo<IRuntimeOptionProps>(({ runtimeArguments, inde
         </div>
     );
 });
-
-RuntimeOption.displayName = 'RuntimeOption';
