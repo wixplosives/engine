@@ -28,6 +28,7 @@ export interface ICreateWebpackConfigsOptions {
     publicPath?: string;
     title?: string;
     favicon?: string;
+    htmlMeta?: Record<string, string>;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -100,6 +101,7 @@ interface ICreateWebpackConfigOptions {
     target: 'web' | 'webworker' | 'electron-renderer';
     title?: string;
     favicon?: string;
+    htmlMeta?: Record<string, string>;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     publicConfigsRoute?: string;
@@ -129,6 +131,7 @@ export function createWebpackConfig({
     externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
+    htmlMeta,
     webpackHot = false,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const { module: baseModule = {}, plugins: basePlugins = [] } = baseConfig;
@@ -164,6 +167,7 @@ export function createWebpackConfig({
                         chunks: [envName],
                         title,
                         favicon,
+                        meta: htmlMeta ?? {},
                     }),
                     new WebpackScriptAttributesPlugin({
                         scriptAttributes: {

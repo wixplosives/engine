@@ -13,7 +13,7 @@ guiFeature.setup(
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute },
+                devServerConfig: { title, favicon, htmlMeta, publicConfigsRoute, externalFeaturesRoute },
                 serverListeningHandlerSlot,
                 application,
             },
@@ -44,6 +44,7 @@ guiFeature.setup(
                 virtualModules,
                 title,
                 favicon,
+                htmlMeta,
                 outputPath: application.outputPath,
             })
         );
@@ -61,11 +62,13 @@ function createDashboardConfig({
     outputPath,
     title,
     favicon,
+    htmlMeta,
 }: {
     baseConfig: webpack.Configuration;
     virtualModules: Record<string, string>;
     title?: string;
     favicon?: string;
+    htmlMeta?: Record<string, string>;
     outputPath: string;
 }): webpack.Configuration {
     const { module: baseModule = {}, plugins: basePlugins = [] } = baseConfig;
@@ -84,6 +87,7 @@ function createDashboardConfig({
                 chunks: ['index'],
                 title,
                 favicon,
+                meta: htmlMeta ?? {},
             }),
         ],
         module: { ...baseModule, rules: [...baseRules, loaderRule] },

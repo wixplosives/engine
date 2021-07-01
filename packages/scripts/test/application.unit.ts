@@ -271,6 +271,22 @@ describe('Application', function () {
             expect(faviconHref).to.equal('favicon.ico');
         });
 
+        it('launches a built application with web environment and given metadata', async () => {
+            const app = new Application({ basePath: engineFeatureFixturePath });
+            await app.build({
+                featureName: 'engine-single/x',
+                htmlMeta: { unit_test: 'test_data' },
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run();
+            disposables.add(close);
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+            const testMetadata = await page.$('head > meta[name="unit_test"][content="test_data"]');
+            expect(testMetadata).to.not.equal(null);
+        });
+
         it(`launches a built application with node environment`, async () => {
             const app = new Application({ basePath: nodeFeatureFixturePath });
             await app.build({
