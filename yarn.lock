@@ -1155,10 +1155,10 @@
   resolved "https://registry.yarnpkg.com/@types/cors/-/cors-2.8.10.tgz#61cc8469849e5bcdd0c7044122265c39cec10cf4"
   integrity sha512-C7srjHiVG3Ey1nR6d511dtDkCEjxuN9W1HWAEjGq8kpcwmNM6JJkpC0xvabM7BXTG2wDq8Eu33iH9aQKa7IvLQ==
 
-"@types/d3-hierarchy@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@types/d3-hierarchy/-/d3-hierarchy-3.0.0.tgz#ad00bd976b38c4d12e0814dc3d634a57ea0e6e7a"
-  integrity sha512-gW9zxjPyjhMJrFqF32wz4oVV5jlbY2UhfQ0FtZmK00b6VkOTIbgLD2K/oke/epAV8TorzoA2NQiYSlNnbWlXHQ==
+"@types/d3-hierarchy@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@types/d3-hierarchy/-/d3-hierarchy-3.0.1.tgz#2bcb22ea25d7695fee8a3e6157017fc3717312e4"
+  integrity sha512-bXAS5udAD5RXfM/FsWMP9ggCl9cWXH0417Mwpw6ytSDP+Oez+XP0SLFPG5oPQc3m7ZToKg3/b4UW8hC/F6Qddw==
 
 "@types/d3-path@*":
   version "3.0.0"
