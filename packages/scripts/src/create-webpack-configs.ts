@@ -1,7 +1,6 @@
 import fs from '@file-services/node';
-import webpack, { Configuration } from 'webpack';
+import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import VirtualModulesPlugin from 'webpack-virtual-modules';
 import semverLessThan from 'semver/functions/lt';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import {
@@ -14,8 +13,10 @@ import {
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IConfigDefinition, TopLevelConfigProvider, FeatureLoaderMeta } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+import { createVirtualEntries } from './virtual-modules-loader';
+
 export interface ICreateWebpackConfigsOptions {
-    baseConfig?: Configuration;
+    baseConfig?: webpack.Configuration;
     featureName?: string;
     configName?: string;
     singleFeature?: boolean;
@@ -49,21 +50,16 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         baseConfig.output = {};
     }
     baseConfig.output.publicPath = publicPath;
+
     const configurations: webpack.Configuration[] = [];
-    const virtualModules: Record<string, string> = {};
 
     if (webEnvs.size) {
-        const plugins: webpack.WebpackPluginInstance[] = [new VirtualModulesPlugin(virtualModules)];
-        const entry: webpack.Entry = {};
         configurations.push(
             createWebpackConfig({
                 ...options,
                 baseConfig,
                 enviroments: webEnvs,
                 target: 'web',
-                virtualModules,
-                plugins,
-                entry,
             })
         );
     }
@@ -74,8 +70,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
-                virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)],
             })
         );
     }
@@ -86,8 +80,6 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                virtualModules,
-                plugins: [new VirtualModulesPlugin(virtualModules)],
             })
         );
     }
@@ -106,9 +98,6 @@ interface ICreateWebpackConfigOptions {
     enviroments: Map<string, string[]>;
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
-    virtualModules: Record<string, string>;
-    plugins?: webpack.WebpackPluginInstance[];
-    entry?: webpack.EntryObject;
     title?: string;
     favicon?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
@@ -118,21 +107,19 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
+    plugins?: webpack.WebpackPluginInstance[];
 }
 
 export function createWebpackConfig({
     baseConfig,
     target,
     enviroments,
-    virtualModules,
     featureName,
     configName,
     features,
     context,
     mode = 'development',
     outputPath,
-    plugins = [],
-    entry = {},
     publicPath,
     title,
     configurations,
@@ -143,12 +130,15 @@ export function createWebpackConfig({
     eagerEntrypoint,
     favicon,
     webpackHot = false,
-}: ICreateWebpackConfigOptions): Configuration {
+}: ICreateWebpackConfigOptions): webpack.Configuration {
+    const { module: baseModule = {}, plugins: basePlugins = [] } = baseConfig;
+    const { rules: baseRules = [] } = baseModule;
+    const entryModules: Record<string, string> = {};
+    const plugins: webpack.WebpackPluginInstance[] = [];
+
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
-        entry[envName] = entryPath;
-        virtualModules[entryPath] = createMainEntrypoint({
+        const entrypointContent = createMainEntrypoint({
             features,
             childEnvs,
             envName,
@@ -164,6 +154,8 @@ export function createWebpackConfig({
             externalFeaturesRoute,
             eagerEntrypoint,
         });
+
+        entryModules[envName] = entrypointContent;
         if (target === 'web' || target === 'electron-renderer') {
             plugins.push(
                 ...[
@@ -181,19 +173,22 @@ export function createWebpackConfig({
                 ]
             );
         }
-        if (webpackHot) {
-            // we need the hot middleware client into the env entry
-            entry[envName] = ['webpack-hot-middleware/client', entryPath];
-            plugins.push(new webpack.HotModuleReplacementPlugin());
-        }
     }
-    const { plugins: basePlugins = [] } = baseConfig;
-
+    const { loaderRule, entries } = createVirtualEntries(entryModules);
+    if (webpackHot) {
+        for (const [entryName, entryValue] of Object.entries(entries)) {
+            entries[entryName] = ['webpack-hot-middleware/client', entryValue as string];
+        }
+        // we need the hot middleware client into the env entry
+        plugins.push(new webpack.HotModuleReplacementPlugin());
+    }
     return {
         ...baseConfig,
         target,
-        entry,
+        entry: entries,
+        name: target,
         mode,
+        module: { ...baseModule, rules: [...baseRules, loaderRule] },
         devtool: mode === 'development' ? 'source-map' : false,
         context,
         output: {
@@ -211,13 +206,10 @@ export function createWebpackConfigForExternalFeature({
     baseConfig,
     target,
     enviroments,
-    virtualModules,
     features,
     context,
     mode = 'development',
     outputPath,
-    plugins = [],
-    entry = {},
     featureName,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const feature = features.get(featureName!);
@@ -225,10 +217,13 @@ export function createWebpackConfigForExternalFeature({
         throw new Error(`${featureName!} was not found after analyzing features`);
     }
 
+    const { module: baseModule = {} } = baseConfig;
+    const { rules: baseRules = [] } = baseModule;
+
+    const entryModules: Record<string, string> = {};
+
     for (const [envName, childEnvs] of enviroments) {
-        const entryPath = fs.join(context, `${envName}-${target}-entry.js`);
-        entry[envName] = entryPath;
-        virtualModules[entryPath] = createExternalBrowserEntrypoint({
+        entryModules[envName] = createExternalBrowserEntrypoint({
             ...feature,
             childEnvs,
             envName,
@@ -243,8 +238,6 @@ export function createWebpackConfigForExternalFeature({
     const externals: webpack.Configuration['externals'] = [externalFeatures];
     const { packageName, scopedName, filePath } = feature;
 
-    const { plugins: basePlugins = [] } = baseConfig;
-
     const userExternals = baseConfig.externals;
     if (userExternals) {
         if (Array.isArray(userExternals)) {
@@ -253,14 +246,15 @@ export function createWebpackConfigForExternalFeature({
             externals.push(userExternals);
         }
     }
-    const virtualModulePaths = Object.keys(virtualModules);
-    const extractExternalsMethod = extractExternals(filePath, virtualModulePaths);
+    const { loaderRule, entries } = createVirtualEntries(entryModules);
+    const extractExternalsMethod = extractExternals(filePath, Object.keys(entries));
 
     const webpackConfig: webpack.Configuration = {
         ...baseConfig,
         target,
-        entry,
+        entry: entries,
         mode,
+        module: { ...baseModule, rules: [...baseRules, loaderRule] },
         devtool: mode === 'development' ? 'source-map' : false,
         context,
         output: {
@@ -269,7 +263,6 @@ export function createWebpackConfigForExternalFeature({
             filename: `[name].${target}.js`,
             chunkFilename: `[name].${target}.js`,
         },
-        plugins: [...basePlugins, ...plugins],
         externals,
         optimization: {
             ...baseConfig.optimization,
@@ -292,25 +285,24 @@ export function createWebpackConfigForExternalFeature({
     return webpackConfig;
 }
 
-const extractExternals = (featurePath: string, ignoredRequests: string[]) => (
-    { context, request }: { context?: string; request?: string },
-    cb: (e?: Error, target?: string) => void
-) => {
-    try {
-        if (!request || !context || ignoredRequests.includes(request)) {
-            return cb();
-        }
-        const resolvedRequest = require.resolve(request, { paths: [context] });
-        if (resolvedRequest !== featurePath && fs.basename(resolvedRequest).includes('.feature.')) {
-            const packageJson = fs.findClosestFileSync(fs.dirname(resolvedRequest), 'package.json');
-            if (!packageJson) {
-                throw new Error(`could not find package.json for ${resolvedRequest}`);
+const extractExternals =
+    (featurePath: string, ignoredRequests: string[]) =>
+    ({ context, request }: { context?: string; request?: string }, cb: (e?: Error, target?: string) => void) => {
+        try {
+            if (!request || !context || ignoredRequests.includes(request) || request.includes('!=!')) {
+                return cb();
             }
-            const { name } = fs.readJsonFileSync(packageJson) as { name: string };
-            return cb(undefined, createExternalFeatureMapping(name, resolvedRequest));
+            const resolvedRequest = require.resolve(request, { paths: [context] });
+            if (resolvedRequest !== featurePath && fs.basename(resolvedRequest).includes('.feature.')) {
+                const packageJson = fs.findClosestFileSync(fs.dirname(resolvedRequest), 'package.json');
+                if (!packageJson) {
+                    throw new Error(`could not find package.json for ${resolvedRequest}`);
+                }
+                const { name } = fs.readJsonFileSync(packageJson) as { name: string };
+                return cb(undefined, createExternalFeatureMapping(name, resolvedRequest));
+            }
+            cb();
+        } catch (err) {
+            cb(err);
         }
-        cb();
-    } catch (err) {
-        cb(err);
-    }
-};
+    };

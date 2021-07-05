@@ -1,9 +1,11 @@
 import { createDisposables, TopLevelConfig } from '@wixc3/engine-core';
 import isCI from 'is-ci';
+import fs from '@file-services/node';
 import playwright from 'playwright-core';
 import type { PerformanceMetrics } from '@wixc3/engine-scripts';
 import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
+import { ensureTracePath } from './utils';
 import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 
@@ -27,7 +29,6 @@ export interface IFeatureExecutionOptions {
      * `my-feature/my-feature-fixture`
      */
     featureName?: string;
-
     /**
      * configuration file name scoped to feature root directory.
      *
@@ -44,17 +45,14 @@ export interface IFeatureExecutionOptions {
      *
      */
     configName?: string;
-
     /**
      * query parameters to open the page with
      */
     queryParams?: Record<string, string>;
-
     /**
      * runtime options that will be provided to the node environments
      */
     runOptions?: Record<string, string>;
-
     /**
      * Allows providing a Top level config
      * If configName was provided, the matching configurations will be overriden by the config provided
@@ -63,17 +61,49 @@ export interface IFeatureExecutionOptions {
 
     /** Passed down to `browser.newContext()` */
     browserContextOptions?: playwright.BrowserContextOptions;
+
+    /**
+     * Creates a playwright trace file for the test
+     */
+    tracing?: boolean | Tracing;
 }
 
-export interface IWithFeatureOptions extends IFeatureExecutionOptions, playwright.LaunchOptions {
+export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
     /**
      * If we want to test the engine against a running application, proveide the port of the application.
      * It can be extracted from the log printed after 'engineer start' or 'engine run'
      */
     runningApplicationPort?: number;
-
     /** Specify directory where features will be looked up within the package */
     featureDiscoveryRoot?: string;
+
+    /**
+     * add tracing for the entire suite, the name of the test will be used as the zip name
+     */
+    tracing?: boolean | Omit<Tracing, 'name'>;
+}
+
+export interface Tracing {
+    /**
+     * path to a directory where the trace file will be saved
+     * @default process.cwd()
+     */
+    outPath?: string;
+    /**
+     * should trace include screenshots
+     * @default true
+     */
+    screenshots?: boolean;
+    /**
+     * should trace include snapshots
+     * @default true
+     */
+    snapshots?: boolean;
+    /**
+     * name of the trace file
+     * @default random string
+     */
+    name?: string;
 }
 
 let browser: playwright.Browser | undefined = undefined;
@@ -111,6 +141,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         runningApplicationPort,
         config: suiteConfig,
         featureDiscoveryRoot,
+        tracing: suiteTracing = process.env.TRACING ? true : undefined,
     } = withFeatureOptions;
 
     if (
@@ -149,13 +180,19 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     afterEach(disposeAfterEach.dispose);
 
+    const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
     const browserContexts = new Set<playwright.BrowserContext>();
-    afterEach('close pages', async () => {
+    afterEach('close pages', async function () {
+        for (const tracingDisposable of tracingDisposables) {
+            await tracingDisposable(this.test?.title);
+        }
+        tracingDisposables.clear();
         for (const browserContext of browserContexts) {
             await browserContext.close();
         }
         browserContexts.clear();
     });
+
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
             const errorsText = capturedErrors.join('\n');
@@ -173,6 +210,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams = suiteQueryParams,
                 config = suiteConfig,
                 browserContextOptions = suiteBrowserContextOptions,
+                tracing = suiteTracing,
             }: IFeatureExecutionOptions = {},
             navigationOptions?: Parameters<playwright.Page['goto']>[1]
         ) {
@@ -202,8 +240,32 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 configName: newConfigName,
                 queryParams,
             });
-
             const browserContext = await browser.newContext(browserContextOptions);
+            const sanitizedSuiteTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+            const sanitizedTracing = typeof tracing === 'boolean' ? {} : tracing;
+
+            if (sanitizedTracing) {
+                const { screenshots, snapshots, name, outPath } = {
+                    ...sanitizedTracing,
+                    ...sanitizedSuiteTracing,
+                    screenshots: true,
+                    snapshots: true,
+                    outPath: process.cwd(),
+                };
+                await browserContext.tracing.start({ screenshots, snapshots });
+                tracingDisposables.add((testName) => {
+                    return browserContext.tracing.stop({
+                        path: ensureTracePath({
+                            outPath,
+                            fs,
+                            name:
+                                process.env.TRACING && process.env.TRACING !== 'true'
+                                    ? process.env.TRACING
+                                    : name ?? testName?.replace(/(\W+)/gi, '-').slice(1),
+                        }),
+                    });
+                });
+            }
             browserContexts.add(browserContext);
             browserContext.on('page', (page) => {
                 page.setDefaultNavigationTimeout(30_000);

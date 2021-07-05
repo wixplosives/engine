@@ -139,7 +139,7 @@ describe('Application', function () {
             });
 
             it('maps to own feature request to package requests if output path outside package directory', async () => {
-                const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
+                const tempDirPath = mkdtempSync(fs.join(os.tmpdir(), 'some-test'));
                 const app = new Application({ basePath: engineFeatureFixturePath, outputPath: tempDirPath });
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
@@ -156,7 +156,7 @@ describe('Application', function () {
             });
 
             it('uses package requests when output path is outside package path', async () => {
-                const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
+                const tempDirPath = mkdtempSync(fs.join(os.tmpdir(), 'some-test'));
                 const app = new Application({ basePath: engineFeatureFixturePath, outputPath: tempDirPath });
 
                 const manifestFilePath = fs.join(app.outputPath, manifestFileName);
@@ -202,7 +202,7 @@ describe('Application', function () {
             });
 
             it('creates a node entry with re-mapped sources', async () => {
-                const tempDirPath = fs.join(os.tmpdir(), mkdtempSync('some-test'));
+                const tempDirPath = mkdtempSync(fs.join(os.tmpdir(), 'some-test'));
 
                 disposables.add(() => rimraf.sync(tempDirPath));
 

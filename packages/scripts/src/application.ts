@@ -213,7 +213,7 @@ export class Application {
             ? staticExternalFeaturesFileName
             : `/${staticExternalFeaturesFileName}`;
 
-        const compiler = this.createCompiler({
+        const { compiler } = this.createCompiler({
             mode,
             features,
             featureName,
@@ -809,7 +809,9 @@ export class Application {
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
-        return compiler;
+        return {
+            compiler,
+        };
     }
 
     protected analyzeFeatures() {

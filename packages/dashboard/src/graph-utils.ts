@@ -1,21 +1,21 @@
 import type { HierarchyPointNode } from 'd3-hierarchy';
-import type { GraphNode, Node } from '../../graph-types';
+import type { GraphNode, Node } from './graph-types';
 
-export function translateNodeToHierarchy(features: Array<Node>) {
+export function translateNodeToHierarchy(nodes: Array<Node>) {
     const hierarchy: Record<string, GraphNode> = {
         root: { name: 'root', children: [], group: 0 },
     };
 
-    features.forEach(function (c) {
-        const group = c.group.toString();
+    for (const node of nodes) {
+        const group = node.group.toString();
 
         if (!hierarchy[group]) {
-            hierarchy[group] = { name: group, children: [], parent: hierarchy['root'], group: c.group };
+            hierarchy[group] = { name: group, children: [], parent: hierarchy['root'], group: node.group };
             hierarchy['root']!.children.push(hierarchy[group]!);
         }
 
-        hierarchy[group]!.children.push(c);
-    });
+        hierarchy[group]!.children.push(node);
+    }
 
     return hierarchy['root']!;
 }

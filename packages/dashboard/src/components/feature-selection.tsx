@@ -1,21 +1,21 @@
-import React, { useState, useMemo, useCallback, memo } from 'react';
-import type { ServerFeatureDef } from '../../../server-types';
+import React, { useState, useMemo, useCallback } from 'react';
+import type { ServerFeatureDef } from '../server-types';
 import { classes } from './feature-selection.st.css';
-import { TitledElement } from '../titled-element';
+import { TitledElement } from './titled-element';
 
 export interface FeaturesSelectionProps {
     features: Record<string, ServerFeatureDef>;
     onSelected?: (featureName?: string, configName?: string) => unknown;
 }
 
-export const FeaturesSelection = memo<FeaturesSelectionProps>(({ features, onSelected }) => {
+export const FeaturesSelection = React.memo<FeaturesSelectionProps>(({ features, onSelected }) => {
     const featureNames = useMemo(() => Object.keys(features), [features]);
     const [firstFeatureName] = featureNames;
     const [selectedFeatureName, setSelectedFeatureName] = useState<string | undefined>(firstFeatureName);
-    const configNames = useMemo(() => features[selectedFeatureName!]?.configurations ?? [], [
-        features,
-        selectedFeatureName,
-    ]);
+    const configNames = useMemo(
+        () => features[selectedFeatureName!]?.configurations ?? [],
+        [features, selectedFeatureName]
+    );
     const [firstConfigName] = configNames;
     const [selectedConfigName, setSelectedConfigName] = useState(firstConfigName);
 

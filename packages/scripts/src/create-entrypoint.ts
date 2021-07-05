@@ -70,7 +70,7 @@ export interface LoadStatementArguments
 
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
-    import { getTopWindow } from '@wixc3/engine-core';
+    import { getTopWindow } from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     ${setExternalPublicPath(args.envName, args.target, args.scopedName)}
     __webpack_public_path__= publicPath;
@@ -108,7 +108,7 @@ export function createMainEntrypoint({
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
-import * as EngineCore from '@wixc3/engine-core';
+import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
@@ -142,7 +142,7 @@ async function main() {
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
     const rootFeatureLoader = featureLoaders.get(featureName);
     if(!rootFeatureLoader) {
-        throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
+        throw new Error("cannot find feature '" + featureName + "'. available features:\\n" + Array.from(featureLoaders.keys()).join('\\n'));
     }
     const { resolvedContexts = {} } = rootFeatureLoader;
     const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);

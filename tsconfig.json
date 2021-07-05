@@ -17,6 +17,7 @@
     { "path": "./packages/scripts/test" },
 
     { "path": "./packages/test-kit/src" },
+    { "path": "./packages/test-kit/test" },
 
     { "path": "./examples/file-server" },
     { "path": "./examples/multi-env" },

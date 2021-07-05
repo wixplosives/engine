@@ -3,4 +3,5 @@ module.exports = {
     extension: ['js', 'json', 'ts', 'tsx'],
     colors: true,
     timeout: 10000,
+    'enable-source-maps': true,
 };

@@ -2,7 +2,7 @@ import { workerInitializer } from '@wixc3/engine-core';
 import CodeEditor, { MAIN, PROCESSING } from './code-editor.feature';
 import { CodeService } from './code-service';
 import { ErrorService } from './error-service';
-import './style.css';
+import './style.st.css';
 
 CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { startEnvironment } }) => {
     const codeService = new CodeService();

@@ -114,7 +114,12 @@ devServerFeature.setup(
                 configExternalFeaturesPath,
                 engineConfigPath
             );
-            const { port: actualPort, app, close, socketServer } = await launchHttpServer({
+            const {
+                port: actualPort,
+                app,
+                close,
+                socketServer,
+            } = await launchHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
@@ -201,7 +206,7 @@ devServerFeature.setup(
             });
 
             // Write middleware for each of the apps
-            const compiler = application.createCompiler({
+            const { compiler } = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
@@ -222,14 +227,10 @@ devServerFeature.setup(
 
             if (compiler.compilers.length > 0) {
                 const devMiddleware = webpackDevMiddleware(compiler);
-                disposables.add(
-                    () => new Promise<void>((res) => devMiddleware.close(res))
-                );
+                disposables.add(() => new Promise<void>((res) => devMiddleware.close(res)));
                 app.use(devMiddleware);
                 compilationPromises.push(
-                    new Promise<void>((resolve) => {
-                        devMiddleware.waitUntilValid(() => resolve());
-                    })
+                    new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve()))
                 );
                 if (webpackHot) {
                     const hotMiddleware = webpackHotMiddleware(compiler);
@@ -276,14 +277,12 @@ devServerFeature.setup(
                 // If we decide to create more engineers one day we might need to rethink the index file
                 // In any case it's a fallback, full paths should still work as usual
                 const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers, { index: 'main-dashboard.html' });
-                disposables.add(
-                    () => new Promise<void>((res) => engineerDevMiddleware.close(res))
-                );
+                disposables.add(() => new Promise<void>((res) => engineerDevMiddleware.close(res)));
                 app.use(engineerDevMiddleware);
                 compilationPromises.push(
-                    new Promise<void>((resolve) => {
-                        engineerDevMiddleware.waitUntilValid(() => resolve());
-                    })
+                    new Promise<void>((resolve) =>
+                        engineerCompilers.hooks.done.tap('engineer dashboard', () => resolve())
+                    )
                 );
             }
 

@@ -11,9 +11,9 @@ export function createDisposables() {
         },
         add<T extends { dispose(): unknown } | (() => unknown)>(disposable: T): T {
             if (typeof disposable === 'function') {
-                disposables.add(disposable as () => unknown);
+                disposables.add(disposable);
             } else {
-                disposables.add(() => (disposable as { dispose(): unknown }).dispose());
+                disposables.add(() => disposable.dispose());
             }
             return disposable;
         },

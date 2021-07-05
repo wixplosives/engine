@@ -1,28 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-misused-promises */
 
 /**
  * We use Node's native module system to directly load configuration file.
  * This configuration can (and should) be written as a `.ts` file.
  */
 
-import type commander from 'commander';
+import type {Command} from 'commander';
 import { resolve } from 'path';
 import open from 'open';
 import fs from '@file-services/node';
 
 import { Application, parseCliArguments } from '@wixc3/engine-scripts';
 import { startDevServer } from './utils';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
 const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '/';
 
-export type Command = (program: typeof commander) => void;
+export type CliCommand = (program: Command) => void;
 
 export class CliApplication {
-    constructor(protected program: typeof commander, commands: Iterable<Command>) {
+    constructor(protected program: Command, commands: Iterable<CliCommand>) {
         for (const command of commands) {
             command(program);
         }
@@ -33,7 +31,7 @@ export class CliApplication {
     }
 }
 
-export const startCommand: Command = (program) =>
+export const startCommand: CliCommand = (program) =>
     program
         .command('start [path]')
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
@@ -127,7 +125,7 @@ export const startCommand: Command = (program) =>
             }
         });
 
-export function buildCommand(program: typeof commander) {
+export function buildCommand(program: Command) {
     program
         .command('build [path]')
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
@@ -212,7 +210,7 @@ export function buildCommand(program: typeof commander) {
         });
 }
 
-export function runCommand(program: typeof commander) {
+export function runCommand(program: Command) {
     program
         .command('run [path]')
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
@@ -261,7 +259,7 @@ export function runCommand(program: typeof commander) {
             }
         });
 }
-export function cleanCommand(program: typeof commander) {
+export function cleanCommand(program: Command) {
     program.command('clean [path]').action(async (path = process.cwd()) => {
         try {
             const basePath = resolve(path);
@@ -274,7 +272,7 @@ export function cleanCommand(program: typeof commander) {
     });
 }
 
-export function createCommand(program: typeof commander) {
+export function createCommand(program: Command) {
     program
         .command('create [featureName]')
         .option('--path <path>')

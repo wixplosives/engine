@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { classes, style } from './titled-element.st.css';
 
 export interface TitledElementProps {
@@ -7,7 +7,7 @@ export interface TitledElementProps {
     children: React.ReactNode;
 }
 
-export const TitledElement = memo<TitledElementProps>(({ title, className, children }) => {
+export const TitledElement = React.memo<TitledElementProps>(function TitledElement({ title, className, children }) {
     return (
         <div className={style(classes.root, className)}>
             <div className={classes.title}>{title}</div>
@@ -15,5 +15,3 @@ export const TitledElement = memo<TitledElementProps>(({ title, className, child
         </div>
     );
 });
-
-TitledElement.displayName = 'TitledElement';
