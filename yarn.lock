@@ -1074,10 +1074,10 @@
     csso "^4.2.0"
     postcss "^8.3.5"
 
-"@stylable/runtime@^4.3.3":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-4.3.3.tgz#daa415c9c269570150ff7fccb7d3cd1975f9d93e"
-  integrity sha512-pbehZJo4jyXffQ7b5teuJ6nw/spwwd5byJA5EASwYmkhMZLADh8g5jK3i2ouzvUwKC27iWSPrsgnIarzXgv8+Q==
+"@stylable/runtime@^4.3.3", "@stylable/runtime@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-4.4.0.tgz#b60bd7d1c299c85af2c3d79370d162879af39495"
+  integrity sha512-VUcGdBt1fkD76CnS/jCLWMBUUGhT6ppakE04edXy+F9Hem1Tw5S9wVViUvqvpUJOwvwHaaARqRiCnNFAUSdLwA==
 
 "@stylable/webpack-plugin@^4.3.3":
   version "4.3.3"
