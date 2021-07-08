@@ -1028,10 +1028,10 @@
     lodash.upperfirst "^4.3.1"
     yargs "^17.0.1"
 
-"@stylable/core@^4.3.3":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.3.3.tgz#49abb8eb38b3012eb28361d51079f65307ce27dd"
-  integrity sha512-gQH+FKh4egvJJ9UDxqdLW1QLU3xEwQqL2818alEsHNZ/dLF1itHfwsY61BIjLQb47GLau5zzCUDuuIGvTVx7Bg==
+"@stylable/core@^4.3.3", "@stylable/core@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.4.0.tgz#7ddef831272083f2a3a53d4d059a35d2bb2ec160"
+  integrity sha512-e2vdd2rWh6X7sfyKg6k2j58/bp3ST8KmUmw8zjdAjAOZ/xRTcf3pCR70hPf0SKnRRqZFths9o+CH1rxGnzTgZg==
   dependencies:
     balanced-match "^2.0.0"
     css-selector-tokenizer "^0.8.0"
