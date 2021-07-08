@@ -111,7 +111,8 @@ let featureUrl = '';
 let executableApp: IExecutableApplication;
 
 if (typeof after !== 'undefined') {
-    after('close browser, if open', async () => {
+    after('close browser, if open', async function () {
+        this.timeout(20_000);
         if (browser && browser.isConnected) {
             await browser.close();
         }
