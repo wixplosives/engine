@@ -35,9 +35,8 @@ export function initializeContextualEnv<
             if (!envInitializer) {
                 throw new Error(`environment initializer is not set for ${activeEnvironment.env}`);
             }
-            const contextEnvironment: Environment = { ...activeEnvironment, env };
 
-            return communication.startEnvironment(contextEnvironment, envInitializer);
+            return communication.startEnvironment({ ...activeEnvironment, env }, envInitializer);
         } else {
             throw new Error('error');
         }

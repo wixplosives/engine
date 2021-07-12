@@ -43,8 +43,6 @@ export interface ICommunicationOptions {
     connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
 }
 
-export type InferInitializer<K> = K extends EnvironmentInitializer<infer U> ? U : never;
-
 /**
  * Manages all API registrations and message forwarding
  * in each execution context.
