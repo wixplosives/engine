@@ -15,7 +15,7 @@ import type {
     SetupHandler,
 } from '../types';
 import { Environment, testEnvironmentCollision, getEnvName, isGloballyProvided } from './env';
-import { SetMultiMap } from '../helpers';
+import { deferred, SetMultiMap } from '../helpers';
 
 /*************** FEATURE ***************/
 
@@ -27,6 +27,8 @@ export class RuntimeFeature<
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
+    private disposing = false;
+    private disposePromise = deferred();
 
     constructor(
         public feature: T,
@@ -57,6 +59,10 @@ export class RuntimeFeature<
     }
 
     public async [DISPOSE](context: RuntimeEngine, envName: string) {
+        if (this.disposing) {
+            return this.disposePromise.promise;
+        }
+        this.disposing = true;
         for (const dep of this.feature.dependencies) {
             await context.dispose(dep, envName);
         }
@@ -64,6 +70,7 @@ export class RuntimeFeature<
         for (const handler of featureDisposeHandlers) {
             await handler();
         }
+        return this.disposePromise.resolve();
     }
 }
 
@@ -85,7 +92,7 @@ export class Feature<
 
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
-        this.dependencies = def.dependencies || (([] as Feature[]) as Deps);
+        this.dependencies = def.dependencies || ([] as Feature[] as Deps);
         this.api = def.api || ({} as API);
         this.context = def.context || ({} as EnvironmentContext);
         this.identifyApis();
