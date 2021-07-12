@@ -142,7 +142,7 @@ async function main() {
     ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
     const rootFeatureLoader = featureLoaders.get(featureName);
     if(!rootFeatureLoader) {
-        throw new Error("cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', '));
+        throw new Error("cannot find feature '" + featureName + "'. available features:\\n" + Array.from(featureLoaders.keys()).join('\\n'));
     }
     const { resolvedContexts = {} } = rootFeatureLoader;
     const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);

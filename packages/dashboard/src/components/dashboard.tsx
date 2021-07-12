@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useCallback, memo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { FeaturesSelection } from './feature-selection';
-import { ServerState, isServerResponseMessage } from '../../server-types';
-import type { GraphData } from '../../graph-types';
+import { ServerState, isServerResponseMessage } from '../server-types';
+import type { GraphData } from '../graph-types';
 import { classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';
-import { FeatureGraph } from '../feature-graph';
+import { FeatureGraph } from './feature-graph';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
@@ -21,18 +21,23 @@ export interface IDashboardProps {
     fetchGraphData: (featureName: string) => Promise<GraphData>;
 }
 
-interface SelectedFeature {
+export interface SelectedFeature {
     featureName?: string;
     configName?: string;
     runtimeArguments?: string;
 }
 
-export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEnvironmentState, fetchGraphData }) => {
+export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
+    fetchServerState,
+    changeNodeEnvironmentState,
+    fetchGraphData,
+}) {
     const [serverState, setServerState] = useState<ServerState>({
         featuresWithRunningNodeEnvs: [],
         features: {},
     });
 
+    const [showGraph, setShowGraph] = useState(false);
     const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>({});
     const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
 
@@ -45,7 +50,6 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
 
     const onServerEnvironmentStatusChange = useCallback(
         async (isNodeEnvActive: boolean) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const serverResponse = await changeNodeEnvironmentState(
                 selectedFeature.featureName!,
                 selectedFeature.configName!,
@@ -91,10 +95,10 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
     const hasNodeEnvironments =
         !!selectedFeature.featureName && !!serverState.features[selectedFeature.featureName]?.hasServerEnvironments;
 
-    const addRuntimeOption = useCallback(() => setRuntimeArguments([...runtimeArguments, { key: '', value: '' }]), [
-        runtimeArguments,
-        setRuntimeArguments,
-    ]);
+    const addRuntimeOption = useCallback(
+        () => setRuntimeArguments([...runtimeArguments, { key: '', value: '' }]),
+        [runtimeArguments, setRuntimeArguments]
+    );
 
     const isNodeEnvRunning = !!serverState.featuresWithRunningNodeEnvs.find(
         ([featureName, configName]) =>
@@ -121,15 +125,26 @@ export const Dashboard = memo<IDashboardProps>(({ fetchServerState, changeNodeEn
                 displayServerToggle={hasNodeEnvironments}
                 actionBtnClassName={classes.actionButton}
             />
-            {selectedFeature?.featureName ? (
-                selectedFeatureGraph ? (
-                    <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
+            <div>
+                <input
+                    id="feature-graph"
+                    type="checkbox"
+                    checked={showGraph}
+                    onChange={(e) => setShowGraph(e.currentTarget.checked)}
+                />
+                <label htmlFor="feature-graph">Feature Dependency Graph</label>
+            </div>
+            {showGraph ? (
+                selectedFeature?.featureName ? (
+                    selectedFeatureGraph ? (
+                        <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
+                    ) : (
+                        <div>Loading graph data...</div>
+                    )
                 ) : (
-                    <div>Loading graph data...</div>
+                    <div>Select a feature to view its dependency graph</div>
                 )
-            ) : (
-                <div>Select a feature to view its dependency graph</div>
-            )}
+            ) : null}
         </div>
     );
 });

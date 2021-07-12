@@ -76,6 +76,11 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     runningApplicationPort?: number;
     /** Specify directory where features will be looked up within the package */
     featureDiscoveryRoot?: string;
+
+    /**
+     * add tracing for the entire suite, the name of the test will be used as the zip name
+     */
+    tracing?: boolean | Omit<Tracing, 'name'>;
 }
 
 export interface Tracing {
@@ -106,7 +111,8 @@ let featureUrl = '';
 let executableApp: IExecutableApplication;
 
 if (typeof after !== 'undefined') {
-    after('close browser, if open', async () => {
+    after('close browser, if open', async function () {
+        this.timeout(20_000);
         if (browser && browser.isConnected) {
             await browser.close();
         }
@@ -136,6 +142,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         runningApplicationPort,
         config: suiteConfig,
         featureDiscoveryRoot,
+        tracing: suiteTracing = process.env.TRACING ? true : undefined,
     } = withFeatureOptions;
 
     if (
@@ -174,13 +181,19 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     afterEach(disposeAfterEach.dispose);
 
+    const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
     const browserContexts = new Set<playwright.BrowserContext>();
-    afterEach('close pages', async () => {
+    afterEach('close pages', async function () {
+        for (const tracingDisposable of tracingDisposables) {
+            await tracingDisposable(this.test?.title);
+        }
+        tracingDisposables.clear();
         for (const browserContext of browserContexts) {
             await browserContext.close();
         }
         browserContexts.clear();
     });
+
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
             const errorsText = capturedErrors.join('\n');
@@ -198,7 +211,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams = suiteQueryParams,
                 config = suiteConfig,
                 browserContextOptions = suiteBrowserContextOptions,
-                tracing,
+                tracing = suiteTracing,
             }: IFeatureExecutionOptions = {},
             navigationOptions?: Parameters<playwright.Page['goto']>[1]
         ) {
@@ -228,24 +241,31 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 configName: newConfigName,
                 queryParams,
             });
-
             const browserContext = await browser.newContext(browserContextOptions);
-            if (tracing) {
-                if (typeof tracing === 'boolean') {
-                    tracing = {};
-                }
+            const sanitizedSuiteTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+            const sanitizedTracing = typeof tracing === 'boolean' ? {} : tracing;
+
+            if (sanitizedTracing) {
                 const { screenshots, snapshots, name, outPath } = {
-                    ...tracing,
+                    ...sanitizedTracing,
+                    ...sanitizedSuiteTracing,
                     screenshots: true,
                     snapshots: true,
                     outPath: process.cwd(),
                 };
                 await browserContext.tracing.start({ screenshots, snapshots });
-                disposeAfterEach.add(() =>
-                    browserContext.tracing.stop({
-                        path: ensureTracePath({ outPath, fs, name }),
-                    })
-                );
+                tracingDisposables.add((testName) => {
+                    return browserContext.tracing.stop({
+                        path: ensureTracePath({
+                            outPath,
+                            fs,
+                            name:
+                                process.env.TRACING && process.env.TRACING !== 'true'
+                                    ? process.env.TRACING
+                                    : name ?? testName?.replace(/(\W+)/gi, '-').slice(1),
+                        }),
+                    });
+                });
             }
             browserContexts.add(browserContext);
             browserContext.on('page', (page) => {

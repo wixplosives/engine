@@ -13,11 +13,12 @@ import {
     EntityRecord,
     DisposableContext,
     RuntimeEngine,
-    MapToProxyType,
     flattenTree,
+    NormalizeEnvironmentFilter,
+    Running,
 } from '@wixc3/engine-core';
 
-export interface IRunNodeEnvironmentOptions {
+export interface IRunNodeEnvironmentOptions<ENV extends Environment = Environment> {
     featureName: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
@@ -31,7 +32,7 @@ export interface IRunNodeEnvironmentOptions {
      * base folder to locate features from within basePath
      */
     featureDiscoveryRoot?: string;
-    env: Environment;
+    env: ENV;
     externalFeatures?: IExternalFeatureNodeDescriptor[];
 }
 
@@ -39,8 +40,9 @@ export interface IGetRuinnnigFeatureOptions<
     NAME extends string,
     DEPS extends Feature[],
     API extends EntityRecord,
-    CONTEXT extends Record<string, DisposableContext<any>>
-> extends IRunNodeEnvironmentOptions {
+    CONTEXT extends Record<string, DisposableContext<any>>,
+    ENV extends Environment
+> extends IRunNodeEnvironmentOptions<ENV> {
     feature: Feature<NAME, DEPS, API, CONTEXT>;
 }
 
@@ -118,12 +120,13 @@ export async function getRunningFeature<
     NAME extends string,
     DEPS extends Feature[],
     API extends EntityRecord,
-    CONTEXT extends Record<string, DisposableContext<any>>
+    CONTEXT extends Record<string, DisposableContext<any>>,
+    ENV extends Environment
 >(
-    options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT>
+    options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
-    runningApi: MapToProxyType<API>;
+    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, NormalizeEnvironmentFilter<ENV>>;
     engine: RuntimeEngine;
 }> {
     const { feature } = options;

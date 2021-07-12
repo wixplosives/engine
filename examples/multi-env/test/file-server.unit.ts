@@ -13,7 +13,7 @@ describe('Processing env test', () => {
             feature: Feature,
         });
 
-        const message = await runningApi.echoService.echo('text');
+        const message = runningApi.echoService.echo('text');
         expect(message).to.eq('node env says text');
 
         await dispose();

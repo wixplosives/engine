@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-dashboard",
-  "version": "19.1.0",
+  "version": "19.3.0",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,9 +12,9 @@
     "react": ">=16"
   },
   "dependencies": {
-    "@stylable/runtime": "^4.2.5",
-    "@wixc3/engine-core": "^19.0.1",
-    "@wixc3/engine-scripts": "^19.0.3",
+    "@stylable/runtime": "^4.4.0",
+    "@wixc3/engine-core": "^19.3.0",
+    "@wixc3/engine-scripts": "^19.3.0",
     "d3-hierarchy": "^3.0.1",
     "d3-selection": "^3.0.0",
     "d3-shape": "^3.0.1"

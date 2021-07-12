@@ -16,3 +16,4 @@ export * from './types';
 export * from './utils';
 export * from './ws-environment';
 export * from './webpack-html-attributes-plugins';
+export { createVirtualEntries, VirtualModulesLoaderOptions } from './virtual-modules-loader';
