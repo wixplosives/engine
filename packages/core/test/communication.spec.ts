@@ -6,6 +6,7 @@ import {
     Environment,
     declareComEmitter,
     iframeInitializer,
+    deferredIframeInitializer,
 } from '@wixc3/engine-core';
 import {
     ITestServiceData,
@@ -208,5 +209,19 @@ describe('Communication API', function () {
             const deserializedHash = decodeURIComponent(await api.getHashParams());
             expect(deserializedHash).to.eq(`#test`);
         });
+    });
+
+    it('should allow to load iframe after receiving its token id', async () => {
+        const iframeEnv = new Environment('iframe', 'iframe', 'multi');
+        const com = disposables.add(new Communication(window, comId));
+
+        const env = com.startEnvironment(iframeEnv, deferredIframeInitializer());
+
+        expect(com.getEnvironmentHost(env.id)).to.eq(undefined);
+
+        await env.initialize({
+            iframeElement: createIframe(),
+        });
+        expect(com.getEnvironmentHost(env.id)).to.not.eq(undefined);
     });
 });
