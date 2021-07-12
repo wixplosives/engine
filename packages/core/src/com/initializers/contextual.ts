@@ -3,16 +3,22 @@ import type { SingleEndpointContextualEnvironment, Environment } from '../../ent
 import type { Communication } from '../communication';
 import type { MapBy } from '../../types';
 
-export type EnvironmentInitializers<ENVS extends Environment[]> = {
-    [K in keyof MapBy<ENVS, 'env'>]: EnvironmentInitializer<any>;
+export type EnvironmentInitializers<
+    ENVS extends Environment[],
+    EnvToken extends { id: string } | Promise<{ id: string }>
+> = {
+    [K in keyof MapBy<ENVS, 'env'>]: EnvironmentInitializer<EnvToken>;
 };
 
 /**
  * TODO: better inference of the return type of the initialzier function
  */
-export function initializeContextualEnv<ENVS extends Environment[]>(
+export function initializeContextualEnv<
+    ENVS extends Environment[],
+    EnvToken extends { id: string } | Promise<{ id: string }>
+>(
     { env, environments }: SingleEndpointContextualEnvironment<string, ENVS>,
-    envInitializers: EnvironmentInitializers<ENVS>
+    envInitializers: EnvironmentInitializers<ENVS, EnvToken>
 ) {
     return (communication: Communication) => {
         const runtimeEnvironmentName = communication.resolvedContexts[env]!;
@@ -29,8 +35,9 @@ export function initializeContextualEnv<ENVS extends Environment[]>(
             if (!envInitializer) {
                 throw new Error(`environment initializer is not set for ${activeEnvironment.env}`);
             }
+            const contextEnvironment: Environment = { ...activeEnvironment, env };
 
-            return communication.startEnvironment({ ...activeEnvironment, env }, envInitializer);
+            return communication.startEnvironment(contextEnvironment, envInitializer);
         } else {
             throw new Error('error');
         }

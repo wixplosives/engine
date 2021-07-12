@@ -2,7 +2,7 @@ import type { EnvironmentInitializer, WindowHost } from '../types';
 import type { Communication } from '../communication';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
-import type { Environment } from '../..';
+import type { Environment } from '../../entities';
 
 export interface IIframeInitializerOptions {
     iframeElement: HTMLIFrameElement;

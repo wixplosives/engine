@@ -43,6 +43,8 @@ export interface ICommunicationOptions {
     connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
 }
 
+export type InferInitializer<K> = K extends EnvironmentInitializer<infer U> ? U : never;
+
 /**
  * Manages all API registrations and message forwarding
  * in each execution context.
@@ -125,8 +127,11 @@ export class Communication {
         return this.options.publicPath;
     }
 
-    public startEnvironment<K extends EnvironmentInitializer>(env: Environment, initializer: K): ReturnType<K> {
-        return initializer(this, env) as ReturnType<K>;
+    public startEnvironment<EnvToken extends { id: string } | Promise<{ id: string }>>(
+        env: Environment,
+        initializer: EnvironmentInitializer<EnvToken>
+    ) {
+        return initializer(this, env);
     }
 
     public setTopology(envName: string, envUrl: string) {
@@ -559,7 +564,6 @@ export class Communication {
     }
 
     private getPostEndpoint(target: Target): Window | Worker {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return isWindow(target) ? target.opener || target.parent : (target as Worker);
     }
 
