@@ -4,10 +4,10 @@ import sampleFeature from './some-feature.feature';
 
 sampleFeature.setup(mainEnv, ({ run, serverService }, { COM: { communication } }) => {
     run(async () => {
-        await initializeContextualEnv(contextualEnv, {
-            server: socketServerInitializer(),
-            worker: workerInitializer(),
-        })(communication);
+        await initializeContextualEnv(communication, contextualEnv, {
+            server: socketServerInitializer,
+            worker: workerInitializer,
+        });
 
         document.body.innerText = await serverService.echo();
     });

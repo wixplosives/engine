@@ -4,8 +4,8 @@ import sampleFeature, { MAIN, NODE_1, NODE_2 } from './x.feature';
 sampleFeature.setup(MAIN, ({ nodeEnv1, nodeEnv2, run }, { COM: { communication } }) => {
     document.body.textContent = `pid_1;$pid_2`;
     run(async () => {
-        await socketServerInitializer()(communication, NODE_1);
-        await socketServerInitializer()(communication, NODE_2);
+        await socketServerInitializer(communication, NODE_1);
+        await socketServerInitializer(communication, NODE_2);
         const pid1 = await nodeEnv1.getPid();
         const pid2 = await nodeEnv2.getPid();
         document.body.textContent = `${pid1};${pid2}`;
