@@ -5,9 +5,9 @@ import React from 'react';
 import { render } from 'react-dom';
 import { App } from '@wixc3/engine-dashboard';
 
-guiFeature.setup(mainDashboardEnv, ({ run }, { COM: { startEnvironment } }) => {
+guiFeature.setup(mainDashboardEnv, ({ run }, { COM: { communication } }) => {
     run(async () => {
-        await startEnvironment(devServerEnv, socketServerInitializer());
+        await socketServerInitializer(communication, devServerEnv);
         const appContainer = document.createElement('div');
         document.body.appendChild(appContainer);
 

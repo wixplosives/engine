@@ -5,7 +5,7 @@ import performance from '@wixc3/cross-performance';
 /**
  * Setting up the FileServer feature main environment
  */
-FileServer.setup('main', ({ run, config }, { COM: { startEnvironment } }) => {
+FileServer.setup('main', ({ run, config }, { COM: { communication } }) => {
     /**
      * the main env for this feature only creates the connection to the server environment
      */
@@ -13,6 +13,6 @@ FileServer.setup('main', ({ run, config }, { COM: { startEnvironment } }) => {
 
     run(async () => {
         document.title = config.title ?? 'my title';
-        await startEnvironment(server, socketServerInitializer());
+        await socketServerInitializer(communication, server);
     });
 });

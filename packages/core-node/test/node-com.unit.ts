@@ -178,10 +178,11 @@ describe('Socket communication', () => {
         const clientCom = new Communication(clientHost, 'client-host', {
             'server-host': `http://localhost:${port}`,
         });
-        const { onDisconnect } = await clientCom.startEnvironment(
-            { env: 'server-host', endpointType: 'single', envType: 'node' },
-            socketServerInitializer()
-        );
+        const { onDisconnect } = await socketServerInitializer()(clientCom, {
+            env: 'server-host',
+            endpointType: 'single',
+            envType: 'node',
+        });
 
         expect(onDisconnect).to.not.eq(undefined);
 

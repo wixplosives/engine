@@ -2,15 +2,12 @@ import { socketServerInitializer, workerInitializer, initializeContextualEnv } f
 import { contextualEnv, mainEnv } from './some-feature.feature';
 import sampleFeature from './some-feature.feature';
 
-sampleFeature.setup(mainEnv, ({ run, serverService }, { COM: { startEnvironment } }) => {
+sampleFeature.setup(mainEnv, ({ run, serverService }, { COM: { communication } }) => {
     run(async () => {
-        await startEnvironment(
-            contextualEnv,
-            initializeContextualEnv(contextualEnv, {
-                server: socketServerInitializer(),
-                worker: workerInitializer(),
-            })
-        );
+        await initializeContextualEnv(contextualEnv, {
+            server: socketServerInitializer(),
+            worker: workerInitializer(),
+        })(communication);
 
         document.body.innerText = await serverService.echo();
     });

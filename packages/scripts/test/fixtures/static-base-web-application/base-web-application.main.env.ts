@@ -1,7 +1,7 @@
 import { iframeInitializer } from '@wixc3/engine-core';
 import BaseAppFeature, { client, iframe } from './base-web-application.feature';
 
-BaseAppFeature.setup(client, ({ clientSlot }, { COM: { startEnvironment } }) => {
+BaseAppFeature.setup(client, ({ clientSlot }, { COM: { communication } }) => {
     const registeredSlots = [...clientSlot];
     clientSlot.subscribe((e) => {
         registeredSlots.push(e);
@@ -19,10 +19,7 @@ BaseAppFeature.setup(client, ({ clientSlot }, { COM: { startEnvironment } }) => 
 
     document.body.append(clientSlotTitle, clientSlotValue, iframeElement);
 
-    startEnvironment(
-        iframe,
-        iframeInitializer({
-            iframeElement,
-        })
-    ).catch(console.error);
+    iframeInitializer({
+        iframeElement,
+    })(communication, iframe).catch(console.error);
 });

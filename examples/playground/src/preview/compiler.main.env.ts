@@ -13,12 +13,10 @@ Preview.setup('main', ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
             panel.appendChild(iframe);
 
             iframe.onload = () =>
-                COM.startEnvironment(
-                    PREVIEW,
-                    iframeInitializer({
-                        iframeElement: iframe,
-                    })
-                );
+                iframeInitializer(COM.communication, PREVIEW, {
+                    iframeElement: iframe,
+                });
+
             return panel;
         },
     });

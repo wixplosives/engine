@@ -22,7 +22,6 @@ import type {
     UnknownFunction,
     AnyServiceMethodOptions,
     ServiceComConfig,
-    EnvironmentInitializer,
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -123,13 +122,6 @@ export class Communication {
 
     public getPublicPath() {
         return this.options.publicPath;
-    }
-
-    public startEnvironment<EnvToken extends { id: string } | Promise<{ id: string }>>(
-        env: Environment,
-        initializer: EnvironmentInitializer<EnvToken>
-    ) {
-        return initializer(this, env);
     }
 
     public setTopology(envName: string, envUrl: string) {

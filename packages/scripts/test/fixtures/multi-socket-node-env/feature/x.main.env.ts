@@ -2,7 +2,7 @@ import { socketServerInitializer } from '@wixc3/engine-core';
 import { mainEnv, serverEnv } from './x.feature';
 import sampleFeature from './x.feature';
 
-sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { startEnvironment } }) => {
+sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { communication } }) => {
     const echoValue = document.createElement('div');
 
     echoValue.id = 'echoValue';
@@ -10,7 +10,7 @@ sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { startEnvironment } 
     document.body.append(echoValue);
 
     run(async () => {
-        await startEnvironment(serverEnv, socketServerInitializer());
+        await socketServerInitializer()(communication, serverEnv);
         echoValue.textContent = await echoService.echo();
     });
 });

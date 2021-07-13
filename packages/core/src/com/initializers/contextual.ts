@@ -17,28 +17,26 @@ export function initializeContextualEnv<
     ENVS extends Environment[],
     EnvToken extends { id: string } | Promise<{ id: string }>
 >(
+    communication: Communication,
     { env, environments }: SingleEndpointContextualEnvironment<string, ENVS>,
     envInitializers: EnvironmentInitializers<ENVS, EnvToken>
 ) {
-    return (communication: Communication) => {
-        const runtimeEnvironmentName = communication.resolvedContexts[env]!;
+    const runtimeEnvironmentName = communication.resolvedContexts[env]!;
 
-        const activeEnvironment = environments.find((contextualEnv) => contextualEnv.env === runtimeEnvironmentName);
+    const activeEnvironment = environments.find((contextualEnv) => contextualEnv.env === runtimeEnvironmentName);
 
-        if (!activeEnvironment) {
-            throw new Error(`${runtimeEnvironmentName} cannot be found in definition of ${env} environment`);
+    if (!activeEnvironment) {
+        throw new Error(`${runtimeEnvironmentName} cannot be found in definition of ${env} environment`);
+    }
+
+    if (activeEnvironment.env in envInitializers) {
+        const key: keyof typeof envInitializers = activeEnvironment.env;
+        const envInitializer = envInitializers[key];
+        if (!envInitializer) {
+            throw new Error(`environment initializer is not set for ${activeEnvironment.env}`);
         }
-
-        if (activeEnvironment.env in envInitializers) {
-            const key: keyof typeof envInitializers = activeEnvironment.env;
-            const envInitializer = envInitializers[key];
-            if (!envInitializer) {
-                throw new Error(`environment initializer is not set for ${activeEnvironment.env}`);
-            }
-
-            return communication.startEnvironment({ ...activeEnvironment, env }, envInitializer);
-        } else {
-            throw new Error('error');
-        }
-    };
+        return envInitializer(communication, { ...activeEnvironment, env });
+    } else {
+        throw new Error('error');
+    }
 }

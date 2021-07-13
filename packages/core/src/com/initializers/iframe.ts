@@ -1,4 +1,4 @@
-import type { EnvironmentInitializer, WindowHost } from '../types';
+import type { WindowHost } from '../types';
 import type { Communication } from '../communication';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
@@ -11,46 +11,50 @@ export interface IIframeInitializerOptions {
     managed?: boolean;
 }
 
-export function iframeInitializer(
+export async function iframeInitializer(
+    com: Communication,
+    env: Environment,
     initializerOptions: IIframeInitializerOptions
-): EnvironmentInitializer<Promise<{ id: string }>> {
-    return async (com, env) => {
-        const { initialize } = deferredIframeInitializer()(com, env);
-        const id = await initialize(initializerOptions);
-        return {
-            id,
-        };
+): Promise<{ id: string }> {
+    const { initialize } = deferredIframeInitializer(com, env);
+    const id = await initialize(initializerOptions);
+    return {
+        id,
     };
 }
 
-export function deferredIframeInitializer() {
-    return (com: Communication, { env, endpointType }: Environment) => {
-        const instanceId = com.getEnvironmentInstanceId(env, endpointType);
+export function deferredIframeInitializer(
+    com: Communication,
+    { env, endpointType }: Environment
+): {
+    id: string;
+    initialize: (options: IIframeInitializerOptions) => Promise<string>;
+} {
+    const instanceId = com.getEnvironmentInstanceId(env, endpointType);
 
-        return {
-            id: instanceId,
-            initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
-                const publicPath = com.getPublicPath();
-                const baseStartIframeParams: StartIframeBaseParams = {
-                    com,
-                    envReadyPromise: com.envReady(instanceId),
-                    instanceId,
-                    src:
-                        src ?? managed
-                            ? defaultHtmlSourceFactory(env, publicPath, hashParams)
-                            : defaultSourceFactory(env, publicPath),
-                };
-                return managed
-                    ? startManagedIframe({
-                          ...baseStartIframeParams,
-                          iframe: iframeElement,
-                      })
-                    : startIframe({
-                          ...baseStartIframeParams,
-                          host: iframeElement,
-                      });
-            },
-        };
+    return {
+        id: instanceId,
+        initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
+            const publicPath = com.getPublicPath();
+            const baseStartIframeParams: StartIframeBaseParams = {
+                com,
+                envReadyPromise: com.envReady(instanceId),
+                instanceId,
+                src:
+                    src ?? managed
+                        ? defaultHtmlSourceFactory(env, publicPath, hashParams)
+                        : defaultSourceFactory(env, publicPath),
+            };
+            return managed
+                ? startManagedIframe({
+                      ...baseStartIframeParams,
+                      iframe: iframeElement,
+                  })
+                : startIframe({
+                      ...baseStartIframeParams,
+                      host: iframeElement,
+                  });
+        },
     };
 }
 

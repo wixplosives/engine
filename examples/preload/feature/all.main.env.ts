@@ -19,11 +19,11 @@ allFeature.setup(
             nodeEnvMessages: { getNodeEnvMessages, getNodeRuntimeOptions },
             workerEnvMessages: { getWorkerEnvMessages },
         },
-        { COM: { startEnvironment } }
+        { COM: { communication } }
     ) => {
         run(async () => {
-            await startEnvironment(nodeEnv, socketServerInitializer());
-            await startEnvironment(workerEnv, workerInitializer());
+            await socketServerInitializer(communication, nodeEnv);
+            await workerInitializer(communication, workerEnv);
             const nodeMessages = await getNodeEnvMessages();
             const workerMessages = await getWorkerEnvMessages();
 
