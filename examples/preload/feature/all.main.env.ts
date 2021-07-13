@@ -1,5 +1,5 @@
 import allFeature, { mainEnv, nodeEnv, workerEnv } from './all.feature';
-import { socketServerInitializer, workerInitializer } from '@wixc3/engine-core';
+import { socketClientInitializer, workerInitializer } from '@wixc3/engine-core';
 globalThis.envMessages = [...(globalThis.envMessages ?? []), 'enveval'];
 
 const content = `
@@ -19,11 +19,11 @@ allFeature.setup(
             nodeEnvMessages: { getNodeEnvMessages, getNodeRuntimeOptions },
             workerEnvMessages: { getWorkerEnvMessages },
         },
-        { COM: { startEnvironment } }
+        { COM: { communication } }
     ) => {
         run(async () => {
-            await startEnvironment(nodeEnv, socketServerInitializer());
-            await startEnvironment(workerEnv, workerInitializer());
+            await socketClientInitializer({ communication, env: nodeEnv });
+            await workerInitializer({ communication, env: workerEnv });
             const nodeMessages = await getNodeEnvMessages();
             const workerMessages = await getWorkerEnvMessages();
 

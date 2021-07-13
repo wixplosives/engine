@@ -22,8 +22,6 @@ import type {
     UnknownFunction,
     AnyServiceMethodOptions,
     ServiceComConfig,
-    EnvironmentInitializer,
-    IActiveEnvironment,
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -124,10 +122,6 @@ export class Communication {
 
     public getPublicPath() {
         return this.options.publicPath;
-    }
-
-    public startEnvironment<T extends IActiveEnvironment>(env: Environment, initializer: EnvironmentInitializer<T>) {
-        return initializer(this, env);
     }
 
     public setTopology(envName: string, envUrl: string) {

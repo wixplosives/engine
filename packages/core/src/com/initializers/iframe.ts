@@ -1,7 +1,8 @@
-import type { EnvironmentInitializer, WindowHost } from '../types';
+import type { WindowHost } from '../types';
 import type { Communication } from '../communication';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
+import type { InitializerOptions } from './types';
 
 export interface IIframeInitializerOptions {
     iframeElement: HTMLIFrameElement;
@@ -10,47 +11,87 @@ export interface IIframeInitializerOptions {
     managed?: boolean;
 }
 
-export function iframeInitializer({
-    hashParams,
-    iframeElement,
-    managed,
-    src,
-}: IIframeInitializerOptions): EnvironmentInitializer<{ id: string }> {
-    return async (com, { env, endpointType }) => {
-        const instanceId = com.getEnvironmentInstanceId(env, endpointType);
-        const publicPath = com.getPublicPath();
-        const id = managed
-            ? await useIframe(
-                  com,
-                  iframeElement,
-                  instanceId,
-                  src ?? defaultHtmlSourceFactory(env, publicPath, hashParams)
-              )
-            : await useWindow(com, iframeElement, instanceId, src ?? defaultSourceFactory(env, publicPath));
+export interface IframeInitializerOptions extends InitializerOptions, IIframeInitializerOptions {}
 
-        return { id };
+export async function iframeInitializer({
+    communication,
+    env,
+    ...initializerOptions
+}: IframeInitializerOptions): Promise<{ id: string }> {
+    const { initialize } = deferredIframeInitializer({ communication, env });
+    const id = await initialize(initializerOptions);
+    return {
+        id,
     };
 }
 
-async function useWindow(com: Communication, host: WindowHost, instanceId: string, src: string): Promise<string> {
+export function deferredIframeInitializer({ communication: com, env: { env, endpointType } }: InitializerOptions): {
+    id: string;
+    initialize: (options: IIframeInitializerOptions) => Promise<string>;
+} {
+    const instanceId = com.getEnvironmentInstanceId(env, endpointType);
+
+    return {
+        id: instanceId,
+        initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
+            const publicPath = com.getPublicPath();
+            const baseStartIframeParams: StartIframeBaseOptions = {
+                com,
+                envReadyPromise: com.envReady(instanceId),
+                instanceId,
+                src:
+                    src ?? managed
+                        ? defaultHtmlSourceFactory(env, publicPath, hashParams)
+                        : defaultSourceFactory(env, publicPath),
+            };
+            return managed
+                ? startManagedIframe({
+                      ...baseStartIframeParams,
+                      iframe: iframeElement,
+                  })
+                : startIframe({
+                      ...baseStartIframeParams,
+                      host: iframeElement,
+                  });
+        },
+    };
+}
+
+interface StartIframeBaseOptions {
+    com: Communication;
+    instanceId: string;
+    src: string;
+    envReadyPromise: Promise<void>;
+}
+
+interface StartIframeParams extends StartIframeBaseOptions {
+    host: WindowHost;
+}
+
+interface StartManagedIframeParams extends StartIframeBaseOptions {
+    iframe: HTMLIFrameElement;
+}
+
+async function startIframe({ com, host, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
     const win = isIframe(host) ? host.contentWindow : host;
     if (!win) {
         throw new Error('cannot spawn detached iframe.');
     }
     com.registerEnv(instanceId, win);
     await injectScript(win, instanceId, src);
-    await com.envReady(instanceId);
+    await envReadyPromise;
     return instanceId;
 }
 
 const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
-async function useIframe(
-    com: Communication,
-    iframe: HTMLIFrameElement,
-    instanceId: string,
-    src: string
-): Promise<string> {
+async function startManagedIframe({
+    com,
+    iframe,
+    instanceId,
+    src,
+    envReadyPromise,
+}: StartManagedIframeParams): Promise<string> {
     if (!iframe.contentWindow) {
         throw new Error('Cannot initialize environment in a detached iframe');
     }
@@ -98,7 +139,7 @@ async function useIframe(
         }
 
         contentWindow.addEventListener('unload', cleanup);
-        await Promise.race([waitForCancel, com.envReady(instanceId)]);
+        await Promise.race([waitForCancel, envReadyPromise]);
 
         cancellationTriggers.delete(iframe);
         return instanceId;

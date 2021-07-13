@@ -53,7 +53,6 @@ export default new Feature({
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Service.withType<LoggerService>().defineEntity(Universal),
-        startEnvironment: Service.withType<Communication['startEnvironment']>().defineEntity(AllEnvironments),
         communication: Service.withType<Communication>().defineEntity(AllEnvironments),
     },
 }).setup(
@@ -107,7 +106,6 @@ export default new Feature({
         return {
             loggerService,
             communication,
-            startEnvironment: communication.startEnvironment.bind(communication),
         };
     }
 );

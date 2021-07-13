@@ -149,7 +149,7 @@ export class NodeEnvironmentsManager {
          *
          * to this communication all environments will be registered using either a base host which uses 'baseHost' as a parent, either IPCHost (in cases when node environments are launched in forked mode).
          *
-         * all node environments will receive a "connectedEnvironments" configuration to the communication feature, to provide access to all node environments. (note: this means that when running engine applications using the Applciation API from engine-scripts, node environments communication is implicit. BUT, we do need to encourage the users to still use the COM's startEnvironment API in the 'initiating' environment for both concictensy and correctness. If the user would like to change a connection method to an environment, not having the 'startEnvironment' there might cause confusion).
+         * all node environments will receive a "connectedEnvironments" configuration to the communication feature, to provide access to all node environments. (note: this means that when running engine applications using the Applciation API from engine-scripts, node environments communication is implicit. BUT, we do need to encourage the users to still use the COM's 'initializers' in the 'initiating' environment for both concictensy and correctness.
          *
          * in the other side, when a node environment a wants to communicate with node environment b using this mechanism, it uses the 'localNodeEnvironmentInitializer' exported from '@wixc3/engine-core', as the initializer for communicating with environment b (from a).
          *
@@ -162,7 +162,7 @@ export class NodeEnvironmentsManager {
          * message gets re-routed to 'b'
          * 'b' responds back to top level communication which then forwards the message to 'a'
          *
-         * if 'b' wants to call an api provided from 'a', it's implicity will do the same thing, but without the need to explicitly call the COM's startEnvironment API
+         * if 'b' wants to call an api provided from 'a', it's implicity will do the same thing, but without the need to explicitly call a COM's initializer
          */
 
         const baseHost = new BaseHost();

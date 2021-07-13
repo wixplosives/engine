@@ -1,13 +1,13 @@
 import guiFeature, { mainDashboardEnv } from './gui.feature';
 import { devServerEnv } from './dev-server.feature';
-import { socketServerInitializer } from '@wixc3/engine-core';
+import { socketClientInitializer } from '@wixc3/engine-core';
 import React from 'react';
 import { render } from 'react-dom';
 import { App } from '@wixc3/engine-dashboard';
 
-guiFeature.setup(mainDashboardEnv, ({ run }, { COM: { startEnvironment } }) => {
+guiFeature.setup(mainDashboardEnv, ({ run }, { COM: { communication } }) => {
     run(async () => {
-        await startEnvironment(devServerEnv, socketServerInitializer());
+        await socketClientInitializer({ communication, env: devServerEnv });
         const appContainer = document.createElement('div');
         document.body.appendChild(appContainer);
 

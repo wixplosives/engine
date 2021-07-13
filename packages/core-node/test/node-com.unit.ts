@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { waitFor } from 'promise-assist';
 
-import { Communication, WsClientHost, socketServerInitializer, BaseHost, createDisposables } from '@wixc3/engine-core';
+import { Communication, WsClientHost, socketClientInitializer, BaseHost, createDisposables } from '@wixc3/engine-core';
 import { WsHost, IPCHost } from '@wixc3/engine-core-node';
 
 interface ICommunicationTestApi {
@@ -178,10 +178,14 @@ describe('Socket communication', () => {
         const clientCom = new Communication(clientHost, 'client-host', {
             'server-host': `http://localhost:${port}`,
         });
-        const { onDisconnect } = await clientCom.startEnvironment(
-            { env: 'server-host', endpointType: 'single', envType: 'node' },
-            socketServerInitializer()
-        );
+        const { onDisconnect } = await socketClientInitializer({
+            communication: clientCom,
+            env: {
+                env: 'server-host',
+                endpointType: 'single',
+                envType: 'node',
+            },
+        });
 
         expect(onDisconnect).to.not.eq(undefined);
 

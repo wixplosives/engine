@@ -4,7 +4,7 @@ import { CodeService } from './code-service';
 import { ErrorService } from './error-service';
 import './style.st.css';
 
-CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { startEnvironment } }) => {
+CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { communication } }) => {
     const codeService = new CodeService();
     const errorService = new ErrorService();
 
@@ -25,7 +25,7 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { startEnvironment } }) => 
     });
 
     run(async () => {
-        await startEnvironment(PROCESSING, workerInitializer()); // returns processingID
+        await workerInitializer({ communication, env: PROCESSING }); // returns processingID
         const { codeInput, sidebar } = render();
 
         codeInput.value = codeService.getContent();
