@@ -216,12 +216,14 @@ describe('Communication API', function () {
         const com = disposables.add(new Communication(window, comId));
 
         const env = com.startEnvironment(iframeEnv, deferredIframeInitializer());
-
+        const api = com.apiProxy<TestService>(env, { id: testServiceId });
+        const res = api.testApi(1, 2, 3);
         expect(com.getEnvironmentHost(env.id)).to.eq(undefined);
 
         await env.initialize({
             iframeElement: createIframe(),
         });
-        expect(com.getEnvironmentHost(env.id)).to.not.eq(undefined);
+
+        expect(await res).to.eql({ echo: [1, 2, 3] });
     });
 });
