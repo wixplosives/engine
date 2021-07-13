@@ -1,20 +1,21 @@
 import type { SocketOptions } from 'socket.io-client';
-import type { Environment } from '../../entities';
-import type { Communication } from '../communication';
 import { WsClientHost } from '../hosts/ws-client-host';
 import type { ReadyMessage } from '../message-types';
+import type { InitializerOptions } from './types';
 
-export const socketServerInitializer = async (
-    communication: Communication,
-    { env }: Environment,
-    options?: Partial<SocketOptions>
-) => {
+export interface SocketClientInitializerOptions extends InitializerOptions, Partial<SocketOptions> {}
+
+export const socketClientInitializer = async ({
+    communication,
+    env: { env },
+    ...socketClientOptions
+}: SocketClientInitializerOptions) => {
     const url = communication.topology[env];
     if (!url) {
         throw new Error(`Could not find node topology for ${env} environment`);
     }
     const instanceId = env;
-    const host = new WsClientHost(url, options);
+    const host = new WsClientHost(url, socketClientOptions);
     if (communication.getEnvironmentHost(instanceId)) {
         communication.clearEnvironment(instanceId);
     }

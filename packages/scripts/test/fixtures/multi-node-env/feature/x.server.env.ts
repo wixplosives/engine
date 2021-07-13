@@ -3,7 +3,7 @@ import sampleFeature from './x.feature';
 import { localNodeEnvironmentInitializer } from '@wixc3/engine-core-node';
 
 sampleFeature.setup(serverEnv, ({ anotherEchoService }, { COM: { communication } }) => {
-    localNodeEnvironmentInitializer(communication, anotherServerEnv);
+    localNodeEnvironmentInitializer({ communication, env: anotherServerEnv });
     return {
         echoService: {
             echo: () => anotherEchoService.echo(),

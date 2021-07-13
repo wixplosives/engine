@@ -1,5 +1,5 @@
 import FileServer, { server, MAIN_MARK } from './file-server.feature';
-import { socketServerInitializer } from '@wixc3/engine-core';
+import { socketClientInitializer } from '@wixc3/engine-core';
 import performance from '@wixc3/cross-performance';
 
 /**
@@ -13,6 +13,6 @@ FileServer.setup('main', ({ run, config }, { COM: { communication } }) => {
 
     run(async () => {
         document.title = config.title ?? 'my title';
-        await socketServerInitializer(communication, server);
+        await socketClientInitializer({ communication, env: server });
     });
 });

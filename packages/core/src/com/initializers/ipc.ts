@@ -1,7 +1,6 @@
-import type { Environment } from '../../entities';
-import type { Communication } from '../communication';
+import type { InitializerOptions } from './types';
 
-export const ipcInitializer = async (communication: Communication, { env, endpointType }: Environment) => {
+export const ipcInitializer = async ({ communication, env: { env, endpointType } }: InitializerOptions) => {
     const instanceId = communication.getEnvironmentInstanceId(env, endpointType);
 
     const host = communication.getEnvironmentHost(env);

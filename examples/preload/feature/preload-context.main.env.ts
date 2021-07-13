@@ -1,10 +1,11 @@
 import contextualFeature, { mainEnv, procEnv } from './preload-context.feature';
-import { socketServerInitializer, initializeContextualEnv, workerInitializer } from '@wixc3/engine-core';
+import { socketClientInitializer, initializeContextualEnv, workerInitializer } from '@wixc3/engine-core';
 
 contextualFeature.setup(mainEnv, ({ run, procEnvMessages: { getProcEnvMessages } }, { COM: { communication } }) => {
-    const initializer = initializeContextualEnv(communication, procEnv, {
-        nodeCtx: socketServerInitializer,
-        workerCtx: workerInitializer,
+    const initializer = initializeContextualEnv({
+        communication,
+        env: procEnv,
+        envInitializers: { nodeCtx: socketClientInitializer, workerCtx: workerInitializer },
     });
 
     run(async () => {

@@ -25,7 +25,7 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { communication } }) => {
     });
 
     run(async () => {
-        await workerInitializer(communication, PROCESSING); // returns processingID
+        await workerInitializer({ communication, env: PROCESSING }); // returns processingID
         const { codeInput, sidebar } = render();
 
         codeInput.value = codeService.getContent();

@@ -24,7 +24,9 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
     document.body.appendChild(iframe);
 
     run(async () => {
-        const envToken = await iframeInitializer(COM.communication, iframeEnv, {
+        const envToken = await iframeInitializer({
+            communication: COM.communication,
+            env: iframeEnv,
             iframeElement: iframe,
             managed: true,
         });

@@ -1,4 +1,4 @@
-import { socketServerInitializer } from '@wixc3/engine-core';
+import { socketClientInitializer } from '@wixc3/engine-core';
 import { mainEnv, serverEnv } from './x.feature';
 import sampleFeature from './x.feature';
 
@@ -10,7 +10,7 @@ sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { communication } }) 
     document.body.append(echoValue);
 
     run(async () => {
-        await socketServerInitializer(communication, serverEnv);
+        await socketClientInitializer({ communication, env: serverEnv });
         echoValue.textContent = await echoService.echo();
     });
 });

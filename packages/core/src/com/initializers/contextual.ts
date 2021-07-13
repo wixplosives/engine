@@ -1,26 +1,30 @@
-import type { EnvironmentInitializer } from '../types';
 import type { SingleEndpointContextualEnvironment, Environment } from '../../entities';
-import type { Communication } from '../communication';
 import type { MapBy } from '../../types';
+import type { InitializerOptions } from './types';
 
-export type EnvironmentInitializers<
-    ENVS extends Environment[],
-    EnvToken extends { id: string } | Promise<{ id: string }>
-> = {
+export type EnvironmentInitializer<T, OPTIONS extends InitializerOptions = InitializerOptions> = (
+    options: OPTIONS
+) => T;
+
+export type EnvironmentInitializers<ENVS extends Environment[], EnvToken extends Promise<{ id: string }>> = {
     [K in keyof MapBy<ENVS, 'env'>]: EnvironmentInitializer<EnvToken>;
 };
 
+export interface ContextualEnvironmentInitializerOptions<
+    ENVS extends Environment[],
+    EnvToken extends Promise<{ id: string }>
+> extends InitializerOptions {
+    envInitializers: EnvironmentInitializers<ENVS, EnvToken>;
+    env: SingleEndpointContextualEnvironment<string, ENVS>;
+}
 /**
  * TODO: better inference of the return type of the initialzier function
  */
-export function initializeContextualEnv<
-    ENVS extends Environment[],
-    EnvToken extends { id: string } | Promise<{ id: string }>
->(
-    communication: Communication,
-    { env, environments }: SingleEndpointContextualEnvironment<string, ENVS>,
-    envInitializers: EnvironmentInitializers<ENVS, EnvToken>
-) {
+export function initializeContextualEnv<ENVS extends Environment[], EnvToken extends Promise<{ id: string }>>({
+    communication,
+    env: { env, environments },
+    envInitializers,
+}: ContextualEnvironmentInitializerOptions<ENVS, EnvToken>) {
     const runtimeEnvironmentName = communication.resolvedContexts[env]!;
 
     const activeEnvironment = environments.find((contextualEnv) => contextualEnv.env === runtimeEnvironmentName);
@@ -35,7 +39,7 @@ export function initializeContextualEnv<
         if (!envInitializer) {
             throw new Error(`environment initializer is not set for ${activeEnvironment.env}`);
         }
-        return envInitializer(communication, { ...activeEnvironment, env });
+        return envInitializer({ communication, env: { ...activeEnvironment, env } });
     } else {
         throw new Error('error');
     }

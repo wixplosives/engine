@@ -19,7 +19,5 @@ BaseAppFeature.setup(client, ({ clientSlot }, { COM: { communication } }) => {
 
     document.body.append(clientSlotTitle, clientSlotValue, iframeElement);
 
-    iframeInitializer(communication, iframe, {
-        iframeElement,
-    }).catch(console.error);
+    iframeInitializer({ communication, env: iframe, iframeElement }).catch(console.error);
 });

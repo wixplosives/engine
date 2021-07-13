@@ -1,7 +1,6 @@
-import type { Environment } from '../../entities';
-import type { Communication } from '../communication';
+import type { InitializerOptions } from './types';
 
-export async function workerInitializer(communication: Communication, { env, endpointType }: Environment) {
+export async function workerInitializer({ communication, env: { env, endpointType } }: InitializerOptions) {
     const isSingleton = endpointType === 'single';
     const instanceId = isSingleton ? env : communication.generateEnvInstanceID(env);
 

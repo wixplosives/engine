@@ -2,7 +2,7 @@ import type { WindowHost } from '../types';
 import type { Communication } from '../communication';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
-import type { Environment } from '../../entities';
+import type { InitializerOptions } from './types';
 
 export interface IIframeInitializerOptions {
     iframeElement: HTMLIFrameElement;
@@ -11,22 +11,21 @@ export interface IIframeInitializerOptions {
     managed?: boolean;
 }
 
-export async function iframeInitializer(
-    com: Communication,
-    env: Environment,
-    initializerOptions: IIframeInitializerOptions
-): Promise<{ id: string }> {
-    const { initialize } = deferredIframeInitializer(com, env);
+export interface IframeInitializerOptions extends InitializerOptions, IIframeInitializerOptions {}
+
+export async function iframeInitializer({
+    communication,
+    env,
+    ...initializerOptions
+}: IframeInitializerOptions): Promise<{ id: string }> {
+    const { initialize } = deferredIframeInitializer({ communication, env });
     const id = await initialize(initializerOptions);
     return {
         id,
     };
 }
 
-export function deferredIframeInitializer(
-    com: Communication,
-    { env, endpointType }: Environment
-): {
+export function deferredIframeInitializer({ communication: com, env: { env, endpointType } }: InitializerOptions): {
     id: string;
     initialize: (options: IIframeInitializerOptions) => Promise<string>;
 } {
@@ -73,7 +72,7 @@ interface StartManagedIframeParams extends StartIframeBaseParams {
     iframe: HTMLIFrameElement;
 }
 
-export async function startIframe({ com, host, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
+async function startIframe({ com, host, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
     const win = isIframe(host) ? host.contentWindow : host;
     if (!win) {
         throw new Error('cannot spawn detached iframe.');
@@ -86,7 +85,7 @@ export async function startIframe({ com, host, instanceId, src, envReadyPromise 
 
 const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
-export async function startManagedIframe({
+async function startManagedIframe({
     com,
     iframe,
     instanceId,

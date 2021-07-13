@@ -1,18 +1,13 @@
 import type { WindowHost } from '../types';
 import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
-import type { Communication } from '../communication';
-import type { Environment } from '../../entities';
+import type { InitializerOptions } from './types';
 
-interface WindowInitializerOptions {
+interface WindowInitializerOptions extends InitializerOptions {
     host?: WindowHost;
 }
 
-export async function windowInitializer(
-    communication: Communication,
-    { env, endpointType }: Environment,
-    { host }: WindowInitializerOptions
-) {
+export async function windowInitializer({ communication, env: { env, endpointType }, host }: WindowInitializerOptions) {
     const instanceId = communication.getEnvironmentInstanceId(env, endpointType);
     const win = isIframe(host) ? host.contentWindow : host;
     if (!win) {
