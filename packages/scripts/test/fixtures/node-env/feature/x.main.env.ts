@@ -10,7 +10,7 @@ sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { communication } }) 
     document.body.append(echoValue);
 
     run(async () => {
-        await socketServerInitializer()(communication, serverEnv);
+        await socketServerInitializer(communication, serverEnv);
         echoValue.textContent = await echoService.echo();
     });
 });

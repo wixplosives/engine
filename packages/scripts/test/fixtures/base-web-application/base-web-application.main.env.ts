@@ -2,7 +2,7 @@ import { socketServerInitializer, iframeInitializer } from '@wixc3/engine-core';
 import BaseAppFeature, { client, server, iframe } from './base-web-application.feature';
 
 BaseAppFeature.setup(client, ({ clientSlot, dataProvider }, { COM: { communication } }) => {
-    socketServerInitializer()(communication, server).catch(console.error);
+    socketServerInitializer(communication, server).catch(console.error);
 
     const registeredSlots = [...clientSlot];
     clientSlot.subscribe((e) => {
@@ -44,7 +44,7 @@ BaseAppFeature.setup(client, ({ clientSlot, dataProvider }, { COM: { communicati
         iframeElement
     );
 
-    iframeInitializer({
+    iframeInitializer(communication, iframe, {
         iframeElement,
-    })(communication, iframe).catch(console.error);
+    }).catch(console.error);
 });

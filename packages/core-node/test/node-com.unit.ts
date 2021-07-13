@@ -178,7 +178,7 @@ describe('Socket communication', () => {
         const clientCom = new Communication(clientHost, 'client-host', {
             'server-host': `http://localhost:${port}`,
         });
-        const { onDisconnect } = await socketServerInitializer()(clientCom, {
+        const { onDisconnect } = await socketServerInitializer(clientCom, {
             env: 'server-host',
             endpointType: 'single',
             envType: 'node',
