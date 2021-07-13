@@ -35,7 +35,7 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
         id: instanceId,
         initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
             const publicPath = com.getPublicPath();
-            const baseStartIframeParams: StartIframeBaseParams = {
+            const baseStartIframeParams: StartIframeBaseOptions = {
                 com,
                 envReadyPromise: com.envReady(instanceId),
                 instanceId,
@@ -57,18 +57,18 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
     };
 }
 
-interface StartIframeBaseParams {
+interface StartIframeBaseOptions {
     com: Communication;
     instanceId: string;
     src: string;
     envReadyPromise: Promise<void>;
 }
 
-interface StartIframeParams extends StartIframeBaseParams {
+interface StartIframeParams extends StartIframeBaseOptions {
     host: WindowHost;
 }
 
-interface StartManagedIframeParams extends StartIframeBaseParams {
+interface StartManagedIframeParams extends StartIframeBaseOptions {
     iframe: HTMLIFrameElement;
 }
 

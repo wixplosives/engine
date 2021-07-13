@@ -34,8 +34,7 @@ export function initializeContextualEnv<ENVS extends Environment[], EnvToken ext
     }
 
     if (activeEnvironment.env in envInitializers) {
-        const key: keyof typeof envInitializers = activeEnvironment.env;
-        const envInitializer = envInitializers[key];
+        const envInitializer = envInitializers[activeEnvironment.env as keyof typeof envInitializers];
         if (!envInitializer) {
             throw new Error(`environment initializer is not set for ${activeEnvironment.env}`);
         }
