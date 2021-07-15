@@ -1,15 +1,15 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../dist",
+    "outDir": "../dist/test",
     "types": ["mocha", "node"]
   },
   "references": [
     {
-      "path": "../../scripts/src"
+      "path": "../src"
     },
     {
-      "path": "../../runtime-node/src"
+      "path": "../../test-kit/src"
     }
   ]
 }

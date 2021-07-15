@@ -1,11 +1,5 @@
 import fs from '@file-services/node';
-import {
-    readFeatures,
-    evaluateConfig,
-    runNodeEnvironment,
-    IFeatureDefinition,
-    IExternalFeatureNodeDescriptor,
-} from '@wixc3/engine-scripts';
+import { readFeatures, evaluateConfig } from '@wixc3/engine-scripts';
 import {
     TopLevelConfig,
     Environment,
@@ -17,6 +11,7 @@ import {
     NormalizeEnvironmentFilter,
     Running,
 } from '@wixc3/engine-core';
+import { IExternalFeatureNodeDescriptor, IFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
 export interface IRunNodeEnvironmentOptions<ENV extends Environment = Environment> {
     featureName: string;

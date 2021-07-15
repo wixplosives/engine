@@ -1,5 +1,5 @@
 import { Feature, Environment, COM, Config } from '@wixc3/engine-core';
-import type { IExtenalFeatureDescriptor, IFeatureDefinition } from '@wixc3/engine-scripts';
+import type { IExtenalFeatureDescriptor, IFeatureDefinition } from '@wixc3/engine-runtime-node';
 import buildFeature from './dev-server.feature';
 
 export const mainDashboardEnv = new Environment('main-dashboard', 'window', 'single');

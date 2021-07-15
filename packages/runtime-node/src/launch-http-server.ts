@@ -34,17 +34,17 @@ export async function launchHttpServer({
         app.use(path, handlers);
     }
     app.use(cors());
-    const openSockets = new Set<Socket>();
     const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
-    httpServer.on('connection', (socket) => {
-        openSockets.add(socket);
-        socket.once('close', () => openSockets.delete(socket));
-    });
 
     app.use('/', express.static(staticDirPath));
 
     app.use('/favicon.ico', noContentHandler);
 
+    const openSockets = new Set<Socket>();
+    httpServer.on('connection', (socket) => {
+        openSockets.add(socket);
+        socket.once('close', () => openSockets.delete(socket));
+    });
     const socketServer = new io.Server(httpServer, { cors: {}, ...socketServerOptions });
 
     return {

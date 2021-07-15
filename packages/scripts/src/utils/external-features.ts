@@ -1,8 +1,8 @@
 import { join } from 'path';
 import { EXTERNAL_FEATURES_BASE_URI } from '../build-constants';
-import type { IExternalDefinition, IExternalFeatureNodeDescriptor } from '../types';
 import fs from '@file-services/node';
 import type { IBuildManifest } from '../application';
+import type { IExternalDefinition, IExternalFeatureNodeDescriptor } from '@wixc3/engine-runtime-node';
 
 export function getExternalFeaturesMetadata(
     pluginDefinitions: IExternalDefinition[],

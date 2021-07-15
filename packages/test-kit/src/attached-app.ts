@@ -1,12 +1,8 @@
-import type {
-    IFeatureTarget,
-    IProcessMessage,
-    IFeatureMessagePayload,
-    PerformanceMetrics,
-} from '@wixc3/engine-scripts';
+import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 import { request } from 'http';
 import type { IExecutableApplication } from './types';
 import { join } from 'path';
+import type { PerformanceMetrics, IProcessMessage } from '@wixc3/engine-runtime-node';
 
 const NODE_ENV_PATH = '/engine-feature';
 

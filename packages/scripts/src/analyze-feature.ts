@@ -21,8 +21,8 @@ import {
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
 import type { INpmPackage } from './utils/resolve-packages';
+import type { IFeatureDefinition, IConfigDefinition, IFeatureModule, IEnvironment } from '@wixc3/engine-runtime-node';
 
 interface IPackageDescriptor {
     simplifiedName: string;

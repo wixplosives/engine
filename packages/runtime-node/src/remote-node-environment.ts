@@ -1,16 +1,19 @@
 import { fork } from 'child_process';
 import { once } from 'events';
+import type { ServerOptions } from 'socket.io';
 import { ForkedProcess } from './forked-process';
 import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from './types';
 
 export interface IStartRemoteNodeEnvironmentOptions {
     port: number;
     inspect?: boolean;
+    socketServerOptions: Partial<ServerOptions>;
+    requiredPaths: string[];
 }
 
 export async function startRemoteNodeEnvironment(
     entryFilePath: string,
-    { inspect, port }: IStartRemoteNodeEnvironmentOptions
+    { inspect, port, socketServerOptions, requiredPaths }: IStartRemoteNodeEnvironmentOptions
 ) {
     // Roman: add this lines after worker threads will be debuggable
     // the current behavior should be a fallback
@@ -20,9 +23,21 @@ export async function startRemoteNodeEnvironment(
     // return new RemoteNodeEnvironment(new WorkerThreadsModule.Worker(entityFilePath, {}));
     // } catch {
     const execArgv = inspect ? ['--inspect'] : [];
-    const childProc = fork(entryFilePath, ['remote', '-p', `${port}`], {
-        execArgv,
-    });
+
+    const childProc = fork(
+        entryFilePath,
+        [
+            '--preferredPort',
+            `${port}`,
+            '--socketServerOptions',
+            JSON.stringify(socketServerOptions),
+            '--requiredPaths',
+            JSON.stringify(requiredPaths),
+        ],
+        {
+            execArgv,
+        }
+    );
     await once(childProc, 'message');
     childProc.on('error', (e) => console.error(`error in forked process`, e));
     return { remoteNodeEnvironment: new RemoteNodeEnvironment(new ForkedProcess(childProc)), process: childProc };

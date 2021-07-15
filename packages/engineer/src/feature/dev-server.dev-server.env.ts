@@ -9,17 +9,15 @@ import {
     createConfigMiddleware,
     createFeaturesEngineRouter,
     getExternalFeaturesMetadata,
-    launchHttpServer,
-    NodeEnvironmentsManager,
     EXTERNAL_FEATURES_BASE_URI,
     getExportedEnvironments,
-    getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
+import { getResolvedEnvironments, launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackDevMiddleware = require('webpack-dev-middleware') as (
@@ -90,13 +88,13 @@ devServerFeature.setup(
 
             const {
                 externalFeatureDefinitions = [],
-                require,
+                require: requiredPaths = [],
                 socketServerOptions: configServerOptions = {},
                 externalFeaturesBasePath: configExternalFeaturesPath,
                 serveStatic = [],
             } = engineConfig ?? {};
-            if (require) {
-                await application.importModules(require);
+            if (requiredPaths) {
+                await application.importModules(requiredPaths);
             }
             const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
                 ...socketServerOptions,
@@ -147,6 +145,8 @@ devServerFeature.setup(
                         inspect,
                         overrideConfig,
                         externalFeatures,
+                        socketServerOptions,
+                        requiredPaths,
                     },
                     basePath,
                     resolvedSocketServerOptions

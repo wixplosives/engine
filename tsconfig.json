@@ -8,6 +8,9 @@
     { "path": "./packages/core-node/src" },
     { "path": "./packages/core-node/test" },
 
+    { "path": "./packages/runtime-node/src" },
+    { "path": "./packages/runtime-node/test" },
+
     { "path": "./packages/dashboard/src" },
 
     { "path": "./packages/engineer/src" },

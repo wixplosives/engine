@@ -1,4 +1,5 @@
-import type { IFeatureMessagePayload, IProcessMessage, ErrorResponse } from '@wixc3/engine-scripts';
+import type { IProcessMessage } from '@wixc3/engine-runtime-node';
+import type { IFeatureMessagePayload } from '@wixc3/engine-scripts';
 
 export interface ServerResponse<T> extends IProcessMessage<T> {
     id: 'error' | 'feature-initialized' | 'feature-closed';
@@ -50,6 +51,9 @@ export const isServerStateResponse = (message: unknown): message is ServerStateR
     !!(message as ServerStateResponse).data &&
     !!(message as ServerStateResponse).data.features;
 
+export interface ErrorResponse extends IProcessMessage<string> {
+    id: 'error';
+}
 export const isErrorResponse = (message: unknown): message is ErrorResponse =>
     isServerResponseMessage(message) && message.id === 'error';
 

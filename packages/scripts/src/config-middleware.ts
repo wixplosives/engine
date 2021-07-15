@@ -1,8 +1,7 @@
 import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 import type express from 'express';
 import importFresh from 'import-fresh';
-import type { IConfigDefinition, TopLevelConfigProvider } from './types';
-import type { NodeEnvironmentsManager } from './node-environments-manager';
+import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 
 export interface OverrideConfig {
     configName?: string;
@@ -58,9 +57,11 @@ export function createLiveConfigsMiddleware(
                 }
             }
         }
-        (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (res.locals as {
-            topLevelConfig: TopLevelConfig[];
-        }).topLevelConfig.concat(config, overrideConfig);
+        (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (
+            res.locals as {
+                topLevelConfig: TopLevelConfig[];
+            }
+        ).topLevelConfig.concat(config, overrideConfig);
         next();
     };
 }
@@ -82,9 +83,11 @@ export function createCommunicationMiddleware(
                           requestedConfig === 'undefined' ? undefined : requestedConfig
                       )
                 : undefined;
-        (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (res.locals as {
-            topLevelConfig: TopLevelConfig[];
-        }).topLevelConfig.concat([
+        (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (
+            res.locals as {
+                topLevelConfig: TopLevelConfig[];
+            }
+        ).topLevelConfig.concat([
             COM.use({
                 config: {
                     topology,
@@ -98,14 +101,16 @@ export function createCommunicationMiddleware(
 
 export const createConfigMiddleware: (
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider
-) => express.RequestHandler = (overrideConfig = []) => (req, res) => {
-    const { env: reqEnv } = req.query;
-    res.send(
-        (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig.concat(
-            Array.isArray(overrideConfig) ? overrideConfig : reqEnv ? overrideConfig(reqEnv as string) : []
-        )
-    );
-};
+) => express.RequestHandler =
+    (overrideConfig = []) =>
+    (req, res) => {
+        const { env: reqEnv } = req.query;
+        res.send(
+            (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig.concat(
+                Array.isArray(overrideConfig) ? overrideConfig : reqEnv ? overrideConfig(reqEnv as string) : []
+            )
+        );
+    };
 
 export const ensureTopLevelConfigMiddleware: express.RequestHandler = (_, res, next) => {
     if (!res.locals.topLevelConfig) {

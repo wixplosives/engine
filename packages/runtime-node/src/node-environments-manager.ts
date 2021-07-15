@@ -1,7 +1,7 @@
 import type { Socket } from 'net';
 import { delimiter } from 'path';
 
-import io from 'socket.io';
+import io, { ServerOptions } from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
 import {
     TopLevelConfig,
@@ -27,9 +27,13 @@ import {
     ICommunicationMessage,
     IExternalFeatureNodeDescriptor,
 } from './types';
-import type { OverrideConfig } from './config-middleware';
-import { getEnvironmntsForFeature } from './utils/environments';
+import { getEnvironmntsForFeature } from './environments';
 import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
+
+export interface OverrideConfig {
+    configName?: string;
+    overrideConfig: TopLevelConfig;
+}
 
 export interface RunningEnvironment {
     port: number;
@@ -91,6 +95,8 @@ export interface INodeEnvironmentsManagerOptions {
     inspect?: boolean;
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
     externalFeatures: IExternalFeatureNodeDescriptor[];
+    socketServerOptions: Partial<ServerOptions>;
+    requiredPaths: string[];
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -436,6 +442,8 @@ export class NodeEnvironmentsManager {
         const { remoteNodeEnvironment, process: childProc } = await startRemoteNodeEnvironment(cliEntry, {
             inspect: this.options.inspect,
             port: this.options.port,
+            socketServerOptions: this.options.socketServerOptions,
+            requiredPaths: this.options.requiredPaths,
         });
 
         const port = await remoteNodeEnvironment.getRemotePort();

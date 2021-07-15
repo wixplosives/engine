@@ -3,8 +3,8 @@ import bodyParser from 'body-parser';
 import performance from '@wixc3/cross-performance';
 
 import type { OverrideConfig } from './config-middleware';
-import type { NodeEnvironmentsManager } from './node-environments-manager';
-import type { IProcessMessage, IFeatureMessagePayload, IFeatureTarget } from './types';
+import type { IFeatureMessagePayload, IFeatureTarget } from './types';
+import type { IProcessMessage, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 
 export function createFeaturesEngineRouter(
     overrideConfigsMap: Map<string, OverrideConfig>,

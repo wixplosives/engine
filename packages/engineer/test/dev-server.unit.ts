@@ -5,10 +5,11 @@ import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
-import { Application, IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import { Application } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
 import { join } from 'path';
 import rimraf from 'rimraf';
+import type { IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 
 const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
 const engineRuntimeFeatureFixturePath = fs.join(__dirname, './fixtures/engine-run-options');

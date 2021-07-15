@@ -10,10 +10,14 @@ import {
     createExternalFeatureMapping,
 } from './create-entrypoint';
 
-import type { getResolvedEnvironments } from './utils/environments';
-import type { IFeatureDefinition, IConfigDefinition, TopLevelConfigProvider } from './types';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 import { createVirtualEntries } from './virtual-modules-loader';
+import type {
+    getResolvedEnvironments,
+    IConfigDefinition,
+    IFeatureDefinition,
+    TopLevelConfigProvider,
+} from '@wixc3/engine-runtime-node';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;

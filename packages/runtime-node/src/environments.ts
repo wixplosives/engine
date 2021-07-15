@@ -1,5 +1,5 @@
 import { flattenTree, EnvironmentTypes, SetMultiMap } from '@wixc3/engine-core';
-import type { IEnvironment, IFeatureDefinition } from '../types';
+import type { IEnvironment, IFeatureDefinition } from './types';
 
 export function getEnvironmntsForFeature(
     featureName: string,

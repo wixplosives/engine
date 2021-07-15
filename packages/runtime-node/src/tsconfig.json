@@ -2,14 +2,14 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "../dist",
-    "types": ["mocha", "node"]
+    "types": ["node"]
   },
   "references": [
     {
-      "path": "../../scripts/src"
+      "path": "../../core/src"
     },
     {
-      "path": "../../runtime-node/src"
+      "path": "../../core-node/src"
     }
   ]
 }

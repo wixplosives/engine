@@ -1,7 +1,7 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { IFeatureDefinition, IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
-import type { IFeatureDefinition, IConfigDefinition } from './types';
 
 const { stringify } = JSON;
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');

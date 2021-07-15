@@ -18,23 +18,15 @@ import {
     createWebpackConfigForExternalFeature,
     createWebpackConfigs,
 } from './create-webpack-configs';
-import { ForkedProcess } from './forked-process';
-import { NodeEnvironmentsManager, LaunchEnvironmentMode } from './node-environments-manager';
-import { createIPC } from './process-communication';
-import type {
-    EngineConfig,
-    IConfigDefinition,
-    IEnvironment,
-    IFeatureDefinition,
-    IFeatureTarget,
-    IExternalDefinition,
-    TopLevelConfigProvider,
-    IExternalFeatureNodeDescriptor,
-} from './types';
+import type { EngineConfig, IFeatureTarget } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
-import { getEnvironmntsForFeature, getResolvedEnvironments } from './utils/environments';
-import { launchHttpServer, RouteMiddleware } from './launch-http-server';
+import {
+    launchHttpServer,
+    RouteMiddleware,
+    getEnvironmntsForFeature,
+    getResolvedEnvironments,
+} from '@wixc3/engine-runtime-node';
 import {
     getExternalFeatureBasePath,
     getExternalFeaturesMetadata,
@@ -43,6 +35,18 @@ import {
 } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+import {
+    ForkedProcess,
+    LaunchEnvironmentMode,
+    NodeEnvironmentsManager,
+    createIPC,
+    IConfigDefinition,
+    IEnvironment,
+    IExternalDefinition,
+    IExternalFeatureNodeDescriptor,
+    IFeatureDefinition,
+    TopLevelConfigProvider,
+} from '@wixc3/engine-runtime-node';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -349,6 +353,7 @@ export class Application {
             serveExternalFeaturesPath = providedServeExternalFeaturesPath,
             serveStatic = [],
             socketServerOptions: configSocketServerOptions,
+            require: requiredPaths = [],
         } = engineConfig ?? {};
 
         const fixedExternalFeatureDefinitions = this.normilizeDefinitionsPackagePath(
@@ -439,6 +444,8 @@ export class Application {
                 overrideConfig: config,
                 configurations,
                 externalFeatures,
+                socketServerOptions,
+                requiredPaths,
             },
             this.basePath,
             { ...socketServerOptions, ...configSocketServerOptions }
