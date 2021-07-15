@@ -170,6 +170,13 @@ export class Communication {
     }
 
     /**
+     * Remove local handle event listener to Target.
+     */
+    public removeMessageHandler(target: Target): void {
+        target.removeEventListener('message', this.handleEvent, true);
+    }
+
+    /**
      * Generate client id for newly spawned environment.
      */
     public generateEnvInstanceID(name: string): string {
