@@ -11,9 +11,7 @@ export type MapBy<T extends any[] | undefined, FIELD extends keyof TupleToUnion<
     [key in TupleToUnion<T>[FIELD]]: Extract<TupleToUnion<T>, { [exc in FIELD]: key }>;
 };
 
-type JustFilterKeys<T, Filter> = { [P in keyof T]: T[P] extends Filter ? P : never }[keyof T];
-type JustFilter<T, Filter> = Pick<T, JustFilterKeys<T, Filter>>;
-// type JustFilterReverse<T, Filter> = Pick<T, Exclude<keyof T, JustFilterKeys<T, Filter>>>
+export type FilterRecord<T, Filter> = { [P in keyof T as T[P] extends Filter ? P : never]: T[P] };
 
 /*************** ENGINE TYPES  ***************/
 
@@ -50,11 +48,11 @@ export interface Entity<
     [IDENTIFY_API]?: (featureID: string, entityKey: string) => void;
 }
 
-export type GetInputs<T extends EntityRecord> = JustFilter<T, Entity<any, any, any, any, 'input', false>>;
-export type GetOutputs<T extends EntityRecord> = JustFilter<T, Entity<any, any, any, any, 'output', boolean>>;
+export type GetInputs<T extends EntityRecord> = FilterRecord<T, Entity<any, any, any, any, 'input', false>>;
+export type GetOutputs<T extends EntityRecord> = FilterRecord<T, Entity<any, any, any, any, 'output', boolean>>;
 
-export type GetRemoteOutputs<T extends EntityRecord> = JustFilter<T, Entity<any, any, any, any, any, true>>;
-export type GetOnlyLocalUniversalOutputs<T extends EntityRecord> = JustFilter<
+export type GetRemoteOutputs<T extends EntityRecord> = FilterRecord<T, Entity<any, any, any, any, any, true>>;
+export type GetOnlyLocalUniversalOutputs<T extends EntityRecord> = FilterRecord<
     T,
     Entity<any, any, typeof Universal, any, 'output', false>
 >;
