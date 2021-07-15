@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "20.0.0",
+  "version": "20.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -15,8 +15,8 @@
     "@file-services/types": "^5.3.1",
     "@types/express": "^4.17.13",
     "@wixc3/cross-performance": "^20.0.0",
-    "@wixc3/engine-core": "^20.0.0",
-    "@wixc3/engine-core-node": "^20.0.0",
+    "@wixc3/engine-core": "^20.1.0",
+    "@wixc3/engine-core-node": "^20.1.0",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
     "express": "^4.17.1",
