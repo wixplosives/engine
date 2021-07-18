@@ -1,15 +1,17 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import { createDisposables } from '@wixc3/engine-core';
 import { Application } from '@wixc3/engine-scripts';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 
 chai.use(chaiAsPromised);
 
-const nodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'node-env');
-const multiNodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'multi-node-env');
-const socketNodeEnvironmentFixturePath = join(__dirname, 'fixtures', 'multi-socket-node-env');
+const fixturesFolder = join(dirname(require.resolve('@wixc3/engine-scripts/package.json')), 'test/fixtures');
+
+const nodeEnvironmentFixturePath = join(fixturesFolder, 'node-env');
+const multiNodeEnvironmentFixturePath = join(fixturesFolder, 'multi-node-env');
+const socketNodeEnvironmentFixturePath = join(fixturesFolder, 'multi-socket-node-env');
 const runFeatureOptions = { featureName: 'engine-node/x' };
 
 describe('Node environments manager', function () {
