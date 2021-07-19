@@ -19,7 +19,6 @@ const requiredPaths = JSON.parse(requiredPathsJson as string) as string[];
 const socketServerOptions = JSON.parse(socketServerOptionsJson as string) as Partial<ServerOptions>;
 
 const basePath = resolve(path);
-// const app = new Application({ basePath, featureDiscoveryRoot: featureDiscoveryRoot as string });
 
 const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : undefined;
 
