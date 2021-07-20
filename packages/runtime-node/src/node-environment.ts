@@ -158,7 +158,7 @@ export function createFeatureLoaders(
                 }
                 return ((await import(filePath)) as { default: Feature }).default;
             },
-            depFeatures: dependencies,
+            depFeatures: dependencies ?? [],
             resolvedContexts: resolvedContexts ?? {},
         };
     }

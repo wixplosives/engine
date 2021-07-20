@@ -22,7 +22,7 @@ export interface IFeatureLoader {
     preload: (
         resolveContexts: Record<string, string>
     ) => Promise<Array<(runtimeOptions: Record<string, string | boolean>) => void | Promise<void>>> | undefined;
-    depFeatures?: string[];
+    depFeatures: string[];
     resolvedContexts: Record<string, string>;
 }
 
@@ -127,12 +127,10 @@ export class FeatureLoadersRegistry {
         const features = [featureName];
         while (features.length) {
             const { depFeatures } = await this.get(features.shift()!);
-            if (depFeatures) {
-                for (const depFeature of depFeatures) {
-                    if (!dependencies.includes(depFeature)) {
-                        dependencies.push(depFeature);
-                        features.push(depFeature);
-                    }
+            for (const depFeature of depFeatures) {
+                if (!dependencies.includes(depFeature)) {
+                    dependencies.push(depFeature);
+                    features.push(depFeature);
                 }
             }
         }
