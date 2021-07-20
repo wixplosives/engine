@@ -1,7 +1,7 @@
 import { resolve, join } from 'path';
 import { parseCliArguments } from './parse-cli-arguments';
 import { ForkedProcess } from './forked-process';
-import { launchHttpServer } from './launch-http-server';
+import { launchEngineHttpServer } from './launch-http-server';
 import { createIPC } from './process-communication';
 import type { ServerOptions } from 'socket.io';
 
@@ -30,7 +30,7 @@ void (async () => {
             throw new Error(`failed requiring: ${requiredModule} ${(ex as Error)?.stack || String(ex)}`);
         }
     }
-    const { socketServer, close, port } = await launchHttpServer({
+    const { socketServer, close, port } = await launchEngineHttpServer({
         staticDirPath: join(basePath, 'dist'),
         httpServerPort,
         socketServerOptions,

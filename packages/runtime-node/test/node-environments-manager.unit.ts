@@ -1,35 +1,117 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { dirname, join } from 'path';
-import { createDisposables } from '@wixc3/engine-core';
-import { Application } from '@wixc3/engine-scripts';
+import { COM, createDisposables, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
+import { launchEngineHttpServer, NodeEnvironmentsManager, StaticFeatureDefinition } from '@wixc3/engine-runtime-node';
+import type io from 'socket.io';
+
+import SocketServerNodeFeature, {
+    serverEnv as socketServerEnv,
+} from '@fixture/engine-multi-socket-node/dist/feature/x.feature';
+
+import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
 
 chai.use(chaiAsPromised);
 
-const fixturesFolder = join(dirname(require.resolve('@wixc3/engine-scripts/package.json')), 'test/fixtures');
+const nodeEnvironmentFixturePath = join(dirname(require.resolve('@fixture/engine-node/package.json')), 'dist');
 
-const nodeEnvironmentFixturePath = join(fixturesFolder, 'node-env');
-const multiNodeEnvironmentFixturePath = join(fixturesFolder, 'multi-node-env');
-const socketNodeEnvironmentFixturePath = join(fixturesFolder, 'multi-socket-node-env');
+const multiNodeEnvironmentFixturePath = join(
+    dirname(require.resolve('@fixture/engine-multi-node/package.json')),
+    'dist'
+);
+const socketNodeEnvironmentFixturePath = join(
+    dirname(require.resolve('@fixture/engine-multi-socket-node/package.json')),
+    'dist'
+);
 const runFeatureOptions = { featureName: 'engine-node/x' };
+
+const comBasePath = join(dirname(require.resolve('@wixc3/engine-core/package.json')), 'dist');
+
+const comEntry: StaticFeatureDefinition = {
+    filePath: join(comBasePath, 'communication.feature'),
+    name: 'communication',
+    packageName: '@wixc3/engine-core',
+    scopedName: 'engine-core/communication',
+};
+
+const engineNodeEntry: StaticFeatureDefinition = {
+    dependencies: [comEntry.scopedName],
+    envFilePaths: {
+        server: join(nodeEnvironmentFixturePath, 'feature/x.server.env'),
+    },
+    exportedEnvs: [{ name: 'server', type: 'node' }],
+    filePath: join(nodeEnvironmentFixturePath, 'feature/x.feature'),
+    name: 'x',
+    packageName: '@fixture/engine-node',
+    scopedName: 'engine-node/x',
+};
+
+const engineMultiNodeSocketCommunication: StaticFeatureDefinition = {
+    dependencies: [comEntry.scopedName],
+    filePath: join(socketNodeEnvironmentFixturePath, 'feature/x.feature'),
+    name: 'x',
+    scopedName: 'engine-multi-socket-node/x',
+    packageName: '@fixture/engine-multi-socket-node',
+    envFilePaths: {
+        server: join(socketNodeEnvironmentFixturePath, 'feature/x.server.env'),
+        'server-two': join(socketNodeEnvironmentFixturePath, 'feature/x.server-two.env'),
+    },
+    exportedEnvs: [
+        { name: 'server', type: 'node' },
+        { name: 'server-two', type: 'node' },
+    ],
+};
+
+const engineMultiNodeIPCCommunication: StaticFeatureDefinition = {
+    dependencies: [comEntry.scopedName],
+    filePath: join(multiNodeEnvironmentFixturePath, 'feature/x.feature'),
+    name: 'x',
+    scopedName: 'engine-multi-socket-node/x',
+    packageName: '@fixture/engine-multi-socket-node',
+    envFilePaths: {
+        server: join(multiNodeEnvironmentFixturePath, 'feature/x.server.env'),
+        'server-two': join(multiNodeEnvironmentFixturePath, 'feature/x.server-two.env'),
+    },
+    exportedEnvs: [
+        { name: 'server', type: 'node' },
+        { name: 'server-two', type: 'node' },
+    ],
+};
 
 describe('Node environments manager', function () {
     this.timeout(10_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
+    let socketServer: io.Server;
+    let port: number;
+
+    beforeEach(async () => {
+        const server = await launchEngineHttpServer();
+        ({ socketServer, port } = server);
+        disposables.add(server.close);
+    });
 
     after(() => browserProvider.dispose());
 
     afterEach(disposables.dispose);
 
     it('launches a new node environment', async () => {
-        const app = new Application({ basePath: nodeEnvironmentFixturePath });
-        await app.build();
-        disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager } = await app.run();
-        disposables.add(() => close());
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(
+            socketServer,
+            {
+                features: new Map<string, StaticFeatureDefinition>(
+                    Object.entries({
+                        [engineNodeEntry.scopedName]: engineNodeEntry,
+                        [comEntry.scopedName]: comEntry,
+                    })
+                ),
+                port,
+            },
+            nodeEnvironmentFixturePath
+        );
 
+        disposables.add(() => nodeEnvironmentManager.closeAll());
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
         const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
@@ -39,11 +121,21 @@ describe('Node environments manager', function () {
     });
 
     it('lists only open environments', async () => {
-        const app = new Application({ basePath: nodeEnvironmentFixturePath });
-        await app.build();
-        disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager } = await app.run();
-        disposables.add(close);
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(
+            socketServer,
+            {
+                features: new Map<string, StaticFeatureDefinition>(
+                    Object.entries({
+                        [engineNodeEntry.scopedName]: engineNodeEntry,
+                        [comEntry.scopedName]: comEntry,
+                    })
+                ),
+                port,
+            },
+            nodeEnvironmentFixturePath
+        );
+
+        disposables.add(() => nodeEnvironmentManager.closeAll());
 
         const allOpenEnvironments = nodeEnvironmentManager.getFeaturesWithRunningEnvironments();
 
@@ -58,11 +150,21 @@ describe('Node environments manager', function () {
     });
 
     it('fails to launch if wrong config name or feature name are provided', async () => {
-        const app = new Application({ basePath: nodeEnvironmentFixturePath });
-        await app.build();
-        disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager } = await app.run();
-        disposables.add(close);
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(
+            socketServer,
+            {
+                features: new Map<string, StaticFeatureDefinition>(
+                    Object.entries({
+                        [engineNodeEntry.scopedName]: engineNodeEntry,
+                        [comEntry.scopedName]: comEntry,
+                    })
+                ),
+                port,
+            },
+            nodeEnvironmentFixturePath
+        );
+
+        disposables.add(() => nodeEnvironmentManager.closeAll());
 
         await expect(
             nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
@@ -72,11 +174,21 @@ describe('Node environments manager', function () {
     });
 
     it('closes open environments', async () => {
-        const app = new Application({ basePath: nodeEnvironmentFixturePath });
-        await app.build();
-        disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager } = await app.run();
-        disposables.add(close);
+        const nodeEnvironmentManager = new NodeEnvironmentsManager(
+            socketServer,
+            {
+                features: new Map<string, StaticFeatureDefinition>(
+                    Object.entries({
+                        [engineNodeEntry.scopedName]: engineNodeEntry,
+                        [comEntry.scopedName]: comEntry,
+                    })
+                ),
+                port,
+            },
+            nodeEnvironmentFixturePath
+        );
+
+        disposables.add(() => nodeEnvironmentManager.closeAll());
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
         await expect(nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
@@ -84,98 +196,196 @@ describe('Node environments manager', function () {
         );
     });
 
-    it('allows socket communication between node environments', async () => {
-        const app = new Application({ basePath: socketNodeEnvironmentFixturePath });
-        await app.build({
-            featureName: 'engine-multi-socket-node/x',
-            staticBuild: false,
-            publicConfigsRoute: '/config',
+    describe('Node environment manager socket communication', () => {
+        const proxyFeature = new Feature({
+            id: 'test',
+            api: {
+                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
+            },
+            dependencies: [SocketServerNodeFeature, COM],
+        }).setup('dev', ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+            void socketClientInitializer({ communication, env: socketServerEnv });
+
+            return {
+                echoService: {
+                    echo: () => {
+                        return echoService.echo();
+                    },
+                },
+            };
         });
-        disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager, port } = await app.run({
-            publicConfigsRoute: 'config',
-            autoLaunch: false,
+
+        it('allows socket communication between node environments', async () => {
+            const nodeEnvironmentManager = new NodeEnvironmentsManager(
+                socketServer,
+                {
+                    features: new Map<string, StaticFeatureDefinition>(
+                        Object.entries({
+                            [engineMultiNodeSocketCommunication.scopedName]: engineMultiNodeSocketCommunication,
+                            [comEntry.scopedName]: comEntry,
+                        })
+                    ),
+                    port,
+                },
+                nodeEnvironmentFixturePath
+            );
+
+            disposables.add(() => nodeEnvironmentManager.closeAll());
+
+            await nodeEnvironmentManager.runServerEnvironments({
+                featureName: engineMultiNodeSocketCommunication.scopedName,
+            });
+
+            const { dispose, engine } = runEngineApp({
+                envName: 'dev',
+                resolvedContexts: {},
+                features: [proxyFeature],
+                config: [
+                    COM.use({
+                        config: {
+                            topology: nodeEnvironmentManager.getTopology('engine-multi-socket-node/x'),
+                        },
+                    }),
+                ],
+            });
+            disposables.add(() => dispose());
+
+            expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
         });
-        disposables.add(() => close());
 
-        await nodeEnvironmentManager.runServerEnvironments({ featureName: 'engine-multi-socket-node/x' });
+        it('allows socket communication between node environments when running in forked mode', async () => {
+            const nodeEnvironmentManager = new NodeEnvironmentsManager(
+                socketServer,
+                {
+                    features: new Map<string, StaticFeatureDefinition>(
+                        Object.entries({
+                            [engineMultiNodeSocketCommunication.scopedName]: engineMultiNodeSocketCommunication,
+                            [comEntry.scopedName]: comEntry,
+                        })
+                    ),
+                    port,
+                },
+                nodeEnvironmentFixturePath
+            );
 
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        disposables.add(() => page.close());
+            disposables.add(() => nodeEnvironmentManager.closeAll());
 
-        const contents = await page.textContent('body');
-        expect(contents).to.eq('hello gaga');
+            await nodeEnvironmentManager.runServerEnvironments({
+                featureName: engineMultiNodeSocketCommunication.scopedName,
+                mode: 'forked',
+            });
+
+            const { dispose, engine } = runEngineApp({
+                envName: 'dev',
+                resolvedContexts: {},
+                features: [proxyFeature],
+                config: [
+                    COM.use({
+                        config: {
+                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeSocketCommunication.scopedName),
+                        },
+                    }),
+                ],
+            });
+            disposables.add(() => dispose());
+
+            expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
+        });
     });
+    describe('Node environment manager ipc communication', () => {
+        const testFeature = new Feature({
+            id: 'test',
+            api: {
+                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
+            },
+            dependencies: [ServerNodeFeature, COM],
+        }).setup('dev', ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+            void socketClientInitializer({ communication, env: serverEnv });
 
-    it('allows socket communication between node environments when running in forked mode', async () => {
-        const app = new Application({ basePath: socketNodeEnvironmentFixturePath });
-        await app.build({
-            featureName: 'engine-multi-socket-node/x',
-            staticBuild: false,
-            publicConfigsRoute: '/config',
+            return {
+                echoService: {
+                    echo: () => {
+                        return echoService.echo();
+                    },
+                },
+            };
         });
-        disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager, port } = await app.run({
-            publicConfigsRoute: 'config',
-            autoLaunch: false,
+
+        it('allows local communication between node environments', async () => {
+            const nodeEnvironmentManager = new NodeEnvironmentsManager(
+                socketServer,
+                {
+                    features: new Map<string, StaticFeatureDefinition>(
+                        Object.entries({
+                            [engineMultiNodeIPCCommunication.scopedName]: engineMultiNodeIPCCommunication,
+                            [comEntry.scopedName]: comEntry,
+                        })
+                    ),
+                    port,
+                },
+                nodeEnvironmentFixturePath
+            );
+
+            disposables.add(() => nodeEnvironmentManager.closeAll());
+
+            await nodeEnvironmentManager.runServerEnvironments({
+                featureName: engineMultiNodeIPCCommunication.scopedName,
+            });
+
+            const { dispose, engine } = runEngineApp({
+                envName: 'dev',
+                resolvedContexts: {},
+                features: [testFeature],
+                config: [
+                    COM.use({
+                        config: {
+                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
+                        },
+                    }),
+                ],
+            });
+            disposables.add(() => dispose());
+
+            expect(await engine.get(testFeature).api.echoService.echo()).to.eq('hello gaga');
         });
-        disposables.add(() => close());
 
-        await nodeEnvironmentManager.runServerEnvironments({
-            featureName: 'engine-multi-socket-node/x',
-            mode: 'forked',
+        it('allows local communication between node environments when running in forked mode', async () => {
+            const nodeEnvironmentManager = new NodeEnvironmentsManager(
+                socketServer,
+                {
+                    features: new Map<string, StaticFeatureDefinition>(
+                        Object.entries({
+                            [engineMultiNodeIPCCommunication.scopedName]: engineMultiNodeIPCCommunication,
+                            [comEntry.scopedName]: comEntry,
+                        })
+                    ),
+                    port,
+                },
+                nodeEnvironmentFixturePath
+            );
+
+            disposables.add(() => nodeEnvironmentManager.closeAll());
+
+            await nodeEnvironmentManager.runServerEnvironments({
+                featureName: engineMultiNodeIPCCommunication.scopedName,
+                mode: 'forked',
+            });
+
+            const { dispose, engine } = runEngineApp({
+                envName: 'dev',
+                resolvedContexts: {},
+                features: [testFeature],
+                config: [
+                    COM.use({
+                        config: {
+                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
+                        },
+                    }),
+                ],
+            });
+            disposables.add(() => dispose());
+
+            expect(await engine.get(testFeature).api.echoService.echo()).to.eq('hello gaga');
         });
-
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        disposables.add(() => page.close());
-
-        const contents = await page.textContent('body');
-        expect(contents).to.eq('hello gaga');
-    });
-
-    it('allows local communication between node environments', async () => {
-        const app = new Application({ basePath: multiNodeEnvironmentFixturePath });
-        await app.build({
-            featureName: 'engine-multi-node/x',
-            staticBuild: false,
-            publicConfigsRoute: '/config',
-        });
-        disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager, port } = await app.run({
-            publicConfigsRoute: 'config',
-            autoLaunch: false,
-        });
-        disposables.add(() => close());
-
-        await nodeEnvironmentManager.runServerEnvironments({ featureName: 'engine-multi-node/x' });
-
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        disposables.add(() => page.close());
-
-        const contents = await page.textContent('body');
-        expect(contents).to.eq('hello gaga');
-    });
-
-    it('allows local communication between node environments when running in forked mode', async () => {
-        const app = new Application({ basePath: multiNodeEnvironmentFixturePath });
-        await app.build({
-            featureName: 'engine-multi-node/x',
-            staticBuild: false,
-            publicConfigsRoute: '/config',
-        });
-        disposables.add(() => app.clean());
-        const { close, nodeEnvironmentManager, port } = await app.run({
-            publicConfigsRoute: 'config',
-            autoLaunch: false,
-        });
-        disposables.add(() => close());
-
-        await nodeEnvironmentManager.runServerEnvironments({ featureName: 'engine-multi-node/x', mode: 'forked' });
-
-        const page = await browserProvider.loadPage(`http://localhost:${port}/main.html`);
-        disposables.add(() => page.close());
-
-        const contents = await page.textContent('body');
-        expect(contents).to.eq('hello gaga');
     });
 });

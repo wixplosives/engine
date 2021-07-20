@@ -175,6 +175,9 @@ export function loadFeaturesFromPaths(
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
                 const targetEnv = childEnvName ? `${envName}/${childEnvName}` : envName;
+                if (!existingDefinition.envFilePaths) {
+                    existingDefinition.envFilePaths = {};
+                }
                 existingDefinition.envFilePaths[targetEnv] = envFilePath;
             }
         }
@@ -184,7 +187,7 @@ export function loadFeaturesFromPaths(
             const { featureName, envName, childEnvName } = parseContextFileName(fs.basename(contextFilePath));
             const contextualName = `${envName}/${childEnvName}`;
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
-            if (existingDefinition) {
+            if (existingDefinition && existingDefinition.contextFilePaths) {
                 existingDefinition.contextFilePaths[contextualName] = contextFilePath;
             }
         }
@@ -193,7 +196,7 @@ export function loadFeaturesFromPaths(
             const { featureName, envName, childEnvName } = parsePreloadFileName(fs.basename(preloadFile));
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             const contextualName = childEnvName ? `${envName}/${childEnvName}` : envName;
-            if (existingDefinition) {
+            if (existingDefinition && existingDefinition.preloadFilePaths) {
                 existingDefinition.preloadFilePaths[contextualName] = preloadFile;
             }
         }
@@ -204,7 +207,9 @@ export function loadFeaturesFromPaths(
         Object.assign(resolvedContexts, computeUsedContext(featureName, foundFeatures));
 
         // compute dependencies
-        dependencies.push(...exportedFeature.dependencies.map((feature) => featureToScopedName.get(feature)!));
+        if (dependencies) {
+            dependencies.push(...exportedFeature.dependencies.map((feature) => featureToScopedName.get(feature)!));
+        }
     }
 
     return { features: foundFeatures, configurations: foundConfigs };
@@ -250,7 +255,7 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
     };
 
     if (typeof exports === 'object' && exports !== null) {
-        const { exportedEnvs: envs, usedContexts } = featureFile;
+        const { exportedEnvs: envs = [], usedContexts = {} } = featureFile;
         for (const exportValue of Object.values(exports)) {
             if (instanceOf(exportValue, Environment)) {
                 if (instanceOf(exportValue, SingleEndpointContextualEnvironment)) {

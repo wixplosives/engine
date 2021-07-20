@@ -17,7 +17,7 @@ import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
-import { getResolvedEnvironments, launchHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import { getResolvedEnvironments, launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackDevMiddleware = require('webpack-dev-middleware') as (
@@ -117,7 +117,7 @@ devServerFeature.setup(
                 app,
                 close,
                 socketServer,
-            } = await launchHttpServer({
+            } = await launchEngineHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
@@ -145,7 +145,6 @@ devServerFeature.setup(
                         inspect,
                         overrideConfig,
                         externalFeatures,
-                        socketServerOptions,
                         requiredPaths,
                     },
                     basePath,

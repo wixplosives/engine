@@ -7,6 +7,11 @@ export interface IExtenalFeatureDescriptor {
     packageBasePath: string;
 }
 
+export type StaticFeatureDefinition = Omit<
+    IFeatureDefinition,
+    'exportedFeature' | 'toJSON' | 'isRoot' | 'directoryPath'
+>;
+
 export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IFeatureDefinition {}
 
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
@@ -15,7 +20,7 @@ export const isProcessMessage = (value: unknown): value is IProcessMessage<unkno
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
-    features: Array<[string, IFeatureDefinition]>;
+    features: Array<[string, StaticFeatureDefinition]>;
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: BaseHost;
@@ -100,13 +105,13 @@ export interface IFeatureModule {
     /**
      * Exported environments from module.
      */
-    exportedEnvs: IEnvironment[];
+    exportedEnvs?: IEnvironment[];
 
     /**
      * If module exports any `processingEnv.use('worker')`,
      * it will be set as `'processing': 'worker'`
      */
-    usedContexts: Record<string, string>;
+    usedContexts?: Record<string, string>;
 }
 
 export interface IEnvironment {
@@ -139,12 +144,12 @@ export interface IConfigDefinition {
 }
 
 export interface IFeatureDefinition extends IFeatureModule {
-    contextFilePaths: Record<string, string>;
-    envFilePaths: Record<string, string>;
-    preloadFilePaths: Record<string, string>;
-    dependencies: string[];
+    contextFilePaths?: Record<string, string>;
+    envFilePaths?: Record<string, string>;
+    preloadFilePaths?: Record<string, string>;
+    dependencies?: string[];
     scopedName: string;
-    resolvedContexts: Record<string, string>;
+    resolvedContexts?: Record<string, string>;
     isRoot: boolean;
     packageName: string;
     directoryPath: string;

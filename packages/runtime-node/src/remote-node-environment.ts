@@ -7,13 +7,13 @@ import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from '
 export interface IStartRemoteNodeEnvironmentOptions {
     port: number;
     inspect?: boolean;
-    socketServerOptions: Partial<ServerOptions>;
-    requiredPaths: string[];
+    socketServerOptions?: Partial<ServerOptions>;
+    requiredPaths?: string[];
 }
 
 export async function startRemoteNodeEnvironment(
     entryFilePath: string,
-    { inspect, port, socketServerOptions, requiredPaths }: IStartRemoteNodeEnvironmentOptions
+    { inspect, port, socketServerOptions = {}, requiredPaths = [] }: IStartRemoteNodeEnvironmentOptions
 ) {
     // Roman: add this lines after worker threads will be debuggable
     // the current behavior should be a fallback

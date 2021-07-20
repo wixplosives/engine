@@ -32,13 +32,21 @@ describe('Application', function () {
         return page;
     };
 
-    const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
-    const baseWebApplicationFixturePath = fs.join(__dirname, './fixtures/base-web-application');
-    const staticBaseWebApplicationFixturePath = fs.join(__dirname, './fixtures/static-base-web-application');
-    const applicationExternalFixturePath = fs.join(__dirname, './fixtures/application-external');
-    const staticApplicationExternalFixturePath = fs.join(__dirname, './fixtures/static-application-external');
-    const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
-    const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
+    const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
+    const baseWebApplicationFixturePath = fs.dirname(
+        require.resolve('@fixture/base-web-application-feature/package.json')
+    );
+    const staticBaseWebApplicationFixturePath = fs.dirname(
+        require.resolve('@fixture/static-base-web-application-feature/package.json')
+    );
+    const applicationExternalFixturePath = fs.dirname(
+        require.resolve('@fixture/application-external-feature/package.json')
+    );
+    const staticApplicationExternalFixturePath = fs.dirname(
+        require.resolve('@fixture/static-application-external-feature/package.json')
+    );
+    const nodeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-node/package.json'));
+    const contextualFeatureFixturePath = fs.dirname(require.resolve('@fixture/contextual-feature/package.json'));
 
     describe('build', () => {
         const manifestFileName = 'manifest.json';

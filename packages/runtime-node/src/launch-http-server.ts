@@ -17,18 +17,18 @@ export interface RouteMiddleware {
 }
 
 export interface ILaunchHttpServerOptions {
-    staticDirPath: string;
+    staticDirPath?: string;
     httpServerPort?: number;
     socketServerOptions?: Partial<io.ServerOptions>;
     routeMiddlewares?: Array<RouteMiddleware>;
 }
 
-export async function launchHttpServer({
+export async function launchEngineHttpServer({
     staticDirPath,
     httpServerPort = DEFAULT_PORT,
     socketServerOptions,
     routeMiddlewares = [],
-}: ILaunchHttpServerOptions) {
+}: ILaunchHttpServerOptions = {}) {
     const app = express();
     for (const { path, handlers } of routeMiddlewares) {
         app.use(path, handlers);
@@ -36,7 +36,9 @@ export async function launchHttpServer({
     app.use(cors());
     const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
 
-    app.use('/', express.static(staticDirPath));
+    if (staticDirPath) {
+        app.use('/', express.static(staticDirPath));
+    }
 
     app.use('/favicon.ico', noContentHandler);
 

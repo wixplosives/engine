@@ -1,9 +1,9 @@
 import { flattenTree, EnvironmentTypes, SetMultiMap } from '@wixc3/engine-core';
-import type { IEnvironment, IFeatureDefinition } from './types';
+import type { IEnvironment, IFeatureDefinition, StaticFeatureDefinition } from './types';
 
 export function getEnvironmntsForFeature(
     featureName: string,
-    features: Map<string, IFeatureDefinition>,
+    features: Map<string, StaticFeatureDefinition>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes,
     filterByContext = true
 ) {
@@ -17,15 +17,15 @@ export function getEnvironmntsForFeature(
     }
     const { resolvedContexts } = featureDefinition;
     const deepDefsForFeature = flattenTree(featureDefinition, (f) =>
-        f.dependencies.map((fName) => features.get(fName)!)
+        f.dependencies ? f.dependencies.map((fName) => features.get(fName)!) : []
     );
-    for (const { exportedEnvs } of deepDefsForFeature) {
+    for (const { exportedEnvs = [] } of deepDefsForFeature) {
         for (const exportedEnv of exportedEnvs) {
             if (
                 (!envTypes || environmentTypesToFilterBy.includes(exportedEnv.type)) &&
                 (!filterByContext ||
                     !exportedEnv.childEnvName ||
-                    resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
+                    resolvedContexts?.[exportedEnv.name] === exportedEnv.childEnvName)
             ) {
                 filteredEnvironments.add(exportedEnv);
             }
@@ -94,14 +94,14 @@ function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironmen
 function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
     const allContexts = new SetMultiMap<string, string>();
     for (const { resolvedContexts } of features.values()) {
-        convertEnvRecordToSetMultiMap(resolvedContexts, allContexts);
+        convertEnvRecordToSetMultiMap(resolvedContexts ?? {}, allContexts);
     }
     return allContexts;
 }
 
 function getPossibleContexts(features: Map<string, IFeatureDefinition>) {
     const allContexts = new SetMultiMap<string, string>();
-    for (const { exportedEnvs } of features.values()) {
+    for (const { exportedEnvs = [] } of features.values()) {
         for (const env of exportedEnvs) {
             if (env.childEnvName) {
                 allContexts.add(env.name, env.childEnvName);

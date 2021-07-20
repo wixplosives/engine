@@ -1,7 +1,7 @@
 import type { Socket } from 'net';
 import { delimiter } from 'path';
 
-import io, { ServerOptions } from 'socket.io';
+import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
 import {
     TopLevelConfig,
@@ -20,12 +20,12 @@ import {
     IEnvironment,
     IEnvironmentMessage,
     IEnvironmentStartMessage,
-    IFeatureDefinition,
     isEnvironmentStartMessage,
     StartEnvironmentOptions,
     TopLevelConfigProvider,
     ICommunicationMessage,
     IExternalFeatureNodeDescriptor,
+    StaticFeatureDefinition,
 } from './types';
 import { getEnvironmntsForFeature } from './environments';
 import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
@@ -88,15 +88,14 @@ export interface RunEnvironmentOptions {
 const cliEntry = require.resolve('./remote-node-entry');
 
 export interface INodeEnvironmentsManagerOptions {
-    features: Map<string, IFeatureDefinition>;
+    features: Map<string, StaticFeatureDefinition>;
     configurations?: SetMultiMap<string, IConfigDefinition | TopLevelConfig>;
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
     inspect?: boolean;
-    overrideConfig: TopLevelConfig | TopLevelConfigProvider;
-    externalFeatures: IExternalFeatureNodeDescriptor[];
-    socketServerOptions: Partial<ServerOptions>;
-    requiredPaths: string[];
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
+    externalFeatures?: IExternalFeatureNodeDescriptor[];
+    requiredPaths?: string[];
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -114,7 +113,7 @@ export interface ILaunchEnvironmentOptions {
     externalFeatures?: IExternalFeatureNodeDescriptor[];
     com: Communication;
     baseHost: BaseHost;
-    features: Map<string, IFeatureDefinition>;
+    features: Map<string, StaticFeatureDefinition>;
 }
 
 export class NodeEnvironmentsManager {
@@ -242,10 +241,12 @@ export class NodeEnvironmentsManager {
 
     private getOverrideConfig(overrideConfigsMap: Map<string, OverrideConfig>, configName?: string, envName?: string) {
         const { overrideConfig: overrideConfigProvider } = this.options;
-        const overrideConfig = Array.isArray(overrideConfigProvider)
-            ? overrideConfigProvider
-            : envName
-            ? overrideConfigProvider(envName)
+        const overrideConfig = overrideConfigProvider
+            ? Array.isArray(overrideConfigProvider)
+                ? overrideConfigProvider
+                : envName
+                ? overrideConfigProvider(envName)
+                : []
             : [];
         const overrideConfigs = [...overrideConfig];
         if (configName) {
@@ -442,7 +443,7 @@ export class NodeEnvironmentsManager {
         const { remoteNodeEnvironment, process: childProc } = await startRemoteNodeEnvironment(cliEntry, {
             inspect: this.options.inspect,
             port: this.options.port,
-            socketServerOptions: this.options.socketServerOptions,
+            socketServerOptions: this.socketServerOptions,
             requiredPaths: this.options.requiredPaths,
         });
 

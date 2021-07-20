@@ -3,7 +3,7 @@
   "workspaces": [
     "examples/*",
     "packages/*",
-    "packages/scripts/test/fixtures/*"
+    "test-fixtures/*"
   ],
   "scripts": {
     "clean": "rimraf ./packages/*/dist ./examples/*/dist",

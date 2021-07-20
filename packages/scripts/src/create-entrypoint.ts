@@ -216,7 +216,7 @@ function loadEnvAndContextFiles({
     const loadStatements: string[] = [];
     const preloadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
-        const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
+        const contextFilePath = contextFilePaths?.[`${envName}/${childEnvName}`];
         if (contextFilePath) {
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
@@ -229,7 +229,7 @@ function loadEnvAndContextFiles({
                 })};
             }`);
         }
-        const preloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+        const preloadFilePath = preloadFilePaths?.[`${envName}/${childEnvName}`];
         if (preloadFilePath) {
             // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
@@ -244,7 +244,7 @@ function loadEnvAndContextFiles({
             }`);
         }
     }
-    const envFilePath = envFilePaths[envName];
+    const envFilePath = envFilePaths?.[envName];
     if (envFilePath) {
         loadStatements.push(
             loadStatement({
@@ -256,7 +256,7 @@ function loadEnvAndContextFiles({
             })
         );
     }
-    const preloadFilePath = preloadFilePaths[envName];
+    const preloadFilePath = preloadFilePaths?.[envName];
     if (preloadFilePath) {
         preloadStatements.push(
             webpackImportStatement({

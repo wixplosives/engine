@@ -27,6 +27,23 @@
     { "path": "./examples/playground" },
     { "path": "./examples/preload" },
     { "path": "./examples/reloaded-iframe" },
-    { "path": "./examples/dashboard-extention" }
+    { "path": "./examples/dashboard-extention" },
+
+    { "path": "./test-fixtures/3rd-party" },
+    { "path": "./test-fixtures/application-external" },
+    { "path": "./test-fixtures/base-web-application" },
+    { "path": "./test-fixtures/contextual" },
+    { "path": "./test-fixtures/engine-config" },
+    { "path": "./test-fixtures/engine-feature" },
+    { "path": "./test-fixtures/engine-feature-roots" },
+    { "path": "./test-fixtures/engine-multi-feature" },
+    { "path": "./test-fixtures/engine-run-options" },
+    { "path": "./test-fixtures/multi-node-env" },
+    { "path": "./test-fixtures/multi-socket-node-env" },
+    { "path": "./test-fixtures/node-env" },
+    { "path": "./test-fixtures/static-application-external" },
+    { "path": "./test-fixtures/static-base-web-application" },
+    { "path": "./test-fixtures/using-config" },
+    { "path": "./test-fixtures/workspace" }
   ]
 }

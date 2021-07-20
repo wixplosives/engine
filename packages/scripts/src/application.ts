@@ -22,7 +22,7 @@ import type { EngineConfig, IFeatureTarget } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import {
-    launchHttpServer,
+    launchEngineHttpServer,
     RouteMiddleware,
     getEnvironmntsForFeature,
     getResolvedEnvironments,
@@ -410,7 +410,7 @@ export class Application {
             },
         });
 
-        const { port, close, socketServer, app } = await launchHttpServer({
+        const { port, close, socketServer, app } = await launchEngineHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort,
             socketServerOptions,
@@ -444,7 +444,6 @@ export class Application {
                 overrideConfig: config,
                 configurations,
                 externalFeatures,
-                socketServerOptions,
                 requiredPaths,
             },
             this.basePath,
@@ -491,7 +490,7 @@ export class Application {
         return features;
     }
 
-    private resolveManifestPaths(envFilePaths: Record<string, string>): Record<string, string> {
+    private resolveManifestPaths(envFilePaths: Record<string, string> = {}): Record<string, string> {
         return Object.fromEntries(
             Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
                 envName,
@@ -533,7 +532,7 @@ export class Application {
         if (config && config.require) {
             await this.importModules(config.require);
         }
-        const { socketServer, close, port } = await launchHttpServer({
+        const { socketServer, close, port } = await launchEngineHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort: preferredPort,
             socketServerOptions,
@@ -688,26 +687,36 @@ export class Application {
         if (isRoot) {
             // mapping all paths to the sources folder
             filePath = this.remapPathToSourcesFolder(sourcesRoot, filePath, directoryPath);
-            Object.keys(envFilePaths).map(
-                (key) =>
-                    (envFilePaths[key] = this.remapPathToSourcesFolder(sourcesRoot, envFilePaths[key]!, directoryPath))
-            );
-            Object.keys(contextFilePaths).map(
-                (key) =>
-                    (contextFilePaths[key] = this.remapPathToSourcesFolder(
-                        sourcesRoot,
-                        contextFilePaths[key]!,
-                        directoryPath
-                    ))
-            );
-            Object.keys(preloadFilePaths).map(
-                (key) =>
-                    (preloadFilePaths[key] = this.remapPathToSourcesFolder(
-                        sourcesRoot,
-                        preloadFilePaths[key]!,
-                        directoryPath
-                    ))
-            );
+            if (envFilePaths) {
+                Object.keys(envFilePaths).map(
+                    (key) =>
+                        (envFilePaths[key] = this.remapPathToSourcesFolder(
+                            sourcesRoot,
+                            envFilePaths[key]!,
+                            directoryPath
+                        ))
+                );
+            }
+            if (contextFilePaths) {
+                Object.keys(contextFilePaths).map(
+                    (key) =>
+                        (contextFilePaths[key] = this.remapPathToSourcesFolder(
+                            sourcesRoot,
+                            contextFilePaths[key]!,
+                            directoryPath
+                        ))
+                );
+            }
+            if (preloadFilePaths) {
+                Object.keys(preloadFilePaths).map(
+                    (key) =>
+                        (preloadFilePaths[key] = this.remapPathToSourcesFolder(
+                            sourcesRoot,
+                            preloadFilePaths[key]!,
+                            directoryPath
+                        ))
+                );
+            }
         }
         const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
         const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
@@ -718,22 +727,22 @@ export class Application {
                 fs,
                 packageName,
                 context,
-                envFilePaths,
-                isRoot && outputDirInBasePath
+                isRoot && outputDirInBasePath,
+                envFilePaths
             ),
             contextFilePaths: scopeFilePathsToPackage(
                 fs,
                 packageName,
                 context,
-                contextFilePaths,
-                isRoot && outputDirInBasePath
+                isRoot && outputDirInBasePath,
+                contextFilePaths
             ),
             preloadFilePaths: scopeFilePathsToPackage(
                 fs,
                 packageName,
                 context,
-                preloadFilePaths,
-                isRoot && outputDirInBasePath
+                isRoot && outputDirInBasePath,
+                preloadFilePaths
             ),
         };
     }
@@ -854,15 +863,17 @@ export class Application {
         }
         const nonFoundDependencies: string[] = [];
         const filteredFeatures = [
-            ...flattenTree(foundFeature, ({ dependencies }) =>
-                dependencies.map((dependencyName) => {
-                    const feature = features.get(dependencyName);
-                    if (!feature) {
-                        nonFoundDependencies.push(dependencyName);
-                        return {} as IFeatureDefinition;
-                    }
-                    return feature;
-                })
+            ...flattenTree(
+                foundFeature,
+                ({ dependencies }) =>
+                    dependencies?.map((dependencyName) => {
+                        const feature = features.get(dependencyName);
+                        if (!feature) {
+                            nonFoundDependencies.push(dependencyName);
+                            return {} as IFeatureDefinition;
+                        }
+                        return feature;
+                    }) ?? []
             ),
         ].map(({ scopedName }) => scopedName);
         if (nonFoundDependencies.length) {
@@ -894,7 +905,7 @@ function getEnvEntrypoints(
 
 export function getExportedEnvironments(features: Map<string, IFeatureDefinition>): Set<IEnvironment> {
     const environments = new Set<IEnvironment>();
-    for (const { exportedEnvs } of features.values()) {
+    for (const { exportedEnvs = [] } of features.values()) {
         for (const exportedEnv of exportedEnvs) {
             environments.add(exportedEnv);
         }
