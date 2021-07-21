@@ -43,7 +43,8 @@
       "files": ["test-fixtures/**/*.ts", "test-fixtures/**/*.tsx"],
       "parserOptions": {
         "project": ["test-fixtures/*/tsconfig.json"],
-        "EXPERIMENTAL_useSourceOfProjectReferenceRedirect": true
+        "EXPERIMENTAL_useSourceOfProjectReferenceRedirect": true,
+        "allowAutomaticSingleRunInference": true
       },
       "extends": [
         "plugin:@typescript-eslint/recommended",
