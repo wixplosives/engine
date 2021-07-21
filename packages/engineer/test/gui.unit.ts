@@ -5,7 +5,7 @@ import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
 import guiFeature from '@wixc3/engineer/gui-feature';
 
-const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package..json'));
+const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
 
 describe('engineer:gui', function () {
     this.timeout(15_000);
