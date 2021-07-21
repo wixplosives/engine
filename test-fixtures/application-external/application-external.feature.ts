@@ -1,5 +1,5 @@
 import { Feature, Service } from '@wixc3/engine-core';
-import BaseApp, { server } from '@fixture/base-web-application-feature/base-web-application.feature';
+import BaseApp, { server } from '@fixture/base-web-application-feature/dist/base-web-application.feature';
 
 export default new Feature({
     id: 'extenalFeature',
