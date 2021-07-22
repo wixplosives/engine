@@ -1,7 +1,7 @@
-import MyFeature from './x.feature';
+// import MyFeature from './x.feature';
 
-export default [
-    MyFeature.use({
-        config: { value: 0 },
-    }),
-];
+// export default [
+//     MyFeature.use({
+//         config: { value: 0 },
+//     }),
+// ];
