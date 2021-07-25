@@ -3,5 +3,3 @@ cjs
 esm
 umd
 dist
-_wcs
-**/*.js
