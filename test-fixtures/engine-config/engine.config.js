@@ -1,4 +1,4 @@
-// module.exports = {
-//     require: ['@ts-tools/node/r'],
-//     nodeEnvironmentsMode: 'forked',
-// };
+module.exports = {
+    require: ['@ts-tools/node/r'],
+    nodeEnvironmentsMode: 'forked',
+};
