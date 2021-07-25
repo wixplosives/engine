@@ -1,8 +1,7 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.test.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "types": ["mocha", "node"]
+    "outDir": "./dist"
   },
   "references": [{ "path": "../../packages/core/src" }, { "path": "../../packages/test-kit/src" }]
 }
