@@ -20,9 +20,14 @@
   },
   "overrides": [
     {
-      "files": ["**/*.ts", "**/*.tsx"],
+      "files": ["*.ts", "*.tsx"],
       "parserOptions": {
-        "project": ["packages/*/{src,test}/tsconfig.json", "examples/*/tsconfig.json", "test-fixtures/*/tsconfig.json"],
+        "project": [
+          "packages/*/src/tsconfig.json",
+          "test-fixtures/*/tsconfig.json",
+          "examples/*/tsconfig.json",
+          "packages/*/test/tsconfig.json"
+        ],
         "EXPERIMENTAL_useSourceOfProjectReferenceRedirect": true
       },
       "extends": [
