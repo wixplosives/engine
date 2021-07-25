@@ -10,7 +10,7 @@
     "build": "yarn build:typescript && yarn build:stylable",
     "build:typescript": "tsc --build",
     "build:stylable": "lerna run build:stylable",
-    "lint": "eslint . -f codeframe --debug",
+    "lint": "eslint . -f codeframe",
     "prestart": "yarn build",
     "start": "engineer start --featureDiscoveryRoot dist",
     "pretest": "yarn build && yarn lint",
