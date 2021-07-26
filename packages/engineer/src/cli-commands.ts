@@ -5,7 +5,7 @@
  * This configuration can (and should) be written as a `.ts` file.
  */
 
-import type {Command} from 'commander';
+import type { Command } from 'commander';
 import { resolve } from 'path';
 import open from 'open';
 import fs from '@file-services/node';
@@ -186,10 +186,11 @@ export function buildCommand(program: Command) {
                 preRequire(pathsToRequire, basePath);
                 const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
                 const outputPath = resolve(outDir);
-                const app = new Application({ basePath, outputPath, featureDiscoveryRoot });
+                const app = new Application({ basePath, outputPath });
                 const stats = await app.build({
                     featureName,
                     configName,
+                    featureDiscoveryRoot,
                     publicPath,
                     mode,
                     singleFeature,

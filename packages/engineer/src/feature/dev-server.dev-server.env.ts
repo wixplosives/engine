@@ -73,13 +73,13 @@ devServerFeature.setup(
             externalFeatureDefinitions: providedExternalDefinitions,
             externalFeaturesPath: providedExternalFeaturesPath,
             serveExternalFeaturesPath = true,
-            featureDiscoveryRoot,
+            featureDiscoveryRoot: providedFeatureDiscoveryRoot,
             socketServerOptions = {},
             webpackConfigPath,
             externalFeaturesRoute,
             webpackHot = false,
         } = devServerConfig;
-        const application = new TargetApplication({ basePath, outputPath, featureDiscoveryRoot });
+        const application = new TargetApplication({ basePath, outputPath });
         const disposables = createDisposables();
 
         onDispose(disposables.dispose);
@@ -94,6 +94,7 @@ devServerFeature.setup(
                 socketServerOptions: configServerOptions = {},
                 externalFeaturesBasePath: configExternalFeaturesPath,
                 serveStatic = [],
+                featureDiscoveryRoot,
             } = engineConfig ?? {};
             if (require) {
                 await application.importModules(require);
@@ -130,7 +131,11 @@ devServerFeature.setup(
             // So we launch with a basehost and upgrade to a wshost
             attachWSHost(socketServer, devServerEnv.env, communication);
 
-            const { features, configurations, packages } = application.getFeatures(singleFeature, featureName);
+            const { features, configurations, packages } = application.getFeatures(
+                singleFeature,
+                featureName,
+                providedFeatureDiscoveryRoot ?? featureDiscoveryRoot
+            );
             const externalFeatures = getExternalFeaturesMetadata(fixedExternalFeatureDefinitions, externalFeaturesPath);
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
