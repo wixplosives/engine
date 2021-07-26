@@ -190,7 +190,7 @@ export class Application {
             throw new Error('You must specify a feature name when building a feature in external mode');
         }
 
-        const { features, configurations } = this.analyzeFeatures(featureDiscoveryRoot);
+        const { features, configurations } = this.analyzeFeatures(providedFeatureDiscoveryRoot ?? featureDiscoveryRoot);
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
         }
