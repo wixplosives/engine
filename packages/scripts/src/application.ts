@@ -68,6 +68,7 @@ export interface IRunApplicationOptions extends IFeatureTarget {
 }
 
 export interface IBuildCommandOptions extends IRunApplicationOptions {
+    featureDiscoveryRoot?: string;
     external?: boolean;
     staticBuild?: boolean;
     externalFeaturesFilePath?: string;
@@ -111,7 +112,6 @@ export interface ICreateOptions {
 export interface IApplicationOptions {
     basePath?: string;
     outputPath?: string;
-    featureDiscoveryRoot?: string;
 }
 
 export interface ICompilerOptions {
@@ -140,16 +140,10 @@ const DEFAULT_EXTERNAL_FEATURES_PATH = 'external-features.json';
 export class Application {
     public outputPath: string;
     protected basePath: string;
-    protected featureDiscoveryRoot: string;
 
-    constructor({
-        basePath = process.cwd(),
-        outputPath = fs.join(basePath, 'dist'),
-        featureDiscoveryRoot = '.',
-    }: IApplicationOptions) {
+    constructor({ basePath = process.cwd(), outputPath = fs.join(basePath, 'dist') }: IApplicationOptions) {
         this.basePath = basePath;
         this.outputPath = outputPath;
-        this.featureDiscoveryRoot = featureDiscoveryRoot;
     }
 
     public async clean() {
@@ -176,6 +170,7 @@ export class Application {
         eagerEntrypoint,
         externalFeaturesBasePath,
         externalFeatureDefinitions: providedExternalFeatureDefinitions = [],
+        featureDiscoveryRoot: providedFeatureDiscoveryRoot,
     }: IBuildCommandOptions = {}): Promise<WebpackMultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
@@ -184,6 +179,7 @@ export class Application {
             externalFeaturesBasePath: configExternalFeaturesBasePath,
             sourcesRoot: configSourcesRoot,
             favicon: configFavicon,
+            featureDiscoveryRoot,
         } = config ?? {};
         if (require) {
             await this.importModules(require);
@@ -194,7 +190,7 @@ export class Application {
             throw new Error('You must specify a feature name when building a feature in external mode');
         }
 
-        const { features, configurations } = this.analyzeFeatures();
+        const { features, configurations } = this.analyzeFeatures(featureDiscoveryRoot);
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
         }
@@ -246,7 +242,8 @@ export class Application {
             })
         );
 
-        const sourceRoot = providedSourcesRoot ?? configSourcesRoot ?? this.featureDiscoveryRoot;
+        const sourceRoot =
+            providedSourcesRoot ?? configSourcesRoot ?? providedFeatureDiscoveryRoot ?? featureDiscoveryRoot ?? '.';
         if (external) {
             const feature = features.get(featureName!)!;
             const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
@@ -794,8 +791,8 @@ export class Application {
         };
     }
 
-    protected analyzeFeatures() {
-        const { basePath, featureDiscoveryRoot } = this;
+    protected analyzeFeatures(featureDiscoveryRoot = '.') {
+        const { basePath } = this;
 
         console.time(`Analyzing Features`);
         const packages = resolvePackages(basePath);

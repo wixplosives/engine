@@ -35,13 +35,14 @@ export class TargetApplication extends Application {
 
     public getFeatures(
         singleFeature?: boolean,
-        featureName?: string
+        featureName?: string,
+        featureDiscoveryRoot?: string
     ): {
         packages: INpmPackage[];
         features: Map<string, IFeatureDefinition>;
         configurations: SetMultiMap<string, IConfigDefinition>;
     } {
-        const { features, configurations, packages } = super.analyzeFeatures();
+        const { features, configurations, packages } = super.analyzeFeatures(featureDiscoveryRoot);
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
         }

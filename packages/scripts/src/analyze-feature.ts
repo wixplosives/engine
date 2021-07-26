@@ -32,14 +32,14 @@ interface IPackageDescriptor {
 
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
-export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, rootOwnFeaturesDir = '.') {
+export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
 
     // pick up own feature files in provided npm packages
     for (const { directoryPath } of npmPackages) {
         for (const rootName of featureRoots) {
-            const rootPath = fs.join(directoryPath, rootOwnFeaturesDir, rootName);
+            const rootPath = fs.join(directoryPath, featureDiscoveryRoot, rootName);
             if (!fs.directoryExistsSync(rootPath)) {
                 continue;
             }

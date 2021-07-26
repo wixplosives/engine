@@ -291,6 +291,7 @@ export interface IExternalDefinition {
 
 export interface EngineConfig {
     require?: string[];
+    featureDiscoveryRoot?: string;
     featuresDirectory?: string;
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
