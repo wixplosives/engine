@@ -187,10 +187,11 @@ export function buildCommand(program: Command) {
                 preRequire(pathsToRequire, basePath);
                 const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
                 const outputPath = resolve(outDir);
-                const app = new Application({ basePath, outputPath, featureDiscoveryRoot });
+                const app = new Application({ basePath, outputPath });
                 const stats = await app.build({
                     featureName,
                     configName,
+                    featureDiscoveryRoot,
                     publicPath,
                     mode,
                     singleFeature,

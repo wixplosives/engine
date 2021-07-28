@@ -4,10 +4,10 @@ import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { resolvePackages } from './utils/resolve-packages';
 
-export function readFeatures(fs: IFileSystem, basePath: string, featuresDirectory?: string) {
+export function readFeatures(fs: IFileSystem, basePath: string, featureDiscoveryRoot?: string) {
     const packages = resolvePackages(basePath);
 
-    return loadFeaturesFromPackages(packages, fs, featuresDirectory);
+    return loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
 }
 
 export function evaluateConfig(
