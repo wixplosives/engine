@@ -35,8 +35,12 @@ export const startCommand: CliCommand = (program) =>
     program
         .command('start [path]')
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
-        .option('-f, --feature <feature>')
-        .option('-c, --config <config>')
+        .option('-f, --feature <feature>', `feature name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the feature name (file name) - packageName/featureName. 
+        if featureName === packageName, featureName is enough 
+        `)
+        .option('-c, --config <config>', `config name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the config name (file name) - packageName/configName. 
+        if configName === packageName, configName is enough 
+        `)
         .option('--mode <production|development>', 'mode passed to webpack', 'development')
         .option('--inspect')
         .option('-p ,--port <port>')
@@ -129,8 +133,12 @@ export function buildCommand(program: Command) {
     program
         .command('build [path]')
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
-        .option('-f ,--feature <feature>')
-        .option('-c ,--config <config>')
+        .option('-f, --feature <feature>', `feature name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the feature name (file name) - packageName/featureName. 
+        if featureName === packageName, featureName is enough 
+        `)
+        .option('-c, --config <config>', `config name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the config name (file name) - packageName/configName. 
+        if configName === packageName, configName is enough 
+        `)
         .option('--mode <production|development>', 'mode passed to webpack', 'production')
         .option('--outDir <outDir>', 'default: dist')
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
@@ -215,8 +223,12 @@ export function runCommand(program: Command) {
     program
         .command('run [path]')
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
-        .option('-c ,--config <config>')
-        .option('-f ,--feature <feature>')
+        .option('-f, --feature <feature>', `feature name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the feature name (file name) - packageName/featureName. 
+        if featureName === packageName, featureName is enough 
+        `)
+        .option('-c, --config <config>', `config name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the config name (file name) - packageName/configName. 
+        if configName === packageName, configName is enough 
+        `)
         .option('--outDir <outDir>')
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('-p ,--port <port>')
