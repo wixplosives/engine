@@ -11,7 +11,7 @@ export interface IFeatureTarget {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
-export interface IFeatureDefinition extends IStaticFeatureDefinition, IFeatureModule {
+export interface IFeatureDefinition extends Required<IStaticFeatureDefinition>, IFeatureModule {
     isRoot: boolean;
     directoryPath: string;
     toJSON(): unknown;
@@ -38,7 +38,7 @@ export interface IFeatureModule {
     /**
      * Exported environments from module.
      */
-    exportedEnvs?: IEnvironment[];
+    exportedEnvs: IEnvironment[];
 
     /**
      * If module exports any `processingEnv.use('worker')`,

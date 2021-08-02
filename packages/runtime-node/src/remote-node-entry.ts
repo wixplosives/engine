@@ -7,7 +7,7 @@ import type { ServerOptions } from 'socket.io';
 
 const isFirstArgumentPath = process.argv[1]!.startsWith('-');
 
-const path = isFirstArgumentPath ? process.cwd() : process.argv[1]!;
+const providedPath = isFirstArgumentPath ? process.cwd() : process.argv[1]!;
 
 const {
     preferredPort,
@@ -18,11 +18,11 @@ const requiredPaths = JSON.parse(requiredPathsJson as string) as string[];
 
 const socketServerOptions = JSON.parse(socketServerOptionsJson as string) as Partial<ServerOptions>;
 
-const basePath = resolve(path);
+const basePath = resolve(providedPath);
 
 const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : undefined;
 
-void (async () => {
+(async () => {
     for (const requiredModule of requiredPaths) {
         try {
             await import(require.resolve(requiredModule, { paths: [basePath] }));
@@ -40,4 +40,7 @@ void (async () => {
     createIPC(parentProcess, socketServer, { port, onClose: close });
 
     parentProcess.postMessage({ id: 'initiated' });
-})();
+})().catch((e) => {
+    console.error(e);
+    process.exit(1);
+});

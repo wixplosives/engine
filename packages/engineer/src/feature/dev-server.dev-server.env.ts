@@ -95,9 +95,7 @@ devServerFeature.setup(
                 serveStatic = [],
                 featureDiscoveryRoot,
             } = engineConfig ?? {};
-            if (requiredPaths) {
-                await application.importModules(requiredPaths);
-            }
+            await application.importModules(requiredPaths);
             const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
                 ...socketServerOptions,
                 ...configServerOptions,
