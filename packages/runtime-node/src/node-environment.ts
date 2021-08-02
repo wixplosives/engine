@@ -109,7 +109,7 @@ export async function runNodeEnvironment({
 }
 
 export function createFeatureLoaders(
-    features: Map<string, IStaticFeatureDefinition>,
+    features: Map<string, Required<IStaticFeatureDefinition>>,
     { name: envName, childEnvName }: IEnvironment
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
@@ -126,7 +126,7 @@ export function createFeatureLoaders(
             preload: async (currentContext) => {
                 const initFunctions = [];
                 if (childEnvName && currentContext[envName] === childEnvName) {
-                    const contextPreloadFilePath = preloadFilePaths?.[`${envName}/${childEnvName}`];
+                    const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
 
                     if (contextPreloadFilePath) {
                         const preloadedContextModule = (await import(contextPreloadFilePath)) as IPreloadModule;
@@ -135,7 +135,7 @@ export function createFeatureLoaders(
                         }
                     }
                 }
-                const preloadFilePath = preloadFilePaths?.[envName];
+                const preloadFilePath = preloadFilePaths[envName];
                 if (preloadFilePath) {
                     const preloadedModule = (await import(preloadFilePath)) as IPreloadModule;
                     if (preloadedModule.init) {
@@ -146,20 +146,20 @@ export function createFeatureLoaders(
             },
             load: async (currentContext) => {
                 if (childEnvName && currentContext[envName] === childEnvName) {
-                    const contextFilePath = contextFilePaths?.[`${envName}/${childEnvName}`];
+                    const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
                     if (contextFilePath) {
                         await import(contextFilePath);
                     }
                 }
 
-                const envFilePath = envFilePaths?.[envName];
+                const envFilePath = envFilePaths[envName];
                 if (envFilePath) {
                     await import(envFilePath);
                 }
                 return ((await import(filePath)) as { default: Feature }).default;
             },
-            depFeatures: dependencies ?? [],
-            resolvedContexts: resolvedContexts ?? {},
+            depFeatures: dependencies,
+            resolvedContexts,
         };
     }
     return featureLoaders;

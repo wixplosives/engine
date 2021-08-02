@@ -30,7 +30,7 @@ export const isProcessMessage = (value: unknown): value is IProcessMessage<unkno
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
-    features: Array<[string, IStaticFeatureDefinition]>;
+    features: Array<[string, Required<IStaticFeatureDefinition>]>;
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: BaseHost;

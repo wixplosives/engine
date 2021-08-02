@@ -113,7 +113,7 @@ export interface ILaunchEnvironmentOptions {
     externalFeatures?: IExternalFeatureNodeDescriptor[];
     com: Communication;
     baseHost: BaseHost;
-    features: Map<string, IStaticFeatureDefinition>;
+    features: Map<string, Required<IStaticFeatureDefinition>>;
 }
 
 export class NodeEnvironmentsManager {
@@ -133,12 +133,25 @@ export class NodeEnvironmentsManager {
         overrideConfigsMap = new Map<string, OverrideConfig>(),
         mode = 'new-server',
     }: RunEnvironmentOptions) {
+
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
         const topology: Record<string, string> = {};
         const { defaultRuntimeOptions, features } = this.options;
-        const nodeEnvironments = getEnvironmntsForFeature(featureName, features, 'node');
-
+        const featuresWithDefaults = new Map<string, Required<IStaticFeatureDefinition>>()
+        for (const [featureName, featureDef] of features.entries()) {
+            featuresWithDefaults.set(featureName, {
+                contextFilePaths: {},
+                dependencies: [],
+                envFilePaths: {},
+                exportedEnvs: [],
+                preloadFilePaths: {},
+                resolvedContexts: {},
+                ...featureDef,
+            })
+        }
+        const nodeEnvironments = getEnvironmntsForFeature(featureName, featuresWithDefaults, 'node');
+        featuresWithDefaults
         // checking if already has running environments for this feature
         const runningEnv = this.runningFeatures.get(featureId);
         if (runningEnv) {
@@ -180,6 +193,8 @@ export class NodeEnvironmentsManager {
             com.registerEnv(nodeEnv.name, new ChildHostWrapper(host));
         }
 
+
+
         for (const nodeEnv of nodeEnvironments) {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
@@ -214,7 +229,7 @@ export class NodeEnvironmentsManager {
                 externalFeatures: this.options.externalFeatures,
                 com,
                 baseHost,
-                features,
+                features: featuresWithDefaults,
             });
             topology[nodeEnv.name] = `http://localhost:${preparedEnvironment.port}/${nodeEnv.name}`;
             preparedEnvironments[nodeEnv.name] = preparedEnvironment;

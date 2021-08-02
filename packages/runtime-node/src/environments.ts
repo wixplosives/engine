@@ -3,7 +3,7 @@ import type { IEnvironment, IStaticFeatureDefinition } from './types';
 
 export function getEnvironmntsForFeature(
     featureName: string,
-    features: Map<string, IStaticFeatureDefinition>,
+    features: Map<string, Required<IStaticFeatureDefinition>>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes,
     filterByContext = true
 ) {
@@ -17,7 +17,7 @@ export function getEnvironmntsForFeature(
     }
     const { resolvedContexts } = featureDefinition;
     const deepDefsForFeature = flattenTree(featureDefinition, (f) =>
-        f.dependencies ? f.dependencies.map((fName) => features.get(fName)!) : []
+        f.dependencies.map((fName) => features.get(fName)!)
     );
     for (const { exportedEnvs = [] } of deepDefsForFeature) {
         for (const exportedEnv of exportedEnvs) {
@@ -25,7 +25,7 @@ export function getEnvironmntsForFeature(
                 (!envTypes || environmentTypesToFilterBy.includes(exportedEnv.type)) &&
                 (!filterByContext ||
                     !exportedEnv.childEnvName ||
-                    resolvedContexts?.[exportedEnv.name] === exportedEnv.childEnvName)
+                    resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
             ) {
                 filteredEnvironments.add(exportedEnv);
             }
