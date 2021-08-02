@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { dirname, join } from 'path';
 import { COM, createDisposables, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import { launchEngineHttpServer, NodeEnvironmentsManager, StaticFeatureDefinition } from '@wixc3/engine-runtime-node';
+import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import type io from 'socket.io';
 
 import SocketServerNodeFeature, {
@@ -28,29 +28,26 @@ const runFeatureOptions = { featureName: 'engine-node/x' };
 
 const comBasePath = join(dirname(require.resolve('@wixc3/engine-core/package.json')), 'dist');
 
-const comEntry: StaticFeatureDefinition = {
+const comEntry: IStaticFeatureDefinition = {
     filePath: join(comBasePath, 'communication.feature'),
-    name: 'communication',
     packageName: '@wixc3/engine-core',
     scopedName: 'engine-core/communication',
 };
 
-const engineNodeEntry: StaticFeatureDefinition = {
+const engineNodeEntry: IStaticFeatureDefinition = {
     dependencies: [comEntry.scopedName],
     envFilePaths: {
         server: join(nodeEnvironmentFixturePath, 'feature/x.server.env'),
     },
     exportedEnvs: [{ name: 'server', type: 'node' }],
     filePath: join(nodeEnvironmentFixturePath, 'feature/x.feature'),
-    name: 'x',
     packageName: '@fixture/engine-node',
     scopedName: 'engine-node/x',
 };
 
-const engineMultiNodeSocketCommunication: StaticFeatureDefinition = {
+const engineMultiNodeSocketCommunication: IStaticFeatureDefinition = {
     dependencies: [comEntry.scopedName],
     filePath: join(socketNodeEnvironmentFixturePath, 'feature/x.feature'),
-    name: 'x',
     scopedName: 'engine-multi-socket-node/x',
     packageName: '@fixture/engine-multi-socket-node',
     envFilePaths: {
@@ -63,10 +60,9 @@ const engineMultiNodeSocketCommunication: StaticFeatureDefinition = {
     ],
 };
 
-const engineMultiNodeIPCCommunication: StaticFeatureDefinition = {
+const engineMultiNodeIPCCommunication: IStaticFeatureDefinition = {
     dependencies: [comEntry.scopedName],
     filePath: join(multiNodeEnvironmentFixturePath, 'feature/x.feature'),
-    name: 'x',
     scopedName: 'engine-multi-socket-node/x',
     packageName: '@fixture/engine-multi-socket-node',
     envFilePaths: {
@@ -100,7 +96,7 @@ describe('Node environments manager', function () {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
-                features: new Map<string, StaticFeatureDefinition>(
+                features: new Map<string, IStaticFeatureDefinition>(
                     Object.entries({
                         [engineNodeEntry.scopedName]: engineNodeEntry,
                         [comEntry.scopedName]: comEntry,
@@ -124,7 +120,7 @@ describe('Node environments manager', function () {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
-                features: new Map<string, StaticFeatureDefinition>(
+                features: new Map<string, IStaticFeatureDefinition>(
                     Object.entries({
                         [engineNodeEntry.scopedName]: engineNodeEntry,
                         [comEntry.scopedName]: comEntry,
@@ -153,7 +149,7 @@ describe('Node environments manager', function () {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
-                features: new Map<string, StaticFeatureDefinition>(
+                features: new Map<string, IStaticFeatureDefinition>(
                     Object.entries({
                         [engineNodeEntry.scopedName]: engineNodeEntry,
                         [comEntry.scopedName]: comEntry,
@@ -177,7 +173,7 @@ describe('Node environments manager', function () {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
             {
-                features: new Map<string, StaticFeatureDefinition>(
+                features: new Map<string, IStaticFeatureDefinition>(
                     Object.entries({
                         [engineNodeEntry.scopedName]: engineNodeEntry,
                         [comEntry.scopedName]: comEntry,
@@ -203,7 +199,7 @@ describe('Node environments manager', function () {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
             },
             dependencies: [SocketServerNodeFeature, COM],
-        }).setup('dev', ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }).setup('dev', ({ }, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: socketServerEnv });
 
             return {
@@ -219,7 +215,7 @@ describe('Node environments manager', function () {
             const nodeEnvironmentManager = new NodeEnvironmentsManager(
                 socketServer,
                 {
-                    features: new Map<string, StaticFeatureDefinition>(
+                    features: new Map<string, IStaticFeatureDefinition>(
                         Object.entries({
                             [engineMultiNodeSocketCommunication.scopedName]: engineMultiNodeSocketCommunication,
                             [comEntry.scopedName]: comEntry,
@@ -257,7 +253,7 @@ describe('Node environments manager', function () {
             const nodeEnvironmentManager = new NodeEnvironmentsManager(
                 socketServer,
                 {
-                    features: new Map<string, StaticFeatureDefinition>(
+                    features: new Map<string, IStaticFeatureDefinition>(
                         Object.entries({
                             [engineMultiNodeSocketCommunication.scopedName]: engineMultiNodeSocketCommunication,
                             [comEntry.scopedName]: comEntry,
@@ -299,7 +295,7 @@ describe('Node environments manager', function () {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
             },
             dependencies: [ServerNodeFeature, COM],
-        }).setup('dev', ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }).setup('dev', ({ }, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: serverEnv });
 
             return {
@@ -315,7 +311,7 @@ describe('Node environments manager', function () {
             const nodeEnvironmentManager = new NodeEnvironmentsManager(
                 socketServer,
                 {
-                    features: new Map<string, StaticFeatureDefinition>(
+                    features: new Map<string, IStaticFeatureDefinition>(
                         Object.entries({
                             [engineMultiNodeIPCCommunication.scopedName]: engineMultiNodeIPCCommunication,
                             [comEntry.scopedName]: comEntry,
@@ -353,7 +349,7 @@ describe('Node environments manager', function () {
             const nodeEnvironmentManager = new NodeEnvironmentsManager(
                 socketServer,
                 {
-                    features: new Map<string, StaticFeatureDefinition>(
+                    features: new Map<string, IStaticFeatureDefinition>(
                         Object.entries({
                             [engineMultiNodeIPCCommunication.scopedName]: engineMultiNodeIPCCommunication,
                             [comEntry.scopedName]: comEntry,

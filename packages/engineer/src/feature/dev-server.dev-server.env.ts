@@ -11,13 +11,14 @@ import {
     getExternalFeaturesMetadata,
     EXTERNAL_FEATURES_BASE_URI,
     getExportedEnvironments,
+    getResolvedEnvironments
 } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
-import { getResolvedEnvironments, launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackDevMiddleware = require('webpack-dev-middleware') as (
@@ -183,8 +184,8 @@ devServerFeature.setup(
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
-                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                      }
+                        [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+                    }
                     : undefined;
 
             app.use(`/${publicConfigsRoute}`, [

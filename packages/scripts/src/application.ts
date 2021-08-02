@@ -18,24 +18,13 @@ import {
     createWebpackConfigForExternalFeature,
     createWebpackConfigs,
 } from './create-webpack-configs';
-import type { EngineConfig, IFeatureTarget } from './types';
+import type { EngineConfig, IFeatureDefinition, IFeatureTarget } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import {
     launchEngineHttpServer,
     RouteMiddleware,
     getEnvironmntsForFeature,
-    getResolvedEnvironments,
-} from '@wixc3/engine-runtime-node';
-import {
-    getExternalFeatureBasePath,
-    getExternalFeaturesMetadata,
-    getFilePathInPackage,
-    scopeFilePathsToPackage,
-} from './utils';
-import { createExternalNodeEntrypoint } from './create-entrypoint';
-import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
-import {
     ForkedProcess,
     LaunchEnvironmentMode,
     NodeEnvironmentsManager,
@@ -44,9 +33,19 @@ import {
     IEnvironment,
     IExternalDefinition,
     IExternalFeatureNodeDescriptor,
-    IFeatureDefinition,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
+
+import {
+    getExternalFeatureBasePath,
+    getExternalFeaturesMetadata,
+    getFilePathInPackage,
+    scopeFilePathsToPackage,
+} from './utils';
+import { createExternalNodeEntrypoint } from './create-entrypoint';
+import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+
+import { getResolvedEnvironments } from './utils/environments';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -385,8 +384,8 @@ export class Application {
 
         const resolvedExternalFeaturesPath = fs.resolve(
             providedExternalFeatuersPath ??
-                baseExternalFeaturesPath ??
-                (configPath ? fs.dirname(configPath) : this.basePath)
+            baseExternalFeaturesPath ??
+            (configPath ? fs.dirname(configPath) : this.basePath)
         );
 
         externalFeatures.push(
@@ -513,7 +512,7 @@ export class Application {
                         require.resolve(fs.join(packageName, 'package.json'), {
                             paths: [
                                 providedExternalFeatuersPath ??
-                                    (baseExternalFeaturesPath ? configPath! : this.basePath),
+                                (baseExternalFeaturesPath ? configPath! : this.basePath),
                             ],
                         })
                     ),
@@ -687,31 +686,31 @@ export class Application {
             if (envFilePaths) {
                 Object.keys(envFilePaths).map(
                     (key) =>
-                        (envFilePaths[key] = this.remapPathToSourcesFolder(
-                            sourcesRoot,
-                            envFilePaths[key]!,
-                            directoryPath
-                        ))
+                    (envFilePaths[key] = this.remapPathToSourcesFolder(
+                        sourcesRoot,
+                        envFilePaths[key]!,
+                        directoryPath
+                    ))
                 );
             }
             if (contextFilePaths) {
                 Object.keys(contextFilePaths).map(
                     (key) =>
-                        (contextFilePaths[key] = this.remapPathToSourcesFolder(
-                            sourcesRoot,
-                            contextFilePaths[key]!,
-                            directoryPath
-                        ))
+                    (contextFilePaths[key] = this.remapPathToSourcesFolder(
+                        sourcesRoot,
+                        contextFilePaths[key]!,
+                        directoryPath
+                    ))
                 );
             }
             if (preloadFilePaths) {
                 Object.keys(preloadFilePaths).map(
                     (key) =>
-                        (preloadFilePaths[key] = this.remapPathToSourcesFolder(
-                            sourcesRoot,
-                            preloadFilePaths[key]!,
-                            directoryPath
-                        ))
+                    (preloadFilePaths[key] = this.remapPathToSourcesFolder(
+                        sourcesRoot,
+                        preloadFilePaths[key]!,
+                        directoryPath
+                    ))
                 );
             }
         }

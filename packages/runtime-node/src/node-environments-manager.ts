@@ -25,7 +25,7 @@ import {
     TopLevelConfigProvider,
     ICommunicationMessage,
     IExternalFeatureNodeDescriptor,
-    StaticFeatureDefinition,
+    IStaticFeatureDefinition,
 } from './types';
 import { getEnvironmntsForFeature } from './environments';
 import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
@@ -88,7 +88,7 @@ export interface RunEnvironmentOptions {
 const cliEntry = require.resolve('./remote-node-entry');
 
 export interface INodeEnvironmentsManagerOptions {
-    features: Map<string, StaticFeatureDefinition>;
+    features: Map<string, IStaticFeatureDefinition>;
     configurations?: SetMultiMap<string, IConfigDefinition | TopLevelConfig>;
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
@@ -113,7 +113,7 @@ export interface ILaunchEnvironmentOptions {
     externalFeatures?: IExternalFeatureNodeDescriptor[];
     com: Communication;
     baseHost: BaseHost;
-    features: Map<string, StaticFeatureDefinition>;
+    features: Map<string, IStaticFeatureDefinition>;
 }
 
 export class NodeEnvironmentsManager {
@@ -124,7 +124,7 @@ export class NodeEnvironmentsManager {
         private options: INodeEnvironmentsManagerOptions,
         private context: string,
         private socketServerOptions?: Partial<io.ServerOptions>
-    ) {}
+    ) { }
 
     public async runServerEnvironments({
         featureName,
@@ -245,8 +245,8 @@ export class NodeEnvironmentsManager {
             ? Array.isArray(overrideConfigProvider)
                 ? overrideConfigProvider
                 : envName
-                ? overrideConfigProvider(envName)
-                : []
+                    ? overrideConfigProvider(envName)
+                    : []
             : [];
         const overrideConfigs = [...overrideConfig];
         if (configName) {

@@ -1,4 +1,4 @@
-import type { EnvironmentTypes, TopLevelConfig, Feature, BaseHost } from '@wixc3/engine-core';
+import type { EnvironmentTypes, TopLevelConfig, BaseHost } from '@wixc3/engine-core';
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
@@ -7,12 +7,22 @@ export interface IExtenalFeatureDescriptor {
     packageBasePath: string;
 }
 
-export type StaticFeatureDefinition = Omit<
-    IFeatureDefinition,
-    'exportedFeature' | 'toJSON' | 'isRoot' | 'directoryPath'
->;
 
-export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IFeatureDefinition {}
+export interface IStaticFeatureDefinition {
+    contextFilePaths?: Record<string, string>;
+    envFilePaths?: Record<string, string>;
+    preloadFilePaths?: Record<string, string>;
+    dependencies?: string[];
+    scopedName: string;
+    resolvedContexts?: Record<string, string>;
+    packageName: string;
+    filePath: string;
+    exportedEnvs?: IEnvironment[];
+}
+
+
+
+export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IStaticFeatureDefinition { }
 
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
@@ -20,7 +30,7 @@ export const isProcessMessage = (value: unknown): value is IProcessMessage<unkno
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
     config?: TopLevelConfig;
-    features: Array<[string, StaticFeatureDefinition]>;
+    features: Array<[string, IStaticFeatureDefinition]>;
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: BaseHost;
@@ -85,35 +95,6 @@ export interface RemoteProcess {
     off: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
 }
 
-export interface IFeatureModule {
-    /**
-     * Feature name.
-     * @example "gui" for "gui.feature.ts"
-     */
-    name: string;
-
-    /**
-     * Absolute path pointing to the feature file.
-     */
-    filePath: string;
-
-    /**
-     * Actual evaluated Feature instance exported from the file.
-     */
-    exportedFeature: Feature;
-
-    /**
-     * Exported environments from module.
-     */
-    exportedEnvs?: IEnvironment[];
-
-    /**
-     * If module exports any `processingEnv.use('worker')`,
-     * it will be set as `'processing': 'worker'`
-     */
-    usedContexts?: Record<string, string>;
-}
-
 export interface IEnvironment {
     type: EnvironmentTypes;
     name: string;
@@ -143,18 +124,6 @@ export interface IConfigDefinition {
     filePath: string;
 }
 
-export interface IFeatureDefinition extends IFeatureModule {
-    contextFilePaths?: Record<string, string>;
-    envFilePaths?: Record<string, string>;
-    preloadFilePaths?: Record<string, string>;
-    dependencies?: string[];
-    scopedName: string;
-    resolvedContexts?: Record<string, string>;
-    isRoot: boolean;
-    packageName: string;
-    directoryPath: string;
-    toJSON(): unknown;
-}
 
 export interface IExternalDefinition {
     /**

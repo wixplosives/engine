@@ -1,6 +1,6 @@
 import type io from 'socket.io';
 import type { Environment, EnvironmentContext, TopLevelConfig, Feature } from '@wixc3/engine-core';
-import type { IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
+import type { IEnvironment, IExternalDefinition, IStaticFeatureDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -10,6 +10,43 @@ export interface IFeatureTarget {
     runtimeOptions?: Record<string, string | boolean>;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
+
+export interface IFeatureDefinition extends IStaticFeatureDefinition, IFeatureModule {
+    isRoot: boolean;
+    directoryPath: string;
+    toJSON(): unknown;
+}
+
+
+export interface IFeatureModule {
+    /**
+     * Feature name.
+     * @example "gui" for "gui.feature.ts"
+     */
+    name: string;
+
+    /**
+     * Absolute path pointing to the feature file.
+     */
+    filePath: string;
+
+    /**
+     * Actual evaluated Feature instance exported from the file.
+     */
+    exportedFeature: Feature;
+
+    /**
+     * Exported environments from module.
+     */
+    exportedEnvs?: IEnvironment[];
+
+    /**
+     * If module exports any `processingEnv.use('worker')`,
+     * it will be set as `'processing': 'worker'`
+     */
+    usedContexts?: Record<string, string>;
+}
+
 
 export interface VirtualEntry {
     source: string;

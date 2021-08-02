@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import { readFeatures, evaluateConfig } from '@wixc3/engine-scripts';
+import { readFeatures, evaluateConfig, IFeatureDefinition } from '@wixc3/engine-scripts';
 import {
     TopLevelConfig,
     Environment,
@@ -11,7 +11,7 @@ import {
     NormalizeEnvironmentFilter,
     Running,
 } from '@wixc3/engine-core';
-import { IExternalFeatureNodeDescriptor, IFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
 export interface IRunNodeEnvironmentOptions<ENV extends Environment = Environment> {
     featureName: string;
@@ -37,7 +37,7 @@ export interface IGetRuinnnigFeatureOptions<
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends Environment
-> extends IRunNodeEnvironmentOptions<ENV> {
+    > extends IRunNodeEnvironmentOptions<ENV> {
     feature: Feature<NAME, DEPS, API, CONTEXT>;
 }
 
@@ -67,8 +67,7 @@ export async function runEngineEnvironment({
         const env = locateEnvironment(featureDef!, features, name, childEnvName);
         if (!env) {
             throw new Error(
-                `environment "${name}" with the context "${childEnvName}" is not found when running "${
-                    featureDef!.name
+                `environment "${name}" with the context "${childEnvName}" is not found when running "${featureDef!.name
                 }" feature`
             );
         }

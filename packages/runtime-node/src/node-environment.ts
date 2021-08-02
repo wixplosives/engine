@@ -9,7 +9,7 @@ import {
 } from '@wixc3/engine-core';
 import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
 
-import type { IEnvironment, StartEnvironmentOptions, StaticFeatureDefinition } from './types';
+import type { IEnvironment, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
 
 export async function runNodeEnvironment({
     featureName,
@@ -80,7 +80,7 @@ export async function runNodeEnvironment({
         init();
     }
 
-    for (const { name: externalFeatureName, envEntries } of externalFeatures) {
+    for (const { scopedName: externalFeatureName, envEntries } of externalFeatures) {
         if (envEntries[name] && envEntries[name]!['node']) {
             const externalFeatureLoaders = (await import(envEntries[name]!['node']!)) as {
                 [featureName: string]: IFeatureLoader;
@@ -109,7 +109,7 @@ export async function runNodeEnvironment({
 }
 
 export function createFeatureLoaders(
-    features: Map<string, StaticFeatureDefinition>,
+    features: Map<string, IStaticFeatureDefinition>,
     { name: envName, childEnvName }: IEnvironment
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
