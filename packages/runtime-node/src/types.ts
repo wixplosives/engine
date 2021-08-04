@@ -7,7 +7,6 @@ export interface IExtenalFeatureDescriptor {
     packageBasePath: string;
 }
 
-
 export interface IStaticFeatureDefinition {
     contextFilePaths?: Record<string, string>;
     envFilePaths?: Record<string, string>;
@@ -19,7 +18,6 @@ export interface IStaticFeatureDefinition {
     filePath: string;
     exportedEnvs?: IEnvironment[];
 }
-
 
 
 export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IStaticFeatureDefinition { }

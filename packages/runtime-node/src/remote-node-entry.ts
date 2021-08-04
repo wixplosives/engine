@@ -5,15 +5,12 @@ import { launchEngineHttpServer } from './launch-http-server';
 import { createIPC } from './process-communication';
 import type { ServerOptions } from 'socket.io';
 
-const isFirstArgumentPath = process.argv[1]!.startsWith('-');
-
-const providedPath = isFirstArgumentPath ? process.cwd() : process.argv[1]!;
-
 const {
     preferredPort,
     socketServerOptions: socketServerOptionsJson,
     requiredPaths: requiredPathsJson,
-} = parseCliArguments(process.argv.slice(isFirstArgumentPath ? 2 : 1));
+    _: [providedPath = process.cwd()]
+} = parseCliArguments(process.argv.slice(1));
 const requiredPaths = JSON.parse(requiredPathsJson as string) as string[];
 
 const socketServerOptions = JSON.parse(socketServerOptionsJson as string) as Partial<ServerOptions>;
@@ -43,5 +40,4 @@ const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : u
 })().catch((e) => {
     console.error(e);
     process.exitCode = 1;
-    process.exit();
 });

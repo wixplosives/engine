@@ -254,14 +254,12 @@ export class NodeEnvironmentsManager {
     }
 
     private getOverrideConfig(overrideConfigsMap: Map<string, OverrideConfig>, configName?: string, envName?: string) {
-        const { overrideConfig: overrideConfigProvider } = this.options;
-        const overrideConfig = overrideConfigProvider
-            ? Array.isArray(overrideConfigProvider)
-                ? overrideConfigProvider
-                : envName
-                    ? overrideConfigProvider(envName)
-                    : []
-            : [];
+        const { overrideConfig: overrideConfigProvider = [] } = this.options;
+        const overrideConfig = Array.isArray(overrideConfigProvider)
+            ? overrideConfigProvider
+            : envName
+                ? overrideConfigProvider(envName)
+                : [];
         const overrideConfigs = [...overrideConfig];
         if (configName) {
             const currentOverrideConfig = overrideConfigsMap.get(configName);
