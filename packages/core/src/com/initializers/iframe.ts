@@ -11,7 +11,7 @@ export interface IIframeInitializerOptions {
     managed?: boolean;
 }
 
-export interface IframeInitializerOptions extends InitializerOptions, IIframeInitializerOptions {}
+export interface IframeInitializerOptions extends InitializerOptions, IIframeInitializerOptions { }
 
 export async function iframeInitializer({
     communication,
@@ -30,14 +30,14 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
     initialize: (options: IIframeInitializerOptions) => Promise<string>;
 } {
     const instanceId = com.getEnvironmentInstanceId(env, endpointType);
-
+    const envReadyPromise = com.envReady(instanceId)
     return {
         id: instanceId,
         initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
             const publicPath = com.getPublicPath();
             const baseStartIframeParams: StartIframeBaseOptions = {
                 com,
-                envReadyPromise: com.envReady(instanceId),
+                envReadyPromise,
                 instanceId,
                 src:
                     src ?? managed
@@ -46,13 +46,13 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
             };
             return managed
                 ? startManagedIframe({
-                      ...baseStartIframeParams,
-                      iframe: iframeElement,
-                  })
+                    ...baseStartIframeParams,
+                    iframe: iframeElement,
+                })
                 : startIframe({
-                      ...baseStartIframeParams,
-                      host: iframeElement,
-                  });
+                    ...baseStartIframeParams,
+                    host: iframeElement,
+                });
         },
     };
 }

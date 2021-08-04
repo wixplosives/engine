@@ -27,7 +27,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
     constructor(
         public defaultValue: Readonly<T>,
         public mergeConfig: MergeConfigHook<T> = (a: T, b: Partial<T>) => ({ ...a, ...b }),
-        visibleAt = (AllEnvironments as unknown) as VisibleAt
+        visibleAt = AllEnvironments as unknown as VisibleAt
     ) {
         super(AllEnvironments, visibleAt);
     }

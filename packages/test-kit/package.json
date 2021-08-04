@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "20.2.1",
+  "version": "20.2.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@file-services/node": "^5.3.1",
-    "@wixc3/engine-core": "^20.1.0",
-    "@wixc3/engine-scripts": "^20.2.1",
+    "@wixc3/engine-core": "^20.2.3",
+    "@wixc3/engine-scripts": "^20.2.3",
     "create-temp-directory": "^1.1.1",
     "is-ci": "^3.0.0",
     "playwright-core": "^1.13.1",
