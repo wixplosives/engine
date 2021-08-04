@@ -151,7 +151,6 @@ export class NodeEnvironmentsManager {
             })
         }
         const nodeEnvironments = resolveEnvironments(featureName, featuresWithDefaults, 'node');
-        featuresWithDefaults
         // checking if already has running environments for this feature
         const runningEnv = this.runningFeatures.get(featureId);
         if (runningEnv) {
