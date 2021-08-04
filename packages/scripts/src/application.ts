@@ -683,35 +683,28 @@ export class Application {
         if (isRoot) {
             // mapping all paths to the sources folder
             filePath = this.remapPathToSourcesFolder(sourcesRoot, filePath, directoryPath);
-            if (envFilePaths) {
-                Object.keys(envFilePaths).map(
-                    (key) =>
-                    (envFilePaths[key] = this.remapPathToSourcesFolder(
-                        sourcesRoot,
-                        envFilePaths[key]!,
-                        directoryPath
-                    ))
-                );
+            for (const key of Object.keys(envFilePaths)) {
+                envFilePaths[key] = this.remapPathToSourcesFolder(
+                    sourcesRoot,
+                    envFilePaths[key]!,
+                    directoryPath
+                )
             }
-            if (contextFilePaths) {
-                Object.keys(contextFilePaths).map(
-                    (key) =>
-                    (contextFilePaths[key] = this.remapPathToSourcesFolder(
-                        sourcesRoot,
-                        contextFilePaths[key]!,
-                        directoryPath
-                    ))
-                );
+
+            for (const key of Object.keys(contextFilePaths)) {
+                contextFilePaths[key] = this.remapPathToSourcesFolder(
+                    sourcesRoot,
+                    contextFilePaths[key]!,
+                    directoryPath
+                )
             }
-            if (preloadFilePaths) {
-                Object.keys(preloadFilePaths).map(
-                    (key) =>
-                    (preloadFilePaths[key] = this.remapPathToSourcesFolder(
-                        sourcesRoot,
-                        preloadFilePaths[key]!,
-                        directoryPath
-                    ))
-                );
+
+            for (const key of Object.keys(preloadFilePaths)) {
+                preloadFilePaths[key] = this.remapPathToSourcesFolder(
+                    sourcesRoot,
+                    preloadFilePaths[key]!,
+                    directoryPath
+                )
             }
         }
         const outputDirInBasePath = this.outputPath.startsWith(this.basePath);

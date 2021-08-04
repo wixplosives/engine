@@ -1,6 +1,5 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { dirname, join } from 'path';
 import { COM, createDisposables, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
@@ -14,22 +13,11 @@ import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/fe
 
 chai.use(chaiAsPromised);
 
-const nodeEnvironmentFixturePath = join(dirname(require.resolve('@fixture/engine-node/package.json')), 'dist');
 
-const multiNodeEnvironmentFixturePath = join(
-    dirname(require.resolve('@fixture/engine-multi-node/package.json')),
-    'dist'
-);
-const socketNodeEnvironmentFixturePath = join(
-    dirname(require.resolve('@fixture/engine-multi-socket-node/package.json')),
-    'dist'
-);
 const runFeatureOptions = { featureName: 'engine-node/x' };
 
-const comBasePath = join(dirname(require.resolve('@wixc3/engine-core/package.json')), 'dist');
-
 const comEntry: IStaticFeatureDefinition = {
-    filePath: join(comBasePath, 'communication.feature'),
+    filePath: require.resolve('@wixc3/engine-core/dist/communication.feature'),
     packageName: '@wixc3/engine-core',
     scopedName: 'engine-core/communication',
 };
@@ -37,22 +25,22 @@ const comEntry: IStaticFeatureDefinition = {
 const engineNodeEntry: IStaticFeatureDefinition = {
     dependencies: [comEntry.scopedName],
     envFilePaths: {
-        server: join(nodeEnvironmentFixturePath, 'feature/x.server.env'),
+        server: require.resolve('@fixture/engine-node/dist/feature/x.server.env'),
     },
     exportedEnvs: [{ name: 'server', type: 'node' }],
-    filePath: join(nodeEnvironmentFixturePath, 'feature/x.feature'),
+    filePath: require.resolve('@fixture/engine-node/dist/feature/x.feature'),
     packageName: '@fixture/engine-node',
     scopedName: 'engine-node/x',
 };
 
 const engineMultiNodeSocketCommunication: IStaticFeatureDefinition = {
     dependencies: [comEntry.scopedName],
-    filePath: join(socketNodeEnvironmentFixturePath, 'feature/x.feature'),
+    filePath: require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.feature'),
     scopedName: 'engine-multi-socket-node/x',
     packageName: '@fixture/engine-multi-socket-node',
     envFilePaths: {
-        server: join(socketNodeEnvironmentFixturePath, 'feature/x.server.env'),
-        'server-two': join(socketNodeEnvironmentFixturePath, 'feature/x.server-two.env'),
+        server: require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.server.env'),
+        'server-two': require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.server-two.env'),
     },
     exportedEnvs: [
         { name: 'server', type: 'node' },
@@ -62,12 +50,12 @@ const engineMultiNodeSocketCommunication: IStaticFeatureDefinition = {
 
 const engineMultiNodeIPCCommunication: IStaticFeatureDefinition = {
     dependencies: [comEntry.scopedName],
-    filePath: join(multiNodeEnvironmentFixturePath, 'feature/x.feature'),
+    filePath: require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.feature'),
     scopedName: 'engine-multi-socket-node/x',
     packageName: '@fixture/engine-multi-socket-node',
     envFilePaths: {
-        server: join(multiNodeEnvironmentFixturePath, 'feature/x.server.env'),
-        'server-two': join(multiNodeEnvironmentFixturePath, 'feature/x.server-two.env'),
+        server: require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.server.env'),
+        'server-two': require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.server-two.env'),
     },
     exportedEnvs: [
         { name: 'server', type: 'node' },
@@ -104,7 +92,7 @@ describe('Node environments manager', function () {
                 ),
                 port,
             },
-            nodeEnvironmentFixturePath
+            process.cwd()
         );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -128,7 +116,7 @@ describe('Node environments manager', function () {
                 ),
                 port,
             },
-            nodeEnvironmentFixturePath
+            process.cwd()
         );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -157,7 +145,7 @@ describe('Node environments manager', function () {
                 ),
                 port,
             },
-            nodeEnvironmentFixturePath
+            process.cwd()
         );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -181,7 +169,7 @@ describe('Node environments manager', function () {
                 ),
                 port,
             },
-            nodeEnvironmentFixturePath
+            process.cwd()
         );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -223,7 +211,7 @@ describe('Node environments manager', function () {
                     ),
                     port,
                 },
-                nodeEnvironmentFixturePath
+                process.cwd()
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -261,7 +249,7 @@ describe('Node environments manager', function () {
                     ),
                     port,
                 },
-                nodeEnvironmentFixturePath
+                process.cwd()
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -319,7 +307,7 @@ describe('Node environments manager', function () {
                     ),
                     port,
                 },
-                nodeEnvironmentFixturePath
+                process.cwd()
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -357,7 +345,7 @@ describe('Node environments manager', function () {
                     ),
                     port,
                 },
-                nodeEnvironmentFixturePath
+                process.cwd()
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());
