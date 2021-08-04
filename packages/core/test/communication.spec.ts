@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { waitFor } from 'promise-assist';
+import { deferred, waitFor } from 'promise-assist';
 import {
     createDisposables,
     Communication,
@@ -191,5 +191,32 @@ describe('Communication API', function () {
         });
 
         expect(await res).to.eql({ echo: [1, 2, 3] });
+    });
+
+    it('should allow subscribing to events in non-initialized iframe', async () => {
+        const iframeEnv = new Environment('iframe', 'iframe', 'multi');
+        const com = disposables.add(new Communication(window, comId));
+
+        const env = deferredIframeInitializer({ communication: com, env: iframeEnv });
+
+        const api = com.apiProxy<TestService>(env, { id: testServiceId }, {
+            listen: {
+                listener: true
+            },
+        });
+        const { promise, resolve } = deferred<ITestServiceData>()
+
+        void api.listen(resolve)
+        void api.testApi(1, 2, 3);
+
+        // this should happen later then the api calls in the event loop
+        setTimeout(() => {
+            env.initialize({
+                iframeElement: createIframe(),
+            }).catch(console.error)
+        }, 0)
+
+
+        expect(await promise).to.eql({ echo: [1, 2, 3] });
     });
 });
