@@ -16,7 +16,7 @@
     "@types/express": "^4.17.13",
     "@wixc3/cross-performance": "^20.2.2",
     "@wixc3/engine-core": "^20.2.3",
-    "@wixc3/engine-runtime-node": "^20.2.1",
+    "@wixc3/engine-runtime-node": "^20.2.3",
     "@wixc3/engine-core-node": "^20.2.3",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
