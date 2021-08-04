@@ -24,7 +24,7 @@ import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import {
     launchEngineHttpServer,
     RouteMiddleware,
-    getEnvironmntsForFeature,
+    resolveEnvironments,
     ForkedProcess,
     LaunchEnvironmentMode,
     NodeEnvironmentsManager,
@@ -844,7 +844,7 @@ export class Application {
             const [rootFeatureName] = scopedName.split('/') as [string];
             featureEnvDefinitions[scopedName] = {
                 configurations: configNames.filter((name) => name.includes(rootFeatureName)),
-                hasServerEnvironments: getEnvironmntsForFeature(scopedName, features, 'node').size > 0,
+                hasServerEnvironments: resolveEnvironments(scopedName, features, 'node').size > 0,
                 featureName: scopedName,
             };
         }

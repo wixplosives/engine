@@ -42,5 +42,6 @@ const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : u
     parentProcess.postMessage({ id: 'initiated' });
 })().catch((e) => {
     console.error(e);
-    process.exit(1);
+    process.exitCode = 1;
+    process.exit();
 });

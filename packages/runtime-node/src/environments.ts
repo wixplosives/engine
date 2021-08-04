@@ -1,7 +1,7 @@
 import { flattenTree, EnvironmentTypes } from '@wixc3/engine-core';
 import type { IEnvironment, IStaticFeatureDefinition } from './types';
 
-export function getEnvironmntsForFeature(
+export function resolveEnvironments(
     featureName: string,
     features: Map<string, Required<IStaticFeatureDefinition>>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes,

@@ -27,7 +27,7 @@ import {
     IExternalFeatureNodeDescriptor,
     IStaticFeatureDefinition,
 } from './types';
-import { getEnvironmntsForFeature } from './environments';
+import { resolveEnvironments } from './environments';
 import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
 
 export interface OverrideConfig {
@@ -150,7 +150,7 @@ export class NodeEnvironmentsManager {
                 ...featureDef,
             })
         }
-        const nodeEnvironments = getEnvironmntsForFeature(featureName, featuresWithDefaults, 'node');
+        const nodeEnvironments = resolveEnvironments(featureName, featuresWithDefaults, 'node');
         featuresWithDefaults
         // checking if already has running environments for this feature
         const runningEnv = this.runningFeatures.get(featureId);
