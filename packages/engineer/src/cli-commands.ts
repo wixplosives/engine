@@ -60,11 +60,7 @@ export const startCommand: CliCommand = (program) =>
             '--nodeEnvironmentsMode <nodeEnvironmentsMode>',
             'one of "new-server", "same-server" or "forked" for choosing how to launch node envs'
         )
-        .option(
-            '--featureDiscoveryRoot <featureDiscoveryRoot>',
-            'package subdirectory where feature discovery starts',
-            '.'
-        )
+        .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts')
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
             const {

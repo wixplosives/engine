@@ -85,7 +85,7 @@ export class Feature<
 
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
-        this.dependencies = def.dependencies || (([] as Feature[]) as Deps);
+        this.dependencies = def.dependencies || ([] as Feature[] as Deps);
         this.api = def.api || ({} as API);
         this.context = def.context || ({} as EnvironmentContext);
         this.identifyApis();

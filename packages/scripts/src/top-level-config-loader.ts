@@ -1,13 +1,13 @@
 export interface PartialWebpackLoaderContext {
-    query: string
-    resourcePath: string
-    rootContext: string
-    addDependency(filePath: string): void
-    emitFile(filePath: string, contents: string, sourcemap: boolean): void
+    query: string;
+    resourcePath: string;
+    rootContext: string;
+    addDependency(filePath: string): void;
+    emitFile(filePath: string, contents: string, sourcemap: boolean): void;
 }
 
 export default function topLevelConfigLoader(this: PartialWebpackLoaderContext) {
-    const params = new URLSearchParams((this.query).slice(1));
+    const params = new URLSearchParams(this.query.slice(1));
 
     const fileName = params.get('scopedName');
     const envName = params.get('envName');
