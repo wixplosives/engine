@@ -19,20 +19,20 @@ interface StaticModule {
     /** internal node.js module system function which we monkey-patch to allow remapping */
     _resolveFilename: (request: string, ...rest: any[]) => string;
 }
-const originalResolveFilename = ((Module as unknown) as StaticModule)._resolveFilename;
+const originalResolveFilename = (Module as unknown as StaticModule)._resolveFilename;
 
 let isMapperRegistered = originalResolveFilename === _resolveFilenameWithMapping;
 
 function _resolveFilenameWithMapping(this: unknown) {
     // using arguments to save cycles. this function is called for every require() or require.resolve() calls
-    const [request] = (arguments as unknown) as string[];
+    const [request] = arguments as unknown as string[];
 
     // bails quickly on relative requests to avoid checking map
     if (request && request[0] !== '.') {
         try {
             for (const { test, context } of requestContextProviders) {
                 if (test(request)) {
-                    ((Module as unknown) as StaticModule)._resolveFilename = originalResolveFilename;
+                    (Module as unknown as StaticModule)._resolveFilename = originalResolveFilename;
                     arguments[0] = require.resolve(request, { paths: [context] });
                     break;
                 }
@@ -40,15 +40,15 @@ function _resolveFilenameWithMapping(this: unknown) {
         } catch {
             /** */
         } finally {
-            ((Module as unknown) as StaticModule)._resolveFilename = _resolveFilenameWithMapping;
+            (Module as unknown as StaticModule)._resolveFilename = _resolveFilenameWithMapping;
         }
     }
     return originalResolveFilename.apply(this, arguments as any);
 }
 
 export function init() {
-    if (!isMapperRegistered && ((Module as unknown) as StaticModule)._resolveFilename !== _resolveFilenameWithMapping) {
-        ((Module as unknown) as StaticModule)._resolveFilename = _resolveFilenameWithMapping;
+    if (!isMapperRegistered && (Module as unknown as StaticModule)._resolveFilename !== _resolveFilenameWithMapping) {
+        (Module as unknown as StaticModule)._resolveFilename = _resolveFilenameWithMapping;
         isMapperRegistered = true;
     }
 }
@@ -56,7 +56,7 @@ export function init() {
 export function clear() {
     if (isMapperRegistered) {
         requestContextProviders.clear();
-        ((Module as unknown) as StaticModule)._resolveFilename = originalResolveFilename;
+        (Module as unknown as StaticModule)._resolveFilename = originalResolveFilename;
         isMapperRegistered = false;
     }
 }

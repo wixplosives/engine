@@ -302,9 +302,8 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
-                        'main'
-                    ),
+                    retrieveService:
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity('main'),
                 },
             }).setup('main', ({ mapSlot }) => {
                 return {
@@ -336,9 +335,8 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
-                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
-                        envName
-                    ),
+                    retrieveService:
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(envName),
                 },
             }).setup(envName, ({ mapSlot }) => {
                 return {
@@ -378,9 +376,8 @@ describe('Feature', () => {
                 id: 'testSlotsFeature',
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(envName),
-                    retrieveService: Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(
-                        envName
-                    ),
+                    retrieveService:
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(envName),
                 },
             }).setup(envName, ({ mapSlot }) => {
                 return {
