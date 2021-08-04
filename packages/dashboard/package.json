@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-dashboard",
-  "version": "20.2.1",
+  "version": "20.2.2",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@stylable/runtime": "^4.5.0",
-    "@wixc3/engine-core": "^20.1.0",
-    "@wixc3/engine-scripts": "^20.2.1",
+    "@wixc3/engine-core": "^20.2.2",
+    "@wixc3/engine-scripts": "^20.2.2",
     "d3-hierarchy": "^3.0.1",
     "d3-selection": "^3.0.0",
     "d3-shape": "^3.0.1"
