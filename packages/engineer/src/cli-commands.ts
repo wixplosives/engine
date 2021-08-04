@@ -31,21 +31,32 @@ export class CliApplication {
     }
 }
 
-export const startCommand: CliCommand = (program) =>
-    program
-        .command('start [path]')
+const engineCommandBuilder = (program: Command, command: string): Command => {
+    return program.command(command)
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
-        .option('-f, --feature <feature>', `feature name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the feature name (file name) - packageName/featureName. 
-        if featureName === packageName, featureName is enough 
-        `)
+        .option('-f, --feature <feature>', `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
+        featureName and packageName are the same then featureName is sufficient
+    `)
         .option('-c, --config <config>', `config name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the config name (file name) - packageName/configName. 
-        if configName === packageName, configName is enough 
-        `)
+    if configName === packageName, configName is enough 
+    `)
+        .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
+        .option('--inspect')
+        .option('--singleFeature', 'build only the feature set by --feature', false)
+        .option('--title <title>', 'application title to display in browser')
+        .option('--favicon <faviconPath>', 'path to favicon to be displayed in browser environments')
+        .option(
+            '--featureDiscoveryRoot <featureDiscoveryRoot>',
+            'package subdirectory where feature discovery starts',
+            '.'
+        )
+}
+
+export const startCommand: CliCommand = (program) =>
+    engineCommandBuilder(program, 'start [path]')
         .option('--mode <production|development>', 'mode passed to webpack', 'development')
         .option('--inspect')
         .option('-p ,--port <port>')
-        .option('--singleFeature', 'build only the feature set by --feature', false)
-        .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--open <open>')
         .option(
             '--autoLaunch [autoLaunch]',
@@ -53,20 +64,12 @@ export const startCommand: CliCommand = (program) =>
             parseBoolean,
             true
         )
-        .option('--title <title>', 'application title to display in browser')
-        .option('--favicon <faviconPath>', 'path to favicon to be displayed in browser environments')
-        .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
         .option('--webpackHot', 'Start dev server with webpackHot hot reloading', false)
         .option(
             '--nodeEnvironmentsMode <nodeEnvironmentsMode>',
             'one of "new-server", "same-server" or "forked" for choosing how to launch node envs'
-        )
-        .option(
-            '--featureDiscoveryRoot <featureDiscoveryRoot>',
-            'package subdirectory where feature discovery starts',
-            '.'
         )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -130,21 +133,9 @@ export const startCommand: CliCommand = (program) =>
         });
 
 export function buildCommand(program: Command) {
-    program
-        .command('build [path]')
-        .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
-        .option('-f, --feature <feature>', `feature name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the feature name (file name) - packageName/featureName. 
-        if featureName === packageName, featureName is enough 
-        `)
-        .option('-c, --config <config>', `config name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the config name (file name) - packageName/configName. 
-        if configName === packageName, configName is enough 
-        `)
+    engineCommandBuilder(program, 'build [path]')
         .option('--mode <production|development>', 'mode passed to webpack', 'production')
         .option('--outDir <outDir>', 'default: dist')
-        .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
-        .option('--singleFeature [true|false]', 'build only the feature set by --feature', parseBoolean, true)
-        .option('--title <title>', 'application title to display in browser')
-        .option('--favicon <faviconPath>', 'path to favicon to be displayed in browser environments')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
@@ -162,11 +153,6 @@ export function buildCommand(program: Command) {
             'should include defined external features in the built output',
             parseBoolean,
             false
-        )
-        .option(
-            '--featureDiscoveryRoot <featureDiscoveryRoot>',
-            'package subdirectory where feature discovery starts',
-            '.'
         )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -220,17 +206,8 @@ export function buildCommand(program: Command) {
 }
 
 export function runCommand(program: Command) {
-    program
-        .command('run [path]')
-        .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
-        .option('-f, --feature <feature>', `feature name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the feature name (file name) - packageName/featureName. 
-        if featureName === packageName, featureName is enough 
-        `)
-        .option('-c, --config <config>', `config name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the config name (file name) - packageName/configName. 
-        if configName === packageName, configName is enough 
-        `)
+    engineCommandBuilder(program, 'run [path]')
         .option('--outDir <outDir>')
-        .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('-p ,--port <port>')
         .option(
             '--autoLaunch <autoLaunch>',
