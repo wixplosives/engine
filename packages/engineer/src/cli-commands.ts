@@ -37,8 +37,7 @@ const engineCommandBuilder = (program: Command, command: string): Command => {
         .option('-f, --feature <feature>', `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
         featureName and packageName are the same then featureName is sufficient
     `)
-        .option('-c, --config <config>', `config name is combined from the package name (minus the scope if exists, and minus the suffix "-feature") and the config name (file name) - packageName/configName. 
-    if configName === packageName, configName is enough 
+        .option('-c, --config <config>', `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
     `)
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--inspect')
