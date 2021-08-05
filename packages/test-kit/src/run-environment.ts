@@ -62,7 +62,7 @@ export async function runEngineEnvironment({
     }
     const featureDef = features.get(featureName);
 
-    const childEnvName = featureDef?.resolvedContexts?.[name];
+    const childEnvName = featureDef?.resolvedContexts[name];
     if (childEnvName) {
         const env = locateEnvironment(featureDef!, features, name, childEnvName);
         if (!env) {
@@ -100,7 +100,7 @@ function locateEnvironment(
         featureDef,
         (f) => f.dependencies?.map((fName) => features.get(fName)!) ?? []
     );
-    for (const { exportedEnvs = [] } of deepDefsForFeature) {
+    for (const { exportedEnvs } of deepDefsForFeature) {
         for (const env of exportedEnvs) {
             if (env.name === name && env.childEnvName === childEnvName) {
                 return env;

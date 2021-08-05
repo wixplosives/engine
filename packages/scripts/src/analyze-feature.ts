@@ -176,9 +176,6 @@ export function loadFeaturesFromPaths(
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             if (existingDefinition) {
                 const targetEnv = childEnvName ? `${envName}/${childEnvName}` : envName;
-                if (!existingDefinition.envFilePaths) {
-                    existingDefinition.envFilePaths = {};
-                }
                 existingDefinition.envFilePaths[targetEnv] = envFilePath;
             }
         }
@@ -188,7 +185,7 @@ export function loadFeaturesFromPaths(
             const { featureName, envName, childEnvName } = parseContextFileName(fs.basename(contextFilePath));
             const contextualName = `${envName}/${childEnvName}`;
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
-            if (existingDefinition && existingDefinition.contextFilePaths) {
+            if (existingDefinition) {
                 existingDefinition.contextFilePaths[contextualName] = contextFilePath;
             }
         }
@@ -197,7 +194,7 @@ export function loadFeaturesFromPaths(
             const { featureName, envName, childEnvName } = parsePreloadFileName(fs.basename(preloadFile));
             const existingDefinition = foundFeatures.get(scopeToPackage(featurePackage.simplifiedName, featureName));
             const contextualName = childEnvName ? `${envName}/${childEnvName}` : envName;
-            if (existingDefinition && existingDefinition.preloadFilePaths) {
+            if (existingDefinition) {
                 existingDefinition.preloadFilePaths[contextualName] = preloadFile;
             }
         }
@@ -208,9 +205,7 @@ export function loadFeaturesFromPaths(
         Object.assign(resolvedContexts, computeUsedContext(featureName, foundFeatures));
 
         // compute dependencies
-        if (dependencies) {
-            dependencies.push(...exportedFeature.dependencies.map((feature) => featureToScopedName.get(feature)!));
-        }
+        dependencies.push(...exportedFeature.dependencies.map((feature) => featureToScopedName.get(feature)!));
     }
 
     return { features: foundFeatures, configurations: foundConfigs };

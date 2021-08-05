@@ -855,14 +855,14 @@ export class Application {
             ...flattenTree(
                 foundFeature,
                 ({ dependencies }) =>
-                    dependencies?.map((dependencyName) => {
+                    dependencies.map((dependencyName) => {
                         const feature = features.get(dependencyName);
                         if (!feature) {
                             nonFoundDependencies.push(dependencyName);
                             return {} as IFeatureDefinition;
                         }
                         return feature;
-                    }) ?? []
+                    })
             ),
         ].map(({ scopedName }) => scopedName);
         if (nonFoundDependencies.length) {
@@ -894,7 +894,7 @@ function getEnvEntrypoints(
 
 export function getExportedEnvironments(features: Map<string, IFeatureDefinition>): Set<IEnvironment> {
     const environments = new Set<IEnvironment>();
-    for (const { exportedEnvs = [] } of features.values()) {
+    for (const { exportedEnvs } of features.values()) {
         for (const exportedEnv of exportedEnvs) {
             environments.add(exportedEnv);
         }

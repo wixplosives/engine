@@ -216,7 +216,7 @@ function loadEnvAndContextFiles({
     const loadStatements: string[] = [];
     const preloadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
-        const contextFilePath = contextFilePaths?.[`${envName}/${childEnvName}`];
+        const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
         if (contextFilePath) {
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {

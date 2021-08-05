@@ -17,7 +17,6 @@ export interface IFeatureDefinition extends Required<IStaticFeatureDefinition>, 
     toJSON(): unknown;
 }
 
-
 export interface IFeatureModule {
     /**
      * Feature name.

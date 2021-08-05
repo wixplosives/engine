@@ -417,11 +417,12 @@ describe('Application', function () {
 
         it('loads external features', async () => {
             const externalFeatureName = 'application-external';
-            // const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
             const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
                 name: string;
             };
-            const outputPath = join(applicationExternalFixturePath, 'out');
+            const distExternal = 'dist-external';
+
+            const outputPath = join(applicationExternalFixturePath, distExternal);
             const externalFeatureApp = new Application({
                 basePath: applicationExternalFixturePath,
                 outputPath
@@ -431,11 +432,6 @@ describe('Application', function () {
                 external: true,
                 featureName: externalFeatureName,
             });
-
-            // fs.copyDirectorySync(applicationExternalFixturePath, join(pluginsFolderPath, name, 'dist'));
-            // fs.copyDirectorySync(outputPath, join(pluginsFolderPath, name, 'dist'));
-            // disposables.add(() => externalFeatureApp.clean());
-            // disposables.add(() => rimraf.sync(pluginsFolderPath));
 
             const app = new Application({ basePath: baseWebApplicationFixturePath });
             await app.build({
@@ -451,7 +447,7 @@ describe('Application', function () {
                     {
                         packageName: name,
                         packagePath: applicationExternalFixturePath,
-                        outDir: 'out'
+                        outDir: distExternal
                     },
                 ],
                 autoLaunch: true,
