@@ -1,8 +1,0 @@
-{
-  "name": "@fixture/engine-multi-node",
-  "version": "20.2.2",
-  "scripts": {
-    "start": "engineer start"
-  },
-  "private": true
-}

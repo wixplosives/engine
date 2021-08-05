@@ -1,38 +1,6 @@
-import { flattenTree, EnvironmentTypes, SetMultiMap } from '@wixc3/engine-core';
-import type { IEnvironment, IFeatureDefinition } from '../types';
-
-export function getEnvironmntsForFeature(
-    featureName: string,
-    features: Map<string, IFeatureDefinition>,
-    envTypes?: EnvironmentTypes[] | EnvironmentTypes,
-    filterByContext = true
-) {
-    const environmentTypesToFilterBy = Array.isArray(envTypes) ? envTypes : [envTypes];
-    const filteredEnvironments = new Set<IEnvironment>();
-
-    const featureDefinition = features.get(featureName);
-    if (!featureDefinition) {
-        const featureNames = Array.from(features.keys());
-        throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
-    }
-    const { resolvedContexts } = featureDefinition;
-    const deepDefsForFeature = flattenTree(featureDefinition, (f) =>
-        f.dependencies.map((fName) => features.get(fName)!)
-    );
-    for (const { exportedEnvs } of deepDefsForFeature) {
-        for (const exportedEnv of exportedEnvs) {
-            if (
-                (!envTypes || environmentTypesToFilterBy.includes(exportedEnv.type)) &&
-                (!filterByContext ||
-                    !exportedEnv.childEnvName ||
-                    resolvedContexts[exportedEnv.name] === exportedEnv.childEnvName)
-            ) {
-                filteredEnvironments.add(exportedEnv);
-            }
-        }
-    }
-    return filteredEnvironments;
-}
+import { SetMultiMap } from "@wixc3/engine-core";
+import type { IEnvironment } from "@wixc3/engine-runtime-node";
+import type { IFeatureDefinition } from "../types";
 
 export interface GetResolveEnvironmentsParams {
     featureName?: string;
@@ -58,8 +26,8 @@ export function getResolvedEnvironments({
     const resolvedContexts = findAllEnviromnents
         ? getPossibleContexts(features)
         : featureName && filterContexts
-        ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
-        : getAllResolvedContexts(features);
+            ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
+            : getAllResolvedContexts(features);
     for (const env of environments) {
         const { name, childEnvName, type } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))

@@ -10,6 +10,7 @@
     "@file-services/node": "^5.3.1",
     "@wixc3/engine-core": "^20.2.3",
     "@wixc3/engine-scripts": "^20.2.3",
+    "@wixc3/engine-runtime-node": "^20.2.3",
     "create-temp-directory": "^1.1.1",
     "is-ci": "^3.0.0",
     "playwright-core": "^1.13.1",

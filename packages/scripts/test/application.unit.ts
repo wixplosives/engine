@@ -32,13 +32,21 @@ describe('Application', function () {
         return page;
     };
 
-    const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
-    const baseWebApplicationFixturePath = fs.join(__dirname, './fixtures/base-web-application');
-    const staticBaseWebApplicationFixturePath = fs.join(__dirname, './fixtures/static-base-web-application');
-    const applicationExternalFixturePath = fs.join(__dirname, './fixtures/application-external');
-    const staticApplicationExternalFixturePath = fs.join(__dirname, './fixtures/static-application-external');
-    const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
-    const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
+    const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
+    const baseWebApplicationFixturePath = fs.dirname(
+        require.resolve('@fixture/base-web-application-feature/package.json')
+    );
+    const staticBaseWebApplicationFixturePath = fs.dirname(
+        require.resolve('@fixture/static-base-web-application-feature/package.json')
+    );
+    const applicationExternalFixturePath = fs.dirname(
+        require.resolve('@fixture/application-external-feature/package.json')
+    );
+    const staticApplicationExternalFixturePath = fs.dirname(
+        require.resolve('@fixture/static-application-external-feature/package.json')
+    );
+    const nodeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-node/package.json'));
+    const contextualFeatureFixturePath = fs.dirname(require.resolve('@fixture/contextual-feature/package.json'));
 
     describe('build', () => {
         const manifestFileName = 'manifest.json';
@@ -409,23 +417,21 @@ describe('Application', function () {
 
         it('loads external features', async () => {
             const externalFeatureName = 'application-external';
-            const pluginsFolderPath = join(baseWebApplicationFixturePath, 'node_modules');
             const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
                 name: string;
             };
+            const distExternal = 'dist-external';
+
+            const outputPath = join(applicationExternalFixturePath, distExternal);
             const externalFeatureApp = new Application({
                 basePath: applicationExternalFixturePath,
+                outputPath
             });
             const publicConfigsRoute = 'config';
             await externalFeatureApp.build({
                 external: true,
                 featureName: externalFeatureName,
             });
-
-            fs.copyDirectorySync(applicationExternalFixturePath, join(pluginsFolderPath, name, 'dist'));
-            fs.copyDirectorySync(join(applicationExternalFixturePath, 'dist'), join(pluginsFolderPath, name, 'dist'));
-            disposables.add(() => externalFeatureApp.clean());
-            disposables.add(() => rimraf.sync(pluginsFolderPath));
 
             const app = new Application({ basePath: baseWebApplicationFixturePath });
             await app.build({
@@ -440,6 +446,8 @@ describe('Application', function () {
                 externalFeatureDefinitions: [
                     {
                         packageName: name,
+                        packagePath: applicationExternalFixturePath,
+                        outDir: distExternal
                     },
                 ],
                 autoLaunch: true,

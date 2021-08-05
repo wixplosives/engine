@@ -1,7 +1,8 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
-import type { IFeatureDefinition, IConfigDefinition } from './types';
+import type { IFeatureDefinition } from './types';
 
 const { stringify } = JSON;
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
@@ -69,6 +70,7 @@ export interface LoadStatementArguments
 //#region entry points
 
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
+
     return `
     import { getTopWindow } from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
@@ -85,7 +87,7 @@ export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
         ...args,
         target: 'node',
         loadStatement: nodeImportStatement,
-    })}
+    })} 
 }
     `;
 }
@@ -127,9 +129,8 @@ async function main() {
     const topWindow = getTopWindow(currentWindow);
     const options = new URLSearchParams(topWindow.location.search);
 
-    const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
-        typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
-    };
+    const publicPath = options.has('publicPath') ? options.get('publicPath') : ${typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
+        };
     __webpack_public_path__= publicPath;
 
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
@@ -166,9 +167,8 @@ main().catch(console.error);
 
 //#region webpack import statements
 export function webpackImportStatement({ moduleIdentifier, filePath, eagerEntrypoint }: LoadStatementArguments) {
-    return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
-        eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
-    } ${stringify(filePath)});`;
+    return `await import(/* webpackChunkName: "${moduleIdentifier}" */${eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
+        } ${stringify(filePath)});`;
 }
 
 export function nodeImportStatement({ filePath }: LoadStatementArguments) {
@@ -221,30 +221,30 @@ function loadEnvAndContextFiles({
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
                 ${loadStatement({
-                    moduleIdentifier: name,
-                    filePath: contextFilePath,
-                    directoryPath,
-                    packageName,
-                    eagerEntrypoint,
-                })};
+                moduleIdentifier: name,
+                filePath: contextFilePath,
+                directoryPath,
+                packageName,
+                eagerEntrypoint,
+            })};
             }`);
         }
-        const preloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+        const preloadFilePath = preloadFilePaths?.[`${envName}/${childEnvName}`];
         if (preloadFilePath) {
             // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
             preloadStatements.push(`if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
                 ${webpackImportStatement({
-                    directoryPath,
-                    filePath: preloadFilePath,
-                    moduleIdentifier: name,
-                    packageName,
-                    eagerEntrypoint,
-                })};
+                directoryPath,
+                filePath: preloadFilePath,
+                moduleIdentifier: name,
+                packageName,
+                eagerEntrypoint,
+            })};
             }`);
         }
     }
-    const envFilePath = envFilePaths[envName];
+    const envFilePath = envFilePaths?.[envName];
     if (envFilePath) {
         loadStatements.push(
             loadStatement({
@@ -256,7 +256,7 @@ function loadEnvAndContextFiles({
             })
         );
     }
-    const preloadFilePath = preloadFilePaths[envName];
+    const preloadFilePath = preloadFilePaths?.[envName];
     if (preloadFilePath) {
         preloadStatements.push(
             webpackImportStatement({
@@ -288,17 +288,16 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                     ${loadStatements.length ? loadStatements.join(';\n') : ''}
                     const featureModule = ${loadStatement({
-                        moduleIdentifier: `[feature]${name}`,
-                        filePath,
-                        directoryPath,
-                        packageName,
-                        eagerEntrypoint,
-                    })};
-                    ${
-                        target !== 'node'
-                            ? `self.${createExternalFeatureMapping(packageName, filePath)} = featureModule;`
-                            : ''
-                    }
+        moduleIdentifier: `[feature]${name}`,
+        filePath,
+        directoryPath,
+        packageName,
+        eagerEntrypoint,
+    })};
+                    ${target !== 'node'
+            ? `self.${createExternalFeatureMapping(packageName, filePath)} = featureModule;`
+            : ''
+        }
                     return featureModule.default;
                 },
                 async preload(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
@@ -355,11 +354,10 @@ function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
 }
 
 function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
-    return `import(/* webpackChunkName: "[config]${scopedName}${
-        configEnvName ?? ''
-    }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-        topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
-    )})`;
+    return `import(/* webpackChunkName: "[config]${scopedName}${configEnvName ?? ''
+        }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
+            topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
+        )})`;
 }
 //#endregion
 
@@ -395,11 +393,10 @@ function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer',
     
     ${addExternalsEventListenerForParentEnvironments(externalsFilePath)}
     
-    const fetchedExternalFeatures = ${
-        target === 'electron-renderer'
+    const fetchedExternalFeatures = ${target === 'electron-renderer'
             ? fetchFeaturesFromElectronProcess(externalsFilePath)
             : fetchExternalFeaturesInBrowser(externalsFilePath)
-    };
+        };
     externalFeatures.push(...fetchedExternalFeatures)
     
     if(externalFeatures.length) {

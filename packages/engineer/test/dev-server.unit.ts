@@ -1,3 +1,5 @@
+import { join } from 'path';
+import rimraf from 'rimraf';
 import { expect } from 'chai';
 import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
@@ -5,27 +7,29 @@ import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
-import { Application, IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-scripts';
+import { Application } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
-import { join } from 'path';
-import rimraf from 'rimraf';
+import type { IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 
-const engineFeatureFixturePath = fs.join(__dirname, './fixtures/engine-feature');
-const engineRuntimeFeatureFixturePath = fs.join(__dirname, './fixtures/engine-run-options');
-const engineFeatureRoots = fs.join(__dirname, './fixtures/engine-feature-roots');
-const multiFeatureFixturePath = fs.join(__dirname, './fixtures/engine-multi-feature');
-const nodeFeatureFixturePath = fs.join(__dirname, './fixtures/node-env');
-const contextualFeatureFixturePath = fs.join(__dirname, './fixtures/contextual');
-const useConfigsFeaturePath = fs.join(__dirname, './fixtures/using-config');
-const baseWebApplicationFixturePath = fs.join(
-    fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
-    'test/fixtures/base-web-application'
+const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
+
+const engineRuntimeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-run-options/package.json'));
+
+const engineFeatureRoots = fs.dirname(require.resolve('@fixture/engine-feature-roots/package.json'));
+
+const multiFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-multi-feature/package.json'));
+
+const nodeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-node/package.json'));
+const contextualFeatureFixturePath = fs.dirname(require.resolve('@fixture/contextual-feature/package.json'));
+
+const useConfigsFeaturePath = fs.dirname(require.resolve('@fixture/configs/package.json'));
+const baseWebApplicationFixturePath = fs.dirname(require.resolve('@fixture/base-web-application-feature/package.json'));
+
+const applicationExternalFixturePath = fs.dirname(
+    require.resolve('@fixture/application-external-feature/package.json')
 );
-const applicationExternalFixturePath = fs.join(
-    fs.dirname(require.resolve('@wixc3/engine-scripts/package.json')),
-    'test/fixtures/application-external'
-);
-const engineConfigFixturePath = fs.join(__dirname, './fixtures/engine-config');
+
+const engineConfigFixturePath = fs.dirname(require.resolve('@fixture/engine-config-feature/package.json'));
 
 function getBodyContent(page: Page | Frame) {
     return page.evaluate(() => document.body.textContent!.trim());

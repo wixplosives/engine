@@ -1,8 +1,0 @@
-{
-  "name": "@fixture/engine-run-options",
-  "version": "16.0.0",
-  "scripts": {
-    "start": "engineer start"
-  },
-  "private": true
-}

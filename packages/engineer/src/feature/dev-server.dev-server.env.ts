@@ -9,17 +9,16 @@ import {
     createConfigMiddleware,
     createFeaturesEngineRouter,
     getExternalFeaturesMetadata,
-    launchHttpServer,
-    NodeEnvironmentsManager,
     EXTERNAL_FEATURES_BASE_URI,
     getExportedEnvironments,
-    getResolvedEnvironments,
+    getResolvedEnvironments
 } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { Communication, createDisposables } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
+import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackDevMiddleware = require('webpack-dev-middleware') as (
@@ -90,15 +89,13 @@ devServerFeature.setup(
 
             const {
                 externalFeatureDefinitions = [],
-                require,
+                require: requiredPaths = [],
                 socketServerOptions: configServerOptions = {},
                 externalFeaturesBasePath: configExternalFeaturesPath,
                 serveStatic = [],
                 featureDiscoveryRoot,
             } = engineConfig ?? {};
-            if (require) {
-                await application.importModules(require);
-            }
+            await application.importModules(requiredPaths);
             const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
                 ...socketServerOptions,
                 ...configServerOptions,
@@ -120,7 +117,7 @@ devServerFeature.setup(
                 app,
                 close,
                 socketServer,
-            } = await launchHttpServer({
+            } = await launchEngineHttpServer({
                 staticDirPath: application.outputPath,
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
@@ -152,6 +149,7 @@ devServerFeature.setup(
                         inspect,
                         overrideConfig,
                         externalFeatures,
+                        requiredPaths,
                     },
                     basePath,
                     resolvedSocketServerOptions
@@ -184,8 +182,8 @@ devServerFeature.setup(
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
-                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                      }
+                        [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+                    }
                     : undefined;
 
             app.use(`/${publicConfigsRoute}`, [

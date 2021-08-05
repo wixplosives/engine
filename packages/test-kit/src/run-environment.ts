@@ -1,11 +1,5 @@
 import fs from '@file-services/node';
-import {
-    readFeatures,
-    evaluateConfig,
-    runNodeEnvironment,
-    IFeatureDefinition,
-    IExternalFeatureNodeDescriptor,
-} from '@wixc3/engine-scripts';
+import { readFeatures, evaluateConfig, IFeatureDefinition } from '@wixc3/engine-scripts';
 import {
     TopLevelConfig,
     Environment,
@@ -17,6 +11,7 @@ import {
     NormalizeEnvironmentFilter,
     Running,
 } from '@wixc3/engine-core';
+import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
 export interface IRunNodeEnvironmentOptions<ENV extends Environment = Environment> {
     featureName: string;
@@ -42,7 +37,7 @@ export interface IGetRuinnnigFeatureOptions<
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends Environment
-> extends IRunNodeEnvironmentOptions<ENV> {
+    > extends IRunNodeEnvironmentOptions<ENV> {
     feature: Feature<NAME, DEPS, API, CONTEXT>;
 }
 
@@ -72,8 +67,7 @@ export async function runEngineEnvironment({
         const env = locateEnvironment(featureDef!, features, name, childEnvName);
         if (!env) {
             throw new Error(
-                `environment "${name}" with the context "${childEnvName}" is not found when running "${
-                    featureDef!.name
+                `environment "${name}" with the context "${childEnvName}" is not found when running "${featureDef!.name
                 }" feature`
             );
         }
@@ -102,8 +96,9 @@ function locateEnvironment(
     name: string,
     childEnvName: string
 ) {
-    const deepDefsForFeature = flattenTree<IFeatureDefinition>(featureDef, (f) =>
-        f.dependencies.map((fName) => features.get(fName)!)
+    const deepDefsForFeature = flattenTree<IFeatureDefinition>(
+        featureDef,
+        (f) => f.dependencies?.map((fName) => features.get(fName)!) ?? []
     );
     for (const { exportedEnvs } of deepDefsForFeature) {
         for (const env of exportedEnvs) {

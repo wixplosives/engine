@@ -10,8 +10,9 @@ import { resolve } from 'path';
 import open from 'open';
 import fs from '@file-services/node';
 
-import { Application, parseCliArguments } from '@wixc3/engine-scripts';
+import { Application } from '@wixc3/engine-scripts';
 import { startDevServer } from './utils';
+import { parseCliArguments } from '@wixc3/engine-runtime-node';
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];

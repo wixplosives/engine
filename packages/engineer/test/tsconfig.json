@@ -9,6 +9,9 @@
     },
     {
       "path": "../../test-kit/src"
+    },
+    {
+      "path": "../../runtime-node/src"
     }
   ]
 }

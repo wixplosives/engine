@@ -21,8 +21,9 @@ import {
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { IConfigDefinition, IEnvironment, IFeatureDefinition, IFeatureModule } from './types';
 import type { INpmPackage } from './utils/resolve-packages';
+import type { IConfigDefinition, IEnvironment } from '@wixc3/engine-runtime-node';
+import type { IFeatureDefinition, IFeatureModule } from './types';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -250,7 +251,7 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
     };
 
     if (typeof exports === 'object' && exports !== null) {
-        const { exportedEnvs: envs, usedContexts } = featureFile;
+        const { exportedEnvs: envs = [], usedContexts = {} } = featureFile;
         for (const exportValue of Object.values(exports)) {
             if (instanceOf(exportValue, Environment)) {
                 if (instanceOf(exportValue, SingleEndpointContextualEnvironment)) {

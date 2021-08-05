@@ -22,8 +22,8 @@ export function scopeFilePathsToPackage(
     fs: IFileSystemSync,
     packageName: string,
     context: string,
-    envFiles: Record<string, string>,
-    isRoot: boolean
+    isRoot: boolean,
+    envFiles: Record<string, string> = {}
 ) {
     return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
         acc[envName] = getFilePathInPackage(fs, packageName, context, filePath, isRoot);

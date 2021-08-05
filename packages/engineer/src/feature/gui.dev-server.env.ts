@@ -2,9 +2,10 @@ import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import fs from '@file-services/node';
 import { SetMultiMap } from '@wixc3/engine-core';
-import { createMainEntrypoint, createVirtualEntries, IConfigDefinition } from '@wixc3/engine-scripts';
+import { createMainEntrypoint, createVirtualEntries } from '@wixc3/engine-scripts';
 import guiFeature, { mainDashboardEnv } from './gui.feature';
 import { devServerEnv } from './dev-server.feature';
+import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 
 guiFeature.setup(
     devServerEnv,

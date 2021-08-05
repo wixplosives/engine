@@ -1,11 +1,5 @@
-import {
-    IFeatureTarget,
-    IPortMessage,
-    isProcessMessage,
-    ProcessMessageId,
-    IFeatureMessagePayload,
-    PerformanceMetrics,
-} from '@wixc3/engine-scripts';
+import { PerformanceMetrics, ProcessMessageId, isProcessMessage } from '@wixc3/engine-runtime-node';
+import type { IFeatureTarget, IPortMessage, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
 import type { IExecutableApplication } from './types';
 

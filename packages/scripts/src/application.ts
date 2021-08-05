@@ -18,23 +18,24 @@ import {
     createWebpackConfigForExternalFeature,
     createWebpackConfigs,
 } from './create-webpack-configs';
-import { ForkedProcess } from './forked-process';
-import { NodeEnvironmentsManager, LaunchEnvironmentMode } from './node-environments-manager';
-import { createIPC } from './process-communication';
-import type {
-    EngineConfig,
-    IConfigDefinition,
-    IEnvironment,
-    IFeatureDefinition,
-    IFeatureTarget,
-    IExternalDefinition,
-    TopLevelConfigProvider,
-    IExternalFeatureNodeDescriptor,
-} from './types';
+import type { EngineConfig, IFeatureDefinition, IFeatureTarget } from './types';
 import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
-import { getEnvironmntsForFeature, getResolvedEnvironments } from './utils/environments';
-import { launchHttpServer, RouteMiddleware } from './launch-http-server';
+import {
+    launchEngineHttpServer,
+    RouteMiddleware,
+    resolveEnvironments,
+    ForkedProcess,
+    LaunchEnvironmentMode,
+    NodeEnvironmentsManager,
+    createIPC,
+    IConfigDefinition,
+    IEnvironment,
+    IExternalDefinition,
+    IExternalFeatureNodeDescriptor,
+    TopLevelConfigProvider,
+} from '@wixc3/engine-runtime-node';
+
 import {
     getExternalFeatureBasePath,
     getExternalFeaturesMetadata,
@@ -43,6 +44,8 @@ import {
 } from './utils';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+
+import { getResolvedEnvironments } from './utils/environments';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -346,6 +349,7 @@ export class Application {
             serveExternalFeaturesPath = providedServeExternalFeaturesPath,
             serveStatic = [],
             socketServerOptions: configSocketServerOptions,
+            require: requiredPaths = [],
         } = engineConfig ?? {};
 
         const fixedExternalFeatureDefinitions = this.normilizeDefinitionsPackagePath(
@@ -380,8 +384,8 @@ export class Application {
 
         const resolvedExternalFeaturesPath = fs.resolve(
             providedExternalFeatuersPath ??
-                baseExternalFeaturesPath ??
-                (configPath ? fs.dirname(configPath) : this.basePath)
+            baseExternalFeaturesPath ??
+            (configPath ? fs.dirname(configPath) : this.basePath)
         );
 
         externalFeatures.push(
@@ -402,7 +406,7 @@ export class Application {
             },
         });
 
-        const { port, close, socketServer, app } = await launchHttpServer({
+        const { port, close, socketServer, app } = await launchEngineHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort,
             socketServerOptions,
@@ -436,6 +440,7 @@ export class Application {
                 overrideConfig: config,
                 configurations,
                 externalFeatures,
+                requiredPaths,
             },
             this.basePath,
             { ...socketServerOptions, ...configSocketServerOptions }
@@ -481,7 +486,7 @@ export class Application {
         return features;
     }
 
-    private resolveManifestPaths(envFilePaths: Record<string, string>): Record<string, string> {
+    private resolveManifestPaths(envFilePaths: Record<string, string> = {}): Record<string, string> {
         return Object.fromEntries(
             Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
                 envName,
@@ -507,7 +512,7 @@ export class Application {
                         require.resolve(fs.join(packageName, 'package.json'), {
                             paths: [
                                 providedExternalFeatuersPath ??
-                                    (baseExternalFeaturesPath ? configPath! : this.basePath),
+                                (baseExternalFeaturesPath ? configPath! : this.basePath),
                             ],
                         })
                     ),
@@ -523,7 +528,7 @@ export class Application {
         if (config && config.require) {
             await this.importModules(config.require);
         }
-        const { socketServer, close, port } = await launchHttpServer({
+        const { socketServer, close, port } = await launchEngineHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort: preferredPort,
             socketServerOptions,
@@ -678,26 +683,29 @@ export class Application {
         if (isRoot) {
             // mapping all paths to the sources folder
             filePath = this.remapPathToSourcesFolder(sourcesRoot, filePath, directoryPath);
-            Object.keys(envFilePaths).map(
-                (key) =>
-                    (envFilePaths[key] = this.remapPathToSourcesFolder(sourcesRoot, envFilePaths[key]!, directoryPath))
-            );
-            Object.keys(contextFilePaths).map(
-                (key) =>
-                    (contextFilePaths[key] = this.remapPathToSourcesFolder(
-                        sourcesRoot,
-                        contextFilePaths[key]!,
-                        directoryPath
-                    ))
-            );
-            Object.keys(preloadFilePaths).map(
-                (key) =>
-                    (preloadFilePaths[key] = this.remapPathToSourcesFolder(
-                        sourcesRoot,
-                        preloadFilePaths[key]!,
-                        directoryPath
-                    ))
-            );
+            for (const key of Object.keys(envFilePaths)) {
+                envFilePaths[key] = this.remapPathToSourcesFolder(
+                    sourcesRoot,
+                    envFilePaths[key]!,
+                    directoryPath
+                )
+            }
+
+            for (const key of Object.keys(contextFilePaths)) {
+                contextFilePaths[key] = this.remapPathToSourcesFolder(
+                    sourcesRoot,
+                    contextFilePaths[key]!,
+                    directoryPath
+                )
+            }
+
+            for (const key of Object.keys(preloadFilePaths)) {
+                preloadFilePaths[key] = this.remapPathToSourcesFolder(
+                    sourcesRoot,
+                    preloadFilePaths[key]!,
+                    directoryPath
+                )
+            }
         }
         const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
         const context = isRoot && outputDirInBasePath ? this.outputPath : directoryPath;
@@ -708,22 +716,22 @@ export class Application {
                 fs,
                 packageName,
                 context,
-                envFilePaths,
-                isRoot && outputDirInBasePath
+                isRoot && outputDirInBasePath,
+                envFilePaths
             ),
             contextFilePaths: scopeFilePathsToPackage(
                 fs,
                 packageName,
                 context,
-                contextFilePaths,
-                isRoot && outputDirInBasePath
+                isRoot && outputDirInBasePath,
+                contextFilePaths
             ),
             preloadFilePaths: scopeFilePathsToPackage(
                 fs,
                 packageName,
                 context,
-                preloadFilePaths,
-                isRoot && outputDirInBasePath
+                isRoot && outputDirInBasePath,
+                preloadFilePaths
             ),
         };
     }
@@ -829,7 +837,7 @@ export class Application {
             const [rootFeatureName] = scopedName.split('/') as [string];
             featureEnvDefinitions[scopedName] = {
                 configurations: configNames.filter((name) => name.includes(rootFeatureName)),
-                hasServerEnvironments: getEnvironmntsForFeature(scopedName, features, 'node').size > 0,
+                hasServerEnvironments: resolveEnvironments(scopedName, features, 'node').size > 0,
                 featureName: scopedName,
             };
         }
@@ -844,15 +852,17 @@ export class Application {
         }
         const nonFoundDependencies: string[] = [];
         const filteredFeatures = [
-            ...flattenTree(foundFeature, ({ dependencies }) =>
-                dependencies.map((dependencyName) => {
-                    const feature = features.get(dependencyName);
-                    if (!feature) {
-                        nonFoundDependencies.push(dependencyName);
-                        return {} as IFeatureDefinition;
-                    }
-                    return feature;
-                })
+            ...flattenTree(
+                foundFeature,
+                ({ dependencies }) =>
+                    dependencies.map((dependencyName) => {
+                        const feature = features.get(dependencyName);
+                        if (!feature) {
+                            nonFoundDependencies.push(dependencyName);
+                            return {} as IFeatureDefinition;
+                        }
+                        return feature;
+                    })
             ),
         ].map(({ scopedName }) => scopedName);
         if (nonFoundDependencies.length) {

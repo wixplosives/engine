@@ -1,4 +1,5 @@
-import type { IFeatureTarget, IFeatureMessagePayload, PerformanceMetrics } from '@wixc3/engine-scripts';
+import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 
 export interface IExecutableApplication {
     getServerPort(): Promise<number>;

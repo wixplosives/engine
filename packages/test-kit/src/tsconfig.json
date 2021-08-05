@@ -6,6 +6,9 @@
   "references": [
     {
       "path": "../../scripts/src"
+    },
+    {
+      "path": "../../runtime-node/src"
     }
   ]
 }

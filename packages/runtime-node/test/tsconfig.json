@@ -1,0 +1,20 @@
+{
+  "extends": "../../../tsconfig.test.json",
+  "compilerOptions": {
+    "outDir": "../dist/test"
+  },
+  "references": [
+    {
+      "path": "../src"
+    },
+    {
+      "path": "../../test-kit/src"
+    },
+    {
+      "path": "../../../test-fixtures/multi-node-env"
+    },
+    {
+      "path": "../../../test-fixtures/multi-socket-node-env"
+    }
+  ]
+}
