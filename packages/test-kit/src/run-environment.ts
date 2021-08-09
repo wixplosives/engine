@@ -1,5 +1,11 @@
 import fs from '@file-services/node';
-import { readFeatures, evaluateConfig, IFeatureDefinition } from '@wixc3/engine-scripts';
+import {
+    readFeatures,
+    evaluateConfig,
+    IFeatureDefinition,
+    ENGINE_CONFIG_FILE_NAME,
+    EngineConfig,
+} from '@wixc3/engine-scripts';
 import {
     TopLevelConfig,
     Environment,
@@ -37,7 +43,7 @@ export interface IGetRuinnnigFeatureOptions<
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends Environment
-    > extends IRunNodeEnvironmentOptions<ENV> {
+> extends IRunNodeEnvironmentOptions<ENV> {
     feature: Feature<NAME, DEPS, API, CONTEXT>;
 }
 
@@ -46,7 +52,7 @@ export async function runEngineEnvironment({
     configName,
     runtimeOptions = {},
     config = [],
-    env,
+    env: { env: envName, envType },
     basePath = process.cwd(),
     externalFeatures = [],
     featureDiscoveryRoot,
@@ -54,34 +60,39 @@ export async function runEngineEnvironment({
     engine: RuntimeEngine;
     dispose: () => Promise<void>;
 }> {
-    const { env: name, envType: type } = env;
-    const { features, configurations } = readFeatures(fs, basePath, featureDiscoveryRoot);
+    const engineConfigFilePath = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
+    const { featureDiscoveryRoot: configFeatureDiscoveryRoot } = (
+        engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}
+    ) as EngineConfig;
+
+    const { features, configurations } = readFeatures(fs, basePath, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
 
     if (configName) {
-        config = [...evaluateConfig(configName, configurations, name), ...config];
+        config = [...evaluateConfig(configName, configurations, envName), ...config];
     }
     const featureDef = features.get(featureName);
 
-    const childEnvName = featureDef?.resolvedContexts[name];
+    const childEnvName = featureDef?.resolvedContexts[envName];
     if (childEnvName) {
-        const env = locateEnvironment(featureDef!, features, name, childEnvName);
+        const env = locateEnvironment(featureDef!, features, envName, childEnvName);
         if (!env) {
             throw new Error(
-                `environment "${name}" with the context "${childEnvName}" is not found when running "${featureDef!.name
+                `environment "${envName}" with the context "${childEnvName}" is not found when running "${
+                    featureDef!.name
                 }" feature`
             );
         }
         if (env.type !== 'node') {
             throw new Error(
-                `Trying to run "${name}" with the "${childEnvName}" context, the target of which is "${env.type}"`
+                `Trying to run "${envName}" with the "${childEnvName}" context, the target of which is "${env.type}"`
             );
         }
     }
     return runNodeEnvironment({
         featureName,
         features: [...features.entries()],
-        name,
-        type,
+        name: envName,
+        type: envType,
         childEnvName,
         config,
         externalFeatures,
@@ -132,4 +143,12 @@ export async function getRunningFeature<
         engine,
         dispose,
     };
+}
+
+async function importWithProperError(filePath: string): Promise<unknown> {
+    try {
+        return import(filePath);
+    } catch (ex: unknown) {
+        throw new Error(`failed evaluating file: ${filePath}\n${(ex as Error).message ?? ex}`);
+    }
 }
