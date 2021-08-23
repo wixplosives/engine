@@ -40,7 +40,7 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
                 envReadyPromise,
                 instanceId,
                 src:
-                    src || managed
+                    src ?? (managed ? ... )
                         ? defaultHtmlSourceFactory(env, publicPath, hashParams)
                         : defaultSourceFactory(env, publicPath),
             };
