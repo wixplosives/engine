@@ -9,7 +9,7 @@ const {
     preferredPort,
     socketServerOptions: socketServerOptionsJson,
     requiredPaths: requiredPathsJson,
-    _: [providedPath = process.cwd()]
+    _: [providedPath = process.cwd()],
 } = parseCliArguments(process.argv.slice(1));
 const requiredPaths = JSON.parse(requiredPathsJson as string) as string[];
 

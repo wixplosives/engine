@@ -11,7 +11,7 @@ import {
     getExternalFeaturesMetadata,
     EXTERNAL_FEATURES_BASE_URI,
     getExportedEnvironments,
-    getResolvedEnvironments
+    getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
@@ -182,8 +182,8 @@ devServerFeature.setup(
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
-                        [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                    }
+                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+                      }
                     : undefined;
 
             app.use(`/${publicConfigsRoute}`, [

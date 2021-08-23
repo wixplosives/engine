@@ -425,7 +425,7 @@ describe('Application', function () {
             const outputPath = join(applicationExternalFixturePath, distExternal);
             const externalFeatureApp = new Application({
                 basePath: applicationExternalFixturePath,
-                outputPath
+                outputPath,
             });
             const publicConfigsRoute = 'config';
             await externalFeatureApp.build({
@@ -447,7 +447,7 @@ describe('Application', function () {
                     {
                         packageName: name,
                         packagePath: applicationExternalFixturePath,
-                        outDir: distExternal
+                        outDir: distExternal,
                     },
                 ],
                 autoLaunch: true,

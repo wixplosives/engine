@@ -124,7 +124,7 @@ export class NodeEnvironmentsManager {
         private options: INodeEnvironmentsManagerOptions,
         private context: string,
         private socketServerOptions?: Partial<io.ServerOptions>
-    ) { }
+    ) {}
 
     public async runServerEnvironments({
         featureName,
@@ -133,12 +133,11 @@ export class NodeEnvironmentsManager {
         overrideConfigsMap = new Map<string, OverrideConfig>(),
         mode = 'new-server',
     }: RunEnvironmentOptions) {
-
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
         const topology: Record<string, string> = {};
         const { defaultRuntimeOptions, features } = this.options;
-        const featuresWithDefaults = new Map<string, Required<IStaticFeatureDefinition>>()
+        const featuresWithDefaults = new Map<string, Required<IStaticFeatureDefinition>>();
         for (const [featureName, featureDef] of features.entries()) {
             featuresWithDefaults.set(featureName, {
                 contextFilePaths: {},
@@ -148,7 +147,7 @@ export class NodeEnvironmentsManager {
                 preloadFilePaths: {},
                 resolvedContexts: {},
                 ...featureDef,
-            })
+            });
         }
         const nodeEnvironments = resolveEnvironments(featureName, featuresWithDefaults, 'node');
         // checking if already has running environments for this feature
@@ -191,8 +190,6 @@ export class NodeEnvironmentsManager {
             envHostMapping.set(nodeEnv, host);
             com.registerEnv(nodeEnv.name, new ChildHostWrapper(host));
         }
-
-
 
         for (const nodeEnv of nodeEnvironments) {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
@@ -258,8 +255,8 @@ export class NodeEnvironmentsManager {
         const overrideConfig = Array.isArray(overrideConfigProvider)
             ? overrideConfigProvider
             : envName
-                ? overrideConfigProvider(envName)
-                : [];
+            ? overrideConfigProvider(envName)
+            : [];
         const overrideConfigs = [...overrideConfig];
         if (configName) {
             const currentOverrideConfig = overrideConfigsMap.get(configName);
