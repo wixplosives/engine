@@ -22,7 +22,6 @@ export interface IIframeInitializerOptions {
      * @default false
      */
     managed?: boolean;
-    envReady?: Promise<void>;
 }
 
 export interface IframeInitializerOptions extends InitializerOptions, IIframeInitializerOptions {}
@@ -47,17 +46,11 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
     const envReadyPromise = com.envReady(instanceId);
     return {
         id: instanceId,
-        initialize: ({
-            managed,
-            iframeElement,
-            hashParams,
-            src,
-            envReady = envReadyPromise,
-        }: IIframeInitializerOptions) => {
+        initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
             const publicPath = com.getPublicPath();
             const baseStartIframeParams: StartIframeBaseOptions = {
                 com,
-                envReadyPromise: envReady,
+                envReadyPromise,
                 instanceId,
                 src:
                     src ??

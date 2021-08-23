@@ -56,24 +56,27 @@ describe('Communication API', function () {
 
     it('allows providing custom src', async () => {
         const com = disposables.add(new Communication(window, comId));
-        const content = `
-            const p = document.createElement('p');
-            p.innerText = "hello world";
-            document.body.appendChild(p);
-        `;
+
         const iframeElement = createIframe();
+
+        const { initialize, id } = deferredIframeInitializer({
+            communication: com,
+            env: iframeEnv,
+        });
+        const content = `const p = document.createElement('p');
+p.innerText = "hello world";
+document.body.appendChild(p);
+const id = '${id}';
+debugger;
+window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
         const src = URL.createObjectURL(
             new Blob([content], {
                 type: 'application/javascript',
             })
         );
-
-        await iframeInitializer({
-            communication: com,
-            env: iframeEnv,
+        await initialize({
             iframeElement,
             src,
-            envReady: Promise.resolve(),
         });
         expect(iframeElement.contentWindow?.document.body.textContent).to.eq('hello world');
     });
