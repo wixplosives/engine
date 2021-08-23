@@ -129,8 +129,9 @@ async function main() {
     const options = new URLSearchParams(topWindow.location.search);
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
 
-    const publicPath = options.has('publicPath') ? options.get('publicPath') : ${typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
-        };
+    const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
+        typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
+    };
     __webpack_public_path__= publicPath;
 
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
@@ -165,8 +166,9 @@ main().catch(console.error);
 
 //#region webpack import statements
 export function webpackImportStatement({ moduleIdentifier, filePath, eagerEntrypoint }: LoadStatementArguments) {
-    return `await import(/* webpackChunkName: "${moduleIdentifier}" */${eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
-        } ${stringify(filePath)});`;
+    return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
+        eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
+    } ${stringify(filePath)});`;
 }
 
 export function nodeImportStatement({ filePath }: LoadStatementArguments) {
@@ -219,12 +221,12 @@ function loadEnvAndContextFiles({
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
                 ${loadStatement({
-                moduleIdentifier: name,
-                filePath: contextFilePath,
-                directoryPath,
-                packageName,
-                eagerEntrypoint,
-            })};
+                    moduleIdentifier: name,
+                    filePath: contextFilePath,
+                    directoryPath,
+                    packageName,
+                    eagerEntrypoint,
+                })};
             }`);
         }
         const preloadFilePath = preloadFilePaths?.[`${envName}/${childEnvName}`];
@@ -233,12 +235,12 @@ function loadEnvAndContextFiles({
             usesResolvedContexts = true;
             preloadStatements.push(`if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
                 ${webpackImportStatement({
-                directoryPath,
-                filePath: preloadFilePath,
-                moduleIdentifier: name,
-                packageName,
-                eagerEntrypoint,
-            })};
+                    directoryPath,
+                    filePath: preloadFilePath,
+                    moduleIdentifier: name,
+                    packageName,
+                    eagerEntrypoint,
+                })};
             }`);
         }
     }
@@ -286,16 +288,17 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                     ${loadStatements.length ? loadStatements.join(';\n') : ''}
                     const featureModule = ${loadStatement({
-        moduleIdentifier: `[feature]${name}`,
-        filePath,
-        directoryPath,
-        packageName,
-        eagerEntrypoint,
-    })};
-                    ${target !== 'node'
-            ? `self.${createExternalFeatureMapping(packageName, filePath)} = featureModule;`
-            : ''
-        }
+                        moduleIdentifier: `[feature]${name}`,
+                        filePath,
+                        directoryPath,
+                        packageName,
+                        eagerEntrypoint,
+                    })};
+                    ${
+                        target !== 'node'
+                            ? `self.${createExternalFeatureMapping(packageName, filePath)} = featureModule;`
+                            : ''
+                    }
                     return featureModule.default;
                 },
                 async preload(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
@@ -352,10 +355,11 @@ function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
 }
 
 function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
-    return `import(/* webpackChunkName: "[config]${scopedName}${configEnvName ?? ''
-        }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-            topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
-        )})`;
+    return `import(/* webpackChunkName: "[config]${scopedName}${
+        configEnvName ?? ''
+    }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
+        topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
+    )})`;
 }
 //#endregion
 
@@ -366,7 +370,7 @@ ${staticBuild && config ? addOverrideConfig(config) : ''}
 
 ${publicConfigsRoute ? getRemoteConfigs(publicConfigsRoute, envName) : ''}
 
-${publicConfigsRoute ? `${addConfigsEventListenerForParentEnvironments(publicConfigsRoute)}` : ''}`
+${publicConfigsRoute ? `${addConfigsEventListenerForParentEnvironments(publicConfigsRoute)}` : ''}`;
 }
 
 function getRemoteConfigs(publicConfigsRoute: string, envName: string) {
@@ -376,7 +380,7 @@ function getRemoteConfigs(publicConfigsRoute: string, envName: string) {
         } else {
             ${fetchConfigs(publicConfigsRoute, envName)}
         }
-    })());`
+    })());`;
 }
 
 function fetchConfigs(publicConfigsRoute: string, envName: string) {
@@ -444,10 +448,11 @@ function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer',
     
     ${addExternalsEventListenerForParentEnvironments(externalsFilePath)}
     
-    const fetchedExternalFeatures = ${target === 'electron-renderer'
+    const fetchedExternalFeatures = ${
+        target === 'electron-renderer'
             ? fetchFeaturesFromElectronProcess(externalsFilePath)
             : fetchExternalFeaturesInBrowser(externalsFilePath)
-        };
+    };
     externalFeatures.push(...fetchedExternalFeatures)
     
     if(externalFeatures.length) {
