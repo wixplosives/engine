@@ -5,13 +5,27 @@ import { injectScript } from '../../helpers';
 import type { InitializerOptions } from './types';
 
 export interface IIframeInitializerOptions {
+    /** the iframe element to launch the environment on */
     iframeElement: HTMLIFrameElement;
+    /**
+     * custom source url
+     * if launching a managed iframe, the src should point to an html content
+     * if launching not managed iframe, the src should point to a js content
+     */
     src?: string;
+    /**
+     * if launching iframe in "managed" mode, it will parse the hash params on the other hand and listen to them
+     */
     hashParams?: string;
+    /**
+     * if true, allows control over ifrsme content via hash parameters also.
+     * @default false
+     */
     managed?: boolean;
+    envReady?: Promise<void>
 }
 
-export interface IframeInitializerOptions extends InitializerOptions, IIframeInitializerOptions {}
+export interface IframeInitializerOptions extends InitializerOptions, IIframeInitializerOptions { }
 
 export async function iframeInitializer({
     communication,
@@ -33,11 +47,11 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
     const envReadyPromise = com.envReady(instanceId);
     return {
         id: instanceId,
-        initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
+        initialize: ({ managed, iframeElement, hashParams, src, envReady = envReadyPromise }: IIframeInitializerOptions) => {
             const publicPath = com.getPublicPath();
             const baseStartIframeParams: StartIframeBaseOptions = {
                 com,
-                envReadyPromise,
+                envReadyPromise: envReady,
                 instanceId,
                 src:
                     src ??
@@ -47,13 +61,13 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
             };
             return managed
                 ? startManagedIframe({
-                      ...baseStartIframeParams,
-                      iframe: iframeElement,
-                  })
+                    ...baseStartIframeParams,
+                    iframe: iframeElement,
+                })
                 : startIframe({
-                      ...baseStartIframeParams,
-                      host: iframeElement,
-                  });
+                    ...baseStartIframeParams,
+                    host: iframeElement,
+                });
         },
     };
 }
