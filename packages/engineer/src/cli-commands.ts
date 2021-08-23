@@ -33,24 +33,27 @@ export class CliApplication {
 }
 
 const engineCommandBuilder = (program: Command, command: string): Command => {
-    return program.command(command)
+    return program
+        .command(command)
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
-        .option('-f, --feature <feature>', `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
+        .option(
+            '-f, --feature <feature>',
+            `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
         featureName and packageName are the same then featureName is sufficient
-    `)
-        .option('-c, --config <config>', `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
-    `)
+    `
+        )
+        .option(
+            '-c, --config <config>',
+            `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
+    `
+        )
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--inspect')
         .option('--singleFeature', 'build only the feature set by --feature', false)
         .option('--title <title>', 'application title to display in browser')
         .option('--favicon <faviconPath>', 'path to favicon to be displayed in browser environments')
-        .option(
-            '--featureDiscoveryRoot <featureDiscoveryRoot>',
-            'package subdirectory where feature discovery starts',
-            '.'
-        )
-}
+        .option('--featureDiscoveryRoot <featureDiscoveryRoot>', 'package subdirectory where feature discovery starts');
+};
 
 export const startCommand: CliCommand = (program) =>
     engineCommandBuilder(program, 'start [path]')
