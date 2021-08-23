@@ -19,8 +19,7 @@ export interface IStaticFeatureDefinition {
     exportedEnvs?: IEnvironment[];
 }
 
-
-export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IStaticFeatureDefinition { }
+export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IStaticFeatureDefinition {}
 
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
@@ -121,7 +120,6 @@ export interface IConfigDefinition {
     envName?: string;
     filePath: string;
 }
-
 
 export interface IExternalDefinition {
     /**

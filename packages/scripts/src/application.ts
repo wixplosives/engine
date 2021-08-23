@@ -384,8 +384,8 @@ export class Application {
 
         const resolvedExternalFeaturesPath = fs.resolve(
             providedExternalFeatuersPath ??
-            baseExternalFeaturesPath ??
-            (configPath ? fs.dirname(configPath) : this.basePath)
+                baseExternalFeaturesPath ??
+                (configPath ? fs.dirname(configPath) : this.basePath)
         );
 
         externalFeatures.push(
@@ -512,7 +512,7 @@ export class Application {
                         require.resolve(fs.join(packageName, 'package.json'), {
                             paths: [
                                 providedExternalFeatuersPath ??
-                                (baseExternalFeaturesPath ? configPath! : this.basePath),
+                                    (baseExternalFeaturesPath ? configPath! : this.basePath),
                             ],
                         })
                     ),
@@ -684,11 +684,7 @@ export class Application {
             // mapping all paths to the sources folder
             filePath = this.remapPathToSourcesFolder(sourcesRoot, filePath, directoryPath);
             for (const key of Object.keys(envFilePaths)) {
-                envFilePaths[key] = this.remapPathToSourcesFolder(
-                    sourcesRoot,
-                    envFilePaths[key]!,
-                    directoryPath
-                )
+                envFilePaths[key] = this.remapPathToSourcesFolder(sourcesRoot, envFilePaths[key]!, directoryPath);
             }
 
             for (const key of Object.keys(contextFilePaths)) {
@@ -696,7 +692,7 @@ export class Application {
                     sourcesRoot,
                     contextFilePaths[key]!,
                     directoryPath
-                )
+                );
             }
 
             for (const key of Object.keys(preloadFilePaths)) {
@@ -704,7 +700,7 @@ export class Application {
                     sourcesRoot,
                     preloadFilePaths[key]!,
                     directoryPath
-                )
+                );
             }
         }
         const outputDirInBasePath = this.outputPath.startsWith(this.basePath);
@@ -852,17 +848,15 @@ export class Application {
         }
         const nonFoundDependencies: string[] = [];
         const filteredFeatures = [
-            ...flattenTree(
-                foundFeature,
-                ({ dependencies }) =>
-                    dependencies.map((dependencyName) => {
-                        const feature = features.get(dependencyName);
-                        if (!feature) {
-                            nonFoundDependencies.push(dependencyName);
-                            return {} as IFeatureDefinition;
-                        }
-                        return feature;
-                    })
+            ...flattenTree(foundFeature, ({ dependencies }) =>
+                dependencies.map((dependencyName) => {
+                    const feature = features.get(dependencyName);
+                    if (!feature) {
+                        nonFoundDependencies.push(dependencyName);
+                        return {} as IFeatureDefinition;
+                    }
+                    return feature;
+                })
             ),
         ].map(({ scopedName }) => scopedName);
         if (nonFoundDependencies.length) {

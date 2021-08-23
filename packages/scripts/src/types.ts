@@ -1,6 +1,12 @@
 import type io from 'socket.io';
 import type { Environment, EnvironmentContext, TopLevelConfig, Feature } from '@wixc3/engine-core';
-import type { IEnvironment, IExternalDefinition, IStaticFeatureDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
+import type {
+    IEnvironment,
+    IExternalDefinition,
+    IStaticFeatureDefinition,
+    LaunchEnvironmentMode,
+    TopLevelConfigProvider,
+} from '@wixc3/engine-runtime-node';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -45,7 +51,6 @@ export interface IFeatureModule {
      */
     usedContexts?: Record<string, string>;
 }
-
 
 export interface VirtualEntry {
     source: string;

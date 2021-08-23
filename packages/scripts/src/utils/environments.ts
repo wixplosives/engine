@@ -1,6 +1,6 @@
-import { SetMultiMap } from "@wixc3/engine-core";
-import type { IEnvironment } from "@wixc3/engine-runtime-node";
-import type { IFeatureDefinition } from "../types";
+import { SetMultiMap } from '@wixc3/engine-core';
+import type { IEnvironment } from '@wixc3/engine-runtime-node';
+import type { IFeatureDefinition } from '../types';
 
 export interface GetResolveEnvironmentsParams {
     featureName?: string;
@@ -26,8 +26,8 @@ export function getResolvedEnvironments({
     const resolvedContexts = findAllEnviromnents
         ? getPossibleContexts(features)
         : featureName && filterContexts
-            ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
-            : getAllResolvedContexts(features);
+        ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
+        : getAllResolvedContexts(features);
     for (const env of environments) {
         const { name, childEnvName, type } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
