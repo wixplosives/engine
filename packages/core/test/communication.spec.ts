@@ -60,15 +60,23 @@ describe('Communication API', function () {
             const p = document.createElement('p');
             p.innerText = "hello world";
             document.body.appendChild(p);
-        `
+        `;
         const iframeElement = createIframe();
-        const src = URL.createObjectURL(new Blob([content], {
-            type: 'application/javascript'
-        }));
+        const src = URL.createObjectURL(
+            new Blob([content], {
+                type: 'application/javascript',
+            })
+        );
 
-        await iframeInitializer({ communication: com, env: iframeEnv, iframeElement, src, envReady: Promise.resolve() });
-        expect(iframeElement.contentWindow?.document.body.textContent).to.eq('hello world')
-    })
+        await iframeInitializer({
+            communication: com,
+            env: iframeEnv,
+            iframeElement,
+            src,
+            envReady: Promise.resolve(),
+        });
+        expect(iframeElement.contentWindow?.document.body.textContent).to.eq('hello world');
+    });
 
     it('should proxy exceptions thrown in remote service api', async () => {
         const com = disposables.add(new Communication(window, comId));
