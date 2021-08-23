@@ -67,7 +67,6 @@ describe('Communication API', function () {
 p.innerText = "hello world";
 document.body.appendChild(p);
 const id = '${id}';
-debugger;
 window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
         const src = URL.createObjectURL(
             new Blob([content], {
