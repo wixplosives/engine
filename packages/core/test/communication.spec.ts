@@ -63,13 +63,14 @@ describe('Communication API', function () {
             communication: com,
             env: iframeEnv,
         });
-        const content = `const p = document.createElement('p');
-p.innerText = "hello world";
+        const testContent = 'hello world';
+        const jsContent = `const p = document.createElement('p');
+p.innerText = '${testContent}';
 document.body.appendChild(p);
 const id = '${id}';
 window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
         const src = URL.createObjectURL(
-            new Blob([content], {
+            new Blob([jsContent], {
                 type: 'application/javascript',
             })
         );
@@ -77,7 +78,7 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
             iframeElement,
             src,
         });
-        expect(iframeElement.contentWindow?.document.body.textContent).to.eq('hello world');
+        expect(iframeElement.contentWindow?.document.body.textContent).to.eq(testContent);
     });
 
     it('should proxy exceptions thrown in remote service api', async () => {
