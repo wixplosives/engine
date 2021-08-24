@@ -54,6 +54,33 @@ describe('Communication API', function () {
         expect(res).to.eql({ echo: [1, 2, 3] });
     });
 
+    it('allows providing custom src', async () => {
+        const com = disposables.add(new Communication(window, comId));
+
+        const iframeElement = createIframe();
+
+        const { initialize, id } = deferredIframeInitializer({
+            communication: com,
+            env: iframeEnv,
+        });
+        const testContent = 'hello world';
+        const jsContent = `const p = document.createElement('p');
+p.innerText = '${testContent}';
+document.body.appendChild(p);
+const id = '${id}';
+window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
+        const src = URL.createObjectURL(
+            new Blob([jsContent], {
+                type: 'application/javascript',
+            })
+        );
+        await initialize({
+            iframeElement,
+            src,
+        });
+        expect(iframeElement.contentWindow?.document.body.textContent).to.eq(testContent);
+    });
+
     it('should proxy exceptions thrown in remote service api', async () => {
         const com = disposables.add(new Communication(window, comId));
 

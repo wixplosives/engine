@@ -5,9 +5,22 @@ import { injectScript } from '../../helpers';
 import type { InitializerOptions } from './types';
 
 export interface IIframeInitializerOptions {
+    /** the iframe element to launch the environment on */
     iframeElement: HTMLIFrameElement;
+    /**
+     * custom source url
+     * if launching a managed iframe, the src should point to an html content
+     * if launching not managed iframe, the src should point to a js content
+     */
     src?: string;
+    /**
+     * if launching iframe in "managed" mode, it will parse the hash params on the other hand and listen to them
+     */
     hashParams?: string;
+    /**
+     * if true, allows control over ifrsme content via hash parameters also.
+     * @default false
+     */
     managed?: boolean;
 }
 
