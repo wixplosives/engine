@@ -15,7 +15,7 @@ import type {
     SetupHandler,
 } from '../types';
 import { Environment, testEnvironmentCollision, getEnvName, isGloballyProvided } from './env';
-import { SetMultiMap } from '../helpers';
+import { deferred, IDeferredPromise, SetMultiMap } from '../helpers';
 
 /*************** FEATURE ***************/
 
@@ -27,6 +27,7 @@ export class RuntimeFeature<
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
+    private disposing: IDeferredPromise<void> | undefined;
 
     constructor(
         public feature: T,
@@ -57,6 +58,10 @@ export class RuntimeFeature<
     }
 
     public async [DISPOSE](context: RuntimeEngine, envName: string) {
+        if (this.disposing) {
+            return this.disposing.promise;
+        }
+        this.disposing = deferred();
         for (const dep of this.feature.dependencies) {
             await context.dispose(dep, envName);
         }
@@ -64,6 +69,7 @@ export class RuntimeFeature<
         for (const handler of featureDisposeHandlers) {
             await handler();
         }
+        return this.disposing.resolve();
     }
 }
 
