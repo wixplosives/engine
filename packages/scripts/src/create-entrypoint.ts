@@ -127,6 +127,7 @@ async function main() {
     const currentWindow = typeof self !== 'undefined' ? self : window;
     const topWindow = getTopWindow(currentWindow);
     const options = new URLSearchParams(topWindow.location.search);
+    const isMainEntrypoint = topWindow && currentWindow === topWindow;
 
     const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
         typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
@@ -136,11 +137,9 @@ async function main() {
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
-    
-    ${staticBuild ? importStaticConfigs() : ''}
-    ${staticBuild && config ? addOverrideConfig(config) : ''}
-    
-    ${publicConfigsRoute ? fetchConfigs(publicConfigsRoute, envName) : ''}
+
+    ${populateConfig(envName, staticBuild, publicConfigsRoute, config)}
+
     const rootFeatureLoader = featureLoaders.get(featureName);
     if(!rootFeatureLoader) {
         throw new Error("cannot find feature '" + featureName + "'. available features:\\n" + Array.from(featureLoaders.keys()).join('\\n'));
@@ -365,10 +364,29 @@ function loadConfigFile(filePath: string, scopedName: string, configEnvName: str
 //#endregion
 
 //#region configs
+function populateConfig(envName: string, staticBuild?: boolean, publicConfigsRoute?: string, config?: TopLevelConfig) {
+    return `${staticBuild ? importStaticConfigs() : ''}
+${staticBuild && config ? addOverrideConfig(config) : ''}
+
+${publicConfigsRoute ? getRemoteConfigs(publicConfigsRoute, envName) : ''}
+
+${publicConfigsRoute ? `${addConfigsEventListenerForParentEnvironments(publicConfigsRoute)}` : ''}`;
+}
+
+function getRemoteConfigs(publicConfigsRoute: string, envName: string) {
+    return `config.push(...await (async () =>{
+        if(!isMainEntrypoint) {
+            ${getConfigsFromParent(publicConfigsRoute, envName)}   
+        } else {
+            ${fetchConfigs(publicConfigsRoute, envName)}
+        }
+    })());`;
+}
+
 function fetchConfigs(publicConfigsRoute: string, envName: string) {
-    return `config.push(...await (await fetch('${normalizeRoute(
+    return `return (await fetch('${normalizeRoute(
         publicConfigsRoute
-    )!}' + configName + '?env=${envName}&feature=' + featureName)).json());`;
+    )!}' + configName + '?env=${envName}&feature=' + featureName)).json();`;
 }
 
 function addOverrideConfig(config: TopLevelConfig) {
@@ -386,13 +404,47 @@ function importStaticConfigs() {
     }`;
 }
 
+function addConfigsEventListenerForParentEnvironments(publicConfigsRoute: string) {
+    return `if(isMainEntrypoint) {
+        const fetchedConfigs = {};
+        const configsEventListener = async ({ data: { id, envName }, source }) => {
+            if(source && id === '${publicConfigsRoute}') {
+                if(!fetchedConfigs[envName]) {
+                    const config = await (await fetch('configs/' + configName + '?env=' + envName + '&feature=' + featureName)).json();
+                    fetchedConfigs[envName] = config;
+                }
+                source.postMessage({
+                    id,
+                    config: fetchedConfigs[envName]
+                });
+            }
+        }
+        currentWindow.addEventListener('message', configsEventListener);
+    }`;
+}
+
+function getConfigsFromParent(publicConfigsRoute: string, envName: string) {
+    return `return new Promise((res) => {
+        const configsHandler = ({ data: { id, config } }) => {
+            if(id === '${publicConfigsRoute}') {
+                currentWindow.removeEventListener('message', configsHandler);
+                res(config);
+            }
+        };
+        currentWindow.addEventListener('message', configsHandler)
+        topWindow.postMessage({
+            id: '${publicConfigsRoute}',
+            envName: '${envName}'
+        });
+    });`;
+}
+
 //#endregion
 
 //#region loading 3rd party features
 function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer', externalsFilePath: string) {
     return `self.runtimeFeatureLoader = featureLoader;
     const externalFeatures = [];
-    const isMainEntrypoint = topWindow && currentWindow === topWindow;
     
     ${addExternalsEventListenerForParentEnvironments(externalsFilePath)}
     
