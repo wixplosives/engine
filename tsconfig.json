@@ -44,6 +44,7 @@
     { "path": "./test-fixtures/static-application-external" },
     { "path": "./test-fixtures/static-base-web-application" },
     { "path": "./test-fixtures/using-config" },
+    { "path": "./test-fixtures/with-iframe" },
     { "path": "./test-fixtures/workspace" }
   ]
 }

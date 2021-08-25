@@ -410,7 +410,9 @@ function addConfigsEventListenerForParentEnvironments(publicConfigsRoute: string
         const configsEventListener = async ({ data: { id, envName }, source }) => {
             if(source && id === '${publicConfigsRoute}') {
                 if(!fetchedConfigs[envName]) {
-                    const config = await (await fetch('configs/' + configName + '?env=' + envName + '&feature=' + featureName)).json();
+                    const config = await (await fetch('${normalizeRoute(
+                        publicConfigsRoute
+                    )}/' + configName + '?env=' + envName + '&feature=' + featureName)).json();
                     fetchedConfigs[envName] = config;
                 }
                 source.postMessage({

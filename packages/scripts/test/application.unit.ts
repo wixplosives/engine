@@ -45,6 +45,7 @@ describe('Application', function () {
     const staticApplicationExternalFixturePath = fs.dirname(
         require.resolve('@fixture/static-application-external-feature/package.json')
     );
+    const withIframeFixturePath = fs.dirname(require.resolve('@fixture/with-iframe/package.json'));
     const nodeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-node/package.json'));
     const contextualFeatureFixturePath = fs.dirname(require.resolve('@fixture/contextual-feature/package.json'));
 
@@ -297,6 +298,32 @@ describe('Application', function () {
             await waitFor(async () => {
                 const text = await getBodyContent(page);
                 expect(text).to.equal('Hello');
+            });
+        });
+
+        it(`launches a built application with iframe environment`, async () => {
+            const app = new Application({ basePath: withIframeFixturePath });
+            await app.build({
+                featureName: 'with-iframe/x',
+                publicConfigsRoute: 'some-config-path',
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                publicConfigsRoute: 'some-config-path',
+            });
+            disposables.add(close);
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            await waitFor(async () => {
+                const text = await page.evaluate(() => {
+                    return (
+                        (document.getElementById('iframe') as HTMLIFrameElement).contentWindow?.document.body
+                            .innerText || ''
+                    ).trim();
+                });
+                expect(text).to.equal('echo');
             });
         });
 
