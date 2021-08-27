@@ -15,7 +15,8 @@ export class ManagedIframe {
     public createHashParams = (hashParams: Json) => `#${this.encode(hashParams)}`;
 
     public onHashChange(onHashChange: (ev: HashChangeEvent) => unknown) {
-        this.getContentWindow().addEventListener('hashchange', onHashChange);
+        // cast is due to ts@4.4 dom.d.ts bug
+        this.getContentWindow().addEventListener('hashchange', onHashChange as (e: Event) => unknown);
     }
 
     private getContentWindow() {
@@ -26,7 +27,8 @@ export class ManagedIframe {
     }
 
     public offHashChange(onHashChange: (ev: HashChangeEvent) => unknown) {
-        this.getContentWindow().removeEventListener('hashchange', onHashChange);
+        // cast is due to ts@4.4 dom.d.ts bug
+        this.getContentWindow().removeEventListener('hashchange', onHashChange as (e: Event) => unknown);
     }
 
     public updateHashParams(hashParams: Json) {

@@ -304,6 +304,6 @@ const extractExternals =
             }
             cb();
         } catch (err) {
-            cb(err);
+            cb(err as Error | undefined);
         }
     };
