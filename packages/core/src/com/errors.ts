@@ -21,6 +21,6 @@ export const SPAWNED_MORE_THEN_ONCE = (id: string) => `Environment with id ${id}
 export const MISSING_CONTEXT_FOR_API_PROXY = (type: string, remoteServiceId: string) =>
     `Missing ${type} when trying to get remote service api proxy for ${remoteServiceId}`;
 
-export function reportError(e: Error) {
+export function reportError(e: unknown) {
     console.error(e);
 }
