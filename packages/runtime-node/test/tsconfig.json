@@ -11,10 +11,10 @@
       "path": "../../test-kit/src"
     },
     {
-      "path": "../../../test-fixtures/multi-node-env"
+      "path": "../../../test-fixtures/multi-node"
     },
     {
-      "path": "../../../test-fixtures/multi-socket-node-env"
+      "path": "../../../test-fixtures/multi-socket-node"
     }
   ]
 }
