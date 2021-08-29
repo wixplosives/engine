@@ -9,17 +9,17 @@ const noDepsFeature = new Feature({
 });
 const simpleDepFeature = new Feature({
     id: 'simpleDepFeature',
-    dependencies: [noDepsFeature.asEntity],
+    dependencies: [noDepsFeature],
     api: {},
 });
 const shareDepWithDepFeature = new Feature({
     id: 'shareDepWithDepFeature',
-    dependencies: [noDepsFeature.asEntity, simpleDepFeature.asEntity],
+    dependencies: [noDepsFeature, simpleDepFeature],
     api: {},
 });
 const multiLevelFeature = new Feature({
     id: 'multLevel',
-    dependencies: [simpleDepFeature.asEntity, shareDepWithDepFeature.asEntity],
+    dependencies: [simpleDepFeature, shareDepWithDepFeature],
     api: {},
 });
 
