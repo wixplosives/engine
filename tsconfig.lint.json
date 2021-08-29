@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.test.json",
+  "compilerOptions": {
+    "paths": {
+      "@wixc3/engine-*": ["./packages/*/src"],
+      "@wixc3/*": ["./packages/*/src"],
+      "@wixc3/engine-dashboard/dist/*": ["./packages/dashboard/src/*"],
+      "@wixc3/engine-test-kit/dist/*": ["./packages/test-kit/src/*"],
+      "@wixc3/engineer/dist/*": ["./packages/engineer/src/*"],
+      "@fixture/*-feature": ["./test-fixtures/*/src"],
+      "@fixture/static-base-web-application-feature/dist/*": ["./test-fixtures/static-base-web-application/*"],
+      "@fixture/3rd-party/dist/*": ["./test-fixtures/3rd-party/*"],
+      "@fixture/engine-multi-node/dist/*": ["./test-fixtures/multi-node/*"],
+      "@fixture/engine-multi-socket-node/dist/*": ["./test-fixtures/multi-socket-node/*"]
+    }
+  }
+}
