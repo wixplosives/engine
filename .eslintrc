@@ -22,7 +22,7 @@
     {
       "files": ["*.ts", "*.tsx"],
       "parserOptions": {
-        "project": "./tsconfig.test.json"
+        "project": "./tsconfig.lint.json"
       },
       "extends": [
         "plugin:@typescript-eslint/recommended",

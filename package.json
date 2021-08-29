@@ -13,7 +13,7 @@
     "lint": "eslint . -f codeframe",
     "prestart": "yarn build",
     "start": "engineer start --featureDiscoveryRoot dist",
-    "pretest": "yarn build && yarn lint",
+    "pretest": "yarn lint && yarn build",
     "test": "yarn test:unit",
     "test:unit": "lerna run test --stream --concurrency=1",
     "prettify": "npx prettier . --write"
