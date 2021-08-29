@@ -6,7 +6,7 @@
     "test-fixtures/*"
   ],
   "scripts": {
-    "clean": "rimraf ./packages/*/dist ./examples/*/dist",
+    "clean": "rimraf \"./packages/*/dist\" \"./examples/*/dist\" \"./test-fixtures/*/dist\"",
     "build": "yarn build:typescript && yarn build:stylable",
     "build:typescript": "tsc --build",
     "build:stylable": "lerna run build:stylable",
