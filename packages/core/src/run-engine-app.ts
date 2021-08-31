@@ -1,18 +1,23 @@
 import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
-import type { Feature } from './entities';
+import type { Environment, Feature } from './entities';
 import { deferred, flattenTree, IDeferredPromise } from './helpers';
 
-export interface IRunEngineOptions {
+export interface IRunEngineOptions<ENV extends Environment> {
     entryFeature: Feature | Feature[];
     topLevelConfig?: TopLevelConfig;
-    envName?: string;
+    envName?: ENV['env'];
     runOptions?: IRunOptions;
 }
 
-export function run({ entryFeature, topLevelConfig = [], envName = '', runOptions }: IRunEngineOptions) {
-    return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature, envName);
+export function run<ENV extends Environment<any, any, any, any>>({
+    entryFeature,
+    topLevelConfig = [],
+    envName = '',
+    runOptions,
+}: IRunEngineOptions<ENV>) {
+    return new RuntimeEngine<ENV>(topLevelConfig, runOptions).run(entryFeature, envName);
 }
 
 export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
@@ -39,7 +44,7 @@ export interface IRunEngineAppOptions {
     resolvedContexts: Record<string, string>;
 }
 
-export function runEngineApp({
+export function runEngineApp<ENV extends Environment = Environment<any, any, any>>({
     config = [],
     options,
     envName,
@@ -47,7 +52,7 @@ export function runEngineApp({
     features = [],
     resolvedContexts = {},
 }: IRunEngineAppOptions) {
-    const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
+    const engine = new RuntimeEngine<ENV>([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
     const runningPromise = engine.run(features, envName);
 
     return {

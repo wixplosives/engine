@@ -1,6 +1,6 @@
 import type { TupleToUnion } from 'typescript-type-utils';
 import type { LogMessage } from './common-types';
-import type { Universal } from './entities/env';
+import type { Environment, Universal } from './entities/env';
 import type { Feature } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
@@ -66,6 +66,10 @@ export type NormalizeEnvironmentFilter<T extends EnvironmentFilter> = T extends 
     ? U1
     : T extends string
     ? T
+    : never;
+
+export type NormalizeEnvironmentDeps<T extends EnvironmentFilter> = T extends Environment<any, any, any, any>
+    ? T['__depNames']
     : never;
 
 export type EnvVisibility = string | { env: string; envType?: string } | Array<{ env: string; envType?: string }>;
@@ -139,7 +143,7 @@ export interface FeatureDef<
 }
 
 export type UnknownFeatureDef = FeatureDef<string, Feature[], EntityRecord, Record<string, Context<any>>>;
-export type Running<T extends UnknownFeatureDef, ENV extends string> = MapAllTypesForEnv<T['api'], ENV>;
+export type Running<T extends { api: EntityRecord }, ENV extends string> = MapAllTypesForEnv<T['api'], ENV>;
 
 export type RunningFeatures<
     T extends Feature[],
@@ -215,10 +219,11 @@ export type SetupHandler<
     Deps extends Feature[],
     API extends EntityRecord,
     EnvironmentContext extends Record<string, Context<any>>,
-    Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>
+    Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>,
+    DEP_NAMES extends NormalizeEnvironmentDeps<EnvFilter> = NormalizeEnvironmentDeps<EnvFilter>
 > = (
-    feature: SettingUpFeature<ID, API, Filter>,
-    runningFeatures: RunningFeatures<Deps, Filter>,
+    feature: SettingUpFeature<ID, API, Filter> & Running<{ api: API }, DEP_NAMES>,
+    runningFeatures: RunningFeatures<Deps, DEP_NAMES | Filter>,
     context: MapRecordType<EnvironmentContext>
 ) => RegisteringFeature<API, Filter>;
 

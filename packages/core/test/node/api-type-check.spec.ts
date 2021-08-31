@@ -140,7 +140,6 @@ export async function dontRun() {
     addPanel.setup(MAIN, (feature, engine) => {
         feature.componentDescription.register({ component: '', description: '' });
         feature.componentDescription.register({ component: '', description: '' });
-
         engine.logger.transport.register({ transportName: `test${engine.logger.config.time}` });
 
         engine.gui.panelSlot.register({ panelID: 'panel1' });

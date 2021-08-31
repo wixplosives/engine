@@ -4,12 +4,30 @@ import type { DisposableContext, EnvVisibility, MapBy, EnvironmentFilter } from 
 
 export type EnvironmentMode = 'single' | 'multi';
 
+export type EnvNames<T extends Environment[]> = T extends Array<infer U>
+    ? U extends Environment<any, any, any>
+        ? U['__depNames'] | U['env']
+        : never
+    : never;
 export class Environment<
     NAME extends string = string,
     TYPE extends EnvironmentTypes = EnvironmentTypes,
-    MODE extends EnvironmentMode = EnvironmentMode
+    MODE extends EnvironmentMode = EnvironmentMode,
+    DEPS extends Array<Environment<string, TYPE, MODE, any>> = []
 > {
-    constructor(public env: NAME, public envType: TYPE, public endpointType: MODE) {}
+    // dependencyNames: Set<EnvNames<DEPS>> = this.dependencies.reduce((acc, dep) => {
+    //     for (const item of dep.dependencyNames) {
+    //         acc.add(item);
+    //     }
+    //     return acc;
+    // }, new Set<EnvNames<DEPS>>());
+    __depNames: EnvNames<DEPS> = this.env as EnvNames<DEPS>;
+    constructor(
+        public env: NAME,
+        public envType: TYPE,
+        public endpointType: MODE,
+        public dependencies: DEPS = [] as unknown as DEPS
+    ) {}
 }
 
 export class EnvironmentContext {

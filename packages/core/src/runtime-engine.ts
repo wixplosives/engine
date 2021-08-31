@@ -1,9 +1,10 @@
+import type { EnvironmentTypes } from './com/types';
 import COM from './communication.feature';
-import type { RuntimeFeature, Feature } from './entities';
+import type { RuntimeFeature, Feature, Environment, Universal, EnvironmentMode } from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
 
-export class RuntimeEngine {
+export class RuntimeEngine<ENV extends Environment = typeof Universal> {
     public features = new Map<Feature, RuntimeFeature>();
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
@@ -11,10 +12,10 @@ export class RuntimeEngine {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
     }
 
-    public get<T extends Feature>(feature: T) {
+    public get<T extends Feature>(feature: T): RuntimeFeature<T, ENV> {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
-            return runningFeature as RuntimeFeature<T, T['dependencies'], T['api']>;
+            return runningFeature as RuntimeFeature<T, ENV>;
         } else {
             throw new Error('missing feature');
         }
@@ -42,7 +43,10 @@ export class RuntimeEngine {
     public initFeature<T extends Feature>(feature: T, envName: string) {
         let instance = this.features.get(feature);
         if (!instance) {
-            instance = feature[CREATE_RUNTIME](this, envName);
+            instance = feature[CREATE_RUNTIME](this, envName) as RuntimeFeature<
+                Feature<string, any[], any, any>,
+                Environment<string, EnvironmentTypes, EnvironmentMode, []>
+            >;
         }
         return instance;
     }
