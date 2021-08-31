@@ -2,6 +2,7 @@ import { promisify } from 'util';
 import express from 'express';
 import rimrafCb from 'rimraf';
 import webpack from 'webpack';
+import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import fs from '@file-services/node';
 import type io from 'socket.io';
 import { TopLevelConfig, SetMultiMap, flattenTree, createDisposables } from '@wixc3/engine-core';
@@ -19,7 +20,6 @@ import {
     createWebpackConfigs,
 } from './create-webpack-configs';
 import type { EngineConfig, IFeatureDefinition, IFeatureTarget } from './types';
-import { resolvePackages } from './utils/resolve-packages';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import {
     launchEngineHttpServer,
@@ -801,7 +801,7 @@ export class Application {
         const { basePath } = this;
 
         console.time(`Analyzing Features`);
-        const packages = resolvePackages(basePath);
+        const packages = childPackagesFromContext(resolveDirectoryContext(basePath));
         const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features');
         return { ...featuresAndConfigs, packages };
