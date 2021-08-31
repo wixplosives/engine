@@ -1,5 +1,6 @@
 import { basename } from 'path';
 import type { PackageJson } from 'type-fest';
+import type { INpmPackage } from '@wixc3/resolve-directory-context';
 import type { IFileSystemSync } from '@file-services/types';
 import {
     Environment,
@@ -21,7 +22,6 @@ import {
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { INpmPackage } from './utils/resolve-packages';
 import type { IConfigDefinition, IEnvironment } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition, IFeatureModule } from './types';
 

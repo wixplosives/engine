@@ -6,7 +6,6 @@ import {
     generateConfigName,
     ICompilerOptions,
     OverrideConfig,
-    INpmPackage,
     IFeatureDefinition,
 } from '@wixc3/engine-scripts';
 import type { SetMultiMap } from '@wixc3/engine-core';
@@ -35,15 +34,7 @@ export class TargetApplication extends Application {
         return super.getClosestEngineConfigPath();
     }
 
-    public getFeatures(
-        singleFeature?: boolean,
-        featureName?: string,
-        featureDiscoveryRoot?: string
-    ): {
-        packages: INpmPackage[];
-        features: Map<string, IFeatureDefinition>;
-        configurations: SetMultiMap<string, IConfigDefinition>;
-    } {
+    public getFeatures(singleFeature?: boolean, featureName?: string, featureDiscoveryRoot?: string) {
         const { features, configurations, packages } = super.analyzeFeatures(featureDiscoveryRoot);
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
