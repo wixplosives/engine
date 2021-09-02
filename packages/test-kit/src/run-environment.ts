@@ -47,7 +47,7 @@ export interface IGetRuinnnigFeatureOptions<
     feature: Feature<NAME, DEPS, API, CONTEXT>;
 }
 
-export async function runEngineEnvironment({
+export async function runEngineEnvironment<ENV extends Environment>({
     featureName,
     configName,
     runtimeOptions = {},
@@ -56,8 +56,8 @@ export async function runEngineEnvironment({
     basePath = process.cwd(),
     externalFeatures = [],
     featureDiscoveryRoot,
-}: IRunNodeEnvironmentOptions): Promise<{
-    engine: RuntimeEngine;
+}: IRunNodeEnvironmentOptions<ENV>): Promise<{
+    engine: RuntimeEngine<ENV>;
     dispose: () => Promise<void>;
 }> {
     const engineConfigFilePath = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
@@ -70,7 +70,7 @@ export async function runEngineEnvironment({
     if (configName) {
         config = [...evaluateConfig(configName, configurations, envName), ...config];
     }
-    const featureDef = features.get(featureName);
+    const featureDef = features.get(featureName)!;
 
     const childEnvName = featureDef?.resolvedContexts[envName];
     if (childEnvName) {
@@ -86,7 +86,7 @@ export async function runEngineEnvironment({
             );
         }
     }
-    return runNodeEnvironment({
+    return runNodeEnvironment<ENV>({
         featureName,
         features: [...features.entries()],
         name: envName,
@@ -134,7 +134,7 @@ export async function getRunningFeature<
     engine: RuntimeEngine;
 }> {
     const { feature } = options;
-    const { engine, dispose } = await runEngineEnvironment(options);
+    const { engine, dispose } = await runEngineEnvironment<ENV>(options);
     const { api } = engine.get(feature);
     return {
         runningApi: api,

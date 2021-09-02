@@ -6,12 +6,13 @@ import {
     RuntimeEngine,
     FeatureLoadersRegistry,
     IPreloadModule,
+    Environment,
 } from '@wixc3/engine-core';
 import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
 
 import type { IEnvironment, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
 
-export async function runNodeEnvironment({
+export async function runNodeEnvironment<ENV extends Environment>({
     featureName,
     childEnvName,
     features,
@@ -24,7 +25,7 @@ export async function runNodeEnvironment({
     context,
 }: StartEnvironmentOptions): Promise<{
     dispose: () => Promise<void>;
-    engine: RuntimeEngine;
+    engine: RuntimeEngine<ENV>;
 }> {
     if (host) {
         config.push(
