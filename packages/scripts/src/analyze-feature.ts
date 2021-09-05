@@ -31,7 +31,7 @@ interface IPackageDescriptor {
     name: string;
 }
 
-const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
+const featureRoots = ['.', 'src', 'src/feature', 'src/fixtures', 'feature', 'fixtures'] as const;
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
     const ownFeatureFilePaths = new Set<string>();
