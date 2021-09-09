@@ -27,3 +27,12 @@
 .actionButton:hover {
     background: #dbdbdb;
 }
+
+
+.runningFeature {
+    -st-states: selected;
+    background: white;
+}
+.runningFeature:selected{
+    color:blue;
+}

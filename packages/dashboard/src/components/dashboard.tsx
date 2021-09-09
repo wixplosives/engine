@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { FeaturesSelection } from './feature-selection';
 import { ServerState, isServerResponseMessage } from '../server-types';
 import type { GraphData } from '../graph-types';
-import { classes } from './dashboard.st.css';
+import { style, classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';
 import { FeatureGraph } from './feature-graph';
@@ -129,6 +129,27 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
     serverState.featuresWithRunningNodeEnvs;
     return (
         <div className={classes.root}>
+            {serverState.featuresWithRunningNodeEnvs.length ? (
+                <div>
+                    <div>Running Features:</div>
+                    {serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (
+                        <button
+                            className={style(classes.runningFeature, {
+                                selected: f === params.user_feature && c === params.user_config,
+                            })}
+                            key={f + '_' + c}
+                            onClick={() => {
+                                setParams({
+                                    user_config: c,
+                                    user_feature: f,
+                                });
+                            }}
+                        >
+                            Feature: {f} config: {c}{' '}
+                        </button>
+                    ))}
+                </div>
+            ) : null}
             <FeaturesSelection
                 features={serverState.features}
                 onSelected={selectedFeatureConfig}
