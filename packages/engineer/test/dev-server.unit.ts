@@ -29,6 +29,8 @@ const applicationExternalFixturePath = fs.dirname(
     require.resolve('@fixture/application-external-feature/package.json')
 );
 
+const environmentExtensionFeaturePath = fs.dirname(require.resolve('@fixture/engine-env-dependency/package.json'));
+
 const engineConfigFixturePath = fs.dirname(require.resolve('@fixture/engine-config-feature/package.json'));
 
 function getBodyContent(page: Page | Frame) {
@@ -38,7 +40,9 @@ function getBodyContent(page: Page | Frame) {
 describe('engineer:dev-server', function () {
     this.timeout(15_000);
     const disposables = createDisposables();
-    const browserProvider = createBrowserProvider();
+    const browserProvider = createBrowserProvider({
+        devtools: true,
+    });
 
     const setup = async ({
         featureName,
@@ -585,6 +589,21 @@ describe('engineer:dev-server', function () {
 
         expect(pid1).to.eq(pid2);
         expect(pid1).to.eq(process.pid);
+    });
+
+    it.only('supports simple environment extension', async () => {
+        const {
+            config: { port },
+            dispose,
+        } = await setup({
+            basePath: environmentExtensionFeaturePath,
+            featureName: 'engine-env-dependency/app',
+        });
+        disposables.add(() => dispose);
+
+        const page = await loadPage(`http://localhost:${port}/page1.html`);
+        const text = await getBodyContent(page);
+        expect(text).to.eq('page1');
     });
 });
 

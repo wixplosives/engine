@@ -3,18 +3,14 @@ import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import semverLessThan from 'semver/functions/lt';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import {
-    createMainEntrypoint,
-    createExternalBrowserEntrypoint,
-    webpackImportStatement,
-    createExternalFeatureMapping,
-} from './create-entrypoint';
+import { createMainEntrypoint, createExternalBrowserEntrypoint } from './create-entrypoint';
 
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 import { createVirtualEntries } from './virtual-modules-loader';
 import type { IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { getResolvedEnvironments } from './utils/environments';
 import type { IFeatureDefinition } from './types';
+import { createExternalFeatureMapping, webImportStatement } from './entrypoint-helpers';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -228,7 +224,7 @@ export function createWebpackConfigForExternalFeature({
             ...feature,
             childEnvs,
             envName,
-            loadStatement: webpackImportStatement,
+            loadStatement: webImportStatement,
             target: target === 'webworker' ? 'webworker' : 'web',
             eagerEntrypoint: true,
         });
