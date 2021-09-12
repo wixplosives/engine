@@ -1,14 +1,35 @@
 .root {
     font-family: Helvetica, sans-serif;
+    display: flex;
+    height: 100%;
+}
+
+
+.root>* {
+    margin-bottom: 20px;
+}
+
+.content {
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    flex:1;
 }
 
-.root > * {
-    margin-bottom: 20px;
+.leftBar {
+    width: 250px;
+    border: 1px solid gray;
+    padding: 5px;
+    height: 100%;
+
+}
+
+.title {
+    padding: 5px;
+    border-bottom: 1px solid gray;
+    margin-bottom: 5px
 }
 
 .actionButton {
@@ -32,7 +53,10 @@
 .runningFeature {
     -st-states: selected;
     background: white;
+    text-align: left;
+    width: 100%;
 }
-.runningFeature:selected{
-    color:blue;
+
+.runningFeature:selected {
+    color: blue;
 }

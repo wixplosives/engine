@@ -2,17 +2,17 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { FeaturesSelection } from './feature-selection';
 import { ServerState, isServerResponseMessage } from '../server-types';
 import type { GraphData } from '../graph-types';
-import { style, classes } from './dashboard.st.css';
+import { style, classes } from './dashboard.st.css'; 
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';
 import { FeatureGraph } from './feature-graph';
 import { useUrlParams } from './dashboard-hooks';
-
+ 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
         result: 'success' | 'error';
         data: ServerState;
-    }>;
+    }>; 
     changeNodeEnvironmentState: (
         featureName: string,
         configName: string,
@@ -129,69 +129,74 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
     serverState.featuresWithRunningNodeEnvs;
     return (
         <div className={classes.root}>
-            {serverState.featuresWithRunningNodeEnvs.length ? (
-                <div>
-                    <div>Running Features:</div>
-                    {serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (
-                        <button
-                            className={style(classes.runningFeature, {
-                                selected: f === params.user_feature && c === params.user_config,
-                            })}
-                            key={f + '_' + c}
-                            onClick={() => {
-                                setParams({
-                                    user_config: c,
-                                    user_feature: f,
-                                });
-                            }}
-                        >
-                            Feature: {f} config: {c}{' '}
-                        </button>
-                    ))}
-                </div>
-            ) : null}
-            <FeaturesSelection
-                features={serverState.features}
-                onSelected={selectedFeatureConfig}
-                selectedConfig={params.user_config}
-                selectedFeature={params.user_feature}
-            />
-            {hasNodeEnvironments ? (
-                <RuntimeOptionsContainer
-                    onOptionAdded={addRuntimeOption}
-                    runtimeOptions={runtimeArguments}
-                    setRuntimeArguments={setRuntimeArguments}
+            <div className={classes.leftBar}>
+                {serverState.featuresWithRunningNodeEnvs.length ? (
+                    <div>
+                        <div  className={classes.title}>Running Features:</div>
+                        {serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (
+                            <button
+                                className={style(classes.runningFeature, {
+                                    selected: f === params.user_feature && c === params.user_config,
+                                })}
+                                key={f + '_' + c}
+                                onClick={() => {
+                                    setParams({
+                                        user_config: c,
+                                        user_feature: f,
+                                    });
+                                }}
+                            >
+                                <div>Feature: {f}</div>
+                                <div> config: {c}</div>
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+            </div>
+            <div className={classes.content}>
+                <FeaturesSelection
+                    features={serverState.features}
+                    onSelected={selectedFeatureConfig}
+                    selectedConfig={params.user_config}
+                    selectedFeature={params.user_feature}
+                />
+                {hasNodeEnvironments ? (
+                    <RuntimeOptionsContainer
+                        onOptionAdded={addRuntimeOption}
+                        runtimeOptions={runtimeArguments}
+                        setRuntimeArguments={setRuntimeArguments}
+                        actionBtnClassName={classes.actionButton}
+                    />
+                ) : null}
+                <ActionsContainer
+                    configName={params.user_config}
+                    featureName={params.user_feature}
+                    isServerActive={isNodeEnvRunning}
+                    onToggleChange={onServerEnvironmentStatusChange}
+                    displayServerToggle={hasNodeEnvironments}
                     actionBtnClassName={classes.actionButton}
                 />
-            ) : null}
-            <ActionsContainer
-                configName={params.user_config}
-                featureName={params.user_feature}
-                isServerActive={isNodeEnvRunning}
-                onToggleChange={onServerEnvironmentStatusChange}
-                displayServerToggle={hasNodeEnvironments}
-                actionBtnClassName={classes.actionButton}
-            />
-            <div>
-                <input
-                    id="feature-graph"
-                    type="checkbox"
-                    checked={showGraph}
-                    onChange={(e) => setShowGraph(e.currentTarget.checked)}
-                />
-                <label htmlFor="feature-graph">Feature Dependency Graph</label>
-            </div>
-            {showGraph ? (
-                params.user_feature ? (
-                    selectedFeatureGraph ? (
-                        <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
+                <div>
+                    <input
+                        id="feature-graph"
+                        type="checkbox"
+                        checked={showGraph}
+                        onChange={(e) => setShowGraph(e.currentTarget.checked)}
+                    />
+                    <label htmlFor="feature-graph">Feature Dependency Graph</label>
+                </div>
+                {showGraph ? (
+                    params.user_feature ? (
+                        selectedFeatureGraph ? (
+                            <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
+                        ) : (
+                            <div>Loading graph data...</div>
+                        )
                     ) : (
-                        <div>Loading graph data...</div>
+                        <div>Select a feature to view its dependency graph</div>
                     )
-                ) : (
-                    <div>Select a feature to view its dependency graph</div>
-                )
-            ) : null}
+                ) : null}
+            </div>
         </div>
     );
 });
