@@ -23,7 +23,7 @@
     "@wixc3/engine-dashboard": "^21.2.0",
     "@wixc3/engine-runtime-node": "^21.2.0",
     "@wixc3/engine-scripts": "^21.2.0",
-    "commander": "^8.1.0",
+    "commander": "^8.2.0",
     "open": "^8.2.1",
     "socket.io": "^4.2.0",
     "webpack-dev-middleware": "^5.1.0",
