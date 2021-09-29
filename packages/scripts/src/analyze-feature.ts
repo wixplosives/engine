@@ -33,6 +33,29 @@ interface IPackageDescriptor {
 
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
+export function parseEnv(environment: InstanceType<typeof Environment>): IEnvironment {
+    const { env, envType, dependencies } = environment;
+    return {
+        name: env,
+        type: envType,
+        dependencies: dependencies.map(parseEnv),
+        env: environment as Environment,
+    };
+}
+
+export const parseContextualEnv = ({
+    env,
+    environments,
+    dependencies,
+}: InstanceType<typeof SingleEndpointContextualEnvironment>): IEnvironment[] =>
+    environments.map((childEnv) => ({
+        name: env,
+        dependencies: dependencies.map(parseEnv),
+        type: childEnv.envType,
+        childEnvName: childEnv.env,
+        env: childEnv,
+    }));
+
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
@@ -266,21 +289,6 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
     }
     return featureFile;
 }
-
-const parseEnv = ({ env, envType }: InstanceType<typeof Environment>): IEnvironment => ({
-    name: env,
-    type: envType,
-});
-
-const parseContextualEnv = ({
-    env,
-    environments,
-}: InstanceType<typeof SingleEndpointContextualEnvironment>): IEnvironment[] =>
-    environments.map((childEnv) => ({
-        name: env,
-        type: childEnv.envType,
-        childEnvName: childEnv.env,
-    }));
 
 export const getFeatureModules = (module: NodeJS.Module) =>
     flattenTree(

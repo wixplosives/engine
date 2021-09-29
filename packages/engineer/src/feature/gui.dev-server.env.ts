@@ -29,7 +29,7 @@ guiFeature.setup(
         virtualModules['index'] = createMainEntrypoint({
             features,
             childEnvs: [],
-            envName: mainDashboardEnv.env,
+            env: mainDashboardEnv,
             mode: 'development',
             publicConfigsRoute,
             staticBuild: false,

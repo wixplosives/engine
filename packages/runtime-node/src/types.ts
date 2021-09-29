@@ -1,4 +1,4 @@
-import type { EnvironmentTypes, TopLevelConfig, BaseHost } from '@wixc3/engine-core';
+import type { EnvironmentTypes, TopLevelConfig, BaseHost, Environment } from '@wixc3/engine-core';
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
@@ -96,6 +96,8 @@ export interface IEnvironment {
     type: EnvironmentTypes;
     name: string;
     childEnvName?: string;
+    dependencies?: IEnvironment[];
+    env: Environment;
 }
 
 export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>

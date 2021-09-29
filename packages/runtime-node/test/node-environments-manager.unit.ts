@@ -1,6 +1,14 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { COM, createDisposables, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
+import {
+    COM,
+    createDisposables,
+    Environment,
+    Feature,
+    runEngineApp,
+    Service,
+    socketClientInitializer,
+} from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import type io from 'socket.io';
@@ -21,12 +29,20 @@ const comEntry: IStaticFeatureDefinition = {
     scopedName: 'engine-core/communication',
 };
 
+const server2Env = new Environment('server-two', 'node', 'single');
+
 const engineNodeEntry: IStaticFeatureDefinition = {
     dependencies: [comEntry.scopedName],
     envFilePaths: {
         server: require.resolve('@fixture/engine-node/dist/feature/x.server.env'),
     },
-    exportedEnvs: [{ name: 'server', type: 'node' }],
+    exportedEnvs: [
+        {
+            name: 'server',
+            type: 'node',
+            env: serverEnv,
+        },
+    ],
     filePath: require.resolve('@fixture/engine-node/dist/feature/x.feature'),
     packageName: '@fixture/engine-node',
     scopedName: 'engine-node/x',
@@ -42,8 +58,8 @@ const engineMultiNodeSocketCommunication: IStaticFeatureDefinition = {
         'server-two': require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.server-two.env'),
     },
     exportedEnvs: [
-        { name: 'server', type: 'node' },
-        { name: 'server-two', type: 'node' },
+        { name: 'server', type: 'node', env: serverEnv },
+        { name: 'server-two', type: 'node', env: server2Env },
     ],
 };
 
@@ -57,8 +73,8 @@ const engineMultiNodeIPCCommunication: IStaticFeatureDefinition = {
         'server-two': require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.server-two.env'),
     },
     exportedEnvs: [
-        { name: 'server', type: 'node' },
-        { name: 'server-two', type: 'node' },
+        { name: 'server', type: 'node', env: serverEnv },
+        { name: 'server-two', type: 'node', env: server2Env },
     ],
 };
 describe('Node environments manager', function () {

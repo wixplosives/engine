@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import {
     ExternalEntrypoint,
@@ -5,11 +6,12 @@ import {
     getConfigLoaders,
     ICreateEntrypointsOptions,
     WebpackFeatureLoaderArguments,
+    LoadStatementArguments,
 } from './entrypoint-helpers';
 
 const { stringify } = JSON;
 export const LOADED_FEATURE_MODULES_NAMESPACE = '_engine_';
-const entrypointHelpersPath = require.resolve('./entrypoint-helpers.ts');
+const entrypointHelpersPath = require.resolve(join(__dirname, 'entrypoint-helpers'));
 
 export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
     return `
@@ -19,10 +21,11 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
     const envName = ${JSON.stringify(args.env.env)};
     const target = ${JSON.stringify(args.target)};
     const featureName = ${JSON.stringify(args.scopedName)};
+    ${webLoadStatement()}
 
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
     __webpack_public_path__= getExternalPublicPath(envName, target, scopedName, topWindow);
-    registerExternalFeature('${args.scopedName}', ${JSON.stringify(args)});
+    registerExternalFeature('${args.scopedName}', {...${JSON.stringify(args)}, loadStatement});
     `;
 }
 
@@ -37,6 +40,37 @@ module.exports = {
     })
 }`;
 }
+
+export function webImportStatement({ moduleIdentifier, eagerEntrypoint, filePath }: LoadStatementArguments) {
+    return `await import(/* webpackChunkName:${moduleIdentifier} */ ${
+        eagerEntrypoint ? `/* webpackMode: 'eager' */ ` : ''
+    }${JSON.stringify(filePath.slice(0, filePath.lastIndexOf('.')))})`;
+}
+
+const webLoadStatement = () => {
+    return `const loadStatementFunction = ${webImportStatement.toString()};
+
+    const loadStatement = async ({
+        directoryPath,
+        filePath,
+        moduleIdentifier: scopedName,
+        packageName,
+        eagerEntrypoint,
+    }) => {
+        const func = '(async function() { return ' + loadStatementFunction({
+            directoryPath,
+            filePath,
+            moduleIdentifier: scopedName,
+            packageName,
+            eagerEntrypoint,
+        }) + ' })()';
+    
+        const a = eval(func);
+        debugger;
+        return a;
+    };
+    `;
+};
 
 export function createMainEntrypoint({
     features,
@@ -64,24 +98,26 @@ import {
     addConfigsEventListenerForParentEnvironments, 
     loadExternalFeatures, 
     loadRootFeature, 
-    webImportStatement 
+    getRemoteConfigs 
 } from ${JSON.stringify(entrypointHelpersPath)};
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
 const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
-const features = JSON.parse(${JSON.stringify(features)});
-const env = JSON.parse(${JSON.stringify(env)});
-const eagerEntrypoint = JSON.parse(${JSON.stringify(eagerEntrypoint ?? false)})
-const configs = JSON.parse(${JSON.stringify(configs)});
+const features = new Map(${JSON.stringify([...features.entries()])});
+const env = ${JSON.stringify(env)};
+const eagerEntrypoint = ${JSON.stringify(eagerEntrypoint ?? false)}
+const configs = ${JSON.stringify(configs)};
 
+${webLoadStatement()}
 
 const featureLoaders = createFeatureLoaders({ features: features.values(), env, childEnvs: ${JSON.stringify(
         childEnvs
-    )}, eagerEntrypoint, target: ${JSON.stringify(target)}, loadStatement: webImportStatement })
+    )}, eagerEntrypoint, target: ${JSON.stringify(target)}, loadStatement });
 
+    
 self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
-const configLoaders = createConfigLoaders(configs)
+const configLoaders = createConfigLoaders(configs, loadStatement)
 
 async function main() {
     const envName = env.env;
@@ -160,8 +196,9 @@ main().catch(console.error);
 }
 
 function fetchExternalFeaturesInBrowser() {
-    return `(externalFeaturesRoute, publicPath) =>
-        return !isMainEntrypoint ? (${externalFeaturesParentWindowFetcher()})(externalFeaturesRoute, publicPath) : (${externalFeaturesHttpFethcher()})(externalFeaturesRoute, publicPath);`;
+    return `(externalFeaturesRoute, publicPath) => {
+        return isMainEntrypoint ? (${externalFeaturesHttpFethcher()})(externalFeaturesRoute, publicPath) : (${externalFeaturesParentWindowFetcher()})(externalFeaturesRoute)
+    }`;
 }
 
 function externalFeaturesParentWindowFetcher() {
@@ -182,7 +219,7 @@ function externalFeaturesParentWindowFetcher() {
 }
 
 function externalFeaturesHttpFethcher() {
-    return `(externalFeturesRoute, publicPath) => {
+    return `async (externalFeturesRoute, publicPath) => {
         const path = publicPath + publicPath && !publicPath.endsWith('/') ? '/' : '';
         const normalizedExternalFeaturesRoute = !externalFeaturesRoute.startsWith('/') ? externalFeaturesRoute : externalFeaturesRoute.slice(1);
         return (await fetch(path + normalizedExternalFeaturesRoute)).json()

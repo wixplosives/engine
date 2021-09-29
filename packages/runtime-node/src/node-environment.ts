@@ -23,6 +23,7 @@ export async function runNodeEnvironment<ENV extends Environment>({
     host,
     externalFeatures = [],
     context,
+    env,
 }: StartEnvironmentOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine<ENV>;
@@ -42,6 +43,7 @@ export async function runNodeEnvironment<ENV extends Environment>({
         name,
         childEnvName,
         type,
+        env,
     });
     const rootFeatureLoader = featureLoaders[featureName];
     if (!rootFeatureLoader) {

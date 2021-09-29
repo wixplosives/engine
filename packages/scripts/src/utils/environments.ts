@@ -1,13 +1,18 @@
-import { SetMultiMap } from '@wixc3/engine-core';
+import { Environment, SetMultiMap } from '@wixc3/engine-core';
 import type { IEnvironment } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '../types';
 
 export interface GetResolveEnvironmentsParams {
     featureName?: string;
     filterContexts?: boolean;
-    features: Map<string, IFeatureDefinition>;
+    features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs' | 'resolvedContexts'>>;
     environments: IEnvironment[];
     findAllEnviromnents?: boolean;
+}
+
+export interface ISimplifiedEnvironment {
+    childEnvs: string[];
+    env: Environment;
 }
 
 export function getResolvedEnvironments({
@@ -17,11 +22,11 @@ export function getResolvedEnvironments({
     environments,
     findAllEnviromnents,
 }: GetResolveEnvironmentsParams) {
-    const webEnvs = new Map<string, string[]>();
-    const workerEnvs = new Map<string, string[]>();
-    const electronRendererEnvs = new Map<string, string[]>();
-    const nodeEnvs = new Map<string, string[]>();
-    const electronMainEnvs = new Map<string, string[]>();
+    const webEnvs = new Map<string, ISimplifiedEnvironment>();
+    const workerEnvs = new Map<string, ISimplifiedEnvironment>();
+    const electronRendererEnvs = new Map<string, ISimplifiedEnvironment>();
+    const nodeEnvs = new Map<string, ISimplifiedEnvironment>();
+    const electronMainEnvs = new Map<string, ISimplifiedEnvironment>();
 
     const resolvedContexts = findAllEnviromnents
         ? getPossibleContexts(features)
@@ -51,15 +56,18 @@ export function getResolvedEnvironments({
     };
 }
 
-function addEnv(envs: Map<string, string[]>, { name, childEnvName }: IEnvironment) {
-    const childEnvs = envs.get(name) || [];
+function addEnv(envs: Map<string, ISimplifiedEnvironment>, { name, childEnvName, env: environment }: IEnvironment) {
+    const env = envs.get(name) || {
+        childEnvs: [] as string[],
+        env: environment,
+    };
     if (childEnvName) {
-        childEnvs.push(childEnvName);
+        env.childEnvs.push(childEnvName);
     }
-    envs.set(name, childEnvs);
+    envs.set(name, env);
 }
 
-function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
+function getAllResolvedContexts(features: Map<string, Pick<IFeatureDefinition, 'resolvedContexts'>>) {
     const allContexts = new SetMultiMap<string, string>();
     for (const { resolvedContexts } of features.values()) {
         convertEnvRecordToSetMultiMap(resolvedContexts, allContexts);
@@ -67,7 +75,7 @@ function getAllResolvedContexts(features: Map<string, IFeatureDefinition>) {
     return allContexts;
 }
 
-function getPossibleContexts(features: Map<string, IFeatureDefinition>) {
+function getPossibleContexts(features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs'>>) {
     const allContexts = new SetMultiMap<string, string>();
     for (const { exportedEnvs } of features.values()) {
         for (const env of exportedEnvs) {

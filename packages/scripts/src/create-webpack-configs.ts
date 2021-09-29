@@ -8,9 +8,9 @@ import { createMainEntrypoint, createExternalBrowserEntrypoint } from './create-
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 import { createVirtualEntries } from './virtual-modules-loader';
 import type { IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
-import type { getResolvedEnvironments } from './utils/environments';
+import type { getResolvedEnvironments, ISimplifiedEnvironment } from './utils/environments';
 import type { IFeatureDefinition } from './types';
-import { createExternalFeatureMapping, webImportStatement } from './entrypoint-helpers';
+import { createExternalFeatureMapping } from './entrypoint-helpers';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -92,7 +92,7 @@ interface ICreateWebpackConfigOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    enviroments: Map<string, string[]>;
+    enviroments: Map<string, ISimplifiedEnvironment>;
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
     title?: string;
@@ -133,12 +133,12 @@ export function createWebpackConfig({
     const entryModules: Record<string, string> = {};
     const plugins: webpack.WebpackPluginInstance[] = [];
 
-    for (const [envName, childEnvs] of enviroments) {
+    for (const [envName, { childEnvs, env }] of enviroments) {
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         const entrypointContent = createMainEntrypoint({
             features,
             childEnvs,
-            envName,
+            env,
             featureName,
             configName,
             publicPath,
@@ -219,12 +219,11 @@ export function createWebpackConfigForExternalFeature({
 
     const entryModules: Record<string, string> = {};
 
-    for (const [envName, childEnvs] of enviroments) {
+    for (const [envName, { childEnvs, env }] of enviroments) {
         entryModules[envName] = createExternalBrowserEntrypoint({
             ...feature,
             childEnvs,
-            envName,
-            loadStatement: webImportStatement,
+            env,
             target: target === 'webworker' ? 'webworker' : 'web',
             eagerEntrypoint: true,
         });

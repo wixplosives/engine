@@ -45,7 +45,7 @@ import {
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
-import { getResolvedEnvironments } from './utils/environments';
+import { getResolvedEnvironments, ISimplifiedEnvironment } from './utils/environments';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -807,14 +807,18 @@ export class Application {
         return { ...featuresAndConfigs, packages };
     }
 
-    protected createNodeEntry(feature: IFeatureDefinition, nodeEnvs: Map<string, string[]>, pathToSources: string) {
-        for (const [envName, childEnvs] of nodeEnvs) {
+    protected createNodeEntry(
+        feature: IFeatureDefinition,
+        nodeEnvs: Map<string, ISimplifiedEnvironment>,
+        pathToSources: string
+    ) {
+        for (const [envName, { env, childEnvs }] of nodeEnvs) {
             const entryPath = join(this.outputPath, `${envName}.node.js`);
             const [, reMappedFeature] = this.generateReMappedFeature({ ...feature }, pathToSources, feature.scopedName);
             const entryCode = createExternalNodeEntrypoint({
                 ...reMappedFeature,
                 childEnvs,
-                envName,
+                env,
             });
             fs.writeFileSync(entryPath, entryCode);
         }
@@ -888,7 +892,9 @@ function getEnvEntrypoints(
     }
 }
 
-export function getExportedEnvironments(features: Map<string, IFeatureDefinition>): Set<IEnvironment> {
+export function getExportedEnvironments(
+    features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs'>>
+): Set<IEnvironment> {
     const environments = new Set<IEnvironment>();
     for (const { exportedEnvs } of features.values()) {
         for (const exportedEnv of exportedEnvs) {

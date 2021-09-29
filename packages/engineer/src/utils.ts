@@ -141,6 +141,7 @@ export async function startDevServer({
         ],
         context: targetApplicationPath,
         externalFeatures,
+        env: devServerEnv,
     });
     return {
         engine,

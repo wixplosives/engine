@@ -52,7 +52,7 @@ export async function runEngineEnvironment<ENV extends Environment>({
     configName,
     runtimeOptions = {},
     config = [],
-    env: { env: envName, envType },
+    env,
     basePath = process.cwd(),
     externalFeatures = [],
     featureDiscoveryRoot,
@@ -60,6 +60,7 @@ export async function runEngineEnvironment<ENV extends Environment>({
     engine: RuntimeEngine<ENV>;
     dispose: () => Promise<void>;
 }> {
+    const { env: envName, envType } = env;
     const engineConfigFilePath = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
     const { featureDiscoveryRoot: configFeatureDiscoveryRoot } = (
         engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}
@@ -96,6 +97,7 @@ export async function runEngineEnvironment<ENV extends Environment>({
         externalFeatures,
         options: Object.entries(runtimeOptions),
         context: basePath,
+        env,
     });
 }
 

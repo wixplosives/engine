@@ -7,8 +7,8 @@ import {
     SetMultiMap,
     TopLevelConfig,
 } from '@wixc3/engine-core';
+import { parse } from '@file-services/path';
 import type { IConfigDefinition, IExternalFeatureNodeDescriptor } from '@wixc3/engine-runtime-node';
-import { parse } from 'path';
 import type { IFeatureDefinition } from './types';
 
 export interface ICreateEntrypointsOptions {
@@ -48,7 +48,10 @@ const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
 export interface WebpackFeatureLoaderArguments extends ExternalEntrypoint {
     target: 'web' | 'webworker' | 'node' | 'electron-renderer';
     eagerEntrypoint?: boolean;
-    loadStatement: (args: LoadStatementArguments) => string;
+}
+
+export interface WebpackFeatureLoaderArgumentsInWebpack extends WebpackFeatureLoaderArguments {
+    loadStatement: (args: LoadStatementArguments) => unknown;
 }
 
 export type LoadStatement = Pick<
@@ -78,20 +81,11 @@ export interface ICreateFeatureLoaders {
     loadStatement: (args: LoadStatementArguments) => string;
 }
 
-export function webImportStatement({ moduleIdentifier, eagerEntrypoint, filePath }: LoadStatementArguments) {
-    const statement = [`/* webpackChunkName:${moduleIdentifier} */`];
-    if (eagerEntrypoint) {
-        statement.push(`/* webpackMode: 'eager' */`);
-    }
-    statement.push(filePath);
-    return statement.join(' ');
-}
-
 export function nodeImportStatement({ filePath }: Pick<LoadStatementArguments, 'filePath'>) {
     return `require(${JSON.stringify(filePath)})`;
 }
 
-export function registerExternalFeature(args: WebpackFeatureLoaderArguments) {
+export function registerExternalFeature(args: WebpackFeatureLoaderArgumentsInWebpack) {
     window.runtimeFeatureLoader?.register(args.scopedName, createFeatureLoaderObject(args));
 }
 
@@ -121,13 +115,13 @@ export function createFeatureLoaderObject({
     env,
     directoryPath,
     filePath,
-    name,
+    scopedName,
     packageName,
     eagerEntrypoint,
     envFilePaths,
     preloadFilePaths,
     loadStatement,
-}: WebpackFeatureLoaderArguments): IFeatureLoader {
+}: WebpackFeatureLoaderArgumentsInWebpack): IFeatureLoader {
     return {
         depFeatures: dependencies,
         resolvedContexts,
@@ -135,42 +129,36 @@ export function createFeatureLoaderObject({
             for (const childEnvName of childEnvs) {
                 const contextFilePath = contextFilePaths[`${env.env}/${childEnvName}`];
                 if (contextFilePath && resolvedContexts[env.env] === childEnvName) {
-                    await import(
-                        loadStatement({
-                            directoryPath,
-                            filePath,
-                            moduleIdentifier: name,
-                            packageName,
-                            eagerEntrypoint,
-                        })
-                    );
+                    await loadStatement({
+                        directoryPath,
+                        filePath,
+                        moduleIdentifier: scopedName,
+                        packageName,
+                        eagerEntrypoint,
+                    });
                 }
             }
 
             for (const { env: envName } of [env, ...env.dependencies]) {
                 const envFilePath = envFilePaths?.[envName];
                 if (envFilePath) {
-                    await import(
-                        loadStatement({
-                            directoryPath,
-                            filePath,
-                            moduleIdentifier: `[${envName}]${name}`,
-                            packageName,
-                            eagerEntrypoint,
-                        })
-                    );
+                    await loadStatement({
+                        directoryPath,
+                        filePath,
+                        moduleIdentifier: `[${envName}]${scopedName}`,
+                        packageName,
+                        eagerEntrypoint,
+                    });
                 }
             }
 
-            const featureModule = (await import(
-                loadStatement({
-                    directoryPath,
-                    filePath,
-                    packageName,
-                    eagerEntrypoint,
-                    moduleIdentifier: `[feature]${name}`,
-                })
-            )) as { default: Feature };
+            const featureModule = (await loadStatement({
+                directoryPath,
+                filePath,
+                packageName,
+                eagerEntrypoint,
+                moduleIdentifier: `[feature]${scopedName}`,
+            })) as { default: Feature };
 
             // external feature mapping
             self._engine_[createExternalFeatureMapping(packageName, filePath)] = featureModule;
@@ -203,10 +191,13 @@ export function createFeatureLoaderObject({
     };
 }
 
-export function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
+export function createConfigLoaders(
+    configs: Record<string, IConfigFileMapping[]>,
+    loadStatement: (args: LoadStatementArguments) => unknown
+) {
     return Object.entries(configs).reduce((acc, [scopedName, config]) => {
         const importedConfigPaths = config?.map(({ filePath, configEnvName }) =>
-            loadConfigFile(filePath, scopedName, configEnvName)
+            loadConfigFile(filePath, scopedName, configEnvName, loadStatement)
         );
         acc[scopedName] = () => Promise.all(importedConfigPaths);
         return acc;
@@ -216,17 +207,16 @@ export function createConfigLoaders(configs: Record<string, IConfigFileMapping[]
 function loadConfigFile(
     filePath: string,
     scopedName: string,
-    configEnvName: string | undefined
+    configEnvName: string | undefined,
+    loadStatement: (args: LoadStatementArguments) => unknown
 ): Promise<TopLevelConfigModule> {
-    return import(
-        webImportStatement({
-            moduleIdentifier: `[config]${scopedName}${configEnvName ?? ''}`,
-            directoryPath: '',
-            filePath: topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath,
-            packageName: '',
-            eagerEntrypoint: true,
-        })
-    ) as unknown as Promise<TopLevelConfigModule>;
+    return loadStatement({
+        moduleIdentifier: `[config]${scopedName}${configEnvName ?? ''}`,
+        directoryPath: '',
+        filePath: topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath,
+        packageName: '',
+        eagerEntrypoint: true,
+    }) as Promise<TopLevelConfigModule>;
 }
 
 export async function importStaticConfigs(configLoaders: ConfigLoaders, configName: string, config: TopLevelConfig) {
@@ -247,10 +237,16 @@ export async function fetchConfigs(
     configName: string,
     featureName: string
 ): Promise<TopLevelConfig> {
-    const url = new URL(normalizeRoute(publicConfigsRoute) + configName);
-    url.searchParams.append('env', envName);
-    url.searchParams.append('feature', featureName);
-    return (await fetch(url.toString())).json() as unknown as TopLevelConfig;
+    const route = normalizeRoute(publicConfigsRoute) + configName;
+    const searchParams = [
+        ['env', envName],
+        ['feature', featureName],
+    ]
+        .map((s) => s.join('='))
+        .join('&');
+
+    const fullRoute = route + '?' + searchParams;
+    return (await fetch(fullRoute)).json() as unknown as TopLevelConfig;
 }
 
 export function getConfigsFromParent(
@@ -432,6 +428,7 @@ export async function loadRootFeature(featureLoaders: ReturnType<typeof createFe
     const { resolvedContexts = {} } = rootFeatureLoader;
     const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
 
+    debugger;
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
 
     return { featureLoader, feature: loadedFeatures[loadedFeatures.length - 1], resolvedContexts };

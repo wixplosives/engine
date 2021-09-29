@@ -13,14 +13,8 @@ export class Environment<
     NAME extends string = string,
     TYPE extends EnvironmentTypes = EnvironmentTypes,
     MODE extends EnvironmentMode = EnvironmentMode,
-    DEPS extends Array<Environment<string, TYPE, MODE, any>> = []
+    DEPS extends Array<Environment<string, TYPE, EnvironmentMode, any>> = []
 > {
-    // dependencyNames: Set<EnvNames<DEPS>> = this.dependencies.reduce((acc, dep) => {
-    //     for (const item of dep.dependencyNames) {
-    //         acc.add(item);
-    //     }
-    //     return acc;
-    // }, new Set<EnvNames<DEPS>>());
     __depNames: EnvNames<DEPS> = this.env as EnvNames<DEPS>;
     constructor(
         public env: NAME,
