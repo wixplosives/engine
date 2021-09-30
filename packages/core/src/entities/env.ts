@@ -13,7 +13,7 @@ export class Environment<
     NAME extends string = string,
     TYPE extends EnvironmentTypes = EnvironmentTypes,
     MODE extends EnvironmentMode = EnvironmentMode,
-    DEPS extends Array<Environment<string, TYPE, EnvironmentMode, any>> = []
+    DEPS extends Array<Environment<string, TYPE, 'multi', any>> = []
 > {
     __depNames: EnvNames<DEPS> = this.env as EnvNames<DEPS>;
     constructor(

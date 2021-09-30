@@ -4,7 +4,7 @@ import type { IRunOptions, TopLevelConfig } from './types';
 import type { Environment, Feature } from './entities';
 import { deferred, flattenTree, IDeferredPromise } from './helpers';
 
-export interface IRunEngineOptions<ENV extends Environment> {
+export interface IRunEngineOptions<ENV> {
     entryFeature: Feature | Feature[];
     topLevelConfig?: TopLevelConfig;
     env: ENV;

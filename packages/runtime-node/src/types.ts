@@ -24,7 +24,7 @@ export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescripto
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
 
-export interface StartEnvironmentOptions extends IEnvironment {
+export interface StartEnvironmentOptions<ENV extends Environment = Environment> extends IEnvironment<ENV> {
     featureName: string;
     config?: TopLevelConfig;
     features: Array<[string, Required<IStaticFeatureDefinition>]>;
@@ -82,7 +82,7 @@ export interface IEnvironmentMessage extends ICommunicationMessage {
 
 export interface IEnvironmentStartMessage extends IEnvironmentMessage {
     id: 'start';
-    data: StartEnvironmentOptions;
+    data: StartEnvironmentOptions<Environment>;
 }
 
 export interface RemoteProcess {
@@ -92,12 +92,12 @@ export interface RemoteProcess {
     off: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
 }
 
-export interface IEnvironment {
+export interface IEnvironment<ENV extends Environment = Environment> {
     type: EnvironmentTypes;
     name: string;
     childEnvName?: string;
-    dependencies?: IEnvironment[];
-    env: Environment;
+    dependencies?: IEnvironment<ENV>[];
+    env: ENV;
 }
 
 export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>

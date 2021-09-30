@@ -1,6 +1,6 @@
 import { Environment, Feature, Service, Slot } from '@wixc3/engine-core';
 
-export const client = new Environment('client', 'window', 'single');
+export const client = new Environment('client', 'window', 'multi');
 export const page1 = new Environment('page1', 'window', 'single', [client]);
 
 export default new Feature({

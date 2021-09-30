@@ -99,7 +99,7 @@ export async function startDevServer({
         app.normilizeDefinitionsPackagePath([...configDefs, ...externalFeatureDefinitions]),
         resolvedExternalFeaturesPath
     );
-    const { engine, dispose } = await runNodeEnvironment<typeof devServerEnv>({
+    const { engine, dispose } = await runNodeEnvironment({
         featureName: engineerEntry,
         features: [...features],
         name: devServerEnv.env,

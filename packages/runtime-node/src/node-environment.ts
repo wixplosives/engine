@@ -24,7 +24,7 @@ export async function runNodeEnvironment<ENV extends Environment>({
     externalFeatures = [],
     context,
     env,
-}: StartEnvironmentOptions): Promise<{
+}: StartEnvironmentOptions<ENV>): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine<ENV>;
 }> {
@@ -105,7 +105,7 @@ export async function runNodeEnvironment<ENV extends Environment>({
         options: new Map(options),
         features: runningFeatures,
         resolvedContexts,
-        env: env,
+        env,
     });
 
     return runtimeEngine;

@@ -1,10 +1,10 @@
 import type { EnvironmentTypes } from './com/types';
 import COM from './communication.feature';
-import type { RuntimeFeature, Feature, Environment, Universal, EnvironmentMode } from './entities';
+import type { RuntimeFeature, Feature, Environment, EnvironmentMode } from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
 
-export class RuntimeEngine<ENV extends Environment = typeof Universal> {
+export class RuntimeEngine<ENV extends Environment = Environment> {
     public features = new Map<Feature, RuntimeFeature>();
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
