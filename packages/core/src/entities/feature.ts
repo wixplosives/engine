@@ -37,19 +37,24 @@ export class RuntimeFeature<T extends Feature = Feature, ENV extends Environment
     public addOnDisposeHandler(fn: DisposeFunction, envName: string) {
         this.disposeHandlers.add(envName, fn);
     }
-    public async [RUN](context: RuntimeEngine, envName: string): Promise<void> {
+    public async [RUN](context: RuntimeEngine, env: Environment): Promise<void> {
         if (this.running) {
             return;
         }
         this.running = true;
+        const runEnvs = [...globallyProvidingEnvironments, ...orderedEnvDependencies(env)];
+
         const runPromises: Array<unknown> = [];
-        for (const dep of this.feature.dependencies) {
-            runPromises.push(context.runFeature(dep, envName));
+        for (const envName of runEnvs) {
+            for (const dep of this.feature.dependencies) {
+                runPromises.push(context.runFeature(dep, env));
+            }
+            const envRunHandlers = this.runHandlers.get(envName) || [];
+            for (const handler of envRunHandlers) {
+                runPromises.push(handler());
+            }
         }
-        const envRunHandlers = this.runHandlers.get(envName) || [];
-        for (const handler of envRunHandlers) {
-            runPromises.push(handler());
-        }
+
         await Promise.all(runPromises);
     }
 
@@ -123,7 +128,7 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, envName: string): RuntimeFeature<this, any> {
+    public [CREATE_RUNTIME](runningEngine: RuntimeEngine, env: Environment): RuntimeFeature<this, any> {
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};
@@ -131,16 +136,13 @@ export class Feature<
         const providedAPI: any = {};
         const environmentContext: any = {};
         const apiEntries = Object.entries(this.api);
-        console.log('gaga', this.setupEnvs);
-        // const universalApiEntries = apiEntries.filter(
-        //     ([_, entity]) => entity.mode !== 'input' && isGloballyProvided(entity.providedFrom)
-        // );
+
         const feature = new RuntimeFeature<this, any>(this, runningApi, deps);
 
         runningEngine.features.set(this, feature);
 
         for (const dep of this.dependencies) {
-            deps[dep.id] = runningEngine.initFeature(dep, envName);
+            deps[dep.id] = runningEngine.initFeature(dep, env);
             depsApis[dep.id] = deps[dep.id].api;
         }
 
@@ -155,13 +157,13 @@ export class Feature<
             ...inputApi,
             id: this.id,
             run(fn: () => void) {
-                feature.addRunHandler(fn, envName);
+                feature.addRunHandler(fn, env.env);
             },
             onDispose(fn: DisposeFunction) {
-                feature.addOnDisposeHandler(fn, envName);
+                feature.addOnDisposeHandler(fn, env.env);
             },
             [RUN_OPTIONS]: runningEngine.runOptions,
-            runningEnvironmentName: envName,
+            runningEnvironmentName: env.env,
         };
 
         const emptyDispose = { dispose: () => undefined };
@@ -171,12 +173,8 @@ export class Feature<
         }
         const setupHandlers: Array<SetupHandler<Environment, ID, Deps, API, EnvironmentContext>> = [];
 
-        const env = [...this.setupEnvs].find((e) => e.env === envName);
-        const runEnvs = env
-            ? [...globallyProvidingEnvironments, ...orderedEnvDependencies(env)]
-            : [...globallyProvidingEnvironments, envName];
+        const runEnvs = [...globallyProvidingEnvironments, ...orderedEnvDependencies(env)];
 
-        // const running = new Set<string>()
         for (const envName of runEnvs) {
             const environmentSetupHandlers = this.setupHandlers.get(envName);
             if (environmentSetupHandlers) {

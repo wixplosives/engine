@@ -1,4 +1,5 @@
 import { Environment, Feature, Service, Slot } from '@wixc3/engine-core';
+
 export const client = new Environment('client', 'window', 'single');
 export const page1 = new Environment('page1', 'window', 'single', [client]);
 

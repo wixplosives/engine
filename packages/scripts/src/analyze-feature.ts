@@ -33,13 +33,23 @@ interface IPackageDescriptor {
 
 const featureRoots = ['.', 'src', 'feature', 'fixtures'] as const;
 
-export function parseEnv(environment: InstanceType<typeof Environment>): IEnvironment {
-    const { env, envType, dependencies } = environment;
+const convertEnvToIEnv = (env: Environment): IEnvironment => {
+    const { env: name, envType: type } = env;
     return {
-        name: env,
-        type: envType,
-        dependencies: dependencies.map(parseEnv),
-        env: environment as Environment,
+        name,
+        type,
+        env,
+        dependencies: [],
+    };
+};
+
+export function parseEnv(env: InstanceType<typeof Environment>): IEnvironment {
+    const [parsedEnv, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e) =>
+        convertEnvToIEnv(e as Environment)
+    );
+    return {
+        ...parsedEnv!,
+        dependencies,
     };
 }
 

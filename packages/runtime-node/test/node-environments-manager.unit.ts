@@ -23,6 +23,7 @@ chai.use(chaiAsPromised);
 
 const runFeatureOptions = { featureName: 'engine-node/x' };
 
+const env = new Environment('dev', 'node', 'single');
 const comEntry: IStaticFeatureDefinition = {
     filePath: require.resolve('@wixc3/engine-core/dist/communication.feature'),
     packageName: '@wixc3/engine-core',
@@ -235,7 +236,7 @@ describe('Node environments manager', function () {
             });
 
             const { dispose, engine } = runEngineApp({
-                envName: 'dev',
+                env,
                 resolvedContexts: {},
                 features: [proxyFeature],
                 config: [
@@ -274,7 +275,7 @@ describe('Node environments manager', function () {
             });
 
             const { dispose, engine } = runEngineApp({
-                envName: 'dev',
+                env,
                 resolvedContexts: {},
                 features: [proxyFeature],
                 config: [
@@ -331,7 +332,7 @@ describe('Node environments manager', function () {
             });
 
             const { dispose, engine } = runEngineApp({
-                envName: 'dev',
+                env,
                 resolvedContexts: {},
                 features: [testFeature],
                 config: [
@@ -370,7 +371,7 @@ describe('Node environments manager', function () {
             });
 
             const { dispose, engine } = runEngineApp({
-                envName: 'dev',
+                env,
                 resolvedContexts: {},
                 features: [testFeature],
                 config: [

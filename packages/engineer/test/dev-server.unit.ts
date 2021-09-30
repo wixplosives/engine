@@ -591,7 +591,7 @@ describe('engineer:dev-server', function () {
         expect(pid1).to.eq(process.pid);
     });
 
-    it.only('supports simple environment extension', async () => {
+    it('supports simple environment extension', async () => {
         const {
             config: { port },
             dispose,
@@ -604,6 +604,36 @@ describe('engineer:dev-server', function () {
         const page = await loadPage(`http://localhost:${port}/page1.html`);
         const text = await getBodyContent(page);
         expect(text).to.eq('page1');
+    });
+
+    it('supports base environment extention in dependent features', async () => {
+        const {
+            config: { port },
+            dispose,
+        } = await setup({
+            basePath: environmentExtensionFeaturePath,
+            featureName: 'engine-env-dependency/variant',
+        });
+        disposables.add(() => dispose);
+
+        const page = await loadPage(`http://localhost:${port}/page2.html`);
+        const text = await getBodyContent(page);
+        expect(text).to.eq('variant added to client page2');
+    });
+
+    it('in extending environment invokes parent environment setup prior to own', async () => {
+        const {
+            config: { port },
+            dispose,
+        } = await setup({
+            basePath: environmentExtensionFeaturePath,
+            featureName: 'engine-env-dependency/variant',
+        });
+        disposables.add(() => dispose);
+
+        const page = await loadPage(`http://localhost:${port}/page1.html`);
+        const text = await getBodyContent(page);
+        expect(text).to.eq('variant added to variant added to client page1');
     });
 });
 

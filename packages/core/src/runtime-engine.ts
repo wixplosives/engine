@@ -21,7 +21,7 @@ export class RuntimeEngine<ENV extends Environment = typeof Universal> {
         }
     }
 
-    public async run(features: Feature | Feature[], envName: string): Promise<this> {
+    public async run(features: Feature | Feature[], env: Environment): Promise<this> {
         if (this.running) {
             throw new Error('Engine already running!');
         }
@@ -30,20 +30,20 @@ export class RuntimeEngine<ENV extends Environment = typeof Universal> {
             features = [features];
         }
         for (const feature of features) {
-            this.initFeature(feature, envName);
+            this.initFeature(feature, env);
         }
         const runPromises: Array<Promise<void>> = [];
         for (const feature of features) {
-            runPromises.push(this.runFeature(feature, envName));
+            runPromises.push(this.runFeature(feature, env));
         }
         await Promise.all(runPromises);
         return this;
     }
 
-    public initFeature<T extends Feature>(feature: T, envName: string) {
+    public initFeature<T extends Feature>(feature: T, env: Environment) {
         let instance = this.features.get(feature);
         if (!instance) {
-            instance = feature[CREATE_RUNTIME](this, envName) as RuntimeFeature<
+            instance = feature[CREATE_RUNTIME](this, env) as RuntimeFeature<
                 Feature<string, any[], any, any>,
                 Environment<string, EnvironmentTypes, EnvironmentMode, []>
             >;
@@ -51,12 +51,12 @@ export class RuntimeEngine<ENV extends Environment = typeof Universal> {
         return instance;
     }
 
-    public async runFeature(feature: Feature, envName: string): Promise<void> {
+    public async runFeature(feature: Feature, env: Environment): Promise<void> {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
         }
-        await featureInstance[RUN](this, envName);
+        await featureInstance[RUN](this, env);
     }
 
     public async dispose(feature: Feature, envName: string) {

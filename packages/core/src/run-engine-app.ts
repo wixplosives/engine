@@ -35,10 +35,10 @@ export interface IPreloadModule {
     init?: (runtimeOptions?: Record<string, string | boolean>) => Promise<void> | void;
 }
 
-export interface IRunEngineAppOptions {
+export interface IRunEngineAppOptions<ENV extends Environment> {
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;
-    envName: string;
+    env: ENV;
     publicPath?: string;
     features?: Feature[];
     resolvedContexts: Record<string, string>;
@@ -47,20 +47,20 @@ export interface IRunEngineAppOptions {
 export function runEngineApp<ENV extends Environment = Environment<any, any, any>>({
     config = [],
     options,
-    envName,
+    env,
     publicPath,
     features = [],
     resolvedContexts = {},
-}: IRunEngineAppOptions) {
+}: IRunEngineAppOptions<ENV>) {
     const engine = new RuntimeEngine<ENV>([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    const runningPromise = engine.run(features, envName);
+    const runningPromise = engine.run(features, env);
 
     return {
         engine,
         async dispose() {
             await runningPromise;
             for (const feature of features) {
-                await engine.dispose(feature, envName);
+                await engine.dispose(feature, env.env);
             }
         },
     };

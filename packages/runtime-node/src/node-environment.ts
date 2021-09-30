@@ -103,9 +103,9 @@ export async function runNodeEnvironment<ENV extends Environment>({
     const runtimeEngine = runEngineApp({
         config,
         options: new Map(options),
-        envName: name,
         features: runningFeatures,
         resolvedContexts,
+        env: env,
     });
 
     return runtimeEngine;

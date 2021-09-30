@@ -135,6 +135,8 @@ typeCheck(
     ) => true
 );
 
+const env = new Environment('main', 'window', 'single');
+
 /*************** EXAMPLE SETUP FILES ***************/
 export async function dontRun() {
     addPanel.setup(MAIN, (feature, engine) => {
@@ -193,5 +195,5 @@ export async function dontRun() {
         };
     });
 
-    await new RuntimeEngine([]).run(addPanel, 'main');
+    await new RuntimeEngine([]).run(addPanel, env);
 }
