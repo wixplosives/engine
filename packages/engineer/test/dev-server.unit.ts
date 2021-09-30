@@ -40,9 +40,7 @@ function getBodyContent(page: Page | Frame) {
 describe('engineer:dev-server', function () {
     this.timeout(15_000);
     const disposables = createDisposables();
-    const browserProvider = createBrowserProvider({
-        devtools: true,
-    });
+    const browserProvider = createBrowserProvider();
 
     const setup = async ({
         featureName,

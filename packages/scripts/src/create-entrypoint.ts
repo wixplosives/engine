@@ -245,7 +245,7 @@ function loadEnvAndContextFiles({
             }`);
         }
     }
-    for (const { env: envName } of [env, ...env.dependencies]) {
+    for (const { env: envName } of new Set([env, ...env.dependencies])) {
         const envFilePath = envFilePaths[envName];
         if (envFilePath) {
             loadStatements.push(
@@ -558,7 +558,7 @@ function loadScripts() {
 }
 
 export function createExternalFeatureMapping(packageName: string, featurePath: string) {
-    return `${packageName}_${parse(featurePath).name}`;
+    return `${normilizePackageName(packageName)}_${parse(featurePath).name}`;
 }
 
 //#endregion

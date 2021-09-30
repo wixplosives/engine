@@ -8,6 +8,7 @@ import {
     createExternalBrowserEntrypoint,
     createExternalFeatureMapping,
     webpackImportStatement,
+    LOADED_FEATURE_MODULES_NAMESPACE,
 } from './create-entrypoint';
 
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
@@ -300,7 +301,12 @@ const extractExternals =
                     throw new Error(`could not find package.json for ${resolvedRequest}`);
                 }
                 const { name } = fs.readJsonFileSync(packageJson) as { name: string };
-                return cb(undefined, createExternalFeatureMapping(name, resolvedRequest));
+                return cb(
+                    undefined,
+                    `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
+                        createExternalFeatureMapping(name, resolvedRequest)
+                    )}]`
+                );
             }
             cb();
         } catch (err) {

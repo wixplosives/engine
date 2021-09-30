@@ -113,7 +113,7 @@ export async function runNodeEnvironment<ENV extends Environment>({
 
 export function createFeatureLoaders(
     features: Map<string, Required<IStaticFeatureDefinition>>,
-    { name: envName, childEnvName }: IEnvironment
+    { childEnvName, name: envName, env }: IEnvironment
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {
@@ -155,9 +155,11 @@ export function createFeatureLoaders(
                     }
                 }
 
-                const envFilePath = envFilePaths[envName];
-                if (envFilePath) {
-                    await import(envFilePath);
+                for (const { env: envName } of new Set([env, ...env.dependencies])) {
+                    const envFilePath = envFilePaths[envName];
+                    if (envFilePath) {
+                        await import(envFilePath);
+                    }
                 }
                 return ((await import(filePath)) as { default: Feature }).default;
             },

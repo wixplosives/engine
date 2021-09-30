@@ -42,10 +42,9 @@ export class RuntimeFeature<T extends Feature = Feature, ENV extends Environment
             return;
         }
         this.running = true;
-        const runEnvs = [...globallyProvidingEnvironments, ...orderedEnvDependencies(env)];
 
         const runPromises: Array<unknown> = [];
-        for (const envName of runEnvs) {
+        for (const envName of new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(env)])) {
             for (const dep of this.feature.dependencies) {
                 runPromises.push(context.runFeature(dep, env));
             }
@@ -75,7 +74,7 @@ export class RuntimeFeature<T extends Feature = Feature, ENV extends Environment
 }
 
 function orderedEnvDependencies(env: Environment): string[] {
-    return env.dependencies.flatMap(orderedEnvDependencies).concat(env.env);
+    return env.dependencies?.flatMap(orderedEnvDependencies).concat(env.env) ?? [];
 }
 export class Feature<
     ID extends string = string,
@@ -173,9 +172,7 @@ export class Feature<
         }
         const setupHandlers: Array<SetupHandler<Environment, ID, Deps, API, EnvironmentContext>> = [];
 
-        const runEnvs = [...globallyProvidingEnvironments, ...orderedEnvDependencies(env)];
-
-        for (const envName of runEnvs) {
+        for (const envName of new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(env)])) {
             const environmentSetupHandlers = this.setupHandlers.get(envName);
             if (environmentSetupHandlers) {
                 setupHandlers.push(...environmentSetupHandlers);

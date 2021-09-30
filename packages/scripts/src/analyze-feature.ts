@@ -53,18 +53,19 @@ export function parseEnv(env: InstanceType<typeof Environment>): IEnvironment {
     };
 }
 
-export const parseContextualEnv = ({
-    env,
-    environments,
-    dependencies,
-}: InstanceType<typeof SingleEndpointContextualEnvironment>): IEnvironment[] =>
-    environments.map((childEnv) => ({
-        name: env,
-        dependencies: dependencies.map(parseEnv),
+export function parseContextualEnv(env: InstanceType<typeof SingleEndpointContextualEnvironment>): IEnvironment[] {
+    const { env: name, environments } = env;
+    const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e: Environment) =>
+        convertEnvToIEnv(e)
+    );
+    return environments.map((childEnv) => ({
+        name,
+        dependencies,
         type: childEnv.envType,
         childEnvName: childEnv.env,
-        env: childEnv,
+        env: new Environment(name, childEnv.envType, 'single'),
     }));
+}
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
     const ownFeatureFilePaths = new Set<string>();

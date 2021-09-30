@@ -33,7 +33,7 @@ describe('ENV dependencies', () => {
                 },
             };
         });
-        const engine = await runEngine<typeof extendingEnv>({ entryFeature, envName: extendingEnv.env });
+        const engine = await runEngine<typeof extendingEnv>({ entryFeature, env: extendingEnv });
         const runningFeature = engine.get(entryFeature);
 
         expect(runningFeature.api.service2.multiplyThenIncrement(5)).to.equal(11);
@@ -84,7 +84,7 @@ describe('ENV dependencies', () => {
                 service2,
             };
         });
-        const engine = await runEngine<typeof extendingEnv>({ entryFeature, envName: extendingEnv.env });
+        const engine = await runEngine<typeof extendingEnv>({ entryFeature, env: extendingEnv });
         const runningFeature = engine.get(entryFeature);
 
         expect(runningFeature.api.service2.multiplyThenIncrement(5)).to.equal(11);

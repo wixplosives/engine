@@ -7,17 +7,17 @@ import { deferred, flattenTree, IDeferredPromise } from './helpers';
 export interface IRunEngineOptions<ENV extends Environment> {
     entryFeature: Feature | Feature[];
     topLevelConfig?: TopLevelConfig;
-    envName?: ENV['env'];
+    env: ENV;
     runOptions?: IRunOptions;
 }
 
 export function run<ENV extends Environment<any, any, any, any>>({
     entryFeature,
     topLevelConfig = [],
-    envName = '',
+    env,
     runOptions,
 }: IRunEngineOptions<ENV>) {
-    return new RuntimeEngine<ENV>(topLevelConfig, runOptions).run(entryFeature, envName);
+    return new RuntimeEngine<ENV>(topLevelConfig, runOptions).run(entryFeature, env);
 }
 
 export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
