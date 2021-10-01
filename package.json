@@ -58,7 +58,7 @@
     "lerna": "^4.0.0",
     "mocha": "^9.1.2",
     "mocha-play": "^3.0.0",
-    "playwright-chromium": "^1.15.0",
+    "playwright-chromium": "^1.15.1",
     "playwright-core": "^1.15.0",
     "promise-assist": "^1.3.0",
     "react": "^17.0.2",
