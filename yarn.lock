@@ -1051,19 +1051,19 @@
     "@stylable/core" "^4.6.0"
     js-beautify "^1.14.0"
 
-"@stylable/core@^4.6.0":
-  version "4.6.0"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.6.0.tgz#27625bc24bf00c1be704c77b1ac0e55d12a81925"
-  integrity sha512-SbOqJWH/CbJQpThtvFcYnqYjKAEY3Gq4D46hj6d4CvU//D2n7/paGIk9596aWx9i78BSdQygLAqMlzrXCZC4Dg==
+"@stylable/core@^4.6.0", "@stylable/core@^4.7.0":
+  version "4.7.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.7.0.tgz#ce44e53ddc42b5403bf1e615a05a630bb4580bf4"
+  integrity sha512-G1/obNJeo0QzzVcC7t4QHO6lnJMMWAuyj1eQLcLmbYS+8J3o08BZCCmIai7U9RmN0tum4HO7Cd9/GJSZpLjwdQ==
   dependencies:
     balanced-match "^2.0.0"
     css-selector-tokenizer "^0.8.0"
     deindent "^0.1.0"
-    enhanced-resolve "^5.8.2"
+    enhanced-resolve "^5.8.3"
     is-vendor-prefixed "^4.0.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
-    postcss "^8.3.6"
+    postcss "^8.3.8"
     postcss-js "^3.0.3"
     postcss-nested "^5.0.6"
     postcss-safe-parser "^6.0.0"
@@ -2981,7 +2981,7 @@ engine.io@~5.2.0:
     engine.io-parser "~4.0.0"
     ws "~7.4.2"
 
-enhanced-resolve@^5.8.2, enhanced-resolve@^5.8.3:
+enhanced-resolve@^5.8.3:
   version "5.8.3"
   resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.8.3.tgz#6d552d465cce0423f5b3d718511ea53826a7b2f0"
   integrity sha512-EGAbGvH7j7Xt2nc0E7D99La1OiEs8LnyimkRgwExpUMScN6O+3x9tIWs7PLQZVNx4YD+00skHXPXi1yQHpAmZA==
@@ -5905,7 +5905,7 @@ postcss-value-parser@^4.1.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.1.0.tgz#443f6a20ced6481a2bda4fa8532a6e55d789a2cb"
   integrity sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
 
-postcss@^8.1.6, postcss@^8.2.15, postcss@^8.3.6:
+postcss@^8.1.6, postcss@^8.2.15, postcss@^8.3.6, postcss@^8.3.8:
   version "8.3.8"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.3.8.tgz#9ebe2a127396b4b4570ae9f7770e7fb83db2bac1"
   integrity sha512-GT5bTjjZnwDifajzczOC+r3FI3Cu+PgPvrsjhQdRqa2kTJ4968/X9CUce9xttIB0xOs5c6xf0TCWZo/y9lF6bA==
