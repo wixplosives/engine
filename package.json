@@ -21,7 +21,7 @@
   "devDependencies": {
     "@file-services/memory": "^5.4.1",
     "@file-services/types": "^5.4.0",
-    "@stylable/cli": "^4.7.1",
+    "@stylable/cli": "^4.7.2",
     "@stylable/core": "^4.7.1",
     "@stylable/webpack-plugin": "^4.7.1",
     "@ts-tools/build": "^2.1.1",
