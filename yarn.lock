@@ -1051,10 +1051,10 @@
     "@stylable/core" "^4.7.1"
     js-beautify "^1.14.0"
 
-"@stylable/core@^4.7.1":
-  version "4.7.1"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.7.1.tgz#8eacb3b4264053f487577158f662e39b8d5a5ef8"
-  integrity sha512-1igVs7sBZ8nL2oYgWMfvfvCUCAvYNx8axmAEwLWRtTc2ctf8PtYU+B3OpAAp/TmdZe1qkWXa78xh4P2HQ6LmQQ==
+"@stylable/core@^4.7.1", "@stylable/core@^4.7.2":
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.7.2.tgz#383727f382f7c658011befa693865e829ac919e4"
+  integrity sha512-/u7Q4Lu0oH7qCPvKcrcWORNgQXasxHN8v1MQ2Ew09c5UeYpuqlOs4bTzD4McHvnbKGqAFtBu5tblhsEqB5HWLw==
   dependencies:
     balanced-match "^2.0.0"
     css-selector-tokenizer "^0.8.0"
@@ -1063,7 +1063,7 @@
     is-vendor-prefixed "^4.0.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
-    postcss "^8.3.8"
+    postcss "^8.3.9"
     postcss-js "^3.0.3"
     postcss-nested "^5.0.6"
     postcss-safe-parser "^6.0.0"
@@ -5903,7 +5903,7 @@ postcss-value-parser@^4.1.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.1.0.tgz#443f6a20ced6481a2bda4fa8532a6e55d789a2cb"
   integrity sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
 
-postcss@^8.1.6, postcss@^8.2.15, postcss@^8.3.8:
+postcss@^8.1.6, postcss@^8.2.15, postcss@^8.3.8, postcss@^8.3.9:
   version "8.3.9"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.3.9.tgz#98754caa06c4ee9eb59cc48bd073bb6bd3437c31"
   integrity sha512-f/ZFyAKh9Dnqytx5X62jgjhhzttjZS7hMsohcI7HEI5tjELX/HxCy3EFhsRxyzGvrzFF+82XPvCS8T9TFleVJw==
