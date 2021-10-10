@@ -16,7 +16,7 @@ export class RuntimeEngine {
         if (runningFeature) {
             return runningFeature as RuntimeFeature<T, T['dependencies'], T['api']>;
         } else {
-            throw new Error('missing feature');
+            throw new Error(`missing feature ${feature.id}`);
         }
     }
 

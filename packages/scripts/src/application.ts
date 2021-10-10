@@ -144,7 +144,7 @@ export class Application {
     public outputPath: string;
     protected basePath: string;
 
-    constructor({ basePath = process.cwd(), outputPath = fs.join(basePath, 'dist') }: IApplicationOptions) {
+    constructor({ basePath = process.cwd(), outputPath = fs.join(basePath, 'dist-app') }: IApplicationOptions) {
         this.basePath = basePath;
         this.outputPath = outputPath;
     }

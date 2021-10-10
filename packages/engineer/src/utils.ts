@@ -82,6 +82,7 @@ export async function startDevServer({
         externalFeaturesBasePath: configExternalPath,
         require,
         favicon: configFavicon,
+        featureDiscoveryRoot: configFeatureDiscoveryRoot,
     } = engineConfig ?? {};
 
     const featurePaths = fs.findFilesSync(basePath, {
@@ -125,7 +126,7 @@ export async function startDevServer({
                     defaultRuntimeOptions: runtimeOptions,
                     externalFeatureDefinitions,
                     externalFeaturesPath,
-                    featureDiscoveryRoot,
+                    featureDiscoveryRoot: featureDiscoveryRoot ?? configFeatureDiscoveryRoot,
                     nodeEnvironmentsMode,
                     socketServerOptions,
                     webpackConfigPath,

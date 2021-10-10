@@ -9,7 +9,7 @@ export function getExternalFeaturesMetadata(
     basePath: string
 ): IExternalFeatureNodeDescriptor[] {
     // mapping a feature definition to the entries of each environment of that feature, per target
-    return pluginDefinitions.map(({ packageName, outDir = 'dist', packagePath }) => {
+    return pluginDefinitions.map(({ packageName, outDir = 'dist-app', packagePath }) => {
         const packageBasePath = getExternalFeatureBasePath({ packagePath, basePath, packageName });
         const { entryPoints, defaultFeatureName, features } = fs.readJsonFileSync(
             fs.join(packageBasePath, outDir, 'manifest.json')
