@@ -6,7 +6,7 @@
     "start": "yarn engineer start -f react/someplugin --singleFeature",
     "start:hot": "yarn start --webpackConfig webpack.config.hot.js --webpackHot",
     "test": "yarn test:ix",
-    "test:ix": "mocha \"test/**/*.ix.ts?(x)\""
+    "test:ix": "mocha \"dist/test/**/*.ix.js\""
   },
   "devDependencies": {
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.1",

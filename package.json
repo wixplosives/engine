@@ -3,16 +3,17 @@
   "workspaces": [
     "examples/*",
     "packages/*",
-    "test-fixtures/*"
+    "test-fixtures/*",
+    "test-fixtures/workspace/packages/*"
   ],
   "scripts": {
-    "clean": "rimraf \"./packages/*/dist\" \"./examples/*/dist\" \"./test-fixtures/*/dist\"",
+    "clean": "rimraf \"./packages/*/dist\" \"./examples/*/dist\" \"./test-fixtures/*/dist\" \"./test-fixtures/workspace/packages/*/dist\"",
     "build": "yarn build:typescript && yarn build:stylable",
     "build:typescript": "tsc --build",
     "build:stylable": "lerna run build:stylable",
     "lint": "eslint . -f codeframe",
     "prestart": "yarn build",
-    "start": "engineer start --featureDiscoveryRoot dist",
+    "start": "engineer start",
     "pretest": "yarn lint && yarn build",
     "test": "yarn test:unit",
     "test:unit": "lerna run test --stream --concurrency=1",

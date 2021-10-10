@@ -3,7 +3,7 @@
   "version": "21.2.0",
   "scripts": {
     "start": "engineer start",
-    "test": "mocha \"test/**/*.ix.ts?(x)\""
+    "test": "mocha \"dist/test/**/*.ix.js\""
   },
   "private": true
 }

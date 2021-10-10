@@ -4,17 +4,9 @@
     "outDir": "../dist/test"
   },
   "references": [
-    {
-      "path": "../src"
-    },
-    {
-      "path": "../../test-kit/src"
-    },
-    {
-      "path": "../../../test-fixtures/multi-node"
-    },
-    {
-      "path": "../../../test-fixtures/multi-socket-node"
-    }
+    { "path": "../src" },
+    { "path": "../../test-kit/src" },
+    { "path": "../../../test-fixtures/multi-node/src" },
+    { "path": "../../../test-fixtures/multi-socket-node/src" }
   ]
 }

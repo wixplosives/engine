@@ -3,4 +3,6 @@ cjs
 esm
 umd
 dist
+dist-app
 dist-external
+examples/preload

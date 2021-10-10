@@ -8,10 +8,11 @@
       "@wixc3/engine-test-kit/dist/*": ["./packages/test-kit/src/*"],
       "@wixc3/engineer/dist/*": ["./packages/engineer/src/*"],
       "@fixture/*-feature": ["./test-fixtures/*/src"],
-      "@fixture/static-base-web-application-feature/dist/*": ["./test-fixtures/static-base-web-application/*"],
-      "@fixture/3rd-party/dist/*": ["./test-fixtures/3rd-party/*"],
-      "@fixture/engine-multi-node/dist/*": ["./test-fixtures/multi-node/*"],
-      "@fixture/engine-multi-socket-node/dist/*": ["./test-fixtures/multi-socket-node/*"]
+      "@fixture/base-web-application-feature/dist/*": ["./test-fixtures/base-web-application/src/*"],
+      "@fixture/static-base-web-application-feature/dist/*": ["./test-fixtures/static-base-web-application/src/*"],
+      "@fixture/3rd-party/dist/*": ["./test-fixtures/3rd-party/src/*"],
+      "@fixture/engine-multi-node/dist/*": ["./test-fixtures/multi-node/src/*"],
+      "@fixture/engine-multi-socket-node/dist/*": ["./test-fixtures/multi-socket-node/src/*"]
     }
   }
 }

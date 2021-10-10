@@ -4,7 +4,7 @@
   "scripts": {
     "start": "engineer start",
     "test": "yarn test:ix",
-    "test:ix": "mocha \"test/**/*.ix.ts?(x)\""
+    "test:ix": "mocha \"dist/test/**/*.ix.js\""
   },
   "license": "UNLICENSED",
   "private": true

@@ -141,13 +141,13 @@ describe('engineer:dev-server', function () {
     it('serves a build feature with featureDiscoveryRoot ', async () => {
         const {
             config: { port },
-        } = await setup({ basePath: engineFeatureRoots, featureDiscoveryRoot: './build' });
+        } = await setup({ basePath: engineFeatureRoots, featureDiscoveryRoot: './dist/custom-feature-location' });
 
         const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/y`);
 
         const text = await getBodyContent(page);
 
-        expect(text).to.include('Build Feature is running');
+        expect(text).to.include('Custom Feature is running');
     });
 
     it('serves a fixture feature', async () => {
@@ -229,10 +229,11 @@ describe('engineer:dev-server', function () {
     it('hot reloads config files', async () => {
         const modifiedConfigValue = 'modified config';
         const originalConfigValue = 'original config';
-        const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'feature', 'example.config.ts');
+        const configFilePathInRepo = fs.join(useConfigsFeaturePath, 'dist', 'feature', 'example.config.js');
 
         // creating config file
         await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(originalConfigValue));
+        disposables.add(() => fs.promises.unlink(configFilePathInRepo));
 
         const {
             config: { port },
@@ -241,9 +242,6 @@ describe('engineer:dev-server', function () {
             featureName: 'configs/use-configs',
             configName: 'configs/example',
         });
-
-        // after the test, delete the file
-        disposables.add(() => fs.promises.unlink(configFilePathInRepo));
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
@@ -590,9 +588,11 @@ describe('engineer:dev-server', function () {
 
 function getConfigFileContent(textText: string) {
     return `
-import UseConfigs from './use-configs.feature';
+const UseConfigs = require('./use-configs.feature').default;
 
-export default [
+Object.defineProperty(exports, "__esModule", { value: true });
+
+exports.default = [
     UseConfigs.use({
         config: {
             echoText: '${textText}'
