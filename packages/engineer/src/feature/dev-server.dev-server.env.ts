@@ -106,7 +106,7 @@ devServerFeature.setup(
 
             externalFeatureDefinitions.push(...providedExternalDefinitions);
 
-            const fixedExternalFeatureDefinitions = application.normilizeDefinitionsPackagePath(
+            const fixedExternalFeatureDefinitions = application.normalizeDefinitionsPackagePath(
                 externalFeatureDefinitions,
                 providedExternalFeaturesPath,
                 configExternalFeaturesPath,

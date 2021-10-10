@@ -97,7 +97,7 @@ export async function startDevServer({
     );
 
     const externalFeatures = getExternalFeaturesMetadata(
-        app.normilizeDefinitionsPackagePath([...configDefs, ...externalFeatureDefinitions]),
+        app.normalizeDefinitionsPackagePath([...configDefs, ...externalFeatureDefinitions]),
         resolvedExternalFeaturesPath
     );
     const { engine, dispose } = await runNodeEnvironment({

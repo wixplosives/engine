@@ -354,7 +354,7 @@ export class Application {
             require: requiredPaths = [],
         } = engineConfig ?? {};
 
-        const fixedExternalFeatureDefinitions = this.normilizeDefinitionsPackagePath(
+        const fixedExternalFeatureDefinitions = this.normalizeDefinitionsPackagePath(
             [...providedExternalFeaturesDefinitions, ...externalFeatureDefinitions],
             providedExternalFeatuersPath,
             baseExternalFeaturesPath,
@@ -424,7 +424,7 @@ export class Application {
         });
 
         fixedExternalFeatureDefinitions.push(
-            ...this.normilizeDefinitionsPackagePath(
+            ...this.normalizeDefinitionsPackagePath(
                 providedExternalFeaturesDefinitions,
                 providedExternalFeatuersPath,
                 baseExternalFeaturesPath,
@@ -497,7 +497,7 @@ export class Application {
         );
     }
 
-    protected normilizeDefinitionsPackagePath(
+    protected normalizeDefinitionsPackagePath(
         externalFeatureDefinitions: IExternalDefinition[],
         providedExternalFeatuersPath: string | undefined,
         baseExternalFeaturesPath: string | undefined,
