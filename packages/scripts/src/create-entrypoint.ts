@@ -25,6 +25,7 @@ export interface ICreateEntrypointsOptions {
     target: 'webworker' | 'web' | 'electron-renderer';
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
+    featuresBundleName?: string;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -44,6 +45,7 @@ export interface ExternalBrowserEntrypoint extends ExternalEntrypoint {
 export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint {
     target: 'web' | 'webworker' | 'node' | 'electron-renderer';
     eagerEntrypoint?: boolean;
+    featuresBundleName?: string;
 }
 
 export type LoadStatement = Pick<
@@ -106,6 +108,7 @@ export function createMainEntrypoint({
     target,
     externalFeaturesRoute,
     eagerEntrypoint,
+    featuresBundleName,
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
@@ -116,7 +119,7 @@ if(!self.EngineCore) {
 const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
 
 const featureLoaders = new Map(Object.entries({
-    ${createFeatureLoaders(features.values(), envName, childEnvs, target, eagerEntrypoint)}
+    ${createFeatureLoaders(features.values(), envName, childEnvs, target, eagerEntrypoint, featuresBundleName)}
 }));
 
 self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
@@ -183,7 +186,8 @@ function createFeatureLoaders(
     envName: string,
     childEnvs: string[],
     target: 'web' | 'webworker' | 'node' | 'electron-renderer',
-    eagerEntrypoint?: boolean
+    eagerEntrypoint?: boolean,
+    featuresBundleName?: string
 ) {
     return Array.from(features)
         .map(
@@ -195,6 +199,7 @@ function createFeatureLoaders(
                     loadStatement: webpackImportStatement,
                     target,
                     eagerEntrypoint,
+                    featuresBundleName,
                 })}`
         )
         .join(',\n');
@@ -273,7 +278,6 @@ function loadEnvAndContextFiles({
 
 function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
     const {
-        name,
         filePath,
         dependencies,
         resolvedContexts,
@@ -282,13 +286,14 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
         directoryPath,
         target,
         eagerEntrypoint,
+        featuresBundleName = 'features',
     } = args;
     const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
     return `{
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                     ${loadStatements.length ? loadStatements.join(';\n') : ''}
                     const featureModule = ${loadStatement({
-                        moduleIdentifier: `[feature]${name}`,
+                        moduleIdentifier: featuresBundleName,
                         filePath,
                         directoryPath,
                         packageName,
