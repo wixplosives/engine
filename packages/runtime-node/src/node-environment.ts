@@ -8,7 +8,7 @@ import {
     IPreloadModule,
     Environment,
 } from '@wixc3/engine-core';
-import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
+import { init, remapToUserLibrary, clear } from './external-request-mapper';
 
 import type { IEnvironment, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
 
@@ -113,7 +113,7 @@ export async function runNodeEnvironment<ENV extends Environment>({
 
 export function createFeatureLoaders(
     features: Map<string, Required<IStaticFeatureDefinition>>,
-    { childEnvName, name: envName, env }: IEnvironment
+    { childEnvName, name: envName, env }: IEnvironment<Environment>
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {
@@ -154,7 +154,6 @@ export function createFeatureLoaders(
                         await import(contextFilePath);
                     }
                 }
-
                 for (const { env: envName } of new Set([env, ...env.dependencies])) {
                     const envFilePath = envFilePaths[envName];
                     if (envFilePath) {

@@ -162,6 +162,8 @@ describe('Feature', () => {
     });
 
     it('feature should throw if setup is called with same environment twice', () => {
+        const mainEnv = new Environment('main1', 'window', 'single');
+
         const f0 = new Feature({
             id: 'test',
             api: {
@@ -170,7 +172,7 @@ describe('Feature', () => {
             },
         });
         expect(() => {
-            f0.setup('main1', () => {
+            f0.setup(mainEnv, () => {
                 return {
                     service1: {
                         echo(x: string) {
@@ -180,7 +182,7 @@ describe('Feature', () => {
                 };
             });
 
-            f0.setup('main1', () => {
+            f0.setup(mainEnv, () => {
                 return {
                     service1: {
                         echo(x: string) {
@@ -309,7 +311,7 @@ describe('Feature', () => {
                     retrieveService:
                         Service.withType<{ getValue(key: string): string | undefined }>().defineEntity('main'),
                 },
-            }).setup('main', ({ mapSlot }) => {
+            }).setup(mainEnv, ({ mapSlot }) => {
                 return {
                     retrieveService: {
                         getValue(key: string) {
@@ -343,7 +345,7 @@ describe('Feature', () => {
                     retrieveService:
                         Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(envName),
                 },
-            }).setup(envName, ({ mapSlot }) => {
+            }).setup(mainEnv, ({ mapSlot }) => {
                 return {
                     retrieveService: {
                         getValue(key: string) {
@@ -357,7 +359,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps],
-            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(mainEnv, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
             });
@@ -366,7 +368,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps],
-            }).setup(envName, ({}, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(mainEnv, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
             });
 
@@ -385,7 +387,7 @@ describe('Feature', () => {
                     retrieveService:
                         Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(envName),
                 },
-            }).setup(envName, ({ mapSlot }) => {
+            }).setup(mainEnv, ({ mapSlot }) => {
                 return {
                     retrieveService: {
                         getValue(key: string) {
@@ -399,7 +401,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps],
-            }).setup(envName, () => undefined);
+            }).setup(mainEnv, () => undefined);
             const engine = await runEngine({ entryFeature, env: mainEnv });
 
             expect(engine.get(maps).api.retrieveService.getValue('1')).to.be.equal(undefined);
@@ -470,7 +472,7 @@ describe('feature interaction', () => {
                 transformers: Slot.withType<(s: string) => string>().defineEntity(envName),
                 echoService: Service.withType<{ echo(s: string): string }>().defineEntity(envName),
             },
-        }).setup(envName, ({ transformers }) => {
+        }).setup(mainEnv, ({ transformers }) => {
             return {
                 echoService: {
                     echo(s: string) {
@@ -490,7 +492,7 @@ describe('feature interaction', () => {
             api: {
                 config: Config.withType<{ prefix: string; suffix: string }>().defineEntity({ prefix: '', suffix: '' }),
             },
-        }).setup(envName, ({ config }, { echoFeature: { transformers } }) => {
+        }).setup(mainEnv, ({ config }, { echoFeature: { transformers } }) => {
             transformers.register((s: string) => {
                 return `${config.prefix}${s}${config.suffix}`;
             });

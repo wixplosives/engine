@@ -1,23 +1,23 @@
 import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
-import type { Environment, Feature } from './entities';
+import type { AnyEnvironment, Feature } from './entities';
 import { deferred, flattenTree, IDeferredPromise } from './helpers';
 
-export interface IRunEngineOptions<ENV> {
+export interface IRunEngineOptions<ENV extends AnyEnvironment> {
     entryFeature: Feature | Feature[];
     topLevelConfig?: TopLevelConfig;
     env: ENV;
     runOptions?: IRunOptions;
 }
 
-export function run<ENV extends Environment<any, any, any, any>>({
+export function run<ENV extends AnyEnvironment>({
     entryFeature,
     topLevelConfig = [],
     env,
     runOptions,
 }: IRunEngineOptions<ENV>) {
-    return new RuntimeEngine<ENV>(topLevelConfig, runOptions).run(entryFeature, env);
+    return new RuntimeEngine(env, topLevelConfig, runOptions).run(entryFeature);
 }
 
 export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
@@ -35,7 +35,7 @@ export interface IPreloadModule {
     init?: (runtimeOptions?: Record<string, string | boolean>) => Promise<void> | void;
 }
 
-export interface IRunEngineAppOptions<ENV extends Environment> {
+export interface IRunEngineAppOptions<ENV extends AnyEnvironment> {
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;
     env: ENV;
@@ -44,7 +44,7 @@ export interface IRunEngineAppOptions<ENV extends Environment> {
     resolvedContexts: Record<string, string>;
 }
 
-export function runEngineApp<ENV extends Environment = Environment<any, any, any>>({
+export function runEngineApp<ENV extends AnyEnvironment>({
     config = [],
     options,
     env,
@@ -52,8 +52,8 @@ export function runEngineApp<ENV extends Environment = Environment<any, any, any
     features = [],
     resolvedContexts = {},
 }: IRunEngineAppOptions<ENV>) {
-    const engine = new RuntimeEngine<ENV>([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    const runningPromise = engine.run(features, env);
+    const engine = new RuntimeEngine(env, [COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
+    const runningPromise = engine.run(features);
 
     return {
         engine,

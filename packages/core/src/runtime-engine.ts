@@ -1,14 +1,13 @@
-import type { EnvironmentTypes } from './com/types';
 import COM from './communication.feature';
-import type { RuntimeFeature, Feature, Environment, EnvironmentMode } from './entities';
+import type { RuntimeFeature, Feature, Environment } from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine<ENV extends Environment = Environment> {
-    public features = new Map<Feature, RuntimeFeature>();
+    public features = new Map<Feature, RuntimeFeature<Feature, ENV>>();
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
-    constructor(topLevelConfig: TopLevelConfig = [], public runOptions: IRunOptions = new Map()) {
+    constructor(private env: ENV, topLevelConfig: TopLevelConfig = [], public runOptions: IRunOptions = new Map()) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
     }
 
@@ -21,7 +20,7 @@ export class RuntimeEngine<ENV extends Environment = Environment> {
         }
     }
 
-    public async run(features: Feature | Feature[], env: Environment): Promise<this> {
+    public async run(features: Feature | Feature[]): Promise<this> {
         if (this.running) {
             throw new Error('Engine already running!');
         }
@@ -30,33 +29,30 @@ export class RuntimeEngine<ENV extends Environment = Environment> {
             features = [features];
         }
         for (const feature of features) {
-            this.initFeature(feature, env);
+            this.initFeature(feature);
         }
         const runPromises: Array<Promise<void>> = [];
         for (const feature of features) {
-            runPromises.push(this.runFeature(feature, env));
+            runPromises.push(this.runFeature(feature));
         }
         await Promise.all(runPromises);
         return this;
     }
 
-    public initFeature<T extends Feature>(feature: T, env: Environment) {
+    public initFeature<T extends Feature>(feature: T): RuntimeFeature<Feature, ENV> {
         let instance = this.features.get(feature);
         if (!instance) {
-            instance = feature[CREATE_RUNTIME](this, env) as RuntimeFeature<
-                Feature<string, any[], any, any>,
-                Environment<string, EnvironmentTypes, EnvironmentMode, []>
-            >;
+            instance = feature[CREATE_RUNTIME](this, this.env);
         }
         return instance;
     }
 
-    public async runFeature(feature: Feature, env: Environment): Promise<void> {
+    public async runFeature(feature: Feature): Promise<void> {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
         }
-        await featureInstance[RUN](this, env);
+        await featureInstance[RUN](this, this.env);
     }
 
     public async dispose(feature: Feature, envName: string) {

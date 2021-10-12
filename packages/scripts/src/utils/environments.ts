@@ -1,4 +1,4 @@
-import { Environment, SetMultiMap } from '@wixc3/engine-core';
+import { AnyEnvironment, Environment, SetMultiMap } from '@wixc3/engine-core';
 import type { IEnvironment } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '../types';
 
@@ -7,12 +7,12 @@ export interface GetResolveEnvironmentsParams {
     filterContexts?: boolean;
     features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs' | 'resolvedContexts'>>;
     environments: IEnvironment[];
-    findAllEnviromnents?: boolean;
+    findAllEnvironments?: boolean;
 }
 
 export interface ISimplifiedEnvironment {
     childEnvs: string[];
-    env: Environment;
+    env: AnyEnvironment;
 }
 
 export function getResolvedEnvironments({
@@ -20,7 +20,7 @@ export function getResolvedEnvironments({
     filterContexts,
     features,
     environments,
-    findAllEnviromnents,
+    findAllEnvironments,
 }: GetResolveEnvironmentsParams) {
     const webEnvs = new Map<string, ISimplifiedEnvironment>();
     const workerEnvs = new Map<string, ISimplifiedEnvironment>();
@@ -28,7 +28,7 @@ export function getResolvedEnvironments({
     const nodeEnvs = new Map<string, ISimplifiedEnvironment>();
     const electronMainEnvs = new Map<string, ISimplifiedEnvironment>();
 
-    const resolvedContexts = findAllEnviromnents
+    const resolvedContexts = findAllEnvironments
         ? getPossibleContexts(features)
         : featureName && filterContexts
         ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
@@ -56,7 +56,7 @@ export function getResolvedEnvironments({
     };
 }
 
-function addEnv(envs: Map<string, ISimplifiedEnvironment>, { name, childEnvName, env: environment }: IEnvironment) {
+function addEnv(envs: Map<string, ISimplifiedEnvironment>, { name, childEnvName, env: environment }: IEnvironment<Environment>) {
     const env = envs.get(name) || {
         childEnvs: [] as string[],
         env: environment,

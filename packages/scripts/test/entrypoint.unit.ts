@@ -20,7 +20,7 @@ describe('create entrypoint', () => {
                                 type: clientEnv.envType,
                                 dependencies: [analyzedBaseEnv],
                                 env: clientEnv,
-                            } as IEnvironment,
+                            }
                         ],
                         resolvedContexts: {},
                     },

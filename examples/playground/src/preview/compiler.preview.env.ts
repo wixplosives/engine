@@ -1,6 +1,6 @@
-import Preview from './compiler.feature';
+import Preview, { PREVIEW } from './compiler.feature';
 
-Preview.setup('preview', ({ run, compileService }, { playgroundCodeEditor: { remoteCodeService } }) => {
+Preview.setup(PREVIEW, ({ run, compileService }, { playgroundCodeEditor: { remoteCodeService } }) => {
     run(async () => {
         await remoteCodeService.listen(async () => {
             document.body.innerHTML = (await compileService.compile()).code;

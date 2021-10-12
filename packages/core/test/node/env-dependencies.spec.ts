@@ -8,7 +8,7 @@ chai.use(chaiAsPromised);
 
 describe('ENV dependencies', () => {
     it('simple env dependency', async () => {
-        const baseEnv = new Environment('baseEnv', 'node', 'multi');
+        const baseEnv = new Environment('baseEnv', 'node', 'multi', []);
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
         const entryFeature = new Feature({
             id: 'test',
@@ -18,6 +18,7 @@ describe('ENV dependencies', () => {
                     Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(extendingEnv),
             },
         });
+
 
         entryFeature.setup(baseEnv, ({}) => {
             return {
@@ -33,7 +34,7 @@ describe('ENV dependencies', () => {
                 },
             };
         });
-        const engine = await runEngine<typeof extendingEnv>({ entryFeature, env: extendingEnv });
+        const engine = await runEngine({ entryFeature, env: extendingEnv });
         const runningFeature = engine.get(entryFeature);
 
         expect(runningFeature.api.service2.multiplyThenIncrement(5)).to.equal(11);
@@ -84,7 +85,7 @@ describe('ENV dependencies', () => {
                 service2,
             };
         });
-        const engine = await runEngine<typeof extendingEnv>({ entryFeature, env: extendingEnv });
+        const engine = await runEngine({ entryFeature, env: extendingEnv });
         const runningFeature = engine.get(entryFeature);
 
         expect(runningFeature.api.service2.multiplyThenIncrement(5)).to.equal(11);

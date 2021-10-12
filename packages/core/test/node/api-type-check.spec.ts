@@ -195,5 +195,5 @@ export async function dontRun() {
         };
     });
 
-    await new RuntimeEngine([]).run(addPanel, env);
+    await new RuntimeEngine(env, []).run(addPanel);
 }

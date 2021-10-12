@@ -1,8 +1,8 @@
-import type { EnvironmentTypes, TopLevelConfig, BaseHost, Environment } from '@wixc3/engine-core';
+import type { EnvironmentTypes, TopLevelConfig, BaseHost, Environment, AnyEnvironment } from '@wixc3/engine-core';
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
-export interface IExtenalFeatureDescriptor {
+export interface IExternalFeatureDescriptor {
     envEntries: Record<string, Record<string, string>>;
     packageBasePath: string;
 }
@@ -16,10 +16,10 @@ export interface IStaticFeatureDefinition {
     resolvedContexts?: Record<string, string>;
     packageName: string;
     filePath: string;
-    exportedEnvs?: IEnvironment[];
+    exportedEnvs?: IEnvironment<AnyEnvironment>[];
 }
 
-export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IStaticFeatureDefinition {}
+export interface IExternalFeatureNodeDescriptor extends IExternalFeatureDescriptor, IStaticFeatureDefinition {}
 
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
@@ -96,7 +96,7 @@ export interface IEnvironment<ENV extends Environment = Environment> {
     type: EnvironmentTypes;
     name: string;
     childEnvName?: string;
-    dependencies?: IEnvironment<ENV>[];
+    dependencies?: IEnvironment[];
     env: ENV;
 }
 

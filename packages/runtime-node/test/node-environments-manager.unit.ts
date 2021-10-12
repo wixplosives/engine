@@ -202,7 +202,7 @@ describe('Node environments manager', function () {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
             },
             dependencies: [SocketServerNodeFeature, COM],
-        }).setup('dev', ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: socketServerEnv });
 
             return {
@@ -298,7 +298,7 @@ describe('Node environments manager', function () {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
             },
             dependencies: [ServerNodeFeature, COM],
-        }).setup('dev', ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: serverEnv });
 
             return {

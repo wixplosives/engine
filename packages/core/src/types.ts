@@ -1,6 +1,7 @@
 import type { TupleToUnion } from 'typescript-type-utils';
+import type { EnvironmentTypes } from './com/types';
 import type { LogMessage } from './common-types';
-import type { Environment, Universal } from './entities/env';
+import type { MultiEnvironment, Universal } from './entities/env';
 import type { Feature } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
@@ -68,8 +69,10 @@ export type NormalizeEnvironmentFilter<T extends EnvironmentFilter> = T extends 
     ? T
     : never;
 
-export type NormalizeEnvironmentDeps<T extends EnvironmentFilter> = T extends Environment<any, any, any, any>
-    ? T['__depNames']
+export type NormalizeEnvironmentDeps<T> = T extends {
+    dependencies: MultiEnvironment<EnvironmentTypes>[];
+}
+    ? T['dependencies'][number]['env']
     : never;
 
 export type EnvVisibility = string | { env: string; envType?: string } | Array<{ env: string; envType?: string }>;
@@ -219,6 +222,7 @@ export type SetupHandler<
     Deps extends Feature[],
     API extends EntityRecord,
     EnvironmentContext extends Record<string, Context<any>>,
+    // TODO: check
     Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>,
     DEP_NAMES extends NormalizeEnvironmentDeps<EnvFilter> = NormalizeEnvironmentDeps<EnvFilter>
 > = (

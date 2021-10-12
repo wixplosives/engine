@@ -37,6 +37,7 @@ export function createIPC(
             const ipcHost = new IPCHost(process);
             // re-mapping all provided connected environments to use the IPC host, to allow, through the parent process, access other node environments
             const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
+            //TODO: check
             for (const [envName, config] of message.data.config ?? []) {
                 if (envName === COM.id) {
                     const typedConfig = (config as PartialFeatureConfig<typeof COM['api']>).config ?? {};

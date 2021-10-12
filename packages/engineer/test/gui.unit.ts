@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import fs from '@file-services/node';
-import { createDisposables, RuntimeFeature } from '@wixc3/engine-core';
+import { createDisposables } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
 import guiFeature from '@wixc3/engineer/gui-feature';
@@ -18,7 +18,7 @@ describe('engineer:gui', function () {
             targetApplicationPath: basePath,
         });
 
-        const runtimeFeature = engine.features.get(guiFeature) as RuntimeFeature;
+        const runtimeFeature = engine.get(guiFeature);
 
         const runningPort = await new Promise<number>((resolve) => {
             devServerFeature.serverListeningHandlerSlot.register(({ port }) => {

@@ -1,26 +1,37 @@
 import type { EnvironmentTypes } from '../com/types';
 import { runtimeType } from '../entity-helpers';
-import type { DisposableContext, EnvVisibility, MapBy, EnvironmentFilter } from '../types';
+import type { DisposableContext, EnvVisibility, MapBy } from '../types';
 
 export type EnvironmentMode = 'single' | 'multi';
+export type AnyEnvironment = Environment<string, EnvironmentTypes, EnvironmentMode, any>;
 
-export type EnvNames<T extends Environment[]> = T extends Array<infer U>
-    ? U extends Environment<any, any, any>
-        ? U['__depNames'] | U['env']
-        : never
-    : never;
+export type MultiEnvironment<TYPE extends EnvironmentTypes> = Environment<
+    string,
+    TYPE,
+    'multi',
+    MultiEnvironment<TYPE>[] | []
+>;
+
+// type EnvironmentDependencies<T>
+
+// export type EnvNames<T> = T extends Array<infer U>
+//     ? U extends Environment
+//         ? U['dependencies'][number]['env'] | U['env']
+//         : never
+//     : never;
+
 export class Environment<
     NAME extends string = string,
     TYPE extends EnvironmentTypes = EnvironmentTypes,
     MODE extends EnvironmentMode = EnvironmentMode,
-    DEPS extends Array<Environment<string, TYPE, 'multi', any>> = []
+    DEPS extends MultiEnvironment<TYPE>[] | [] = []
 > {
-    __depNames: EnvNames<DEPS> = this.env as EnvNames<DEPS>;
+    // __depNames: EnvNames<DEPS> = this.dependencies.map(({ env }) => env) as EnvNames<DEPS>;
     constructor(
-        public env: NAME,
-        public envType: TYPE,
-        public endpointType: MODE,
-        public dependencies: DEPS = [] as unknown as DEPS
+        public readonly env: NAME,
+        public readonly envType: TYPE,
+        public readonly endpointType: MODE,
+        public readonly dependencies: DEPS = [] as DEPS
     ) {}
 }
 
@@ -90,10 +101,6 @@ export function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: S
         test(envVisibility.env);
     }
     return [...containsEnv];
-}
-
-export function getEnvName(env: EnvironmentFilter): string {
-    return typeof env === 'string' ? env : env.env;
 }
 
 export function isProvidedFrom(envVisibility: EnvVisibility, envSet: Set<string>) {

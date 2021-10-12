@@ -203,7 +203,7 @@ export class Application {
             features,
             filterContexts: singleFeature,
             environments: [...getExportedEnvironments(features)],
-            findAllEnviromnents: external,
+            findAllEnvironments: external,
         });
 
         const externalsFilePath = staticExternalFeaturesFileName.startsWith('/')
@@ -283,7 +283,7 @@ export class Application {
             JSON.stringify(externalFeatures)
         );
 
-        // only if building this feature as a static build, we want to create a folder that will match the external feature definition. meaning that we will copy all external feature root folders into EXTERNAL_FEATURES_BASE_URI. This is correct beceuase the mapping for each feature inside the externalFeatures onkect, will hold the following mapping for each web entry: `${EXTERNAL_FEATURES_BASE_URI}/${externalFeaturePackageName}/${externalFeatureOutDir}/entry-file.js`
+        // only if building this feature as a static build, we want to create a folder that will match the external feature definition. meaning that we will copy all external feature root folders into EXTERNAL_FEATURES_BASE_URI. This is correct because the mapping for each feature inside the externalFeatures object, will hold the following mapping for each web entry: `${EXTERNAL_FEATURES_BASE_URI}/${externalFeaturePackageName}/${externalFeatureOutDir}/entry-file.js`
         if (externalFeatures.length && staticBuild) {
             const externalFeaturesPath = fs.join(this.outputPath, EXTERNAL_FEATURES_BASE_URI);
             for (const { packageName, packagePath } of [

@@ -136,7 +136,7 @@ export async function getRunningFeature<
     engine: RuntimeEngine;
 }> {
     const { feature } = options;
-    const { engine, dispose } = await runEngineEnvironment<ENV>(options);
+    const { engine, dispose } = await runEngineEnvironment(options);
     const { api } = engine.get(feature);
     return {
         runningApi: api,
