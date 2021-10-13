@@ -14,7 +14,6 @@ import {
     DisposableContext,
     RuntimeEngine,
     flattenTree,
-    NormalizeEnvironmentFilter,
     Running,
 } from '@wixc3/engine-core';
 import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
@@ -132,7 +131,7 @@ export async function getRunningFeature<
     options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
-    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, NormalizeEnvironmentFilter<ENV>>;
+    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV['env']>;
     engine: RuntimeEngine;
 }> {
     const { feature } = options;

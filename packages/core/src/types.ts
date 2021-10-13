@@ -1,7 +1,7 @@
 import type { TupleToUnion } from 'typescript-type-utils';
 import type { EnvironmentTypes } from './com/types';
 import type { LogMessage } from './common-types';
-import type { MultiEnvironment, Universal } from './entities/env';
+import type { AnyEnvironment, MultiEnvironment, Universal } from './entities/env';
 import type { Feature } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
@@ -61,13 +61,6 @@ export type GetOnlyLocalUniversalOutputs<T extends EntityRecord> = FilterRecord<
 export interface EntityRecord {
     [key: string]: Entity;
 }
-
-export type EnvironmentFilter = string | { env: string };
-export type NormalizeEnvironmentFilter<T extends EnvironmentFilter> = T extends { env: infer U1 }
-    ? U1
-    : T extends string
-    ? T
-    : never;
 
 export type NormalizeEnvironmentDeps<T> = T extends {
     dependencies: MultiEnvironment<EnvironmentTypes>[];
@@ -169,7 +162,12 @@ type RunningEnvironmentNameForUniversal<ENV> = ENV extends '<Universal>'
       }
     : {};
 
-export type SettingUpFeature<ID extends string, API extends EntityRecord, ENV extends string> = {
+export type SettingUpFeature<
+    ID extends string,
+    API extends EntityRecord,
+    ENV extends string,
+    ENV_DEPS extends string
+> = {
     id: ID;
     run: (fn: () => unknown) => void;
     onDispose: (fn: DisposeFunction) => void;
@@ -178,14 +176,15 @@ export type SettingUpFeature<ID extends string, API extends EntityRecord, ENV ex
     MapVisibleInputs<API, ENV> &
     MapToProxyType<GetRemoteOutputs<API>> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
-    RunningEnvironmentNameForUniversal<ENV>;
+    RunningEnvironmentNameForUniversal<ENV> &
+    Running<{ api: API }, ENV_DEPS>;
 
 export type RegisteringFeature<
     API extends EntityRecord,
-    ENV extends string,
-    ProvidedOutputs extends MapTypesForEnv<GetOutputs<API>, ENV, 'providedFrom'> = MapTypesForEnv<
+    ENV extends AnyEnvironment,
+    ProvidedOutputs extends MapTypesForEnv<GetOutputs<API>, ENV['env'], 'providedFrom'> = MapTypesForEnv<
         GetOutputs<API>,
-        ENV,
+        ENV['env'],
         'providedFrom'
     >
 > = keyof ProvidedOutputs extends never ? undefined | void : ProvidedOutputs;
@@ -217,26 +216,22 @@ export interface IDisposable {
 export type DisposableContext<T> = Context<T & IContextDispose>;
 
 export type SetupHandler<
-    EnvFilter extends EnvironmentFilter,
+    ENV extends AnyEnvironment,
     ID extends string,
     Deps extends Feature[],
     API extends EntityRecord,
     EnvironmentContext extends Record<string, Context<any>>,
     // TODO: check
-    Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>,
-    DEP_NAMES extends NormalizeEnvironmentDeps<EnvFilter> = NormalizeEnvironmentDeps<EnvFilter>
+    DEP_NAMES extends NormalizeEnvironmentDeps<ENV> = NormalizeEnvironmentDeps<ENV>
 > = (
-    feature: SettingUpFeature<ID, API, Filter> & Running<{ api: API }, DEP_NAMES>,
-    runningFeatures: RunningFeatures<Deps, DEP_NAMES | Filter>,
+    feature: SettingUpFeature<ID, API, ENV['env'], DEP_NAMES>,
+    runningFeatures: RunningFeatures<Deps, DEP_NAMES | ENV['env']>,
     context: MapRecordType<EnvironmentContext>
-) => RegisteringFeature<API, Filter>;
+) => RegisteringFeature<API, ENV>;
 
-export type ContextHandler<
-    C,
-    EnvFilter extends EnvironmentFilter,
-    Deps extends Feature[],
-    Filter extends NormalizeEnvironmentFilter<EnvFilter> = NormalizeEnvironmentFilter<EnvFilter>
-> = (runningFeatures: RunningFeatures<Deps, Filter>) => C;
+export type ContextHandler<C, EnvFilter extends AnyEnvironment, Deps extends Feature[]> = (
+    runningFeatures: RunningFeatures<Deps, EnvFilter['env']>
+) => C;
 
 export interface Configurable<T> {
     [CONFIGURABLE]: true;

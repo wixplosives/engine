@@ -287,7 +287,7 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
     if (typeof exports === 'object' && exports !== null) {
         const { exportedEnvs: envs = [], usedContexts = {} } = featureFile;
         for (const exportValue of Object.values(exports)) {
-            if (instanceOf(exportValue, Environment) || instanceOf(exportValue, SingleEndpointContextualEnvironment)) {
+            if (instanceOf(exportValue, Environment)) {
                 if (instanceOf(exportValue, SingleEndpointContextualEnvironment)) {
                     envs.push(...parseContextualEnv(exportValue));
                 } else {

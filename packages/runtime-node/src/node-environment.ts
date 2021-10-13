@@ -113,7 +113,7 @@ export async function runNodeEnvironment<ENV extends Environment>({
 
 export function createFeatureLoaders(
     features: Map<string, Required<IStaticFeatureDefinition>>,
-    { childEnvName, name: envName, env }: IEnvironment<Environment>
+    { childEnvName, name: envName, env }: IEnvironment
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {

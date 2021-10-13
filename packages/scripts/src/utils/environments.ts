@@ -1,4 +1,4 @@
-import { AnyEnvironment, Environment, SetMultiMap } from '@wixc3/engine-core';
+import { AnyEnvironment, SetMultiMap } from '@wixc3/engine-core';
 import type { IEnvironment } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '../types';
 
@@ -56,9 +56,9 @@ export function getResolvedEnvironments({
     };
 }
 
-function addEnv(envs: Map<string, ISimplifiedEnvironment>, { name, childEnvName, env: environment }: IEnvironment<Environment>) {
-    const env = envs.get(name) || {
-        childEnvs: [] as string[],
+function addEnv(envs: Map<string, ISimplifiedEnvironment>, { name, childEnvName, env: environment }: IEnvironment) {
+    const env: ISimplifiedEnvironment = envs.get(name) || {
+        childEnvs: [],
         env: environment,
     };
     if (childEnvName) {

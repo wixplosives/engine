@@ -47,7 +47,8 @@ export const globallyProvidingEnvironments = new Set([Universal.env, AllEnvironm
 export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
     NAME,
     EnvironmentTypes,
-    'single'
+    'single',
+    []
 > {
     constructor(env: NAME, public environments: ENVS) {
         super(env, 'context', 'single');
