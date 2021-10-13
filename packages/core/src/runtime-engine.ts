@@ -16,7 +16,7 @@ export class RuntimeEngine<ENV extends Environment = Environment> {
         if (runningFeature) {
             return runningFeature as RuntimeFeature<T, ENV>;
         } else {
-            throw new Error('missing feature');
+            throw new Error(`missing feature ${feature.id}`);
         }
     }
 

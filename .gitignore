@@ -5,6 +5,7 @@ _wcs
 .vscode/settings.json
 .DS_Store
 .idea
+dist-app
 dist-external
 
 # Logs

@@ -31,7 +31,7 @@ interface IPackageDescriptor {
     name: string;
 }
 
-const featureRoots = ['.', 'src', 'src/feature', 'src/fixtures', 'feature', 'fixtures'] as const;
+const featureRoots = ['.', 'feature', 'fixtures'] as const;
 
 const convertEnvToIEnv = (env: Environment): IEnvironment => {
     const { env: name, envType: type } = env;

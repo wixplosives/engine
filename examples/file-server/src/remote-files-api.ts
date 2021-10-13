@@ -1,4 +1,4 @@
-import { FileSystemAPI, SERVER_MARK } from '../feature/file-server.feature';
+import { FileSystemAPI, SERVER_MARK } from './feature/file-server.feature';
 import type { IDirectoryContents } from './types';
 import { FileActions } from './file-actions';
 import performance from '@wixc3/cross-performance';

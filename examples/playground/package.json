@@ -1,8 +1,8 @@
 {
   "name": "@example/playground",
-  "version": "21.2.0",
+  "version": "21.3.0",
   "scripts": {
-    "build:stylable": "stc --srcDir=\"src\" --outDir=\"dist/src\" --stcss --no-cjs --diagnostics",
+    "build:stylable": "stc --srcDir=\"src\" --outDir=\"dist\" --stcss --no-cjs --diagnostics",
     "start": "engineer start"
   },
   "license": "UNLICENSED",

@@ -111,7 +111,7 @@ describe('Application', function () {
                 expect(manifest.entryPoints).to.not.eq(undefined);
                 expect(Object.keys(manifest.entryPoints)).have.lengthOf(1);
                 expect(manifest.entryPoints['main']).to.not.eq(undefined);
-                expect(manifest.entryPoints['main']!['web']).to.eq('dist/main.web.js');
+                expect(manifest.entryPoints['main']!['web']).to.eq('dist-app/main.web.js');
             });
 
             it('maps own feature requests to relative requests if output path inside package directory', async () => {
@@ -127,7 +127,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('../feature/x.feature');
+                expect(filePath).to.eq('../dist/feature/x.feature');
             });
 
             it('uses sourcesRoot when building to the output path which is inside package directory', async () => {
@@ -144,7 +144,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('../lib/feature/x.feature');
+                expect(filePath).to.eq('../lib/dist/feature/x.feature');
             });
 
             it('maps to own feature request to package requests if output path outside package directory', async () => {
@@ -161,7 +161,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('@fixture/engine-single-feature/feature/x.feature');
+                expect(filePath).to.eq('@fixture/engine-single-feature/dist/feature/x.feature');
             });
 
             it('uses package requests when output path is outside package path', async () => {
@@ -179,7 +179,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('@fixture/engine-single-feature/lib/feature/x.feature');
+                expect(filePath).to.eq('@fixture/engine-single-feature/lib/dist/feature/x.feature');
             });
         });
 
@@ -238,7 +238,10 @@ describe('Application', function () {
                 );
 
                 await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.be.rejectedWith();
-                fs.copyDirectorySync(fs.join(nodeFeatureFixturePath, 'feature'), fs.join(tempDirPath, 'lib/feature'));
+                fs.copyDirectorySync(
+                    fs.join(nodeFeatureFixturePath, 'dist/feature'),
+                    fs.join(tempDirPath, 'lib/feature')
+                );
                 await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.not.be.rejectedWith();
             });
         });
