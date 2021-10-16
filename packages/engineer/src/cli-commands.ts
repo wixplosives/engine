@@ -138,7 +138,7 @@ export const startCommand: CliCommand = (program) =>
 export function buildCommand(program: Command) {
     engineCommandBuilder(program, 'build [path]')
         .option('--mode <production|development>', 'mode passed to webpack', 'production')
-        .option('--outDir <outDir>', 'default: dist')
+        .option('--outDir <outDir>', 'output directory for the built application', 'dist-app')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
@@ -162,7 +162,7 @@ export function buildCommand(program: Command) {
             const {
                 feature: featureName,
                 config: configName,
-                outDir = 'dist',
+                outDir,
                 require: pathsToRequire,
                 publicPath,
                 mode,
