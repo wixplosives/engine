@@ -12,14 +12,6 @@ export type MultiEnvironment<TYPE extends EnvironmentTypes> = Environment<
     MultiEnvironment<TYPE>[] | []
 >;
 
-// type EnvironmentDependencies<T>
-
-// export type EnvNames<T> = T extends Array<infer U>
-//     ? U extends Environment
-//         ? U['dependencies'][number]['env'] | U['env']
-//         : never
-//     : never;
-
 export class Environment<
     NAME extends string = string,
     TYPE extends EnvironmentTypes = EnvironmentTypes,
