@@ -1,14 +1,26 @@
 import COM from './communication.feature';
-import type { RuntimeFeature, Feature, Environment } from './entities';
+import {
+    RuntimeFeature,
+    Feature,
+    Environment,
+    globallyProvidingEnvironments,
+    orderedEnvDependencies,
+} from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine<ENV extends Environment = Environment> {
     public features = new Map<Feature, RuntimeFeature<Feature, ENV>>();
+    public referencedEnvs: Set<string>;
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
-    constructor(private env: ENV, topLevelConfig: TopLevelConfig = [], public runOptions: IRunOptions = new Map()) {
+    constructor(
+        public entryEnvironment: ENV,
+        topLevelConfig: TopLevelConfig = [],
+        public runOptions: IRunOptions = new Map()
+    ) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
+        this.referencedEnvs = new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(entryEnvironment)]);
     }
 
     public get<T extends Feature>(feature: T): RuntimeFeature<T, ENV> {
@@ -42,7 +54,7 @@ export class RuntimeEngine<ENV extends Environment = Environment> {
     public initFeature<T extends Feature>(feature: T): RuntimeFeature<Feature, ENV> {
         let instance = this.features.get(feature);
         if (!instance) {
-            instance = feature[CREATE_RUNTIME](this, this.env);
+            instance = feature[CREATE_RUNTIME](this);
         }
         return instance;
     }
@@ -52,12 +64,13 @@ export class RuntimeEngine<ENV extends Environment = Environment> {
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
         }
-        await featureInstance[RUN](this, this.env);
+        await featureInstance[RUN](this);
     }
 
     public async dispose(feature: Feature, envName: string) {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
+            // TODO: fixme pass this.entryEnvironment
             await runningFeature[DISPOSE](this, envName);
             this.features.delete(feature);
         }

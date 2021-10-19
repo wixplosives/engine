@@ -10,7 +10,7 @@ export interface GetResolveEnvironmentsParams {
     findAllEnvironments?: boolean;
 }
 
-export interface ISimplifiedEnvironment {
+export interface IResolvedEnvironment {
     childEnvs: string[];
     env: AnyEnvironment;
 }
@@ -22,11 +22,11 @@ export function getResolvedEnvironments({
     environments,
     findAllEnvironments,
 }: GetResolveEnvironmentsParams) {
-    const webEnvs = new Map<string, ISimplifiedEnvironment>();
-    const workerEnvs = new Map<string, ISimplifiedEnvironment>();
-    const electronRendererEnvs = new Map<string, ISimplifiedEnvironment>();
-    const nodeEnvs = new Map<string, ISimplifiedEnvironment>();
-    const electronMainEnvs = new Map<string, ISimplifiedEnvironment>();
+    const webEnvs = new Map<string, IResolvedEnvironment>();
+    const workerEnvs = new Map<string, IResolvedEnvironment>();
+    const electronRendererEnvs = new Map<string, IResolvedEnvironment>();
+    const nodeEnvs = new Map<string, IResolvedEnvironment>();
+    const electronMainEnvs = new Map<string, IResolvedEnvironment>();
 
     const resolvedContexts = findAllEnvironments
         ? getPossibleContexts(features)
@@ -56,15 +56,18 @@ export function getResolvedEnvironments({
     };
 }
 
-function addEnv(envs: Map<string, ISimplifiedEnvironment>, { name, childEnvName, env: environment }: IEnvironment) {
-    const env: ISimplifiedEnvironment = envs.get(name) || {
-        childEnvs: [],
-        env: environment,
-    };
+function addEnv(envs: Map<string, IResolvedEnvironment>, { name, childEnvName, env: environment }: IEnvironment) {
+    let env = envs.get(name);
+    if (!env) {
+        env = {
+            childEnvs: [],
+            env: environment,
+        };
+        envs.set(name, env);
+    }
     if (childEnvName) {
         env.childEnvs.push(childEnvName);
     }
-    envs.set(name, env);
 }
 
 function getAllResolvedContexts(features: Map<string, Pick<IFeatureDefinition, 'resolvedContexts'>>) {

@@ -36,6 +36,11 @@ export const AllEnvironments: Environment = new Environment('<All>', 'window', '
 export const NoEnvironments = new Environment('<None>', 'window', 'multi');
 
 export const globallyProvidingEnvironments = new Set([Universal.env, AllEnvironments.env]);
+// TODO: move me
+export function orderedEnvDependencies(env: Environment): string[] {
+    return env.dependencies?.flatMap(orderedEnvDependencies).concat(env.env) ?? [];
+}
+
 export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
     NAME,
     EnvironmentTypes,

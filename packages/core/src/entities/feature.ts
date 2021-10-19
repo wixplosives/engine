@@ -12,12 +12,14 @@ import type {
     PartialFeatureConfig,
     RunningFeatures,
     SetupHandler,
+    ReferencedEnvironments,
 } from '../types';
-import { AnyEnvironment, Environment, testEnvironmentCollision, globallyProvidingEnvironments } from './env';
+import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
 import { deferred, IDeferredPromise, SetMultiMap } from '../helpers';
 
-/*************** FEATURE ***************/
+const emptyDispose = { dispose: () => undefined };
 
+/*************** FEATURE ***************/
 export class RuntimeFeature<T extends Feature, ENV extends Environment> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
@@ -26,8 +28,8 @@ export class RuntimeFeature<T extends Feature, ENV extends Environment> {
 
     constructor(
         public feature: T,
-        public api: Running<T, ENV['env'] | ENV['dependencies'][number]['env']>,
-        public dependencies: RunningFeatures<T['dependencies'], ENV['env'] | ENV['dependencies'][number]['env']>
+        public api: Running<T, ReferencedEnvironments<ENV>>,
+        public dependencies: RunningFeatures<T['dependencies'], ReferencedEnvironments<ENV>>
     ) {}
 
     public addRunHandler(fn: () => unknown, envName: string) {
@@ -36,14 +38,13 @@ export class RuntimeFeature<T extends Feature, ENV extends Environment> {
     public addOnDisposeHandler(fn: DisposeFunction, envName: string) {
         this.disposeHandlers.add(envName, fn);
     }
-    public async [RUN](context: RuntimeEngine, env: Environment): Promise<void> {
+    public async [RUN](context: RuntimeEngine): Promise<void> {
         if (this.running) {
             return;
         }
         this.running = true;
-
         const runPromises: Array<unknown> = [];
-        for (const envName of new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(env)])) {
+        for (const envName of context.referencedEnvs) {
             for (const dep of this.feature.dependencies) {
                 runPromises.push(context.runFeature(dep));
             }
@@ -119,10 +120,14 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME]<ENV extends Environment>(
-        runningEngine: RuntimeEngine,
-        env: ENV
-    ): RuntimeFeature<this, ENV> {
+    public [CREATE_RUNTIME]<ENV extends Environment>(runningEngine: RuntimeEngine<ENV>): RuntimeFeature<this, ENV> {
+        const {
+            features,
+            runOptions,
+            referencedEnvs,
+            entryEnvironment: { env: envName },
+        } = runningEngine;
+
         const deps: any = {};
         const depsApis: any = {};
         const runningApi: any = {};
@@ -133,7 +138,7 @@ export class Feature<
 
         const feature = new RuntimeFeature<this, ENV>(this, runningApi, deps);
 
-        runningEngine.features.set(this, feature);
+        features.set(this, feature);
 
         for (const dep of this.dependencies) {
             deps[dep.id] = runningEngine.initFeature(dep);
@@ -147,7 +152,6 @@ export class Feature<
             }
         }
 
-        const envName = env.env;
         const settingUpFeature = {
             ...inputApi,
             id: this.id,
@@ -157,17 +161,15 @@ export class Feature<
             onDispose(fn: DisposeFunction) {
                 feature.addOnDisposeHandler(fn, envName);
             },
-            [RUN_OPTIONS]: runningEngine.runOptions,
+            [RUN_OPTIONS]: runOptions,
             runningEnvironmentName: envName,
         };
 
-        const emptyDispose = { dispose: () => undefined };
         for (const [key, contextHandler] of this.contextHandlers) {
-            const contextValue = contextHandler(depsApis);
-            environmentContext[key] = { ...emptyDispose, ...contextValue };
+            environmentContext[key] = { ...emptyDispose, ...contextHandler(depsApis) };
         }
 
-        for (const envName of new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(env)])) {
+        for (const envName of referencedEnvs) {
             const environmentSetupHandlers = this.setupHandlers.get(envName);
             if (!environmentSetupHandlers) {
                 continue;
@@ -227,8 +229,4 @@ function validateNoDuplicateContextRegistration(
             )}`
         );
     }
-}
-
-function orderedEnvDependencies(env: Environment): string[] {
-    return env.dependencies?.flatMap(orderedEnvDependencies).concat(env.env) ?? [];
 }

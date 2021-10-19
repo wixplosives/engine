@@ -110,7 +110,8 @@ export function createMainEntrypoint({
     env,
     featuresBundleName,
 }: ICreateEntrypointsOptions) {
-    const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), env.env);
+    const envName = env.env;
+    const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
 if(!self.EngineCore) {
@@ -126,7 +127,7 @@ self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
 
 ${staticBuild ? createConfigLoadersObject(configs) : ''}
 async function main() {
-    const envName = '${env.env}';
+    const envName = '${envName}';
     const currentWindow = typeof self !== 'undefined' ? self : window;
     const topWindow = getTopWindow(currentWindow);
     const options = new URLSearchParams(topWindow.location.search);
@@ -142,7 +143,7 @@ async function main() {
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
 
-    ${populateConfig(env.env, staticBuild, publicConfigsRoute, config)}
+    ${populateConfig(envName, staticBuild, publicConfigsRoute, config)}
 
     const rootFeatureLoader = featureLoaders.get(featureName);
     if(!rootFeatureLoader) {
@@ -250,6 +251,7 @@ function loadEnvAndContextFiles({
             }`);
         }
     }
+    // TODO: make deep
     for (const { env: envName } of new Set([env, ...env.dependencies])) {
         const envFilePath = envFilePaths[envName];
         if (envFilePath) {

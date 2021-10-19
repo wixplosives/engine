@@ -5,7 +5,7 @@ import webpack from 'webpack';
 import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import fs from '@file-services/node';
 import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree, createDisposables } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree, createDisposables, AnyEnvironment } from '@wixc3/engine-core';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -45,7 +45,7 @@ import {
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
-import { getResolvedEnvironments, ISimplifiedEnvironment } from './utils/environments';
+import { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -272,7 +272,7 @@ export class Application {
             );
         }
 
-        // cretaing external-features json either way
+        // creating external-features json either way
         fs.writeFileSync(
             fs.join(
                 this.outputPath,
@@ -332,7 +332,7 @@ export class Application {
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
-            externalFeaturesPath: providedExternalFeatuersPath,
+            externalFeaturesPath: providedExternalFeaturesPath,
             serveExternalFeaturesPath: providedServeExternalFeaturesPath = true,
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
             socketServerOptions: runtimeSocketServerOptions,
@@ -356,7 +356,7 @@ export class Application {
 
         const fixedExternalFeatureDefinitions = this.normalizeDefinitionsPackagePath(
             [...providedExternalFeaturesDefinitions, ...externalFeatureDefinitions],
-            providedExternalFeatuersPath,
+            providedExternalFeaturesPath,
             baseExternalFeaturesPath,
             configPath
         );
@@ -385,7 +385,7 @@ export class Application {
         const routeMiddlewares: RouteMiddleware[] = [];
 
         const resolvedExternalFeaturesPath = fs.resolve(
-            providedExternalFeatuersPath ??
+            providedExternalFeaturesPath ??
                 baseExternalFeaturesPath ??
                 (configPath ? fs.dirname(configPath) : this.basePath)
         );
@@ -426,7 +426,7 @@ export class Application {
         fixedExternalFeatureDefinitions.push(
             ...this.normalizeDefinitionsPackagePath(
                 providedExternalFeaturesDefinitions,
-                providedExternalFeatuersPath,
+                providedExternalFeaturesPath,
                 baseExternalFeaturesPath,
                 configPath
             )
@@ -809,7 +809,7 @@ export class Application {
 
     protected createNodeEntry(
         feature: IFeatureDefinition,
-        nodeEnvs: Map<string, ISimplifiedEnvironment>,
+        nodeEnvs: Map<string, IResolvedEnvironment>,
         pathToSources: string
     ) {
         for (const [envName, { env, childEnvs }] of nodeEnvs) {
@@ -893,7 +893,7 @@ function getEnvEntrypoints(
 }
 
 export function getExportedEnvironments(
-    features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs'>>
+    features: Map<string, { exportedEnvs: IEnvironment<AnyEnvironment>[] }>
 ): Set<IEnvironment> {
     const environments = new Set<IEnvironment>();
     for (const { exportedEnvs } of features.values()) {
