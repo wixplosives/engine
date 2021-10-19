@@ -43,9 +43,9 @@ const convertEnvToIEnv = (env: Environment): IEnvironment => {
     };
 };
 
-export function parseEnv(env: InstanceType<typeof Environment>): IEnvironment {
+export function parseEnv(env: Environment): IEnvironment {
     const [parsedEnv, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e) =>
-        convertEnvToIEnv(e as Environment)
+        convertEnvToIEnv(e)
     );
     return {
         ...parsedEnv!,
@@ -53,7 +53,7 @@ export function parseEnv(env: InstanceType<typeof Environment>): IEnvironment {
     };
 }
 
-export function parseContextualEnv(env: InstanceType<typeof SingleEndpointContextualEnvironment>): IEnvironment[] {
+export function parseContextualEnv(env: SingleEndpointContextualEnvironment<string, Environment[]>): IEnvironment[] {
     const { env: name, environments } = env;
     const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e: Environment) =>
         convertEnvToIEnv(e)
