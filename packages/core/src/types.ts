@@ -1,7 +1,6 @@
 import type { TupleToUnion } from 'typescript-type-utils';
-import type { EnvironmentTypes } from './com/types';
 import type { LogMessage } from './common-types';
-import type { AnyEnvironment, MultiEnvironment, Universal } from './entities/env';
+import type { AnyEnvironment, Universal } from './entities/env';
 import type { Feature } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
@@ -62,11 +61,18 @@ export interface EntityRecord {
     [key: string]: Entity;
 }
 
-export type NormalizeEnvironmentDeps<T> = T extends {
-    dependencies: MultiEnvironment<EnvironmentTypes>[];
-}
-    ? T['dependencies'][number]['env']
-    : never;
+type DeepEnvDepsTuple<T extends AnyEnvironment> = [
+    T['dependencies'][number]['env'],
+    DeepEnvDepsTuple<T['dependencies'][number]>
+];
+
+type Flatten<T extends any[]> = {
+    [K in keyof T]: T[K] extends any[] ? T[K][0] : T[K];
+};
+
+export type DeepEnvironmentDeps<Env extends AnyEnvironment> = Flatten<DeepEnvDepsTuple<Env>>[number];
+
+export type ReferencedEnvironments<ENV extends AnyEnvironment> = ENV['env'] | DeepEnvironmentDeps<ENV>;
 
 export type EnvVisibility = string | { env: string; envType?: string } | Array<{ env: string; envType?: string }>;
 
@@ -218,14 +224,12 @@ export type DisposableContext<T> = Context<T & IContextDispose>;
 export type SetupHandler<
     ENV extends AnyEnvironment,
     ID extends string,
-    Deps extends Feature[],
+    FeatureDeps extends Feature[],
     API extends EntityRecord,
-    EnvironmentContext extends Record<string, Context<any>>,
-    // TODO: check
-    DEP_NAMES extends NormalizeEnvironmentDeps<ENV> = NormalizeEnvironmentDeps<ENV>
+    EnvironmentContext extends Record<string, Context<any>>
 > = (
-    feature: SettingUpFeature<ID, API, ENV['env'], DEP_NAMES>,
-    runningFeatures: RunningFeatures<Deps, DEP_NAMES | ENV['env']>,
+    feature: SettingUpFeature<ID, API, ENV['env'], DeepEnvironmentDeps<ENV>>,
+    runningFeatures: RunningFeatures<FeatureDeps, ReferencedEnvironments<ENV>>,
     context: MapRecordType<EnvironmentContext>
 ) => RegisteringFeature<API, ENV>;
 
