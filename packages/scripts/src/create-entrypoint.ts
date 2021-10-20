@@ -55,7 +55,7 @@ export type LoadStatement = Pick<
     | 'env'
     | 'contextFilePaths'
     | 'envFilePaths'
-    | 'name'
+    | 'scopedName'
     | 'loadStatement'
     | 'packageName'
     | 'directoryPath'
@@ -113,6 +113,7 @@ export function createMainEntrypoint({
 }: ICreateEntrypointsOptions) {
     const envName = env.name;
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
+
     return `
 import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
 if(!self.EngineCore) {
@@ -213,7 +214,7 @@ function createFeatureLoaders(
 function loadEnvAndContextFiles({
     childEnvs,
     contextFilePaths,
-    name,
+    scopedName,
     envFilePaths,
     loadStatement,
     directoryPath,
@@ -233,7 +234,7 @@ function loadEnvAndContextFiles({
                 childEnvName
             )}) {
                 ${loadStatement({
-                    moduleIdentifier: name,
+                    moduleIdentifier: scopedName,
                     filePath: contextFilePath,
                     directoryPath,
                     packageName,
@@ -249,7 +250,7 @@ function loadEnvAndContextFiles({
                 ${webpackImportStatement({
                     directoryPath,
                     filePath: preloadFilePath,
-                    moduleIdentifier: name,
+                    moduleIdentifier: scopedName,
                     packageName,
                     eagerEntrypoint,
                 })};
@@ -261,7 +262,7 @@ function loadEnvAndContextFiles({
         if (envFilePath) {
             loadStatements.push(
                 loadStatement({
-                    moduleIdentifier: `[${envName}]${name}`,
+                    moduleIdentifier: `[${envName}]${scopedName}`,
                     filePath: envFilePath,
                     directoryPath,
                     packageName,
@@ -274,7 +275,7 @@ function loadEnvAndContextFiles({
     if (preloadFilePath) {
         preloadStatements.push(
             webpackImportStatement({
-                moduleIdentifier: `[${env.name}]${name}`,
+                moduleIdentifier: `[${env.name}]${scopedName}`,
                 filePath: preloadFilePath,
                 directoryPath,
                 packageName,

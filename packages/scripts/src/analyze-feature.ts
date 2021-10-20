@@ -45,25 +45,27 @@ const convertEnvToIEnv = (env: AnyEnvironment): IEnvironmentDescriptor => {
     };
 };
 
-export function parseEnv<ENV extends AnyEnvironment>(env: ENV) {
+export function parseEnv<ENV extends AnyEnvironment>(env: ENV): IEnvironmentDescriptor {
     type MultiEnvironmentType = MultiEnvironment<ENV['envType']>;
     const [parsedEnv, ...dependencies] = [
         ...flattenTree<ENV | MultiEnvironmentType>(env, (node) => node.dependencies),
     ].map((e) => convertEnvToIEnv(e));
     return {
         ...parsedEnv!,
-        dependencies: dependencies as IEnvironmentDescriptor<MultiEnvironmentType>[],
+        flatDependencies: dependencies as IEnvironmentDescriptor<MultiEnvironmentType>[],
     };
 }
 
-export function parseContextualEnv(env: SingleEndpointContextualEnvironment<string, Environment[]>) {
+export function parseContextualEnv(
+    env: SingleEndpointContextualEnvironment<string, Environment[]>
+): IEnvironmentDescriptor[] {
     const { env: name, environments } = env;
     const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e: Environment) =>
         convertEnvToIEnv(e)
     );
-    return environments.map((childEnv) => ({
+    return environments.map<IEnvironmentDescriptor>((childEnv) => ({
         name,
-        dependencies: dependencies as IEnvironmentDescriptor<MultiEnvironment<typeof childEnv.envType>>[],
+        flatDependencies: dependencies as IEnvironmentDescriptor<MultiEnvironment<typeof childEnv.envType>>[],
         type: childEnv.envType,
         childEnvName: childEnv.env,
         env: new Environment(name, childEnv.envType, 'single'),
