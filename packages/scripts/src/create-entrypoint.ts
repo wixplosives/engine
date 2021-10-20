@@ -256,7 +256,6 @@ function loadEnvAndContextFiles({
             }`);
         }
     }
-    // TODO: make deep
     for (const { name: envName } of new Set([env, ...(env.flatDependencies ?? [])])) {
         const envFilePath = envFilePaths[envName];
         if (envFilePath) {
