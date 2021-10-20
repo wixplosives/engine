@@ -582,7 +582,7 @@ describe('feature disposal', () => {
             env: mainEnv,
         });
 
-        await engine.dispose(entryFeature, 'main');
+        await engine.dispose(entryFeature);
 
         expect(dispose).to.have.have.callCount(1);
     });
@@ -607,7 +607,7 @@ describe('feature disposal', () => {
             env: mainEnv,
         });
 
-        await engine.dispose(entryFeature, 'main');
+        await engine.dispose(entryFeature);
 
         expect(dispose).to.have.have.callCount(1);
         expect(dispose2).to.have.have.callCount(1);
@@ -633,7 +633,7 @@ describe('feature disposal', () => {
             env: mainEnv,
         });
 
-        await expect(engine.dispose(entryFeature, 'main')).to.be.rejectedWith('err');
+        await expect(engine.dispose(entryFeature)).to.be.rejectedWith('err');
 
         expect(disposeFirst).to.have.have.callCount(1);
         expect(disposeSecond).to.have.have.callCount(1);
@@ -656,7 +656,7 @@ describe('feature disposal', () => {
             env: mainEnv,
         });
 
-        await Promise.all([engine.dispose(entryFeature, 'main'), engine.dispose(entryFeature, 'main')]);
+        await Promise.all([engine.dispose(entryFeature), engine.dispose(entryFeature)]);
 
         expect(dispose).to.have.have.callCount(1);
     });

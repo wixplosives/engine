@@ -60,7 +60,7 @@ export function runEngineApp<ENV extends AnyEnvironment>({
         async dispose() {
             await runningPromise;
             for (const feature of features) {
-                await engine.dispose(feature, env.env);
+                await engine.dispose(feature);
             }
         },
     };

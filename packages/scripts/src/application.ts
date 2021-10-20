@@ -30,7 +30,7 @@ import {
     NodeEnvironmentsManager,
     createIPC,
     IConfigDefinition,
-    IEnvironment,
+    IEnvironmentDescriptor,
     IExternalDefinition,
     IExternalFeatureNodeDescriptor,
     TopLevelConfigProvider,
@@ -893,9 +893,9 @@ function getEnvEntrypoints(
 }
 
 export function getExportedEnvironments(
-    features: Map<string, { exportedEnvs: IEnvironment<AnyEnvironment>[] }>
-): Set<IEnvironment> {
-    const environments = new Set<IEnvironment>();
+    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
+): Set<IEnvironmentDescriptor> {
+    const environments = new Set<IEnvironmentDescriptor>();
     for (const { exportedEnvs } of features.values()) {
         for (const exportedEnv of exportedEnvs) {
             environments.add(exportedEnv);

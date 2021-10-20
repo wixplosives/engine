@@ -10,6 +10,8 @@ import {
     SingleEndpointContextualEnvironment,
     SetMultiMap,
     flattenTree,
+    AnyEnvironment,
+    MultiEnvironment,
 } from '@wixc3/engine-core';
 import {
     isFeatureFile,
@@ -22,7 +24,7 @@ import {
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { IConfigDefinition, IEnvironment } from '@wixc3/engine-runtime-node';
+import type { IConfigDefinition, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition, IFeatureModule } from './types';
 
 interface IPackageDescriptor {
@@ -33,34 +35,35 @@ interface IPackageDescriptor {
 
 const featureRoots = ['.', 'feature', 'fixtures'] as const;
 
-const convertEnvToIEnv = (env: Environment): IEnvironment => {
+const convertEnvToIEnv = (env: AnyEnvironment): IEnvironmentDescriptor => {
     const { env: name, envType: type } = env;
     return {
         name,
         type,
         env,
-        dependencies: [],
+        flatDependencies: [],
     };
 };
 
-export function parseEnv(env: Environment): IEnvironment {
-    const [parsedEnv, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e) =>
-        convertEnvToIEnv(e)
-    );
+export function parseEnv<ENV extends AnyEnvironment>(env: ENV) {
+    type MultiEnvironmentType = MultiEnvironment<ENV['envType']>;
+    const [parsedEnv, ...dependencies] = [
+        ...flattenTree<ENV | MultiEnvironmentType>(env, (node) => node.dependencies),
+    ].map((e) => convertEnvToIEnv(e));
     return {
         ...parsedEnv!,
-        dependencies,
+        dependencies: dependencies as IEnvironmentDescriptor<MultiEnvironmentType>[],
     };
 }
 
-export function parseContextualEnv(env: SingleEndpointContextualEnvironment<string, Environment[]>): IEnvironment[] {
+export function parseContextualEnv(env: SingleEndpointContextualEnvironment<string, Environment[]>) {
     const { env: name, environments } = env;
     const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e: Environment) =>
         convertEnvToIEnv(e)
     );
     return environments.map((childEnv) => ({
         name,
-        dependencies,
+        dependencies: dependencies as IEnvironmentDescriptor<MultiEnvironment<typeof childEnv.envType>>[],
         type: childEnv.envType,
         childEnvName: childEnv.env,
         env: new Environment(name, childEnv.envType, 'single'),

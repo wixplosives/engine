@@ -1,4 +1,11 @@
-import type { EnvironmentTypes, TopLevelConfig, BaseHost, Environment, AnyEnvironment } from '@wixc3/engine-core';
+import type {
+    EnvironmentTypes,
+    TopLevelConfig,
+    BaseHost,
+    Environment,
+    AnyEnvironment,
+    MultiEnvironment,
+} from '@wixc3/engine-core';
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
@@ -16,7 +23,7 @@ export interface IStaticFeatureDefinition {
     resolvedContexts?: Record<string, string>;
     packageName: string;
     filePath: string;
-    exportedEnvs?: IEnvironment<AnyEnvironment>[];
+    exportedEnvs?: IEnvironmentDescriptor<AnyEnvironment>[];
 }
 
 export interface IExternalFeatureNodeDescriptor extends IExternalFeatureDescriptor, IStaticFeatureDefinition {}
@@ -24,7 +31,8 @@ export interface IExternalFeatureNodeDescriptor extends IExternalFeatureDescript
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
 
-export interface StartEnvironmentOptions<ENV extends Environment = Environment> extends IEnvironment<ENV> {
+export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment>
+    extends IEnvironmentDescriptor<ENV> {
     featureName: string;
     config?: TopLevelConfig;
     features: Array<[string, Required<IStaticFeatureDefinition>]>;
@@ -92,11 +100,11 @@ export interface RemoteProcess {
     off: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
 }
 
-export interface IEnvironment<ENV extends Environment = Environment> {
+export interface IEnvironmentDescriptor<ENV extends AnyEnvironment = AnyEnvironment> {
     type: EnvironmentTypes;
     name: string;
     childEnvName?: string;
-    dependencies?: IEnvironment[];
+    flatDependencies?: IEnvironmentDescriptor<MultiEnvironment<ENV['envType']>>[];
     env: ENV;
 }
 

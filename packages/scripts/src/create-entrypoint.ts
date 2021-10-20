@@ -1,5 +1,5 @@
-import type { Environment, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import { Environment, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { IConfigDefinition, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition } from './types';
@@ -24,9 +24,10 @@ export interface ICreateEntrypointsOptions {
     target: 'webworker' | 'web' | 'electron-renderer';
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
-    env: Environment;
+    env: IEnvironmentDescriptor;
     featuresBundleName?: string;
 }
+
 interface IConfigFileMapping {
     filePath: string;
     configEnvName?: string;
@@ -34,7 +35,7 @@ interface IConfigFileMapping {
 
 export interface ExternalEntrypoint extends IFeatureDefinition {
     childEnvs: string[];
-    env: Environment;
+    env: IEnvironmentDescriptor;
     publicPath?: string;
 }
 
@@ -75,7 +76,7 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
     return `
     import { getTopWindow } from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
-    ${setExternalPublicPath(args.env.env, args.target, args.scopedName)}
+    ${setExternalPublicPath(args.env.name, args.target, args.scopedName)}
     __webpack_public_path__= publicPath;
     self.runtimeFeatureLoader.register('${args.scopedName}', ${createLoaderInterface(args)});
     ;
@@ -110,7 +111,7 @@ export function createMainEntrypoint({
     env,
     featuresBundleName,
 }: ICreateEntrypointsOptions) {
-    const envName = env.env;
+    const envName = env.name;
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
@@ -132,7 +133,9 @@ async function main() {
     const topWindow = getTopWindow(currentWindow);
     const options = new URLSearchParams(topWindow.location.search);
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
-    const env = ${JSON.stringify(env)}
+    const env = ${JSON.stringify(
+        new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
+    )}
 
     const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
         typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
@@ -187,7 +190,7 @@ function createFeatureLoaders(
     features: Iterable<IFeatureDefinition>,
     childEnvs: string[],
     target: 'web' | 'webworker' | 'node' | 'electron-renderer',
-    env: Environment,
+    env: IEnvironmentDescriptor,
     eagerEntrypoint?: boolean,
     featuresBundleName?: string
 ) {
@@ -223,10 +226,12 @@ function loadEnvAndContextFiles({
     const loadStatements: string[] = [];
     const preloadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
-        const contextFilePath = contextFilePaths[`${env.env}/${childEnvName}`];
+        const contextFilePath = contextFilePaths[`${env.name}/${childEnvName}`];
         if (contextFilePath) {
             usesResolvedContexts = true;
-            loadStatements.push(`if (resolvedContexts[${JSON.stringify(env.env)}] === ${JSON.stringify(childEnvName)}) {
+            loadStatements.push(`if (resolvedContexts[${JSON.stringify(env.name)}] === ${JSON.stringify(
+                childEnvName
+            )}) {
                 ${loadStatement({
                     moduleIdentifier: name,
                     filePath: contextFilePath,
@@ -236,11 +241,11 @@ function loadEnvAndContextFiles({
                 })};
             }`);
         }
-        const preloadFilePath = preloadFilePaths?.[`${env.env}/${childEnvName}`];
+        const preloadFilePath = preloadFilePaths?.[`${env.name}/${childEnvName}`];
         if (preloadFilePath) {
             // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
-            preloadStatements.push(`if (resolvedContexts[${stringify(env.env)}] === ${stringify(childEnvName)}) {
+            preloadStatements.push(`if (resolvedContexts[${stringify(env.name)}] === ${stringify(childEnvName)}) {
                 ${webpackImportStatement({
                     directoryPath,
                     filePath: preloadFilePath,
@@ -252,7 +257,7 @@ function loadEnvAndContextFiles({
         }
     }
     // TODO: make deep
-    for (const { env: envName } of new Set([env, ...env.dependencies])) {
+    for (const { name: envName } of new Set([env, ...(env.flatDependencies ?? [])])) {
         const envFilePath = envFilePaths[envName];
         if (envFilePath) {
             loadStatements.push(
@@ -266,11 +271,11 @@ function loadEnvAndContextFiles({
             );
         }
     }
-    const preloadFilePath = preloadFilePaths?.[env.env];
+    const preloadFilePath = preloadFilePaths?.[env.name];
     if (preloadFilePath) {
         preloadStatements.push(
             webpackImportStatement({
-                moduleIdentifier: `[${env.env}]${name}`,
+                moduleIdentifier: `[${env.name}]${name}`,
                 filePath: preloadFilePath,
                 directoryPath,
                 packageName,

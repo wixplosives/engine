@@ -6,13 +6,13 @@ import {
     RuntimeEngine,
     FeatureLoadersRegistry,
     IPreloadModule,
-    Environment,
+    AnyEnvironment,
 } from '@wixc3/engine-core';
 import { init, remapToUserLibrary, clear } from './external-request-mapper';
 
-import type { IEnvironment, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
+import type { IEnvironmentDescriptor, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
 
-export async function runNodeEnvironment<ENV extends Environment>({
+export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     featureName,
     childEnvName,
     features,
@@ -113,7 +113,7 @@ export async function runNodeEnvironment<ENV extends Environment>({
 
 export function createFeatureLoaders(
     features: Map<string, Required<IStaticFeatureDefinition>>,
-    { childEnvName, name: envName, env }: IEnvironment
+    { childEnvName, name: envName, env }: IEnvironmentDescriptor
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {

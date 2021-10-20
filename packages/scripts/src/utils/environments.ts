@@ -1,18 +1,18 @@
-import { AnyEnvironment, SetMultiMap } from '@wixc3/engine-core';
-import type { IEnvironment } from '@wixc3/engine-runtime-node';
+import { SetMultiMap } from '@wixc3/engine-core';
+import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '../types';
 
 export interface GetResolveEnvironmentsParams {
     featureName?: string;
     filterContexts?: boolean;
     features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs' | 'resolvedContexts'>>;
-    environments: IEnvironment[];
+    environments: IEnvironmentDescriptor[];
     findAllEnvironments?: boolean;
 }
 
 export interface IResolvedEnvironment {
     childEnvs: string[];
-    env: AnyEnvironment;
+    env: IEnvironmentDescriptor;
 }
 
 export function getResolvedEnvironments({
@@ -56,7 +56,8 @@ export function getResolvedEnvironments({
     };
 }
 
-function addEnv(envs: Map<string, IResolvedEnvironment>, { name, childEnvName, env: environment }: IEnvironment) {
+function addEnv(envs: Map<string, IResolvedEnvironment>, environment: IEnvironmentDescriptor) {
+    const { childEnvName, name } = environment;
     let env = envs.get(name);
     if (!env) {
         env = {

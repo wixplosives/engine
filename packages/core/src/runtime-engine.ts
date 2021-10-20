@@ -2,14 +2,14 @@ import COM from './communication.feature';
 import {
     RuntimeFeature,
     Feature,
-    Environment,
     globallyProvidingEnvironments,
     orderedEnvDependencies,
+    AnyEnvironment,
 } from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
 
-export class RuntimeEngine<ENV extends Environment = Environment> {
+export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public features = new Map<Feature, RuntimeFeature<Feature, ENV>>();
     public referencedEnvs: Set<string>;
     private running = false;
@@ -67,11 +67,10 @@ export class RuntimeEngine<ENV extends Environment = Environment> {
         await featureInstance[RUN](this);
     }
 
-    public async dispose(feature: Feature, envName: string) {
+    public async dispose(feature: Feature) {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
-            // TODO: fixme pass this.entryEnvironment
-            await runningFeature[DISPOSE](this, envName);
+            await runningFeature[DISPOSE](this);
             this.features.delete(feature);
         }
     }

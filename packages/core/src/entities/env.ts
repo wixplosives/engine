@@ -3,7 +3,12 @@ import { runtimeType } from '../entity-helpers';
 import type { DisposableContext, EnvVisibility, MapBy } from '../types';
 
 export type EnvironmentMode = 'single' | 'multi';
-export type AnyEnvironment = Environment<string, EnvironmentTypes, EnvironmentMode, any>;
+export type AnyEnvironment = Environment<
+    string,
+    EnvironmentTypes,
+    EnvironmentMode,
+    MultiEnvironment<EnvironmentTypes>[] | []
+>;
 
 export type MultiEnvironment<TYPE extends EnvironmentTypes> = Environment<
     string,
@@ -36,8 +41,8 @@ export const AllEnvironments: Environment = new Environment('<All>', 'window', '
 export const NoEnvironments = new Environment('<None>', 'window', 'multi');
 
 export const globallyProvidingEnvironments = new Set([Universal.env, AllEnvironments.env]);
-// TODO: move me
-export function orderedEnvDependencies(env: Environment): string[] {
+
+export function orderedEnvDependencies(env: AnyEnvironment): string[] {
     return env.dependencies?.flatMap(orderedEnvDependencies).concat(env.env) ?? [];
 }
 

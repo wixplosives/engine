@@ -20,7 +20,7 @@ import { deferred, IDeferredPromise, SetMultiMap } from '../helpers';
 const emptyDispose = { dispose: () => undefined };
 
 /*************** FEATURE ***************/
-export class RuntimeFeature<T extends Feature, ENV extends Environment> {
+export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
@@ -57,13 +57,16 @@ export class RuntimeFeature<T extends Feature, ENV extends Environment> {
         await Promise.all(runPromises);
     }
 
-    public async [DISPOSE](context: RuntimeEngine, envName: string) {
+    public async [DISPOSE](context: RuntimeEngine) {
+        const {
+            entryEnvironment: { env: envName },
+        } = context;
         if (this.disposing) {
             return this.disposing.promise;
         }
         this.disposing = deferred();
         for (const dep of this.feature.dependencies) {
-            await context.dispose(dep, envName);
+            await context.dispose(dep);
         }
         const featureDisposeHandlers = this.disposeHandlers.get(envName) || new Set();
         for (const handler of featureDisposeHandlers) {
@@ -120,7 +123,7 @@ export class Feature<
         return this;
     }
 
-    public [CREATE_RUNTIME]<ENV extends Environment>(runningEngine: RuntimeEngine<ENV>): RuntimeFeature<this, ENV> {
+    public [CREATE_RUNTIME]<ENV extends AnyEnvironment>(runningEngine: RuntimeEngine<ENV>): RuntimeFeature<this, ENV> {
         const {
             features,
             runOptions,
@@ -151,7 +154,6 @@ export class Feature<
                 inputApi[key] = provided;
             }
         }
-
         const settingUpFeature = {
             ...inputApi,
             id: this.id,
@@ -206,7 +208,7 @@ export class Feature<
     }
 }
 
-function validateNoDuplicateEnvRegistration(env: Environment, featureId: string, registered: Set<string>) {
+function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureId: string, registered: Set<string>) {
     const hasCollision = testEnvironmentCollision(env, registered);
     if (hasCollision.length) {
         const collisions = hasCollision.join(', ');
