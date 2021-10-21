@@ -7,7 +7,6 @@ import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-conta
 import { ActionsContainer } from './actions-container';
 import { FeatureGraph } from './feature-graph';
 import { useUrlParams } from './dashboard-hooks';
- 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
         result: 'success' | 'error';

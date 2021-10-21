@@ -2,6 +2,8 @@ import React, { useMemo, useCallback } from 'react';
 import type { ServerFeatureDef } from '../server-types';
 import { classes } from './feature-selection.st.css';
 import { TitledElement } from './titled-element';
+import { AutoComplete } from 'stylable-components/dist/auto-complete/auto-complete';
+import type { ListItemProps } from 'stylable-components/dist/list/list';
 
 export interface FeaturesSelectionProps {
     features: Record<string, ServerFeatureDef>;
@@ -9,6 +11,13 @@ export interface FeaturesSelectionProps {
     selectedConfig?: string;
     onSelected?: (featureName?: string, configName?: string) => unknown;
 }
+
+const TextItemRenderer = (props: ListItemProps<string>) => {
+    return <div>{props.data}</div>;
+};
+const identity = function <T>(t: T): T {
+    return t;
+};
 
 export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
     ({ features, onSelected, selectedConfig, selectedFeature }) => {
@@ -37,6 +46,12 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
         return (
             <div className={classes.root}>
                 <TitledElement title={'Feature'} className={classes.option}>
+                    <AutoComplete
+                        items={featureNames}
+                        ItemRenderer={TextItemRenderer}
+                        getId={identity}
+                        getTextContent={identity}
+                    />
                     <select value={selectedFeature} onChange={onFeatureChange} disabled={!featureNames.length}>
                         {featureNames.map((featureName) => (
                             <option key={`feature-${featureName}`} value={featureName}>
