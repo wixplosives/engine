@@ -115,7 +115,7 @@ interface ICreateWebpackConfigOptions {
 export function createWebpackConfig({
     baseConfig,
     target,
-    environments: enviroments,
+    environments,
     featureName,
     configName,
     features,
@@ -138,7 +138,7 @@ export function createWebpackConfig({
     const entryModules: Record<string, string> = {};
     const plugins: webpack.WebpackPluginInstance[] = [];
 
-    for (const [envName, { childEnvs, env }] of enviroments) {
+    for (const [envName, { childEnvs, env }] of environments) {
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         const entrypointContent = createMainEntrypoint({
             features,

@@ -15,6 +15,7 @@ import {
     RuntimeEngine,
     flattenTree,
     Running,
+    ReferencedEnvironments,
 } from '@wixc3/engine-core';
 import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
@@ -86,7 +87,7 @@ export async function runEngineEnvironment<ENV extends Environment>({
             );
         }
     }
-    return runNodeEnvironment<ENV>({
+    return runNodeEnvironment({
         featureName,
         features: [...features.entries()],
         name: envName,
@@ -131,7 +132,7 @@ export async function getRunningFeature<
     options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
-    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV['env']>;
+    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ReferencedEnvironments<ENV>>;
     engine: RuntimeEngine;
 }> {
     const { feature } = options;

@@ -223,14 +223,15 @@ function loadEnvAndContextFiles({
     eagerEntrypoint,
     env,
 }: LoadStatement) {
+    const envName = env.name;
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
     const preloadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
-        const contextFilePath = contextFilePaths[`${env.name}/${childEnvName}`];
+        const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
         if (contextFilePath) {
             usesResolvedContexts = true;
-            loadStatements.push(`if (resolvedContexts[${JSON.stringify(env.name)}] === ${JSON.stringify(
+            loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(
                 childEnvName
             )}) {
                 ${loadStatement({
@@ -242,11 +243,11 @@ function loadEnvAndContextFiles({
                 })};
             }`);
         }
-        const preloadFilePath = preloadFilePaths?.[`${env.name}/${childEnvName}`];
+        const preloadFilePath = preloadFilePaths?.[`${envName}/${childEnvName}`];
         if (preloadFilePath) {
             // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
-            preloadStatements.push(`if (resolvedContexts[${stringify(env.name)}] === ${stringify(childEnvName)}) {
+            preloadStatements.push(`if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
                 ${webpackImportStatement({
                     directoryPath,
                     filePath: preloadFilePath,
@@ -257,12 +258,12 @@ function loadEnvAndContextFiles({
             }`);
         }
     }
-    for (const { name: envName } of new Set([env, ...(env.flatDependencies ?? [])])) {
-        const envFilePath = envFilePaths[envName];
+    for (const { name } of new Set([env, ...(env.flatDependencies ?? [])])) {
+        const envFilePath = envFilePaths[name];
         if (envFilePath) {
             loadStatements.push(
                 loadStatement({
-                    moduleIdentifier: `[${envName}]${scopedName}`,
+                    moduleIdentifier: `${name}/${scopedName}`,
                     filePath: envFilePath,
                     directoryPath,
                     packageName,
@@ -271,11 +272,11 @@ function loadEnvAndContextFiles({
             );
         }
     }
-    const preloadFilePath = preloadFilePaths?.[env.name];
+    const preloadFilePath = preloadFilePaths?.[envName];
     if (preloadFilePath) {
         preloadStatements.push(
             webpackImportStatement({
-                moduleIdentifier: `[${env.name}]${scopedName}`,
+                moduleIdentifier: `${envName}/${scopedName}`,
                 filePath: preloadFilePath,
                 directoryPath,
                 packageName,

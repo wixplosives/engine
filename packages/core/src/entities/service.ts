@@ -56,6 +56,7 @@ export class Service<
             const serviceKey = runtimeEngine.entityID(featureID, entityKey);
             const providedFrom = normEnvVisibility(this.providedFrom);
             const localEnv = communication.getEnvironmentName();
+            // TODO: TEST COM
             if (providedFrom.has(localEnv) || providedFrom.has(Universal.env)) {
                 if (!providedValue) {
                     throw new Error('service is not provide in runtime');
