@@ -4,6 +4,7 @@ import { classes } from './feature-selection.st.css';
 import { TitledElement } from './titled-element';
 import { AutoComplete } from 'stylable-components/dist/auto-complete/auto-complete';
 import type { ListItemProps } from 'stylable-components/dist/list/list';
+import { Root } from '@zeejs/react';
 
 export interface FeaturesSelectionProps {
     features: Record<string, ServerFeatureDef>;
@@ -46,12 +47,14 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
         return (
             <div className={classes.root}>
                 <TitledElement title={'Feature'} className={classes.option}>
-                    <AutoComplete
-                        items={featureNames}
-                        ItemRenderer={TextItemRenderer}
-                        getId={identity}
-                        getTextContent={identity}
-                    />
+                    <Root>
+                        <AutoComplete
+                            items={featureNames}
+                            ItemRenderer={TextItemRenderer}
+                            getId={identity}
+                            getTextContent={identity}
+                        />
+                    </Root>
                     <select value={selectedFeature} onChange={onFeatureChange} disabled={!featureNames.length}>
                         {featureNames.map((featureName) => (
                             <option key={`feature-${featureName}`} value={featureName}>
