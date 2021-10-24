@@ -4,6 +4,7 @@ import { createDisposables, RuntimeFeature } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
 import guiFeature from '@wixc3/engineer/gui-feature';
+import { join } from 'path';
 
 const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
 
@@ -64,9 +65,9 @@ describe('engineer:gui', function () {
     it('should allow visit of dashboard gui through full path', async () => {
         const {
             config: { port },
-        } = await setup({ basePath: engineFeatureFixturePath });
+        } = await setup({ basePath: join(__dirname, '../../../') });
 
-        const page = await loadPage(`http://localhost:${port}/dashboard/main-dashboard.html?feature=engineer/gui`);
+        const page = await loadPage(`http://localhost:${port}/main-dashboard.html?feature=engineer/gui`);
 
         const text = await page.evaluate(() => document.body.textContent!.trim());
 
