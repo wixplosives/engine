@@ -54,7 +54,7 @@ export type LoadStatement = Pick<
     | 'envName'
     | 'contextFilePaths'
     | 'envFilePaths'
-    | 'name'
+    | 'scopedName'
     | 'loadStatement'
     | 'packageName'
     | 'directoryPath'
@@ -209,7 +209,7 @@ function loadEnvAndContextFiles({
     childEnvs,
     contextFilePaths,
     envName,
-    name,
+    scopedName,
     envFilePaths,
     loadStatement,
     directoryPath,
@@ -217,6 +217,7 @@ function loadEnvAndContextFiles({
     preloadFilePaths,
     eagerEntrypoint,
 }: LoadStatement) {
+    const moduleIdentifier = scopedName.replace(/\//g, '-').replace('@', '');
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
     const preloadStatements: string[] = [];
@@ -226,7 +227,7 @@ function loadEnvAndContextFiles({
             usesResolvedContexts = true;
             loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
                 ${loadStatement({
-                    moduleIdentifier: name,
+                    moduleIdentifier: `[${envName}]${moduleIdentifier}`,
                     filePath: contextFilePath,
                     directoryPath,
                     packageName,
@@ -242,7 +243,7 @@ function loadEnvAndContextFiles({
                 ${webpackImportStatement({
                     directoryPath,
                     filePath: preloadFilePath,
-                    moduleIdentifier: name,
+                    moduleIdentifier: `[${envName}]${moduleIdentifier}`,
                     packageName,
                     eagerEntrypoint,
                 })};
@@ -253,7 +254,7 @@ function loadEnvAndContextFiles({
     if (envFilePath) {
         loadStatements.push(
             loadStatement({
-                moduleIdentifier: `[${envName}]${name}`,
+                moduleIdentifier: `[${envName}]${moduleIdentifier}`,
                 filePath: envFilePath,
                 directoryPath,
                 packageName,
@@ -265,7 +266,7 @@ function loadEnvAndContextFiles({
     if (preloadFilePath) {
         preloadStatements.push(
             webpackImportStatement({
-                moduleIdentifier: `[${envName}]${name}`,
+                moduleIdentifier: `[${envName}]${moduleIdentifier}`,
                 filePath: preloadFilePath,
                 directoryPath,
                 packageName,
