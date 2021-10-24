@@ -53,7 +53,7 @@ describe('engineer:gui', function () {
             config: { port },
         } = await setup({ basePath: engineFeatureFixturePath });
 
-        const page = await loadPage(`http://localhost:${port}/`);
+        const page = await loadPage(`http://localhost:${port}/dashboard`);
 
         const text = await page.evaluate(() => document.body.textContent!.trim());
 
@@ -66,7 +66,7 @@ describe('engineer:gui', function () {
             config: { port },
         } = await setup({ basePath: engineFeatureFixturePath });
 
-        const page = await loadPage(`http://localhost:${port}/main-dashboard.html?feature=engineer/gui`);
+        const page = await loadPage(`http://localhost:${port}/dashboard/main-dashboard.html?feature=engineer/gui`);
 
         const text = await page.evaluate(() => document.body.textContent!.trim());
 
