@@ -74,15 +74,17 @@ export type DeepEnvironmentDeps<Env extends AnyEnvironment> = Flatten<DeepEnvDep
 
 export type ReferencedEnvironments<ENV extends AnyEnvironment> = ENV['env'] | DeepEnvironmentDeps<ENV>;
 
-export type EnvVisibility = string | { env: string; envType?: string } | Array<{ env: string; envType?: string }>;
+export type EnvVisibility = AnyEnvironment | Array<AnyEnvironment>;
 
-export type EnvType<T extends EnvVisibility> = T extends []
-    ? string
-    : T extends Array<{ env: infer U }>
-    ? U
+export type EnvType<T extends EnvVisibility> = T extends Array<{ env: infer U }>
+    ? U extends string
+        ? U
+        : never
     : T extends { env: infer U1 }
-    ? U1
-    : T;
+    ? U1 extends string
+        ? U1
+        : never
+    : never;
 
 type FilterENVKeys<T extends EntityRecord, ENV extends string, Key extends 'visibleAt' | 'providedFrom'> = {
     [P in keyof T]: ENV extends EnvType<T[P][Key]> ? P : never;

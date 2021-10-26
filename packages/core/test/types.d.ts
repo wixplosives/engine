@@ -1,18 +1,19 @@
 import { EQUAL } from 'typescript-type-utils';
-import { EnvType, Running, Entity } from '@wixc3/engine-core';
+import { EnvType, Running, Entity, Environment } from '@wixc3/engine-core';
 
-export type FromString = EQUAL<EnvType<'main'>, 'main'>;
-export type FromEnvArray = EQUAL<EnvType<[{ env: 'main' }]>, 'main'>;
-export type FromEnv = EQUAL<EnvType<{ env: 'main' }>, 'main'>;
-export type FromEnvArrayMultiple = EQUAL<EnvType<[{ env: 'main' }, { env: 'main1' }]>, 'main' | 'main1'>;
-export type FromEnvEmptyArray = EQUAL<EnvType<[]>, any>;
+type MAIN1 = Environment<'main', 'node', 'single'>;
+type K = EnvType<[]>;
+export type FromEnvArray = EQUAL<EnvType<[MAIN1]>, 'main'>;
+export type FromEnv = EQUAL<EnvType<MAIN1>, 'main'>;
+export type FromEnvArrayMultiple = EQUAL<EnvType<[MAIN1, Environment<'main1', 'node', 'single'>]>, 'main' | 'main1'>;
+export type FromEnvEmptyArray = EQUAL<EnvType<[]>, never>;
 
 export type RunningEmpty = EQUAL<Running<{ id: ''; api: {} }, 'main'>, {}>;
 export type RunningProvidesApiInputTypes = EQUAL<
-    Running<{ id: ''; api: { x: Entity<string, string, 'main', 'main', 'input', false> } }, 'main'>,
+    Running<{ id: ''; api: { x: Entity<string, string, MAIN1, MAIN1, 'input', false> } }, 'main'>,
     { x: string }
 >;
 export type RunningProvidesApiOutputTypes = EQUAL<
-    Running<{ id: ''; api: { x: Entity<string, string, 'main', 'main', 'output', false> } }, 'main'>,
+    Running<{ id: ''; api: { x: Entity<string, string, MAIN1, MAIN1, 'output', false> } }, 'main'>,
     { x: string }
 >;

@@ -167,8 +167,7 @@ describe('Feature', () => {
         const f0 = new Feature({
             id: 'test',
             api: {
-                service1: Service.withType<{ echo(x: string): string }>().defineEntity('main1'),
-                service2: Service.withType<{ echo(x: string): string }>().defineEntity('main2'),
+                service1: Service.withType<{ echo(x: string): string }>().defineEntity(mainEnv),
             },
         });
         expect(() => {
@@ -307,9 +306,9 @@ describe('Feature', () => {
             const maps = new Feature({
                 id: 'testSlotsFeature',
                 api: {
-                    mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
+                    mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
                     retrieveService:
-                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity('main'),
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
                 },
             }).setup(mainEnv, ({ mapSlot }) => {
                 return {
@@ -335,15 +334,14 @@ describe('Feature', () => {
         });
 
         it('two features that adds to slots', async () => {
-            const envName = 'main';
             const mainEnv = new Environment('main', 'node', 'single');
 
             const maps = new Feature({
                 id: 'testSlotsFeature',
                 api: {
-                    mapSlot: MapSlot.withType<string, string>().defineEntity('main'),
+                    mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
                     retrieveService:
-                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(envName),
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
                 },
             }).setup(mainEnv, ({ mapSlot }) => {
                 return {
@@ -378,14 +376,13 @@ describe('Feature', () => {
         });
 
         it('try to get value from the slot, when the key is not in the map', async () => {
-            const envName = 'main';
             const mainEnv = new Environment('main', 'node', 'single');
             const maps = new Feature({
                 id: 'testSlotsFeature',
                 api: {
-                    mapSlot: MapSlot.withType<string, string>().defineEntity(envName),
+                    mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
                     retrieveService:
-                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(envName),
+                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
                 },
             }).setup(mainEnv, ({ mapSlot }) => {
                 return {
@@ -464,13 +461,12 @@ describe('Feature', () => {
 
 describe('feature interaction', () => {
     it('should run engine with two features interacting', async () => {
-        const envName = 'main';
         const mainEnv = new Environment('main', 'node', 'single');
         const echoFeature = new Feature({
             id: 'echoFeature',
             api: {
-                transformers: Slot.withType<(s: string) => string>().defineEntity(envName),
-                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(envName),
+                transformers: Slot.withType<(s: string) => string>().defineEntity(mainEnv),
+                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(mainEnv),
             },
         }).setup(mainEnv, ({ transformers }) => {
             return {

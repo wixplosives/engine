@@ -199,7 +199,7 @@ describe('Node environments manager', function () {
         const proxyFeature = new Feature({
             id: 'test',
             api: {
-                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
+                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
             dependencies: [SocketServerNodeFeature, COM],
         }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
@@ -295,7 +295,7 @@ describe('Node environments manager', function () {
         const testFeature = new Feature({
             id: 'test',
             api: {
-                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
+                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
             dependencies: [ServerNodeFeature, COM],
         }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {

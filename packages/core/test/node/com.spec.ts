@@ -12,6 +12,11 @@ import {
     createDisposables,
     EventEmitter,
     Message,
+    Environment,
+    Feature,
+    Service,
+    RuntimeEngine,
+    COM,
 } from '@wixc3/engine-core';
 
 chai.use(sinonChai);
@@ -273,6 +278,51 @@ describe('Communication', () => {
         mockApi.invoke();
         expect(spyFn2).to.have.callCount(1);
         expect(mockApi.getListenersCount()).to.eq(0);
+    });
+});
+
+describe('environment-dependencies communication', () => {
+    it('supports environment proxy for environment dependencies', async () => {
+        const base = new Environment('base', 'node', 'multi');
+        // const base = new AbstractEnvironment('base', 'node');
+        const env1 = new Environment('env1', 'node', 'single', [base]);
+        const env3 = new Environment('env3', 'node', 'single', [base]);
+
+        const env2 = new Environment('env2', 'node', 'single');
+
+        const f = new Feature({
+            id: 'base',
+            api: {
+                service1: Service.withType<{ echo: () => string }>().defineEntity(base).allowRemoteAccess(),
+            },
+            dependencies: [COM],
+        });
+
+        f.setup(base, () => {
+            return {
+                service1: { echo: () => base.env },
+            };
+        });
+
+        f.setup(env1, ({ service1 }) => {});
+
+        const env1Engine = new RuntimeEngine(env1);
+        await env1Engine.run([f]);
+        const {
+            api: { communication: env1Communication },
+        } = env1Engine.getCOM();
+
+        const env1Target = (
+            env1Communication.getEnvironmentHost(env1Communication.getEnvironmentId()) as BaseHost
+        ).open();
+
+        f.setup(env2, ({ service1 }, { COM: { communication } }) => {
+            const env2Target = (communication.getEnvironmentHost(communication.getEnvironmentId()) as BaseHost).open();
+            communication.registerEnv(env1.env, env1Target);
+            communication.registerMessageHandler(env1Target);
+            env1Communication.registerEnv(env2.env, env2Target);
+            env1Communication.registerMessageHandler(env2Target);
+        });
     });
 });
 

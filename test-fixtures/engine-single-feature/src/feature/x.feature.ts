@@ -5,7 +5,7 @@ export const MAIN = new Environment('main', 'window', 'single');
 export default new Feature({
     id: 'XTestFeature',
     api: {
-        mySlot: Slot.withType<{}>().defineEntity('main'),
+        mySlot: Slot.withType<{}>().defineEntity(MAIN),
         config: new Config<{ value?: number }>({}),
     },
     dependencies: [],

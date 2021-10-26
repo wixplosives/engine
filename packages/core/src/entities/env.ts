@@ -77,14 +77,16 @@ export class SingleEndpointContextualEnvironment<NAME extends string, ENVS exten
 
 export function normEnvVisibility(envVisibility: EnvVisibility): Set<string> {
     const envSet = new Set<string>();
-    if (Array.isArray(envVisibility)) {
-        for (const e of envVisibility) {
-            envSet.add(e.env);
+    const extractDependencies = (env: AnyEnvironment) => {
+        for (const { env: depEnv, dependencies } of env.dependencies) {
+            envSet.add(depEnv);
+            dependencies.map(extractDependencies);
         }
-    } else if (typeof envVisibility === 'string') {
-        envSet.add(envVisibility);
-    } else {
-        envSet.add(envVisibility.env);
+    };
+    const envs = Array.isArray(envVisibility) ? envVisibility : [envVisibility];
+    for (const e of envs) {
+        envSet.add(e.env);
+        extractDependencies(e);
     }
     return envSet;
 }
