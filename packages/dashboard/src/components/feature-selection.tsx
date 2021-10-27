@@ -17,7 +17,7 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
             () => features[selectedFeature!]?.configurations ?? [],
             [features, selectedFeature]
         );
-        const onFeatureChange: React.ChangeEventHandler<HTMLSelectElement> = useCallback(
+        const onFeatureChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
             ({ currentTarget }) => {
                 const { value: newFeatureName } = currentTarget;
                 const newConfigName = features[newFeatureName]?.configurations[0];
@@ -26,7 +26,7 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
             [features, onSelected]
         );
 
-        const onConfigChange: React.ChangeEventHandler<HTMLSelectElement> = useCallback(
+        const onConfigChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
             ({ currentTarget }) => {
                 const { value: newConfigName } = currentTarget;
                 onSelected?.(selectedFeature, newConfigName);
@@ -37,22 +37,36 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
         return (
             <div className={classes.root}>
                 <TitledElement title={'Feature'} className={classes.option}>
-                    <select value={selectedFeature} onChange={onFeatureChange} disabled={!featureNames.length}>
+                    <input
+                        list="features"
+                        value={selectedFeature}
+                        disabled={!featureNames.length}
+                        onChange={onFeatureChange}
+                        autoComplete="off"
+                    />
+                    <datalist id="features">
                         {featureNames.map((featureName) => (
                             <option key={`feature-${featureName}`} value={featureName}>
                                 {featureName}
                             </option>
                         ))}
-                    </select>
+                    </datalist>
                 </TitledElement>
                 <TitledElement title={'Config'} className={classes.option}>
-                    <select value={selectedConfig} onChange={onConfigChange} disabled={!configNames.length}>
+                    <input
+                        list="configs"
+                        value={selectedConfig}
+                        disabled={!configNames.length}
+                        onChange={onConfigChange}
+                        autoComplete="off"
+                    />
+                    <datalist id="configs">
                         {configNames.map((configName) => (
                             <option key={`config-${configName}`} value={configName}>
                                 {configName}
                             </option>
                         ))}
-                    </select>
+                    </datalist>
                 </TitledElement>
             </div>
         );
