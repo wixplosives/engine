@@ -4,6 +4,7 @@ import { createDisposables, RuntimeFeature } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
 import guiFeature from '@wixc3/engineer/gui-feature';
+import { join } from 'path';
 
 const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
 
@@ -53,7 +54,7 @@ describe('engineer:gui', function () {
             config: { port },
         } = await setup({ basePath: engineFeatureFixturePath });
 
-        const page = await loadPage(`http://localhost:${port}/`);
+        const page = await loadPage(`http://localhost:${port}/dashboard`);
 
         const text = await page.evaluate(() => document.body.textContent!.trim());
 
@@ -62,9 +63,10 @@ describe('engineer:gui', function () {
     });
 
     it('should allow visit of dashboard gui through full path', async () => {
+        // the project path should be the root of the monorepo, so it will locate the dashboard features
         const {
             config: { port },
-        } = await setup({ basePath: engineFeatureFixturePath });
+        } = await setup({ basePath: join(__dirname, '../../../') });
 
         const page = await loadPage(`http://localhost:${port}/main-dashboard.html?feature=engineer/gui`);
 

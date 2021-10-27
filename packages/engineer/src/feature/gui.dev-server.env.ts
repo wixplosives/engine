@@ -52,7 +52,7 @@ guiFeature.setup(
 
         serverListeningHandlerSlot.register(({ port, host }) => {
             console.log(`Dashboard Listening:`);
-            console.log(`Dashboard URL: http://${host}:${port}/`);
+            console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
         });
     }
 );
@@ -92,6 +92,7 @@ function createDashboardConfig({
         devtool: 'source-map',
         output: {
             ...baseConfig.output,
+            publicPath: '/dashboard',
             path: outputPath,
             filename: `[name].web.js`,
             chunkFilename: `[name].web.js`,
