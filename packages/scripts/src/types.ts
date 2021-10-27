@@ -17,7 +17,7 @@ export interface IFeatureTarget {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
 }
 
-export interface IFeatureDefinition extends Required<IStaticFeatureDefinition>, Omit<IFeatureModule, 'name'> {
+export interface IFeatureDefinition extends Required<IStaticFeatureDefinition>, IFeatureModule {
     isRoot: boolean;
     directoryPath: string;
     toJSON(): unknown;
