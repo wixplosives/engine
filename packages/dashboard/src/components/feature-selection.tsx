@@ -42,7 +42,7 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
                         value={selectedFeature}
                         disabled={!featureNames.length}
                         onChange={onFeatureChange}
-                        autoComplete={'off'}
+                        autoComplete="off"
                     />
                     <datalist id="features">
                         {featureNames.map((featureName) => (
@@ -58,7 +58,7 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
                         value={selectedConfig}
                         disabled={!configNames.length}
                         onChange={onConfigChange}
-                        autoComplete={'off'}
+                        autoComplete="off"
                     />
                     <datalist id="configs">
                         {configNames.map((configName) => (
