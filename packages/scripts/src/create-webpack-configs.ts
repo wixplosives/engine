@@ -237,7 +237,7 @@ export function createWebpackConfigForExternalFeature({
         '@wixc3/engine-core': 'EngineCore',
     };
     const externals: webpack.Configuration['externals'] = [externalFeatures];
-    const { packageName, name, filePath } = feature;
+    const { packageName, scopedName, filePath } = feature;
 
     const userExternals = baseConfig.externals;
     if (userExternals) {
@@ -273,7 +273,7 @@ export function createWebpackConfigForExternalFeature({
     };
     if (semverLessThan(webpack.version, '5.0.0')) {
         webpackConfig.output!.libraryTarget = 'var';
-        (webpackConfig.output as { jsonpFunction: string }).jsonpFunction = packageName + name;
+        (webpackConfig.output as { jsonpFunction: string }).jsonpFunction = packageName + scopedName;
         const webpack4ExtractExternalsAdaptation: any = (
             context: string,
             request: string,
