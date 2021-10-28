@@ -1,6 +1,10 @@
 import React from 'react';
 import { Dashboard } from './dashboard';
-import { classes } from './app.st.css';
+import { classes, st } from './app.st.css';
+import { Root } from '@zeejs/react';
+
+import { classes as theme } from 'stylable-components/dist/themes/white.st.css';
+
 import './reset.st.css';
 
 const fetchServerState = async () => (await fetch(`engine-state`)).json();
@@ -31,12 +35,16 @@ const changeNodeEnvironmentState = async (
 
 export const App: React.FC = () => {
     return (
-        <div className={classes.root}>
-            <Dashboard
-                fetchServerState={fetchServerState}
-                changeNodeEnvironmentState={changeNodeEnvironmentState}
-                fetchGraphData={fetchGraphData}
-            ></Dashboard>
+        <div className={st(classes.root, theme.white)}>
+            <Root>
+                <div className={classes.gui}>
+                    <Dashboard
+                        fetchServerState={fetchServerState}
+                        changeNodeEnvironmentState={changeNodeEnvironmentState}
+                        fetchGraphData={fetchGraphData}
+                    ></Dashboard>
+                </div>
+            </Root>
         </div>
     );
 };

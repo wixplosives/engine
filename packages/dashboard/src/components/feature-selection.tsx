@@ -1,8 +1,10 @@
 import React, { useMemo, useCallback } from 'react';
 import type { ServerFeatureDef } from '../server-types';
-import { classes } from './feature-selection.st.css';
+import { classes, st } from './feature-selection.st.css';
 import { TitledElement } from './titled-element';
+
 import { AutoComplete } from 'stylable-components/dist/auto-complete/auto-complete';
+import { SearchableText } from 'stylable-components/dist/searchable-text/searchable-text';
 import type { ListItemProps } from 'stylable-components/dist/list/list';
 
 export interface FeaturesSelectionProps {
@@ -12,8 +14,18 @@ export interface FeaturesSelectionProps {
     onSelected?: (featureName?: string, configName?: string) => unknown;
 }
 
-const TextItemRenderer = (props: ListItemProps<string>) => {
-    return <div>{props.data}</div>;
+const TextItemRenderer = ({ data, isFocused, isSelected, id }: ListItemProps<string>) => {
+    return (
+        <div
+            data-id={id}
+            className={st(classes.autocompleteItem, {
+                focused: isFocused,
+                selected: isSelected,
+            })}
+        >
+            <SearchableText text={data} />
+        </div>
+    );
 };
 const identity = function <T>(t: T): T {
     return t;
@@ -26,23 +38,24 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
             () => features[selectedFeature!]?.configurations ?? [],
             [features, selectedFeature]
         );
-        const onFeatureChange: React.ChangeEventHandler<HTMLSelectElement> = useCallback(
-            ({ currentTarget }) => {
-                const { value: newFeatureName } = currentTarget;
-                const newConfigName = features[newFeatureName]?.configurations[0];
-                onSelected?.(newFeatureName, newConfigName);
-            },
-            [features, onSelected]
-        );
 
-        const onConfigChange: React.ChangeEventHandler<HTMLSelectElement> = useCallback(
-            ({ currentTarget }) => {
-                const { value: newConfigName } = currentTarget;
+        const onConfigChange = useCallback(
+            (newConfigName?: string) => {
                 onSelected?.(selectedFeature, newConfigName);
             },
             [onSelected, selectedFeature]
         );
 
+        const onFeatureChange = useCallback(
+            (newFeatureName?: string) => {
+                if (!newFeatureName) {
+                    return;
+                }
+                const newConfigName = features[newFeatureName]?.configurations[0];
+                onSelected?.(newFeatureName, newConfigName);
+            },
+            [features, onSelected]
+        );
         return (
             <div className={classes.root}>
                 <TitledElement title={'Feature'} className={classes.option}>
@@ -51,23 +64,17 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
                         ItemRenderer={TextItemRenderer}
                         getId={identity}
                         getTextContent={identity}
+                        selectionControl={[selectedFeature, onFeatureChange]}
                     />
-                    <select value={selectedFeature} onChange={onFeatureChange} disabled={!featureNames.length}>
-                        {featureNames.map((featureName) => (
-                            <option key={`feature-${featureName}`} value={featureName}>
-                                {featureName}
-                            </option>
-                        ))}
-                    </select>
                 </TitledElement>
                 <TitledElement title={'Config'} className={classes.option}>
-                    <select value={selectedConfig} onChange={onConfigChange} disabled={!configNames.length}>
-                        {configNames.map((configName) => (
-                            <option key={`config-${configName}`} value={configName}>
-                                {configName}
-                            </option>
-                        ))}
-                    </select>
+                    <AutoComplete
+                        items={configNames}
+                        ItemRenderer={TextItemRenderer}
+                        getId={identity}
+                        getTextContent={identity}
+                        selectionControl={[selectedConfig, onConfigChange]}
+                    />
                 </TitledElement>
             </div>
         );

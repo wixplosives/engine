@@ -7,3 +7,15 @@
 .option {
     width: 270px;
 }
+
+.autocompleteItem {
+    -st-states: selected, focused;
+}
+
+.autocompleteItem:focused {
+    background: lightblue;
+}
+
+.autocompleteItem:selected {
+    background: lightgreen;
+}

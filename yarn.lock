@@ -6916,12 +6916,12 @@ strong-log-transformer@^2.1.0:
     minimist "^1.2.0"
     through "^2.3.4"
 
-stylable-components@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/stylable-components/-/stylable-components-1.0.1.tgz#9437e57abf1e27a642faf907924fb436c3fe1777"
-  integrity sha512-QN0FRvXEgFc9W+n5fejBZ+t0QhQbsScMd4p50V3K2jq23WKp6awaum6OIaYiFrTxF6oaRd4xnmsRx8VKUm/5Qw==
+stylable-components@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/stylable-components/-/stylable-components-1.0.3.tgz#f7df1460e61af9f7f94b3d42ee62713af2b525c2"
+  integrity sha512-8dRLMZSWp1/ECYJBKO+a/PC5wodHXffQIAj//V78Qm6KO8h3OM2kdYbo9Ry1zpaujH5RRDaPsgbO7nPIu0GG1w==
   dependencies:
-    "@stylable/runtime" "^4.7.3"
+    "@stylable/runtime" "^4.7.4"
     "@zeejs/react" "^0.2.0"
 
 style-loader@^3.3.0:

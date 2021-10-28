@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { FeaturesSelection } from './feature-selection';
 import { ServerState, isServerResponseMessage } from '../server-types';
 import type { GraphData } from '../graph-types';
-import { style, classes } from './dashboard.st.css'; 
+import { style, classes } from './dashboard.st.css';
 import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
 import { ActionsContainer } from './actions-container';
 import { FeatureGraph } from './feature-graph';
@@ -11,7 +11,7 @@ export interface IDashboardProps {
     fetchServerState: () => Promise<{
         result: 'success' | 'error';
         data: ServerState;
-    }>; 
+    }>;
     changeNodeEnvironmentState: (
         featureName: string,
         configName: string,
@@ -131,7 +131,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
             <div className={classes.leftBar}>
                 {serverState.featuresWithRunningNodeEnvs.length ? (
                     <div>
-                        <div  className={classes.title}>Running Features:</div>
+                        <div className={classes.title}>Running Features:</div>
                         {serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (
                             <button
                                 className={style(classes.runningFeature, {
