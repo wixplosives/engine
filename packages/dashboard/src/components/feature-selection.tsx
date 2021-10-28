@@ -6,6 +6,7 @@ import { TitledElement } from './titled-element';
 import { AutoComplete } from 'stylable-components/dist/auto-complete/auto-complete';
 import { SearchableText } from 'stylable-components/dist/searchable-text/searchable-text';
 import type { ListItemProps } from 'stylable-components/dist/list/list';
+import { Root } from '@zeejs/react';
 
 export interface FeaturesSelectionProps {
     features: Record<string, ServerFeatureDef>;
