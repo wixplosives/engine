@@ -8,7 +8,6 @@ import { ensureTracePath } from './utils';
 import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
-import { type } from 'os';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
