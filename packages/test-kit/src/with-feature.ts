@@ -106,8 +106,6 @@ export interface Tracing {
     name?: string;
 }
 
-export type PageErrorsHandler = (pageErrors: Error[]) => void;
-
 let browser: playwright.Browser | undefined = undefined;
 let featureUrl = '';
 let executableApp: IExecutableApplication;
@@ -196,29 +194,13 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         browserContexts.clear();
     });
 
-    const defaultErrorHandler = () => {
+    afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
             const errorsText = capturedErrors.join('\n');
             capturedErrors.length = 0;
             throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
         }
-    };
-
-    const errorHandlers: Array<(pageErrors: Error[]) => void> = [];
-
-    beforeEach(() => {
-        errorHandlers.push(defaultErrorHandler);
     });
-
-    afterEach('verify page errors', () => {
-        errorHandlers[errorHandlers.length - 1]!(capturedErrors);
-        errorHandlers.length = 0;
-        capturedErrors.length = 0;
-    });
-
-    const providePageErrorsHandler = (cb: PageErrorsHandler) => {
-        errorHandlers.push(cb);
-    };
 
     return {
         async getLoadedFeature(
@@ -331,7 +313,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 return measures;
             }
 
-            return { page: featurePage, response, getMetrics, providePageErrorsHandler };
+            return { page: featurePage, response, getMetrics };
         },
     };
 }
