@@ -66,6 +66,12 @@ export interface IFeatureExecutionOptions {
      * Creates a playwright trace file for the test
      */
     tracing?: boolean | Tracing;
+
+    /**
+     * Error messages that are allowed to stay unhandled without failing the tests.
+     * strings are tested for exact match.
+     */
+    allowedErrors?: Array<string | RegExp>;
 }
 
 export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
@@ -143,6 +149,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         config: suiteConfig,
         featureDiscoveryRoot,
         tracing: suiteTracing = process.env.TRACING ? true : undefined,
+        allowedErrors: suiteAllowedErrors = [],
     } = withFeatureOptions;
 
     if (
@@ -212,6 +219,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 config = suiteConfig,
                 browserContextOptions = suiteBrowserContextOptions,
                 tracing = suiteTracing,
+                allowedErrors = suiteAllowedErrors,
             }: IFeatureExecutionOptions = {},
             navigationOptions?: Parameters<playwright.Page['goto']>[1]
         ) {
@@ -272,7 +280,13 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
                 page.on('pageerror', (e) => {
-                    capturedErrors.push(e);
+                    if (
+                        !allowedErrors.some((allowed) =>
+                            allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed
+                        )
+                    ) {
+                        capturedErrors.push(e);
+                    }
                     console.error(e);
                 });
                 hookPageConsole(page, isNonReactDevMessage);
