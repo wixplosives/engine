@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "21.4.1",
+  "version": "21.5.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
