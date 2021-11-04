@@ -173,7 +173,7 @@ export class Communication {
                 return;
             }
             if (!this.environments[data.from]) {
-                this.registerEnv(data.from, target instanceof BaseHost ? target.parent || target : target);
+                this.registerEnv(data.from, (target as BaseHost).parent ?? target);
             }
         };
         target.addEventListener('message', onTargetMessage);
@@ -313,7 +313,7 @@ export class Communication {
         };
     }
 
-    private reconnectHandler(instanceId: string, data: ListenMessage['data']) {
+    private reconnectHandler(instanceId: string, data: ListenMessage['data'], handlerId: string) {
         return new Promise((res, rej) => {
             const message: ListenMessage = {
                 to: instanceId,
@@ -322,6 +322,7 @@ export class Communication {
                 data,
                 callbackId: this.idsCounter.next('c'),
                 origin: this.rootEnvId,
+                handlerId,
             };
             this.createCallbackRecord(message, message.callbackId!, res, rej);
             this.sendTo(instanceId, message);
@@ -333,7 +334,7 @@ export class Communication {
 
         for (const handlerId of this.handlers.keys()) {
             if (handlerId.startsWith(handlerPrefix)) {
-                await this.reconnectHandler(instanceId, this.parseHandlerId(handlerId, handlerPrefix));
+                await this.reconnectHandler(instanceId, this.parseHandlerId(handlerId, handlerPrefix), handlerId);
             }
         }
     }
@@ -402,7 +403,7 @@ export class Communication {
         const callbackId = this.idsCounter.next('c');
 
         const data = await new Promise<void>((res, rej) => {
-            const handlerId = message.data.handlerId;
+            const handlerId = message.handlerId;
             const handler = (...args: SerializableArguments) => {
                 this.sendTo(message.from, {
                     to: message.from,
@@ -515,8 +516,8 @@ export class Communication {
                         data: {
                             api,
                             method,
-                            handlerId: this.createHandlerRecord(envId, api, method, fn),
                         },
+                        handlerId: this.createHandlerRecord(envId, api, method, fn),
                         callbackId,
                         origin,
                     };
@@ -662,8 +663,7 @@ export class Communication {
 
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
-            const dispatcher =
-                this.eventDispatchers[message.data.handlerId] || this.createDispatcher(message.from, message);
+            const dispatcher = this.eventDispatchers[message.handlerId] || this.createDispatcher(message.from, message);
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
 
             if (message.callbackId) {
@@ -736,7 +736,7 @@ export class Communication {
     }
 
     private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
-        const handlerId = message.data.handlerId;
+        const handlerId = message.handlerId;
         return (this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
             this.sendTo(envId, {
                 to: envId,

@@ -26,7 +26,8 @@ export interface CallbackMessage extends BaseMessage {
 
 export interface ListenMessage extends BaseMessage {
     type: 'listen';
-    data: RemoteCallAddress & { handlerId: string };
+    data: RemoteCallAddress;
+    handlerId: string;
 }
 
 export interface UnListenMessage extends BaseMessage {

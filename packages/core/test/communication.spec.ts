@@ -97,7 +97,6 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
         const com = disposables.add(new Communication(window, comId));
 
         const env = iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
-
         const api = com.apiProxy<TestService>(env, { id: testServiceId }, declareComEmitter('listen', '', ''));
         const capturedCalls: ITestServiceData[] = [];
         await api.listen((data) => capturedCalls.push(data));
