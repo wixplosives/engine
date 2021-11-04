@@ -26,7 +26,7 @@ import type {
 
 import { SERVICE_CONFIG } from '../symbols';
 
-import { SetMultiMap, deferred, serializeError } from '../helpers';
+import { SetMultiMap, deferred, serializeError, createDisposables } from '../helpers';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
@@ -62,6 +62,7 @@ export class Communication {
     private options: Required<ICommunicationOptions>;
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
+    private targetDisposables = createDisposables();
 
     constructor(
         host: Target,
@@ -167,6 +168,18 @@ export class Communication {
      */
     public registerMessageHandler(target: Target): void {
         target.addEventListener('message', this.handleEvent, true);
+        const onTargetMessage = ({ data }: { data: null | Message }) => {
+            if (!data) {
+                return;
+            }
+            if (!this.environments[data.from]) {
+                this.registerEnv(data.from, target instanceof BaseHost ? target.parent || target : target);
+            }
+        };
+        target.addEventListener('message', onTargetMessage);
+        this.targetDisposables.add(() => {
+            target.removeEventListener('message', onTargetMessage);
+        });
     }
 
     /**
@@ -263,6 +276,8 @@ export class Communication {
      * Dispose the Communication and stop listening to messages.
      */
     public dispose(): void {
+        // in this case it's not really async, since all disposing methods are sync
+        void this.targetDisposables.dispose();
         for (const { host } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();

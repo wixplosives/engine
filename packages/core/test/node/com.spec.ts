@@ -274,6 +274,52 @@ describe('Communication', () => {
         expect(spyFn2).to.have.callCount(1);
         expect(mockApi.getListenersCount()).to.eq(0);
     });
+
+    it('communication handshake', async () => {
+        const testText = 'Yoo!';
+        const api: { echo(s: string): string } = {
+            echo(s: string) {
+                return s;
+            },
+        };
+        const serviceId = { id: 'echoService' };
+
+        const host1 = new BaseHost();
+        const host2 = new BaseHost();
+        const host3 = new BaseHost();
+        const host1Child = host1.open();
+        const host2Child = host2.open();
+
+        const main = new Communication(host1, 'main');
+        const main2 = new Communication(host2, 'main2');
+        const main3 = new Communication(host3, 'main3');
+
+        // main3 setup
+        main3.registerMessageHandler(host1Child);
+        main3.registerMessageHandler(host2Child);
+        main3.registerAPI(serviceId, api);
+
+        // connecting other environments to env3
+        main.registerEnv('main3', host1Child);
+        main2.registerEnv('main3', host2Child);
+
+        const proxy1 = main.apiProxy<EchoService>(Promise.resolve({ id: 'main3' }), { id: 'echoService' });
+        const proxy2 = main2.apiProxy<EchoService>(Promise.resolve({ id: 'main3' }), { id: 'echoService' });
+
+        const res1 = await proxy1.echo(testText);
+        const res2 = await proxy2.echo(testText);
+
+        expect(res1, 'allow communication between calling environment and base').to.be.equal(testText);
+        expect(res2, 'allow communication between calling environment and base').to.be.equal(testText);
+
+        main.registerAPI(serviceId, api);
+        const proxy3 = main3.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
+
+        expect(
+            await proxy3.echo(testText),
+            'after handshake is done - allow sending message from base to one of the clients'
+        ).to.eq(testText);
+    });
 });
 
 describe('Event Emitter communication', () => {
