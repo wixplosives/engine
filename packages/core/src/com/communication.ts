@@ -26,11 +26,12 @@ import type {
 
 import { SERVICE_CONFIG } from '../symbols';
 
-import { SetMultiMap, deferred, serializeError, createDisposables } from '../helpers';
+import { SetMultiMap, deferred, serializeError } from '../helpers';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
+import { isMessage } from '.';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;
@@ -62,7 +63,7 @@ export class Communication {
     private options: Required<ICommunicationOptions>;
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
-    private targetDisposables = createDisposables();
+    private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
 
     constructor(
         host: Target,
@@ -167,26 +168,26 @@ export class Communication {
      * Add local handle event listener to Target.
      */
     public registerMessageHandler(target: Target): void {
-        target.addEventListener('message', this.handleEvent, true);
         const onTargetMessage = ({ data }: { data: null | Message }) => {
-            if (!data) {
-                return;
-            }
-            if (!this.environments[data.from]) {
-                this.registerEnv(data.from, (target as BaseHost).parent ?? target);
+            if (isMessage(data)) {
+                if (!this.environments[data.from]) {
+                    this.registerEnv(data.from, (target as BaseHost).parent ?? target);
+                }
+                this.handleEvent({ data });
             }
         };
         target.addEventListener('message', onTargetMessage);
-        this.targetDisposables.add(() => {
-            target.removeEventListener('message', onTargetMessage);
-        });
+        this.messageHandlers.set(target, onTargetMessage);
     }
 
     /**
      * Remove local handle event listener to Target.
      */
     public removeMessageHandler(target: Target): void {
-        target.removeEventListener('message', this.handleEvent, true);
+        const messageHandler = this.messageHandlers.get(target);
+        if (messageHandler) {
+            target.removeEventListener('message', messageHandler, true);
+        }
     }
 
     /**
@@ -277,13 +278,12 @@ export class Communication {
      */
     public dispose(): void {
         // in this case it's not really async, since all disposing methods are sync
-        void this.targetDisposables.dispose();
         for (const { host } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
                 host.dispose();
             }
-            host.removeEventListener('message', this.handleEvent, true);
+            this.removeMessageHandler(host);
         }
 
         for (const [id, { timerId }] of Object.entries(this.callbacks)) {
@@ -491,8 +491,8 @@ export class Communication {
                     data: {
                         api,
                         method,
-                        handlerId: listenerHandlerId,
                     },
+                    handlerId: listenerHandlerId,
                     callbackId,
                     origin,
                 };
@@ -608,9 +608,9 @@ export class Communication {
         }
     }
     private async handleUnListen(message: UnListenMessage) {
-        const dispatcher = this.eventDispatchers[message.data.handlerId];
+        const dispatcher = this.eventDispatchers[message.handlerId];
         if (dispatcher) {
-            delete this.eventDispatchers[message.data.handlerId];
+            delete this.eventDispatchers[message.handlerId];
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
             if (message.callbackId) {
                 this.sendTo(message.from, {
@@ -628,7 +628,7 @@ export class Communication {
     private async forwardUnlisten(message: UnListenMessage) {
         const callbackId = this.idsCounter.next('c');
         const handlerPrefix = `${message.from}__${message.to}_`;
-        const { method, api } = this.parseHandlerId(message.data.handlerId, handlerPrefix);
+        const { method, api } = this.parseHandlerId(message.handlerId, handlerPrefix);
 
         const data = await new Promise<void>((res, rej) =>
             this.addOrRemoveListener(
@@ -642,13 +642,13 @@ export class Communication {
                         removeListener: method,
                     },
                 },
-                this.eventDispatchers[message.data.handlerId]!,
+                this.eventDispatchers[message.handlerId]!,
                 res,
                 rej
             )
         );
 
-        delete this.eventDispatchers[message.data.handlerId];
+        delete this.eventDispatchers[message.handlerId];
         if (message.callbackId) {
             this.sendTo(message.from, {
                 to: message.from,

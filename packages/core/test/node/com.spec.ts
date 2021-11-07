@@ -277,47 +277,67 @@ describe('Communication', () => {
 
     it('communication handshake', async () => {
         const testText = 'Yoo!';
-        const api: { echo(s: string): string } = {
+        const echoService: { echo(s: string): string } = {
             echo(s: string) {
                 return s;
             },
         };
-        const serviceId = { id: 'echoService' };
+        const echoServiceComID = { id: 'echoService' };
 
-        const host1 = new BaseHost();
-        const host2 = new BaseHost();
-        const host3 = new BaseHost();
-        const host1Child = host1.open();
-        const host2Child = host2.open();
+        const client1RootHost = new BaseHost();
+        const client2RootHost = new BaseHost();
+        const serverRootHost = new BaseHost();
 
-        const main = new Communication(host1, 'main');
-        const main2 = new Communication(host2, 'main2');
-        const main3 = new Communication(host3, 'main3');
+        const client1 = new Communication(client1RootHost, 'client1');
+        const client2 = new Communication(client2RootHost, 'client2');
+        const serverEnv = new Communication(serverRootHost, 'server');
 
-        // main3 setup
-        main3.registerMessageHandler(host1Child);
-        main3.registerMessageHandler(host2Child);
-        main3.registerAPI(serviceId, api);
+        // server env setup
+        const client1RemoteHost = client1RootHost.open();
+        serverEnv.registerMessageHandler(client1RemoteHost);
+        client1.registerEnv('server', client1RemoteHost);
 
-        // connecting other environments to env3
-        main.registerEnv('main3', host1Child);
-        main2.registerEnv('main3', host2Child);
+        const client2RemoteHost = client2RootHost.open();
+        serverEnv.registerMessageHandler(client2RemoteHost);
+        client2.registerEnv('server', client2RemoteHost);
 
-        const proxy1 = main.apiProxy<EchoService>(Promise.resolve({ id: 'main3' }), { id: 'echoService' });
-        const proxy2 = main2.apiProxy<EchoService>(Promise.resolve({ id: 'main3' }), { id: 'echoService' });
+        serverEnv.registerAPI(echoServiceComID, echoService);
 
-        const res1 = await proxy1.echo(testText);
-        const res2 = await proxy2.echo(testText);
+        const echoServiceProxyInClient1 = client1.apiProxy<EchoService>(
+            Promise.resolve({ id: 'server' }),
+            echoServiceComID
+        );
+        const echoServiceInstanceInClient2 = client2.apiProxy<EchoService>(
+            Promise.resolve({ id: 'server' }),
+            echoServiceComID
+        );
 
-        expect(res1, 'allow communication between calling environment and base').to.be.equal(testText);
-        expect(res2, 'allow communication between calling environment and base').to.be.equal(testText);
+        const resposeToClient1 = await echoServiceProxyInClient1.echo(testText);
+        const responseToClient2 = await echoServiceInstanceInClient2.echo(testText);
 
-        main.registerAPI(serviceId, api);
-        const proxy3 = main3.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
+        expect(resposeToClient1, 'allow communication between calling environment and base').to.be.equal(testText);
+        expect(responseToClient2, 'allow communication between calling environment and base').to.be.equal(testText);
+
+        client1.registerAPI(echoServiceComID, echoService);
+        const echoServiceProxyFromServerToClient1 = serverEnv.apiProxy<EchoService>(
+            { id: 'client1' },
+            echoServiceComID
+        );
 
         expect(
-            await proxy3.echo(testText),
-            'after handshake is done - allow sending message from base to one of the clients'
+            await echoServiceProxyFromServerToClient1.echo(testText),
+            'after handshake is done - allow sending message from base to client1'
+        ).to.eq(testText);
+
+        client2.registerAPI(echoServiceComID, echoService);
+        const echoServiceProxyFromServerToClient2 = serverEnv.apiProxy<EchoService>(
+            { id: 'client2' },
+            echoServiceComID
+        );
+
+        expect(
+            await echoServiceProxyFromServerToClient2.echo(testText),
+            'after handshake is done - allow sending message from base to client2'
         ).to.eq(testText);
     });
 });
