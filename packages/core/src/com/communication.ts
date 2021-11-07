@@ -309,11 +309,10 @@ export class Communication {
         return {
             api,
             method,
-            handlerId,
         };
     }
 
-    private reconnectHandler(instanceId: string, data: ListenMessage['data'], handlerId: string) {
+    private reconnectHandler(instanceId: string, handlerId: string, data: ListenMessage['data']) {
         return new Promise((res, rej) => {
             const message: ListenMessage = {
                 to: instanceId,
@@ -330,13 +329,17 @@ export class Communication {
     }
 
     public async reconnectHandlers(instanceId: string) {
-        const handlerPrefix = `${this.rootEnvId}__${instanceId}_`;
+        const handlerPrefix = this.createHandlerIdPrefix({ from: this.rootEnvId, to: instanceId });
 
         for (const handlerId of this.handlers.keys()) {
             if (handlerId.startsWith(handlerPrefix)) {
-                await this.reconnectHandler(instanceId, this.parseHandlerId(handlerId, handlerPrefix), handlerId);
+                await this.reconnectHandler(instanceId, handlerId, this.parseHandlerId(handlerId, handlerPrefix));
             }
         }
+    }
+
+    private createHandlerIdPrefix({ from, to }: { from: string; to: string }) {
+        return `${from}__${to}_`;
     }
 
     private applyApiDirectives(id: string, api: APIService): void {
@@ -627,8 +630,7 @@ export class Communication {
 
     private async forwardUnlisten(message: UnListenMessage) {
         const callbackId = this.idsCounter.next('c');
-        const handlerPrefix = `${message.from}__${message.to}_`;
-        const { method, api } = this.parseHandlerId(message.handlerId, handlerPrefix);
+        const { method, api } = this.parseHandlerId(message.handlerId, this.createHandlerIdPrefix(message));
 
         const data = await new Promise<void>((res, rej) =>
             this.addOrRemoveListener(
@@ -759,7 +761,7 @@ export class Communication {
     };
 
     private getHandlerId(envId: string, api: string, method: string) {
-        return `${this.rootEnvId}__${envId}_${api}@${method}`;
+        return `${this.createHandlerIdPrefix({ from: this.rootEnvId, to: envId })}${api}@${method}`;
     }
     private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
         const handlerId = this.getHandlerId(envId, api, method);
