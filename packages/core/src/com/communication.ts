@@ -311,13 +311,16 @@ export class Communication {
         };
     }
 
-    private reconnectHandler(instanceId: string, handlerId: string, data: ListenMessage['data']) {
+    private reconnectHandler(instanceId: string, handlerId: string) {
         return new Promise((res, rej) => {
             const message: ListenMessage = {
                 to: instanceId,
                 from: this.rootEnvId,
                 type: 'listen',
-                data,
+                data: this.parseHandlerId(
+                    handlerId,
+                    this.createHandlerIdPrefix({ from: this.rootEnvId, to: instanceId })
+                ),
                 callbackId: this.idsCounter.next('c'),
                 origin: this.rootEnvId,
                 handlerId,
@@ -332,7 +335,7 @@ export class Communication {
 
         for (const handlerId of this.handlers.keys()) {
             if (handlerId.startsWith(handlerPrefix)) {
-                await this.reconnectHandler(instanceId, handlerId, this.parseHandlerId(handlerId, handlerPrefix));
+                await this.reconnectHandler(instanceId, handlerId);
             }
         }
     }
