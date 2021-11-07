@@ -26,12 +26,14 @@ export interface CallbackMessage extends BaseMessage {
 
 export interface ListenMessage extends BaseMessage {
     type: 'listen';
-    data: RemoteCallAddress & { handlerId: string };
+    data: RemoteCallAddress;
+    handlerId: string;
 }
 
 export interface UnListenMessage extends BaseMessage {
     type: 'unlisten';
-    data: RemoteCallAddress & { handlerId: string };
+    data: RemoteCallAddress;
+    handlerId: string;
 }
 
 export interface EventMessage extends BaseMessage {
@@ -45,3 +47,7 @@ export interface ReadyMessage extends BaseMessage {
 }
 
 export type Message = CallMessage | CallbackMessage | ListenMessage | UnListenMessage | EventMessage | ReadyMessage;
+
+export function isMessage(arg: any): arg is Message {
+    return 'to' in arg && 'from' in arg && 'type' in arg;
+}

@@ -274,6 +274,72 @@ describe('Communication', () => {
         expect(spyFn2).to.have.callCount(1);
         expect(mockApi.getListenersCount()).to.eq(0);
     });
+
+    it('communication handshake', async () => {
+        const testText = 'Yoo!';
+        const echoService: { echo(s: string): string } = {
+            echo(s: string) {
+                return s;
+            },
+        };
+        const echoServiceComID = { id: 'echoService' };
+
+        const client1RootHost = new BaseHost();
+        const client2RootHost = new BaseHost();
+        const serverRootHost = new BaseHost();
+
+        const client1 = new Communication(client1RootHost, 'client1');
+        const client2 = new Communication(client2RootHost, 'client2');
+        const serverEnv = new Communication(serverRootHost, 'server');
+
+        // server env setup
+        const client1RemoteHost = client1RootHost.open();
+        serverEnv.registerMessageHandler(client1RemoteHost);
+        client1.registerEnv('server', client1RemoteHost);
+
+        const client2RemoteHost = client2RootHost.open();
+        serverEnv.registerMessageHandler(client2RemoteHost);
+        client2.registerEnv('server', client2RemoteHost);
+
+        serverEnv.registerAPI(echoServiceComID, echoService);
+
+        const echoServiceProxyInClient1 = client1.apiProxy<EchoService>(
+            Promise.resolve({ id: 'server' }),
+            echoServiceComID
+        );
+        const echoServiceInstanceInClient2 = client2.apiProxy<EchoService>(
+            Promise.resolve({ id: 'server' }),
+            echoServiceComID
+        );
+
+        const resposeToClient1 = await echoServiceProxyInClient1.echo(testText);
+        const responseToClient2 = await echoServiceInstanceInClient2.echo(testText);
+
+        expect(resposeToClient1, 'allow communication between calling environment and base').to.be.equal(testText);
+        expect(responseToClient2, 'allow communication between calling environment and base').to.be.equal(testText);
+
+        client1.registerAPI(echoServiceComID, echoService);
+        const echoServiceProxyFromServerToClient1 = serverEnv.apiProxy<EchoService>(
+            { id: 'client1' },
+            echoServiceComID
+        );
+
+        expect(
+            await echoServiceProxyFromServerToClient1.echo(testText),
+            'after handshake is done - allow sending message from base to client1'
+        ).to.eq(testText);
+
+        client2.registerAPI(echoServiceComID, echoService);
+        const echoServiceProxyFromServerToClient2 = serverEnv.apiProxy<EchoService>(
+            { id: 'client2' },
+            echoServiceComID
+        );
+
+        expect(
+            await echoServiceProxyFromServerToClient2.echo(testText),
+            'after handshake is done - allow sending message from base to client2'
+        ).to.eq(testText);
+    });
 });
 
 describe('Event Emitter communication', () => {
