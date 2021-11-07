@@ -31,7 +31,7 @@ import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode 
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
-import { isMessage } from '.';
+import { isMessage } from './message-types';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;
