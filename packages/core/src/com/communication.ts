@@ -176,7 +176,7 @@ export class Communication {
                 this.handleEvent({ data });
             }
         };
-        target.addEventListener('message', onTargetMessage);
+        target.addEventListener('message', onTargetMessage, true);
         this.messageHandlers.set(target, onTargetMessage);
     }
 
@@ -277,7 +277,6 @@ export class Communication {
      * Dispose the Communication and stop listening to messages.
      */
     public dispose(): void {
-        // in this case it's not really async, since all disposing methods are sync
         for (const { host } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
