@@ -63,10 +63,10 @@
     "@file-services/types" "^5.4.0"
     "@file-services/utils" "^5.4.0"
 
-"@file-services/node@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-5.4.0.tgz#7ab9755ee004d66164bb2b2e68b2469a423bbb20"
-  integrity sha512-UaaEeL2m00K6ER+xYMUXVQ1dfQjFZmY3lS692/XUyH8AjOdf5378ORIjos02ln0p8kOq85qmdnO5FqO1o+1fgg==
+"@file-services/node@^5.4.0", "@file-services/node@^5.4.3":
+  version "5.4.3"
+  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-5.4.3.tgz#236552a9cf267d298842a889b500e5b535840d94"
+  integrity sha512-6jaxbIilocBUKVHuyfTxv/u44uby3R/RFgIZUMGiw81i1F5a9BNnMQdvP5lCYh3xzxEfvrI+ipNNDhoiEurFcA==
   dependencies:
     "@file-services/types" "^5.4.0"
     "@file-services/utils" "^5.4.0"
