@@ -7,7 +7,7 @@
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
-    "@file-services/node": "^5.4.0",
+    "@file-services/node": "^5.4.3",
     "@wixc3/engine-core": "^21.3.2",
     "@wixc3/engine-runtime-node": "^21.3.3",
     "@wixc3/engine-scripts": "^21.3.3",
