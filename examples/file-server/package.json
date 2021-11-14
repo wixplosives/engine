@@ -1,6 +1,6 @@
 {
   "name": "@example/file-server",
-  "version": "21.3.2",
+  "version": "21.6.0",
   "scripts": {
     "start": "engineer start",
     "test": "yarn test:ix && yarn test:unit",
