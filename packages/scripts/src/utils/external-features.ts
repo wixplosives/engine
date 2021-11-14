@@ -32,7 +32,6 @@ export function getExternalFeaturesMetadata(
         return {
             envEntries,
             ...externalFeatureDefinition,
-            name: externalFeatureDefinition.scopedName,
             packageBasePath,
         };
     });

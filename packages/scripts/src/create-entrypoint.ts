@@ -464,13 +464,13 @@ function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer',
     
     if(externalFeatures.length) {
         self.externalFeatures = externalFeatures;
-        const filteredExternals = externalFeatures.filter(({name, envEntries}) => envEntries[envName] && envEntries[envName]['${target}']);
-        const entryPaths = filteredExternals.map(({ name, envEntries }) => (envEntries[envName]['${target}']));
+        const filteredExternals = externalFeatures.filter(({ envEntries }) => envEntries[envName] && envEntries[envName]['${target}']);
+        const entryPaths = filteredExternals.map(({ envEntries }) => (envEntries[envName]['${target}']));
         if(filteredExternals.length) {
             await ${target === 'webworker' ? 'importScripts' : loadScripts()}(entryPaths);
     
-            for (const { name } of filteredExternals) {
-                for (const loadedFeature of await featureLoader.getLoadedFeatures(name)) {
+            for (const { scopedName } of filteredExternals) {
+                for (const loadedFeature of await featureLoader.getLoadedFeatures(scopedName)) {
                     features.push(loadedFeature);
                 }
             }
@@ -479,7 +479,7 @@ function loadExternalFeatures(target: 'web' | 'webworker' | 'electron-renderer',
 }
 
 function setExternalPublicPath(envName: string, target: string, featureName: string) {
-    return `const featureDef = topWindow.externalFeatures.find(({ name }) => name === '${featureName}');
+    return `const featureDef = topWindow.externalFeatures.find(({ scopedName }) => scopedName === '${featureName}');
     if(!featureDef) {
         throw new Error('trying to load feature ' + '${featureName}' + ', but it is not defined');
     }
