@@ -49,5 +49,9 @@ export interface ReadyMessage extends BaseMessage {
 export type Message = CallMessage | CallbackMessage | ListenMessage | UnListenMessage | EventMessage | ReadyMessage;
 
 export function isMessage(arg: any): arg is Message {
-    return 'to' in arg && 'from' in arg && 'type' in arg;
+    if (typeof arg !== 'object') {
+        return false;
+    }
+    const keys = new Set([...Object.keys(arg)]);
+    return keys.has('to') && keys.has('from') && keys.has('type');
 }
