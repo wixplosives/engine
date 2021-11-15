@@ -56,7 +56,7 @@
     "@file-services/types" "^5.4.0"
     "@file-services/utils" "^5.4.0"
 
-"@file-services/node@^5.4.0", "@file-services/node@^5.4.3":
+"@file-services/node@^5.4.3":
   version "5.4.3"
   resolved "https://registry.yarnpkg.com/@file-services/node/-/node-5.4.3.tgz#236552a9cf267d298842a889b500e5b535840d94"
   integrity sha512-6jaxbIilocBUKVHuyfTxv/u44uby3R/RFgIZUMGiw81i1F5a9BNnMQdvP5lCYh3xzxEfvrI+ipNNDhoiEurFcA==
@@ -1033,12 +1033,12 @@
     "@stylable/core" "^4.8.1"
     find-config "^1.0.0"
 
-"@stylable/cli@^4.8.1":
-  version "4.8.1"
-  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-4.8.1.tgz#d5db1f933ab4fc00ea9afeb808d1e56ac333d83e"
-  integrity sha512-6+9gLl3EkY0SLfMFsdfB+VF1O+3EcZGJkDCaBgYflyyImxCm5ihsm5yazIo5zRTM83rV3cVK97KXqaNpdvKupg==
+"@stylable/cli@^4.8.2":
+  version "4.8.2"
+  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-4.8.2.tgz#b3d16506470d9ea000fafebabbc154addeb5d256"
+  integrity sha512-a3u885UdPU/NUHLLnts4PLl6aVbRVSf9IcZHxZbt9sHDZKbYMQEq2KU4Gq3O4WJPYYKOu1yO+oQbdOcWtXg9gA==
   dependencies:
-    "@file-services/node" "^5.4.0"
+    "@file-services/node" "^5.4.3"
     "@file-services/types" "^5.4.0"
     "@stylable/code-formatter" "^4.8.1"
     "@stylable/core" "^4.8.1"
