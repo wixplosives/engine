@@ -54,13 +54,14 @@ export class WsServerHost extends BaseHost implements IDisposable {
     }
 
     private onConnection = (socket: io.Socket): void => {
+        const nameSpace = (original: string) => `${socket.id}/${original}`;
         const onMessage = (message: Message): void => {
             // this mapping should not be here because of forwarding of messages
             // maybe change message forwarding to have 'forward destination' and correct 'from'
             // also maybe we can put the init of the map on 'connection' event
             // maybe we can notify from client about the new connected id
-            const originId = `${socket.id}/${message.origin}`;
-            const fromId = `${socket.id}/${message.from}`;
+            const originId = nameSpace(message.origin);
+            const fromId = nameSpace(message.from);
             if (message.type === 'listen') {
                 message.handlerId += originId;
             }
@@ -71,6 +72,24 @@ export class WsServerHost extends BaseHost implements IDisposable {
             this.emitMessageHandlers(message);
         };
         socket.on('message', onMessage);
-        socket.once('disconnect', () => socket.off('message', onMessage));
+
+        socket.once('disconnect', () => {
+            socket.off('message', onMessage);
+            const disconnectedEnvs = [...this.socketToEnvId.entries()].reduce((acc, [envId, { socket: soc }]) => {
+                if (socket === soc) {
+                    acc.add(envId);
+                }
+                return acc;
+            }, new Set<string>());
+            for (const env of disconnectedEnvs) {
+                this.socketToEnvId.delete(env);
+                this.emitMessageHandlers({
+                    type: 'dispose',
+                    from: env,
+                    origin: env,
+                    to: '*',
+                });
+            }
+        });
     };
 }

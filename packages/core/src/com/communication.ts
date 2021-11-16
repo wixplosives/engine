@@ -64,7 +64,7 @@ export class Communication {
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
-
+    private disposListeners = new Set<(envId: string) => void>();
     constructor(
         host: Target,
         id: string,
@@ -240,6 +240,10 @@ export class Communication {
      * handles Communication incoming message.
      */
     public async handleMessage(message: Message): Promise<void> {
+        if (message.type === 'dispose' && message.to === '*') {
+            this.clearEnvironment(message.origin);
+            return;
+        }
         const env = this.environments[message.to];
         if (!env) {
             this.unhandledMessage(message);
@@ -267,6 +271,9 @@ export class Communication {
                 break;
             case 'ready':
                 this.handleReady(message);
+                break;
+            case 'dispose':
+                this.clearEnvironment(message.origin, message.from);
                 break;
             default:
                 break;
@@ -369,11 +376,31 @@ export class Communication {
         return promise;
     }
 
-    public clearEnvironment(instanceId: string) {
+    public clearEnvironment(instanceId: string, from?: string) {
+        if (!this.readyEnvs.has(instanceId)) {
+            return;
+        }
+        this.localyClear(instanceId);
+        for (const env of this.readyEnvs) {
+            if (env !== from) {
+                this.sendTo(env, {
+                    type: 'dispose',
+                    from: this.rootEnvId,
+                    to: env,
+                    origin: instanceId,
+                });
+            }
+        }
+    }
+
+    private localyClear(instanceId: string) {
         this.readyEnvs.delete(instanceId);
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
         delete this.environments[instanceId];
+        for (const dispose of this.disposListeners) {
+            dispose(instanceId);
+        }
     }
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {

@@ -46,7 +46,18 @@ export interface ReadyMessage extends BaseMessage {
     type: 'ready';
 }
 
-export type Message = CallMessage | CallbackMessage | ListenMessage | UnListenMessage | EventMessage | ReadyMessage;
+export interface DisposeMessage extends BaseMessage {
+    type: 'dispose';
+}
+
+export type Message =
+    | CallMessage
+    | CallbackMessage
+    | ListenMessage
+    | UnListenMessage
+    | EventMessage
+    | ReadyMessage
+    | DisposeMessage;
 
 export function isMessage(arg: any): arg is Message {
     return typeof arg === 'object' && arg !== null && 'to' in arg && 'from' in arg && 'type' in arg;
