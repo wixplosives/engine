@@ -7,9 +7,18 @@ import io from 'socket.io';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { waitFor } from 'promise-assist';
+import { createWaitForCall } from '@wixc3/engine-test-kit';
 
-import { Communication, WsClientHost, socketClientInitializer, BaseHost, createDisposables } from '@wixc3/engine-core';
-import { WsHost, IPCHost } from '@wixc3/engine-core-node';
+import {
+    Communication,
+    WsClientHost,
+    socketClientInitializer,
+    BaseHost,
+    createDisposables,
+    DisposeMessage,
+    Message,
+} from '@wixc3/engine-core';
+import { IPCHost, WsServerHost } from '@wixc3/engine-core-node';
 
 interface ICommunicationTestApi {
     sayHello: () => string;
@@ -18,29 +27,22 @@ interface ICommunicationTestApi {
 
 describe('Socket communication', () => {
     let clientHost: WsClientHost;
-    let serverHost: WsHost;
+    let serverHost: WsServerHost;
     let socketServer: io.Server;
+    let serverTopology: Record<string, string> = {};
     let port: number;
 
     const disposables = createDisposables();
 
     beforeEach(async () => {
-        const getSocketAfterConnected = () =>
-            new Promise<io.Socket>((resolve) => {
-                const onConnection = (socket: io.Socket): void => {
-                    disposables.add(() => {
-                        socket.disconnect(true);
-                    });
-                    resolve(socket);
-                };
-                socketServer.on('connection', onConnection);
-            });
-
         const { httpServer: server, port: servingPort } = await safeListeningHttpServer(3050);
         port = servingPort;
         socketServer = new io.Server(server, { cors: {} });
+        const nameSpace = socketServer.of('processing');
+        serverTopology['server-host'] = `http://localhost:${port}/processing`;
         const connections = new Set<Socket>();
         disposables.add(() => new Promise((res) => socketServer.close(res)));
+        disposables.add(() => (serverTopology = {}));
         const onConnection = (connection: Socket): void => {
             connections.add(connection);
             disposables.add(() => {
@@ -54,8 +56,8 @@ describe('Socket communication', () => {
             }
         });
 
-        clientHost = new WsClientHost(`http://localhost:${port}`);
-        serverHost = new WsHost(await getSocketAfterConnected());
+        clientHost = new WsClientHost(serverTopology['server-host']);
+        serverHost = new WsServerHost(nameSpace);
         await clientHost.connected;
     });
 
@@ -63,9 +65,7 @@ describe('Socket communication', () => {
 
     it('Should activate a function from the client communication on the server communication and receive response', async () => {
         const COMMUNICATION_ID = 'node-com';
-        const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`,
-        });
+        const clientCom = new Communication(clientHost, 'client-host', serverTopology);
 
         const serverCom = new Communication(serverHost, 'server-host');
 
@@ -83,9 +83,7 @@ describe('Socket communication', () => {
 
     it('Should activate a function with params from the client communication on the server communication and receive response', async () => {
         const COMMUNICATION_ID = 'node-com';
-        const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`,
-        });
+        const clientCom = new Communication(clientHost, 'client-host', serverTopology);
 
         const serverCom = new Communication(serverHost, 'server-host');
 
@@ -104,8 +102,8 @@ describe('Socket communication', () => {
     it('One client should get messages from 2 server communications', async () => {
         const COMMUNICATION_ID = 'node-com';
         const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`,
-            'second-server-host': `http://localhost:${port}`,
+            'server-host': serverTopology['server-host']!,
+            'second-server-host': serverTopology['server-host']!,
         });
 
         const serverCom = new Communication(serverHost, 'server-host');
@@ -142,13 +140,9 @@ describe('Socket communication', () => {
 
     it('Two clients should get messages from 1 server communication', async () => {
         const COMMUNICATION_ID = 'node-com';
-        const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`,
-        });
+        const clientCom = new Communication(clientHost, 'client-host', serverTopology);
 
-        const clientCom2 = new Communication(clientHost, 'client2-host', {
-            'server-host': `http://localhost:${port}`,
-        });
+        const clientCom2 = new Communication(clientHost, 'client2-host', serverTopology);
 
         const serverCom = new Communication(serverHost, 'server-host');
 
@@ -175,9 +169,7 @@ describe('Socket communication', () => {
 
     it('notifies if environment is disconnected', async () => {
         const spy = sinon.spy();
-        const clientCom = new Communication(clientHost, 'client-host', {
-            'server-host': `http://localhost:${port}`,
-        });
+        const clientCom = new Communication(clientHost, 'client-host', serverTopology);
         const { onDisconnect } = await socketClientInitializer({
             communication: clientCom,
             env: {
@@ -199,6 +191,51 @@ describe('Socket communication', () => {
                 timeout: 2_000,
             }
         );
+    });
+
+    it('notifies all connected environments if environment is disconnected', async () => {
+        const { waitForCall: waitForServerCall, spy: spyServer } =
+            createWaitForCall<(ev: { data: Message }) => void>('server');
+        const { waitForCall: waitForClient1Call, spy: spyClient1 } =
+            createWaitForCall<(ev: { data: Message }) => void>('client');
+        const clientHost1 = new WsClientHost(serverTopology['server-host']!);
+        const clientHost2 = new WsClientHost(serverTopology['server-host']!);
+        const clientCom1 = new Communication(clientHost1, 'client-host1', serverTopology);
+        const clientCom2 = new Communication(clientHost2, 'client-host2', serverTopology);
+        new Communication(serverHost, 'server-host');
+        await socketClientInitializer({
+            communication: clientCom1,
+            env: {
+                env: 'server-host',
+                endpointType: 'single',
+                envType: 'node',
+            },
+        });
+        await socketClientInitializer({
+            communication: clientCom2,
+            env: {
+                env: 'server-host',
+                endpointType: 'single',
+                envType: 'node',
+            },
+        });
+        clientCom1.registerEnv('client-host2', clientCom1.getEnvironmentHost('server-host')!);
+        // serverCom.registerMessageHandler(spy);
+        serverHost.addEventListener('message', spyServer);
+        clientHost1.addEventListener('message', spyClient1);
+        clientHost2.dispose();
+        await waitForServerCall(([arg]) => {
+            const message = arg.data as DisposeMessage;
+            expect(message.type).to.eql('dispose');
+            expect(message.from).to.include('/client-host2');
+            expect(message.origin).to.include('/client-host2');
+        });
+        await waitForClient1Call(([arg]) => {
+            const message = arg.data as DisposeMessage;
+            expect(message.type).to.eql('dispose');
+            expect(message.origin).to.include('/client-host2');
+            expect(message.from).to.equal('server-host');
+        });
     });
 });
 
