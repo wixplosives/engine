@@ -258,7 +258,7 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
          *   3 talks to 4
          *   1 talks to 3
          *
-         * and then initiate a message from 2 to 4, which will be farwarded twice - when it will arrive to 1 and then to 3, and will be forwarded back twice using same mechanism
+         * and then initiate a message from 2 to 4, which will be forwarded twice - when it will arrive to 1 and then to 3, and will be forwarded back twice using same mechanism
          */
 
         const host1 = new BaseHost();
