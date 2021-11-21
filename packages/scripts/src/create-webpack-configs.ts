@@ -45,6 +45,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         publicPath = '',
         createWebpackConfig,
         environments: { electronRendererEnvs, webEnvs, workerEnvs },
+        featureName,
     } = options;
 
     if (!baseConfig.output) {
@@ -74,7 +75,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             })
         );
     }
-    if (electronRendererEnvs.size) {
+    if (featureName && electronRendererEnvs.size) {
         configurations.push(
             createWebpackConfig({
                 ...options,
