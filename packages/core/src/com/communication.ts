@@ -381,7 +381,7 @@ export class Communication {
             return;
         }
         this.localyClear(instanceId);
-        const connectedEnvs = this.options.connectedEnvironments.keys();
+        const connectedEnvs = Object.keys(this.options.connectedEnvironments);
         for (const env of [...this.readyEnvs, ...connectedEnvs]) {
             if (env !== from) {
                 this.sendTo(env, {
