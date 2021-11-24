@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { dirname } from 'path';
-import { createDisposables } from '@wixc3/engine-core';
+import { createDisposables } from '@wixc3/create-disposables';
 import { startServerNewProcess } from './utils';
 import type { Page } from 'playwright-core';
 

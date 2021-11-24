@@ -1626,6 +1626,11 @@
     "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
+"@wixc3/create-disposables@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-1.0.0.tgz#d8e8f4ea65a3fa2820de182c4f5186b445936ab6"
+  integrity sha512-qDN5y8lFHMnK3INxPKysDQDIHo0hJh073t2a3etGEp3ayijRgcAan9ruecxAS72qiF63LfEKygOfd22ZIyE1JA==
+
 "@wixc3/resolve-directory-context@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-1.0.1.tgz#f5d45b3a0a63790ae16fd96db35ea36e6a75e417"
