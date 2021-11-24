@@ -381,7 +381,8 @@ export class Communication {
             return;
         }
         this.localyClear(instanceId);
-        for (const env of this.readyEnvs) {
+        const connectedEnvs = this.options.connectedEnvironments.keys();
+        for (const env of [...this.readyEnvs, ...connectedEnvs]) {
             if (env !== from) {
                 this.sendTo(env, {
                     type: 'dispose',

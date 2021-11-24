@@ -220,7 +220,6 @@ describe('Socket communication', () => {
             },
         });
         clientCom1.registerEnv('client-host2', clientCom1.getEnvironmentHost('server-host')!);
-        // serverCom.registerMessageHandler(spy);
         serverHost.addEventListener('message', spyServer);
         clientHost1.addEventListener('message', spyClient1);
         clientHost2.dispose();

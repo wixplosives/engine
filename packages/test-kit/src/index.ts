@@ -5,4 +5,3 @@ export * from './run-environment';
 export * from './types';
 export * from './with-feature';
 export * from './with-local-fixture';
-export * from './wait-for-call';
