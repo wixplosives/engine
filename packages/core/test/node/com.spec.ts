@@ -9,10 +9,10 @@ import {
     BaseHost,
     Communication,
     EventEmitterHost,
-    createDisposables,
     EventEmitter,
     Message,
 } from '@wixc3/engine-core';
+import { createDisposables } from '@wixc3/create-disposables';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

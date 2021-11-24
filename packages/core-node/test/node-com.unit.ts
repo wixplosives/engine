@@ -7,18 +7,18 @@ import io from 'socket.io';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { waitFor } from 'promise-assist';
-import { createWaitForCall } from '@wixc3/engine-test-kit';
 
 import {
     Communication,
     WsClientHost,
     socketClientInitializer,
     BaseHost,
-    createDisposables,
     DisposeMessage,
     Message,
 } from '@wixc3/engine-core';
 import { IPCHost, WsServerHost } from '@wixc3/engine-core-node';
+import { createDisposables } from '@wixc3/create-disposables';
+import { createWaitForCall } from '@wixc3/wait-for-call';
 
 interface ICommunicationTestApi {
     sayHello: () => string;

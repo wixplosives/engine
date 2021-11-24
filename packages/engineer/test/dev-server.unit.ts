@@ -6,8 +6,10 @@ import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import { createDisposables, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
+import type { TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
 import { Application } from '@wixc3/engine-scripts';
+import { createDisposables } from '@wixc3/create-disposables';
+
 import { startDevServer } from '@wixc3/engineer';
 import type { IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 

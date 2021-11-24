@@ -1,6 +1,6 @@
 {
   "name": "@examples/react",
-  "version": "21.3.2",
+  "version": "21.6.2",
   "main": "index.js",
   "scripts": {
     "start": "yarn engineer start -f react/someplugin --singleFeature",
@@ -9,7 +9,7 @@
     "test:ix": "mocha \"dist/test/**/*.ix.js\""
   },
   "devDependencies": {
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.1",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.2",
     "react-refresh": "^0.10.0",
     "react-refresh-typescript": "^2.0.2"
   },
