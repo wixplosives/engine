@@ -1,6 +1,6 @@
 import { dirname } from 'path';
 import { expect } from 'chai';
-import { createDisposables } from '@wixc3/engine-core';
+import { createDisposables } from '@wixc3/create-disposables';
 import { startServerNewProcess } from './utils';
 
 describe('Parent feature', function () {

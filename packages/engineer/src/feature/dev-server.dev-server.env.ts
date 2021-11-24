@@ -16,9 +16,10 @@ import {
 import webpack from 'webpack';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
-import { Communication, createDisposables } from '@wixc3/engine-core';
-import { buildFeatureLinks } from '../feature-dependency-graph';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import { createDisposables } from '@wixc3/create-disposables';
+import type { Communication } from '@wixc3/engine-core';
+import { buildFeatureLinks } from '../feature-dependency-graph';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackDevMiddleware = require('webpack-dev-middleware') as (

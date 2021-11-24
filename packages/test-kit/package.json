@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@file-services/node": "^5.4.3",
+    "@wixc3/create-disposables": "^1.0.0",
     "@wixc3/engine-core": "^21.6.2",
     "@wixc3/engine-runtime-node": "^21.6.2",
     "@wixc3/engine-scripts": "^21.6.2",

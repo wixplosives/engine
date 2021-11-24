@@ -8,8 +8,9 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { waitFor } from 'promise-assist';
 
-import { Communication, WsClientHost, socketClientInitializer, BaseHost, createDisposables } from '@wixc3/engine-core';
+import { Communication, WsClientHost, socketClientInitializer, BaseHost } from '@wixc3/engine-core';
 import { WsHost, IPCHost } from '@wixc3/engine-core-node';
+import { createDisposables } from '@wixc3/create-disposables';
 
 interface ICommunicationTestApi {
     sayHello: () => string;

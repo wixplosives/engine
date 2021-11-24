@@ -1,12 +1,13 @@
-import { createDisposables, TopLevelConfig } from '@wixc3/engine-core';
 import isCI from 'is-ci';
 import fs from '@file-services/node';
 import playwright from 'playwright-core';
+import { createDisposables } from '@wixc3/create-disposables';
 import { AttachedApp } from './attached-app';
 import { DetachedApp } from './detached-app';
 import { ensureTracePath } from './utils';
 import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
+import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
