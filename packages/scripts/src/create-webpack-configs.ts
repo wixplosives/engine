@@ -291,7 +291,13 @@ const extractExternals =
     (featurePath: string, ignoredRequests: string[]) =>
     ({ context, request }: { context?: string; request?: string }, cb: (e?: Error, target?: string) => void) => {
         try {
-            if (!request || !context || ignoredRequests.includes(request) || request.includes('!=!')) {
+            if (
+                !request ||
+                !context ||
+                ignoredRequests.includes(request) ||
+                request.includes('!=!') ||
+                request.startsWith('!')
+            ) {
                 return cb();
             }
             const resolvedRequest = require.resolve(request, { paths: [context] });
