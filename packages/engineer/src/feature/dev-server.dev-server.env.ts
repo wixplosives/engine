@@ -41,7 +41,9 @@ interface WebpackHotMiddleware extends express.Handler {
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
-    communication.clearEnvironment(envName);
+    if (communication.getEnvironmentHost(envName)) {
+        communication.clearEnvironment(envName);
+    }
     communication.registerMessageHandler(host);
     communication.registerEnv(envName, host);
     return () => {
@@ -196,6 +198,11 @@ devServerFeature.setup(
 
             app.get('/feature-graph', (req, res) => {
                 const featureName = req.query['feature-name'] as string;
+                if (!featureName) {
+                    res.statusCode = 403;
+                    res.json({ error: 'feature was not found' });
+                    return;
+                }
                 const { links, nodes } = buildFeatureLinks(features.get(featureName)!.exportedFeature);
 
                 const graph = {
