@@ -173,9 +173,6 @@ export class Communication {
                 if (!this.environments[data.from]) {
                     this.registerEnv(data.from, (target as BaseHost).parent ?? target);
                 }
-                if (!this.environments[data.origin]) {
-                    this.registerEnv(data.origin, (target as BaseHost).parent ?? target);
-                }
                 this.handleEvent({ data });
             }
         };
@@ -394,15 +391,11 @@ export class Communication {
                 this.sendTo(message.from, {
                     from: message.to,
                     type: 'callback',
-                    to: message.origin,
+                    to: message.from,
                     data: forwardResponse,
                     callbackId: message.callbackId,
                     origin: message.to,
                 });
-            }
-        } else if (message.type === 'callback') {
-            if (message.callbackId) {
-                this.sendTo(message.to, message);
             }
         } else if (message.type === 'unlisten') {
             await this.forwardUnlisten(message);
@@ -704,7 +697,7 @@ export class Communication {
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, message.data.args);
             if (message.callbackId) {
                 this.sendTo(message.from, {
-                    to: message.origin,
+                    to: message.from,
                     from: this.rootEnvId,
                     type: 'callback',
                     data,
