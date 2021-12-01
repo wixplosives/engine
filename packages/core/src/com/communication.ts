@@ -241,7 +241,6 @@ export class Communication {
      */
     public async handleMessage(message: Message): Promise<void> {
         if (message.type === 'dispose' && message.to === '*') {
-            console.log('lksdfjsfdl', message);
             this.clearEnvironment(message.origin, this.rootEnvId);
             return;
         }
@@ -380,18 +379,17 @@ export class Communication {
     }
 
     public clearEnvironment(instanceId: string, from: string = instanceId) {
-        if (!this.readyEnvs.has(instanceId) && !this.options.connectedEnvironments[instanceId]) {
-            return;
-        }
-        const connectedEnvs = Object.keys(this.options.connectedEnvironments);
-        for (const env of [...this.readyEnvs, ...connectedEnvs]) {
-            if (env !== from) {
-                this.sendTo(env, {
-                    type: 'dispose',
-                    from: this.rootEnvId,
-                    to: env,
-                    origin: instanceId,
-                });
+        const connectedEnvs: string[] = Object.keys(this.options.connectedEnvironments);
+        if (this.readyEnvs.has(instanceId) || connectedEnvs.includes(instanceId)) {
+            for (const env of [...this.readyEnvs, ...connectedEnvs]) {
+                if (![instanceId, from, this.rootEnvId].includes(env)) {
+                    this.sendTo(env, {
+                        type: 'dispose',
+                        from: this.rootEnvId,
+                        to: env,
+                        origin: instanceId,
+                    });
+                }
             }
         }
         this.localyClear(instanceId);
