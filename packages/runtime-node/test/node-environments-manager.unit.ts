@@ -199,7 +199,7 @@ describe('Node environments manager', function () {
             };
         });
 
-        it.only('allows socket communication between node environments', async () => {
+        it('allows socket communication between node environments', async () => {
             const nodeEnvironmentManager = new NodeEnvironmentsManager(
                 socketServer,
                 {

@@ -378,9 +378,9 @@ export class Communication {
         return promise;
     }
 
-    public clearEnvironment(instanceId: string, from: string = instanceId) {
+    public clearEnvironment(instanceId: string, from: string = instanceId, emitRemote = true) {
         const connectedEnvs: string[] = Object.keys(this.options.connectedEnvironments);
-        if (this.readyEnvs.has(instanceId) || connectedEnvs.includes(instanceId)) {
+        if (emitRemote && (this.readyEnvs.has(instanceId) || connectedEnvs.includes(instanceId))) {
             for (const env of [...this.readyEnvs, ...connectedEnvs]) {
                 if (![instanceId, from, this.rootEnvId].includes(env)) {
                     this.sendTo(env, {
