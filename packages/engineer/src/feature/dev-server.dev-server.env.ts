@@ -199,7 +199,7 @@ devServerFeature.setup(
             app.get('/feature-graph', (req, res) => {
                 const featureName = req.query['feature-name'] as string;
                 if (!featureName) {
-                    res.statusCode = 403;
+                    res.statusCode = 404;
                     res.json({ error: 'feature was not found' });
                     return;
                 }
