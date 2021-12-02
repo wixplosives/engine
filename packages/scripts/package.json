@@ -27,7 +27,7 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "socket.io": "^4.4.0",
-    "type-fest": "^2.7.0"
+    "type-fest": "^2.8.0"
   },
   "files": [
     "dist",
