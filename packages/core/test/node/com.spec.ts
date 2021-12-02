@@ -76,13 +76,13 @@ describe('Communication', () => {
     it('multitenant multi communication', async () => {
         // creating 3 environments - main as a parent, and 2 child environments
         const host = new BaseHost();
-        const main = new Communication(host, 'main');
+        const main = disposables.add(new Communication(host, 'main'));
 
         const host2 = host.open();
-        const child = new Communication(host2, 'child');
+        const child = disposables.add(new Communication(host2, 'child'));
 
         const host3 = host.open();
-        const child2 = new Communication(host3, 'child2');
+        const child2 = disposables.add(new Communication(host3, 'child2'));
 
         // registering them to main
         main.registerEnv('child', host2);
