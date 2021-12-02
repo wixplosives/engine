@@ -130,6 +130,13 @@ export class Communication {
         this.topology[envName] = envUrl;
     }
 
+    public subscribeToEnvironmentDispose(handler: (envId: string) => void) {
+        this.disposListeners.add(handler);
+    }
+    public unsubscribeToEnvironmentDispose(handler: (envId: string) => void) {
+        this.disposListeners.delete(handler);
+    }
+
     /**
      * Creates a Proxy for a remote service api.
      */
@@ -293,6 +300,11 @@ export class Communication {
             }
             this.removeMessageHandler(host);
         }
+
+        for (const disposeListener of this.disposListeners) {
+            disposeListener(this.rootEnvId);
+        }
+        this.disposListeners.clear();
 
         for (const [id, { timerId }] of Object.entries(this.callbacks)) {
             clearTimeout(timerId);
