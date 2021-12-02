@@ -397,7 +397,7 @@ export class Communication {
                     to: message.origin,
                     data: forwardResponse,
                     callbackId: message.callbackId,
-                    origin: message.origin,
+                    origin: message.to,
                 });
             }
         } else if (message.type === 'callback') {
