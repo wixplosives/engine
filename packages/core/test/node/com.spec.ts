@@ -76,13 +76,13 @@ describe('Communication', () => {
     it('multitenant multi communication', async () => {
         // creating 3 environments - main as a parent, and 2 child environments
         const host = new BaseHost();
-        const main = new Communication(host, 'main');
+        const main = disposables.add(new Communication(host, 'main'));
 
         const host2 = host.open();
-        const child = new Communication(host2, 'child');
+        const child = disposables.add(new Communication(host2, 'child'));
 
         const host3 = host.open();
-        const child2 = new Communication(host3, 'child2');
+        const child2 = disposables.add(new Communication(host3, 'child2'));
 
         // registering them to main
         main.registerEnv('child', host2);
@@ -339,6 +339,61 @@ describe('Communication', () => {
             await echoServiceProxyFromServerToClient2.echo(testText),
             'after handshake is done - allow sending message from base to client2'
         ).to.eq(testText);
+    });
+
+    it('supports answering forwarded message from a forwarded message', async () => {
+        /**
+         * The flow of the test is as follows:
+         * setup communication in a way where:
+         *   1 talks to 2
+         *   3 talks to 4
+         *   1 talks to 3
+         *
+         * and then initiate a message from 2 to 4, which will be forwarded twice - when it will arrive to 1 and then to 3, and will be forwarded back twice using same mechanism
+         */
+
+        const host1 = new BaseHost();
+        const host2 = new BaseHost();
+        const host3 = new BaseHost();
+        const host4 = new BaseHost();
+
+        const com1 = disposables.add(new Communication(host1, 'com1'));
+        const com2 = disposables.add(new Communication(host2, 'com2'));
+        const com3 = disposables.add(new Communication(host3, 'com3'));
+        const com4 = disposables.add(new Communication(host4, 'com4'));
+
+        // 1 to 2
+        const com2ChildHost = host1.open();
+        com1.registerEnv('com2', com2ChildHost);
+        com2.registerMessageHandler(com2ChildHost);
+
+        // 3 to 4
+        const com4ChildHost = host3.open();
+        com3.registerEnv('com4', com4ChildHost);
+        com4.registerMessageHandler(com4ChildHost);
+
+        // 1 to 3
+        const com3ChildHost = host1.open();
+        com1.registerEnv('com3', com3ChildHost);
+        com3.registerMessageHandler(com3ChildHost);
+
+        // instruct 1 to send messages to 4 using 3
+        com1.registerEnv('com4', com3ChildHost);
+
+        // instruct 2 to send messages to 4 using 1
+        const com1ChildHost = host1.open();
+        com1.registerMessageHandler(com1ChildHost);
+        com2.registerEnv('com4', com1ChildHost);
+
+        // create a service at 4
+        const echoService = {
+            echo: (text: string) => `hello ${text}`,
+        };
+        com4.registerAPI({ id: 'service' }, echoService);
+
+        // call it from 2
+        const apiProxy = com2.apiProxy<typeof echoService>({ id: 'com4' }, { id: 'service' });
+        expect(await apiProxy.echo('name')).to.eq('hello name');
     });
 });
 
