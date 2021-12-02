@@ -64,7 +64,7 @@ export class Communication {
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
-
+    private disposListeners = new Set<(envId: string) => void>();
     constructor(
         host: Target,
         id: string,
@@ -128,6 +128,13 @@ export class Communication {
 
     public setTopology(envName: string, envUrl: string) {
         this.topology[envName] = envUrl;
+    }
+
+    public subscribeToEnvironmentDispose(handler: (envId: string) => void) {
+        this.disposListeners.add(handler);
+    }
+    public unsubscribeToEnvironmentDispose(handler: (envId: string) => void) {
+        this.disposListeners.delete(handler);
     }
 
     /**
@@ -243,6 +250,10 @@ export class Communication {
      * handles Communication incoming message.
      */
     public async handleMessage(message: Message): Promise<void> {
+        if (message.type === 'dispose' && message.to === '*') {
+            this.clearEnvironment(message.origin, this.rootEnvId);
+            return;
+        }
         const env = this.environments[message.to];
         if (!env) {
             this.unhandledMessage(message);
@@ -271,6 +282,11 @@ export class Communication {
             case 'ready':
                 this.handleReady(message);
                 break;
+            case 'dispose':
+                if (message.from !== this.rootEnvId) {
+                    this.clearEnvironment(message.origin, message.from);
+                }
+                break;
             default:
                 break;
         }
@@ -287,6 +303,11 @@ export class Communication {
             }
             this.removeMessageHandler(host);
         }
+
+        for (const disposeListener of this.disposListeners) {
+            disposeListener(this.rootEnvId);
+        }
+        this.disposListeners.clear();
 
         for (const [id, { timerId }] of Object.entries(this.callbacks)) {
             clearTimeout(timerId);
@@ -372,11 +393,31 @@ export class Communication {
         return promise;
     }
 
-    public clearEnvironment(instanceId: string) {
+    public clearEnvironment(instanceId: string, from: string = instanceId, emitRemote = true) {
+        const connectedEnvs: string[] = Object.keys(this.options.connectedEnvironments);
+        if (emitRemote && (this.readyEnvs.has(instanceId) || connectedEnvs.includes(instanceId))) {
+            for (const env of [...this.readyEnvs, ...connectedEnvs]) {
+                if (![instanceId, from, this.rootEnvId].includes(env)) {
+                    this.sendTo(env, {
+                        type: 'dispose',
+                        from: this.rootEnvId,
+                        to: env,
+                        origin: instanceId,
+                    });
+                }
+            }
+        }
+        this.localyClear(instanceId);
+    }
+
+    private localyClear(instanceId: string) {
         this.readyEnvs.delete(instanceId);
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
         delete this.environments[instanceId];
+        for (const dispose of this.disposListeners) {
+            dispose(instanceId);
+        }
     }
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {

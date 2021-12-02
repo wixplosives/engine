@@ -49,6 +49,7 @@
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.5.0",
     "@wixc3/create-disposables": "^1.0.0",
+    "@wixc3/wait-for-call": "^1.0.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "eslint": "^8.3.0",

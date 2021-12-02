@@ -11,6 +11,7 @@ import {
     COM,
     Message,
     ConfigEnvironmentRecord,
+    ReadyMessage,
 } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
@@ -362,8 +363,9 @@ export class NodeEnvironmentsManager {
             const ipcHost = new IPCHost(childProcess);
             // change previous host registration
             com.clearEnvironment(nodeEnv.name);
-            com.registerEnv(nodeEnv.name, ipcHost);
             com.registerMessageHandler(ipcHost);
+            com.registerEnv(nodeEnv.name, ipcHost);
+            com.handleReady({ from: nodeEnv.name } as ReadyMessage);
             return {
                 port,
                 start,
