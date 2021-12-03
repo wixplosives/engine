@@ -1,4 +1,11 @@
-import { CALLBACK_TIMEOUT, DUPLICATE_REGISTER, REMOTE_CALL_FAILED, reportError, UNKNOWN_CALLBACK_ID } from './errors';
+import {
+    CALLBACK_TIMEOUT,
+    DUPLICATE_REGISTER,
+    ENV_DISCONNECTED,
+    REMOTE_CALL_FAILED,
+    reportError,
+    UNKNOWN_CALLBACK_ID,
+} from './errors';
 import { isWindow, isWorkerContext, MultiCounter } from './helpers';
 import type {
     CallbackMessage,
@@ -65,6 +72,8 @@ export class Communication {
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposListeners = new Set<(envId: string) => void>();
+    private callbackToEnvMapping = new Map<string, string>();
+
     constructor(
         host: Target,
         id: string,
@@ -415,6 +424,16 @@ export class Communication {
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
         delete this.environments[instanceId];
+        for (const [callbackId, env] of this.callbackToEnvMapping.entries() ?? []) {
+            if (env === instanceId && this.callbacks[callbackId]) {
+                const { timerId, reject } = this.callbacks[callbackId]!;
+                clearTimeout(timerId);
+                reject(new Error(ENV_DISCONNECTED(instanceId)));
+                delete this.callbacks[callbackId];
+                this.callbackToEnvMapping.delete(callbackId);
+            }
+        }
+
         for (const dispose of this.disposListeners) {
             dispose(instanceId);
         }
@@ -435,7 +454,7 @@ export class Communication {
                 this.sendTo(message.from, {
                     from: message.to,
                     type: 'callback',
-                    to: message.origin,
+                    to: message.from,
                     data: forwardResponse,
                     callbackId: message.callbackId,
                     origin: message.to,
@@ -443,6 +462,14 @@ export class Communication {
             }
         } else if (message.type === 'callback') {
             if (message.callbackId) {
+                if (this.callbacks[message.callbackId]) {
+                    const { resolve, timerId } = this.callbacks[message.callbackId]!;
+                    resolve(message.data);
+                    clearTimeout(timerId);
+                } else {
+                    this.sendTo(message.to, message);
+                }
+            } else {
                 this.sendTo(message.to, message);
             }
         } else if (message.type === 'unlisten') {
@@ -591,7 +618,7 @@ export class Communication {
     ) {
         this.sendTo(envId, message);
         if (callbackId) {
-            this.createCallbackRecord(message, message.callbackId!, res, rej);
+            this.createCallbackRecord(message, callbackId, res, rej);
         } else {
             res();
         }
@@ -825,12 +852,15 @@ export class Communication {
         res: (value: unknown) => void,
         rej: (reason: Error) => void
     ) {
+        this.callbackToEnvMapping.set(callbackId, message.to);
         const resolve = (value: unknown) => {
+            this.callbackToEnvMapping.delete(callbackId);
             delete this.callbacks[callbackId];
             clearTimeout(timerId);
             res(value);
         };
         const reject = (error: Error) => {
+            this.callbackToEnvMapping.delete(callbackId);
             delete this.callbacks[callbackId];
             rej(error);
         };
