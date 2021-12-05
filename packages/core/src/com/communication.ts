@@ -474,8 +474,8 @@ export class Communication {
             }
         } else if (message.type === 'unlisten') {
             await this.forwardUnlisten(message);
-        } else {
-            await this.forwardListenMessage(message as ListenMessage);
+        } else if (message.type === 'listen') {
+            await this.forwardListenMessage(message);
         }
     }
 
