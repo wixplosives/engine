@@ -70,7 +70,7 @@
     "sinon": "^12.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-loader": "^3.0.0",
-    "typescript": "~4.5.2",
+    "typescript": "~4.5.3",
     "util": "^0.12.4",
     "webpack": "^5.65.0"
   },
