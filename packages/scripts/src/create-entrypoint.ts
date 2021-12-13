@@ -2,7 +2,6 @@ import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
-import { electronConfigRequest } from './electron-channel-config';
 import type { IFeatureDefinition } from './types';
 
 const { stringify } = JSON;
@@ -396,7 +395,7 @@ function getRemoteConfigs(
         } else {
             ${
                 target === 'electron-renderer'
-                    ? fetchConfigsForElectron(publicConfigsRoute)
+                    ? fetchConfigsForElectron(publicConfigsRoute, envName)
                     : fetchConfigs(publicConfigsRoute, envName)
             }
         }
@@ -555,8 +554,8 @@ function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
     return `await require('electron').ipcRenderer.invoke('${externalFeaturesRoute}')`;
 }
 
-function fetchConfigsForElectron(envName: string) {
-    return `await require('electron').ipcRenderer.invoke('${electronConfigRequest}', { env: '${envName}', featureName, configName })`;
+function fetchConfigsForElectron(configsRoute: string, envName: string) {
+    return `await require('electron').ipcRenderer.invoke('${LOADED_FEATURE_MODULES_NAMESPACE}.${configsRoute}', { env: '${envName}', featureName, configName })`;
 }
 
 function loadScripts() {
