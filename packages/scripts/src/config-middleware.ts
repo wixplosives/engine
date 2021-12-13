@@ -1,15 +1,18 @@
-import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
-import type express from 'express';
 import importFresh from 'import-fresh';
-import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
+import type express from 'express';
+
+import { COM, TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
+import {
+    findAllConfigs,
+    DefaultConfigFileExports,
+    IConfigDefinition,
+    NodeEnvironmentsManager,
+    TopLevelConfigProvider,
+} from '@wixc3/engine-runtime-node';
 
 export interface OverrideConfig {
     configName?: string;
     overrideConfig: TopLevelConfig;
-}
-
-interface ConfigFileExports {
-    default: TopLevelConfig;
 }
 
 export function createLiveConfigsMiddleware(
@@ -17,7 +20,7 @@ export function createLiveConfigsMiddleware(
     basePath: string,
     overrideConfigMap: Map<string, OverrideConfig>
 ): express.RequestHandler {
-    return (req, res, next) => {
+    return async (req, res, next) => {
         const config: TopLevelConfig = [];
         const { env: reqEnv } = req.query;
         const overrideConfig: TopLevelConfig = [];
@@ -28,34 +31,19 @@ export function createLiveConfigsMiddleware(
         if (requestedConfig) {
             const currentOverrideConfig = overrideConfigMap.get(requestedConfig);
             if (currentOverrideConfig) {
-                const { overrideConfig: providedOverrideConfig, configName } = currentOverrideConfig;
-                requestedConfig = configName;
-                overrideConfig.push(...providedOverrideConfig);
+                overrideConfig.push(...currentOverrideConfig.overrideConfig);
+                requestedConfig = currentOverrideConfig.configName;
             }
-            if (requestedConfig) {
-                const configDefinitions = configurations.get(requestedConfig);
 
-                if (configDefinitions) {
-                    for (const configDefinition of configDefinitions) {
-                        if (Array.isArray(configDefinition)) {
-                            // dont evaluate configs on bundled version
-                            config.push(...configDefinition);
-                        } else {
-                            const { filePath, envName } = configDefinition;
-                            if (envName === reqEnv || !envName) {
-                                const resolvedPath = require.resolve(filePath, { paths: [basePath] });
-                                try {
-                                    const { default: configValue } = importFresh<ConfigFileExports>(resolvedPath);
-                                    config.push(...configValue);
-                                } catch (e) {
-                                    console.error(`Failed evaluating config file: ${filePath}`);
-                                    console.error(e);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            config.push(
+                ...(await findAllConfigs({
+                    basePath,
+                    configurations,
+                    requestedConfigName: requestedConfig!,
+                    requestedEnvName: reqEnv as string | undefined,
+                    importConfig: (filePath) => importFresh<DefaultConfigFileExports>(filePath).default,
+                }))
+            );
         }
         (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (
             res.locals as {
