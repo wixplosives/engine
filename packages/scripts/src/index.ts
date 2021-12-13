@@ -4,6 +4,7 @@ export * from './build-constants';
 export * from './config-middleware';
 export * from './create-entrypoint';
 export * from './engine-router';
+export * from './electron-channel-config';
 export * from './feature-generator';
 export * from './load-feature-directory';
 export * from './load-node-environment';

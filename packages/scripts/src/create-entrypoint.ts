@@ -2,6 +2,7 @@ import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
+import { electronConfigRequest } from './electron-channel-config';
 import type { IFeatureDefinition } from './types';
 
 const { stringify } = JSON;
@@ -141,7 +142,7 @@ async function main() {
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
 
-    ${populateConfig(envName, staticBuild, publicConfigsRoute, config)}
+    ${populateConfig(envName, target, staticBuild, publicConfigsRoute, config)}
 
     const rootFeatureLoader = featureLoaders.get(featureName);
     if(!rootFeatureLoader) {
@@ -369,21 +370,35 @@ function loadConfigFile(filePath: string, scopedName: string, configEnvName: str
 //#endregion
 
 //#region configs
-function populateConfig(envName: string, staticBuild?: boolean, publicConfigsRoute?: string, config?: TopLevelConfig) {
+function populateConfig(
+    envName: string,
+    target: WebpackFeatureLoaderArguments['target'],
+    staticBuild?: boolean,
+    publicConfigsRoute?: string,
+    config?: TopLevelConfig
+) {
     return `${staticBuild ? importStaticConfigs() : ''}
 ${staticBuild && config ? addOverrideConfig(config) : ''}
 
-${publicConfigsRoute ? getRemoteConfigs(publicConfigsRoute, envName) : ''}
+${publicConfigsRoute ? getRemoteConfigs(publicConfigsRoute, envName, target) : ''}
 
 ${publicConfigsRoute ? `${addConfigsEventListenerForParentEnvironments(publicConfigsRoute)}` : ''}`;
 }
 
-function getRemoteConfigs(publicConfigsRoute: string, envName: string) {
+function getRemoteConfigs(
+    publicConfigsRoute: string,
+    envName: string,
+    target: WebpackFeatureLoaderArguments['target']
+) {
     return `config.push(...await (async () =>{
         if(!isMainEntrypoint) {
             ${getConfigsFromParent(publicConfigsRoute, envName)}   
         } else {
-            ${fetchConfigs(publicConfigsRoute, envName)}
+            ${
+                target === 'electron-renderer'
+                    ? fetchConfigsForElectron(publicConfigsRoute)
+                    : fetchConfigs(publicConfigsRoute, envName)
+            }
         }
     })());`;
 }
@@ -538,6 +553,10 @@ function fetchExternalFeatures(externalFeaturesRoute: string) {
 
 function fetchFeaturesFromElectronProcess(externalFeaturesRoute: string) {
     return `await require('electron').ipcRenderer.invoke('${externalFeaturesRoute}')`;
+}
+
+function fetchConfigsForElectron(envName: string) {
+    return `await require('electron').ipcRenderer.invoke('${electronConfigRequest}', { env: '${envName}', featureName, configName })`;
 }
 
 function loadScripts() {
