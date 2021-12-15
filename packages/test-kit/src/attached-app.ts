@@ -1,15 +1,18 @@
-import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 import { request } from 'http';
+import { posix } from 'path';
+import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 import type { IExecutableApplication } from './types';
-import { join } from 'path';
 import type { PerformanceMetrics, IProcessMessage } from '@wixc3/engine-runtime-node';
+
+const { join } = posix;
 
 const NODE_ENV_PATH = '/engine-feature';
 
-interface IEnvironmentHttpCall {
+export interface IEnvironmentHttpCall<T> {
     method: 'PUT' | 'POST' | 'GET';
     path?: string;
     featureTarget?: IFeatureTarget;
+    defaultValue?: T;
 }
 
 export class AttachedApp implements IExecutableApplication {
@@ -31,10 +34,11 @@ export class AttachedApp implements IExecutableApplication {
         /* We don't close the running app */
     }
 
-    public async getMetrics() {
+    public async getMetrics(): Promise<PerformanceMetrics> {
         return this.makeEnvironmentHttpCall<PerformanceMetrics>({
             method: 'GET',
             path: join(NODE_ENV_PATH, 'metrics'),
+            defaultValue: { marks: [], measures: [] },
         });
     }
 
@@ -42,7 +46,8 @@ export class AttachedApp implements IExecutableApplication {
         method,
         path = NODE_ENV_PATH,
         featureTarget,
-    }: IEnvironmentHttpCall) {
+        defaultValue = {} as ResponseType,
+    }: IEnvironmentHttpCall<ResponseType>) {
         return new Promise<ResponseType>((resolve, reject) => {
             const responseChunks: Array<string> = [];
             const req = request(
@@ -65,7 +70,7 @@ export class AttachedApp implements IExecutableApplication {
                             const response = JSON.parse(responseChunks.join()) as IProcessMessage<ResponseType>;
                             resolve(response.payload);
                         } else {
-                            resolve({} as ResponseType);
+                            resolve(defaultValue);
                         }
                     });
                     res.on('error', reject);
