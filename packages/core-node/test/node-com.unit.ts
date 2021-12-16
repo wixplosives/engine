@@ -262,4 +262,29 @@ describe('IPC communication', () => {
 
         expect(await proxy.echo()).to.eq('yo');
     });
+
+    it('handles forked process closing', async () => {
+        const mainHost = new BaseHost();
+        const communication = new Communication(mainHost, 'main');
+        const forked = fork(join(__dirname, 'process-entry.ts'), [], {
+            execArgv: '-r @ts-tools/node/r'.split(' '),
+            cwd: process.cwd(),
+        });
+        const host = new IPCHost(forked);
+        communication.registerEnv('process', host);
+        communication.registerMessageHandler(host);
+        const proxy = communication.apiProxy<{ echo(): string }>(
+            {
+                id: 'process',
+            },
+            { id: 'myApi' }
+        );
+
+        forked.kill();
+        const { waitForCall, spy } = createWaitForCall<(e: Error) => void>();
+        proxy.echo().catch(spy);
+        await waitForCall((args) => {
+            expect(args[0].message).to.eq('Remote call failed in process - environment disconnected');
+        });
+    });
 });

@@ -516,7 +516,7 @@ describe('Application', function () {
                 },
                 { timeout: 5_000 }
             );
-        });
+        }).timeout(20_000);
 
         it('loads external features after static build', async () => {
             const externalFeatureName = 'static-application-external/application-external';
