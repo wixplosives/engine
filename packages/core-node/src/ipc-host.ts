@@ -1,24 +1,45 @@
-import { BaseHost, IDisposable } from '@wixc3/engine-core';
+import { BaseHost, IDisposable, Message } from '@wixc3/engine-core';
 import type { ChildProcess } from 'child_process';
 
 export class IPCHost extends BaseHost implements IDisposable {
     private disposed = false;
+    private envs = new Set<string>();
 
     constructor(private process: NodeJS.Process | ChildProcess) {
         super();
         process.on('message', this.onMessage);
-        process.once('disconnect', () => process.off('message', this.onMessage));
+        process.once('disconnect', () => {
+            process.off('message', this.onMessage);
+            for (const env of this.envs) {
+                this.emitMessageHandlers({
+                    from: env,
+                    type: 'dispose',
+                    to: '*',
+                    origin: env,
+                });
+            }
+        });
     }
 
     private onMessage: (...args: any[]) => void = (message) => {
         this.emitMessageHandlers(message);
     };
 
-    public postMessage(data: any) {
+    public postMessage(data: Message) {
+        this.envs.add(data.to);
         if (!this.process.send) {
             throw new Error('this process is not forked. There is not to send message to');
         }
-        this.process.send(data);
+        if ((this.process as ChildProcess).killed) {
+            this.emitMessageHandlers({
+                from: data.to,
+                type: 'dispose',
+                to: '*',
+                origin: data.to,
+            });
+        } else {
+            this.process.send(data);
+        }
     }
 
     public dispose() {

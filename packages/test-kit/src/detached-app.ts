@@ -22,13 +22,12 @@ export class DetachedApp implements IExecutableApplication {
             args.push(this.featureDiscoveryRoot);
         }
 
-        const engineStartProcess = fork(this.cliEntry, args, {
+        this.engineStartProcess = fork(this.cliEntry, args, {
             stdio: 'inherit',
             cwd: this.basePath,
             execArgv,
         });
 
-        this.engineStartProcess = engineStartProcess;
         const { port } = await this.waitForProcessMessage<IPortMessage>('port-request', (p) =>
             p.send({ id: 'port-request' })
         );
