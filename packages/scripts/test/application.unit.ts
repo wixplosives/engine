@@ -447,6 +447,7 @@ describe('Application', function () {
         });
 
         it('loads external features', async () => {
+            this.timeout(20_000);
             const externalFeatureName = 'application-external';
             const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
                 name: string;
