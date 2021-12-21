@@ -30,15 +30,16 @@ export class IPCHost extends BaseHost implements IDisposable {
         if (!this.process.send) {
             throw new Error('this process is not forked. There is not to send message to');
         }
-        if ((this.process as ChildProcess).killed) {
+        try {
+            this.process.send(data);
+        } catch {
+            // if the process.send command failed it means the target is not accessible
             this.emitMessageHandlers({
                 from: data.to,
                 type: 'dispose',
                 to: '*',
                 origin: data.to,
             });
-        } else {
-            this.process.send(data);
         }
     }
 
