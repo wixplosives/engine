@@ -1,6 +1,10 @@
 import { BaseHost, IDisposable, Message } from '@wixc3/engine-core';
 import type { ChildProcess } from 'child_process';
 
+export const isParentProcess = (process: NodeJS.Process | ChildProcess): process is NodeJS.Process => {
+    return !!(process as NodeJS.Process).title;
+};
+
 export class IPCHost extends BaseHost implements IDisposable {
     private disposed = false;
     private envs = new Set<string>();
@@ -30,16 +34,21 @@ export class IPCHost extends BaseHost implements IDisposable {
         if (!this.process.send) {
             throw new Error('this process is not forked. There is not to send message to');
         }
-        try {
-            this.process.send(data);
-        } catch {
-            // if the process.send command failed it means the target is not accessible
-            this.emitMessageHandlers({
-                from: data.to,
-                type: 'dispose',
-                to: '*',
-                origin: data.to,
-            });
+        const disposeHandlers = (e: Error | null) => {
+            if (e) {
+                this.emitMessageHandlers({
+                    from: data.to,
+                    type: 'dispose',
+                    to: '*',
+                    origin: data.to,
+                });
+            }
+        };
+
+        if (isParentProcess(this.process)) {
+            this.process.send(data, undefined, undefined, disposeHandlers);
+        } else {
+            this.process.send(data, disposeHandlers);
         }
     }
 
