@@ -2,7 +2,7 @@ import { BaseHost, IDisposable, Message } from '@wixc3/engine-core';
 import type { ChildProcess } from 'child_process';
 
 export const isParentProcess = (process: NodeJS.Process | ChildProcess): process is NodeJS.Process => {
-    return !!(process as NodeJS.Process).title;
+    return !!(process as NodeJS.Process).ppid;
 };
 
 export class IPCHost extends BaseHost implements IDisposable {
