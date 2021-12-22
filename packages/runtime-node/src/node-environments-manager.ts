@@ -30,7 +30,6 @@ import {
 } from './types';
 import { resolveEnvironments } from './environments';
 import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
-import { DefaultConfigFileExports, findAllConfigs } from './config-locators';
 
 export interface OverrideConfig {
     configName?: string;
@@ -98,7 +97,6 @@ export interface INodeEnvironmentsManagerOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     externalFeatures?: IExternalFeatureNodeDescriptor[];
     requiredPaths?: string[];
-    basePath?: string;
 }
 
 export type LaunchEnvironmentMode = 'forked' | 'same-server' | 'new-server';
@@ -127,9 +125,7 @@ export class NodeEnvironmentsManager {
         private options: INodeEnvironmentsManagerOptions,
         private context: string,
         private socketServerOptions?: Partial<io.ServerOptions>
-    ) {
-        this.options.basePath = this.options.basePath ?? process.cwd();
-    }
+    ) {}
 
     public async runServerEnvironments({
         featureName,
@@ -217,10 +213,7 @@ export class NodeEnvironmentsManager {
             }
 
             config.push(COM.use({ config: { topology, connectedEnvironments } }));
-            config.push(
-                ...(await this.getConfig(originalConfigName, nodeEnv.name, this.options.basePath!)),
-                ...overrideConfigs
-            );
+            config.push(...(await this.getConfig(originalConfigName)), ...overrideConfigs);
             const preparedEnvironment = await this.prepareEnvironment({
                 nodeEnv,
                 featureName,
@@ -431,23 +424,27 @@ export class NodeEnvironmentsManager {
         };
     }
 
-    private async getConfig(configName: string | undefined, envName: string, basePath: string) {
+    private async getConfig(configName: string | undefined) {
         const config: TopLevelConfig = [];
         const { configurations } = this.options;
         if (configurations && configName) {
-            const foundConfig = await findAllConfigs({
-                basePath,
-                configurations,
-                requestedConfigName: configName,
-                requestedEnvName: envName,
-                importConfig: async (filePath) => ((await import(filePath)) as DefaultConfigFileExports).default,
-            });
-
-            if (!foundConfig.length) {
+            const configDefinition = configurations.get(configName);
+            if (!configDefinition) {
                 const configNames = Array.from(configurations.keys());
                 throw new Error(
                     `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
                 );
+            }
+            for (const definition of configDefinition) {
+                try {
+                    if (Array.isArray(definition)) {
+                        config.push(...definition);
+                    } else {
+                        config.push(...((await import(definition.filePath)) as { default: TopLevelConfig }).default);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
             }
         }
         return config;
