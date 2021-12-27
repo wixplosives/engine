@@ -3,6 +3,7 @@ import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import semverLessThan from 'semver/functions/lt';
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import { createRequestResolver } from '@file-services/resolve';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
@@ -218,6 +219,7 @@ export function createWebpackConfigForExternalFeature({
     if (!feature) {
         throw new Error(`${featureName!} was not found after analyzing features`);
     }
+    const resolver = createRequestResolver({ fs });
 
     const { module: baseModule = {} } = baseConfig;
     const { rules: baseRules = [] } = baseModule;
@@ -249,7 +251,8 @@ export function createWebpackConfigForExternalFeature({
         }
     }
     const { loaderRule, entries } = createVirtualEntries(entryModules);
-    const extractExternalsMethod = extractExternals(filePath, Object.keys(entries));
+
+    const extractExternalsMethod = extractExternals(filePath, Object.keys(entries), resolver);
 
     const webpackConfig: webpack.Configuration = {
         ...baseConfig,
@@ -288,7 +291,7 @@ export function createWebpackConfigForExternalFeature({
 }
 
 const extractExternals =
-    (featurePath: string, ignoredRequests: string[]) =>
+    (featurePath: string, ignoredRequests: string[], resolver: ReturnType<typeof createRequestResolver>) =>
     ({ context, request }: { context?: string; request?: string }, cb: (e?: Error, target?: string) => void) => {
         try {
             if (
@@ -300,8 +303,13 @@ const extractExternals =
             ) {
                 return cb();
             }
-            const resolvedRequest = require.resolve(request, { paths: [context] });
-            if (resolvedRequest !== featurePath && fs.basename(resolvedRequest).includes('.feature.')) {
+
+            const { resolvedFile: resolvedRequest } = resolver(context, request);
+            if (
+                resolvedRequest &&
+                resolvedRequest !== featurePath &&
+                fs.basename(resolvedRequest).includes('.feature.')
+            ) {
                 const packageJson = fs.findClosestFileSync(fs.dirname(resolvedRequest), 'package.json');
                 if (!packageJson) {
                     throw new Error(`could not find package.json for ${resolvedRequest}`);

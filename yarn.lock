@@ -71,6 +71,11 @@
   dependencies:
     "@file-services/types" "^5.4.0"
 
+"@file-services/resolve@^5.6.0":
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-5.6.0.tgz#431a19005bf5babe4f560c9e44b0b0cdf78d5b46"
+  integrity sha512-xKQX+5JAnawEthfibRBIaUdW/faPzH2KKwlOqG2Sn5EPVCOtFecJO38cJhSb2EsRzczyg8L6s8IQB5dUoCgmFA==
+
 "@file-services/types@^5.4.0":
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/@file-services/types/-/types-5.4.0.tgz#26bd7485ad22de1572fa045ca3f739eef851c99c"
