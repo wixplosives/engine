@@ -1654,10 +1654,10 @@
     glob "^7.2.0"
     type-fest "^2.8.0"
 
-"@wixc3/wait-for-call@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-1.0.0.tgz#c28ccfaaa4586bdcbfc86d0ebc0ec4ce1206d3db"
-  integrity sha512-yDYn2d6hXfkcRXWpdb3ZCHev46ZAU60joP21Aub5/8d7TgbW5Q0cbIGrtUAmsl9XrvH6O5xuNvHAVaDXTP7xnQ==
+"@wixc3/wait-for-call@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-1.0.1.tgz#71ca625a66dbe6a0262be4bd91e54be81ebe3054"
+  integrity sha512-MNbJMuPI84EpuNuKB9jxGEjcwfXxc2HQWhWghV4ZOILQhwkephTURs9W9MBUGhC84uVsPkFl6AnJu1TUav2fJw==
   dependencies:
     promise-assist "^1.3.0"
 
