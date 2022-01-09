@@ -5,7 +5,8 @@ import webpack from 'webpack';
 import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import fs from '@file-services/node';
 import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree, createDisposables, AnyEnvironment } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree, AnyEnvironment } from '@wixc3/engine-core';
+import { createDisposables } from '@wixc3/create-disposables';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';

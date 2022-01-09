@@ -14,33 +14,28 @@ import {
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import webpack from 'webpack';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
-import { Communication, createDisposables } from '@wixc3/engine-core';
-import { buildFeatureLinks } from '../feature-dependency-graph';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import { createDisposables } from '@wixc3/create-disposables';
+import type { Communication } from '@wixc3/engine-core';
+import { buildFeatureLinks } from '../feature-dependency-graph';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const webpackDevMiddleware = require('webpack-dev-middleware') as (
-    compiler: webpack.MultiCompiler,
-    options?: { index?: string }
-) => WebpackDevMiddleware;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpackHotMiddleware = require('webpack-hot-middleware') as (
     compiler: webpack.MultiCompiler
 ) => WebpackHotMiddleware;
 
-interface WebpackDevMiddleware extends express.Handler {
-    close(cb?: () => void): void;
-    waitUntilValid(cb: () => void): void;
-}
 interface WebpackHotMiddleware extends express.Handler {
     close(cb?: () => void): void;
 }
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
-    communication.clearEnvironment(envName);
+    if (communication.getEnvironmentHost(envName)) {
+        communication.clearEnvironment(envName);
+    }
     communication.registerMessageHandler(host);
     communication.registerEnv(envName, host);
     return () => {
@@ -195,6 +190,11 @@ devServerFeature.setup(
 
             app.get('/feature-graph', (req, res) => {
                 const featureName = req.query['feature-name'] as string;
+                if (!featureName) {
+                    res.statusCode = 404;
+                    res.json({ error: 'feature was not found' });
+                    return;
+                }
                 const { links, nodes } = buildFeatureLinks(features.get(featureName)!.exportedFeature);
 
                 const graph = {
@@ -230,7 +230,12 @@ devServerFeature.setup(
 
             if (compiler.compilers.length > 0) {
                 const devMiddleware = webpackDevMiddleware(compiler);
-                disposables.add(() => new Promise<void>((res) => devMiddleware.close(res)));
+                disposables.add(
+                    () =>
+                        new Promise<void>((res, rej) => {
+                            devMiddleware.close((e) => (e ? rej(e) : res()));
+                        })
+                );
                 app.use(devMiddleware);
                 compilationPromises.push(
                     new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve()))
@@ -280,7 +285,12 @@ devServerFeature.setup(
                 // If we decide to create more engineers one day we might need to rethink the index file
                 // In any case it's a fallback, full paths should still work as usual
                 const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers, { index: 'main-dashboard.html' });
-                disposables.add(() => new Promise<void>((res) => engineerDevMiddleware.close(res)));
+                disposables.add(
+                    () =>
+                        new Promise<void>((res, rej) => {
+                            engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
+                        })
+                );
                 app.use(engineerDevMiddleware);
                 compilationPromises.push(
                     new Promise<void>((resolve) =>

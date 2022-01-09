@@ -1,7 +1,7 @@
 import { spawnSync, SpawnSyncOptions } from 'child_process';
 import fs from '@file-services/node';
 import { createTempDirectory } from 'create-temp-directory';
-import { createDisposables } from '@wixc3/engine-core';
+import { createDisposables } from '@wixc3/create-disposables';
 import { IFeatureExecutionOptions, IWithFeatureOptions, withFeature } from './with-feature';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {

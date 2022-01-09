@@ -88,9 +88,7 @@ export type MultiTanentProxyFunction<T extends { [SERVICE_CONFIG]?: any }, K ext
     ServiceConfig<T>[K]
 >['proxyFunction'];
 
-export type FilterFirstArgument<T extends any> = T extends (_a: infer _First, ...rest: infer Args) => unknown
-    ? Args
-    : never;
+export type FilterFirstArgument<T> = T extends (_a: infer _First, ...rest: infer Args) => unknown ? Args : never;
 
 export type AnyFunction = (...args: any[]) => unknown;
 

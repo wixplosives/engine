@@ -17,7 +17,7 @@ export const socketClientInitializer = async ({
     const instanceId = env;
     const host = new WsClientHost(url, socketClientOptions);
     if (communication.getEnvironmentHost(instanceId)) {
-        communication.clearEnvironment(instanceId);
+        communication.clearEnvironment(instanceId, undefined, false);
     }
     communication.registerMessageHandler(host);
     communication.registerEnv(instanceId, host);

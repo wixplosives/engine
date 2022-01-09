@@ -1,5 +1,6 @@
 import fs from '@file-services/node';
-import { TopLevelConfig, createDisposables, IFeatureLoader } from '@wixc3/engine-core';
+import type { TopLevelConfig, IFeatureLoader } from '@wixc3/engine-core';
+import { createDisposables } from '@wixc3/create-disposables';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import { waitFor } from 'promise-assist';
@@ -515,7 +516,7 @@ describe('Application', function () {
                 },
                 { timeout: 5_000 }
             );
-        });
+        }).timeout(20_000);
 
         it('loads external features after static build', async () => {
             const externalFeatureName = 'static-application-external/application-external';

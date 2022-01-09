@@ -78,7 +78,7 @@ export async function runEngineEnvironment<ENV extends Environment>({
         const env = locateEnvironment(featureDef, features, envName, childEnvName);
         if (!env) {
             throw new Error(
-                `environment "${envName}" with the context "${childEnvName}" is not found when running "${featureDef.name}" feature`
+                `environment "${envName}" with the context "${childEnvName}" is not found when running "${featureDef.scopedName}" feature`
             );
         }
         if (env.type !== 'node') {

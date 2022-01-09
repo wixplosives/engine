@@ -1,18 +1,18 @@
 {
   "name": "@wixc3/engine-runtime-node",
-  "version": "21.3.0",
+  "version": "22.1.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
-    "@wixc3/cross-performance": "^21.3.0",
-    "@wixc3/engine-core": "^21.3.0",
-    "@wixc3/engine-core-node": "^21.3.0",
+    "@wixc3/cross-performance": "^22.0.0",
+    "@wixc3/engine-core": "^22.1.1",
+    "@wixc3/engine-core-node": "^22.1.4",
     "create-listening-server": "^1.0.0",
     "minimist": "^1.2.5",
-    "socket.io": "^4.2.0"
+    "socket.io": "^4.4.1"
   },
   "files": [
     "dist",

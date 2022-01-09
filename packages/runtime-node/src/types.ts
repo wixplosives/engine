@@ -19,6 +19,15 @@ export interface IStaticFeatureDefinition {
     envFilePaths?: Record<string, string>;
     preloadFilePaths?: Record<string, string>;
     dependencies?: string[];
+    /**
+     * the feature's name scoped to the package.json package name.
+     * @example
+     * package name = @some-scope/my-package
+     * feature name = my-feature
+     * scopedName === 'my-package/my-feature'.
+     * if package name is equal to the feature name, then the scoped name will just be the package name
+     * if package name ends with - feature, we remove it from the scope
+     */
     scopedName: string;
     resolvedContexts?: Record<string, string>;
     packageName: string;
