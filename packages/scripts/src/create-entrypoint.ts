@@ -26,6 +26,7 @@ export interface ICreateEntrypointsOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     featuresBundleName?: string;
+    fetchConfigModule?: string;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -109,10 +110,12 @@ export function createMainEntrypoint({
     externalFeaturesRoute,
     eagerEntrypoint,
     featuresBundleName,
+    fetchConfigModule = '@wixc3/fetch-config',
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
+import fetchConfig from '${require.resolve(fetchConfigModule)}';
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
@@ -383,15 +386,10 @@ function getRemoteConfigs(publicConfigsRoute: string, envName: string) {
         if(!isMainEntrypoint) {
             ${getConfigsFromParent(publicConfigsRoute, envName)}   
         } else {
-            ${fetchConfigs(publicConfigsRoute, envName)}
+            const config = await fetchConfig('${publicConfigsRoute}', featureName, '${envName}', configName);
+            return config;
         }
     })());`;
-}
-
-function fetchConfigs(publicConfigsRoute: string, envName: string) {
-    return `return (await fetch('${normalizeRoute(
-        publicConfigsRoute
-    )!}' + configName + '?env=${envName}&feature=' + featureName)).json();`;
 }
 
 function addOverrideConfig(config: TopLevelConfig) {
@@ -415,10 +413,7 @@ function addConfigsEventListenerForParentEnvironments(publicConfigsRoute: string
         const configsEventListener = async ({ data: { id, envName }, source }) => {
             if(source && id === '${publicConfigsRoute}') {
                 if(!fetchedConfigs[envName]) {
-                    const config = await (await fetch('${normalizeRoute(
-                        publicConfigsRoute
-                    )}/' + configName + '?env=' + envName + '&feature=' + featureName)).json();
-                    fetchedConfigs[envName] = config;
+                    const config = await fetchConfig('${publicConfigsRoute}', featureName, envName, configName);
                 }
                 source.postMessage({
                     id,
@@ -563,9 +558,6 @@ export function createExternalFeatureMapping(packageName: string, featurePath: s
 }
 
 //#endregion
-function normalizeRoute(route: string) {
-    return route + (route && !route.endsWith('/') ? '/' : '');
-}
 
 export function normilizePackageName(packageName: string) {
     return packageName.replace('@', '').replace(/\//g, '').replace(/-/g, '');

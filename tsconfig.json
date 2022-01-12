@@ -19,6 +19,8 @@
     { "path": "./packages/scripts/src" },
     { "path": "./packages/scripts/test" },
 
+    { "path": "./packages/fetch-config/src" },
+    
     { "path": "./packages/test-kit/src" },
     { "path": "./packages/test-kit/test" },
 
