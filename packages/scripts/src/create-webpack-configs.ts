@@ -37,7 +37,6 @@ export interface ICreateWebpackConfigsOptions {
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
-    webpackHot?: boolean;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -109,7 +108,6 @@ interface ICreateWebpackConfigOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
-    webpackHot?: boolean;
     plugins?: webpack.WebpackPluginInstance[];
 }
 
@@ -132,7 +130,6 @@ export function createWebpackConfig({
     externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
-    webpackHot = false,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const { module: baseModule = {}, plugins: basePlugins = [] } = baseConfig;
     const { rules: baseRules = [] } = baseModule;
@@ -178,13 +175,7 @@ export function createWebpackConfig({
         }
     }
     const { loaderRule, entries } = createVirtualEntries(entryModules);
-    if (webpackHot) {
-        for (const [entryName, entryValue] of Object.entries(entries)) {
-            entries[entryName] = ['webpack-hot-middleware/client', entryValue as string];
-        }
-        // we need the hot middleware client into the env entry
-        plugins.push(new webpack.HotModuleReplacementPlugin());
-    }
+
     return {
         ...baseConfig,
         target,
