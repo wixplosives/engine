@@ -22,15 +22,6 @@ import { createDisposables } from '@wixc3/create-disposables';
 import type { Communication } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const webpackHotMiddleware = require('webpack-hot-middleware') as (
-    compiler: webpack.MultiCompiler
-) => WebpackHotMiddleware;
-
-interface WebpackHotMiddleware extends express.Handler {
-    close(cb?: () => void): void;
-}
-
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
     if (communication.getEnvironmentHost(envName)) {
@@ -71,7 +62,6 @@ devServerFeature.setup(
             socketServerOptions = {},
             webpackConfigPath,
             externalFeaturesRoute,
-            webpackHot = false,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, outputPath });
         const disposables = createDisposables();
@@ -240,11 +230,6 @@ devServerFeature.setup(
                 compilationPromises.push(
                     new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve()))
                 );
-                if (webpackHot) {
-                    const hotMiddleware = webpackHotMiddleware(compiler);
-                    disposables.add(hotMiddleware.close);
-                    app.use(hotMiddleware);
-                }
             }
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);

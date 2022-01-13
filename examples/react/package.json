@@ -4,14 +4,8 @@
   "main": "index.js",
   "scripts": {
     "start": "yarn engineer start -f react/someplugin --singleFeature",
-    "start:hot": "yarn start --webpackConfig webpack.config.hot.js --webpackHot",
     "test": "yarn test:ix",
     "test:ix": "mocha \"dist/test/**/*.ix.js\""
-  },
-  "devDependencies": {
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.4",
-    "react-refresh": "^0.11.0",
-    "react-refresh-typescript": "^2.0.3"
   },
   "license": "UNLICENSED",
   "private": true
