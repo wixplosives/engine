@@ -23,7 +23,6 @@ export class Environment<
     MODE extends EnvironmentMode = EnvironmentMode,
     DEPS extends MultiEnvironment<TYPE>[] | [] = []
 > {
-    // __depNames: EnvNames<DEPS> = this.dependencies.map(({ env }) => env) as EnvNames<DEPS>;
     constructor(
         public readonly env: NAME,
         public readonly envType: TYPE,

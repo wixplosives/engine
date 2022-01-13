@@ -407,7 +407,6 @@ describe('environment-dependencies communication', () => {
         const base = new Environment('base', 'node', 'multi');
         // const base = new AbstractEnvironment('base', 'node');
         const env1 = new Environment('env1', 'node', 'single', [base]);
-        const env3 = new Environment('env3', 'node', 'single', [base]);
 
         const env2 = new Environment('env2', 'node', 'single');
 
@@ -415,6 +414,7 @@ describe('environment-dependencies communication', () => {
             id: 'base',
             api: {
                 service1: Service.withType<{ echo: () => string }>().defineEntity(base).allowRemoteAccess(),
+                service2: Service.withType<{ echo: () => string }>().defineEntity(env1).allowRemoteAccess(),
             },
             dependencies: [COM],
         });
@@ -425,7 +425,11 @@ describe('environment-dependencies communication', () => {
             };
         });
 
-        f.setup(env1, ({ service1 }) => {});
+        f.setup(env1, ({ service1 }) => {
+            return {
+                service2: service1,
+            };
+        });
 
         const env1Engine = new RuntimeEngine(env1);
         await env1Engine.run([f]);
@@ -437,7 +441,7 @@ describe('environment-dependencies communication', () => {
             env1Communication.getEnvironmentHost(env1Communication.getEnvironmentId()) as BaseHost
         ).open();
 
-        f.setup(env2, ({ service1 }, { COM: { communication } }) => {
+        f.setup(env2, ({}, { COM: { communication } }) => {
             const env2Target = (communication.getEnvironmentHost(communication.getEnvironmentId()) as BaseHost).open();
             communication.registerEnv(env1.env, env1Target);
             communication.registerMessageHandler(env1Target);

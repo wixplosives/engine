@@ -8,12 +8,12 @@ export type FromEnv = EQUAL<EnvType<MAIN1>, 'main'>;
 export type FromEnvArrayMultiple = EQUAL<EnvType<[MAIN1, Environment<'main1', 'node', 'single'>]>, 'main' | 'main1'>;
 export type FromEnvEmptyArray = EQUAL<EnvType<[]>, never>;
 
-export type RunningEmpty = EQUAL<Running<{ id: ''; api: {} }, 'main'>, {}>;
+export type RunningEmpty = EQUAL<Running<{ id: ''; api: {} }, MAIN1>, {}>;
 export type RunningProvidesApiInputTypes = EQUAL<
-    Running<{ id: ''; api: { x: Entity<string, string, MAIN1, MAIN1, 'input', false> } }, 'main'>,
+    Running<{ id: ''; api: { x: Entity<string, string, MAIN1, MAIN1, 'input', false> } }, MAIN1>,
     { x: string }
 >;
 export type RunningProvidesApiOutputTypes = EQUAL<
-    Running<{ id: ''; api: { x: Entity<string, string, MAIN1, MAIN1, 'output', false> } }, 'main'>,
+    Running<{ id: ''; api: { x: Entity<string, string, MAIN1, MAIN1, 'output', false> } }, MAIN1>,
     { x: string }
 >;

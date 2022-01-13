@@ -15,11 +15,11 @@ import {
     RuntimeEngine,
     flattenTree,
     Running,
-    ReferencedEnvironments,
+    AnyEnvironment,
 } from '@wixc3/engine-core';
 import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
-export interface IRunNodeEnvironmentOptions<ENV extends Environment = Environment> {
+export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
@@ -42,12 +42,12 @@ export interface IGetRuinnnigFeatureOptions<
     DEPS extends Feature[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
-    ENV extends Environment
+    ENV extends AnyEnvironment
 > extends IRunNodeEnvironmentOptions<ENV> {
     feature: Feature<NAME, DEPS, API, CONTEXT>;
 }
 
-export async function runEngineEnvironment<ENV extends Environment>({
+export async function runEngineEnvironment<ENV extends AnyEnvironment>({
     featureName,
     configName,
     runtimeOptions = {},
@@ -127,12 +127,12 @@ export async function getRunningFeature<
     DEPS extends Feature[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
-    ENV extends Environment
+    ENV extends AnyEnvironment
 >(
     options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
-    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ReferencedEnvironments<ENV>>;
+    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV>;
     engine: RuntimeEngine;
 }> {
     const { feature } = options;

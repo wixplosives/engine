@@ -2,7 +2,7 @@ import type { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComCo
 import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import type { EnvVisibility } from '../types';
-import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
+import { Environment, normEnvVisibility, Universal } from './env';
 import { FeatureOutput } from './output';
 
 export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<string, EnvironmentTypes, 'single'>
@@ -36,9 +36,9 @@ export class Service<
         super(providedFrom, visibleAt, remoteAccess);
     }
     public allowRemoteAccess(options?: ServiceComConfig<T>) {
-        return new Service<T, ServiceRuntime<T, ProvidedFrom>, ProvidedFrom, Environment, true>(
+        return new Service<T, ServiceRuntime<T, ProvidedFrom>, ProvidedFrom, typeof Universal, true>(
             this.providedFrom,
-            AllEnvironments,
+            Universal,
             true,
             options
         );

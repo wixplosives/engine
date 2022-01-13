@@ -73,6 +73,7 @@ describe('ENV dependencies', () => {
                 service,
             };
         });
+
         entryFeature.setup(extendingEnv, ({ service }) => {
             return {
                 service2: {
@@ -80,8 +81,8 @@ describe('ENV dependencies', () => {
                 },
             };
         });
-        extendingFeature.setup(extendingEnv, ({}, { entry: { service, service2 } }) => {
-            console.log(service.increment(2));
+        extendingFeature.setup(extendingEnv, ({}, { entry: { service: entryService, service2 } }) => {
+            console.log(entryService.increment(2));
             return {
                 service2,
             };
@@ -135,7 +136,6 @@ describe('ENV dependencies', () => {
 
         const engine = await runEngine({ entryFeature, env: env3 });
         const runningFeature = engine.get(entryFeature);
-
         expect(runningFeature.api.service1.echo('Test')).to.equal('env1 Test');
         expect(runningFeature.api.service2.echo('Test')).to.equal('env2 Test');
         expect(runningFeature.api.service3.echo('Test')).to.equal('env3 Test');

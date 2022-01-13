@@ -1,19 +1,19 @@
 import type { RuntimeEngine } from '../runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import type { EnvVisibility } from '../types';
-import { AllEnvironments, Environment } from './env';
+import { Universal, AnyEnvironment } from './env';
 import { FeatureInput } from './input';
 
 export type MergeConfigHook<T extends object> = (a: Readonly<T>, b: Readonly<Partial<T>>) => T;
 
-export class Config<T extends object, VisibleAt extends EnvVisibility = Environment> extends FeatureInput<
+export class Config<T extends object, VisibleAt extends EnvVisibility = typeof Universal> extends FeatureInput<
     Readonly<T>,
-    Environment,
+    VisibleAt,
     VisibleAt
 > {
     public static withType<T extends object>() {
         return {
-            defineEntity<E_ENV extends EnvVisibility>(
+            defineEntity<E_ENV extends AnyEnvironment>(
                 defaultValue: T,
                 mergeConfig?: MergeConfigHook<T>,
                 visibleAt?: E_ENV
@@ -27,9 +27,9 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
     constructor(
         public defaultValue: Readonly<T>,
         public mergeConfig: MergeConfigHook<T> = (a: T, b: Partial<T>) => ({ ...a, ...b }),
-        visibleAt = AllEnvironments as unknown as VisibleAt
+        visibleAt = Universal as VisibleAt
     ) {
-        super(AllEnvironments, visibleAt);
+        super(visibleAt, visibleAt);
     }
 
     public [CREATE_RUNTIME](context: RuntimeEngine, featureID: string, entityKey: string) {

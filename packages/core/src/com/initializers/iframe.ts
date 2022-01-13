@@ -44,6 +44,7 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
 } {
     const instanceId = com.getEnvironmentInstanceId(env, endpointType);
     const envReadyPromise = com.envReady(instanceId);
+
     return {
         id: instanceId,
         initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {

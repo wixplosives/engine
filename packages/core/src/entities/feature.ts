@@ -12,7 +12,6 @@ import type {
     PartialFeatureConfig,
     RunningFeatures,
     SetupHandler,
-    ReferencedEnvironments,
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
 import { deferred, IDeferredPromise, SetMultiMap } from '../helpers';
@@ -28,8 +27,8 @@ export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
 
     constructor(
         public feature: T,
-        public api: Running<T, ReferencedEnvironments<ENV>>,
-        public dependencies: RunningFeatures<T['dependencies'], ReferencedEnvironments<ENV>>
+        public api: Running<T, ENV>,
+        public dependencies: RunningFeatures<T['dependencies'], ENV>
     ) {}
 
     public addRunHandler(fn: () => unknown, envName: string) {
