@@ -1064,10 +1064,10 @@
     "@stylable/core" "^4.10.1"
     js-beautify "^1.14.0"
 
-"@stylable/core@^4.10.1":
-  version "4.10.1"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.10.1.tgz#66642ae2925e2cb686e26cd736a9df6e4e860f68"
-  integrity sha512-5eHkh8vS5DA78dauOmot/aHKvo4nEAhD0TG2VrovGzM5s6beWAoUqKHQwEmCz9d6GNkZzAlpgA3ncWbR/ToF/Q==
+"@stylable/core@^4.10.1", "@stylable/core@^4.10.2":
+  version "4.10.2"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.10.2.tgz#af201b8e5e539216ece27e94dd181d2ddf663168"
+  integrity sha512-178fnUejcKx3cPLJElQAO1DGLAkrnT5K3DohpTj4PmLO2pT0yk1HiTiE21I9lqNUrnXHysmiHrIGsajerICxhw==
   dependencies:
     "@tokey/css-selector-parser" "^0.5.1"
     "@tokey/imports-parser" "^0.0.2"
