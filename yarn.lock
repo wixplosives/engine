@@ -1649,13 +1649,13 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-1.1.0.tgz#3c9a39ac0da2f839011c6a1faa90a889d41ecf55"
   integrity sha512-GjDjj9QFD9SXMxanOXMOvh1NrVIOiz1LfFh7VgiiEVqASBzqgH5/YcNY7jPN4/ckn4ziLHTYnUaQOhcsR4u/ag==
 
-"@wixc3/resolve-directory-context@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-1.0.3.tgz#b8c4c97b2727d3f46a6745b00ac28738a3070eec"
-  integrity sha512-IcYEmdJMp63GEVD/HFEVmQjDhT313zewl94b5Xowbt/47jF3SLKQG7upp/JWHsJ2LyTNL9hIRivHjonYg2eURw==
+"@wixc3/resolve-directory-context@^1.0.3", "@wixc3/resolve-directory-context@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-1.0.4.tgz#8de9d84dc640f89df9bb351ae1b507a17218633a"
+  integrity sha512-jZVnCWX9u+NX7DT2iVTQqNUBdImHSJ9xHxtci5R5KEt/bGVODEaYnWUXYDyQZEJl/VQD8uYAGPkAbiKDOqMIDQ==
   dependencies:
     glob "^7.2.0"
-    type-fest "^2.8.0"
+    type-fest "^2.9.0"
 
 "@wixc3/wait-for-call@^1.0.1":
   version "1.0.1"
@@ -7123,7 +7123,7 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-type-fest@^2.8.0, type-fest@^2.9.0:
+type-fest@^2.9.0:
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.9.0.tgz#7a2d430dd966f52b6bc723da2aaa2c9867530551"
   integrity sha512-uC0hJKi7eAGXUJ/YKk53RhnKxMwzHWgzf4t92oz8Qez28EBgVTfpDTB59y9hMYLzc/Wl85cD7Tv1hLZZoEJtrg==
