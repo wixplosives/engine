@@ -6,7 +6,7 @@ import { FeatureInput } from './input';
 
 export type MergeConfigHook<T extends object> = (a: Readonly<T>, b: Readonly<Partial<T>>) => T;
 
-export class Config<T extends object, VisibleAt extends EnvVisibility = typeof AllEnvironments> extends FeatureInput<
+export class Config<T extends object, VisibleAt extends EnvVisibility = Environment> extends FeatureInput<
     Readonly<T>,
     Environment,
     VisibleAt
