@@ -2,7 +2,7 @@ import type { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComCo
 import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import type { EnvVisibility } from '../types';
-import { Environment, normEnvVisibility, Universal, AllEnvironments } from './env';
+import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
 import { FeatureOutput } from './output';
 
 export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<string, EnvironmentTypes, 'single'>
@@ -36,7 +36,7 @@ export class Service<
         super(providedFrom, visibleAt, remoteAccess);
     }
     public allowRemoteAccess(options?: ServiceComConfig<T>) {
-        return new Service<T, ServiceRuntime<T, ProvidedFrom>, ProvidedFrom, typeof AllEnvironments, true>(
+        return new Service<T, ServiceRuntime<T, ProvidedFrom>, ProvidedFrom, Environment, true>(
             this.providedFrom,
             AllEnvironments,
             true,
@@ -56,7 +56,6 @@ export class Service<
             const serviceKey = runtimeEngine.entityID(featureID, entityKey);
             const providedFrom = normEnvVisibility(this.providedFrom);
             const localEnv = communication.getEnvironmentName();
-            // TODO: TEST COM
             if (providedFrom.has(localEnv) || providedFrom.has(Universal.env)) {
                 if (!providedValue) {
                     throw new Error('service is not provide in runtime');
