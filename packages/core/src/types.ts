@@ -211,7 +211,7 @@ export type SettingUpFeature<ID extends string, API extends EntityRecord, ENV ex
     MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
     RunningEnvironmentNameForUniversal<ENV> &
     MapType<GetDependenciesOutput<API, DeepEnvironmentDeps<ENV>>> &
-    MapToProxyType<GetRemoteOutputs<API>>;
+    MapToProxyType<FilterNotEnv<GetRemoteOutputs<API>, DeepEnvironmentDeps<ENV>, 'providedFrom'>>;
 
 export type RegisteringFeature<
     API extends EntityRecord,
