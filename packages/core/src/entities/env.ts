@@ -36,10 +36,11 @@ export class EnvironmentContext {
 }
 
 export const Universal = new Environment('<Universal>', 'window', 'multi');
-export const AllEnvironments: Environment = new Environment('<All>', 'window', 'multi');
-export const NoEnvironments = new Environment('<None>', 'window', 'multi');
+export const AllEnvironments = new Environment('<All>', 'window', 'multi');
 
 export const globallyProvidingEnvironments = new Set([Universal.env, AllEnvironments.env]);
+
+export type GloballyProvidingEnvironments = typeof Universal | typeof AllEnvironments;
 
 export function orderedEnvDependencies(env: AnyEnvironment): string[] {
     return env.dependencies?.flatMap(orderedEnvDependencies).concat(env.env) ?? [];
@@ -105,18 +106,4 @@ export function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: S
         test(envVisibility.env);
     }
     return [...containsEnv];
-}
-
-export function isProvidedFrom(envVisibility: EnvVisibility, envSet: Set<string>) {
-    if (Array.isArray(envVisibility)) {
-        return envVisibility.some((e) => envSet.has(e.env));
-    } else if (typeof envVisibility === 'string') {
-        return envSet.has(envVisibility);
-    } else {
-        return envSet.has(envVisibility.env);
-    }
-}
-
-export function isGloballyProvided(envVisibility: EnvVisibility) {
-    return isProvidedFrom(envVisibility, globallyProvidingEnvironments);
 }

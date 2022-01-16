@@ -1,6 +1,6 @@
 import type { TupleToUnion } from 'typescript-type-utils';
 import type { LogMessage } from './common-types';
-import type { AnyEnvironment, Environment, Universal } from './entities/env';
+import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
 import type { Feature } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
@@ -132,7 +132,11 @@ export type MapToProxyType<T extends EntityRecord> = {
 export type MapToPartialType<T extends { [k: string]: any }> = { [K in keyof T]: Partial<T[K]['type']> };
 
 export type MapAllTypesForEnv<T extends EntityRecord, EnvFilter extends AnyEnvironment> = MapToProxyType<
-    FilterEnv<FilterNotEnv<T, EnvFilter | typeof Universal, 'providedFrom'>, EnvFilter | typeof Universal, 'visibleAt'>
+    FilterEnv<
+        FilterNotEnv<T, EnvFilter | typeof Universal, 'providedFrom'>,
+        EnvFilter | GloballyProvidingEnvironments,
+        'visibleAt'
+    >
 > &
     MapType<FilterEnv<T, EnvFilter | typeof Universal, 'providedFrom'>>;
 
@@ -202,7 +206,7 @@ export type SettingUpFeature<ID extends string, API extends EntityRecord, ENV ex
     run: (fn: () => unknown) => void;
     onDispose: (fn: DisposeFunction) => void;
     [RUN_OPTIONS]: IRunOptions;
-} & MapVisibleInputs<API, typeof Universal> &
+} & MapVisibleInputs<API, GloballyProvidingEnvironments> &
     MapVisibleInputs<API, ENV> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
     RunningEnvironmentNameForUniversal<ENV> &

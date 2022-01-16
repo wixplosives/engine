@@ -604,7 +604,7 @@ describe('engineer:dev-server', function () {
         expect(text).to.eq('page1');
     });
 
-    it('supports base environment extention in dependent features', async () => {
+    it('supports base environment extension in dependent features', async () => {
         const {
             config: { port },
             dispose,
