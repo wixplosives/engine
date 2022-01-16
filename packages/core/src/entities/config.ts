@@ -1,14 +1,14 @@
 import type { RuntimeEngine } from '../runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import type { EnvVisibility } from '../types';
-import { AllEnvironments } from './env';
+import { AllEnvironments, Environment } from './env';
 import { FeatureInput } from './input';
 
 export type MergeConfigHook<T extends object> = (a: Readonly<T>, b: Readonly<Partial<T>>) => T;
 
 export class Config<T extends object, VisibleAt extends EnvVisibility = typeof AllEnvironments> extends FeatureInput<
     Readonly<T>,
-    VisibleAt,
+    Environment,
     VisibleAt
 > {
     public static withType<T extends object>() {
@@ -29,7 +29,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = typeof A
         public mergeConfig: MergeConfigHook<T> = (a: T, b: Partial<T>) => ({ ...a, ...b }),
         visibleAt = AllEnvironments as VisibleAt
     ) {
-        super(AllEnvironments as VisibleAt, visibleAt);
+        super(AllEnvironments, visibleAt);
     }
 
     public [CREATE_RUNTIME](context: RuntimeEngine, featureID: string, entityKey: string) {
