@@ -5,6 +5,7 @@ import type { TopLevelConfig, DisposeFunction } from '@wixc3/engine-core';
 import { getEngineConfig, findFeatures } from '../find-features';
 import { getConfig } from '../engine-helpers';
 import { join } from 'path';
+import { getExportedEnvironments } from '@wixc3/engine-scripts';
 
 // electron node lib exports the electron executable path; inside electron, it's the api itself.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -69,6 +70,18 @@ export async function start({
     serverListeningHandlerSlot.register(({ port, router }) => {
         const config: TopLevelConfig = [];
         const { features, configurations } = findFeatures(basePath, resolvedFeatureDiscoveryRoot);
+
+        const environments = getExportedEnvironments(features);
+
+        // doing this in 2 steps as a future step for not needing to provide the environment name in the cli
+        const electronHostEnvironments = [...environments].filter(({ type }) => type === 'electron-main');
+
+        const env = electronHostEnvironments.find(({ name }) => name === envName)?.env;
+
+        if (!env) {
+            throw new Error(`Environment ${envName} not found`);
+        }
+
         if (configName) {
             config.push(...getConfig(configName, configurations, envName));
         }
@@ -87,7 +100,6 @@ export async function start({
             id: 'runOptions',
             runOptions: {
                 featureName,
-                envName,
                 devport: port,
                 basePath,
                 configName,
@@ -95,6 +107,7 @@ export async function start({
                 requiredModules,
                 config,
                 features: [...features.entries()],
+                env,
             },
         } as IRunOptionsMessage);
 

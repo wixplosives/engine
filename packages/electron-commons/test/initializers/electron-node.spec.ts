@@ -42,6 +42,7 @@ const setupRunningEnv = async ({
                 config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
                 features: Array.from(features.entries()),
                 externalFeatures: [],
+                env: serverEnv,
             }),
         processOptions: { cwd: process.cwd() },
         environmentStartupOptions: {},

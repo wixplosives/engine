@@ -29,6 +29,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         ...environmentStartupOptions,
         parentEnvName: communication.getEnvironmentName(),
         environmentName: env.env,
+        env,
     };
 
     const child = spawn(

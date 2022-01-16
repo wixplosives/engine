@@ -7,7 +7,6 @@ import './test-feature.server.env';
 process.once('message', (message) => {
     if (isNodeEnvStartupMessage(message)) {
         runEngineApp({
-            envName: serverEnv.env,
             features: [COM, feature],
             resolvedContexts: {},
             config: [
@@ -16,6 +15,7 @@ process.once('message', (message) => {
                     config: { host: new IPCHost(process), id: 'server' },
                 }),
             ],
+            env: serverEnv,
         });
 
         if (
