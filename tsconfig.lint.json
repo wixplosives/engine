@@ -7,6 +7,8 @@
       "@wixc3/engine-dashboard/dist/*": ["./packages/dashboard/src/*"],
       "@wixc3/engine-test-kit/dist/*": ["./packages/test-kit/src/*"],
       "@wixc3/engineer/dist/*": ["./packages/engineer/src/*"],
+      "@wixc3/engine-electron-commons/dist/*": ["./packages/electron-commons/src/*"],
+      "@wixc3/engine-electron-node/dist/*": ["./packages/electron-node/src/*"],
       "@fixture/*-feature": ["./test-fixtures/*/src"],
       "@fixture/base-web-application-feature/dist/*": ["./test-fixtures/base-web-application/src/*"],
       "@fixture/static-base-web-application-feature/dist/*": ["./test-fixtures/static-base-web-application/src/*"],

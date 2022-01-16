@@ -1,0 +1,27 @@
+{
+  "name": "@wixc3/engine-electron-node",
+  "version": "22.2.1",
+  "main": "dist/index.js",
+  "dependencies": {
+    "@wixc3/engine-core": "^22.2.1",
+    "@wixc3/engine-core-node": "^22.2.1",
+    "@wixc3/engine-electron-commons": "^22.2.1",
+    "@wixc3/engine-runtime-node": "^22.2.1",
+    "lodash.once": "^4.1.1"
+  },
+  "peerDependencies": {
+    "electron": ">=9"
+  },
+  "files": [
+    "dist",
+    "src",
+    "!*/tsconfig.{json,tsbuildinfo}"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Wix.com",
+  "repository": "https://github.com/wixplosives/engine/tree/master/packages/electron-node",
+  "homepage": "https://github.com/wixplosives/engine"
+}

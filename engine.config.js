@@ -3,5 +3,5 @@
  */
 module.exports = {
     require: ['@ts-tools/node/r'],
-    featureDiscoveryRoot: 'dist'
+    featureDiscoveryRoot: 'dist',
 };
