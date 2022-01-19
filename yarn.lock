@@ -1165,10 +1165,10 @@
     csso "^5.0.2"
     postcss "^8.4.5"
 
-"@stylable/runtime@^4.10.2":
-  version "4.10.2"
-  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-4.10.2.tgz#0d83415f5eca79b4ea114daf2cfa3748940e17ec"
-  integrity sha512-o0rB/BPNvFhYunkJqfWfGxQeqBRqHQkvXxekws7AYOo5iXGOv2L357pEygzANETH3doIadp+ScvdDyx9Mn1J4g==
+"@stylable/runtime@^4.10.2", "@stylable/runtime@^4.10.3":
+  version "4.10.3"
+  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-4.10.3.tgz#8fbbea8c4269a6bb78636cfc15928c2fe2c9115c"
+  integrity sha512-c6I2ZhpxCb9t/Kj1T/3IrFt8oJWh6Nt+KOqTAmuCahBuACLv/OAbc4rzNjngj2Q0qq6OybaxHPh+QKRm+wAIsg==
 
 "@stylable/webpack-plugin@^4.10.2":
   version "4.10.2"
