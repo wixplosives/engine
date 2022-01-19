@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-runtime-node",
-  "version": "22.2.1",
+  "version": "22.3.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@wixc3/cross-performance": "^22.2.1",
-    "@wixc3/engine-core": "^22.2.1",
-    "@wixc3/engine-core-node": "^22.2.1",
+    "@wixc3/engine-core": "^22.3.1",
+    "@wixc3/engine-core-node": "^22.3.1",
     "create-listening-server": "^1.0.0",
     "minimist": "^1.2.5",
     "socket.io": "^4.4.1"
