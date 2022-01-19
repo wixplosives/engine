@@ -11,7 +11,7 @@ import {
 import { build as electronBuild, Configuration, FileSet, PublishOptions } from 'electron-builder';
 import { dirname, posix, relative } from 'path';
 import { getConfig } from '../engine-helpers';
-import { findFeatures, getEngineConfig } from '../find-features';
+import { getEngineConfig } from '../find-features';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: electronVersion } = require('electron/package.json') as { version: string };
@@ -93,21 +93,19 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         await importModules(basePath, requiredModules);
     }
 
-    const { features, configurations } = findFeatures(basePath, featureDiscoveryRoot);
-
     const config: TopLevelConfig = [];
 
-    if (configName) {
-        config.push(...getConfig(configName, configurations, envName));
-    }
-
-    await bundleEngineApp({
+    const { features, configurations } = await bundleEngineApp({
         ...options,
         basePath,
         outputPath,
         staticExternalFeaturesFileName: DEFAULT_EXTERNAL_FEATURES_PATH,
         featureDiscoveryRoot,
     });
+
+    if (configName) {
+        config.push(...getConfig(configName, configurations, envName));
+    }
 
     await createElectronEntryFile({
         outputPath: fs.join(outputPath, ELECTRON_ENTRY_FILE_NAME),
@@ -279,10 +277,10 @@ runElectronEnv({
 /**
  * Bundles the renderer environments
  */
-export async function bundleEngineApp(options: IBundleEngineArguments): Promise<void> {
+export async function bundleEngineApp(options: IBundleEngineArguments): ReturnType<Application['build']> {
     const app = new Application(options);
 
-    await app.build({
+    return app.build({
         ...options,
         singleFeature: true,
     });
