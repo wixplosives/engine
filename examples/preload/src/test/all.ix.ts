@@ -42,6 +42,8 @@ describe('All Environment', () => {
             node: Record<string, string | boolean>;
         };
 
-        expect(runtimeOptionsparsedContent.node).to.eql(runtimeOptions);
+        expect(runtimeOptionsparsedContent.node).to.have.property('a', 'b');
+        expect(runtimeOptionsparsedContent.node).to.have.property('c', true);
+        expect(runtimeOptionsparsedContent.node.applicationPath).to.include('dist-app');
     });
 });
