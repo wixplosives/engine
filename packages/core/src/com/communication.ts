@@ -441,24 +441,36 @@ export class Communication {
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
         if (message.type === 'call') {
-            const forwardResponse = await this.callMethod(
-                env.id,
-                message.data.api,
-                message.data.method,
-                message.data.args,
-                message.origin,
-                {}
-            );
-
-            if (message.callbackId) {
-                this.sendTo(message.from, {
-                    from: message.to,
-                    type: 'callback',
-                    to: message.from,
-                    data: forwardResponse,
-                    callbackId: message.callbackId,
-                    origin: message.to,
-                });
+            try {
+                const data = await this.callMethod(
+                    env.id,
+                    message.data.api,
+                    message.data.method,
+                    message.data.args,
+                    message.origin,
+                    {}
+                );
+                if (message.callbackId) {
+                    this.sendTo(message.from, {
+                        from: message.to,
+                        type: 'callback',
+                        to: message.from,
+                        data,
+                        callbackId: message.callbackId,
+                        origin: message.to,
+                    });
+                }
+            } catch (error) {
+                if (message.callbackId) {
+                    this.sendTo(message.from, {
+                        from: message.to,
+                        type: 'callback',
+                        to: message.from,
+                        error: serializeError(error),
+                        callbackId: message.callbackId,
+                        origin: message.to,
+                    });
+                }
             }
         } else if (message.type === 'callback') {
             if (message.callbackId) {
@@ -616,12 +628,12 @@ export class Communication {
         res: () => void,
         rej: () => void
     ) {
-        this.sendTo(envId, message);
         if (callbackId) {
             this.createCallbackRecord(message, callbackId, res, rej);
         } else {
             res();
         }
+        this.sendTo(envId, message);
     }
     private sendTo(envId: string, message: Message): void {
         if (this.pendingEnvs.get(envId)) {

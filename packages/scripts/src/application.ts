@@ -174,7 +174,12 @@ export class Application {
         externalFeaturesBasePath,
         externalFeatureDefinitions: providedExternalFeatureDefinitions = [],
         featureDiscoveryRoot: providedFeatureDiscoveryRoot,
-    }: IBuildCommandOptions = {}): Promise<WebpackMultiStats> {
+    }: IBuildCommandOptions = {}): Promise<{
+        stats: WebpackMultiStats;
+        features: Map<string, IFeatureDefinition>;
+        configurations: SetMultiMap<string, IConfigDefinition>;
+        resolvedEnvironments: ReturnType<typeof getResolvedEnvironments>;
+    }> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
             require,
@@ -308,7 +313,7 @@ export class Application {
             pathToSources: sourceRoot,
         });
 
-        return stats;
+        return { stats, features, configurations, resolvedEnvironments };
     }
 
     public async run(runOptions: IRunCommandOptions = {}) {

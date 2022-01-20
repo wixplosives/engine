@@ -181,7 +181,7 @@ export function buildCommand(program: Command) {
                 const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
                 const outputPath = resolve(outDir);
                 const app = new Application({ basePath, outputPath });
-                const stats = await app.build({
+                const { stats } = await app.build({
                     featureName,
                     configName,
                     featureDiscoveryRoot,
