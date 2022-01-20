@@ -121,7 +121,7 @@ export async function startDevServer({
                     overrideConfig,
                     outputPath,
                     inspect,
-                    defaultRuntimeOptions: runtimeOptions,
+                    defaultRuntimeOptions: { ...runtimeOptions, applicationPath: app.outputPath },
                     externalFeatureDefinitions,
                     externalFeaturesPath,
                     featureDiscoveryRoot: featureDiscoveryRoot ?? configFeatureDiscoveryRoot,

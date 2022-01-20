@@ -38,13 +38,13 @@ const engineCommandBuilder = (program: Command, command: string): Command => {
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
         .option(
             '-f, --feature <feature>',
-            `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
+            `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName.
         featureName and packageName are the same then featureName is sufficient
     `
         )
         .option(
             '-c, --config <config>',
-            `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
+            `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName.
     `
         )
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
@@ -236,7 +236,7 @@ export function runCommand(program: Command) {
                 const { port } = await app.run({
                     configName,
                     featureName,
-                    runtimeOptions: parseCliArguments(process.argv.slice(3)),
+                    runtimeOptions: { ...parseCliArguments(process.argv.slice(3)), applicationPath: app.outputPath },
                     port: preferredPort ? parseInt(preferredPort, 10) : undefined,
                     publicPath,
                     autoLaunch,
