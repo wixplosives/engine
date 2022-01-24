@@ -1,0 +1,12 @@
+{
+  "name": "@wixc3/engine-runtime-metadata",
+  "version": "22.2.1",
+  "main": "src/index",
+  "dependencies": {
+    "@wixc3/engine-core": "^8.1.1"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}
