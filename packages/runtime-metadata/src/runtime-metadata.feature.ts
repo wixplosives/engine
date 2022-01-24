@@ -10,7 +10,7 @@ export default new Feature({
     dependencies: [],
     api: {
         config: new Config<RuntimeMetadataConfig>({
-            applicationPath: process.cwd(),
+            applicationPath: '',
         } as RuntimeMetadataConfig),
     },
 });

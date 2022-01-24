@@ -16,6 +16,7 @@ import {
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import { WsServerHost } from '@wixc3/engine-core-node';
+import RuntimeMetadata from '@wixc3/engine-runtime-metadata';
 import { dirname, resolve } from 'path';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
@@ -108,6 +109,14 @@ devServerFeature.setup(
                 socketServerOptions: resolvedSocketServerOptions,
             });
             disposables.add(close);
+
+            (Array.isArray(overrideConfig) ? overrideConfig : overrideConfig(devServerEnv.env)).push(
+                RuntimeMetadata.use({
+                    config: {
+                        devport: actualPort,
+                    },
+                })
+            );
 
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost

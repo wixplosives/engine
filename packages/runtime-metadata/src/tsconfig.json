@@ -7,9 +7,6 @@
   "references": [
     {
       "path": "../../core/src"
-    },
-    {
-      "path": "../../core-node/src"
     }
   ]
 }
