@@ -441,27 +441,24 @@ export class Communication {
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
         if (message.type === 'call') {
-            try {
-                const data = await this.callMethod(
-                    env.id,
-                    message.data.api,
-                    message.data.method,
-                    message.data.args,
-                    message.origin,
-                    {}
-                );
-                if (message.callbackId) {
+            if (message.callbackId) {
+                try {
                     this.sendTo(message.from, {
                         from: message.to,
                         type: 'callback',
                         to: message.from,
-                        data,
+                        data: await this.callMethod(
+                            env.id,
+                            message.data.api,
+                            message.data.method,
+                            message.data.args,
+                            message.origin,
+                            {}
+                        ),
                         callbackId: message.callbackId,
                         origin: message.to,
                     });
-                }
-            } catch (error) {
-                if (message.callbackId) {
+                } catch (error) {
                     this.sendTo(message.from, {
                         from: message.to,
                         type: 'callback',
