@@ -7,6 +7,7 @@ import {
     FeatureLoadersRegistry,
     IPreloadModule,
 } from '@wixc3/engine-core';
+import RuntimeMetadata from '@wixc3/engine-runtime-metadata';
 import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
 
 import type { IEnvironment, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
@@ -36,6 +37,14 @@ export async function runNodeEnvironment({
             })
         );
     }
+
+    config.push(
+        RuntimeMetadata.use({
+            config: {
+                applicationPath: context,
+            },
+        })
+    );
 
     const featureLoaders = createFeatureLoaders(new Map(features), {
         name,
