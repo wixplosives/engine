@@ -1,4 +1,5 @@
-import { Feature, Config } from '@wixc3/engine-core';
+import { Config } from './entities/config';
+import { Feature } from './entities/feature';
 
 export interface RuntimeMetadataConfig {
     devport?: number;
