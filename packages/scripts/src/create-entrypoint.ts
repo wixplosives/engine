@@ -115,7 +115,7 @@ export function createMainEntrypoint({
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
-import fetchConfig from '${require.resolve(fetchConfigModule)}';
+import fetchConfig from '${fetchConfigModule}';
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
@@ -413,7 +413,7 @@ function addConfigsEventListenerForParentEnvironments(publicConfigsRoute: string
         const configsEventListener = async ({ data: { id, envName }, source }) => {
             if(source && id === '${publicConfigsRoute}') {
                 if(!fetchedConfigs[envName]) {
-                    const config = await fetchConfig('${publicConfigsRoute}', featureName, envName, configName);
+                    fetchedConfigs[envName] = await fetchConfig('${publicConfigsRoute}', featureName, envName, configName);
                 }
                 source.postMessage({
                     id,
