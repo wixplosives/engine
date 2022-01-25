@@ -10,7 +10,6 @@
     "@wixc3/cross-performance": "^22.2.1",
     "@wixc3/engine-core": "^22.2.1",
     "@wixc3/engine-core-node": "^22.2.1",
-    "@wixc3/engine-runtime-metadata": "^22.2.1",
     "create-listening-server": "^1.0.0",
     "minimist": "^1.2.5",
     "socket.io": "^4.4.1"

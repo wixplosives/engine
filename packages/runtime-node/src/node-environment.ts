@@ -4,10 +4,10 @@ import {
     IFeatureLoader,
     runEngineApp,
     RuntimeEngine,
+    RuntimeMetadata,
     FeatureLoadersRegistry,
     IPreloadModule,
 } from '@wixc3/engine-core';
-import RuntimeMetadata from '@wixc3/engine-runtime-metadata';
 import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
 
 import type { IEnvironment, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
@@ -16,6 +16,7 @@ export async function runNodeEnvironment({
     featureName,
     childEnvName,
     features,
+    outputPath,
     config = [],
     name,
     type,
@@ -41,7 +42,7 @@ export async function runNodeEnvironment({
     config.push(
         RuntimeMetadata.use({
             config: {
-                applicationPath: context,
+                applicationPath: outputPath,
             },
         })
     );

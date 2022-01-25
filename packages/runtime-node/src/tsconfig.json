@@ -10,9 +10,6 @@
     },
     {
       "path": "../../core-node/src"
-    },
-    {
-      "path": "../../runtime-metadata/src"
     }
   ]
 }

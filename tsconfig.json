@@ -8,8 +8,6 @@
     { "path": "./packages/core-node/src" },
     { "path": "./packages/core-node/test" },
 
-    { "path": "./packages/runtime-metadata/src" },
-
     { "path": "./packages/runtime-node/src" },
     { "path": "./packages/runtime-node/test" },
 

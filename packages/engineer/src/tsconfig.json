@@ -17,9 +17,6 @@
       "path": "../../dashboard/src"
     },
     {
-      "path": "../../runtime-metadata/src"
-    },
-    {
       "path": "../../runtime-node/src"
     }
   ]

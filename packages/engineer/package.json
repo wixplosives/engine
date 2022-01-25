@@ -21,7 +21,6 @@
     "@wixc3/engine-core": "^22.2.1",
     "@wixc3/engine-core-node": "^22.2.1",
     "@wixc3/engine-dashboard": "^22.2.1",
-    "@wixc3/engine-runtime-metadata": "^22.2.1",
     "@wixc3/engine-runtime-node": "^22.2.1",
     "@wixc3/engine-scripts": "^22.2.1",
     "commander": "^8.3.0",

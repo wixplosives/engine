@@ -11,6 +11,6 @@ export default new Feature({
     api: {
         config: new Config<RuntimeMetadataConfig>({
             applicationPath: '',
-        } as RuntimeMetadataConfig),
+        }),
     },
 });

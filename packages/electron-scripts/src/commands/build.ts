@@ -233,7 +233,7 @@ export function createElectronEntryFile({
     return fs.promises.writeFile(
         outputPath,
         `process.env.NODE_ENV='production';
-        
+
 const { app } = require('electron');
 const { join } = require('path')
 const { runElectronEnv } = require('@wixc3/engine-electron-host');
@@ -264,6 +264,7 @@ for(const featureDef of features.values()) {
 runElectronEnv({
     basePath,
     featureName,
+    outputPath: basePath,
     configName,
     envName,
     config,
