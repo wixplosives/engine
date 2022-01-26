@@ -63,7 +63,7 @@ export class Communication {
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private pendingEnvs: SetMultiMap<string, UnknownFunction> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
-    private handlers = new Map<string, UnknownFunction[]>();
+    private handlers = new Map<string, Set<UnknownFunction>>();
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
@@ -555,14 +555,11 @@ export class Communication {
                 throw new Error('Cannot Remove handler ' + listenerHandlerId);
             }
             if (serviceComConfig[method]?.removeListener) {
-                const i = listenerHandlersBucket.indexOf(fn);
-                if (i !== -1) {
-                    listenerHandlersBucket.splice(i, 1);
-                }
+                listenerHandlersBucket.delete(fn);
             } else {
-                listenerHandlersBucket.length = 0;
+                listenerHandlersBucket.clear();
             }
-            if (listenerHandlersBucket.length === 0) {
+            if (listenerHandlersBucket.size === 0) {
                 // send remove handler call
                 const message: UnListenMessage = {
                     to: envId,
@@ -585,8 +582,8 @@ export class Communication {
             if (serviceComConfig[method]?.listener) {
                 const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
 
-                if (handlersBucket && handlersBucket.length !== 0) {
-                    handlersBucket.push(fn);
+                if (handlersBucket && handlersBucket.size !== 0) {
+                    handlersBucket.add(fn);
                     res();
                 } else {
                     const message: ListenMessage = {
@@ -843,7 +840,7 @@ export class Communication {
     private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
         const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
-        handlersBucket ? handlersBucket.push(fn) : this.handlers.set(handlerId, [fn]);
+        handlersBucket ? handlersBucket.add(fn) : this.handlers.set(handlerId, new Set([fn]));
         return handlerId;
     }
     private createCallbackRecord(
