@@ -68,6 +68,7 @@ export async function startDevServer({
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
+    outputPath: string | undefined;
     devServerFeature: MapToProxyType<typeof devServerFeature['api']>;
 }> {
     const app = new TargetApplication({
@@ -143,6 +144,7 @@ export async function startDevServer({
     });
     return {
         engine,
+        outputPath,
         dispose,
         devServerFeature: engine.get(devServerFeature).api,
     };
