@@ -26,7 +26,7 @@ export interface ICreateEntrypointsOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     featuresBundleName?: string;
-    fetchConfigModule?: string;
+    configLoader?: string;
 }
 interface IConfigFileMapping {
     filePath: string;
@@ -110,12 +110,12 @@ export function createMainEntrypoint({
     externalFeaturesRoute,
     eagerEntrypoint,
     featuresBundleName,
-    fetchConfigModule = '@wixc3/fetch-config',
+    configLoader = '@wixc3/fetch-config',
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
-import fetchConfig from '${fetchConfigModule}';
+import fetchConfig from '${configLoader}';
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }

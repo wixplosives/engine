@@ -38,6 +38,7 @@ export interface ICreateWebpackConfigsOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
+    configLoader?: string;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -47,6 +48,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         createWebpackConfig,
         environments: { electronRendererEnvs, webEnvs, workerEnvs },
         featureName,
+        configLoader
     } = options;
 
     if (!baseConfig.output) {
@@ -63,6 +65,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: webEnvs,
                 target: 'web',
+                configLoader
             })
         );
     }
@@ -73,6 +76,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
+                configLoader
             })
         );
     }
@@ -83,6 +87,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
+                configLoader
             })
         );
     }
@@ -111,6 +116,7 @@ interface ICreateWebpackConfigOptions {
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
     plugins?: webpack.WebpackPluginInstance[];
+    configLoader?: string;
 }
 
 export function createWebpackConfig({
@@ -133,6 +139,7 @@ export function createWebpackConfig({
     eagerEntrypoint,
     favicon,
     webpackHot = false,
+    configLoader
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const { module: baseModule = {}, plugins: basePlugins = [] } = baseConfig;
     const { rules: baseRules = [] } = baseModule;
@@ -156,6 +163,7 @@ export function createWebpackConfig({
             target,
             externalFeaturesRoute,
             eagerEntrypoint,
+            configLoader,
         });
 
         entryModules[envName] = entrypointContent;

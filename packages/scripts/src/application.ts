@@ -83,6 +83,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     favicon?: string;
     externalFeaturesBasePath?: string;
     externalFeatureDefinitions?: IExternalDefinition[];
+    configLoader?: string;
 }
 
 // inlined to stay type-compatible with @types/webpack
@@ -137,6 +138,7 @@ export interface ICompilerOptions {
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
     eagerEntrypoint?: boolean;
     webpackHot?: boolean;
+    configLoader?: string;
 }
 
 const DEFAULT_EXTERNAL_FEATURES_PATH = 'external-features.json';
@@ -175,6 +177,7 @@ export class Application {
         externalFeaturesBasePath,
         externalFeatureDefinitions: providedExternalFeatureDefinitions = [],
         featureDiscoveryRoot: providedFeatureDiscoveryRoot,
+        configLoader,
     }: IBuildCommandOptions = {}): Promise<WebpackMultiStats> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
@@ -231,6 +234,7 @@ export class Application {
             webpackConfigPath,
             environments: resolvedEnvironments,
             eagerEntrypoint,
+            configLoader
         });
         const outDir = fs.basename(this.outputPath);
 
@@ -762,6 +766,7 @@ export class Application {
         environments,
         eagerEntrypoint,
         webpackHot = false,
+        configLoader
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = webpackConfigPath
@@ -790,6 +795,7 @@ export class Application {
             externalFeaturesRoute,
             eagerEntrypoint,
             webpackHot,
+            configLoader,
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);

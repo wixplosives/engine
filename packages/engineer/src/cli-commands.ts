@@ -141,6 +141,7 @@ export function buildCommand(program: Command) {
         .option('--outDir <outDir>', 'output directory for the built application', 'dist-app')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+        .option('--configLoader [configLoaderModuleName]', 'custom config loader module name', '')
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
         .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
         .option(
@@ -177,6 +178,7 @@ export function buildCommand(program: Command) {
                 featureDiscoveryRoot,
                 staticExternalsDescriptor,
                 includeExternalFeatures,
+                configLoader,
             } = cmd;
             try {
                 const basePath = resolve(path);
@@ -200,6 +202,7 @@ export function buildCommand(program: Command) {
                     staticExternalFeaturesFileName: staticExternalsDescriptor,
                     eagerEntrypoint: eagerEntrypoints,
                     includeExternalFeatures,
+                    configLoader
                 });
                 console.log(stats.toString('errors-warnings'));
             } catch (e) {
