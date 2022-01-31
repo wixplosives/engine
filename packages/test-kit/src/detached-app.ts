@@ -1,6 +1,7 @@
-import { PerformanceMetrics, ProcessMessageId, isProcessMessage } from '@wixc3/engine-runtime-node';
-import type { IFeatureTarget, IPortMessage, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'child_process';
+import { on } from 'events';
+import { PerformanceMetrics, ProcessMessageId, isProcessMessage, IProcessMessage } from '@wixc3/engine-runtime-node';
+import type { IFeatureTarget, IPortMessage, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 import type { IExecutableApplication } from './types';
 
 export class DetachedApp implements IExecutableApplication {
@@ -28,66 +29,54 @@ export class DetachedApp implements IExecutableApplication {
             execArgv,
         });
 
-        const { port } = await this.waitForProcessMessage<IPortMessage>('port-request', (p) =>
-            p.send({ id: 'port-request' })
-        );
-
+        this.send({ id: 'port-request' });
+        const { port } = (await this.waitForProcessMessage('port-request')) as IPortMessage;
         this.port = port;
-
         return this.port;
     }
 
     public async closeServer() {
-        await this.waitForProcessMessage('server-disconnected', (p) => {
-            p.send({ id: 'server-disconnect' });
-        });
+        this.send({ id: 'server-disconnect' });
+        await this.waitForProcessMessage('server-disconnected');
         this.engineStartProcess = undefined;
     }
 
     public async runFeature(payload: IFeatureTarget) {
-        return this.waitForProcessMessage<IFeatureMessagePayload>('feature-initialized', (p) => {
-            p.send({
-                id: 'run-feature',
-                payload,
-            });
+        this.send({
+            id: 'run-feature',
+            payload,
         });
+        return (await this.waitForProcessMessage('feature-initialized')) as IFeatureMessagePayload;
     }
 
     public async closeFeature(payload: IFeatureTarget) {
-        await this.waitForProcessMessage('feature-closed', (p) => {
-            p.send({ id: 'close-feature', payload });
-        });
+        this.send({ id: 'close-feature', payload });
+        await this.waitForProcessMessage('feature-closed');
     }
 
     public async getMetrics() {
-        return this.waitForProcessMessage<PerformanceMetrics>('metrics-response', (p) => {
-            p.send({ id: 'metrics-request' });
-        });
+        this.send({ id: 'metrics-request' });
+        return (await this.waitForProcessMessage('metrics-response')) as PerformanceMetrics;
     }
 
-    private async waitForProcessMessage<T>(
-        messageId: ProcessMessageId,
-        action?: (appProcess: ChildProcess) => void
-    ): Promise<T> {
+    private send(data: IProcessMessage<unknown>): void {
         const { engineStartProcess } = this;
         if (!engineStartProcess) {
             throw new Error('Engine is not started yet');
         }
-        return new Promise<T>((resolve, reject) => {
-            const onMessage = (message: unknown) => {
-                if (isProcessMessage(message) && message.id === messageId) {
-                    engineStartProcess.off('message', onMessage);
-                    engineStartProcess.off('exit', reject);
-                    engineStartProcess.off('error', reject);
-                    resolve(message.payload as T);
-                }
-            };
-            engineStartProcess.on('message', onMessage);
-            engineStartProcess.once('error', reject);
-            engineStartProcess.once('exit', reject);
-            if (action) {
-                action(engineStartProcess);
+        engineStartProcess.send(data);
+    }
+
+    private async waitForProcessMessage(messageId: ProcessMessageId): Promise<unknown> {
+        const { engineStartProcess } = this;
+        if (!engineStartProcess) {
+            throw new Error('Engine is not started yet');
+        }
+        for await (const [message] of on(engineStartProcess, 'message')) {
+            if (isProcessMessage(message) && message.id === messageId) {
+                return message.payload;
             }
-        });
+        }
+        throw new Error(`didn't get message id: ${messageId}`);
     }
 }

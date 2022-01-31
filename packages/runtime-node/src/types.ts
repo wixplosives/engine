@@ -58,7 +58,7 @@ export type ProcessMessageId =
 
 export interface IProcessMessage<T> {
     id: ProcessMessageId;
-    payload: T;
+    payload?: T;
 }
 
 export interface ICommunicationMessage {

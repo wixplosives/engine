@@ -68,7 +68,7 @@ export class AttachedApp implements IExecutableApplication {
                     res.on('end', () => {
                         if (path.includes(NODE_ENV_PATH)) {
                             const response = JSON.parse(responseChunks.join()) as IProcessMessage<ResponseType>;
-                            resolve(response.payload);
+                            resolve(response.payload!);
                         } else {
                             resolve(defaultValue);
                         }
