@@ -144,7 +144,7 @@ export async function startDevServer({
     });
     return {
         engine,
-        outputPath,
+        outputPath: app.outputPath,
         dispose,
         devServerFeature: engine.get(devServerFeature).api,
     };
