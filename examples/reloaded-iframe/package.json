@@ -1,6 +1,6 @@
 {
   "name": "@example/reloaded-iframe",
-  "version": "22.2.1",
+  "version": "22.3.3",
   "scripts": {
     "start": "engineer start",
     "test": "mocha \"dist/test/**/*.ix.js\""
