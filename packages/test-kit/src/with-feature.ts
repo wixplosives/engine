@@ -175,7 +175,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            browser = await playwright.chromium.launch(withFeatureOptions);
+            browser = await playwright.chromium.launch({
+                ...withFeatureOptions,
+                args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
+            });
         }
     });
 
