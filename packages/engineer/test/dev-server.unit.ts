@@ -615,8 +615,7 @@ describe('engineer:dev-server', function () {
 
         const metadata = JSON.parse(text) as RuntimeMetadataConfig;
 
-        expect(metadata.devport).to.eq(port);
-        expect(metadata.applicationPath).to.eq(outputPath);
+        expect(metadata).to.eql({ devport: port, applicationPath: outputPath });
     });
 });
 
