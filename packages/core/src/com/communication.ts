@@ -583,6 +583,11 @@ export class Communication {
                 const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
 
                 if (handlersBucket && handlersBucket.size !== 0) {
+                    if (handlersBucket.has(fn)) {
+                        throw new Error(
+                            'Cannot add same listener instance twice ' + this.getHandlerId(envId, api, method)
+                        );
+                    }
                     handlersBucket.add(fn);
                     res();
                 } else {
