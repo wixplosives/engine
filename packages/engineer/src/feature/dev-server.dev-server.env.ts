@@ -19,7 +19,7 @@ import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
-import type { Communication } from '@wixc3/engine-core';
+import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
@@ -130,9 +130,21 @@ devServerFeature.setup(
                         configurations,
                         features,
                         defaultRuntimeOptions,
+                        outputPath: application.outputPath,
                         port: actualPort,
                         inspect,
-                        overrideConfig,
+                        overrideConfig: (envName: string) => {
+                            const config = Array.isArray(overrideConfig) ? overrideConfig : overrideConfig(envName);
+                            config.push(
+                                RuntimeMetadata.use({
+                                    config: {
+                                        devport: actualPort,
+                                    },
+                                })
+                            );
+
+                            return config;
+                        },
                         externalFeatures,
                         requiredPaths,
                     },

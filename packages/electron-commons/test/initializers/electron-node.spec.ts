@@ -38,6 +38,7 @@ const setupRunningEnv = async ({
             Promise.resolve({
                 featureName: testFeature.id,
                 basePath: testProjectPath,
+                outputPath: fs.join(testProjectPath, 'dist-app'),
                 nodeEntryPath: fs.join(testProjectPath, 'entry.js'),
                 config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
                 features: Array.from(features.entries()),

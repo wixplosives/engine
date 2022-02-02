@@ -442,6 +442,7 @@ export class Application {
             {
                 features: this.remapManifestFeaturePaths(manifestFeatures),
                 port,
+                outputPath: this.outputPath,
                 defaultRuntimeOptions,
                 inspect,
                 overrideConfig: config,
