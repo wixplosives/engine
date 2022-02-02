@@ -90,7 +90,7 @@ const cliEntry = require.resolve('./remote-node-entry');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IStaticFeatureDefinition>;
-    outputPath?: string;
+    bundlePath?: string;
     configurations?: SetMultiMap<string, IConfigDefinition | TopLevelConfig>;
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
@@ -109,7 +109,7 @@ export type RunningFeatureIdentification = {
 export interface ILaunchEnvironmentOptions {
     nodeEnv: IEnvironment;
     featureName: string;
-    outputPath?: string;
+    bundlePath?: string;
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
@@ -219,7 +219,7 @@ export class NodeEnvironmentsManager {
             const preparedEnvironment = await this.prepareEnvironment({
                 nodeEnv,
                 featureName,
-                outputPath: this.options.outputPath,
+                bundlePath: this.options.bundlePath,
                 config,
                 options: {
                     ...defaultRuntimeOptions,
@@ -334,7 +334,7 @@ export class NodeEnvironmentsManager {
     private async prepareEnvironment({
         nodeEnv,
         featureName,
-        outputPath,
+        bundlePath: outputPath,
         config,
         options,
         mode,
@@ -346,7 +346,7 @@ export class NodeEnvironmentsManager {
 
         const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
-            outputPath,
+            bundlePath: outputPath,
             config,
             featureName,
             features: Array.from(features.entries()),

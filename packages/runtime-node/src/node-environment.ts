@@ -16,7 +16,7 @@ export async function runNodeEnvironment({
     featureName,
     childEnvName,
     features,
-    outputPath,
+    bundlePath,
     config = [],
     name,
     type,
@@ -42,7 +42,7 @@ export async function runNodeEnvironment({
     config.push(
         RuntimeMetadata.use({
             config: {
-                applicationPath: outputPath,
+                applicationPath: bundlePath,
             },
         })
     );

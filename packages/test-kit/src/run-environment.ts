@@ -21,7 +21,7 @@ import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engin
 
 export interface IRunNodeEnvironmentOptions<ENV extends Environment = Environment> {
     featureName: string;
-    outputPath?: string;
+    bundlePath?: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
     config?: TopLevelConfig;
@@ -51,7 +51,7 @@ export interface IGetRuinnnigFeatureOptions<
 export async function runEngineEnvironment({
     featureName,
     configName,
-    outputPath,
+    bundlePath,
     runtimeOptions = {},
     config = [],
     env: { env: envName, envType },
@@ -91,7 +91,7 @@ export async function runEngineEnvironment({
     return runNodeEnvironment({
         featureName,
         features: [...features.entries()],
-        outputPath,
+        bundlePath,
         name: envName,
         type: envType,
         childEnvName,

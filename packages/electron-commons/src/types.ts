@@ -25,7 +25,7 @@ export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     environmentContextName?: string;
     devtools?: boolean;
     environmentName: string;
-    outputPath: string;
+    bundlePath?: string;
     featureDiscoveryRoot?: string;
     parentEnvName: string;
     execPath?: string;
