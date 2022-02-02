@@ -1,10 +1,12 @@
 import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
 
 import { BaseHost, Communication, declareComEmitter } from '@wixc3/engine-core';
 
 chai.use(sinonChai);
+chai.use(chaiAsPromised);
 
 class EmitterService {
     listeners = new Set<(s: string) => void>();
@@ -86,25 +88,9 @@ describe('com emitter service', () => {
         const testListenerStub = stub();
 
         await proxy.on(testListenerStub);
-        await expectAsyncErrorMessage(async () => {
-            await proxy.on(testListenerStub);
-        }, 'Cannot add same listener instance twice main__main2_EmitterService@on');
+
+        await expect(proxy.on(testListenerStub)).to.eventually.rejectedWith(
+            'Cannot add same listener instance twice main__main2_EmitterService@on'
+        );
     });
 });
-
-async function expectAsyncErrorMessage(action: () => Promise<void>, message: string) {
-    let error: Error | undefined;
-    try {
-        await action();
-    } catch (e) {
-        if (e instanceof Error) {
-            error = e;
-        } else {
-            throw new Error(`Expected error to thrown, got ${String(e)}`);
-        }
-    }
-    if (!error) {
-        throw new Error('Expected error to be thrown no error thrown');
-    }
-    expect(error.message).to.be.equal(message);
-}
