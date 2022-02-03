@@ -8,11 +8,13 @@ import { deferred } from '@wixc3/engine-core';
 export function hookPageConsole(
     page: playwright.Page,
     filterMessage: (msgType: string, args: unknown[]) => boolean = () => true
-): void {
+): () => void {
     let currentMessage: Promise<void> = Promise.resolve();
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    page.on('console', async (msg) => {
+    page.on('console', listenToPageMessage);
+
+    async function listenToPageMessage(msg: playwright.ConsoleMessage) {
         const messageType = msg.type();
         const consoleFn = messageTypeToConsoleFn[messageType];
         if (!consoleFn) {
@@ -33,7 +35,12 @@ export function hookPageConsole(
         } finally {
             resolve();
         }
-    });
+    }
+
+    return () => {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        page.off('console', listenToPageMessage);
+    };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
