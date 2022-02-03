@@ -130,7 +130,7 @@ devServerFeature.setup(
                         configurations,
                         features,
                         defaultRuntimeOptions,
-                        outputPath: application.outputPath,
+                        bundlePath: application.outputPath,
                         port: actualPort,
                         inspect,
                         overrideConfig: (envName: string) => {

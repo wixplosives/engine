@@ -78,15 +78,9 @@ describe('engineer:dev-server', function () {
         dispose: () => Promise<void>;
         engine: RuntimeEngine;
         runtimeFeature: typeof devServerFeature;
-        outputPath: string | undefined;
         config: { featureName: string | undefined; port: number };
     }> => {
-        const {
-            dispose,
-            engine,
-            outputPath: devOutputPath,
-            devServerFeature,
-        } = await startDevServer({
+        const { dispose, engine, devServerFeature } = await startDevServer({
             engineerEntry: 'engineer/dev-server',
             targetApplicationPath: basePath,
             httpServerPort: port,
@@ -113,7 +107,6 @@ describe('engineer:dev-server', function () {
             dispose,
             engine,
             runtimeFeature: devServerFeature,
-            outputPath: devOutputPath,
             config: { featureName, port: runningPort },
         };
     };
@@ -602,12 +595,14 @@ describe('engineer:dev-server', function () {
     });
 
     it('runs app with the correct runtime metadata', async () => {
+        const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
+        const outputPath = fs.dirname(packageFile);
         const {
-            outputPath,
             config: { port },
         } = await setup({
             basePath: engineRuntimeMetadataFixturePath,
             featureName: 'engine-runtime-metadata/x',
+            outputPath,
         });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);

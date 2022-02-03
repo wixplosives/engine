@@ -146,7 +146,7 @@ export async function runElectronEnv({
     const runningEnvironment = await runNodeEnvironment({
         featureName,
         features: [...features.entries()],
-        outputPath: electronRuntimeArguments.outPath,
+        bundlePath: electronRuntimeArguments.outPath,
         name: envName,
         type: 'node',
         host: new BaseHost(),
