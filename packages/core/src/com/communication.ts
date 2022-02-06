@@ -270,7 +270,7 @@ export class Communication {
             return;
         }
         if (env.id !== this.rootEnvId) {
-            void this.forwardMessage(message, env);
+            await this.forwardMessage(message, env);
             return;
         }
         switch (message.type) {
