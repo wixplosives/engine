@@ -341,7 +341,7 @@ describe('Communication', () => {
         ).to.eq(testText);
     });
 
-    it.only('supports answering forwarded message from a forwarded message', async () => {
+    it('supports answering forwarded message from a forwarded message', async () => {
         /**
          * The flow of the test is as follows:
          * setup communication in a way where:
