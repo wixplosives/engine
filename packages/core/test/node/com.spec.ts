@@ -388,12 +388,18 @@ describe('Communication', () => {
         // create a service at 4
         const echoService = {
             echo: (text: string) => `hello ${text}`,
+            fail: (): Promise<string> => {
+                return new Promise<string>(() => {
+                    throw new Error('fail');
+                });
+            },
         };
         com4.registerAPI({ id: 'service' }, echoService);
 
         // call it from 2
         const apiProxy = com2.apiProxy<typeof echoService>({ id: 'com4' }, { id: 'service' });
         expect(await apiProxy.echo('name')).to.eq('hello name');
+        await expect(apiProxy.fail()).to.be.rejectedWith('fail');
     });
 });
 
