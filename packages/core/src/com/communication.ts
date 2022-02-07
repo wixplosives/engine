@@ -74,6 +74,7 @@ export class Communication {
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposListeners = new Set<(envId: string) => void>();
     private callbackToEnvMapping = new Map<string, string>();
+    private disposedEnvironments = new Set<string>();
 
     constructor(
         host: Target,
@@ -185,12 +186,13 @@ export class Communication {
      * Add local handle event listener to Target.
      */
     public registerMessageHandler(target: Target): void {
+        const envTarget = (target as BaseHost).parent ?? target;
         const onTargetMessage = ({ data }: { data: null | Message }) => {
             if (isMessage(data)) {
-                if (!this.environments[data.from]) {
-                    this.registerEnv(data.from, (target as BaseHost).parent ?? target);
+                if (!this.disposedEnvironments.has(data.from) && !this.environments[data.from]) {
+                    this.registerEnv(data.from, envTarget);
                 }
-                if (!this.environments[data.origin]) {
+                if (!this.disposedEnvironments.has(data.origin) && !this.environments[data.origin]) {
                     this.registerEnv(data.origin, (target as BaseHost).parent ?? target);
                 }
                 this.handleEvent({ data });
@@ -421,6 +423,7 @@ export class Communication {
     }
 
     private localyClear(instanceId: string) {
+        this.disposedEnvironments.add(instanceId);
         this.readyEnvs.delete(instanceId);
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
