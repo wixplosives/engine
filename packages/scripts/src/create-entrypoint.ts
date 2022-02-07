@@ -115,7 +115,7 @@ export function createMainEntrypoint({
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
 import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
-import fetchConfig from '${configLoader}';
+import { fetchConfig } from '${configLoader}';
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
@@ -127,7 +127,7 @@ const featureLoaders = new Map(Object.entries({
 
 self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
 
-${staticBuild ? createConfigLoadersObject(configs) : ''}
+${staticBuild ? createConfigLoadersObject(configs, configLoader) : ''}
 async function main() {
     const envName = '${envName}';
     const currentWindow = typeof self !== 'undefined' ? self : window;
@@ -345,28 +345,28 @@ const getConfigLoaders = (
     return [...configurations.entries()];
 };
 
-function createConfigLoadersObject(configs: Record<string, IConfigFileMapping[]>) {
+function createConfigLoadersObject(configs: Record<string, IConfigFileMapping[]>, configLoader: string) {
     return `const configLoaders = {
-    ${createConfigLoaders(configs)}
+    ${createConfigLoaders(configs, configLoader)}
 }`;
 }
 
-function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
+function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>, configLoader: string) {
     return Object.keys(configs)
         .map((scopedName) => {
             const importedConfigPaths = configs[scopedName]!.map(({ filePath, configEnvName }) =>
-                loadConfigFile(filePath, scopedName, configEnvName)
+                loadConfigFile(filePath, scopedName, configLoader, configEnvName)
             );
             return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;
         })
         .join(',\n');
 }
 
-function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
+function loadConfigFile(filePath: string, scopedName: string, configLoader: string, configEnvName: string | undefined): string {
     return `import(/* webpackChunkName: "[config]${scopedName}${
         configEnvName ?? ''
     }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-        topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
+        topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}?configLoader=${configLoader}!` + filePath
     )})`;
 }
 //#endregion
