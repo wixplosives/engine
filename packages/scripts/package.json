@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "22.1.9-22.5.1-custom-config.0.0",
+  "version": "22.5.1-custom-config.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
