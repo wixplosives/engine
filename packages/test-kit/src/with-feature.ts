@@ -2,8 +2,8 @@ import isCI from 'is-ci';
 import fs from '@file-services/node';
 import playwright from 'playwright-core';
 import { createDisposables } from '@wixc3/create-disposables';
-import { AttachedApp } from './attached-app';
-import { DetachedApp } from './detached-app';
+import { RemoteHttpApplication } from './remote-http-application';
+import { ForkedProcessApplication } from './forked-process-application';
 import { ensureTracePath } from './utils';
 import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
@@ -169,8 +169,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         (process.env.ENGINE_APPLICATION_PORT ? parseInt(process.env.ENGINE_APPLICATION_PORT) : undefined);
 
     executableApp = resolvedPort
-        ? new AttachedApp(resolvedPort)
-        : new DetachedApp(cliEntry, process.cwd(), featureDiscoveryRoot);
+        ? new RemoteHttpApplication(resolvedPort)
+        : new ForkedProcessApplication(cliEntry, process.cwd(), featureDiscoveryRoot);
 
     before('launch browser', async function () {
         if (!browser) {
