@@ -366,7 +366,7 @@ function loadConfigFile(filePath: string, scopedName: string, configLoader: stri
     return `import(/* webpackChunkName: "[config]${scopedName}${
         configEnvName ?? ''
     }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-        topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}?configLoader=${configLoader}!` + filePath
+        topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}&configLoader=${configLoader}!` + filePath
     )})`;
 }
 //#endregion
