@@ -193,7 +193,7 @@ export class Communication {
                     this.registerEnv(data.from, envTarget);
                 }
                 if (!this.disposedEnvironments.has(data.origin) && !this.environments[data.origin]) {
-                    this.registerEnv(data.origin, (target as BaseHost).parent ?? target);
+                    this.registerEnv(data.origin, envTarget);
                 }
                 this.handleEvent({ data });
             }
