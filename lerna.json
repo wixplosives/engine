@@ -1,5 +1,5 @@
 {
-  "version": "22.1.8-custom-config.0",
+  "version": "22.1.9-custom-config.0",
   "npmClient": "yarn",
   "useWorkspaces": true
 }
