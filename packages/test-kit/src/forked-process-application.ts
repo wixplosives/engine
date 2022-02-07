@@ -3,7 +3,7 @@ import type { IFeatureTarget, IPortMessage, IFeatureMessagePayload } from '@wixc
 import { ChildProcess, fork } from 'child_process';
 import type { IExecutableApplication } from './types';
 
-export class DetachedApp implements IExecutableApplication {
+export class ForkedProcessApplication implements IExecutableApplication {
     private engineStartProcess: ChildProcess | undefined;
     private port: number | undefined;
 

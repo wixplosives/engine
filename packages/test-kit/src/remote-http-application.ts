@@ -15,7 +15,7 @@ export interface IEnvironmentHttpCall<T> {
     defaultValue?: T;
 }
 
-export class AttachedApp implements IExecutableApplication {
+export class RemoteHttpApplication implements IExecutableApplication {
     constructor(private port: number, private hostname = 'localhost') {}
     public async getServerPort() {
         await this.makeEnvironmentHttpCall({ method: 'GET' });
