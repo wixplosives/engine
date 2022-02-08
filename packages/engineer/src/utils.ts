@@ -39,6 +39,7 @@ export interface IStartOptions {
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     socketServerOptions?: Partial<io.ServerOptions>;
     webpackConfigPath?: string;
+    noLogs?: boolean;
 }
 
 export async function startDevServer({
@@ -65,6 +66,7 @@ export async function startDevServer({
     nodeEnvironmentsMode,
     socketServerOptions,
     webpackConfigPath,
+    noLogs,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
@@ -130,6 +132,7 @@ export async function startDevServer({
                     nodeEnvironmentsMode,
                     socketServerOptions,
                     webpackConfigPath,
+                    noLogs,
                 },
             }),
             guiFeature.use({

@@ -62,6 +62,7 @@ devServerFeature.setup(
             socketServerOptions = {},
             webpackConfigPath,
             externalFeaturesRoute,
+            noLogs,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, outputPath });
         const disposables = createDisposables();
@@ -300,17 +301,19 @@ devServerFeature.setup(
 
             await Promise.all(compilationPromises);
 
-            const mainUrl = `http://localhost:${actualPort}/`;
-            if (featureName) {
-                console.log('Main application URL:', `${mainUrl}main.html`);
-            }
+            if (!noLogs) {
+                const mainUrl = `http://localhost:${actualPort}/`;
+                if (featureName) {
+                    console.log('Main application URL:', `${mainUrl}main.html`);
+                }
 
-            if (packages.length === 1) {
-                // print links to features
-                console.log('Available Configurations:');
-                for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
-                    for (const runningConfigName of configurations) {
-                        console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
+                if (packages.length === 1) {
+                    // print links to features
+                    console.log('Available Configurations:');
+                    for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
+                        for (const runningConfigName of configurations) {
+                            console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
+                        }
                     }
                 }
             }

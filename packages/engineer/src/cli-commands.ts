@@ -38,13 +38,13 @@ const engineCommandBuilder = (program: Command, command: string): Command => {
         .option('-r, --require <path>', 'path to require before anything else', collectMultiple, [])
         .option(
             '-f, --feature <feature>',
-            `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
+            `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName.
         featureName and packageName are the same then featureName is sufficient
     `
         )
         .option(
             '-c, --config <config>',
-            `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName. 
+            `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName.
     `
         )
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
@@ -73,6 +73,7 @@ export const startCommand: CliCommand = (program) =>
             '--nodeEnvironmentsMode <nodeEnvironmentsMode>',
             'one of "new-server", "same-server" or "forked" for choosing how to launch node envs'
         )
+        .option('--noLogs <noLogs>', 'disable console logs')
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
             const {
@@ -93,6 +94,7 @@ export const startCommand: CliCommand = (program) =>
                 featureDiscoveryRoot,
                 webpackConfig,
                 nodeEnvironmentsMode,
+                noLogs,
             } = cmd;
 
             try {
@@ -118,6 +120,7 @@ export const startCommand: CliCommand = (program) =>
                     featureDiscoveryRoot,
                     webpackConfigPath: webpackConfig,
                     nodeEnvironmentsMode,
+                    noLogs,
                 });
 
                 const { port } = await new Promise((resolve) => {
