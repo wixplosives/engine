@@ -1,7 +1,7 @@
 import type { INpmPackage } from '@wixc3/resolve-directory-context';
-import type { FeatureEnvDefinition } from '@wixc3/engine-scripts';
 import { Config } from './entities/config';
 import { Feature } from './entities/feature';
+import type { FeatureEnvDefinition } from './types';
 
 export interface RuntimeMetadataConfig {
     devport?: number;

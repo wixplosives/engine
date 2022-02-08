@@ -5,7 +5,7 @@ import webpack from 'webpack';
 import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import fs from '@file-services/node';
 import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree, FeatureEnvDefinition } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
@@ -136,12 +136,6 @@ export interface ICompilerOptions {
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
     eagerEntrypoint?: boolean;
-}
-
-export interface FeatureEnvDefinition {
-    configurations: string[];
-    hasServerEnvironments: boolean;
-    featureName: string;
 }
 
 const DEFAULT_EXTERNAL_FEATURES_PATH = 'external-features.json';
