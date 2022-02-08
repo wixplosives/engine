@@ -597,11 +597,12 @@ describe('engineer:dev-server', function () {
     it('runs app with the correct runtime metadata', async () => {
         const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
         const outputPath = fs.dirname(packageFile);
+        const featureName = 'engine-runtime-metadata/x';
         const {
             config: { port },
         } = await setup({
             basePath: engineRuntimeMetadataFixturePath,
-            featureName: 'engine-runtime-metadata/x',
+            featureName,
             outputPath,
         });
 
@@ -610,7 +611,18 @@ describe('engineer:dev-server', function () {
 
         const metadata = JSON.parse(text) as RuntimeMetadataConfig;
 
-        expect(metadata).to.eql({ devport: port, applicationPath: outputPath });
+        expect(metadata).to.eql({
+            devport: port,
+            applicationPath: outputPath,
+            featureName,
+            isWorkspace: false,
+            foundFeatures: [
+                {
+                    configurations: [],
+                    featureName,
+                },
+            ],
+        });
     });
 });
 
