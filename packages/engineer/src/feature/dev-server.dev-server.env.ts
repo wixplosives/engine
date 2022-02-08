@@ -62,7 +62,7 @@ devServerFeature.setup(
             socketServerOptions = {},
             webpackConfigPath,
             externalFeaturesRoute,
-            noLogs,
+            log,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, outputPath });
         const disposables = createDisposables();
@@ -304,7 +304,7 @@ devServerFeature.setup(
 
             await Promise.all(compilationPromises);
 
-            if (!noLogs) {
+            if (log) {
                 const mainUrl = `http://localhost:${actualPort}`;
                 if (featureName) {
                     console.log('Main application URL:', `${mainUrl}main.html`);
