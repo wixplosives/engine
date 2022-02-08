@@ -1,14 +1,17 @@
-import type { INpmPackage } from '@wixc3/resolve-directory-context';
 import { Config } from './entities/config';
 import { Feature } from './entities/feature';
-import type { FeatureEnvDefinition } from './types';
+
+export interface FoundFeatures {
+    featureName: string;
+    configurations: string[];
+}
 
 export interface RuntimeMetadataConfig {
     devport?: number;
     applicationPath?: string;
-    packages?: INpmPackage[];
+    isWorkspace?: boolean;
     featureName?: string;
-    featureEnvDefinitions?: Record<string, FeatureEnvDefinition>;
+    foundFeatures?: FoundFeatures[];
 }
 
 export default new Feature({

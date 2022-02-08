@@ -141,9 +141,11 @@ devServerFeature.setup(
                                 RuntimeMetadata.use({
                                     config: {
                                         devport: actualPort,
-                                        packages,
+                                        isWorkspace: packages.length > 1,
                                         featureName,
-                                        featureEnvDefinitions,
+                                        foundFeatures: Object.values(featureEnvDefinitions).map(
+                                            ({ featureName, configurations }) => ({ featureName, configurations })
+                                        ),
                                     },
                                 })
                             );
@@ -276,7 +278,7 @@ devServerFeature.setup(
             /* creating new compilers for the engineering config for 2 reasons
              *  1. de-couple the engineering build and the users application build
              *  For example it's very likely that later down the line we will never watch here
-             *  but we will keep on watching on the users applicatino
+             *  but we will keep on watching on the users application
              *  2. the createCompiler function is not extendable with more configs with the current API
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
