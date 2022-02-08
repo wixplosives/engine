@@ -119,6 +119,7 @@ devServerFeature.setup(
                 providedFeatureDiscoveryRoot ?? featureDiscoveryRoot
             );
             const externalFeatures = getExternalFeaturesMetadata(fixedExternalFeatureDefinitions, externalFeaturesPath);
+            const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
@@ -139,6 +140,9 @@ devServerFeature.setup(
                                 RuntimeMetadata.use({
                                     config: {
                                         devport: actualPort,
+                                        packages,
+                                        featureName,
+                                        featureEnvDefinitions,
                                     },
                                 })
                             );
@@ -243,8 +247,6 @@ devServerFeature.setup(
                     new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve()))
                 );
             }
-
-            const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
             app.use(
                 '/engine-feature',

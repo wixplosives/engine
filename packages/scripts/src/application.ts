@@ -138,6 +138,12 @@ export interface ICompilerOptions {
     eagerEntrypoint?: boolean;
 }
 
+export interface FeatureEnvDefinition {
+    configurations: string[];
+    hasServerEnvironments: boolean;
+    featureName: string;
+}
+
 const DEFAULT_EXTERNAL_FEATURES_PATH = 'external-features.json';
 
 export class Application {
@@ -830,10 +836,7 @@ export class Application {
     ) {
         const rootFeatures = Array.from(features.values()).filter(({ isRoot }) => isRoot);
         const configNames = Array.from(configurations.keys());
-        const featureEnvDefinitions: Record<
-            string,
-            { configurations: string[]; hasServerEnvironments: boolean; featureName: string }
-        > = {};
+        const featureEnvDefinitions: Record<string, FeatureEnvDefinition> = {};
 
         for (const { scopedName } of rootFeatures) {
             const [rootFeatureName] = scopedName.split('/') as [string];
