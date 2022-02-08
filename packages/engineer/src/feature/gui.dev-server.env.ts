@@ -15,7 +15,6 @@ guiFeature.setup(
             buildFeature: {
                 engineerWebpackConfigs,
                 devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute },
-                serverListeningHandlerSlot,
                 application,
             },
         }

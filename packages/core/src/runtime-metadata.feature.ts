@@ -9,9 +9,9 @@ export interface FoundFeatures {
 export interface RuntimeMetadataConfig {
     devport?: number;
     applicationPath?: string;
-    isWorkspace?: boolean;
     featureName?: string;
     foundFeatures?: FoundFeatures[];
+    isWorkspace?: boolean;
 }
 
 export default new Feature({
