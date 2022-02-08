@@ -49,11 +49,6 @@ guiFeature.setup(
                 outputPath: application.outputPath,
             })
         );
-
-        serverListeningHandlerSlot.register(({ port, host }) => {
-            console.log(`Dashboard Listening:`);
-            console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
-        });
     }
 );
 

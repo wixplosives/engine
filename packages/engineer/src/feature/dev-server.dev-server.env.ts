@@ -304,7 +304,7 @@ devServerFeature.setup(
             await Promise.all(compilationPromises);
 
             if (!noLogs) {
-                const mainUrl = `http://localhost:${actualPort}/`;
+                const mainUrl = `http://localhost:${actualPort}`;
                 if (featureName) {
                     console.log('Main application URL:', `${mainUrl}main.html`);
                 }
@@ -314,10 +314,13 @@ devServerFeature.setup(
                     console.log('Available Configurations:');
                     for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
                         for (const runningConfigName of configurations) {
-                            console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
+                            console.log(`${mainUrl}/main.html?feature=${featureName}&config=${runningConfigName}`);
                         }
                     }
                 }
+
+                console.log(`Dashboard Listening:`);
+                console.log(`Dashboard URL: ${mainUrl}/dashboard`);
             }
 
             for (const handler of serverListeningHandlerSlot) {

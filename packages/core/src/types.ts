@@ -138,12 +138,6 @@ export interface FeatureDef<
     context?: EnvironmentContext;
 }
 
-export interface FeatureEnvDefinition {
-    configurations: string[];
-    hasServerEnvironments: boolean;
-    featureName: string;
-}
-
 export type UnknownFeatureDef = FeatureDef<string, Feature[], EntityRecord, Record<string, Context<any>>>;
 export type Running<T extends UnknownFeatureDef, ENV extends string> = MapAllTypesForEnv<T['api'], ENV>;
 

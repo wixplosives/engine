@@ -5,7 +5,7 @@ import webpack from 'webpack';
 import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import fs from '@file-services/node';
 import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree, FeatureEnvDefinition } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
@@ -830,7 +830,10 @@ export class Application {
     ) {
         const rootFeatures = Array.from(features.values()).filter(({ isRoot }) => isRoot);
         const configNames = Array.from(configurations.keys());
-        const featureEnvDefinitions: Record<string, FeatureEnvDefinition> = {};
+        const featureEnvDefinitions: Record<
+            string,
+            { configurations: string[]; hasServerEnvironments: boolean; featureName: string }
+        > = {};
 
         for (const { scopedName } of rootFeatures) {
             const [rootFeatureName] = scopedName.split('/') as [string];
