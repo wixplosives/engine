@@ -15,7 +15,7 @@
     "@file-services/resolve": "^5.7.1",
     "@file-services/types": "^5.7.1",
     "@types/express": "^4.17.13",
-    "@wixc3/config-loader": "^22.5.2-custom-config.1",
+    "@wixc3/config-loader": "^22.5.3-custom-config.0",
     "@wixc3/create-disposables": "^1.1.0",
     "@wixc3/cross-performance": "^23.0.0",
     "@wixc3/engine-core": "^23.0.0",
