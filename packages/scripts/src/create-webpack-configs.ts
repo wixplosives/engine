@@ -37,6 +37,7 @@ export interface ICreateWebpackConfigsOptions {
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
+    configLoader?: string;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -46,6 +47,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         createWebpackConfig,
         environments: { electronRendererEnvs, webEnvs, workerEnvs },
         featureName,
+        configLoader,
     } = options;
 
     if (!baseConfig.output) {
@@ -62,6 +64,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: webEnvs,
                 target: 'web',
+                configLoader,
             })
         );
     }
@@ -72,6 +75,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
+                configLoader,
             })
         );
     }
@@ -82,6 +86,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
+                configLoader,
             })
         );
     }
@@ -109,6 +114,7 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     plugins?: webpack.WebpackPluginInstance[];
+    configLoader?: string;
 }
 
 export function createWebpackConfig({
