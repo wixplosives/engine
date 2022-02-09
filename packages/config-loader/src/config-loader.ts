@@ -1,6 +1,6 @@
 declare const __webpack_public_path__: string; 
 
-export async function fetchTopLevelConfigs(
+export async function loadConfig(
     fileName: string, 
     envName: string, 
 ) {
