@@ -1,18 +1,20 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../dist",
-    "types": ["node"]
+    "outDir": "../dist"
   },
   "references": [
     {
       "path": "../../core/src"
     },
     {
-      "path": "../../config-loader/src"
+      "path": "../../core-node/src"
     },
     {
-      "path": "../../core-node/src"
+      "path": "../../scripts/src"
+    },
+    {
+      "path": "../../dashboard/src"
     },
     {
       "path": "../../runtime-node/src"

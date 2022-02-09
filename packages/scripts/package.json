@@ -19,6 +19,7 @@
     "@wixc3/cross-performance": "^22.3.3",
     "@wixc3/engine-core": "^22.4.1",
     "@wixc3/engine-core-node": "^22.4.1",
+    "@wixc3/config-loader": "^22.4.1",
     "@wixc3/engine-runtime-node": "^22.4.1",
     "@wixc3/resolve-directory-context": "^1.0.4",
     "cors": "^2.8.5",
