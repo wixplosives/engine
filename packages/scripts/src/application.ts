@@ -178,7 +178,12 @@ export class Application {
         externalFeatureDefinitions: providedExternalFeatureDefinitions = [],
         featureDiscoveryRoot: providedFeatureDiscoveryRoot,
         configLoader,
-    }: IBuildCommandOptions = {}): Promise<WebpackMultiStats> {
+    }: IBuildCommandOptions = {}): Promise<{
+        stats: WebpackMultiStats;
+        features: Map<string, IFeatureDefinition>;
+        configurations: SetMultiMap<string, IConfigDefinition>;
+        resolvedEnvironments: ReturnType<typeof getResolvedEnvironments>;
+    }> {
         const { config, path: configPath } = await this.getEngineConfig();
         const {
             require,
@@ -313,7 +318,7 @@ export class Application {
             pathToSources: sourceRoot,
         });
 
-        return stats;
+        return { stats, features, configurations, resolvedEnvironments };
     }
 
     public async run(runOptions: IRunCommandOptions = {}) {
@@ -765,7 +770,6 @@ export class Application {
         webpackConfigPath,
         environments,
         eagerEntrypoint,
-        webpackHot = false,
         configLoader
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
@@ -794,7 +798,6 @@ export class Application {
             createWebpackConfig: isExternal ? createWebpackConfigForExternalFeature : createWebpackConfig,
             externalFeaturesRoute,
             eagerEntrypoint,
-            webpackHot,
             configLoader,
         });
         const compiler = webpack(webpackConfigs);

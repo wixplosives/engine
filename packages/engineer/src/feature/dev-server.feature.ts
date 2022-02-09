@@ -31,7 +31,6 @@ export interface DevServerConfig {
     socketServerOptions?: Partial<io.ServerOptions>;
     webpackConfigPath?: string;
     externalFeaturesRoute: string;
-    webpackHot?: boolean;
 }
 
 export interface DevServerActions {

@@ -13,6 +13,13 @@
 
     { "path": "./packages/dashboard/src" },
 
+    { "path": "./packages/electron/src" },
+    { "path": "./packages/electron-commons/src" },
+    { "path": "./packages/electron-commons/test" },
+    { "path": "./packages/electron-node/src" },
+    { "path": "./packages/electron-scripts/src" },
+    { "path": "./packages/electron-host/src" },
+
     { "path": "./packages/engineer/src" },
     { "path": "./packages/engineer/test" },
 
@@ -25,6 +32,7 @@
     { "path": "./packages/test-kit/test" },
 
     { "path": "./examples/dashboard-extention/src" },
+    { "path": "./examples/electron-app/src" },
     { "path": "./examples/file-server/src" },
     { "path": "./examples/multi-env/src" },
     { "path": "./examples/node-only/src" },
@@ -42,6 +50,7 @@
     { "path": "./test-fixtures/engine-feature-roots/src" },
     { "path": "./test-fixtures/engine-multi-feature/src" },
     { "path": "./test-fixtures/engine-run-options/src" },
+    { "path": "./test-fixtures/engine-runtime-metadata/src" },
     { "path": "./test-fixtures/multi-node/src" },
     { "path": "./test-fixtures/multi-socket-node/src" },
     { "path": "./test-fixtures/node-env/src" },

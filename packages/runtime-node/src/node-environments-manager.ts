@@ -90,6 +90,7 @@ const cliEntry = require.resolve('./remote-node-entry');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IStaticFeatureDefinition>;
+    bundlePath?: string;
     configurations?: SetMultiMap<string, IConfigDefinition | TopLevelConfig>;
     defaultRuntimeOptions?: Record<string, string | boolean>;
     port: number;
@@ -108,6 +109,7 @@ export type RunningFeatureIdentification = {
 export interface ILaunchEnvironmentOptions {
     nodeEnv: IEnvironment;
     featureName: string;
+    bundlePath?: string;
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
@@ -217,6 +219,7 @@ export class NodeEnvironmentsManager {
             const preparedEnvironment = await this.prepareEnvironment({
                 nodeEnv,
                 featureName,
+                bundlePath: this.options.bundlePath,
                 config,
                 options: {
                     ...defaultRuntimeOptions,
@@ -331,6 +334,7 @@ export class NodeEnvironmentsManager {
     private async prepareEnvironment({
         nodeEnv,
         featureName,
+        bundlePath: outputPath,
         config,
         options,
         mode,
@@ -342,6 +346,7 @@ export class NodeEnvironmentsManager {
 
         const nodeEnvironmentOptions: StartEnvironmentOptions = {
             ...nodeEnv,
+            bundlePath: outputPath,
             config,
             featureName,
             features: Array.from(features.entries()),
@@ -354,7 +359,7 @@ export class NodeEnvironmentsManager {
         if (inspect || mode === 'forked') {
             if (inspect && mode !== 'forked') {
                 console.warn(
-                    `Cannot inspect env without forking new process. 
+                    `Cannot inspect env without forking new process.
                     Launchihg environment ${nodeEnv.name} on remote process.`
                 );
             }

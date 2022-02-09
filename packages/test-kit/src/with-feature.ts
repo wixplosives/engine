@@ -2,8 +2,8 @@ import isCI from 'is-ci';
 import fs from '@file-services/node';
 import playwright from 'playwright-core';
 import { createDisposables } from '@wixc3/create-disposables';
-import { AttachedApp } from './attached-app';
-import { DetachedApp } from './detached-app';
+import { RemoteHttpApplication } from './remote-http-application';
+import { ForkedProcessApplication } from './forked-process-application';
 import { ensureTracePath } from './utils';
 import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
@@ -169,13 +169,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         (process.env.ENGINE_APPLICATION_PORT ? parseInt(process.env.ENGINE_APPLICATION_PORT) : undefined);
 
     executableApp = resolvedPort
-        ? new AttachedApp(resolvedPort)
-        : new DetachedApp(cliEntry, process.cwd(), featureDiscoveryRoot);
+        ? new RemoteHttpApplication(resolvedPort)
+        : new ForkedProcessApplication(cliEntry, process.cwd(), featureDiscoveryRoot);
 
     before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            browser = await playwright.chromium.launch(withFeatureOptions);
+            browser = await playwright.chromium.launch({
+                ...withFeatureOptions,
+                args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
+            });
         }
     });
 
@@ -187,20 +190,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    afterEach(disposeAfterEach.dispose);
-
     const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
-    const browserContexts = new Set<playwright.BrowserContext>();
-    afterEach('close pages', async function () {
+
+    afterEach('stop tracing', async function () {
         for (const tracingDisposable of tracingDisposables) {
             await tracingDisposable(this.test?.title);
         }
         tracingDisposables.clear();
-        for (const browserContext of browserContexts) {
-            await browserContext.close();
-        }
-        browserContexts.clear();
     });
+
+    afterEach('post-test cleanup', disposeAfterEach.dispose);
 
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
@@ -251,6 +250,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams,
             });
             const browserContext = await browser.newContext(browserContextOptions);
+            disposeAfterEach.add(() => browserContext.close());
+
+            browserContext.on('page', onPageCreation);
+            disposeAfterEach.add(() => browserContext.off('page', onPageCreation));
+
             const sanitizedSuiteTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
             const sanitizedTracing = typeof tracing === 'boolean' ? {} : tracing;
 
@@ -276,22 +280,26 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     });
                 });
             }
-            browserContexts.add(browserContext);
-            browserContext.on('page', (page) => {
+
+            function onPageError(e: Error) {
+                if (
+                    !allowedErrors.some((allowed) =>
+                        allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed
+                    )
+                ) {
+                    capturedErrors.push(e);
+                }
+                console.error(e);
+            }
+
+            function onPageCreation(page: playwright.Page) {
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
-                page.on('pageerror', (e) => {
-                    if (
-                        !allowedErrors.some((allowed) =>
-                            allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed
-                        )
-                    ) {
-                        capturedErrors.push(e);
-                    }
-                    console.error(e);
-                });
-                hookPageConsole(page, isNonReactDevMessage);
-            });
+                const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
+                disposeAfterEach.add(disposeConsoleHook);
+                page.on('pageerror', onPageError);
+                disposeAfterEach.add(() => page.off('pageerror', onPageError));
+            }
 
             const featurePage = await browserContext.newPage();
 

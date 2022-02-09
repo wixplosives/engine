@@ -4,6 +4,7 @@ import {
     IFeatureLoader,
     runEngineApp,
     RuntimeEngine,
+    RuntimeMetadata,
     FeatureLoadersRegistry,
     IPreloadModule,
 } from '@wixc3/engine-core';
@@ -15,6 +16,7 @@ export async function runNodeEnvironment({
     featureName,
     childEnvName,
     features,
+    bundlePath,
     config = [],
     name,
     type,
@@ -36,6 +38,14 @@ export async function runNodeEnvironment({
             })
         );
     }
+
+    config.push(
+        RuntimeMetadata.use({
+            config: {
+                applicationPath: bundlePath,
+            },
+        })
+    );
 
     const featureLoaders = createFeatureLoaders(new Map(features), {
         name,

@@ -35,6 +35,7 @@ export const isProcessMessage = (value: unknown): value is IProcessMessage<unkno
 
 export interface StartEnvironmentOptions extends IEnvironment {
     featureName: string;
+    bundlePath?: string;
     config?: TopLevelConfig;
     features: Array<[string, Required<IStaticFeatureDefinition>]>;
     options?: Array<[string, string | boolean]>;

@@ -1,0 +1,39 @@
+{
+  "name": "@wixc3/engine-electron-scripts",
+  "version": "22.4.1",
+  "main": "dist/index.js",
+  "bin": {
+    "engine-electron": "bin/engine-electron.js"
+  },
+  "peerDependencies": {
+    "electron": ">=9"
+  },
+  "dependencies": {
+    "@file-services/node": "^5.7.1",
+    "@wixc3/create-disposables": "^1.1.0",
+    "@wixc3/engine-core": "^22.4.1",
+    "@wixc3/engine-core-node": "^22.4.1",
+    "@wixc3/engine-electron": "^22.4.1",
+    "@wixc3/engine-electron-commons": "^22.4.1",
+    "@wixc3/engine-electron-node": "^22.4.1",
+    "@wixc3/engine-runtime-node": "^22.4.1",
+    "@wixc3/engine-scripts": "^22.4.1",
+    "@wixc3/engineer": "^22.4.1",
+    "@wixc3/resolve-directory-context": "^1.0.4",
+    "electron-builder": "^22.14.13",
+    "yargs": "^17.3.1"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "!*/tsconfig.{json,tsbuildinfo}"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Wix.com",
+  "repository": "https://github.com/wixplosives/engine/tree/master/packages/electron-scripts",
+  "homepage": "https://github.com/wixplosives/engine"
+}
