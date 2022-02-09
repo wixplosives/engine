@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/config-loader",
-  "version": "22.5.3-custom-config.0",
+  "version": "22.5.4-custom-config.0",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
