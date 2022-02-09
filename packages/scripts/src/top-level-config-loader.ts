@@ -29,8 +29,8 @@ export default function topLevelConfigLoader(this: PartialWebpackLoaderContext) 
     this.emitFile(configPath, importedString, false);
 
     return `
-    import { fetchTopLevelConfig } from '${configLoader!}';
-    const fetchResult = fetchTopLevelConfig('${fileName!}', '${envName!}');
+    import { loadConfig } from '${configLoader!}';
+    const fetchResult = loadConfig('${fileName!}', '${envName!}');
     export default fetchResult`;
 }
 
