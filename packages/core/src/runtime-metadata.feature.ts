@@ -6,7 +6,7 @@ export interface FoundFeatures {
     configurations: string[];
 }
 
-export interface RuntimeMetadataConfig {
+export interface EngineerMetadataConfig {
     devport?: number;
     applicationPath?: string;
     featureName?: string;
@@ -18,7 +18,7 @@ export default new Feature({
     id: 'runtimeMetadata',
     dependencies: [],
     api: {
-        config: new Config<RuntimeMetadataConfig>({
+        engineerMetadataConfig: new Config<EngineerMetadataConfig>({
             applicationPath: '',
         }),
     },
