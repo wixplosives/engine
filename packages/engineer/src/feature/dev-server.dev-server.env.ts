@@ -62,6 +62,7 @@ devServerFeature.setup(
             socketServerOptions = {},
             webpackConfigPath,
             externalFeaturesRoute,
+            log,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, outputPath });
         const disposables = createDisposables();
@@ -137,8 +138,13 @@ devServerFeature.setup(
                             const config = Array.isArray(overrideConfig) ? overrideConfig : overrideConfig(envName);
                             config.push(
                                 RuntimeMetadata.use({
-                                    config: {
+                                    engineerMetadataConfig: {
                                         devport: actualPort,
+                                        isWorkspace: packages.length > 1,
+                                        featureName,
+                                        foundFeatures: Object.values(featureEnvDefinitions).map(
+                                            ({ featureName, configurations }) => ({ featureName, configurations })
+                                        ),
                                     },
                                 })
                             );
@@ -273,7 +279,7 @@ devServerFeature.setup(
             /* creating new compilers for the engineering config for 2 reasons
              *  1. de-couple the engineering build and the users application build
              *  For example it's very likely that later down the line we will never watch here
-             *  but we will keep on watching on the users applicatino
+             *  but we will keep on watching on the users application
              *  2. the createCompiler function is not extendable with more configs with the current API
              */
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
@@ -298,17 +304,19 @@ devServerFeature.setup(
 
             await Promise.all(compilationPromises);
 
-            const mainUrl = `http://localhost:${actualPort}/`;
-            if (featureName) {
-                console.log('Main application URL:', `${mainUrl}main.html`);
-            }
+            if (log) {
+                const mainUrl = `http://localhost:${actualPort}`;
+                if (featureName) {
+                    console.log('Main application URL:', `${mainUrl}main.html`);
+                }
 
-            if (packages.length === 1) {
-                // print links to features
-                console.log('Available Configurations:');
-                for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
-                    for (const runningConfigName of configurations) {
-                        console.log(`${mainUrl}main.html?feature=${featureName}&config=${runningConfigName}`);
+                if (packages.length === 1) {
+                    // print links to features
+                    console.log('Available Configurations:');
+                    for (const { configurations, featureName } of Object.values(featureEnvDefinitions)) {
+                        for (const runningConfigName of configurations) {
+                            console.log(`${mainUrl}/main.html?feature=${featureName}&config=${runningConfigName}`);
+                        }
                     }
                 }
             }

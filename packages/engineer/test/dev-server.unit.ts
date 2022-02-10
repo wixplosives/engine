@@ -6,7 +6,7 @@ import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import type { TopLevelConfig, RuntimeEngine, RuntimeMetadataConfig } from '@wixc3/engine-core';
+import type { TopLevelConfig, RuntimeEngine, EngineerMetadataConfig } from '@wixc3/engine-core';
 import { Application } from '@wixc3/engine-scripts';
 import { createDisposables } from '@wixc3/create-disposables';
 
@@ -597,20 +597,32 @@ describe('engineer:dev-server', function () {
     it('runs app with the correct runtime metadata', async () => {
         const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
         const outputPath = fs.dirname(packageFile);
+        const featureName = 'engine-runtime-metadata/x';
         const {
             config: { port },
         } = await setup({
             basePath: engineRuntimeMetadataFixturePath,
-            featureName: 'engine-runtime-metadata/x',
+            featureName,
             outputPath,
         });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
         const text = await getBodyContent(page);
 
-        const metadata = JSON.parse(text) as RuntimeMetadataConfig;
+        const metadata = JSON.parse(text) as EngineerMetadataConfig;
 
-        expect(metadata).to.eql({ devport: port, applicationPath: outputPath });
+        expect(metadata).to.eql({
+            devport: port,
+            applicationPath: outputPath,
+            featureName,
+            isWorkspace: false,
+            foundFeatures: [
+                {
+                    configurations: [],
+                    featureName,
+                },
+            ],
+        });
     });
 });
 

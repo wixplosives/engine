@@ -41,7 +41,7 @@ export async function runNodeEnvironment({
 
     config.push(
         RuntimeMetadata.use({
-            config: {
+            engineerMetadataConfig: {
                 applicationPath: bundlePath,
             },
         })

@@ -1,7 +1,7 @@
 import SampleFeature, { server } from './x.feature';
 
-SampleFeature.setup(server, ({}, { runtimeMetadata: { config: runtimeMetadataConfig } }) => {
+SampleFeature.setup(server, ({}, { runtimeMetadata: { engineerMetadataConfig } }) => {
     return {
-        runtimeMetadata: { getRuntimeMetadata: () => runtimeMetadataConfig },
+        runtimeMetadata: { getEngineerMetadata: () => engineerMetadataConfig },
     };
 });

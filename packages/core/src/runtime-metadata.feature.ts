@@ -1,16 +1,24 @@
 import { Config } from './entities/config';
 import { Feature } from './entities/feature';
 
-export interface RuntimeMetadataConfig {
+export interface FoundFeatures {
+    featureName: string;
+    configurations: string[];
+}
+
+export interface EngineerMetadataConfig {
     devport?: number;
-    applicationPath: string;
+    applicationPath?: string;
+    featureName?: string;
+    foundFeatures?: FoundFeatures[];
+    isWorkspace?: boolean;
 }
 
 export default new Feature({
     id: 'runtimeMetadata',
     dependencies: [],
     api: {
-        config: new Config<RuntimeMetadataConfig>({
+        engineerMetadataConfig: new Config<EngineerMetadataConfig>({
             applicationPath: '',
         }),
     },
