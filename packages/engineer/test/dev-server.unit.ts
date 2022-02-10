@@ -6,7 +6,7 @@ import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import type { TopLevelConfig, RuntimeEngine, RuntimeMetadataConfig } from '@wixc3/engine-core';
+import type { TopLevelConfig, RuntimeEngine, EngineerMetadataConfig } from '@wixc3/engine-core';
 import { Application } from '@wixc3/engine-scripts';
 import { createDisposables } from '@wixc3/create-disposables';
 
@@ -609,7 +609,7 @@ describe('engineer:dev-server', function () {
         const page = await loadPage(`http://localhost:${port}/main.html`);
         const text = await getBodyContent(page);
 
-        const metadata = JSON.parse(text) as RuntimeMetadataConfig;
+        const metadata = JSON.parse(text) as EngineerMetadataConfig;
 
         expect(metadata).to.eql({
             devport: port,

@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import type { TopLevelConfig, IFeatureLoader, RuntimeMetadataConfig } from '@wixc3/engine-core';
+import type { TopLevelConfig, IFeatureLoader, EngineerMetadataConfig } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
@@ -326,7 +326,7 @@ describe('Application', function () {
 
             await waitFor(async () => {
                 const text = await getBodyContent(page);
-                const metadata = JSON.parse(text) as RuntimeMetadataConfig;
+                const metadata = JSON.parse(text) as EngineerMetadataConfig;
 
                 expect(metadata).to.eql({ applicationPath: app.outputPath });
             });

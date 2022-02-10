@@ -4,7 +4,7 @@ import sampleFeature, { client, server } from './x.feature';
 sampleFeature.setup(client, ({ runtimeMetadata, run }, { COM: { communication } }) => {
     run(async () => {
         await socketClientInitializer({ communication, env: server });
-        const runtimeMetadataConfig = await runtimeMetadata.getRuntimeMetadata();
-        document.body.textContent = JSON.stringify(runtimeMetadataConfig);
+        const engineerMetadataConfig = await runtimeMetadata.getEngineerMetadata();
+        document.body.textContent = JSON.stringify(engineerMetadataConfig);
     });
 });
