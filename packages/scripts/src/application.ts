@@ -83,7 +83,7 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     favicon?: string;
     externalFeaturesBasePath?: string;
     externalFeatureDefinitions?: IExternalDefinition[];
-    configLoader?: string;
+    configLoaderModuleName?: string;
 }
 
 // inlined to stay type-compatible with @types/webpack
@@ -137,7 +137,7 @@ export interface ICompilerOptions {
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
     eagerEntrypoint?: boolean;
-    configLoader?: string;
+    configLoaderModuleName?: string;
 }
 
 const DEFAULT_EXTERNAL_FEATURES_PATH = 'external-features.json';
@@ -176,7 +176,7 @@ export class Application {
         externalFeaturesBasePath,
         externalFeatureDefinitions: providedExternalFeatureDefinitions = [],
         featureDiscoveryRoot: providedFeatureDiscoveryRoot,
-        configLoader,
+        configLoaderModuleName,
     }: IBuildCommandOptions = {}): Promise<{
         stats: WebpackMultiStats;
         features: Map<string, IFeatureDefinition>;
@@ -238,7 +238,7 @@ export class Application {
             webpackConfigPath,
             environments: resolvedEnvironments,
             eagerEntrypoint,
-            configLoader,
+            configLoaderModuleName,
         });
         const outDir = fs.basename(this.outputPath);
 
@@ -770,7 +770,7 @@ export class Application {
         webpackConfigPath,
         environments,
         eagerEntrypoint,
-        configLoader
+        configLoaderModuleName,
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = webpackConfigPath
@@ -798,7 +798,7 @@ export class Application {
             createWebpackConfig: isExternal ? createWebpackConfigForExternalFeature : createWebpackConfig,
             externalFeaturesRoute,
             eagerEntrypoint,
-            configLoader,
+            configLoaderModuleName,
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
