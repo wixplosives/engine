@@ -143,7 +143,7 @@ export function buildCommand(program: Command) {
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--external [true|false]', 'build feature as external', parseBoolean, false)
         .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
-        .option('--configLoader [configLoaderModuleName]', 'custom config loader module name', '')
+        .option('--configLoaderModuleName [configLoaderModuleName]', 'custom config loader module name')
         .option(
             '--sourcesRoot <sourcesRoot>',
             'the directory where the feature library will be published at (relative to the base path). default: "."'
@@ -178,7 +178,7 @@ export function buildCommand(program: Command) {
                 featureDiscoveryRoot,
                 staticExternalsDescriptor,
                 includeExternalFeatures,
-                configLoader,
+                configLoaderModuleName,
             } = cmd;
             try {
                 const basePath = resolve(path);
@@ -202,7 +202,7 @@ export function buildCommand(program: Command) {
                     staticExternalFeaturesFileName: staticExternalsDescriptor,
                     eagerEntrypoint: eagerEntrypoints,
                     includeExternalFeatures,
-                    configLoader,
+                    configLoaderModuleName,
                 });
                 console.log(stats.toString('errors-warnings'));
             } catch (e) {

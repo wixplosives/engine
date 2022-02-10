@@ -11,7 +11,7 @@ export default function topLevelConfigLoader(this: PartialWebpackLoaderContext) 
 
     const fileName = params.get('scopedName');
     const envName = params.get('envName');
-    const configLoader = params.get('configLoader');
+    const configLoaderModuleName = params.get('configLoaderModuleName');
     const cachedModule = require.cache[this.resourcePath];
     const imported = requireDeepHack(this.resourcePath, this.rootContext);
     if (cachedModule) {
@@ -29,7 +29,7 @@ export default function topLevelConfigLoader(this: PartialWebpackLoaderContext) 
     this.emitFile(configPath, importedString, false);
 
     return `
-    import { loadConfig } from '${configLoader!}';
+    import { loadConfig } from '${configLoaderModuleName!}';
     const fetchResult = loadConfig('${fileName!}', '${envName!}');
     export default fetchResult`;
 }

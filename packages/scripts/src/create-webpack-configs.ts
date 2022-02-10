@@ -37,7 +37,7 @@ export interface ICreateWebpackConfigsOptions {
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
-    configLoader?: string;
+    configLoaderModuleName?: string;
 }
 
 export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): webpack.Configuration[] {
@@ -47,7 +47,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
         createWebpackConfig,
         environments: { electronRendererEnvs, webEnvs, workerEnvs },
         featureName,
-        configLoader,
+        configLoaderModuleName,
     } = options;
 
     if (!baseConfig.output) {
@@ -64,7 +64,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: webEnvs,
                 target: 'web',
-                configLoader,
+                configLoaderModuleName,
             })
         );
     }
@@ -75,7 +75,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: workerEnvs,
                 target: 'webworker',
-                configLoader,
+                configLoaderModuleName,
             })
         );
     }
@@ -86,7 +86,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 baseConfig,
                 enviroments: electronRendererEnvs,
                 target: 'electron-renderer',
-                configLoader,
+                configLoaderModuleName,
             })
         );
     }
@@ -114,7 +114,7 @@ interface ICreateWebpackConfigOptions {
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     plugins?: webpack.WebpackPluginInstance[];
-    configLoader?: string;
+    configLoaderModuleName?: string;
 }
 
 export function createWebpackConfig({
@@ -136,6 +136,7 @@ export function createWebpackConfig({
     externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
+    configLoaderModuleName,
 }: ICreateWebpackConfigOptions): webpack.Configuration {
     const { module: baseModule = {}, plugins: basePlugins = [] } = baseConfig;
     const { rules: baseRules = [] } = baseModule;
@@ -159,6 +160,7 @@ export function createWebpackConfig({
             target,
             externalFeaturesRoute,
             eagerEntrypoint,
+            configLoaderModuleName,
         });
 
         entryModules[envName] = entrypointContent;
