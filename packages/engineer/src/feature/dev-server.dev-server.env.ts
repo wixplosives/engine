@@ -319,9 +319,6 @@ devServerFeature.setup(
                         }
                     }
                 }
-
-                console.log(`Dashboard Listening:`);
-                console.log(`Dashboard URL: ${mainUrl}/dashboard`);
             }
 
             for (const handler of serverListeningHandlerSlot) {

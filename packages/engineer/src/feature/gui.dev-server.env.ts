@@ -14,7 +14,8 @@ guiFeature.setup(
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute },
+                devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute, log },
+                serverListeningHandlerSlot,
                 application,
             },
         }
@@ -48,6 +49,13 @@ guiFeature.setup(
                 outputPath: application.outputPath,
             })
         );
+
+        if (log) {
+            serverListeningHandlerSlot.register(({ port, host }) => {
+                console.log(`Dashboard Listening:`);
+                console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
+            });
+        }
     }
 );
 
