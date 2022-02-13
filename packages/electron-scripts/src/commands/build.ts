@@ -123,6 +123,9 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         {
             from: dirname(require.resolve('@wixc3/engine-electron-host/package.json')),
             to: 'node_modules/@wixc3/engine-electron-host',
+            // Avoid copying binary links of a package;
+            // They contain relative links that will not work in built app, and also break Mac signing
+            filter: ['!**/node_modules/.bin/**'],
         },
     ];
 
