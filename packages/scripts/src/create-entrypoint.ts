@@ -1,6 +1,6 @@
 import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
-import { parse, join } from 'path';
+import { parse, resolve } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition } from './types';
 
@@ -110,7 +110,7 @@ export function createMainEntrypoint({
     externalFeaturesRoute,
     eagerEntrypoint,
     featuresBundleName,
-    configLoaderModuleName = join(__dirname, 'default-config-loader')
+    configLoaderModuleName = resolve(__dirname, 'default-config-loader')
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
