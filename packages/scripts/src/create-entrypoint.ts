@@ -110,7 +110,7 @@ export function createMainEntrypoint({
     externalFeaturesRoute,
     eagerEntrypoint,
     featuresBundleName,
-    configLoaderModuleName = require.resolve('./default-config-loader')
+    configLoaderModuleName = JSON.stringify(require.resolve('./default-config-loader'))
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
