@@ -805,7 +805,7 @@ export class Application {
         const { basePath } = this;
 
         console.time(`Analyzing Features`);
-        const packages = childPackagesFromContext(resolveDirectoryContext(basePath));
+        const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
         const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features');
         return { ...featuresAndConfigs, packages };

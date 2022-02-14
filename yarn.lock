@@ -1785,6 +1785,14 @@
     glob "^7.2.0"
     type-fest "^2.9.0"
 
+"@wixc3/resolve-directory-context@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-2.0.0.tgz#931336ebacab016133955afbed3fda7a483c5715"
+  integrity sha512-pSmI73kLoXQz2j/8sLCunUqaUcjQe46isXW64p1AaCv7XlBWs84ZTyVEhcBAsDvSMWw8FeU2HFSmdq7bf0nXCQ==
+  dependencies:
+    minimatch "^4.1.1"
+    type-fest "^2.11.2"
+
 "@wixc3/wait-for-call@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-1.0.1.tgz#71ca625a66dbe6a0262be4bd91e54be81ebe3054"
@@ -5608,6 +5616,13 @@ minimatch@^3.0.4:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.1.tgz#879ad447200773912898b46cd516a7abbb5e50b0"
   integrity sha512-reLxBcKUPNBnc/sVtAbxgRVFSegoGeLaSjmphNhcwcolhYLRgtJscn5mRl6YRZNQv40Y7P6JM2YhSIsbL9OB5A==
+  dependencies:
+    brace-expansion "^1.1.7"
+
+minimatch@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-4.1.1.tgz#88d8172f2e1babcc3e249538b1a46970dfea1300"
+  integrity sha512-9ObkVPP8aM2KWHw1RMAaOoEzHjcqzE1dmEQHAOq9ySRhvVMru1VKqniUs/g6Us4KSwXKk0+uLko6caynDcWEWQ==
   dependencies:
     brace-expansion "^1.1.7"
 

@@ -16,7 +16,7 @@ export function findFeatures(
     if (!packagePath) {
         throw new Error(`Couldn't find package.json relative to ${initialDirectoryPath}`);
     }
-    const packages = childPackagesFromContext(resolveDirectoryContext(packagePath));
+    const packages = childPackagesFromContext(resolveDirectoryContext(packagePath, fs));
     return loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
 }
 
