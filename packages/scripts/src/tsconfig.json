@@ -9,9 +9,6 @@
       "path": "../../core/src"
     },
     {
-      "path": "../../config-loader/src"
-    },
-    {
       "path": "../../core-node/src"
     },
     {

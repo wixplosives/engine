@@ -5,7 +5,6 @@
     { "path": "./packages/core/src" },
     { "path": "./packages/core/test" },
     
-    { "path": "./packages/config-loader/src" },
 
     { "path": "./packages/core-node/src" },
     { "path": "./packages/core-node/test" },
