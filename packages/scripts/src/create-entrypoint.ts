@@ -110,7 +110,7 @@ export function createMainEntrypoint({
     externalFeaturesRoute,
     eagerEntrypoint,
     featuresBundleName,
-    configLoaderModuleName = resolve(__dirname, 'default-config-loader')
+    configLoaderModuleName = '@wixc3/engine-scripts',
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
     return `
