@@ -58,12 +58,13 @@ export class Communication {
     private rootEnvId: string;
     private rootEnvName: string;
     private idsCounter = new MultiCounter();
+    private disposing = false;
     private readonly callbackTimeout = 60_000 * 5; // 5 minutes
     private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private pendingEnvs: SetMultiMap<string, UnknownFunction> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
-    private handlers = new Map<string, UnknownFunction[]>();
+    private handlers = new Map<string, Set<UnknownFunction>>();
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
@@ -73,6 +74,7 @@ export class Communication {
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposListeners = new Set<(envId: string) => void>();
     private callbackToEnvMapping = new Map<string, string>();
+    private disposedEnvironments = new Set<string>();
 
     constructor(
         host: Target,
@@ -184,13 +186,14 @@ export class Communication {
      * Add local handle event listener to Target.
      */
     public registerMessageHandler(target: Target): void {
+        const envTarget = (target as BaseHost).parent ?? target;
         const onTargetMessage = ({ data }: { data: null | Message }) => {
             if (isMessage(data)) {
-                if (!this.environments[data.from]) {
-                    this.registerEnv(data.from, (target as BaseHost).parent ?? target);
+                if (!this.disposedEnvironments.has(data.from) && !this.environments[data.from]) {
+                    this.registerEnv(data.from, envTarget);
                 }
-                if (!this.environments[data.origin]) {
-                    this.registerEnv(data.origin, (target as BaseHost).parent ?? target);
+                if (!this.disposedEnvironments.has(data.origin) && !this.environments[data.origin]) {
+                    this.registerEnv(data.origin, envTarget);
                 }
                 this.handleEvent({ data });
             }
@@ -305,17 +308,17 @@ export class Communication {
      * Dispose the Communication and stop listening to messages.
      */
     public dispose(): void {
-        for (const { host } of Object.values(this.environments)) {
+        this.disposing = true;
+        for (const { host, id } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
                 host.dispose();
             }
             this.removeMessageHandler(host);
+            this.localyClear(id);
         }
 
-        for (const disposeListener of this.disposListeners) {
-            disposeListener(this.rootEnvId);
-        }
+        this.localyClear(this.rootEnvId);
         this.disposListeners.clear();
 
         for (const [id, { timerId }] of Object.entries(this.callbacks)) {
@@ -420,6 +423,7 @@ export class Communication {
     }
 
     private localyClear(instanceId: string) {
+        this.disposedEnvironments.add(instanceId);
         this.readyEnvs.delete(instanceId);
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
@@ -441,6 +445,13 @@ export class Communication {
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
         if (message.type === 'call') {
+            const responseMessage: Message = {
+                from: message.to,
+                to: message.from,
+                callbackId: message.callbackId,
+                origin: message.to,
+                type: 'callback',
+            };
             try {
                 const data = await this.callMethod(
                     env.id,
@@ -450,26 +461,13 @@ export class Communication {
                     message.origin,
                     {}
                 );
+
                 if (message.callbackId) {
-                    this.sendTo(message.from, {
-                        from: message.to,
-                        type: 'callback',
-                        to: message.from,
-                        data,
-                        callbackId: message.callbackId,
-                        origin: message.to,
-                    });
+                    this.sendTo(message.from, { ...responseMessage, data });
                 }
             } catch (error) {
                 if (message.callbackId) {
-                    this.sendTo(message.from, {
-                        from: message.to,
-                        type: 'callback',
-                        to: message.from,
-                        error: serializeError(error),
-                        callbackId: message.callbackId,
-                        origin: message.to,
-                    });
+                    this.sendTo(message.from, { ...responseMessage, error: serializeError(error) });
                 }
             }
         } else if (message.type === 'callback') {
@@ -567,14 +565,11 @@ export class Communication {
                 throw new Error('Cannot Remove handler ' + listenerHandlerId);
             }
             if (serviceComConfig[method]?.removeListener) {
-                const i = listenerHandlersBucket.indexOf(fn);
-                if (i !== -1) {
-                    listenerHandlersBucket.splice(i, 1);
-                }
+                listenerHandlersBucket.delete(fn);
             } else {
-                listenerHandlersBucket.length = 0;
+                listenerHandlersBucket.clear();
             }
-            if (listenerHandlersBucket.length === 0) {
+            if (listenerHandlersBucket.size === 0) {
                 // send remove handler call
                 const message: UnListenMessage = {
                     to: envId,
@@ -597,8 +592,13 @@ export class Communication {
             if (serviceComConfig[method]?.listener) {
                 const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
 
-                if (handlersBucket && handlersBucket.length !== 0) {
-                    handlersBucket.push(fn);
+                if (handlersBucket && handlersBucket.size !== 0) {
+                    if (handlersBucket.has(fn)) {
+                        throw new Error(
+                            'Cannot add same listener instance twice ' + this.getHandlerId(envId, api, method)
+                        );
+                    }
+                    handlersBucket.add(fn);
                     res();
                 } else {
                     const message: ListenMessage = {
@@ -628,12 +628,12 @@ export class Communication {
         res: () => void,
         rej: () => void
     ) {
+        this.sendTo(envId, message);
         if (callbackId) {
             this.createCallbackRecord(message, callbackId, res, rej);
         } else {
             res();
         }
-        this.sendTo(envId, message);
     }
     private sendTo(envId: string, message: Message): void {
         if (this.pendingEnvs.get(envId)) {
@@ -855,7 +855,7 @@ export class Communication {
     private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
         const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
-        handlersBucket ? handlersBucket.push(fn) : this.handlers.set(handlerId, [fn]);
+        handlersBucket ? handlersBucket.add(fn) : this.handlers.set(handlerId, new Set([fn]));
         return handlerId;
     }
     private createCallbackRecord(
@@ -864,34 +864,36 @@ export class Communication {
         res: (value: unknown) => void,
         rej: (reason: Error) => void
     ) {
-        this.callbackToEnvMapping.set(callbackId, message.to);
-        const resolve = (value: unknown) => {
-            this.callbackToEnvMapping.delete(callbackId);
-            delete this.callbacks[callbackId];
-            clearTimeout(timerId);
-            res(value);
-        };
-        const reject = (error: Error) => {
-            this.callbackToEnvMapping.delete(callbackId);
-            delete this.callbacks[callbackId];
-            rej(error);
-        };
-        if (this.options.warnOnSlow) {
-            setTimeout(() => {
-                if (this.callbacks[callbackId]) {
-                    console.error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message)));
-                }
-            }, this.slowThreshold);
+        if (!this.disposing) {
+            this.callbackToEnvMapping.set(callbackId, message.to);
+            const resolve = (value: unknown) => {
+                this.callbackToEnvMapping.delete(callbackId);
+                delete this.callbacks[callbackId];
+                clearTimeout(timerId);
+                res(value);
+            };
+            const reject = (error: Error) => {
+                this.callbackToEnvMapping.delete(callbackId);
+                delete this.callbacks[callbackId];
+                clearTimeout(timerId);
+                rej(error);
+            };
+            if (this.options.warnOnSlow) {
+                setTimeout(() => {
+                    if (this.callbacks[callbackId]) {
+                        console.error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message)));
+                    }
+                }, this.slowThreshold);
+            }
+            const timerId = setTimeout(() => {
+                reject(new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message))));
+            }, this.callbackTimeout);
+            this.callbacks[callbackId] = {
+                timerId,
+                resolve,
+                reject,
+            };
         }
-
-        const timerId = setTimeout(() => {
-            reject(new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, removeMessageArgs(message))));
-        }, this.callbackTimeout);
-        this.callbacks[callbackId] = {
-            timerId,
-            resolve,
-            reject,
-        };
     }
 }
 

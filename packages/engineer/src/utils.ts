@@ -39,6 +39,7 @@ export interface IStartOptions {
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     socketServerOptions?: Partial<io.ServerOptions>;
     webpackConfigPath?: string;
+    log?: boolean;
 }
 
 export async function startDevServer({
@@ -65,10 +66,12 @@ export async function startDevServer({
     nodeEnvironmentsMode,
     socketServerOptions,
     webpackConfigPath,
+    log,
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
     devServerFeature: RuntimeFeature<typeof devServerFeature, typeof devServerEnv>['api'];
+    outputPath: string | undefined;
 }> {
     const app = new TargetApplication({
         basePath: targetApplicationPath,
@@ -101,6 +104,7 @@ export async function startDevServer({
     const { engine, dispose } = await runNodeEnvironment({
         featureName: engineerEntry,
         features: [...features],
+        bundlePath: app.outputPath,
         name: devServerEnv.env,
         type: 'node',
         host: new BaseHost(),
@@ -128,6 +132,7 @@ export async function startDevServer({
                     nodeEnvironmentsMode,
                     socketServerOptions,
                     webpackConfigPath,
+                    log,
                 },
             }),
             guiFeature.use({
@@ -143,6 +148,7 @@ export async function startDevServer({
     });
     return {
         engine,
+        outputPath: app.outputPath,
         dispose,
         devServerFeature: engine.get(devServerFeature).api,
     };

@@ -6,7 +6,7 @@ import { waitFor } from 'promise-assist';
 import fs from '@file-services/node';
 
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import type { TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
+import type { TopLevelConfig, RuntimeEngine, EngineerMetadataConfig } from '@wixc3/engine-core';
 import { Application } from '@wixc3/engine-scripts';
 import { createDisposables } from '@wixc3/create-disposables';
 
@@ -34,6 +34,8 @@ const applicationExternalFixturePath = fs.dirname(
 const environmentExtensionFeaturePath = fs.dirname(require.resolve('@fixture/engine-env-dependency/package.json'));
 
 const engineConfigFixturePath = fs.dirname(require.resolve('@fixture/engine-config-feature/package.json'));
+
+const engineRuntimeMetadataFixturePath = fs.dirname(require.resolve('@fixture/engine-runtime-metadata/package.json'));
 
 function getBodyContent(page: Page | Frame) {
     return page.evaluate(() => document.body.textContent!.trim());
@@ -103,7 +105,12 @@ describe('engineer:dev-server', function () {
 
         disposables.add(dispose);
 
-        return { dispose, engine, runtimeFeature: devServerFeature, config: { featureName, port: runningPort } };
+        return {
+            dispose,
+            engine,
+            runtimeFeature: devServerFeature,
+            config: { featureName, port: runningPort },
+        };
     };
 
     const loadPage = async (url: string) => {
@@ -632,6 +639,36 @@ describe('engineer:dev-server', function () {
         const page = await loadPage(`http://localhost:${port}/page1.html`);
         const text = await getBodyContent(page);
         expect(text).to.eq('variant added to variant added to client page1');
+    });
+    it('runs app with the correct runtime metadata', async () => {
+        const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
+        const outputPath = fs.dirname(packageFile);
+        const featureName = 'engine-runtime-metadata/x';
+        const {
+            config: { port },
+        } = await setup({
+            basePath: engineRuntimeMetadataFixturePath,
+            featureName,
+            outputPath,
+        });
+
+        const page = await loadPage(`http://localhost:${port}/main.html`);
+        const text = await getBodyContent(page);
+
+        const metadata = JSON.parse(text) as EngineerMetadataConfig;
+
+        expect(metadata).to.eql({
+            devport: port,
+            applicationPath: outputPath,
+            featureName,
+            isWorkspace: false,
+            foundFeatures: [
+                {
+                    configurations: [],
+                    featureName,
+                },
+            ],
+        });
     });
 });
 

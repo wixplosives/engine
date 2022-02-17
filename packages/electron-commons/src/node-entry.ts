@@ -15,6 +15,7 @@ const onMessageListener: NodeJS.MessageListener = async (message) => {
             environmentContextName,
             featureName,
             features,
+            bundlePath,
             runtimeOptions,
             parentEnvName,
             env,
@@ -50,6 +51,7 @@ const onMessageListener: NodeJS.MessageListener = async (message) => {
         await runIPCEnvironment({
             type: 'node',
             name: environmentName,
+            bundlePath,
             childEnvName: environmentContextName,
             featureName,
             config,

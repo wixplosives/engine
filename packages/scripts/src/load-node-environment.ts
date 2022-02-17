@@ -5,7 +5,7 @@ import { resolveDirectoryContext, childPackagesFromContext } from '@wixc3/resolv
 import { loadFeaturesFromPackages } from './analyze-feature';
 
 export function readFeatures(fs: IFileSystem, basePath: string, featureDiscoveryRoot?: string) {
-    const packages = childPackagesFromContext(resolveDirectoryContext(basePath));
+    const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
     return loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
 }
 

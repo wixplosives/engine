@@ -124,6 +124,9 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         {
             from: dirname(require.resolve('@wixc3/engine-electron-host/package.json')),
             to: 'node_modules/@wixc3/engine-electron-host',
+            // Avoid copying binary links of a package;
+            // They contain relative links that will not work in built app, and also break Mac signing
+            filter: ['!**/node_modules/.bin/**'],
         },
     ];
 
@@ -238,7 +241,7 @@ export function createElectronEntryFile({
     return fs.promises.writeFile(
         outputPath,
         `process.env.NODE_ENV='production';
-        
+
 const { app } = require('electron');
 const { join } = require('path')
 const { runElectronEnv } = require('@wixc3/engine-electron-host');
@@ -269,6 +272,7 @@ for(const featureDef of features.values()) {
 runElectronEnv({
     basePath,
     featureName,
+    outputPath: basePath,
     configName,
     config,
     features,

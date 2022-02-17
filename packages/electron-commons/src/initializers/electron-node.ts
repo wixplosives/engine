@@ -27,6 +27,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     const nodeEnvStartupArguments: NodeEnvironmentStartupOptions = {
         ...runtimeArguments,
         ...environmentStartupOptions,
+        outputPath: runtimeArguments.basePath,
         parentEnvName: communication.getEnvironmentName(),
         environmentName: env.env,
         env,

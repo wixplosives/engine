@@ -17,6 +17,7 @@ const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry
 
 export interface ElectronEnvParams {
     basePath: string;
+    outputPath: string;
     featureName?: string;
     configName?: string;
     devport?: number;
@@ -32,6 +33,7 @@ export const DEFAULT_EXTERNAL_FEATURES_PATH = '/external-features.json';
 
 export async function runElectronEnv({
     basePath,
+    outputPath = fs.join(basePath, 'dist-app'),
     configName,
     featureName,
     devport,
@@ -78,6 +80,7 @@ export async function runElectronEnv({
         return {
             basePath,
             featureName,
+            outputPath,
             configName,
             nodeEntryPath,
             devtools,
@@ -141,6 +144,7 @@ export async function runElectronEnv({
         featureName,
         features: [...features.entries()],
         name: env.env,
+        bundlePath: electronRuntimeArguments.outPath,
         type: 'node',
         host: new BaseHost(),
         config,

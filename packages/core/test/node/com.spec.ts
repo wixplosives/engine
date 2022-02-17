@@ -394,8 +394,10 @@ describe('Communication', () => {
         // create a service at 4
         const echoService = {
             echo: (text: string) => `hello ${text}`,
-            fail: (): string => {
-                throw new Error('fail');
+            fail: (): Promise<string> => {
+                return new Promise<string>(() => {
+                    throw new Error('fail');
+                });
             },
         };
         com4.registerAPI({ id: 'service' }, echoService);

@@ -16,7 +16,7 @@ export function findFeatures(
     if (!packagePath) {
         throw new Error(`Couldn't find package.json relative to ${initialDirectoryPath}`);
     }
-    const packages = childPackagesFromContext(resolveDirectoryContext(packagePath));
+    const packages = childPackagesFromContext(resolveDirectoryContext(packagePath, fs));
     return loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
 }
 
@@ -38,6 +38,7 @@ const setupRunningEnv = async ({
             Promise.resolve({
                 featureName: testFeature.id,
                 basePath: testProjectPath,
+                outputPath: fs.join(testProjectPath, 'dist-app'),
                 nodeEntryPath: fs.join(testProjectPath, 'entry.js'),
                 config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
                 features: Array.from(features.entries()),

@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import type { TopLevelConfig, IFeatureLoader } from '@wixc3/engine-core';
+import type { TopLevelConfig, IFeatureLoader, EngineerMetadataConfig } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
@@ -49,6 +49,10 @@ describe('Application', function () {
     const withIframeFixturePath = fs.dirname(require.resolve('@fixture/with-iframe/package.json'));
     const nodeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-node/package.json'));
     const contextualFeatureFixturePath = fs.dirname(require.resolve('@fixture/contextual-feature/package.json'));
+
+    const engineRuntimeMetadataFixturePath = fs.dirname(
+        require.resolve('@fixture/engine-runtime-metadata/package.json')
+    );
 
     describe('build', () => {
         const manifestFileName = 'manifest.json';
@@ -302,6 +306,29 @@ describe('Application', function () {
             await waitFor(async () => {
                 const text = await getBodyContent(page);
                 expect(text).to.equal('Hello');
+            });
+        });
+
+        it(`launches a built application with node environment which contains runtime metadata`, async () => {
+            const app = new Application({ basePath: engineRuntimeMetadataFixturePath });
+            await app.build({
+                featureName: 'engine-runtime-metadata/x',
+                publicConfigsRoute: 'configs',
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                publicConfigsRoute: 'configs',
+            });
+            disposables.add(close);
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            await waitFor(async () => {
+                const text = await getBodyContent(page);
+                const metadata = JSON.parse(text) as EngineerMetadataConfig;
+
+                expect(metadata).to.eql({ applicationPath: app.outputPath });
             });
         });
 

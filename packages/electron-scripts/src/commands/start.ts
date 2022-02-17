@@ -100,6 +100,8 @@ export async function start({
             id: 'runOptions',
             runOptions: {
                 featureName,
+                envName,
+                outputPath: join(basePath, 'dist-app'),
                 devport: port,
                 basePath,
                 configName,

@@ -9,6 +9,7 @@ export interface IWindowLaunchOptions {
 export interface IEngineRuntimeArguments {
     featureName: string;
     basePath: string;
+    outputPath: string;
     configName?: string;
     devport?: number;
     nodeEntryPath: string;
@@ -24,7 +25,7 @@ export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     environmentContextName?: string;
     devtools?: boolean;
     environmentName: string;
-    outputPath?: string;
+    bundlePath?: string;
     featureDiscoveryRoot?: string;
     parentEnvName: string;
     execPath?: string;
