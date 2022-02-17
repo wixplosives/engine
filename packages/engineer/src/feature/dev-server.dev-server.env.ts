@@ -307,7 +307,7 @@ devServerFeature.setup(
             if (log) {
                 const mainUrl = `http://localhost:${actualPort}`;
                 if (featureName) {
-                    console.log('Main application URL:', `${mainUrl}main.html`);
+                    console.log('Main application URL:', `${mainUrl}/main.html`);
                 }
 
                 if (packages.length === 1) {
