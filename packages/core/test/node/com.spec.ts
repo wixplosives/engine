@@ -225,7 +225,7 @@ describe('Communication', () => {
         );
     });
 
-    it.only('forwards dispose calls', async () => {
+    it('forwards dispose calls', async () => {
         const middlemanHost = new BaseHost();
         const aHost = new BaseHost();
         const bHost = new BaseHost();
