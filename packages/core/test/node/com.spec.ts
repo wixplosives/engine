@@ -11,8 +11,10 @@ import {
     EventEmitterHost,
     EventEmitter,
     Message,
+    ReadyMessage,
 } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
+import { waitFor } from 'promise-assist';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -221,6 +223,40 @@ describe('Communication', () => {
         await expect(mockApiProxyFromAEnv.listen(spyFn)).to.be.eventually.rejectedWith(
             'cannot add listener to unconfigured method myApi listen'
         );
+    });
+
+    it('forwards dispose calls', async () => {
+        const middlemanHost = new BaseHost();
+        const aHost = new BaseHost();
+        const bHost = new BaseHost();
+
+        const mainCom = disposables.add(new Communication(middlemanHost, 'middle'));
+        const bCom = disposables.add(new Communication(bHost, 'bEnv'));
+        const aCom = disposables.add(new Communication(aHost, 'aEnv'));
+
+        aCom.registerEnv('bEnv', middlemanHost);
+        bCom.registerEnv('aEnv', middlemanHost);
+        mainCom.registerEnv('aEnv', aHost);
+        mainCom.registerEnv('bEnv', bHost);
+        aCom.handleReady({ from: 'bEnv' } as ReadyMessage);
+        bCom.handleReady({ from: 'anv' } as ReadyMessage);
+
+        const echoService = {
+            echo() {
+                return 'echo';
+            },
+        };
+
+        bCom.registerAPI({ id: 'myApi' }, echoService);
+
+        const mockApiProxyFromAEnv = aCom.apiProxy<typeof echoService>({ id: 'bEnv' }, { id: 'myApi' });
+        const spyFn = spy();
+        bCom.subscribeToEnvironmentDispose(spyFn);
+        await mockApiProxyFromAEnv.echo();
+        aCom.clearEnvironment(aCom.getEnvironmentId());
+        await waitFor(() => {
+            expect(spyFn).to.have.been.calledWith(aCom.getEnvironmentId());
+        });
     });
 
     it('forwards unlisten calls', async () => {
