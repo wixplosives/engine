@@ -470,8 +470,8 @@ export class Communication {
                     this.sendTo(message.from, { ...responseMessage, error: serializeError(error) });
                 }
             }
-        } else if (message.type === 'callback') {
-            if (message.callbackId) {
+        } else if (message.type === 'callback' || message.type === 'dispose') {
+            if (message.type === 'callback' && message.callbackId) {
                 if (this.callbacks[message.callbackId]) {
                     const { resolve, timerId } = this.callbacks[message.callbackId]!;
                     resolve(message.data);
