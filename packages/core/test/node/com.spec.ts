@@ -12,6 +12,7 @@ import {
     EventEmitter,
     Message,
     ReadyMessage,
+    declareComEmitter,
 } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
 import { waitFor } from 'promise-assist';
@@ -74,6 +75,46 @@ describe('Communication', () => {
 
         expect(res).to.be.equal('Yoo!');
     });
+
+    it('cleans up open listeners', () => {
+        const host = new BaseHost();
+        const main = disposables.add(new Communication(host, 'main'));
+
+        const host2 = host.open();
+        const main2 = disposables.add(new Communication(host2, 'main2'));
+
+        main.registerEnv('main2', host2);
+        main.handleReady({ from: 'main2' } as ReadyMessage)
+
+        const listeners = new Set()
+
+        const echoService = {
+            echo(s: string) {
+                return s;
+            },
+            subscribe(fn: () => void) {
+                listeners.add(fn)
+            },
+            unsubscribe(fn: () => void) {
+                listeners.delete(fn)
+            }
+        };
+
+        main2.registerAPI(
+            { id: 'echoService' },
+            echoService
+        );
+
+        const proxy = main.apiProxy<typeof echoService>(Promise.resolve({ id: 'main2' }), { id: 'echoService' }, declareComEmitter<typeof echoService>('subscribe','unsubscribe'));
+
+        void proxy.subscribe(() => 'test');
+        
+        main.clearEnvironment('main2')
+        
+        // this is an indication that there are no open subscribers between remote environment
+        expect(main['handlers'].size).to.eq(0);
+
+    })
 
     it('multitenant multi communication', async () => {
         // creating 3 environments - main as a parent, and 2 child environments

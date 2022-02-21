@@ -75,6 +75,7 @@ export class Communication {
     private disposListeners = new Set<(envId: string) => void>();
     private callbackToEnvMapping = new Map<string, string>();
     private disposedEnvironments = new Set<string>();
+    private envHandlers = new Map<string, string>();
 
     constructor(
         host: Target,
@@ -437,6 +438,12 @@ export class Communication {
                 this.callbackToEnvMapping.delete(callbackId);
             }
         }
+        for (const [envId, handlerId] of Object.entries(this.envHandlers)) {
+            if(envId === instanceId) {
+                this.handlers.delete(handlerId);
+            }
+        }
+        this.envHandlers.delete(instanceId)
 
         for (const dispose of this.disposListeners) {
             dispose(instanceId);
@@ -855,6 +862,16 @@ export class Communication {
     private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
         const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
+        if(!handlersBucket) {
+            this.subscribeToEnvironmentDispose((disposedEnvId) => {
+                if(envId === disposedEnvId) {
+                    this.handlers.delete(handlerId)
+                }
+            })
+        }
+        if(!handlersBucket) {
+            this.envHandlers.set(envId, handlerId);
+        }
         handlersBucket ? handlersBucket.add(fn) : this.handlers.set(handlerId, new Set([fn]));
         return handlerId;
     }
