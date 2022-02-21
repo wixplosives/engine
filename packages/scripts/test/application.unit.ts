@@ -624,7 +624,7 @@ describe('Application', function () {
                 publicConfigsRoute: '/config',
                 staticBuild: true,
             });
-            // disposables.add(() => app.clean());
+            disposables.add(() => app.clean());
 
             const { close, port } = await app.run({
                 publicConfigsRoute,
