@@ -1,5 +1,6 @@
 import path from 'path';
 import { withFeature } from '@wixc3/engine-test-kit';
+import { waitFor } from 'promise-assist';
 import { expect } from 'chai';
 import { FileServerDriver } from './file-server-driver';
 import fileServerFeature, { SERVER_MARK, MAIN_MARK } from '../feature/file-server.feature';
@@ -41,11 +42,14 @@ describe('File Server Feature', function () {
 
     it('validating metrics are being cleared between runs', async () => {
         const { getMetrics } = await getLoadedFeature();
-        const metrics = await getMetrics();
-        expect(metrics.marks.length).to.eq(2);
-        const browserMark = metrics.marks.find((m) => m.name === MAIN_MARK);
-        const serverMark = metrics.marks.find((m) => m.name === SERVER_MARK);
-        expect(browserMark, 'should receive browser marks').not.be.undefined;
-        expect(serverMark, 'should receive server marks').not.be.undefined;
+
+        await waitFor(async () => {
+            const metrics = await getMetrics();
+            expect(metrics.marks.length).to.eq(2);
+            const browserMark = metrics.marks.find((m) => m.name === MAIN_MARK);
+            const serverMark = metrics.marks.find((m) => m.name === SERVER_MARK);
+            expect(browserMark, 'should receive browser marks').not.be.undefined;
+            expect(serverMark, 'should receive server marks').not.be.undefined;
+        });
     });
 });
