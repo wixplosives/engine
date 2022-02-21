@@ -645,7 +645,8 @@ describe('Application', function () {
                 singleFeature: true,
                 configName: 'static-base-web-application/base',
                 staticBuild: true,
-                configLoaderModuleName: '@fixture/static-base-web-application-config-loader/dist/override-config-loader'
+                configLoaderModuleName:
+                    '@fixture/static-base-web-application-config-loader/dist/override-config-loader',
             });
             disposables.add(() => app.clean());
 

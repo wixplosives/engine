@@ -84,37 +84,37 @@ describe('Communication', () => {
         const main2 = disposables.add(new Communication(host2, 'main2'));
 
         main.registerEnv('main2', host2);
-        main.handleReady({ from: 'main2' } as ReadyMessage)
+        main.handleReady({ from: 'main2' } as ReadyMessage);
 
-        const listeners = new Set()
+        const listeners = new Set();
 
         const echoService = {
             echo(s: string) {
                 return s;
             },
             subscribe(fn: () => void) {
-                listeners.add(fn)
+                listeners.add(fn);
             },
             unsubscribe(fn: () => void) {
-                listeners.delete(fn)
-            }
+                listeners.delete(fn);
+            },
         };
 
-        main2.registerAPI(
+        main2.registerAPI({ id: 'echoService' }, echoService);
+
+        const proxy = main.apiProxy<typeof echoService>(
+            Promise.resolve({ id: 'main2' }),
             { id: 'echoService' },
-            echoService
+            declareComEmitter<typeof echoService>('subscribe', 'unsubscribe')
         );
 
-        const proxy = main.apiProxy<typeof echoService>(Promise.resolve({ id: 'main2' }), { id: 'echoService' }, declareComEmitter<typeof echoService>('subscribe','unsubscribe'));
-
         void proxy.subscribe(() => 'test');
-        
-        main.clearEnvironment('main2')
-        
+
+        main.clearEnvironment('main2');
+
         // this is an indication that there are no open subscribers between remote environment
         expect(main['handlers'].size).to.eq(0);
-
-    })
+    });
 
     it('multitenant multi communication', async () => {
         // creating 3 environments - main as a parent, and 2 child environments
