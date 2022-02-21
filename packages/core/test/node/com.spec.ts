@@ -76,7 +76,7 @@ describe('Communication', () => {
         expect(res).to.be.equal('Yoo!');
     });
 
-    it.only('cleans up open listeners', async () => {
+    it('cleans up open listeners', async () => {
         const host = new BaseHost();
         const main = disposables.add(new Communication(host, 'main'));
 
