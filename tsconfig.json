@@ -4,6 +4,7 @@
   "references": [
     { "path": "./packages/core/src" },
     { "path": "./packages/core/test" },
+    
 
     { "path": "./packages/core-node/src" },
     { "path": "./packages/core-node/test" },
@@ -54,6 +55,7 @@
     { "path": "./test-fixtures/node-env/src" },
     { "path": "./test-fixtures/static-application-external/src" },
     { "path": "./test-fixtures/static-base-web-application/src" },
+    { "path": "./test-fixtures/static-base-web-application-config-loader/src" },
     { "path": "./test-fixtures/using-config/src" },
     { "path": "./test-fixtures/with-iframe/src" },
     { "path": "./test-fixtures/workspace/packages/a/src" },
