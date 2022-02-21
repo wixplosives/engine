@@ -1,9 +1,9 @@
 {
   "name": "@example/dashboard-ext",
-  "version": "23.0.2",
+  "version": "23.1.0",
   "dependencies": {
-    "@wixc3/engine-core": "^23.0.2",
-    "@wixc3/engineer": "^23.0.2"
+    "@wixc3/engine-core": "^23.1.0",
+    "@wixc3/engineer": "^23.1.0"
   },
   "license": "UNLICENSED",
   "private": true
