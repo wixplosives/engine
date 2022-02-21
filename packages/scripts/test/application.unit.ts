@@ -645,9 +645,9 @@ describe('Application', function () {
                 singleFeature: true,
                 configName: 'static-base-web-application/base',
                 staticBuild: true,
-                configLoaderModuleName: '@fixture/static-base-web-application-feature/dist/override-config-loader'
+                configLoaderModuleName: '@fixture/static-base-web-application-config-loader/dist/override-config-loader'
             });
-            // disposables.add(() => app.clean());
+            disposables.add(() => app.clean());
 
             const { close, port } = await app.run({});
             disposables.add(() => close());

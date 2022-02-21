@@ -1,5 +1,8 @@
 {
   "name": "@fixture/static-base-web-application-feature",
   "version": "23.0.0",
-  "private": true
+  "private": true, 
+  "dependencies": {
+    "@fixture/static-base-web-application-feature": "^23.0.0"
+  }
 }
