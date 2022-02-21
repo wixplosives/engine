@@ -76,7 +76,7 @@ describe('Communication', () => {
         expect(res).to.be.equal('Yoo!');
     });
 
-    it('cleans up open listeners', async () => {
+    it('cleans up open listeners', () => {
         const host = new BaseHost();
         const main = disposables.add(new Communication(host, 'main'));
 
@@ -84,6 +84,7 @@ describe('Communication', () => {
         const main2 = disposables.add(new Communication(host2, 'main2'));
 
         main.registerEnv('main2', host2);
+        main.handleReady({ from: 'main2' } as ReadyMessage)
 
         const listeners = new Set()
 
@@ -106,12 +107,13 @@ describe('Communication', () => {
 
         const proxy = main.apiProxy<typeof echoService>(Promise.resolve({ id: 'main2' }), { id: 'echoService' }, declareComEmitter<typeof echoService>('subscribe','unsubscribe'));
 
-        const res = proxy.subscribe(() => 'test');
+        void proxy.subscribe(() => 'test');
         
-        // main.clearEnvironment('main2');
-        main2.dispose()
+        main.clearEnvironment('main2')
+        
+        // this is an indication that there are no open subscribers between remote environment
+        expect(main['handlers'].size).to.eq(0);
 
-        expect(res).to.eventually.be.rejectedWith('Remote call failed in main2 - environment disconnected');
     })
 
     it('multitenant multi communication', async () => {
