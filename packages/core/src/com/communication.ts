@@ -855,6 +855,13 @@ export class Communication {
     private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
         const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
+        if(!handlersBucket) {
+            this.subscribeToEnvironmentDispose((disposedEnvId) => {
+                if(envId === disposedEnvId) {
+                    this.handlers.delete(handlerId)
+                }
+            })
+        }
         handlersBucket ? handlersBucket.add(fn) : this.handlers.set(handlerId, new Set([fn]));
         return handlerId;
     }
