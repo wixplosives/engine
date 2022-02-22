@@ -1,5 +1,4 @@
 import { withFeature } from '@wixc3/engine-test-kit';
-import { expect } from 'chai';
 import { join } from 'path';
 
 describe('React Feature', function () {
@@ -14,7 +13,7 @@ describe('React Feature', function () {
 
     it('Can render react applications', async () => {
         const { page } = await getLoadedFeature();
-        const content = await page.$eval('#loadable', (e) => e.textContent!);
-        expect(content).to.eql('This is from a file');
+
+        await page.locator('#loadable', { hasText: 'This is from a file' }).waitFor({ state: 'visible' });
     });
 });
