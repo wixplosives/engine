@@ -71,7 +71,9 @@ describe('engineer:gui', function () {
 
         const page = await loadPage(`http://localhost:${port}/main-dashboard.html?feature=engineer/gui`);
 
-        await page.locator('body', { hasText: 'Feature' }).waitFor({ state: 'visible' });
-        await page.locator('body', { hasText: 'Config' }).waitFor({ state: 'visible' });
+        const text = await page.evaluate(() => document.body.textContent!.trim());
+
+        expect(text).to.include('Feature');
+        expect(text).to.include('Config');
     });
 });
