@@ -587,11 +587,11 @@ export class Communication {
                         method,
                     },
                     handlerId: listenerHandlerId,
-                    callbackId,
                     origin,
                 };
-
-                this.callWithCallback(envId, message, callbackId, res, rej);
+                // sometimes the callback will never happen since target environment is already dead
+                this.sendTo(envId, message);
+                res();
             } else {
                 res();
             }
