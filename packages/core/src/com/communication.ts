@@ -561,7 +561,8 @@ export class Communication {
             const listenerHandlerId = this.getHandlerId(envId, api, removeListenerRef);
             const listenerHandlersBucket = this.handlers.get(listenerHandlerId);
             if (!listenerHandlersBucket) {
-                throw new Error('Cannot Remove handler ' + listenerHandlerId);
+                res();
+                return;
             }
             if (serviceComConfig[method]?.removeListener) {
                 listenerHandlersBucket.delete(fn);
