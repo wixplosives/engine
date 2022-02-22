@@ -75,7 +75,7 @@ export class Communication {
     private disposListeners = new Set<(envId: string) => void>();
     private callbackToEnvMapping = new Map<string, string>();
     private disposedEnvironments = new Set<string>();
-    private envHandlers = new Map<string, string>();
+    private envHandlers = new SetMultiMap<string, string>();
 
     constructor(
         host: Target,
@@ -443,7 +443,7 @@ export class Communication {
                 this.handlers.delete(handlerId);
             }
         }
-        this.envHandlers.delete(instanceId);
+        this.envHandlers.deleteKey(instanceId);
 
         for (const dispose of this.disposListeners) {
             dispose(instanceId);
@@ -869,9 +869,7 @@ export class Communication {
                 }
             });
         }
-        if (!handlersBucket) {
-            this.envHandlers.set(envId, handlerId);
-        }
+        this.envHandlers.add(envId, handlerId);
         handlersBucket ? handlersBucket.add(fn) : this.handlers.set(handlerId, new Set([fn]));
         return handlerId;
     }
