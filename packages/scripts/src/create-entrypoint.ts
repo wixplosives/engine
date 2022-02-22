@@ -361,11 +361,18 @@ function createConfigLoaders(configLoaderModuleName: string, configs: Record<str
         .join(',\n');
 }
 
-function loadConfigFile(configLoaderModuleName: string, filePath: string, scopedName: string, configEnvName: string | undefined): string {
+function loadConfigFile(
+    configLoaderModuleName: string,
+    filePath: string,
+    scopedName: string,
+    configEnvName: string | undefined
+): string {
     return `import(/* webpackChunkName: "[config]${scopedName}${
         configEnvName ?? ''
     }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-        topLevelConfigLoaderPath + `?configLoaderModuleName=${configLoaderModuleName}&scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
+        topLevelConfigLoaderPath +
+            `?configLoaderModuleName=${configLoaderModuleName}&scopedName=${scopedName}&envName=${configEnvName!}!` +
+            filePath
     )})`;
 }
 //#endregion

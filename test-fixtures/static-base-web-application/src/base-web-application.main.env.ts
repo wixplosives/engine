@@ -10,10 +10,10 @@ BaseAppFeature.setup(client, ({ clientSlot, baseAppConfig }, { COM: { communicat
     const clientSlotTitle = document.createElement('h1');
     clientSlotTitle.id = 'client-slot-title';
     clientSlotTitle.innerText = 'Client Slot Values';
-    
+
     const clientSlotValue = document.createElement('span');
     clientSlotValue.innerText = [...clientSlot].join(',');
-    
+
     const configurableValue = document.createElement('span');
     configurableValue.id = 'configurable';
     configurableValue.innerText = baseAppConfig.message;
