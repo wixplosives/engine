@@ -437,7 +437,6 @@ export class Communication {
                 this.callbackToEnvMapping.delete(callbackId);
             }
         }
-
         for (const dispose of this.disposListeners) {
             dispose(instanceId);
         }
@@ -470,8 +469,8 @@ export class Communication {
                     this.sendTo(message.from, { ...responseMessage, error: serializeError(error) });
                 }
             }
-        } else if (message.type === 'callback') {
-            if (message.callbackId) {
+        } else if (message.type === 'callback' || message.type === 'dispose') {
+            if (message.type === 'callback' && message.callbackId) {
                 if (this.callbacks[message.callbackId]) {
                     const { resolve, timerId } = this.callbacks[message.callbackId]!;
                     resolve(message.data);
@@ -562,7 +561,8 @@ export class Communication {
             const listenerHandlerId = this.getHandlerId(envId, api, removeListenerRef);
             const listenerHandlersBucket = this.handlers.get(listenerHandlerId);
             if (!listenerHandlersBucket) {
-                throw new Error('Cannot Remove handler ' + listenerHandlerId);
+                res();
+                return;
             }
             if (serviceComConfig[method]?.removeListener) {
                 listenerHandlersBucket.delete(fn);
@@ -580,11 +580,11 @@ export class Communication {
                         method,
                     },
                     handlerId: listenerHandlerId,
-                    callbackId,
                     origin,
                 };
-
-                this.callWithCallback(envId, message, callbackId, res, rej);
+                // sometimes the callback will never happen since target environment is already dead
+                this.sendTo(envId, message);
+                res();
             } else {
                 res();
             }
@@ -855,6 +855,13 @@ export class Communication {
     private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
         const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
+        if (!handlersBucket) {
+            this.subscribeToEnvironmentDispose((disposedEnvId) => {
+                if (envId === disposedEnvId) {
+                    this.handlers.delete(handlerId);
+                }
+            });
+        }
         handlersBucket ? handlersBucket.add(fn) : this.handlers.set(handlerId, new Set([fn]));
         return handlerId;
     }

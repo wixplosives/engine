@@ -613,6 +613,52 @@ describe('Application', function () {
                 { timeout: 5_000 }
             );
         });
+
+        it('loads config', async () => {
+            const publicConfigsRoute = 'config';
+            const app = new Application({ basePath: staticBaseWebApplicationFixturePath });
+            await app.build({
+                featureName: 'static-base-web-application/base-web-application',
+                singleFeature: true,
+                configName: 'static-base-web-application/base',
+                publicConfigsRoute: '/config',
+                staticBuild: true,
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({
+                publicConfigsRoute,
+            });
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            const configurableElem = await page.waitForSelector('#configurable', { timeout: 5_000 });
+            const text = await configurableElem?.innerText();
+            expect(text).equal('a configured message');
+        });
+
+        it('overrides config', async () => {
+            const app = new Application({ basePath: staticBaseWebApplicationFixturePath });
+            await app.build({
+                featureName: 'static-base-web-application/base-web-application',
+                singleFeature: true,
+                configName: 'static-base-web-application/base',
+                staticBuild: true,
+                configLoaderModuleName:
+                    '@fixture/static-base-web-application-config-loader/dist/override-config-loader',
+            });
+            disposables.add(() => app.clean());
+
+            const { close, port } = await app.run({});
+            disposables.add(() => close());
+
+            const page = await loadPage(`http://localhost:${port}/main.html`);
+
+            const configurableElem = await page.waitForSelector('#configurable', { timeout: 5_000 });
+            const text = await configurableElem?.innerText();
+            expect(text).equal('an overriden message');
+        });
     });
 
     it('allows adding routes to the engine router', async () => {

@@ -26,6 +26,7 @@ export interface ICreateEntrypointsOptions {
     eagerEntrypoint?: boolean;
     env: IEnvironmentDescriptor;
     featuresBundleName?: string;
+    configLoaderModuleName?: string;
 }
 
 interface IConfigFileMapping {
@@ -110,6 +111,7 @@ export function createMainEntrypoint({
     eagerEntrypoint,
     env,
     featuresBundleName,
+    configLoaderModuleName = '@wixc3/engine-scripts/dist/default-config-loader',
 }: ICreateEntrypointsOptions) {
     const envName = env.name;
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
@@ -127,7 +129,7 @@ const featureLoaders = new Map(Object.entries({
 
 self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
 
-${staticBuild ? createConfigLoadersObject(configs) : ''}
+${staticBuild ? createConfigLoadersObject(configLoaderModuleName, configs) : ''}
 async function main() {
     const envName = '${envName}';
     const currentWindow = typeof self !== 'undefined' ? self : window;
@@ -354,28 +356,35 @@ const getConfigLoaders = (
     return [...configurations.entries()];
 };
 
-function createConfigLoadersObject(configs: Record<string, IConfigFileMapping[]>) {
+function createConfigLoadersObject(configLoaderModuleName: string, configs: Record<string, IConfigFileMapping[]>) {
     return `const configLoaders = {
-    ${createConfigLoaders(configs)}
+    ${createConfigLoaders(configLoaderModuleName, configs)}
 }`;
 }
 
-function createConfigLoaders(configs: Record<string, IConfigFileMapping[]>) {
+function createConfigLoaders(configLoaderModuleName: string, configs: Record<string, IConfigFileMapping[]>) {
     return Object.keys(configs)
         .map((scopedName) => {
             const importedConfigPaths = configs[scopedName]!.map(({ filePath, configEnvName }) =>
-                loadConfigFile(filePath, scopedName, configEnvName)
+                loadConfigFile(configLoaderModuleName, filePath, scopedName, configEnvName)
             );
             return `   '${scopedName}': async () => (await Promise.all([${importedConfigPaths.join(',')}]))`;
         })
         .join(',\n');
 }
 
-function loadConfigFile(filePath: string, scopedName: string, configEnvName: string | undefined): string {
+function loadConfigFile(
+    configLoaderModuleName: string,
+    filePath: string,
+    scopedName: string,
+    configEnvName: string | undefined
+): string {
     return `import(/* webpackChunkName: "[config]${scopedName}${
         configEnvName ?? ''
     }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
-        topLevelConfigLoaderPath + `?scopedName=${scopedName}&envName=${configEnvName!}!` + filePath
+        topLevelConfigLoaderPath +
+            `?configLoaderModuleName=${configLoaderModuleName}&scopedName=${scopedName}&envName=${configEnvName!}!` +
+            filePath
     )})`;
 }
 //#endregion
