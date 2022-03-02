@@ -156,7 +156,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         featureDiscoveryRoot,
         tracing: suiteTracing = process.env.TRACING ? true : undefined,
         allowedErrors: suiteAllowedErrors = [],
-        navigationOptions: suiteNavigationOptions,
+        navigationOptions: suiteNavigationOptions = process.env.SKIP_NETWORK_WAIT
+            ? undefined
+            : { waitUntil: 'networkidle' },
     } = withFeatureOptions;
 
     if (
