@@ -1,5 +1,5 @@
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
-import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import { Environment, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { IConfigDefinition, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition } from './types';
@@ -12,7 +12,6 @@ export const LOADED_FEATURE_MODULES_NAMESPACE = '_engine_';
 
 export interface ICreateEntrypointsOptions {
     features: ReadonlyMap<string, IFeatureDefinition>;
-    envName: string;
     childEnvs: string[];
     featureName?: string;
     configName?: string;
@@ -25,9 +24,11 @@ export interface ICreateEntrypointsOptions {
     target: 'webworker' | 'web' | 'electron-renderer';
     externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
+    env: IEnvironmentDescriptor;
     featuresBundleName?: string;
     configLoaderModuleName?: string;
 }
+
 interface IConfigFileMapping {
     filePath: string;
     configEnvName?: string;
@@ -35,7 +36,7 @@ interface IConfigFileMapping {
 
 export interface ExternalEntrypoint extends IFeatureDefinition {
     childEnvs: string[];
-    envName: string;
+    env: IEnvironmentDescriptor;
     publicPath?: string;
 }
 
@@ -52,7 +53,7 @@ export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint
 export type LoadStatement = Pick<
     WebpackFeatureLoaderArguments,
     | 'childEnvs'
-    | 'envName'
+    | 'env'
     | 'contextFilePaths'
     | 'envFilePaths'
     | 'scopedName'
@@ -76,7 +77,7 @@ export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArgume
     return `
     import { getTopWindow } from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
     const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
-    ${setExternalPublicPath(args.envName, args.target, args.scopedName)}
+    ${setExternalPublicPath(args.env.name, args.target, args.scopedName)}
     __webpack_public_path__= publicPath;
     self.runtimeFeatureLoader.register('${args.scopedName}', ${createLoaderInterface(args)});
     ;
@@ -96,7 +97,6 @@ export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
 
 export function createMainEntrypoint({
     features,
-    envName,
     childEnvs,
     featureName,
     configName,
@@ -109,10 +109,13 @@ export function createMainEntrypoint({
     target,
     externalFeaturesRoute,
     eagerEntrypoint,
+    env,
     featuresBundleName,
     configLoaderModuleName = '@wixc3/engine-scripts/dist/default-config-loader',
 }: ICreateEntrypointsOptions) {
+    const envName = env.name;
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
+
     return `
 import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
 if(!self.EngineCore) {
@@ -121,7 +124,7 @@ if(!self.EngineCore) {
 const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
 
 const featureLoaders = new Map(Object.entries({
-    ${createFeatureLoaders(features.values(), envName, childEnvs, target, eagerEntrypoint, featuresBundleName)}
+    ${createFeatureLoaders(features.values(), childEnvs, target, env, eagerEntrypoint, featuresBundleName)}
 }));
 
 self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
@@ -133,6 +136,9 @@ async function main() {
     const topWindow = getTopWindow(currentWindow);
     const options = new URLSearchParams(topWindow.location.search);
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
+    const env = ${JSON.stringify(
+        new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
+    )}
 
     const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
         typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
@@ -157,7 +163,7 @@ async function main() {
     ${loadExternalFeatures(target, externalFeaturesRoute)}
 
     const runtimeEngine = runEngineApp(
-        { config, options, envName, publicPath, features, resolvedContexts }
+        { config, options, env, publicPath, features, resolvedContexts }
     );
 
     return runtimeEngine;
@@ -185,9 +191,9 @@ export function nodeImportStatement({ filePath }: LoadStatementArguments) {
 //#region feature loaders generation
 function createFeatureLoaders(
     features: Iterable<IFeatureDefinition>,
-    envName: string,
     childEnvs: string[],
     target: 'web' | 'webworker' | 'node' | 'electron-renderer',
+    env: IEnvironmentDescriptor,
     eagerEntrypoint?: boolean,
     featuresBundleName?: string
 ) {
@@ -196,11 +202,11 @@ function createFeatureLoaders(
             (args) =>
                 `    '${args.scopedName}': ${createLoaderInterface({
                     ...args,
-                    envName,
                     childEnvs,
                     loadStatement: webpackImportStatement,
                     target,
                     eagerEntrypoint,
+                    env,
                     featuresBundleName,
                 })}`
         )
@@ -210,25 +216,27 @@ function createFeatureLoaders(
 function loadEnvAndContextFiles({
     childEnvs,
     contextFilePaths,
-    envName,
-    scopedName: moduleIdentifier,
+    scopedName,
     envFilePaths,
     loadStatement,
     directoryPath,
     packageName,
     preloadFilePaths,
     eagerEntrypoint,
+    env,
 }: LoadStatement) {
     let usesResolvedContexts = false;
     const loadStatements: string[] = [];
     const preloadStatements: string[] = [];
     for (const childEnvName of childEnvs) {
-        const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
+        const contextFilePath = contextFilePaths[`${env.name}/${childEnvName}`];
         if (contextFilePath) {
             usesResolvedContexts = true;
-            loadStatements.push(`if (resolvedContexts[${JSON.stringify(envName)}] === ${JSON.stringify(childEnvName)}) {
+            loadStatements.push(`if (resolvedContexts[${JSON.stringify(env.name)}] === ${JSON.stringify(
+                childEnvName
+            )}) {
                 ${loadStatement({
-                    moduleIdentifier,
+                    moduleIdentifier: scopedName,
                     filePath: contextFilePath,
                     directoryPath,
                     packageName,
@@ -236,38 +244,40 @@ function loadEnvAndContextFiles({
                 })};
             }`);
         }
-        const preloadFilePath = preloadFilePaths?.[`${envName}/${childEnvName}`];
+        const preloadFilePath = preloadFilePaths?.[`${env.name}/${childEnvName}`];
         if (preloadFilePath) {
             // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
-            preloadStatements.push(`if (resolvedContexts[${stringify(envName)}] === ${stringify(childEnvName)}) {
+            preloadStatements.push(`if (resolvedContexts[${stringify(env.name)}] === ${stringify(childEnvName)}) {
                 ${webpackImportStatement({
                     directoryPath,
                     filePath: preloadFilePath,
-                    moduleIdentifier: `${envName}/${moduleIdentifier}`,
+                    moduleIdentifier: scopedName,
                     packageName,
                     eagerEntrypoint,
                 })};
             }`);
         }
     }
-    const envFilePath = envFilePaths?.[envName];
-    if (envFilePath) {
-        loadStatements.push(
-            loadStatement({
-                moduleIdentifier: `${envName}/${moduleIdentifier}`,
-                filePath: envFilePath,
-                directoryPath,
-                packageName,
-                eagerEntrypoint,
-            })
-        );
+    for (const { name: envName } of new Set([env, ...(env.flatDependencies ?? [])])) {
+        const envFilePath = envFilePaths[envName];
+        if (envFilePath) {
+            loadStatements.push(
+                loadStatement({
+                    moduleIdentifier: `[${envName}]${scopedName}`,
+                    filePath: envFilePath,
+                    directoryPath,
+                    packageName,
+                    eagerEntrypoint,
+                })
+            );
+        }
     }
-    const preloadFilePath = preloadFilePaths?.[envName];
+    const preloadFilePath = preloadFilePaths?.[env.name];
     if (preloadFilePath) {
         preloadStatements.push(
             webpackImportStatement({
-                moduleIdentifier: `${envName}/${moduleIdentifier}`,
+                moduleIdentifier: `[${env.name}]${scopedName}`,
                 filePath: preloadFilePath,
                 directoryPath,
                 packageName,
@@ -303,7 +313,9 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                     })};
                     ${
                         target !== 'node'
-                            ? `self.${createExternalFeatureMapping(packageName, filePath)} = featureModule;`
+                            ? `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
+                                  createExternalFeatureMapping(packageName, filePath)
+                              )}] = featureModule;`
                             : ''
                     }
                     return featureModule.default;
@@ -567,8 +579,7 @@ function loadScripts() {
 }
 
 export function createExternalFeatureMapping(packageName: string, featurePath: string) {
-    const externalPath = `${packageName}_${parse(featurePath).name}`;
-    return `${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(externalPath)}]`;
+    return `${normilizePackageName(packageName)}_${parse(featurePath).name}`;
 }
 
 //#endregion

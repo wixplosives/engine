@@ -1,7 +1,7 @@
 import type io from 'socket.io';
 import fs from '@file-services/node';
 import { isFeatureFile, loadFeaturesFromPaths, getExternalFeaturesMetadata } from '@wixc3/engine-scripts';
-import { RuntimeEngine, BaseHost, TopLevelConfig, MapToProxyType } from '@wixc3/engine-core';
+import { RuntimeEngine, BaseHost, TopLevelConfig, RuntimeFeature } from '@wixc3/engine-core';
 
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';
@@ -70,8 +70,8 @@ export async function startDevServer({
 }: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
+    devServerFeature: RuntimeFeature<typeof devServerFeature, typeof devServerEnv>['api'];
     outputPath: string | undefined;
-    devServerFeature: MapToProxyType<typeof devServerFeature['api']>;
 }> {
     const app = new TargetApplication({
         basePath: targetApplicationPath,
@@ -144,6 +144,7 @@ export async function startDevServer({
         ],
         context: targetApplicationPath,
         externalFeatures,
+        env: devServerEnv,
     });
     return {
         engine,

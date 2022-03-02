@@ -18,7 +18,7 @@ import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
 import {
     IConfigDefinition,
-    IEnvironment,
+    IEnvironmentDescriptor,
     IEnvironmentMessage,
     IEnvironmentStartMessage,
     isEnvironmentStartMessage,
@@ -107,7 +107,7 @@ export type RunningFeatureIdentification = {
 };
 
 export interface ILaunchEnvironmentOptions {
-    nodeEnv: IEnvironment;
+    nodeEnv: IEnvironmentDescriptor;
     featureName: string;
     bundlePath?: string;
     config: TopLevelConfig;
@@ -187,7 +187,7 @@ export class NodeEnvironmentsManager {
         const baseHost = new BaseHost();
         const com = new Communication(baseHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID, undefined, undefined, true);
 
-        const envHostMapping = new Map<IEnvironment, ChildBaseHost>();
+        const envHostMapping = new Map<IEnvironmentDescriptor, ChildBaseHost>();
         for (const nodeEnv of nodeEnvironments) {
             const host = new ChildBaseHost(baseHost);
             envHostMapping.set(nodeEnv, host);

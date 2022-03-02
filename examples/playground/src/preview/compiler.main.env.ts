@@ -1,7 +1,8 @@
 import Preview, { PREVIEW } from './compiler.feature';
 import { iframeInitializer } from '@wixc3/engine-core';
+import { MAIN } from '../code-editor/code-editor.feature';
 
-Preview.setup('main', ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
+Preview.setup(MAIN, ({}, { playgroundCodeEditor: { sidebarSlot }, COM }) => {
     sidebarSlot.register({
         button: {
             text: 'Preview',

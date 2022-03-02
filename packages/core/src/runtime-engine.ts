@@ -1,26 +1,38 @@
 import COM from './communication.feature';
-import type { RuntimeFeature, Feature } from './entities';
+import {
+    RuntimeFeature,
+    Feature,
+    globallyProvidingEnvironments,
+    orderedEnvDependencies,
+    AnyEnvironment,
+} from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
 
-export class RuntimeEngine {
-    public features = new Map<Feature, RuntimeFeature>();
+export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
+    public features = new Map<Feature, RuntimeFeature<Feature, ENV>>();
+    public referencedEnvs: Set<string>;
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
-    constructor(topLevelConfig: TopLevelConfig = [], public runOptions: IRunOptions = new Map()) {
+    constructor(
+        public entryEnvironment: ENV,
+        topLevelConfig: TopLevelConfig = [],
+        public runOptions: IRunOptions = new Map()
+    ) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
+        this.referencedEnvs = new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(entryEnvironment)]);
     }
 
-    public get<T extends Feature>(feature: T) {
+    public get<T extends Feature>(feature: T): RuntimeFeature<T, ENV> {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
-            return runningFeature as RuntimeFeature<T, T['dependencies'], T['api']>;
+            return runningFeature as RuntimeFeature<T, ENV>;
         } else {
             throw new Error(`missing feature ${feature.id}`);
         }
     }
 
-    public async run(features: Feature | Feature[], envName: string): Promise<this> {
+    public async run(features: Feature | Feature[]): Promise<this> {
         if (this.running) {
             throw new Error('Engine already running!');
         }
@@ -29,36 +41,36 @@ export class RuntimeEngine {
             features = [features];
         }
         for (const feature of features) {
-            this.initFeature(feature, envName);
+            this.initFeature(feature);
         }
         const runPromises: Array<Promise<void>> = [];
         for (const feature of features) {
-            runPromises.push(this.runFeature(feature, envName));
+            runPromises.push(this.runFeature(feature));
         }
         await Promise.all(runPromises);
         return this;
     }
 
-    public initFeature<T extends Feature>(feature: T, envName: string) {
+    public initFeature<T extends Feature>(feature: T): RuntimeFeature<Feature, ENV> {
         let instance = this.features.get(feature);
         if (!instance) {
-            instance = feature[CREATE_RUNTIME](this, envName);
+            instance = feature[CREATE_RUNTIME](this);
         }
         return instance;
     }
 
-    public async runFeature(feature: Feature, envName: string): Promise<void> {
+    public async runFeature(feature: Feature): Promise<void> {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
         }
-        await featureInstance[RUN](this, envName);
+        await featureInstance[RUN](this);
     }
 
-    public async dispose(feature: Feature, envName: string) {
+    public async dispose(feature: Feature) {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
-            await runningFeature[DISPOSE](this, envName);
+            await runningFeature[DISPOSE](this);
             this.features.delete(feature);
         }
     }

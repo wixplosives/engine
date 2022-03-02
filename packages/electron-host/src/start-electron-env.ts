@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
-import { BaseHost, TopLevelConfig, RuntimeEngine } from '@wixc3/engine-core';
+import { BaseHost, TopLevelConfig, RuntimeEngine, Environment } from '@wixc3/engine-core';
 import fs from '@file-services/node';
 import { IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 import {
@@ -18,7 +18,6 @@ const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry
 export interface ElectronEnvParams {
     basePath: string;
     outputPath: string;
-    envName?: string;
     featureName?: string;
     configName?: string;
     devport?: number;
@@ -28,12 +27,12 @@ export interface ElectronEnvParams {
     features: Map<string, Required<IStaticFeatureDefinition>>;
     config: TopLevelConfig;
     requiredModules?: string[];
+    env: Environment;
 }
 export const DEFAULT_EXTERNAL_FEATURES_PATH = '/external-features.json';
 
 export async function runElectronEnv({
     basePath,
-    envName,
     outputPath = fs.join(basePath, 'dist-app'),
     configName,
     featureName,
@@ -43,6 +42,7 @@ export async function runElectronEnv({
     features,
     config,
     requiredModules,
+    env,
 }: ElectronEnvParams): Promise<{
     dispose: () => void;
     engine: RuntimeEngine;
@@ -55,9 +55,6 @@ export async function runElectronEnv({
         throw new Error('Must provide a featureName');
     }
 
-    if (!envName) {
-        throw new Error('Must provide envName');
-    }
     if (!app.isReady()) {
         await new Promise((resolve) => app.once('ready', resolve));
     }
@@ -146,12 +143,13 @@ export async function runElectronEnv({
     const runningEnvironment = await runNodeEnvironment({
         featureName,
         features: [...features.entries()],
+        name: env.env,
         bundlePath: electronRuntimeArguments.outPath,
-        name: envName,
         type: 'node',
         host: new BaseHost(),
         config,
         options: [...runOptions.entries()],
+        env,
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

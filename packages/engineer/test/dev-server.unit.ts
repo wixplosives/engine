@@ -31,6 +31,8 @@ const applicationExternalFixturePath = fs.dirname(
     require.resolve('@fixture/application-external-feature/package.json')
 );
 
+const environmentExtensionFeaturePath = fs.dirname(require.resolve('@fixture/engine-env-dependency/package.json'));
+
 const engineConfigFixturePath = fs.dirname(require.resolve('@fixture/engine-config-feature/package.json'));
 
 const engineRuntimeMetadataFixturePath = fs.dirname(require.resolve('@fixture/engine-runtime-metadata/package.json'));
@@ -594,6 +596,50 @@ describe('engineer:dev-server', function () {
         expect(pid1).to.eq(process.pid);
     });
 
+    it('supports simple environment extension', async () => {
+        const {
+            config: { port },
+            dispose,
+        } = await setup({
+            basePath: environmentExtensionFeaturePath,
+            featureName: 'engine-env-dependency/app',
+        });
+        disposables.add(() => dispose);
+
+        const page = await loadPage(`http://localhost:${port}/page1.html`);
+        const text = await getBodyContent(page);
+        expect(text).to.eq('page1');
+    });
+
+    it('supports base environment extension in dependent features', async () => {
+        const {
+            config: { port },
+            dispose,
+        } = await setup({
+            basePath: environmentExtensionFeaturePath,
+            featureName: 'engine-env-dependency/variant',
+        });
+        disposables.add(() => dispose);
+
+        const page = await loadPage(`http://localhost:${port}/page2.html`);
+        const text = await getBodyContent(page);
+        expect(text).to.eq('variant added to client page2');
+    });
+
+    it('in extending environment invokes parent environment setup prior to own', async () => {
+        const {
+            config: { port },
+            dispose,
+        } = await setup({
+            basePath: environmentExtensionFeaturePath,
+            featureName: 'engine-env-dependency/variant',
+        });
+        disposables.add(() => dispose);
+
+        const page = await loadPage(`http://localhost:${port}/page1.html`);
+        const text = await getBodyContent(page);
+        expect(text).to.eq('variant added to variant added to client page1');
+    });
     it('runs app with the correct runtime metadata', async () => {
         const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
         const outputPath = fs.dirname(packageFile);

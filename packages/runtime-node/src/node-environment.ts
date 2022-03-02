@@ -7,12 +7,13 @@ import {
     RuntimeMetadata,
     FeatureLoadersRegistry,
     IPreloadModule,
+    AnyEnvironment,
 } from '@wixc3/engine-core';
-import { init, remapToUserLibrary, clear } from './extrenal-request-mapper';
+import { init, remapToUserLibrary, clear } from './external-request-mapper';
 
-import type { IEnvironment, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
+import type { IEnvironmentDescriptor, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
 
-export async function runNodeEnvironment({
+export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     featureName,
     childEnvName,
     features,
@@ -24,9 +25,10 @@ export async function runNodeEnvironment({
     host,
     externalFeatures = [],
     context,
-}: StartEnvironmentOptions): Promise<{
+    env,
+}: StartEnvironmentOptions<ENV>): Promise<{
     dispose: () => Promise<void>;
-    engine: RuntimeEngine;
+    engine: RuntimeEngine<ENV>;
 }> {
     if (host) {
         config.push(
@@ -51,6 +53,7 @@ export async function runNodeEnvironment({
         name,
         childEnvName,
         type,
+        env,
     });
     const rootFeatureLoader = featureLoaders[featureName];
     if (!rootFeatureLoader) {
@@ -110,9 +113,9 @@ export async function runNodeEnvironment({
     const runtimeEngine = runEngineApp({
         config,
         options: new Map(options),
-        envName: name,
         features: runningFeatures,
         resolvedContexts,
+        env,
     });
 
     return runtimeEngine;
@@ -120,7 +123,7 @@ export async function runNodeEnvironment({
 
 export function createFeatureLoaders(
     features: Map<string, Required<IStaticFeatureDefinition>>,
-    { name: envName, childEnvName }: IEnvironment
+    { childEnvName, name: envName, env }: IEnvironmentDescriptor
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {
@@ -161,10 +164,11 @@ export function createFeatureLoaders(
                         await import(contextFilePath);
                     }
                 }
-
-                const envFilePath = envFilePaths[envName];
-                if (envFilePath) {
-                    await import(envFilePath);
+                for (const { env: envName } of new Set([env, ...env.dependencies])) {
+                    const envFilePath = envFilePaths[envName];
+                    if (envFilePath) {
+                        await import(envFilePath);
+                    }
                 }
                 return ((await import(filePath)) as { default: Feature }).default;
             },

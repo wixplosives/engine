@@ -1,5 +1,5 @@
 import { Feature, Environment, COM, Config } from '@wixc3/engine-core';
-import type { IExtenalFeatureDescriptor } from '@wixc3/engine-runtime-node';
+import type { IExternalFeatureDescriptor } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '@wixc3/engine-scripts';
 import buildFeature from './dev-server.feature';
 
@@ -7,7 +7,7 @@ export const mainDashboardEnv = new Environment('main-dashboard', 'window', 'sin
 
 export interface EngineerConfig {
     features: Map<string, IFeatureDefinition>;
-    externalFeatures: IExtenalFeatureDescriptor[];
+    externalFeatures: IExternalFeatureDescriptor[];
 }
 
 export default new Feature({

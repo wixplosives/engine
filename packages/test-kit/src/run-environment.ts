@@ -14,12 +14,12 @@ import {
     DisposableContext,
     RuntimeEngine,
     flattenTree,
-    NormalizeEnvironmentFilter,
     Running,
+    AnyEnvironment,
 } from '@wixc3/engine-core';
 import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
-export interface IRunNodeEnvironmentOptions<ENV extends Environment = Environment> {
+export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
     bundlePath?: string;
     configName?: string;
@@ -43,25 +43,26 @@ export interface IGetRuinnnigFeatureOptions<
     DEPS extends Feature[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
-    ENV extends Environment
+    ENV extends AnyEnvironment
 > extends IRunNodeEnvironmentOptions<ENV> {
     feature: Feature<NAME, DEPS, API, CONTEXT>;
 }
 
-export async function runEngineEnvironment({
+export async function runEngineEnvironment<ENV extends AnyEnvironment>({
     featureName,
     configName,
     bundlePath,
     runtimeOptions = {},
     config = [],
-    env: { env: envName, envType },
+    env,
     basePath = process.cwd(),
     externalFeatures = [],
     featureDiscoveryRoot,
-}: IRunNodeEnvironmentOptions): Promise<{
-    engine: RuntimeEngine;
+}: IRunNodeEnvironmentOptions<ENV>): Promise<{
+    engine: RuntimeEngine<ENV>;
     dispose: () => Promise<void>;
 }> {
+    const { env: envName, envType } = env;
     const engineConfigFilePath = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
     const { featureDiscoveryRoot: configFeatureDiscoveryRoot } = (
         engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}
@@ -72,7 +73,7 @@ export async function runEngineEnvironment({
     if (configName) {
         config = [...evaluateConfig(configName, configurations, envName), ...config];
     }
-    const featureDef = features.get(featureName);
+    const featureDef = features.get(featureName)!;
 
     const childEnvName = featureDef?.resolvedContexts[envName];
     if (childEnvName) {
@@ -99,6 +100,7 @@ export async function runEngineEnvironment({
         externalFeatures,
         options: Object.entries(runtimeOptions),
         context: basePath,
+        env,
     });
 }
 
@@ -128,12 +130,12 @@ export async function getRunningFeature<
     DEPS extends Feature[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
-    ENV extends Environment
+    ENV extends AnyEnvironment
 >(
     options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
-    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, NormalizeEnvironmentFilter<ENV>>;
+    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV>;
     engine: RuntimeEngine;
 }> {
     const { feature } = options;

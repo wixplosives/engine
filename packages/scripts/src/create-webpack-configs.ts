@@ -7,14 +7,15 @@ import { createRequestResolver } from '@file-services/resolve';
 import {
     createMainEntrypoint,
     createExternalBrowserEntrypoint,
-    webpackImportStatement,
     createExternalFeatureMapping,
+    webpackImportStatement,
+    LOADED_FEATURE_MODULES_NAMESPACE,
 } from './create-entrypoint';
 
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
 import { createVirtualEntries } from './virtual-modules-loader';
 import type { IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
-import type { getResolvedEnvironments } from './utils/environments';
+import type { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
 import type { IFeatureDefinition } from './types';
 
 export interface ICreateWebpackConfigsOptions {
@@ -62,7 +63,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: webEnvs,
+                environments: webEnvs,
                 target: 'web',
                 configLoaderModuleName,
             })
@@ -73,7 +74,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: workerEnvs,
+                environments: workerEnvs,
                 target: 'webworker',
                 configLoaderModuleName,
             })
@@ -84,7 +85,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
             createWebpackConfig({
                 ...options,
                 baseConfig,
-                enviroments: electronRendererEnvs,
+                environments: electronRendererEnvs,
                 target: 'electron-renderer',
                 configLoaderModuleName,
             })
@@ -102,7 +103,7 @@ interface ICreateWebpackConfigOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    enviroments: Map<string, string[]>;
+    environments: Map<string, IResolvedEnvironment>;
     publicPath?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
     title?: string;
@@ -120,7 +121,7 @@ interface ICreateWebpackConfigOptions {
 export function createWebpackConfig({
     baseConfig,
     target,
-    enviroments,
+    environments,
     featureName,
     configName,
     features,
@@ -143,12 +144,12 @@ export function createWebpackConfig({
     const entryModules: Record<string, string> = {};
     const plugins: webpack.WebpackPluginInstance[] = [];
 
-    for (const [envName, childEnvs] of enviroments) {
+    for (const [envName, { childEnvs, env }] of environments) {
         const config = typeof overrideConfig === 'function' ? overrideConfig(envName) : overrideConfig;
         const entrypointContent = createMainEntrypoint({
             features,
             childEnvs,
-            envName,
+            env,
             featureName,
             configName,
             publicPath,
@@ -207,7 +208,7 @@ export function createWebpackConfig({
 export function createWebpackConfigForExternalFeature({
     baseConfig,
     target,
-    enviroments,
+    environments,
     features,
     context,
     mode = 'development',
@@ -225,14 +226,14 @@ export function createWebpackConfigForExternalFeature({
 
     const entryModules: Record<string, string> = {};
 
-    for (const [envName, childEnvs] of enviroments) {
+    for (const [envName, { childEnvs, env }] of environments) {
         entryModules[envName] = createExternalBrowserEntrypoint({
             ...feature,
             childEnvs,
-            envName,
-            loadStatement: webpackImportStatement,
+            env,
             target: target === 'webworker' ? 'webworker' : 'web',
             eagerEntrypoint: true,
+            loadStatement: webpackImportStatement,
         });
     }
     const externalFeatures: Record<string, string> = {
@@ -314,7 +315,12 @@ const extractExternals =
                     throw new Error(`could not find package.json for ${resolvedRequest}`);
                 }
                 const { name } = fs.readJsonFileSync(packageJson) as { name: string };
-                return cb(undefined, createExternalFeatureMapping(name, resolvedRequest));
+                return cb(
+                    undefined,
+                    `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
+                        createExternalFeatureMapping(name, resolvedRequest)
+                    )}]`
+                );
             }
             cb();
         } catch (err) {

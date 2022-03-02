@@ -1,6 +1,6 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { COM, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
+import { COM, Environment, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
@@ -16,18 +16,27 @@ chai.use(chaiAsPromised);
 
 const runFeatureOptions = { featureName: 'engine-node/x' };
 
+const env = new Environment('dev', 'node', 'single');
 const comEntry: IStaticFeatureDefinition = {
     filePath: require.resolve('@wixc3/engine-core/dist/communication.feature'),
     packageName: '@wixc3/engine-core',
     scopedName: 'engine-core/communication',
 };
 
+const server2Env = new Environment('server-two', 'node', 'single');
+
 const engineNodeEntry: IStaticFeatureDefinition = {
     dependencies: [comEntry.scopedName],
     envFilePaths: {
         server: require.resolve('@fixture/engine-node/dist/feature/x.server.env'),
     },
-    exportedEnvs: [{ name: 'server', type: 'node' }],
+    exportedEnvs: [
+        {
+            name: 'server',
+            type: 'node',
+            env: serverEnv,
+        },
+    ],
     filePath: require.resolve('@fixture/engine-node/dist/feature/x.feature'),
     packageName: '@fixture/engine-node',
     scopedName: 'engine-node/x',
@@ -43,8 +52,8 @@ const engineMultiNodeSocketCommunication: IStaticFeatureDefinition = {
         'server-two': require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.server-two.env'),
     },
     exportedEnvs: [
-        { name: 'server', type: 'node' },
-        { name: 'server-two', type: 'node' },
+        { name: 'server', type: 'node', env: serverEnv },
+        { name: 'server-two', type: 'node', env: server2Env },
     ],
 };
 
@@ -58,11 +67,10 @@ const engineMultiNodeIPCCommunication: IStaticFeatureDefinition = {
         'server-two': require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.server-two.env'),
     },
     exportedEnvs: [
-        { name: 'server', type: 'node' },
-        { name: 'server-two', type: 'node' },
+        { name: 'server', type: 'node', env: serverEnv },
+        { name: 'server-two', type: 'node', env: server2Env },
     ],
 };
-
 describe('Node environments manager', function () {
     this.timeout(10_000);
     const disposables = createDisposables();
@@ -184,10 +192,10 @@ describe('Node environments manager', function () {
         const proxyFeature = new Feature({
             id: 'test',
             api: {
-                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
+                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
             dependencies: [SocketServerNodeFeature, COM],
-        }).setup('dev', ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: socketServerEnv });
 
             return {
@@ -221,7 +229,7 @@ describe('Node environments manager', function () {
             });
 
             const { dispose, engine } = runEngineApp({
-                envName: 'dev',
+                env,
                 resolvedContexts: {},
                 features: [proxyFeature],
                 config: [
@@ -260,7 +268,7 @@ describe('Node environments manager', function () {
             });
 
             const { dispose, engine } = runEngineApp({
-                envName: 'dev',
+                env,
                 resolvedContexts: {},
                 features: [proxyFeature],
                 config: [
@@ -280,10 +288,10 @@ describe('Node environments manager', function () {
         const testFeature = new Feature({
             id: 'test',
             api: {
-                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity('dev'),
+                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
             dependencies: [ServerNodeFeature, COM],
-        }).setup('dev', ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: serverEnv });
 
             return {
@@ -317,7 +325,7 @@ describe('Node environments manager', function () {
             });
 
             const { dispose, engine } = runEngineApp({
-                envName: 'dev',
+                env,
                 resolvedContexts: {},
                 features: [testFeature],
                 config: [
@@ -356,7 +364,7 @@ describe('Node environments manager', function () {
             });
 
             const { dispose, engine } = runEngineApp({
-                envName: 'dev',
+                env,
                 resolvedContexts: {},
                 features: [testFeature],
                 config: [

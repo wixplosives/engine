@@ -10,6 +10,8 @@ import {
     SingleEndpointContextualEnvironment,
     SetMultiMap,
     flattenTree,
+    AnyEnvironment,
+    MultiEnvironment,
 } from '@wixc3/engine-core';
 import {
     isFeatureFile,
@@ -22,7 +24,7 @@ import {
 import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
 import { evaluateModule } from './utils/evaluate-module';
 import { instanceOf } from './utils/instance-of';
-import type { IConfigDefinition, IEnvironment } from '@wixc3/engine-runtime-node';
+import type { IConfigDefinition, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition, IFeatureModule } from './types';
 
 interface IPackageDescriptor {
@@ -32,6 +34,43 @@ interface IPackageDescriptor {
 }
 
 const featureRoots = ['.', 'feature', 'fixtures'] as const;
+
+const convertEnvToIEnv = (env: AnyEnvironment): IEnvironmentDescriptor => {
+    const { env: name, envType: type } = env;
+    return {
+        name,
+        type,
+        env,
+        flatDependencies: [],
+    };
+};
+
+export function parseEnv<ENV extends AnyEnvironment>(env: ENV): IEnvironmentDescriptor {
+    type MultiEnvironmentType = MultiEnvironment<ENV['envType']>;
+    const [parsedEnv, ...dependencies] = [
+        ...flattenTree<ENV | MultiEnvironmentType>(env, (node) => node.dependencies),
+    ].map((e) => convertEnvToIEnv(e));
+    return {
+        ...parsedEnv!,
+        flatDependencies: dependencies as IEnvironmentDescriptor<MultiEnvironmentType>[],
+    };
+}
+
+export function parseContextualEnv(
+    env: SingleEndpointContextualEnvironment<string, Environment[]>
+): IEnvironmentDescriptor[] {
+    const { env: name, environments } = env;
+    const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e: Environment) =>
+        convertEnvToIEnv(e)
+    );
+    return environments.map<IEnvironmentDescriptor>((childEnv) => ({
+        name,
+        flatDependencies: dependencies as IEnvironmentDescriptor<MultiEnvironment<typeof childEnv.envType>>[],
+        type: childEnv.envType,
+        childEnvName: childEnv.env,
+        env: new Environment(name, childEnv.envType, 'single'),
+    }));
+}
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
     const ownFeatureFilePaths = new Set<string>();
@@ -266,21 +305,6 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
     }
     return featureFile;
 }
-
-const parseEnv = ({ env, envType }: InstanceType<typeof Environment>): IEnvironment => ({
-    name: env,
-    type: envType,
-});
-
-const parseContextualEnv = ({
-    env,
-    environments,
-}: InstanceType<typeof SingleEndpointContextualEnvironment>): IEnvironment[] =>
-    environments.map((childEnv) => ({
-        name: env,
-        type: childEnv.envType,
-        childEnvName: childEnv.env,
-    }));
 
 export const getFeatureModules = (module: NodeJS.Module) =>
     flattenTree(

@@ -1,18 +1,23 @@
 import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
-import type { Feature } from './entities';
+import type { AnyEnvironment, Feature } from './entities';
 import { deferred, flattenTree, IDeferredPromise } from './helpers';
 
-export interface IRunEngineOptions {
+export interface IRunEngineOptions<ENV extends AnyEnvironment> {
     entryFeature: Feature | Feature[];
     topLevelConfig?: TopLevelConfig;
-    envName?: string;
+    env: ENV;
     runOptions?: IRunOptions;
 }
 
-export function run({ entryFeature, topLevelConfig = [], envName = '', runOptions }: IRunEngineOptions) {
-    return new RuntimeEngine(topLevelConfig, runOptions).run(entryFeature, envName);
+export function run<ENV extends AnyEnvironment>({
+    entryFeature,
+    topLevelConfig = [],
+    env,
+    runOptions,
+}: IRunEngineOptions<ENV>) {
+    return new RuntimeEngine(env, topLevelConfig, runOptions).run(entryFeature);
 }
 
 export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
@@ -30,32 +35,32 @@ export interface IPreloadModule {
     init?: (runtimeOptions?: Record<string, string | boolean>) => Promise<void> | void;
 }
 
-export interface IRunEngineAppOptions {
+export interface IRunEngineAppOptions<ENV extends AnyEnvironment> {
     config?: TopLevelConfig;
     options?: Map<string, string | boolean>;
-    envName: string;
+    env: ENV;
     publicPath?: string;
     features?: Feature[];
     resolvedContexts: Record<string, string>;
 }
 
-export function runEngineApp({
+export function runEngineApp<ENV extends AnyEnvironment>({
     config = [],
     options,
-    envName,
+    env,
     publicPath,
     features = [],
     resolvedContexts = {},
-}: IRunEngineAppOptions) {
-    const engine = new RuntimeEngine([COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    const runningPromise = engine.run(features, envName);
+}: IRunEngineAppOptions<ENV>) {
+    const engine = new RuntimeEngine(env, [COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
+    const runningPromise = engine.run(features);
 
     return {
         engine,
         async dispose() {
             await runningPromise;
             for (const feature of features) {
-                await engine.dispose(feature, envName);
+                await engine.dispose(feature);
             }
         },
     };

@@ -1,7 +1,7 @@
 import type io from 'socket.io';
-import type { Environment, EnvironmentContext, TopLevelConfig, Feature } from '@wixc3/engine-core';
+import type { Environment, EnvironmentContext, TopLevelConfig, Feature, AnyEnvironment } from '@wixc3/engine-core';
 import type {
-    IEnvironment,
+    IEnvironmentDescriptor,
     IExternalDefinition,
     IStaticFeatureDefinition,
     LaunchEnvironmentMode,
@@ -43,7 +43,7 @@ export interface IFeatureModule {
     /**
      * Exported environments from module.
      */
-    exportedEnvs: IEnvironment[];
+    exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[];
 
     /**
      * If module exports any `processingEnv.use('worker')`,

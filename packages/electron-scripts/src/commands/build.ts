@@ -5,6 +5,7 @@ import { DEFAULT_EXTERNAL_FEATURES_PATH } from '@wixc3/engine-electron-host';
 import type { IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import {
     Application,
+    getExportedEnvironments,
     IApplicationOptions,
     IBuildCommandOptions as IEngineBuildCommandOptions,
 } from '@wixc3/engine-scripts';
@@ -182,6 +183,12 @@ export function createElectronEntryFile({
 }: CreateElectronEntryOptions): Promise<void> {
     const currentFeature = features.get(featureName);
 
+    const env = [...getExportedEnvironments(features)].find(({ name }) => name === envName)?.env;
+
+    if (!env) {
+        throw new Error(`cannot create electron entry for ${envName}. No feature found exporing this environment`);
+    }
+
     if (!currentFeature) {
         throw new Error(`feature ${featureName} was not found. available features:
         ${[...features.keys()].join(', ')}`);
@@ -241,11 +248,11 @@ const { runElectronEnv } = require('@wixc3/engine-electron-host');
 
 const featureName = ${JSON.stringify(featureName)};
 const configName = ${configName ? JSON.stringify(configName) : 'undefined'};
-const envName = ${JSON.stringify(envName)};
 
 const config = ${JSON.stringify(config, null, 4)};
 const features = new Map(${JSON.stringify(scopedFeatures, null, 4)});
 const basePath = join(app.getAppPath(), ${JSON.stringify(outDir)});
+const env = ${JSON.stringify(env)}
 
 const resolvePath = (path) => require.resolve(path, { paths: [basePath] })
 
@@ -267,9 +274,9 @@ runElectronEnv({
     featureName,
     outputPath: basePath,
     configName,
-    envName,
     config,
-    features
+    features,
+    env
 }).catch(e => {
     console.error(e);
     process.exitCode = 1;

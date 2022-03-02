@@ -1,5 +1,5 @@
-import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { IEnvironment, StartEnvironmentOptions } from '@wixc3/engine-runtime-node';
+import type { Environment, TopLevelConfig } from '@wixc3/engine-core';
+import type { IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-runtime-node';
 
 export interface IWindowLaunchOptions {
     devtools?: boolean;
@@ -29,6 +29,7 @@ export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     featureDiscoveryRoot?: string;
     parentEnvName: string;
     execPath?: string;
+    env: Environment;
 }
 
 export type INodeEnvStartupMessage = {
@@ -49,7 +50,7 @@ export interface IStaticFeatureDefinition {
     resolvedContexts?: Record<string, string>;
     packageName: string;
     filePath: string;
-    exportedEnvs?: IEnvironment[];
+    exportedEnvs?: IEnvironmentDescriptor[];
 }
 
 export interface IExtenalFeatureDescriptor {

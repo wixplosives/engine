@@ -11,6 +11,12 @@ import {
     EventEmitterHost,
     EventEmitter,
     Message,
+    Environment,
+    Feature,
+    Service,
+    RuntimeEngine,
+    COM,
+    Slot,
     ReadyMessage,
 } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
@@ -436,6 +442,68 @@ describe('Communication', () => {
         const apiProxy = com2.apiProxy<typeof echoService>({ id: 'com4' }, { id: 'service' });
         expect(await apiProxy.echo('name')).to.eq('hello name');
         await expect(apiProxy.fail()).to.be.rejectedWith('fail');
+    });
+});
+
+describe('environment-dependencies communication', () => {
+    it('supports environment proxy for environment dependencies', async () => {
+        const base = new Environment('base', 'node', 'multi');
+        // const base = new AbstractEnvironment('base', 'node');
+        const env1 = new Environment('env1', 'node', 'single', [base]);
+
+        const env2 = new Environment('env2', 'node', 'single');
+
+        const f = new Feature({
+            id: 'base',
+            api: {
+                service1: Service.withType<{ echo: () => string[] }>().defineEntity(base).allowRemoteAccess(),
+                slot1: Slot.withType<string>().defineEntity(base),
+                service2: Service.withType<{ echo: () => string[] }>().defineEntity(env1).allowRemoteAccess(),
+            },
+            dependencies: [COM],
+        });
+
+        f.setup(base, ({ slot1 }) => {
+            slot1.register(base.env);
+            return {
+                service1: { echo: () => [...slot1] },
+            };
+        });
+
+        f.setup(env1, ({ service1, slot1 }) => {
+            slot1.register(env1.env);
+            return {
+                service2: service1,
+            };
+        });
+
+        const env1Engine = new RuntimeEngine(env1);
+        await env1Engine.run([f]);
+        const {
+            api: { communication: env1Communication },
+        } = env1Engine.getCOM();
+
+        const env1Target = (
+            env1Communication.getEnvironmentHost(env1Communication.getEnvironmentId()) as BaseHost
+        ).open();
+        env1Target.name = env1.env;
+
+        f.setup(env2, ({ service2, run }, { COM: { communication } }) => {
+            const env2Target = (communication.getEnvironmentHost(communication.getEnvironmentId()) as BaseHost).open();
+            env2Target.name = env2.env;
+
+            communication.registerEnv(env1.env, env1Target);
+            env1Communication.registerMessageHandler(env1Target);
+            env1Communication.registerEnv(env2.env, env2Target);
+            communication.registerMessageHandler(env2Target);
+
+            run(async () => {
+                expect(await service2.echo()).to.eql([base.env, env1.env]);
+            });
+        });
+
+        const env1EngineEnv2 = new RuntimeEngine(env2);
+        await env1EngineEnv2.run([f]);
     });
 });
 

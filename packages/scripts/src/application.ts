@@ -5,7 +5,7 @@ import webpack from 'webpack';
 import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import fs from '@file-services/node';
 import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree } from '@wixc3/engine-core';
+import { TopLevelConfig, SetMultiMap, flattenTree, AnyEnvironment } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
 
 import { loadFeaturesFromPackages } from './analyze-feature';
@@ -31,7 +31,7 @@ import {
     NodeEnvironmentsManager,
     createIPC,
     IConfigDefinition,
-    IEnvironment,
+    IEnvironmentDescriptor,
     IExternalDefinition,
     IExternalFeatureNodeDescriptor,
     TopLevelConfigProvider,
@@ -46,7 +46,7 @@ import {
 import { createExternalNodeEntrypoint } from './create-entrypoint';
 import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
-import { getResolvedEnvironments } from './utils/environments';
+import { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
 
 const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
@@ -211,7 +211,7 @@ export class Application {
             features,
             filterContexts: singleFeature,
             environments: [...getExportedEnvironments(features)],
-            findAllEnviromnents: external,
+            findAllEnvironments: external,
         });
 
         const externalsFilePath = staticExternalFeaturesFileName.startsWith('/')
@@ -281,7 +281,7 @@ export class Application {
             );
         }
 
-        // cretaing external-features json either way
+        // creating external-features json either way
         fs.writeFileSync(
             fs.join(
                 this.outputPath,
@@ -292,7 +292,7 @@ export class Application {
             JSON.stringify(externalFeatures)
         );
 
-        // only if building this feature as a static build, we want to create a folder that will match the external feature definition. meaning that we will copy all external feature root folders into EXTERNAL_FEATURES_BASE_URI. This is correct beceuase the mapping for each feature inside the externalFeatures onkect, will hold the following mapping for each web entry: `${EXTERNAL_FEATURES_BASE_URI}/${externalFeaturePackageName}/${externalFeatureOutDir}/entry-file.js`
+        // only if building this feature as a static build, we want to create a folder that will match the external feature definition. meaning that we will copy all external feature root folders into EXTERNAL_FEATURES_BASE_URI. This is correct because the mapping for each feature inside the externalFeatures object, will hold the following mapping for each web entry: `${EXTERNAL_FEATURES_BASE_URI}/${externalFeaturePackageName}/${externalFeatureOutDir}/entry-file.js`
         if (externalFeatures.length && staticBuild) {
             const externalFeaturesPath = fs.join(this.outputPath, EXTERNAL_FEATURES_BASE_URI);
             for (const { packageName, packagePath } of [
@@ -341,7 +341,7 @@ export class Application {
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
-            externalFeaturesPath: providedExternalFeatuersPath,
+            externalFeaturesPath: providedExternalFeaturesPath,
             serveExternalFeaturesPath: providedServeExternalFeaturesPath = true,
             externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
             socketServerOptions: runtimeSocketServerOptions,
@@ -365,7 +365,7 @@ export class Application {
 
         const fixedExternalFeatureDefinitions = this.normalizeDefinitionsPackagePath(
             [...providedExternalFeaturesDefinitions, ...externalFeatureDefinitions],
-            providedExternalFeatuersPath,
+            providedExternalFeaturesPath,
             baseExternalFeaturesPath,
             configPath
         );
@@ -394,7 +394,7 @@ export class Application {
         const routeMiddlewares: RouteMiddleware[] = [];
 
         const resolvedExternalFeaturesPath = fs.resolve(
-            providedExternalFeatuersPath ??
+            providedExternalFeaturesPath ??
                 baseExternalFeaturesPath ??
                 (configPath ? fs.dirname(configPath) : this.basePath)
         );
@@ -435,7 +435,7 @@ export class Application {
         fixedExternalFeatureDefinitions.push(
             ...this.normalizeDefinitionsPackagePath(
                 providedExternalFeaturesDefinitions,
-                providedExternalFeatuersPath,
+                providedExternalFeaturesPath,
                 baseExternalFeaturesPath,
                 configPath
             )
@@ -817,14 +817,18 @@ export class Application {
         return { ...featuresAndConfigs, packages };
     }
 
-    protected createNodeEntry(feature: IFeatureDefinition, nodeEnvs: Map<string, string[]>, pathToSources: string) {
-        for (const [envName, childEnvs] of nodeEnvs) {
+    protected createNodeEntry(
+        feature: IFeatureDefinition,
+        nodeEnvs: Map<string, IResolvedEnvironment>,
+        pathToSources: string
+    ) {
+        for (const [envName, { env, childEnvs }] of nodeEnvs) {
             const entryPath = join(this.outputPath, `${envName}.node.js`);
             const [, reMappedFeature] = this.generateReMappedFeature({ ...feature }, pathToSources, feature.scopedName);
             const entryCode = createExternalNodeEntrypoint({
                 ...reMappedFeature,
                 childEnvs,
-                envName,
+                env,
             });
             fs.writeFileSync(entryPath, entryCode);
         }
@@ -898,8 +902,10 @@ function getEnvEntrypoints(
     }
 }
 
-export function getExportedEnvironments(features: Map<string, IFeatureDefinition>): Set<IEnvironment> {
-    const environments = new Set<IEnvironment>();
+export function getExportedEnvironments(
+    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
+): Set<IEnvironmentDescriptor> {
+    const environments = new Set<IEnvironmentDescriptor>();
     for (const { exportedEnvs } of features.values()) {
         for (const exportedEnv of exportedEnvs) {
             environments.add(exportedEnv);

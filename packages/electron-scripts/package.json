@@ -20,7 +20,7 @@
     "@wixc3/engine-scripts": "^24.0.0",
     "@wixc3/engineer": "^24.0.0",
     "@wixc3/resolve-directory-context": "^2.0.0",
-    "electron-builder": "^22.14.13",
+    "electron-builder": "^22.14.5",
     "yargs": "^17.3.1"
   },
   "files": [

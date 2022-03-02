@@ -18,6 +18,7 @@ const onMessageListener: NodeJS.MessageListener = async (message) => {
             bundlePath,
             runtimeOptions,
             parentEnvName,
+            env,
         } = message.runOptions;
         if (requiredModules) {
             await importModules(basePath, requiredModules);
@@ -59,6 +60,7 @@ const onMessageListener: NodeJS.MessageListener = async (message) => {
             externalFeatures,
             context: basePath,
             parentEnvName,
+            env,
         });
     }
 };

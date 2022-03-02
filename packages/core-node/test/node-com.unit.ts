@@ -15,6 +15,7 @@ import {
     BaseHost,
     DisposeMessage,
     Message,
+    Environment,
 } from '@wixc3/engine-core';
 import { IPCHost, WsServerHost } from '@wixc3/engine-core-node';
 import { createDisposables } from '@wixc3/create-disposables';
@@ -172,11 +173,7 @@ describe('Socket communication', () => {
         const clientCom = new Communication(clientHost, 'client-host', serverTopology);
         const { onDisconnect } = await socketClientInitializer({
             communication: clientCom,
-            env: {
-                env: 'server-host',
-                endpointType: 'single',
-                envType: 'node',
-            },
+            env: new Environment('server-host', 'node', 'single'),
         });
 
         expect(onDisconnect).to.not.eq(undefined);
@@ -209,6 +206,7 @@ describe('Socket communication', () => {
                 env: 'server-host',
                 endpointType: 'single',
                 envType: 'node',
+                dependencies: [],
             },
         });
         await socketClientInitializer({
@@ -217,6 +215,7 @@ describe('Socket communication', () => {
                 env: 'server-host',
                 endpointType: 'single',
                 envType: 'node',
+                dependencies: [],
             },
         });
         clientCom1.registerEnv('client-host2', clientCom1.getEnvironmentHost('server-host')!);

@@ -1,5 +1,5 @@
 import { flattenTree, EnvironmentTypes } from '@wixc3/engine-core';
-import type { IEnvironment, IStaticFeatureDefinition } from './types';
+import type { IEnvironmentDescriptor, IStaticFeatureDefinition } from './types';
 
 export function resolveEnvironments(
     featureName: string,
@@ -8,7 +8,7 @@ export function resolveEnvironments(
     filterByContext = true
 ) {
     const environmentTypesToFilterBy = Array.isArray(envTypes) ? envTypes : [envTypes];
-    const filteredEnvironments = new Set<IEnvironment>();
+    const filteredEnvironments = new Set<IEnvironmentDescriptor>();
 
     const featureDefinition = features.get(featureName);
     if (!featureDefinition) {
