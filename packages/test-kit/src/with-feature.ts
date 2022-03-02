@@ -69,6 +69,11 @@ export interface IFeatureExecutionOptions {
     tracing?: boolean | Tracing;
 
     /**
+     * Creates a playwright trace file for the test
+     */
+    navigationOptions?: Parameters<playwright.Page['goto']>[1];
+
+    /**
      * Error messages that are allowed to stay unhandled without failing the tests.
      * strings are tested for exact match.
      */
@@ -151,6 +156,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         featureDiscoveryRoot,
         tracing: suiteTracing = process.env.TRACING ? true : undefined,
         allowedErrors: suiteAllowedErrors = [],
+        navigationOptions: suiteNavigationOptions = process.env.SKIP_NETWORK_WAIT
+            ? undefined
+            : { waitUntil: 'networkidle' },
     } = withFeatureOptions;
 
     if (
@@ -210,19 +218,17 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     });
 
     return {
-        async getLoadedFeature(
-            {
-                featureName = suiteFeatureName,
-                configName = suiteConfigName,
-                runOptions = suiteOptions,
-                queryParams = suiteQueryParams,
-                config = suiteConfig,
-                browserContextOptions = suiteBrowserContextOptions,
-                tracing = suiteTracing,
-                allowedErrors = suiteAllowedErrors,
-            }: IFeatureExecutionOptions = {},
-            navigationOptions?: Parameters<playwright.Page['goto']>[1]
-        ) {
+        async getLoadedFeature({
+            featureName = suiteFeatureName,
+            configName = suiteConfigName,
+            runOptions = suiteOptions,
+            queryParams = suiteQueryParams,
+            config = suiteConfig,
+            browserContextOptions = suiteBrowserContextOptions,
+            tracing = suiteTracing,
+            allowedErrors = suiteAllowedErrors,
+            navigationOptions = suiteNavigationOptions,
+        }: IFeatureExecutionOptions = {}) {
             if (!browser) {
                 throw new Error('Browser is not open!');
             }
@@ -303,10 +309,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const featurePage = await browserContext.newPage();
 
-            const response = await featurePage.goto(featureUrl + search, {
-                waitUntil: 'networkidle',
-                ...navigationOptions,
-            });
+            const response = await featurePage.goto(featureUrl + search, navigationOptions);
 
             async function getMetrics(): Promise<PerformanceMetrics> {
                 const measures = await executableApp.getMetrics();

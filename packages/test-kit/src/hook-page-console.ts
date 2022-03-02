@@ -24,14 +24,15 @@ export function hookPageConsole(
         const { promise, resolve } = deferred();
         const previousMessage = currentMessage;
         currentMessage = promise;
+        const rawMessageText = msg.text(); // contains non-processed formatting
         try {
-            const msgArgs = await Promise.all(msg.args().map((arg) => arg.jsonValue()));
+            const msgArgs: unknown[] = await Promise.all(msg.args().map((arg) => arg.jsonValue()));
             await previousMessage;
             if (filterMessage(messageType, msgArgs)) {
                 consoleFn.apply(console, msgArgs);
             }
         } catch (e) {
-            console.error(e);
+            console.log(rawMessageText);
         } finally {
             resolve();
         }
