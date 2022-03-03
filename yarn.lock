@@ -1109,10 +1109,10 @@
     "@stylable/core" "^4.10.3"
     js-beautify "^1.14.0"
 
-"@stylable/core@^4.10.3":
-  version "4.10.3"
-  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.10.3.tgz#1ac28f4bf22c53983a71d95d71c6a4dd3a44acb1"
-  integrity sha512-dEPyrZNsa/dWZkXJiYQfpJ9p7ySiTI+w9KqPN+psjAZF0HWHPZdmmDBxTIn9Plnwj/KS18oC+GwYZIpFBKWJCw==
+"@stylable/core@^4.10.3", "@stylable/core@^4.10.4":
+  version "4.10.4"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-4.10.4.tgz#175d626d263ee7d7e1124232fdb72ab4fb04a50f"
+  integrity sha512-gdyhx6XAOxOfNsXt8UEfaW38UGvUj1+MNz9Zgg3W1/qPEKwb8xRY9giSByrPXidRe9qUHZYI1rAg2eOQIly4sw==
   dependencies:
     "@tokey/css-selector-parser" "^0.5.1"
     "@tokey/imports-parser" "^0.0.2"
@@ -1120,11 +1120,11 @@
     css-selector-tokenizer "^0.8.0"
     cssesc "^3.0.0"
     deindent "^0.1.0"
-    enhanced-resolve "^5.8.3"
+    enhanced-resolve "^5.9.1"
     is-vendor-prefixed "^4.0.0"
     lodash.clonedeep "^4.5.0"
     lodash.clonedeepwith "^4.5.0"
-    postcss "^8.4.5"
+    postcss "^8.4.7"
     postcss-js "^4.0.0"
     postcss-nested "^5.0.6"
     postcss-safe-parser "^6.0.0"
@@ -3497,7 +3497,7 @@ engine.io@~6.1.0:
     engine.io-parser "~5.0.3"
     ws "~8.2.3"
 
-enhanced-resolve@^5.8.3:
+enhanced-resolve@^5.8.3, enhanced-resolve@^5.9.1:
   version "5.9.1"
   resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.9.1.tgz#e898cea44d9199fd92137496cff5691b910fb43e"
   integrity sha512-jdyZMwCQ5Oj4c5+BTnkxPgDZO/BJzh/ADDmKebayyzNwjVX1AFCeGkOfxNx0mHi2+8BKC5VxUYiw3TIvoT7vhw==
@@ -6652,7 +6652,7 @@ postcss-value-parser@^4.1.0, postcss-value-parser@^4.2.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz#723c09920836ba6d3e5af019f92bc0971c02e514"
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
-postcss@^8.4.5:
+postcss@^8.4.5, postcss@^8.4.7:
   version "8.4.7"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.7.tgz#f99862069ec4541de386bf57f5660a6c7a0875a8"
   integrity sha512-L9Ye3r6hkkCeOETQX6iOaWZgjp3LL6Lpqm6EtgbKrgqGGteRMNb9vzBfRL96YOSu8o7x3MfIH9Mo5cPJFGrW6A==
