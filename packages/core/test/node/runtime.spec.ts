@@ -23,6 +23,7 @@ import {
     SingleEndpointContextualEnvironment,
     Slot,
     Universal,
+    ENGINE,
 } from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
@@ -735,14 +736,17 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
             .setup(main, ({ slot }) => {
                 slot.register({ name: 'test' });
             })
-            .setup(processing, (x) => {
+            .setup(processing, (feature) => {
+                const engine = feature[ENGINE];
+
                 typeCheck(
                     (
                         _noSlot: EQUAL<
-                            typeof x,
+                            typeof feature,
                             {
                                 id: 'echoFeature';
                                 [RUN_OPTIONS]: IRunOptions;
+                                [ENGINE]: typeof engine;
                                 run(fn: () => unknown): unknown;
                                 onDispose(fn: DisposeFunction): unknown;
                             }

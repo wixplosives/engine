@@ -3,7 +3,7 @@ import type { LogMessage } from './common-types';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
 import type { Feature } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
-import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
+import { CONFIGURABLE, CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
 /*************** HELPER TYPES  ***************/
 
@@ -191,25 +191,15 @@ export interface IRunOptions {
     get(key: string): string | boolean | null | undefined;
 }
 
-type RunningEnvironmentNameForUniversal<ENV> = ENV extends typeof Universal
-    ? {
-          /**
-           * The name of the current running environment while setting up a universal feature.
-           * This is NOT the environment instance id
-           */
-          runningEnvironmentName: string;
-      }
-    : {};
-
 export type SettingUpFeature<ID extends string, API extends EntityRecord, ENV extends AnyEnvironment> = {
     id: ID;
     run: (fn: () => unknown) => void;
     onDispose: (fn: DisposeFunction) => void;
     [RUN_OPTIONS]: IRunOptions;
+    [ENGINE]: RuntimeEngine<ENV>;
 } & MapVisibleInputs<API, GloballyProvidingEnvironments> &
     MapVisibleInputs<API, ENV> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
-    RunningEnvironmentNameForUniversal<ENV> &
     MapType<GetDependenciesOutput<API, DeepEnvironmentDeps<ENV>>> &
     MapToProxyType<FilterNotEnv<GetRemoteOutputs<API>, DeepEnvironmentDeps<ENV>, 'providedFrom'>>;
 
