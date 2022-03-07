@@ -1,7 +1,14 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
-import { Environment, Feature, run as runEngine, Service } from '@wixc3/engine-core';
+import {
+    AsyncApi,
+    Environment,
+    EnvironmentInstanceToken,
+    Feature,
+    run as runEngine,
+    Service,
+} from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 import type { EQUAL } from 'typescript-type-utils';
 
@@ -154,6 +161,48 @@ describe('ENV dependencies', () => {
                             service1: EchoService;
                             service2: EchoService;
                             service3: EchoService;
+                        }
+                    >
+                ) => true
+            );
+        });
+    });
+    it('env dependency preserve multi when accessing from other env', () => {
+        const baseEnv = new Environment('baseEnv', 'node', 'multi');
+        const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
+
+        const entryFeature = new Feature({
+            id: 'test',
+            api: {
+                service: Service.withType<{ increment: (n: number) => number }>()
+                    .defineEntity(baseEnv)
+                    .allowRemoteAccess(),
+                service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>()
+                    .defineEntity(extendingEnv)
+                    .allowRemoteAccess(),
+            },
+        });
+
+        const otherEnv = new Environment('otherEnv', 'node', 'single');
+        entryFeature.setup(otherEnv, (entry) => {
+            typeCheck(
+                (
+                    _runningFeature: EQUAL<
+                        typeof entry['service'],
+                        {
+                            get(token: EnvironmentInstanceToken): AsyncApi<{ increment: (n: number) => number }>;
+                        }
+                    >
+                ) => true
+            );
+            typeCheck(
+                (
+                    _runningFeature: EQUAL<
+                        typeof entry['service2'],
+                        {
+                            get(
+                                token: EnvironmentInstanceToken
+                            ): AsyncApi<{ multiplyThenIncrement: (n: number) => number }>;
                         }
                     >
                 ) => true
