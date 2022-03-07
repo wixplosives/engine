@@ -14,6 +14,7 @@ import {
     RuntimeEngine,
     Service,
     Slot,
+    ENGINE,
 } from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
@@ -140,15 +141,15 @@ const env = new Environment('main', 'window', 'single');
 
 /*************** EXAMPLE SETUP FILES ***************/
 export async function dontRun() {
-    addPanel.setup(MAIN, (feature, engine) => {
+    addPanel.setup(MAIN, (feature, features) => {
         feature.componentDescription.register({ component: '', description: '' });
         feature.componentDescription.register({ component: '', description: '' });
-        engine.logger.transport.register({ transportName: `test${engine.logger.config.time}` });
+        features.logger.transport.register({ transportName: `test${features.logger.config.time}` });
 
-        engine.gui.panelSlot.register({ panelID: 'panel1' });
-        engine.gui.panelSlot.register({ panelID: 'panel2' });
+        features.gui.panelSlot.register({ panelID: 'panel1' });
+        features.gui.panelSlot.register({ panelID: 'panel2' });
 
-        engine.gui.guiService.someMethod();
+        features.gui.guiService.someMethod();
 
         const dataPromise = fetch('./some-data');
 
@@ -160,6 +161,8 @@ export async function dontRun() {
             service1.setData(await dataPromise);
         });
 
+        const engine = feature[ENGINE];
+
         typeCheck(
             (
                 _featureTest: ExpectTrue<
@@ -170,6 +173,7 @@ export async function dontRun() {
                             run: (fn: () => unknown) => void;
                             onDispose: (fn: DisposeFunction) => void;
                             [RUN_OPTIONS]: IRunOptions;
+                            [ENGINE]: typeof engine;
                             componentDescription: Registry<ComponentDescription>;
                             service3: DataService;
                         }
@@ -181,7 +185,7 @@ export async function dontRun() {
         typeCheck(
             (
                 _engineTest: EQUAL<
-                    typeof engine,
+                    typeof features,
                     {
                         gui: Running<typeof gui, typeof MAIN>;
                         logger: Running<typeof logger, typeof MAIN>;

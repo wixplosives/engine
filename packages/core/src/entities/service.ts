@@ -1,3 +1,4 @@
+import COM from '../communication.feature';
 import type { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComConfig } from '../com/types';
 import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
@@ -52,7 +53,7 @@ export class Service<
         entityKey: string
     ) {
         if (this.remoteAccess) {
-            const { communication } = runtimeEngine.getCOM().api;
+            const { communication } = runtimeEngine.get(COM).api;
             const serviceKey = runtimeEngine.entityID(featureID, entityKey);
             const providedFrom = normEnvVisibility(this.providedFrom);
             const localEnv = communication.getEnvironmentName();
@@ -78,7 +79,7 @@ export class Service<
     }
 
     public getApiProxy(context: RuntimeEngine, serviceKey: string): any {
-        const { communication } = context.getCOM().api;
+        const { communication } = context.get(COM).api;
         const instanceId = getSingleInstanceId(this.providedFrom);
         if (instanceId) {
             return communication.apiProxy<T>({ id: instanceId }, { id: serviceKey }, this.options);

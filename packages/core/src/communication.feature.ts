@@ -6,9 +6,9 @@ import type { Target } from './com/types';
 import { Config } from './entities/config';
 import { AllEnvironments, Universal } from './entities/env';
 import { Feature } from './entities/feature';
-import { Service } from './entities/service';
+import { Value } from './entities/value';
 import { Slot } from './entities/slot';
-import { RUN_OPTIONS } from './symbols';
+import { RUN_OPTIONS, ENGINE } from './symbols';
 import { LoggerTransport, LogLevel } from './types';
 
 export interface IComConfig {
@@ -52,8 +52,8 @@ export default new Feature({
             })
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
-        loggerService: Service.withType<LoggerService>().defineEntity(Universal),
-        communication: Service.withType<Communication>().defineEntity(AllEnvironments),
+        loggerService: Value.withType<LoggerService>().defineEntity(Universal),
+        communication: Value.withType<Communication>().defineEntity(AllEnvironments),
     },
 }).setup(
     Universal,
@@ -71,7 +71,7 @@ export default new Feature({
         },
         loggerTransports,
         [RUN_OPTIONS]: runOptions,
-        runningEnvironmentName,
+        [ENGINE]: engine,
         onDispose,
     }) => {
         const isNode = !!process.versions?.node && process.title !== 'browser' && process.type !== 'renderer';
@@ -79,7 +79,8 @@ export default new Feature({
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.
         // main frame might not have that configured, so we use 'main' fallback for it.
-        const comId = id || (host && host.name) || (typeof self !== 'undefined' && self.name) || runningEnvironmentName;
+        const comId =
+            id || (host && host.name) || (typeof self !== 'undefined' && self.name) || engine.entryEnvironment.env;
 
         const comOptions: ICommunicationOptions = {
             warnOnSlow: runOptions.has('warnOnSlow'),
