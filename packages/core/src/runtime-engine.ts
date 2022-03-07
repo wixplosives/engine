@@ -1,4 +1,3 @@
-import COM from './communication.feature';
 import {
     RuntimeFeature,
     Feature,
@@ -81,10 +80,6 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
 
     public entityID(featureId: string, entityKey: string) {
         return `${featureId}.${entityKey}`;
-    }
-
-    public getCOM() {
-        return this.get(COM);
     }
 
     private createConfigMap(topLevelConfig: TopLevelConfig) {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, DISPOSE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
+import { CREATE_RUNTIME, DISPOSE, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import type {
     ContextHandler,
     DisposableContext,
@@ -163,6 +163,7 @@ export class Feature<
                 feature.addOnDisposeHandler(fn, envName);
             },
             [RUN_OPTIONS]: runOptions,
+            [ENGINE]: runningEngine,
             runningEnvironmentName: envName,
         };
 

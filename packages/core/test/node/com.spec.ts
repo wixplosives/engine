@@ -481,7 +481,7 @@ describe('environment-dependencies communication', () => {
         await env1Engine.run([f]);
         const {
             api: { communication: env1Communication },
-        } = env1Engine.getCOM();
+        } = env1Engine.get(COM);
 
         const env1Target = (
             env1Communication.getEnvironmentHost(env1Communication.getEnvironmentId()) as BaseHost
