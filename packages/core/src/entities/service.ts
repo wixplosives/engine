@@ -8,7 +8,7 @@ import { FeatureOutput } from './output';
 
 export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<string, EnvironmentTypes, 'single'>
     ? AsyncApi<T>
-    : ProvidedFrom extends Environment<string, EnvironmentTypes, 'multi'>
+    : ProvidedFrom extends Environment<string, EnvironmentTypes, 'multi', any>
     ? {
           get(token: EnvironmentInstanceToken): AsyncApi<T>;
       }
