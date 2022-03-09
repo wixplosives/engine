@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@file-services/node": "^5.7.1",
-    "@wixc3/create-disposables": "^1.1.1",
+    "@wixc3/create-disposables": "^2.0.0",
     "@wixc3/engine-core": "^26.0.0",
     "@wixc3/engine-core-node": "^26.0.0",
     "@wixc3/engine-electron": "^26.0.0",
