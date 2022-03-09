@@ -1,0 +1,14 @@
+version: 1
+imports: []
+schemas:
+  - id: runtime
+    title: runtime
+    parent: root
+    children:
+      - pattern: entities
+        children:
+          - pattern: environment
+            children:
+              - pattern: targets
+                children:
+                  - pattern: '*'
