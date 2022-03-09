@@ -4,7 +4,7 @@ import { runIPCEnvironment } from '@wixc3/engine-runtime-node';
 import { importModules } from './import-modules';
 import { isNodeEnvStartupMessage, metadataApiToken, MetadataCollectionAPI } from './types';
 
-const onMessageListener: NodeJS.MessageListener = async (message) => {
+const onMessageListener = async (message: unknown) => {
     if (isNodeEnvStartupMessage(message)) {
         const {
             requiredModules,
@@ -65,4 +65,5 @@ const onMessageListener: NodeJS.MessageListener = async (message) => {
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 process.once('message', onMessageListener);
