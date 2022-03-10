@@ -1,10 +1,16 @@
-import COM from '../communication.feature';
-import type { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComConfig } from '../com/types';
-import type { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import type { EnvVisibility } from '../types';
-import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
-import { FeatureOutput } from './output';
+import { COM } from './communication.feature';
+import type { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComConfig } from './types';
+import {
+    RuntimeEngine,
+    CREATE_RUNTIME,
+    REGISTER_VALUE,
+    EnvVisibility,
+    AllEnvironments,
+    Environment,
+    normEnvVisibility,
+    Universal,
+    FeatureOutput,
+} from '@wixc3/engine-core';
 
 export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<string, EnvironmentTypes, 'single'>
     ? AsyncApi<T>
@@ -77,18 +83,18 @@ export class Service<
             return this.getApiProxy(context, context.entityID(featureID, entityKey));
         }
     }
-
+    //TODO: fix? explicit any type
     public getApiProxy(context: RuntimeEngine, serviceKey: string): any {
         const { communication } = context.get(COM).api;
         const instanceId = getSingleInstanceId(this.providedFrom);
         if (instanceId) {
-            return communication.apiProxy<T>({ id: instanceId }, { id: serviceKey }, this.options);
+            return communication.apiProxy<T>({ id: instanceId }, { id: serviceKey }, this.options) as any;
         } else {
             return {
-                get: (token: EnvironmentInstanceToken) => {
-                    return communication.apiProxy<T>(token, { id: serviceKey }, this.options);
+                get: (token: EnvironmentInstanceToken): any => {
+                    return communication.apiProxy<T>(token, { id: serviceKey }, this.options) as any;
                 },
-            };
+            } as any;
         }
     }
 }

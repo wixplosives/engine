@@ -8,11 +8,10 @@ process.once('message', (message) => {
     if (isNodeEnvStartupMessage(message)) {
         runEngineApp({
             features: [COM, feature],
-            resolvedContexts: {},
             config: [
                 ...message.runOptions.config,
                 COM.use({
-                    config: { host: new IPCHost(process), id: 'server' },
+                    config: { resolvedContexts: {}, host: new IPCHost(process), id: 'server' },
                 }),
             ],
             env: serverEnv,

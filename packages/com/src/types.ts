@@ -1,4 +1,5 @@
-import { SERVICE_CONFIG } from '../symbols';
+// TODO: THIS IS LEFTOVER
+import { SERVICE_CONFIG } from '@wixc3/engine-core';
 
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;
@@ -99,4 +100,42 @@ export interface APIService {
 
 export interface RemoteAPIServicesMapping {
     [remoteServiceId: string]: Record<string, AnyFunction>;
+}
+
+export interface LoggerTransport {
+    name: string;
+    handleMessage: (m: LogMessage) => void;
+}
+
+export enum LogLevel {
+    DEBUG,
+    INFO,
+    WARN,
+    ERROR,
+}
+
+export interface LogMetadata {
+    [key: string]: unknown;
+}
+
+export interface LogMessage {
+    /**
+     * Actual text of log message.
+     */
+    message: string;
+
+    /**
+     * UTC timestamp when the message was logged (Date.now)
+     */
+    timestamp: number;
+
+    /**
+     * Severity level of the message.
+     */
+    level: LogLevel;
+
+    /**
+     * Optional string map to add to the message.
+     */
+    metadata?: LogMetadata;
 }

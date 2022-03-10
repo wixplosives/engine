@@ -1,11 +1,6 @@
-import {
-    RuntimeFeature,
-    Feature,
-    globallyProvidingEnvironments,
-    orderedEnvDependencies,
-    AnyEnvironment,
-} from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
+import { globallyProvidingEnvironments, orderedEnvDependencies, AnyEnvironment } from './entities/env';
+import type { RuntimeFeature, Feature } from './entities/feature';
 import type { IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {

@@ -1,5 +1,5 @@
 import type { Message } from '../message-types';
-import type { Target } from '../types';
+import type { Target } from '../../types';
 
 export class BaseHost implements Target {
     public name = 'base-host';

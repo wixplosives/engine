@@ -230,11 +230,11 @@ describe('Node environments manager', function () {
 
             const { dispose, engine } = runEngineApp({
                 env,
-                resolvedContexts: {},
                 features: [proxyFeature],
                 config: [
                     COM.use({
                         config: {
+                            resolvedContexts: {},
                             topology: nodeEnvironmentManager.getTopology('engine-multi-socket-node/x'),
                         },
                     }),
@@ -269,11 +269,11 @@ describe('Node environments manager', function () {
 
             const { dispose, engine } = runEngineApp({
                 env,
-                resolvedContexts: {},
                 features: [proxyFeature],
                 config: [
                     COM.use({
                         config: {
+                            resolvedContexts: {},
                             topology: nodeEnvironmentManager.getTopology(engineMultiNodeSocketCommunication.scopedName),
                         },
                     }),
@@ -326,11 +326,11 @@ describe('Node environments manager', function () {
 
             const { dispose, engine } = runEngineApp({
                 env,
-                resolvedContexts: {},
                 features: [testFeature],
                 config: [
                     COM.use({
                         config: {
+                            resolvedContexts: {},
                             topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
                         },
                     }),
@@ -365,11 +365,11 @@ describe('Node environments manager', function () {
 
             const { dispose, engine } = runEngineApp({
                 env,
-                resolvedContexts: {},
                 features: [testFeature],
                 config: [
                     COM.use({
                         config: {
+                            resolvedContexts: {},
                             topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
                         },
                     }),

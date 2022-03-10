@@ -1,4 +1,4 @@
-import { runtimeType } from '../entity-helpers';
+import { runtimeType } from './entity-helpers';
 import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import type { Entity, EnvVisibility } from '../types';

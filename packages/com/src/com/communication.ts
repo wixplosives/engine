@@ -29,13 +29,18 @@ import type {
     UnknownFunction,
     AnyServiceMethodOptions,
     ServiceComConfig,
-} from './types';
+} from '../types';
 
-import { SERVICE_CONFIG } from '../symbols';
-
-import { SetMultiMap, deferred, serializeError } from '../helpers';
-import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
-import type { IDTag } from '../types';
+import { serializeError } from './serialize-error';
+import {
+    type IDTag,
+    type Environment,
+    type SingleEndpointContextualEnvironment,
+    type EnvironmentMode,
+    SERVICE_CONFIG,
+    SetMultiMap,
+    deferred,
+} from '@wixc3/engine-core';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
 import { isMessage } from './message-types';

@@ -14,7 +14,8 @@ import type {
     SetupHandler,
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
-import { deferred, IDeferredPromise, SetMultiMap } from '../helpers';
+import { deferred, IDeferredPromise } from '../helpers/deferred';
+import { SetMultiMap } from '../helpers/set-multi-map';
 
 const emptyDispose = { dispose: () => undefined };
 

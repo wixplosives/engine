@@ -1,5 +1,4 @@
 import type { TupleToUnion } from 'typescript-type-utils';
-import type { LogMessage } from './common-types';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
 import type { Feature } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
@@ -14,6 +13,15 @@ export type MapBy<T extends any[] | undefined, FIELD extends keyof TupleToUnion<
 export type FilterRecord<T, Filter> = { [P in keyof T as T[P] extends Filter ? P : never]: T[P] };
 
 /*************** ENGINE TYPES  ***************/
+
+export type EnvironmentTypes =
+    | 'window'
+    | 'iframe'
+    | 'worker'
+    | 'node'
+    | 'context'
+    | 'electron-renderer'
+    | 'electron-main';
 
 export interface IDTag<T extends string = string> {
     id: T;
@@ -265,15 +273,3 @@ export type PartialFeatureConfig<API> = {
 };
 
 export type TopLevelConfig = Array<[string, object]>;
-
-export interface LoggerTransport {
-    name: string;
-    handleMessage: (m: LogMessage) => void;
-}
-
-export enum LogLevel {
-    DEBUG,
-    INFO,
-    WARN,
-    ERROR,
-}

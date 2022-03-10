@@ -30,25 +30,6 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     dispose: () => Promise<void>;
     engine: RuntimeEngine<ENV>;
 }> {
-    if (host) {
-        config.push(
-            COM.use({
-                config: {
-                    host,
-                    id: name,
-                },
-            })
-        );
-    }
-
-    config.push(
-        RuntimeMetadata.use({
-            engineerMetadataConfig: {
-                applicationPath: bundlePath,
-            },
-        })
-    );
-
     const featureLoaders = createFeatureLoaders(new Map(features), {
         name,
         childEnvName,
@@ -110,12 +91,31 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
         clear();
     }
 
+    if (host) {
+        config.push(
+            COM.use({
+                config: {
+                    resolvedContexts,
+                    host,
+                    id: name,
+                },
+            })
+        );
+    }
+
+    config.push(
+        RuntimeMetadata.use({
+            runtimeMetadataConfig: {
+                applicationPath: bundlePath,
+            },
+        })
+    );
+
     const runtimeEngine = runEngineApp({
+        env,
         config,
         options: new Map(options),
         features: runningFeatures,
-        resolvedContexts,
-        env,
     });
 
     return runtimeEngine;

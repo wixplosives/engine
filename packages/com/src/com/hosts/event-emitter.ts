@@ -1,4 +1,4 @@
-import type { EventEmitter } from '../../helpers/event-emitter';
+import type { EventEmitter } from '../event-emitter';
 import type { Message } from '../message-types';
 import { BaseHost } from './base-host';
 

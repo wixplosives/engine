@@ -1,5 +1,4 @@
-import type { SingleEndpointContextualEnvironment, Environment } from '../../entities';
-import type { MapBy } from '../../types';
+import type { MapBy, SingleEndpointContextualEnvironment, Environment } from '@wixc3/engine-core';
 import type { InitializerOptions } from './types';
 
 export type EnvironmentInitializer<T, OPTIONS extends InitializerOptions = InitializerOptions> = (

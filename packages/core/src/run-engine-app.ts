@@ -1,8 +1,9 @@
-import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
-import type { AnyEnvironment, Feature } from './entities';
-import { deferred, flattenTree, IDeferredPromise } from './helpers';
+import type { Feature } from './entities/feature';
+import type { AnyEnvironment } from './entities/env';
+import { deferred, IDeferredPromise } from './helpers/deferred';
+import { flattenTree } from './helpers/flatten-tree';
 
 export interface IRunEngineOptions<ENV extends AnyEnvironment> {
     entryFeature: Feature | Feature[];
@@ -36,23 +37,20 @@ export interface IPreloadModule {
 }
 
 export interface IRunEngineAppOptions<ENV extends AnyEnvironment> {
-    config?: TopLevelConfig;
-    options?: Map<string, string | boolean>;
     env: ENV;
-    publicPath?: string;
+    options?: Map<string, string | boolean>;
+    config?: TopLevelConfig;
     features?: Feature[];
-    resolvedContexts: Record<string, string>;
 }
 
 export function runEngineApp<ENV extends AnyEnvironment>({
-    config = [],
-    options,
     env,
-    publicPath,
+    options,
+    config = [],
     features = [],
-    resolvedContexts = {},
 }: IRunEngineAppOptions<ENV>) {
-    const engine = new RuntimeEngine(env, [COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
+    const engine = new RuntimeEngine(env, config, options);
+    // const engine = new RuntimeEngine(env, [COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
     const runningPromise = engine.run(features);
 
     return {

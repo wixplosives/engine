@@ -1,4 +1,4 @@
-import { SetMultiMap } from './set-multi-map';
+import { SetMultiMap } from '@wixc3/engine-core';
 
 export type EventListener<T> = (event: T) => void;
 

@@ -1,6 +1,5 @@
-import type { EnvironmentTypes } from '../com/types';
-import { runtimeType } from '../entity-helpers';
-import type { DisposableContext, EnvVisibility, MapBy } from '../types';
+import { runtimeType } from './entity-helpers';
+import type { EnvironmentTypes, DisposableContext, EnvVisibility, MapBy } from '../types';
 
 export type EnvironmentMode = 'single' | 'multi';
 export type AnyEnvironment = Environment<

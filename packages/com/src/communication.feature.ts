@@ -2,14 +2,8 @@ import process from 'process';
 import { BaseHost } from './com/hosts/base-host';
 import { Communication, ConfigEnvironmentRecord, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
-import type { Target } from './com/types';
-import { Config } from './entities/config';
-import { AllEnvironments, Universal } from './entities/env';
-import { Feature } from './entities/feature';
-import { Value } from './entities/value';
-import { Slot } from './entities/slot';
-import { RUN_OPTIONS, ENGINE } from './symbols';
-import { LoggerTransport, LogLevel } from './types';
+import { AllEnvironments, Universal, Config, RUN_OPTIONS, ENGINE, Feature, Slot, Value } from '@wixc3/engine-core';
+import { LogLevel, type LoggerTransport, type Target } from './types';
 
 export interface IComConfig {
     id?: string;
@@ -23,7 +17,7 @@ export interface IComConfig {
     connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
 }
 
-export default new Feature({
+export const COM = new Feature({
     id: 'COM',
     api: {
         config: Config.withType<IComConfig>().defineEntity(
