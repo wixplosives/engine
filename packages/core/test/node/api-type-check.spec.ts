@@ -5,23 +5,21 @@ import {
     IRunOptions,
     RUN_OPTIONS,
     Universal,
-    AsyncApi,
     Config,
     Feature,
     Registry,
     Running,
     RunningFeatures,
     RuntimeEngine,
-    Service,
     Slot,
     ENGINE,
+    Value,
 } from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/
 
 const MAIN = new Environment('main', 'window', 'single');
-const ZAG = new Environment('zag', 'window', 'single');
 const MAIN_1 = new Environment('main1', 'window', 'single');
 
 const logger = new Feature({
@@ -29,40 +27,9 @@ const logger = new Feature({
     api: {
         config: Config.withType<{ time: number }>().defineEntity({ time: 1 }),
         transport: Slot.withType<{ transportName: string }>().defineEntity(MAIN),
-        sink: Service.withType<{ log: (message: string) => void }>().defineEntity(MAIN).allowRemoteAccess(),
     },
 });
-typeCheck(
-    (
-        _runningFeature: EQUAL<
-            Running<typeof logger, typeof MAIN>,
-            {
-                config: { time: number };
-                transport: Registry<{
-                    transportName: string;
-                }>;
-                sink: {
-                    log: (message: string) => void;
-                };
-            }
-        >
-    ) => true
-);
 
-typeCheck(
-    (
-        _runningFeature: EQUAL<
-            Running<typeof logger, typeof ZAG>,
-            {
-                config: { time: number };
-
-                sink: AsyncApi<{
-                    log: (message: string) => void;
-                }>;
-            }
-        >
-    ) => true
-);
 /* ------------------------------------------------- */
 
 const gui = new Feature({
@@ -70,17 +37,9 @@ const gui = new Feature({
     dependencies: [logger],
     api: {
         panelSlot: Slot.withType<{ panelID: string }>().defineEntity([MAIN]),
-        guiService: Service.withType<{ someMethod(): void }>().defineEntity([MAIN, MAIN_1]),
+        guiService: Value.withType<{ someMethod(): void }>().defineEntity([MAIN, MAIN_1]),
     },
 });
-
-interface SomeApi {
-    someMethod: () => boolean;
-}
-
-type SomeApiPromisified = AsyncApi<SomeApi>;
-
-typeCheck((_: EQUAL<SomeApiPromisified, { someMethod(): Promise<boolean> }>) => true);
 
 typeCheck(
     (
@@ -111,9 +70,9 @@ const addPanel = new Feature({
     dependencies: [gui, logger],
     api: {
         componentDescription: Slot.withType<ComponentDescription>().defineEntity(MAIN),
-        service1: Service.withType<DataService>().defineEntity(MAIN),
-        service2: Service.withType<DataService>().defineEntity(MAIN_1),
-        service3: Service.withType<DataService>().defineEntity(Universal),
+        service1: Value.withType<DataService>().defineEntity(MAIN),
+        service2: Value.withType<DataService>().defineEntity(MAIN_1),
+        service3: Value.withType<DataService>().defineEntity(Universal),
     },
 });
 typeCheck(
