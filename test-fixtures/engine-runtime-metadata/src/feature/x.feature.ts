@@ -1,4 +1,5 @@
-import { COM, Environment, Feature, RuntimeMetadata, MetadataConfig, Service } from '@wixc3/engine-core';
+import { Environment, Feature, RuntimeMetadata, MetadataConfig } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 
 export const client = new Environment('main', 'window', 'single');
 export const server = new Environment('server', 'node', 'single');

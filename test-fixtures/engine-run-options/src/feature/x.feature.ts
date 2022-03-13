@@ -1,4 +1,5 @@
-import { Environment, Feature, Service, COM } from '@wixc3/engine-core';
+import { Environment, Feature } from '@wixc3/engine-core';
+import { Service, COM } from '@wixc3/engine-com';
 export const MAIN = new Environment('main', 'window', 'single');
 export const PROC = new Environment('processing', 'node', 'single');
 import type { MyInterfaceClass } from './interface';

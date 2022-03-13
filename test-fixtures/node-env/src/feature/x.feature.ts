@@ -1,4 +1,5 @@
-import { COM, Config, Environment, Feature, Service } from '@wixc3/engine-core';
+import { Config, Environment, Feature } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 export const mainEnv = new Environment('main', 'window', 'single');
 export const serverEnv = new Environment('server', 'node', 'single');
 

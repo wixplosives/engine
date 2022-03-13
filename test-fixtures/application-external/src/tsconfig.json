@@ -3,5 +3,9 @@
   "compilerOptions": {
     "outDir": "../dist"
   },
-  "references": [{ "path": "../../../packages/core/src" }, { "path": "../../base-web-application/src" }]
+  "references": [
+    { "path": "../../../packages/core/src" },
+    { "path": "../../../packages/com/src" },
+    { "path": "../../base-web-application/src" }
+  ]
 }

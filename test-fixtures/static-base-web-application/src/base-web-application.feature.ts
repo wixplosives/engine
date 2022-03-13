@@ -1,4 +1,5 @@
-import { COM, Config, Environment, Feature, Slot } from '@wixc3/engine-core';
+import { Config, Environment, Feature, Slot } from '@wixc3/engine-core';
+import { COM } from '@wixc3/engine-com';
 
 export const client = new Environment('main', 'window', 'single');
 export const iframe = new Environment('iframe', 'iframe', 'single');
