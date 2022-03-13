@@ -5,7 +5,6 @@ import sinonChai from 'sinon-chai';
 import type { EQUAL } from 'typescript-type-utils';
 import {
     AllEnvironments,
-    COM,
     Config,
     CREATE_RUNTIME,
     DisposeFunction,
@@ -19,7 +18,7 @@ import {
     run as runEngine,
     RUN_OPTIONS,
     RuntimeEngine,
-    Service,
+    Value,
     SingleEndpointContextualEnvironment,
     Slot,
     Universal,
@@ -132,8 +131,8 @@ describe('Feature', () => {
         const f0 = new Feature({
             id: 'test',
             api: {
-                service1: Service.withType<{ echo(x: string): string }>().defineEntity(Universal),
-                service2: Service.withType<{ echo(x: string): string }>().defineEntity(MAIN1),
+                service1: Value.withType<{ echo(x: string): string }>().defineEntity(Universal),
+                service2: Value.withType<{ echo(x: string): string }>().defineEntity(MAIN1),
             },
         });
 
@@ -168,7 +167,7 @@ describe('Feature', () => {
         const f0 = new Feature({
             id: 'test',
             api: {
-                service1: Service.withType<{ echo(x: string): string }>().defineEntity(mainEnv),
+                service1: Value.withType<{ echo(x: string): string }>().defineEntity(mainEnv),
             },
         });
         expect(() => {
@@ -201,8 +200,8 @@ describe('Feature', () => {
             id: 'test',
             api: {
                 slot1: Slot.withType<{ echo(x: string): string }>().defineEntity(Universal),
-                service1: Service.withType<{ echo(x: string): string }>().defineEntity(Universal),
-                service2: Service.withType<{ echo(x: string): string }>().defineEntity(env),
+                service1: Value.withType<{ echo(x: string): string }>().defineEntity(Universal),
+                service2: Value.withType<{ echo(x: string): string }>().defineEntity(env),
             },
         });
         f0.setup(Universal, ({ slot1 }) => {
@@ -309,7 +308,7 @@ describe('Feature', () => {
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
                     retrieveService:
-                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
+                        Value.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
                 },
             }).setup(mainEnv, ({ mapSlot }) => {
                 return {
@@ -342,7 +341,7 @@ describe('Feature', () => {
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
                     retrieveService:
-                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
+                        Value.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
                 },
             }).setup(mainEnv, ({ mapSlot }) => {
                 return {
@@ -383,7 +382,7 @@ describe('Feature', () => {
                 api: {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
                     retrieveService:
-                        Service.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
+                        Value.withType<{ getValue(key: string): string | undefined }>().defineEntity(mainEnv),
                 },
             }).setup(mainEnv, ({ mapSlot }) => {
                 return {
@@ -467,7 +466,7 @@ describe('feature interaction', () => {
             id: 'echoFeature',
             api: {
                 transformers: Slot.withType<(s: string) => string>().defineEntity(mainEnv),
-                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(mainEnv),
+                echoService: Value.withType<{ echo(s: string): string }>().defineEntity(mainEnv),
             },
         }).setup(mainEnv, ({ transformers }) => {
             return {
@@ -523,9 +522,8 @@ describe('Contextual environments', () => {
 
         const entryFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM],
             api: {
-                echoService: Service.withType<{ echo(s: string): string }>().defineEntity(processing),
+                echoService: Value.withType<{ echo(s: string): string }>().defineEntity(processing),
             },
             context: {
                 processingContext: processing.withContext<IProcessingContext>(),
@@ -659,68 +657,6 @@ describe('feature disposal', () => {
     });
 });
 
-describe('service with remove access environment visibility', () => {
-    it('local services in the same env uses the provided implementation', async () => {
-        const processing = new Environment('processing', 'worker', 'multi');
-        const main = new Environment('main', 'worker', 'single');
-
-        const echoFeature = new Feature({
-            id: 'echoFeature',
-            dependencies: [COM],
-            api: {
-                echoService: Service.withType<{ echo(s: string): string }>()
-                    .defineEntity(processing)
-                    .allowRemoteAccess(),
-            },
-        });
-
-        echoFeature.setup(processing, ({ echoService }) => {
-            // this is the proxy! because we did not defined the service yet.
-            expect(typeof echoService.get === 'function');
-
-            return {
-                echoService: {
-                    echo(s: string) {
-                        return s;
-                    },
-                },
-            };
-        });
-
-        echoFeature.setup(main, ({ echoService }) => {
-            // this is the proxy! because we are in different env.
-            expect(typeof echoService.get === 'function');
-        });
-
-        // const checks = [];
-        const testFeature = new Feature({
-            id: 'test',
-            dependencies: [echoFeature],
-            api: {},
-        });
-
-        testFeature.setup(processing, ({}, { echoFeature: { echoService } }) => {
-            // this is the real service since we are in the same env!.
-            expect(typeof echoService.echo === 'function');
-        });
-
-        testFeature.setup(main, ({}, { echoFeature: { echoService } }) => {
-            // this is the proxy! because we are in different env.
-            expect(typeof echoService.get === 'function');
-        });
-
-        await runEngine({
-            entryFeature: testFeature,
-            env: processing,
-        });
-
-        await runEngine({
-            entryFeature: testFeature,
-            env: main,
-        });
-    });
-});
-
 describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
         const main = new Environment('main', 'window', 'single');
@@ -728,7 +664,6 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
         new Feature({
             id: 'echoFeature',
-            dependencies: [COM],
             api: {
                 slot: Slot.withType<{ name: string }>().defineEntity(main),
             },
@@ -754,77 +689,5 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                     ) => true
                 );
             });
-    });
-
-    it('allow spawn of new environments and use remote services', () => {
-        const main = new Environment('main', 'window', 'single');
-        const processing = new Environment('processing', 'worker', 'single');
-
-        const echoFeature = new Feature({
-            id: 'echoFeature',
-            dependencies: [COM],
-            api: {
-                echoService: Service.withType<{ echo(s: string): string }>()
-                    .defineEntity(processing)
-                    .allowRemoteAccess(),
-            },
-        });
-
-        echoFeature.setup(processing, () => {
-            return {
-                echoService: {
-                    echo(s: string) {
-                        return s;
-                    },
-                },
-            };
-        });
-
-        const checks = [];
-        const testFeature = new Feature({
-            id: 'test',
-            dependencies: [echoFeature],
-            api: {},
-        });
-
-        testFeature.setup(processing, ({ run }, { echoFeature: { echoService } }) => {
-            run(() => {
-                checks.push(echoService.echo('echo1'));
-            });
-        });
-
-        testFeature.setup(main, ({ run }, { echoFeature: { echoService } }) => {
-            run(async () => {
-                const val = await echoService.echo('echo2');
-                checks.push(val);
-            });
-        });
-    });
-});
-
-describe.skip('Environments Type tests 1', () => {
-    it('feature remote api should be available inside same feature setup', () => {
-        const processing = new Environment('processing', 'worker', 'single');
-
-        const echoFeature = new Feature({
-            id: 'echoFeature',
-            dependencies: [COM],
-            api: {
-                // processing,
-                echoService: Service.withType<{ echo(s: string): string }>()
-                    .defineEntity(processing)
-                    .allowRemoteAccess(),
-            },
-        });
-
-        echoFeature.setup(processing, ({}, {}) => {
-            return {
-                echoService: {
-                    echo(s: string) {
-                        return s;
-                    },
-                },
-            };
-        });
     });
 });
