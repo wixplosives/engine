@@ -64,6 +64,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     await environmentIsReady;
     return {
         id: env.env,
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         dispose: async () => {
             if (!child.killed) {
                 child.pid ? await promisifiedTreeKill(child.pid) : child.kill();

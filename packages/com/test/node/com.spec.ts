@@ -160,9 +160,13 @@ describe('Communication', () => {
         const aHost = new BaseHost();
         const bHost = new BaseHost();
 
-        const mainCom = disposables.add(new Communication(middlemanHost, 'middle'));
-        const bCom = disposables.add(new Communication(bHost, 'bEnv'));
-        const aCom = disposables.add(new Communication(aHost, 'aEnv'));
+        const mainCom = new Communication(middlemanHost, 'middle');
+        const bCom = new Communication(bHost, 'bEnv');
+        const aCom = new Communication(aHost, 'aEnv');
+
+        disposables.add(mainCom);
+        disposables.add(bCom);
+        disposables.add(aCom);
 
         aCom.registerEnv('bEnv', middlemanHost);
         aCom.registerEnv('middle', middlemanHost);
@@ -204,9 +208,13 @@ describe('Communication', () => {
         const aHost = new BaseHost();
         const bHost = new BaseHost();
 
-        const mainCom = disposables.add(new Communication(middlemanHost, 'middle'));
-        const bCom = disposables.add(new Communication(bHost, 'bEnv'));
-        const aCom = disposables.add(new Communication(aHost, 'aEnv'));
+        const mainCom = new Communication(middlemanHost, 'middle');
+        const bCom = new Communication(bHost, 'bEnv');
+        const aCom = new Communication(aHost, 'aEnv');
+
+        disposables.add(mainCom);
+        disposables.add(bCom);
+        disposables.add(aCom);
 
         aCom.registerEnv('bEnv', middlemanHost);
         aCom.registerEnv('middle', middlemanHost);
@@ -232,9 +240,13 @@ describe('Communication', () => {
         const aHost = new BaseHost();
         const bHost = new BaseHost();
 
-        const mainCom = disposables.add(new Communication(middlemanHost, 'middle'));
-        const bCom = disposables.add(new Communication(bHost, 'bEnv'));
-        const aCom = disposables.add(new Communication(aHost, 'aEnv'));
+        const mainCom = new Communication(middlemanHost, 'middle');
+        const bCom = new Communication(bHost, 'bEnv');
+        const aCom = new Communication(aHost, 'aEnv');
+
+        disposables.add(mainCom);
+        disposables.add(bCom);
+        disposables.add(aCom);
 
         aCom.registerEnv('bEnv', middlemanHost);
         bCom.registerEnv('aEnv', middlemanHost);
@@ -266,9 +278,13 @@ describe('Communication', () => {
         const aHost = new BaseHost();
         const bHost = new BaseHost();
 
-        const mainCom = disposables.add(new Communication(middlemanHost, 'middle'));
-        const bCom = disposables.add(new Communication(bHost, 'bEnv'));
-        const aCom = disposables.add(new Communication(aHost, 'aEnv'));
+        const mainCom = new Communication(middlemanHost, 'middle');
+        const bCom = new Communication(bHost, 'bEnv');
+        const aCom = new Communication(aHost, 'aEnv');
+
+        disposables.add(mainCom);
+        disposables.add(bCom);
+        disposables.add(aCom);
 
         aCom.registerEnv('bEnv', middlemanHost);
         aCom.registerEnv('middle', middlemanHost);
@@ -395,10 +411,15 @@ describe('Communication', () => {
         const host3 = new BaseHost();
         const host4 = new BaseHost();
 
-        const com1 = disposables.add(new Communication(host1, 'com1'));
-        const com2 = disposables.add(new Communication(host2, 'com2'));
-        const com3 = disposables.add(new Communication(host3, 'com3'));
-        const com4 = disposables.add(new Communication(host4, 'com4'));
+        const com1 = new Communication(host1, 'com1');
+        const com2 = new Communication(host2, 'com2');
+        const com3 = new Communication(host3, 'com3');
+        const com4 = new Communication(host4, 'com4');
+
+        disposables.add(com1);
+        disposables.add(com2);
+        disposables.add(com3);
+        disposables.add(com4);
 
         // 1 to 2
         const com2ChildHost = host1.open();

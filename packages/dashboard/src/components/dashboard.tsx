@@ -172,6 +172,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
                     configName={params.user_config}
                     featureName={params.user_feature}
                     isServerActive={isNodeEnvRunning}
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     onToggleChange={onServerEnvironmentStatusChange}
                     displayServerToggle={hasNodeEnvironments}
                     actionBtnClassName={classes.actionButton}

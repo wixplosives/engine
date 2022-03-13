@@ -40,7 +40,8 @@ describe('Communication API', function () {
     const iframeEnv = new Environment('iframe', 'iframe', 'multi');
 
     it('should proxy remote service api', async () => {
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const env = iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
 
@@ -51,7 +52,8 @@ describe('Communication API', function () {
     });
 
     it('allows providing custom src', async () => {
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const iframeElement = createIframe();
 
@@ -78,7 +80,8 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
     });
 
     it('should proxy exceptions thrown in remote service api', async () => {
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const env = await iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
 
@@ -90,7 +93,8 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
     });
 
     it('should listen to remote api callbacks', async () => {
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const env = iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
         const api = com.apiProxy<TestService>(env, { id: testServiceId }, declareComEmitter('listen', '', ''));
@@ -104,7 +108,8 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
     });
 
     it('handles a multi tenant function in api services', async () => {
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const env = iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
 
@@ -119,7 +124,8 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
     });
 
     it('handles a single tenant function in api services that have multi tenant functions', async () => {
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const env = iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
 
@@ -134,7 +140,8 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
     });
 
     it('listen to multiple environment with the same api (iframe)', async () => {
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const [env1, env2] = await Promise.all([
             iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() }),
@@ -162,7 +169,9 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
     });
 
     it('resolves spawn only when com is ready', async () => {
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
+
         const delayedIframeEnv = new Environment('delayed-iframe', 'iframe', 'multi');
 
         const env = iframeInitializer({
@@ -180,7 +189,8 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
 
     it('allows initiating iframe environment with parameters', async () => {
         const iframeEnv = new Environment('iframe', 'iframe', 'multi');
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const env = await iframeInitializer({
             communication: com,
@@ -200,7 +210,8 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
 
     it('should allow to load iframe after receiving its token id', async () => {
         const iframeEnv = new Environment('iframe', 'iframe', 'multi');
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const env = deferredIframeInitializer({ communication: com, env: iframeEnv });
 
@@ -217,7 +228,8 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
 
     it('should allow subscribing to events in non-initialized iframe', async () => {
         const iframeEnv = new Environment('iframe', 'iframe', 'multi');
-        const com = disposables.add(new Communication(window, comId));
+        const com = new Communication(window, comId);
+        disposables.add(com);
 
         const env = deferredIframeInitializer({ communication: com, env: iframeEnv });
 
