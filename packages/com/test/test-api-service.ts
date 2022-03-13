@@ -1,4 +1,5 @@
-import { SERVICE_CONFIG, multiTenantMethod } from '@wixc3/engine-core';
+import { SERVICE_CONFIG } from '@wixc3/engine-core';
+import { multiTenantMethod } from '@wixc3/engine-com';
 
 export interface ITestServiceData {
     echo: number[];

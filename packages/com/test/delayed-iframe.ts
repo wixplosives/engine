@@ -1,4 +1,4 @@
-import { Communication } from '@wixc3/engine-core';
+import { Communication } from '@wixc3/engine-com';
 import { TestService } from './test-api-service';
 
 setTimeout(() => {

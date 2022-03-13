@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import { spy } from 'sinon';
-import { ManagedIframe } from '@wixc3/engine-core';
+import { ManagedIframe } from '@wixc3/engine-com';
 import { createDisposables } from '@wixc3/create-disposables';
 
 describe('Managed Iframe', () => {

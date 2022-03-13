@@ -3,22 +3,18 @@ import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 import { stub, spy } from 'sinon';
 
+import { SERVICE_CONFIG, Environment, Feature, RuntimeEngine, Slot } from '@wixc3/engine-core';
 import {
-    SERVICE_CONFIG,
     multiTenantMethod,
     BaseHost,
     Communication,
     EventEmitterHost,
     EventEmitter,
     Message,
-    Environment,
-    Feature,
     Service,
-    RuntimeEngine,
     COM,
-    Slot,
     ReadyMessage,
-} from '@wixc3/engine-core';
+} from '@wixc3/engine-com';
 import { createDisposables } from '@wixc3/create-disposables';
 import { waitFor } from 'promise-assist';
 
