@@ -1213,15 +1213,6 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@ts-tools/build@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@ts-tools/build/-/build-2.1.1.tgz#6580c0ed5aea8ee8de93d43f40929fcba211f3a5"
-  integrity sha512-uuyXyYMa5BBbZoOddoBQPd+keLUjBR+V7unYAv/cjkCKwahbCAHTlvm2EIXIVafFyMJ9Egit4D9kohE3Q8j8fw==
-  dependencies:
-    "@ts-tools/transpile" "^2.1.1"
-    chalk "^4.1.0"
-    commander "^6.1.0"
-
 "@ts-tools/node@^3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-3.0.1.tgz#9d8bd35bc3a29d23db28b50dce335045b1846a16"
@@ -1229,11 +1220,6 @@
   dependencies:
     "@ts-tools/transpile" "^3.0.1"
     source-map-support "^0.5.19"
-
-"@ts-tools/transpile@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@ts-tools/transpile/-/transpile-2.1.1.tgz#f2448013cdfc2944055d0446a568da97b93c6a3e"
-  integrity sha512-kuhuOlvexcF2UBkmnr+Ir8yhInzJtItiuUxLEgYKQ6odVsD1w7N1n9B0Eqxj9ZT53rhYWUzZEzMWalh9l34EPQ==
 
 "@ts-tools/transpile@^3.0.1":
   version "3.0.1"
@@ -2695,11 +2681,6 @@ commander@^5.0.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-5.1.0.tgz#46abbd1652f8e059bddaef99bbdcb2ad9cf179ae"
   integrity sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==
-
-commander@^6.1.0:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-6.2.1.tgz#0792eb682dfbc325999bb2b84fddddba110ac73c"
-  integrity sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==
 
 commander@^9.0.0:
   version "9.0.0"
