@@ -17,7 +17,7 @@ export interface ContextualEnvironmentInitializerOptions<
     env: SingleEndpointContextualEnvironment<string, ENVS>;
 }
 /**
- * TODO: better inference of the return type of the initialzier function
+ * TODO: better inference of the return type of the initializer function
  */
 export function initializeContextualEnv<ENVS extends Environment[], EnvToken extends Promise<{ id: string }>>({
     communication,

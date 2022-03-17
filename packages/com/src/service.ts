@@ -72,7 +72,7 @@ export class Service<
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return inputValue || this.getApiProxy(runtimeEngine, serviceKey);
+            return inputValue || (this.getApiProxy(runtimeEngine, serviceKey) as any);
         }
         return providedValue;
     }
@@ -80,21 +80,21 @@ export class Service<
     public [CREATE_RUNTIME](context: RuntimeEngine, featureID: string, entityKey: string) {
         if (this.remoteAccess) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return this.getApiProxy(context, context.entityID(featureID, entityKey));
+            return this.getApiProxy(context, context.entityID(featureID, entityKey)) as unknown as PT;
         }
+        return undefined;
     }
-    //TODO: fix? explicit any type
-    public getApiProxy(context: RuntimeEngine, serviceKey: string): any {
+    public getApiProxy(context: RuntimeEngine, serviceKey: string) {
         const { communication } = context.get(COM).api;
         const instanceId = getSingleInstanceId(this.providedFrom);
         if (instanceId) {
-            return communication.apiProxy<T>({ id: instanceId }, { id: serviceKey }, this.options) as any;
+            return communication.apiProxy<T>({ id: instanceId }, { id: serviceKey }, this.options);
         } else {
             return {
-                get: (token: EnvironmentInstanceToken): any => {
-                    return communication.apiProxy<T>(token, { id: serviceKey }, this.options) as any;
+                get: (token: EnvironmentInstanceToken) => {
+                    return communication.apiProxy<T>(token, { id: serviceKey }, this.options);
                 },
-            } as any;
+            };
         }
     }
 }
