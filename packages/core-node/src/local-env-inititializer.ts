@@ -1,4 +1,4 @@
-import type { InitializerOptions } from '@wixc3/engine-core';
+import type { InitializerOptions } from '@wixc3/engine-com';
 
 export const LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID = '__engine-local-env__';
 

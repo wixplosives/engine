@@ -1,4 +1,5 @@
-import { runEngineApp, COM } from '@wixc3/engine-core';
+import { runEngineApp } from '@wixc3/engine-core';
+import { COM } from '@wixc3/engine-com';
 import { IPCHost } from '@wixc3/engine-core-node';
 import { isNodeEnvStartupMessage } from '@wixc3/engine-electron-commons';
 import feature, { serverEnv } from './test-feature.feature';

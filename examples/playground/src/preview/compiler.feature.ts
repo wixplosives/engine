@@ -1,4 +1,5 @@
-import { COM, Environment, Feature, Service, Slot } from '@wixc3/engine-core';
+import { Environment, Feature, Slot } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 import CodeEditor, { PROCESSING } from '../code-editor/code-editor.feature';
 import type { BaseCompiler, CompilerExtension } from './BaseCompiler';
 

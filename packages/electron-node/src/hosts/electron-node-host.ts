@@ -1,4 +1,4 @@
-import { BaseHost, Message } from '@wixc3/engine-core';
+import { BaseHost, Message } from '@wixc3/engine-com';
 import type { WebContents, IpcMain, IpcMainEvent } from 'electron';
 
 /**

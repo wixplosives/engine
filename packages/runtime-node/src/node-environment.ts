@@ -1,5 +1,4 @@
 import {
-    COM,
     Feature,
     IFeatureLoader,
     runEngineApp,
@@ -9,6 +8,7 @@ import {
     IPreloadModule,
     AnyEnvironment,
 } from '@wixc3/engine-core';
+import { COM } from '@wixc3/engine-com';
 import { init, remapToUserLibrary, clear } from './external-request-mapper';
 
 import type { IEnvironmentDescriptor, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';

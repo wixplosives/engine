@@ -1,4 +1,5 @@
-import { Environment, Feature, Service } from '@wixc3/engine-core';
+import { Environment, Feature } from '@wixc3/engine-core';
+import { Service } from '@wixc3/engine-com';
 import type React from 'react';
 
 export const MainEnv = new Environment('main', 'window', 'single');

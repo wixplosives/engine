@@ -1,4 +1,4 @@
-import { socketClientInitializer, workerInitializer, initializeContextualEnv } from '@wixc3/engine-core';
+import { socketClientInitializer, workerInitializer, initializeContextualEnv } from '@wixc3/engine-com';
 import { contextualEnv, mainEnv } from './some-feature.feature';
 import sampleFeature from './some-feature.feature';
 

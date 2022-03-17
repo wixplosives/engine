@@ -1,4 +1,4 @@
-import { socketClientInitializer } from '@wixc3/engine-core';
+import { socketClientInitializer } from '@wixc3/engine-com';
 import { mainEnv, serverEnv } from './x.feature';
 import sampleFeature from './x.feature';
 

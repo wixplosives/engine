@@ -1,5 +1,5 @@
-import { COM, Environment, Feature, Service } from '@wixc3/engine-core';
-
+import { Environment, Feature } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 export const host = new Environment('host', 'electron-main', 'single');
 export const renderer = new Environment('renderer', 'electron-renderer', 'single');
 export const server = new Environment('server', 'node', 'single');

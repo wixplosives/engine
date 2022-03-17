@@ -1,11 +1,11 @@
 import type {
     EnvironmentTypes,
     TopLevelConfig,
-    BaseHost,
     Environment,
     AnyEnvironment,
     MultiEnvironment,
 } from '@wixc3/engine-core';
+import type { BaseHost } from '@wixc3/engine-com';
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 

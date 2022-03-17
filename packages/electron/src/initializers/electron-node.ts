@@ -6,7 +6,7 @@ import {
     InitializeNodeEnvironmentOptions,
 } from '@wixc3/engine-electron-commons';
 
-import type { EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-core';
+import type { EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-com';
 
 /**
  * Spawn a node-based environment from the renderer process.

@@ -1,4 +1,5 @@
-import { Feature, Environment, SingleEndpointContextualEnvironment, Service, COM } from '@wixc3/engine-core';
+import { Feature, Environment, SingleEndpointContextualEnvironment } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 import nonContextualFeature from './non-contextual.feature';
 
 const nodeEnv = new Environment('nodeCtx', 'node', 'single');

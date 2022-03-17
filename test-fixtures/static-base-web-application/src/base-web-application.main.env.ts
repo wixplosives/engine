@@ -1,4 +1,4 @@
-import { iframeInitializer } from '@wixc3/engine-core';
+import { iframeInitializer } from '@wixc3/engine-com';
 import BaseAppFeature, { client, iframe } from './base-web-application.feature';
 
 BaseAppFeature.setup(client, ({ clientSlot, baseAppConfig }, { COM: { communication } }) => {

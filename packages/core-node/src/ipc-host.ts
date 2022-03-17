@@ -1,4 +1,6 @@
-import { BaseHost, IDisposable, Message } from '@wixc3/engine-core';
+import type { IDisposable } from '@wixc3/engine-core';
+import { BaseHost, Message } from '@wixc3/engine-com';
+
 import type { ChildProcess } from 'child_process';
 
 export const isParentProcess = (process: NodeJS.Process | ChildProcess): process is NodeJS.Process => {

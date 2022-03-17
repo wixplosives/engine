@@ -1,4 +1,5 @@
-import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment, Config } from '@wixc3/engine-core';
+import { Environment, Feature, SingleEndpointContextualEnvironment, Config } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 
 export const mainEnv = new Environment('main', 'window', 'single');
 const workerEnv = new Environment('worker1', 'worker', 'single');

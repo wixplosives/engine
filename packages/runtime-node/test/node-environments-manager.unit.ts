@@ -1,6 +1,7 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { COM, Environment, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
+import { Environment, Feature, runEngineApp } from '@wixc3/engine-core';
+import { COM, Service, socketClientInitializer } from '@wixc3/engine-com';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';

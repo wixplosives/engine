@@ -19,7 +19,8 @@ import { WsServerHost } from '@wixc3/engine-core-node';
 import { dirname, resolve } from 'path';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
-import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
+import { RuntimeMetadata } from '@wixc3/engine-core';
+import type { Communication } from '@wixc3/engine-com';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {

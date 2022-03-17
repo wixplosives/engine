@@ -1,4 +1,5 @@
-import { COM, Environment, Feature, Service, Config } from '@wixc3/engine-core';
+import { Environment, Feature, Config } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 import type { IDirectoryContents } from '../types';
 
 /**

@@ -1,5 +1,5 @@
 import allFeature, { mainEnv, nodeEnv, workerEnv } from './all.feature';
-import { socketClientInitializer, workerInitializer } from '@wixc3/engine-core';
+import { socketClientInitializer, workerInitializer } from '@wixc3/engine-com';
 globalThis.envMessages = [...(globalThis.envMessages ?? []), 'enveval'];
 
 const content = `

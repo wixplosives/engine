@@ -1,4 +1,4 @@
-import { COM } from '@wixc3/engine-core';
+import { COM } from '@wixc3/engine-com';
 import { IPCHost } from '@wixc3/engine-core-node';
 
 import type { StartEnvironmentOptions } from './types';

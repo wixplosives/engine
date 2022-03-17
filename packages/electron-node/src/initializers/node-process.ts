@@ -1,4 +1,4 @@
-import { BaseHost, Communication, EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-core';
+import { BaseHost, Communication, EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-com';
 import { LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
 import {
     initializeNodeEnvironment,

@@ -1,4 +1,4 @@
-import { iframeInitializer } from '@wixc3/engine-core';
+import { iframeInitializer } from '@wixc3/engine-com';
 import ReloadedIframe, { iframeEnv, mainEnv } from './reloaded-iframe.feature';
 import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../consts';
 

@@ -2,7 +2,7 @@ import { BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
 import once from 'lodash.once';
 import { electronRuntimeArguments, externalFeaturesManager } from '@wixc3/engine-electron-commons';
-import type { InitializerOptions } from '@wixc3/engine-core';
+import type { InitializerOptions } from '@wixc3/engine-com';
 
 import { ElectronBrowserHost } from '../hosts/electron-node-host';
 import type { InitializedBrowserEnvironment, IWindowEnvironmentOptions } from './types';

@@ -1,4 +1,5 @@
-import { Feature, Environment, COM, Config } from '@wixc3/engine-core';
+import { Feature, Environment, Config } from '@wixc3/engine-core';
+import { COM } from '@wixc3/engine-com';
 import type { IExternalFeatureDescriptor } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '@wixc3/engine-scripts';
 import buildFeature from './dev-server.feature';

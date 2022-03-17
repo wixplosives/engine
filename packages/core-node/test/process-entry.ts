@@ -1,4 +1,4 @@
-import { Communication } from '@wixc3/engine-core';
+import { Communication } from '@wixc3/engine-com';
 import { IPCHost } from '@wixc3/engine-core-node';
 
 const ipcHost = new IPCHost(process);

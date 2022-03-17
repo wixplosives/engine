@@ -1,6 +1,7 @@
 import type io from 'socket.io';
 import type webpack from 'webpack';
-import { Feature, Service, Environment, COM, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
+import { Feature, Environment, Config, TopLevelConfig, Slot } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 import type { IExternalDefinition, TopLevelConfigProvider, LaunchEnvironmentMode } from '@wixc3/engine-runtime-node';
 import type { TargetApplication } from '../application-proxy-service';
 import type { Express } from 'express';

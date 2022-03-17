@@ -1,7 +1,7 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import fs from '@file-services/node';
-import { BaseHost, Communication } from '@wixc3/engine-core';
+import { BaseHost, Communication } from '@wixc3/engine-com';
 import { loadFeaturesFromPackages } from '@wixc3/engine-scripts';
 import { initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
 

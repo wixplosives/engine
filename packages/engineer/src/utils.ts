@@ -1,7 +1,8 @@
 import type io from 'socket.io';
 import fs from '@file-services/node';
 import { isFeatureFile, loadFeaturesFromPaths, getExternalFeaturesMetadata } from '@wixc3/engine-scripts';
-import { RuntimeEngine, BaseHost, TopLevelConfig, RuntimeFeature } from '@wixc3/engine-core';
+import type { RuntimeEngine, TopLevelConfig, RuntimeFeature } from '@wixc3/engine-core';
+import { BaseHost } from '@wixc3/engine-com';
 
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';

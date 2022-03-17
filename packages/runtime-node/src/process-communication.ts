@@ -1,5 +1,6 @@
 import type io from 'socket.io';
-import { COM, ConfigEnvironmentRecord, PartialFeatureConfig } from '@wixc3/engine-core';
+import type { PartialFeatureConfig } from '@wixc3/engine-core';
+import { COM, ConfigEnvironmentRecord } from '@wixc3/engine-com';
 import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
 import performance from '@wixc3/cross-performance';
 performance.clearMeasures;

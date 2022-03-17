@@ -1,4 +1,4 @@
-import { iframeInitializer } from '@wixc3/engine-core';
+import { iframeInitializer } from '@wixc3/engine-com';
 import { mainEnv, iframeEnv } from './x.feature';
 import sampleFeature from './x.feature';
 

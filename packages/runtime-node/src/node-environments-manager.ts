@@ -3,16 +3,8 @@ import { delimiter } from 'path';
 
 import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
-import {
-    TopLevelConfig,
-    SetMultiMap,
-    Communication,
-    BaseHost,
-    COM,
-    Message,
-    ConfigEnvironmentRecord,
-    ReadyMessage,
-} from '@wixc3/engine-core';
+import { Communication, BaseHost, COM, Message, ConfigEnvironmentRecord, ReadyMessage } from '@wixc3/engine-com';
+import type { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
 
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';

@@ -1,4 +1,4 @@
-import { workerInitializer } from '@wixc3/engine-core';
+import { workerInitializer } from '@wixc3/engine-com';
 import CodeEditor, { MAIN, PROCESSING } from './code-editor.feature';
 import { CodeService } from './code-service';
 import { ErrorService } from './error-service';

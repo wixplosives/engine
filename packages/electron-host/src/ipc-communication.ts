@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { Communication, BaseHost, AsyncApi } from '@wixc3/engine-core';
+import { Communication, BaseHost, AsyncApi } from '@wixc3/engine-com';
 import { IPCHost } from '@wixc3/engine-core-node';
 
 import type { ChildProcess } from 'child_process';

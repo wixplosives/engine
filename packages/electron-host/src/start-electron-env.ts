@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
-import { BaseHost, TopLevelConfig, RuntimeEngine, Environment } from '@wixc3/engine-core';
+import type { TopLevelConfig, RuntimeEngine, Environment } from '@wixc3/engine-core';
+import { BaseHost } from '@wixc3/engine-com';
 import fs from '@file-services/node';
 import { IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 import {

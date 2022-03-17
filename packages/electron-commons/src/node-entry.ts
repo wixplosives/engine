@@ -1,4 +1,4 @@
-import { BaseHost, COM, Communication } from '@wixc3/engine-core';
+import { BaseHost, COM, Communication } from '@wixc3/engine-com';
 import { LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
 import { runIPCEnvironment } from '@wixc3/engine-runtime-node';
 import { importModules } from './import-modules';

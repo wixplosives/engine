@@ -1,5 +1,6 @@
 import type { BrowserWindow } from 'electron';
-import type { Environment, IRunOptions, Communication } from '@wixc3/engine-core';
+import type { Environment, IRunOptions } from '@wixc3/engine-core';
+import type { Communication } from '@wixc3/engine-com';
 import type { IExternalFeatureNodeDescriptor } from '@wixc3/engine-runtime-node';
 
 export interface InitializedBrowserEnvironment {

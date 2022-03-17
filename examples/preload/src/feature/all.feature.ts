@@ -1,4 +1,5 @@
-import { Feature, COM, Environment, Service } from '@wixc3/engine-core';
+import { Feature, Environment } from '@wixc3/engine-core';
+import { COM, Service } from '@wixc3/engine-com';
 
 globalThis.envMessages = [...(globalThis.envMessages ?? []), 'feature'];
 

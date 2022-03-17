@@ -1,4 +1,4 @@
-import { socketClientInitializer } from '@wixc3/engine-core';
+import { socketClientInitializer } from '@wixc3/engine-com';
 import sampleFeature, { MAIN, NODE_1, NODE_2 } from './x.feature';
 
 sampleFeature.setup(MAIN, ({ nodeEnv1, nodeEnv2, run }, { COM: { communication } }) => {
