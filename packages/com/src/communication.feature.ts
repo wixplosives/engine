@@ -104,3 +104,5 @@ export const COM = new Feature({
         };
     }
 );
+
+export default COM;
