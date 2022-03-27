@@ -20,8 +20,8 @@
     "prettify": "npx prettier . --write"
   },
   "devDependencies": {
-    "@file-services/memory": "^5.7.1",
-    "@file-services/types": "^5.7.1",
+    "@file-services/memory": "^6.0.0",
+    "@file-services/types": "^6.0.0",
     "@stylable/cli": "^4.11.0",
     "@stylable/core": "^4.11.0",
     "@stylable/webpack-plugin": "^4.11.0",
@@ -53,7 +53,7 @@
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "electron": "^17.2.0",
-    "eslint": "^8.11.0",
+    "eslint": "^8.12.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-react": "^7.29.4",
