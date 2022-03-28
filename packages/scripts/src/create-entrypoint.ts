@@ -152,21 +152,25 @@ async function main() {
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
 
-    ${populateConfig(envName, staticBuild, publicConfigsRoute, config)}
-
     const rootFeatureLoader = featureLoaders.get(featureName);
     if(!rootFeatureLoader) {
         throw new Error("cannot find feature '" + featureName + "'. available features:\\n" + Array.from(featureLoaders.keys()).join('\\n'));
     }
     const { resolvedContexts = {} } = rootFeatureLoader;
     const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
+    
+    ${populateConfig(envName, staticBuild, publicConfigsRoute, config)}
 
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
     const features = [loadedFeatures[loadedFeatures.length - 1]];
     ${loadExternalFeatures(target, externalFeaturesRoute)}
-
+    for(const feature of loadedFeatures) {
+        if(feature.entryConfig) {
+            config.push(feature.entryConfig({publicPath, resolvedContexts}));
+        }
+    }
     const runtimeEngine = runEngineApp(
-        { config, options, env, features, publicPath, resolvedContexts }
+        { config, options, env, features }
     );
 
     return runtimeEngine;
@@ -394,7 +398,8 @@ function loadConfigFile(
 
 //#region configs
 function populateConfig(envName: string, staticBuild?: boolean, publicConfigsRoute?: string, config?: TopLevelConfig) {
-    return `${staticBuild ? importStaticConfigs() : ''}
+    return `
+${staticBuild ? importStaticConfigs() : ''}
 ${staticBuild && config ? addOverrideConfig(config) : ''}
 
 ${publicConfigsRoute ? getRemoteConfigs(publicConfigsRoute, envName) : ''}

@@ -268,8 +268,11 @@ export interface Configurable<T> {
     defaultValue: Readonly<T>;
 }
 
+type ConfigurableType<Entity> = Entity extends Configurable<infer T> ? Partial<T> : never;
+type FilterConfigurable<API, K extends keyof API> = API[K] extends Configurable<any> ? K : never;
+
 export type PartialFeatureConfig<API> = {
-    [key in keyof API]?: API[key] extends Configurable<infer T> ? Partial<T> : never;
+    [key in keyof API as FilterConfigurable<API, key>]?: ConfigurableType<API[key]>;
 };
 
 export type TopLevelConfig = Array<[string, object]>;

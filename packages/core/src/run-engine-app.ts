@@ -109,6 +109,7 @@ export class FeatureLoadersRegistry {
         }
         const featureLoaders = await Promise.all(loaded);
         const allPreloadInitFunctions = [];
+        // TODO: make the preload parallel
         for (const featureLoader of featureLoaders) {
             if (featureLoader.preload) {
                 const featureInitFunctions = await featureLoader.preload(this.resolvedContexts);
@@ -154,4 +155,102 @@ export function canAccessWindow(win: Window): boolean {
     } catch {
         return false;
     }
+}
+
+// THIS ENTIRE SECTION IS EXTRACTED FROM THE ENTRYPOINT AND WAS NOT TYPED SINCE IT WAS A STRING
+// THIS IS AN ATTEMPT TO MAKE THE CODE MANAGEABLE - STILL NOT ALL GOOD
+type ConfigLoaders = Record<string, () => Promise<Array<any>>>;
+
+export async function populateConfig(
+    currentWindow: Window,
+    topWindow: Window,
+    envName: string,
+    configName: string,
+    featureName: string,
+    isMainEntrypoint: boolean,
+    configLoaders: ConfigLoaders,
+    config: TopLevelConfig,
+    staticBuild?: boolean,
+    publicConfigsRoute?: string,
+    topLevelConfig?: TopLevelConfig
+) {
+    if (staticBuild && configLoaders[configName]) {
+        const loadedConfigurations = await configLoaders[configName]!();
+        const allLoadedConfigs = await Promise.all(loadedConfigurations);
+        config.push(...allLoadedConfigs.flat());
+    }
+    if (staticBuild && topLevelConfig) {
+        config.push(...topLevelConfig);
+    }
+    if (publicConfigsRoute) {
+        config.push(
+            ...(await (async () => {
+                if (!isMainEntrypoint) {
+                    return new Promise((res) => {
+                        const configsHandler = ({
+                            data: { id, config },
+                        }: {
+                            data: { id: string; config: unknown };
+                        }) => {
+                            if (id === publicConfigsRoute) {
+                                currentWindow.removeEventListener('message', configsHandler);
+                                res(config);
+                            }
+                        };
+                        currentWindow.addEventListener('message', configsHandler);
+                        topWindow.postMessage({
+                            id: publicConfigsRoute,
+                            envName: envName,
+                        });
+                    });
+                } else {
+                    return (
+                        await fetch(
+                            normalizeRoute(publicConfigsRoute) +
+                                configName +
+                                '?env=' +
+                                envName +
+                                '&feature=' +
+                                featureName
+                        )
+                    ).json();
+                }
+            })())
+        );
+        if (isMainEntrypoint) {
+            const fetchedConfigs: Record<string, unknown> = {};
+            const configsEventListener = async ({
+                data: { id, envName },
+                source,
+            }: {
+                data: { id: string; envName: string };
+                source: MessageEventSource | null;
+            }) => {
+                if (source && id === publicConfigsRoute) {
+                    if (!fetchedConfigs[envName]) {
+                        const config: unknown = await (
+                            await fetch(
+                                normalizeRoute(publicConfigsRoute) +
+                                    configName +
+                                    '?env=' +
+                                    envName +
+                                    '&feature=' +
+                                    featureName
+                            )
+                        ).json();
+                        fetchedConfigs[envName] = config;
+                    }
+                    source.postMessage({
+                        id,
+                        config: fetchedConfigs[envName],
+                    });
+                }
+            };
+            currentWindow.addEventListener('message', (e) => void configsEventListener(e));
+        }
+    }
+}
+
+function normalizeRoute(route: string) {
+    return route + (route && !route.endsWith('/') ? '/' : '');
 }

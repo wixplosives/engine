@@ -24,7 +24,11 @@ export function initializeContextualEnv<ENVS extends Environment[], EnvToken ext
     env: { env, environments },
     envInitializers,
 }: ContextualEnvironmentInitializerOptions<ENVS, EnvToken>) {
-    const runtimeEnvironmentName = communication.resolvedContexts[env]!;
+    const runtimeEnvironmentName = communication.resolvedContexts[env];
+
+    if (!runtimeEnvironmentName) {
+        throw new Error(`missing communication resolved context for ${env}`);
+    }
 
     const activeEnvironment = environments.find((contextualEnv) => contextualEnv.env === runtimeEnvironmentName);
 
@@ -39,6 +43,6 @@ export function initializeContextualEnv<ENVS extends Environment[], EnvToken ext
         }
         return envInitializer({ communication, env: { ...activeEnvironment, env } });
     } else {
-        throw new Error('error');
+        throw new Error(`missing environment initializer for ${activeEnvironment.env}`);
     }
 }

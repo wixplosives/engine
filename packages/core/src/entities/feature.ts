@@ -87,7 +87,10 @@ export class Feature<
     public dependencies: Deps;
     public api: API;
     public context: EnvironmentContext;
-
+    public entryConfig?: ({}: {
+        publicPath: string;
+        resolvedContexts: Record<string, string>;
+    }) => [ID, PartialFeatureConfig<API>];
     private environmentIml = new Set<string>();
     private setupHandlers = new SetMultiMap<string, SetupHandler<any, any, Deps, API, EnvironmentContext>>();
     private contextHandlers = new Map<string | number | symbol, ContextHandler<object, any, Deps>>();

@@ -105,4 +105,13 @@ export const COM = new Feature({
     }
 );
 
+COM.entryConfig = ({ publicPath, resolvedContexts }) => {
+    return COM.use({
+        config: {
+            publicPath,
+            resolvedContexts,
+        },
+    });
+};
+
 export default COM;

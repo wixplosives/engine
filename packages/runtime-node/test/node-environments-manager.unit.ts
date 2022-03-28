@@ -19,9 +19,12 @@ const runFeatureOptions = { featureName: 'engine-node/x' };
 
 const env = new Environment('dev', 'node', 'single');
 const comEntry: IStaticFeatureDefinition = {
-    filePath: require.resolve('@wixc3/engine-core/dist/communication.feature'),
-    packageName: '@wixc3/engine-core',
-    scopedName: 'engine-core/communication',
+    //////////////////////////////////////
+    // TODO: WAT?
+    //////////////////////////////////////
+    filePath: require.resolve('@wixc3/engine-com/dist/communication.feature'),
+    packageName: '@wixc3/engine-com',
+    scopedName: 'engine-com/communication',
 };
 
 const server2Env = new Environment('server-two', 'node', 'single');
@@ -162,7 +165,7 @@ describe('Node environments manager', function () {
         await expect(
             nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
         ).to.eventually.be.rejectedWith(
-            'cannot find feature test. available features: engine-node/x, engine-core/communication'
+            'cannot find feature test. available features: engine-node/x, engine-com/communication'
         );
     });
 
