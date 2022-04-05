@@ -17,6 +17,14 @@ Plugins are one way, you can only consume from them.
 
 ## Feature
 
+#### Run
+
+`run` Methods are running in parallel after **all** `setup` methods has finished
+
+#### Setup
+
+The `setup` method are running in sync and are in the dependency order 
+
 Example
 
 ```typescript
@@ -92,6 +100,8 @@ const myFeature = new Feature({
 
 ## Topics
 
+- [[examples]]
+    - [[examples.best_practices]]
 - [[runtime]]
   - [[runtime.entities]]
     - [[runtime.entities.engine]]
