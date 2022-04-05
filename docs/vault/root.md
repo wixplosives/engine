@@ -102,6 +102,7 @@ const myFeature = new Feature({
 
 - [[examples]]
     - [[examples.best_practices]]
+    - [[examples.best_practices.multi_env]]
 - [[runtime]]
   - [[runtime.entities]]
     - [[runtime.entities.engine]]
