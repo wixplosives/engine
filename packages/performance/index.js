@@ -72,6 +72,7 @@ module.exports = {
         } else {
             measure.push(measurement);
         }
+        return measurement;
     },
     getEntriesByType: (type) => {
         switch (type) {
