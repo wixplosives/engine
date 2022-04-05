@@ -1,6 +1,6 @@
 ---
 id: 1a2ciur4julea4tiy45d5y2
-title: Multi_env
+title: Multi Environments
 desc: ''
 updated: 1649145801921
 created: 1649145801921
@@ -22,7 +22,7 @@ The `main` shouldn't know which env provides the `fs` module since it could come
 
 ```mermaid
 flowchart TD
-    mainEnv([multiEnv])-- "fs API request" -->processingEnv
+    mainEnv([multiEnv])-- "fs API request" -->processing
     
     subgraph main[Main feature]
         mainEnv([multiEnv])
