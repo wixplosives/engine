@@ -2,7 +2,7 @@
 id: 5jom0ayqorrbn2pqdn1xhyp
 title: Feature
 desc: ''
-updated: 1649228491116
+updated: 1649235395316
 created: 1646817042514
 ---
 
@@ -12,7 +12,7 @@ created: 1646817042514
 
 Unique identifier, This is the feature name. For example a `file-server` feature will be initiated as `const fileServerFeature = new Feature({id: 'file-server', ...rest})` and the rest of the folder structure should be prefixed with `file-server`.
 
-![Feature file structure](assets/feature_folder_example.png){max-width: 300px}
+![Feature file structure](assets/images/feature_folder_example.png){max-width: 300px}
 
 ### `Dependencies: []`
 
