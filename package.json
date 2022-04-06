@@ -52,7 +52,7 @@
     "@wixc3/wait-for-call": "^1.0.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
-    "electron": "^17.2.0",
+    "electron": "^18.0.2",
     "eslint": "^8.12.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
