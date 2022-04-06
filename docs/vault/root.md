@@ -1,5 +1,5 @@
 ---
-id: 45mpcodad0ur9czkwwrplo4
+id: 71r7yqloexvnam09iamg00x
 title: Engine
 desc: ''
 updated: 1646820089624
@@ -10,8 +10,6 @@ created: 1646816329621
 Cross runtime dependency injection framework.
 
 Every feature declares it dependencies and its API'S
-
-Features declares slots - which are integration points that services can inject data to me. The reason behind this is separation of concerns.
 
 Plugins are one way, you can only consume from them.
 
@@ -58,45 +56,6 @@ feat2.setup(env1, ({}, {feat1: {echoService}})=> {
   echoService.echo()
 })
 ```
-
-`Feature` constructor accepts 3 options
-
-### `id: string`
-
-### `Dependencies: []`
-
-The `id` is the unique name of the feature.
-### `api: Api`
-
-Api implements 3 types of interfaces:
-#### Config
-
-#### Slot
-
-A slot is a way to provide data to the feature in the setup phase, This is super powerful when interacting with slots when composing multiple features as dependencies.
-
-```typescript
-myFeature.setup(myEnv, ({myNamedSlot}, {})=> {
-  console.log(myNamedSlot) // undefined
-  myNamedSlot.register('Yoda')
-  console.log(myNamedSlot) // Yoda
-})
-```
-
-#### Service
-
-Service is a method within an API. When we need to declare API methods we will call the `Service.withType` static.
-
-```typescript
-const myFeature = new Feature({
-  id: 'myFeature',
-  api: {
-    echoService: Service.withType< echo(): string>().defineEntity(env1)
-  },
-  // etc..
-})
-```
-
 
 ## Topics
 

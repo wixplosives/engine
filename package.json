@@ -17,7 +17,9 @@
     "pretest": "yarn lint && yarn build",
     "test": "yarn test:unit",
     "test:unit": "lerna run test --stream --concurrency=1",
-    "prettify": "npx prettier . --write"
+    "prettify": "npx prettier . --write",
+    "docs:dev": "yarn dendron publish dev --wsRoot docs/",
+    "docs:prod": "yarn dendron publish export --wsRoot docs/"
   },
   "devDependencies": {
     "@file-services/memory": "^6.0.0",
@@ -73,7 +75,8 @@
     "source-map-loader": "^3.0.1",
     "typescript": "~4.6.3",
     "util": "^0.12.4",
-    "webpack": "^5.70.0"
+    "webpack": "^5.70.0",
+    "@dendronhq/dendron-cli": "^0.89.0"
   },
   "license": "MIT",
   "private": true

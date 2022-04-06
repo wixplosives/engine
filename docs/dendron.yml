@@ -74,6 +74,7 @@ preview:
     enableKatex: true
     automaticallyShowPreview: false
 publishing:
+    siteUrl: https://wixplosives.github.io/engine
     enableFMTitle: true
     enableNoteTitleForLink: true
     enableMermaid: true
