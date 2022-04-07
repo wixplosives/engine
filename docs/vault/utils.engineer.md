@@ -2,11 +2,11 @@
 id: k45i9vtrbr3qqlikfbzxzym
 title: Engineer
 desc: ''
-updated: 1646816729824
+updated: 1649265567954
 created: 1646816729824
 ---
 
-Engineer is responsible to compile the application
+The engineer is the CLI tool of the engine, It's responsible to compile the application.
 
 2 packages
 

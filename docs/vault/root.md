@@ -2,18 +2,24 @@
 id: 71r7yqloexvnam09iamg00x
 title: Engine
 desc: ''
-updated: 1646820089624
+updated: 1649320689441
 created: 1646816329621
 ---
 
-## In a sentence
-Cross runtime dependency injection framework.
+## Approach
 
-Every feature declares it dependencies and its API'S
-
-Plugins are one way, you can only consume from them.
+- An application is a set of one or more features.
+- A feature contains all the integration code required to get a subset of product functionality implemented.
+- Features may depend on other features, consume their exposed services and register into their slots.
+- A service is a set of functions exposed as an API of a feature.
+- A slot is a registry of any type, which allows pluggability via registration.
+- Environments (browser/worker/iframe) are defined by features, and have semantic names (main/processing/preview).
+- Each slot and service is available in a specific environment.
+- Services can be marked as accessible cross-environments, which exposes them as async APIs in those environment.
 
 ## Feature
+
+![[runtime.entities.feature#^feature_pitch:#^feature_files_naming]]
 
 #### Run
 
@@ -91,12 +97,5 @@ feat2.setup(env1, ({}, {feat1: {echoService}})=> {
 
 ## Powered by Dendron
 
-This is the root of your dendron vault. If you decide to publish your entire vault, this will be your landing page. You are free to customize any part of this page except the frontmatter on top.
+This is the root of your dendron vault. If you decide to publish your entire vault, this will be your landing page. You are free to customize any part of this page except the formatter on top.
 This section contains useful links to related resources.
-
-- [Getting Started Guide](https://link.dendron.so/6b25)
-- [Discord](https://link.dendron.so/6b23)
-- [Home Page](https://wiki.dendron.so/)
-- [Github](https://link.dendron.so/6b24)
-- [Developer Docs](https://docs.dendron.so/)
-

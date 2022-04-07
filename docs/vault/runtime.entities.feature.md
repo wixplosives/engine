@@ -2,10 +2,42 @@
 id: 5jom0ayqorrbn2pqdn1xhyp
 title: Feature
 desc: ''
-updated: 1649235395316
+updated: 1649320675266
 created: 1646817042514
 ---
 
+A feature is combined of several files: ^feature_pitch
+
+- `<feature-name>.feature.ts` - feature definition file.
+- `<feature-name>.<some-env>.env.ts` - some-env specific setup code.
+- `<feature-name>.<another-env>.env.ts` - another-env specific setup code.
+
+^feature_files_naming
+
+### Feature definition file
+
+Feature definition is created in a `<feature-name>.feature.ts` file, and is exposed as the `default` export.
+
+For example:
+
+```ts
+/* my-feature.feature.ts */
+
+import { Feature } from '@wixc3/engine-core';
+
+/* defining a new feature */
+export default new Feature({
+  id: 'myFeature' /* unique id for the feature */,
+
+  dependencies: [
+    /* other features the feature depends on */
+  ],
+
+  api: {
+    /* slots, services, and configurations of the feature */
+  },
+});
+```
 `Feature` constructor accepts 3 options
 
 ### `id: string`
