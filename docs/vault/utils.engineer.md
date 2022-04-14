@@ -2,7 +2,7 @@
 id: k45i9vtrbr3qqlikfbzxzym
 title: Engineer
 desc: ''
-updated: 1649265567954
+updated: 1649953037995
 created: 1646816729824
 ---
 
@@ -22,6 +22,11 @@ how does the main env receives configuration to the application and how does it 
 
 ### Scripts
 
+![[utils.engineer.create#Options]]
+![[utils.engineer.start#Options]]
+![[utils.engineer.run#Options]]
+![[utils.engineer.build#Options]]
+![[utils.engineer.clean#Options]]
 
 ### Topology
 
