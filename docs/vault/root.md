@@ -2,7 +2,7 @@
 id: 71r7yqloexvnam09iamg00x
 title: Intro
 desc: ''
-updated: 1649951527335
+updated: 1650184615657
 created: 1646816329621
 ---
 
@@ -65,10 +65,10 @@ feat2.setup(env1, ({}, {feat1: {echoService}})=> {
 
 ## Topics
 
+- [[getting_started]]
 - [[examples]]
     - [[examples.best_practices]]
     - [[examples.best_practices.multi_env]]
-    - [[examples.getting_started]]
 - [[runtime]]
   - [[runtime.entities]]
     - [[runtime.entities.engine]]
