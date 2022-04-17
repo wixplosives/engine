@@ -2,14 +2,15 @@
 id: hnu0b3ifu0r82za5ti2y49r
 title: React
 desc: ''
-updated: 1650196350676
+updated: 1650196433456
 created: 1650190944611
 ---
 
 ## How to run it
 
 - Go to example react `Feature` (`examples/react`).
-- type (in terminal): `yarn engineer start`
+- Type (in terminal): `yarn engineer start`
+- Inside the dashboard, select `somePlugin` to see all plugins running
 
 ```mermaid
 
