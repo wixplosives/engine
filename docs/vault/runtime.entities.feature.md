@@ -2,14 +2,14 @@
 id: 5jom0ayqorrbn2pqdn1xhyp
 title: Feature
 desc: ''
-updated: 1649320675266
+updated: 1650264207559
 created: 1646817042514
 ---
 
 A feature is combined of several files: ^feature_pitch
 
 - `<feature-name>.feature.ts` - feature definition file.
-- `<feature-name>.<some-env>.env.ts` - some-env specific setup code.
+- `<feature-name>.<some-env>.env.ts` - some-env specific setup code. ^feature_env_file_example
 - `<feature-name>.<another-env>.env.ts` - another-env specific setup code.
 
 ^feature_files_naming
@@ -71,3 +71,15 @@ const myFeature = new Feature({
   // etc..
 })
 ```
+
+## `Feature` instance
+
+### `run(cb: Function)` 
+
+This will be called when the environment is ready. For example, when we want to render a react component we need the document to be ready. In this case we will insert all react rendering logic inside the `run` method.
+
+### `return`ing the API object
+
+This will enable further use in the feature API methods that were defined in the instancing phase (`new Feature({api: {...methods}, ...rest}))`.
+
+
