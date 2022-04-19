@@ -2,7 +2,7 @@
 id: hnu0b3ifu0r82za5ti2y49r
 title: React
 desc: ''
-updated: 1650196433456
+updated: 1650271580479
 created: 1650190944611
 ---
 
@@ -10,67 +10,64 @@ created: 1650190944611
 
 - Go to example react `Feature` (`examples/react`).
 - Type (in terminal): `yarn engineer start`
-- Inside the dashboard, select `somePlugin` to see all plugins running
+- Inside the dashboard, select `somePlugin` to see all plugins running.
 
 ```mermaid
+flowchart TD
+    rendererFeature -- "setup" --> rendererSetup
+    guiFeature -- "setup" --> guiSetup
+    somepluginFeature -- "setup" --> somepluginSetup
 
-flowchart TB
+    guiSetup -- "rendering React wrapper
+    with plugins as {children}" --> rendererSetup
 
-rendererFeature -- "setup" --> rendererSetup
-guiFeature -- "setup" --> guiSetup
-somepluginFeature -- "setup" --> somepluginSetup
+    guiFeature -- "Dependent on" --> rendererFeature
 
-guiSetup -- "rendering React wrapper
-with plugins as {children}" --> rendererSetup
+    somepluginFeature -- "Dependent on" --> guiFeature
 
-guiFeature -- "Dependent on" --> rendererFeature
-
-somepluginFeature -- "Dependent on" --> guiFeature
-
-somepluginSetup -- "registering plugins using
-extensionSlot API
-" --> guiFeature
+    somepluginSetup -- "registering plugins using
+    extensionSlot API
+    " --> guiFeature
 
 
-subgraph renderer["renderer feature"]
-    rendererFeature[["
-        react-renderer.feature.ts
-        api: { renderingService: { render: (Comp) => void } }
-    "]]
+    subgraph renderer["renderer feature"]
+        rendererFeature[["
+            react-renderer.feature.ts
+            api: { renderingService: { render: (Comp) => void } }
+        "]]
 
-    rendererSetup[["
-        react-renderer.main.env.ts
-        - creating #root element
-        return { renderingService: { render: (Comp) => { reactDOM.render(Comp) } } }
-    "]]
-end
+        rendererSetup[["
+            react-renderer.main.env.ts
+            - creating #root element
+            return { renderingService: { render: (Comp) => { reactDOM.render(Comp) } } }
+        "]]
+    end
 
-subgraph gui["gui feature"]
-    guiFeature[["
-        gui.feature.ts
-        dependencies[ reactRendererFeature ]
-        api: { extensionSlot: Slot w/ReactElement@MainEnv }
-    "]]
+    subgraph gui["gui feature"]
+        guiFeature[["
+            gui.feature.ts
+            dependencies[ reactRendererFeature ]
+            api: { extensionSlot: Slot w/ReactElement@MainEnv }
+        "]]
 
-    guiSetup[["
-        gui.main.env.tsx
-        run(()=> { renderingService.render(// ul of extensionSlots) })
-    "]]
-end
+        guiSetup[["
+            gui.main.env.tsx
+            run(()=> { renderingService.render(// ul of extensionSlots) })
+        "]]
+    end
 
-subgraph somePlugin["somePlugin"]
-    somepluginFeature[["
-        someplugin.feature.ts
-        api: {}
-        dependencies: [ guiFeature ]
-    "]]
+    subgraph somePlugin["somePlugin"]
+        somepluginFeature[["
+            someplugin.feature.ts
+            api: {}
+            dependencies: [ guiFeature ]
+        "]]
 
-    somepluginSetup[["
-        someplugin.main.env.tsx
-        extensionSlot.register(// plugin react component)
-        extensionSlot.register(// plugin react component)
-        ...etc
-    "]]
-end
-
+        somepluginSetup[["
+            someplugin.main.env.tsx
+            extensionSlot.register(// plugin react component)
+            extensionSlot.register(// plugin react component)
+            ...etc
+        "]]
+    end
 ```
