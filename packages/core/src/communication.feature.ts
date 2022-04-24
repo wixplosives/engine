@@ -74,7 +74,11 @@ export default new Feature({
         [ENGINE]: engine,
         onDispose,
     }) => {
-        const isNode = !!process.versions?.node && process.title !== 'browser' && process.type !== 'renderer';
+        const isNode =
+            !!process.versions?.node &&
+            process.title !== 'browser' &&
+            // in electron process also have type 'renderer'
+            (process as { type?: string }).type !== 'renderer';
 
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.
