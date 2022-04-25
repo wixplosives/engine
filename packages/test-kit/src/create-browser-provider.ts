@@ -12,7 +12,7 @@ export function createBrowserProvider(options?: playwright.LaunchOptions) {
             return page;
         },
         async dispose() {
-            if (browser && browser.isConnected()) {
+            if (browser?.isConnected()) {
                 await browser.close();
             }
             browser = undefined;

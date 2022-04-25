@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { deferred, waitFor } from 'promise-assist';
 import { Environment } from '@wixc3/engine-core';
 import { Communication, declareComEmitter, iframeInitializer, deferredIframeInitializer } from '@wixc3/engine-com';
-
 import { createDisposables } from '@wixc3/create-disposables';
 import {
     ITestServiceData,

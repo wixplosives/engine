@@ -7,10 +7,6 @@ import type { IFeatureDefinition } from './types';
 const { stringify } = JSON;
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
 export const LOADED_FEATURE_MODULES_NAMESPACE = '_engine_';
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//TODO: !!!!!!!!!!!!!!!!!!!!!!!! publicPath, resolvedContexts should be passed to COM.config
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 //#region types
 
 export interface ICreateEntrypointsOptions {
