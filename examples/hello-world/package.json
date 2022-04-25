@@ -1,0 +1,9 @@
+{
+  "name": "@example/hello-feature",
+  "version": "26.0.0",
+  "scripts": {
+    "start": "engineer start -f hello/hello-world"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

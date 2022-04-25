@@ -38,6 +38,7 @@
     { "path": "./examples/preload/src" },
     { "path": "./examples/react/src" },
     { "path": "./examples/reloaded-iframe/src" },
+    { "path": "./examples/hello-world/src" },
 
     { "path": "./test-fixtures/3rd-party/src" },
     { "path": "./test-fixtures/application-external/src" },
