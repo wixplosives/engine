@@ -1,7 +1,7 @@
 import type { EQUAL } from 'typescript-type-utils';
 import { Environment, Config, Feature, Registry, Running, Slot } from '@wixc3/engine-core';
 import { AsyncApi, Service } from '@wixc3/engine-com';
-import { typeCheck } from '../type-check';
+import { typeCheck } from '@wixc3/engine-core/dist/test/type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/
 

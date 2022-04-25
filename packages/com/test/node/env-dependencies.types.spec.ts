@@ -1,6 +1,6 @@
 import { Environment, Feature } from '@wixc3/engine-core';
 import { Service, AsyncApi, EnvironmentInstanceToken } from '@wixc3/engine-com';
-import { typeCheck } from '../type-check';
+import { typeCheck } from '@wixc3/engine-core/dist/test/type-check';
 import type { EQUAL } from 'typescript-type-utils';
 
 /** type check only test */

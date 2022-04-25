@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import { Environment, Feature, run as runEngine, Value } from '@wixc3/engine-core';
 import type { EQUAL } from 'typescript-type-utils';
-import { typeCheck } from '@wixc3/engine-core/dist/test/type-check';
+import { typeCheck } from './type-check';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

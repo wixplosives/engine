@@ -15,7 +15,7 @@ import {
     ENGINE,
     Value,
 } from '@wixc3/engine-core';
-import { typeCheck } from '@wixc3/engine-core/dist/test/type-check';
+import { typeCheck } from './type-check';
 
 /*************** EXAMPLE FEATURE FILES ***************/
 
