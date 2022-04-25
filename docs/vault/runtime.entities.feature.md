@@ -2,7 +2,7 @@
 id: 5jom0ayqorrbn2pqdn1xhyp
 title: Feature
 desc: ''
-updated: 1650264207559
+updated: 1650898670264
 created: 1646817042514
 ---
 
@@ -38,6 +38,9 @@ export default new Feature({
   },
 });
 ```
+
+^feature_constructor
+
 `Feature` constructor accepts 3 options
 
 ### `id: string`
@@ -49,9 +52,11 @@ Unique identifier, This is the feature name. For example a `file-server` feature
 ### `Dependencies: []`
 
 Features that this current feature is dependant upon
+
 ### `api: Api`
 
 Api implements 3 types of interfaces:
+
 #### Config
 
 #### Slot
@@ -74,12 +79,57 @@ const myFeature = new Feature({
 
 ## `Feature` instance
 
-### `run(cb: Function)` 
+### setup(env, handler)
+
+This is the method of a feature to set itself up in an [[runtime.entities.environment]]
+
+#### arguments
+
+| argument | description                                                                         |
+| -------- | ----------------------------------------------------------------------------------- |
+| env      | [[runtime.entities.environment]] - the environemnt we want to set the feature up in |
+| handler  | [[Set up handler\|runtime.entities.feature#^setup_handler]]                         |
+
+#### Setup handler
+
+^setup_handler
+
+The setup handler is a method being called with 3 arguments.
+
+```ts
+myFeature.setup(myEnv, (settingUpFeature, dependencies, contexts) => { ... });
+```
+
+- **_settingUpFeature_** - all the entities related to the feature:
+
+| argument  | description                                                                            |
+| --------- | -------------------------------------------------------------------------------------- |
+| id        | (_string_) - id                                                                        |
+| run       | (method) - [[run method\|runtime.entities.feature#^run_method]]                        |
+| onDispose | (method) - a method will be called once this feature gets disposed in this environment |
+| Own slots | all the slots defined in the feature api for this environment                          |
+| Configs   | all the configurations defined in the feature api and accessible in this environment   |
+
+#### `run(cb: Function)`
+
+^run_method
 
 This will be called when the environment is ready. For example, when we want to render a react component we need the document to be ready. In this case we will insert all react rendering logic inside the `run` method.
 
-### `return`ing the API object
+- **_dependencies_** - a list of all the dependencies the feature declared dependency on, and all the api's available from that feature in the current environment
 
-This will enable further use in the feature API methods that were defined in the instancing phase (`new Feature({api: {...methods}, ...rest}))`.
+- **_contexts_** - api's provided to the specific environment in case the environment is a [[contextual environment|runtime.entities.environment.targets]]
 
+### setupContext(env, contextName,handler)
 
+In case the environment is a [[contextual environment|runtime.entities.environment.targets]], this is how we can provide a specific context to the environment.
+
+```ts
+myFeature.setupContext(myEnv, 'envContext', (deps) => {
+  return {
+    method: () => 'from context',
+  };
+});
+```
+
+##### For an example of a minimal contextual environment look at `/examples/multi-env`

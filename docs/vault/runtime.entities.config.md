@@ -2,11 +2,11 @@
 id: bvvioj2a0eoxj6dp8w8fiu4
 title: Config
 desc: ''
-updated: 1650884825472
+updated: 1650889143899
 created: 1646817053797
 ---
 
-Each feature can declare that it can be configured using the `Config` entity.
+Each [[runtime.entities.feature]] can declare that it can be configured using the `Config` entity.
 we can import the `Config` entity and use in the the feature declaration
 
 ```ts

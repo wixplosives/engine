@@ -2,14 +2,14 @@
 id: h2xyrvb15fmarce04l82y5n
 title: Engine
 desc: ''
-updated: 1650884861686
+updated: 1650889170707
 created: 1646817029920
 ---
 
 Any engine application consists of 2 things.
 
-- features
-- environments
+- [[runtime.entities.feature]]
+- [[runtime.entities.environment]]
 
 The `RuntimeEngine` entity is the engine instance running all the features in every environment of the application.
 
