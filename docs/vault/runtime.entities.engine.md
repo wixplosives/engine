@@ -2,7 +2,7 @@
 id: h2xyrvb15fmarce04l82y5n
 title: Engine
 desc: ''
-updated: 1650884073553
+updated: 1650884861686
 created: 1646817029920
 ---
 
@@ -70,30 +70,30 @@ const env2 = new Environment('env2', 'node', 'single');
 const f = new Feature({
   id: 'myFeature',
   api: {
-      config: new Config<{ name?: string }>({})
+    config: new Config<{ name?: string }>({}),
   },
 });
 
-f.setup(env1, ([RUN_OPTIONS: runOptions, config]) => {
+f.setup(env1, ({ [RUN_OPTIONS]: runOptions, config }) => {
   console.log('hello env1');
   console.log(runOptions, config);
 });
 
-f.setup(env2, ([RUN_OPTIONS: runOptions, config]) => {
+f.setup(env2, ({ [RUN_OPTIONS]: runOptions, config }) => {
   console.log('hello env2');
   console.log(runOptions, config);
 });
 
 const runtimeEngine = new RuntimeEngine(
-    env1,
-    [
-        f.use({
-            config: {
-                name: 'some-name'
-            }
-        })
-    ],
-    new Map([some, 'value'])
+  env1,
+  [
+    f.use({
+      config: {
+        name: 'some-name',
+      },
+    }),
+  ],
+  new Map([some, 'value'])
 );
 
 runtimeEngine.run(f);
