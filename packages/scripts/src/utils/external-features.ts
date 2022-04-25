@@ -20,8 +20,8 @@ export function getExternalFeaturesMetadata(
                 envEntries[envName] = {
                     ...envEntries[envName],
                     [target]:
-                    // if target is node, the path to the entry will be the path to the entry file
-                    // otherwise it will be mapped to a path from where this package will be served
+                        // if target is node, the path to the entry will be the path to the entry file
+                        // otherwise it will be mapped to a path from where this package will be served
                         target === 'node'
                             ? join(packageBasePath, entryPath)
                             : join(EXTERNAL_FEATURES_BASE_URI, packageName, entryPath),

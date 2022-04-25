@@ -15,13 +15,13 @@ export class WsClientHost extends BaseHost {
         const { promise, resolve } = deferred();
         this.connected = promise;
 
-        this.socketClient = io(url, options);
+        this.socketClient = io(url, { ...options, transports: ['websocket'], forceNew: true });
 
         this.socketClient.on('connect', () => {
-            resolve();
             this.socketClient.on('message', (data: unknown) => {
                 this.emitMessageHandlers(data as Message);
             });
+            resolve();
         });
 
         this.socketClient.on('disconnect', () => {
