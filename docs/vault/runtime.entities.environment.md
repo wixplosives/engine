@@ -2,7 +2,7 @@
 id: vwijkf6kssesvezejnjzw36
 title: Environment
 desc: ''
-updated: 1650898500507
+updated: 1650974801824
 created: 1646817074058
 ---
 
@@ -23,7 +23,23 @@ const myEnv = new Environment('my-env', 'node', 'single');
 _my-env (string)_ - The semantic name of this environment. this allows differentiating based based on file name conventions which files belongs to which environment.
 This is also used as a name surving a purpose for the application, such as `server`, `processing` or `gui`.
 
-_node_ - The [[runtime.entities.environment.targets]] on which this environment should be evaluated on.
+_node_ - The target on which this environment should be evaluated on.
+
+^dfff
+
+The possible targets for an environment
+
+| target name       | description                                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| window            | an environment which will be bundled, and html will be created for it and will append the bundle to the head of the html |
+| iframe            | very similar to the window environment, with the exception that it is ment to be a source of an ifame element            |
+| node              | node environment                                                                                                         |
+| worker            | environment which will be loaded in a browser worker                                                                     |
+| electron-renderer | an environment which will be executed in an electron browser window                                                      |
+| electron-main     | the root electron process                                                                                                |
+| context           | [[runtime.entities.environment.targets.context]]                                                                         |
+
+--
 
 _single_ - wheather the application should treat this environment as a singleton or a multiton
 
@@ -104,7 +120,7 @@ hello from f2
 
 For cross environment communication and further reading, go to [[runtime.entities.communication]]
 
-For example, a file-server feature which should provide Node `readDir` and `readFile` can run on two (or more) different environments: `node` or `window`, Then we will define them as follows:
+But, for example, a file-server feature which should provide Node `readDir` and `readFile` can run on two (or more) different environments: `node` or `window`, Then we will define them as follows:
 
 ```typescript
 /**

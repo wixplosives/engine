@@ -9,6 +9,4 @@ schemas:
         children:
           - pattern: environment
             children:
-              - pattern: targets
-                children:
-                  - pattern: '*'
+              - pattern: 'contextual'
