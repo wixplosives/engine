@@ -2,11 +2,13 @@
 id: 7ymyhy88vmwyzkaql4918pl
 title: Slot
 desc: ''
-updated: 1650979753025
+updated: 1651067566987
 created: 1646817063393
 ---
 
-Features declares slots - which are integration points for other features of the application. The reason behind this is separation of concerns. ^slots-pitch
+Features declares slots - which are integration points for other features of the application. The reason behind this is separation of concerns.
+
+^slots-pitch
 
 Let's imaging a text editor with a top bar, which currently has in it's right corner 3 buttons:
 
