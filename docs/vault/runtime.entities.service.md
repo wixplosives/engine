@@ -2,7 +2,7 @@
 id: 1slf4w0hj8j3keg577chhur
 title: Service
 desc: ''
-updated: 1651048378465
+updated: 1651050065168
 created: 1646819667337
 ---
 
@@ -103,6 +103,8 @@ f1.setup(otherEnv, ({ echoService }) => {
 If any other feature which has a direct dependency on `f1` wants to access that service from any other environment that is not `myEnv`, the usage will be the same as [[runtime.entities.service#^dependency_setup]] but, again, all the services would be async.
 
 ### .allowRemoteAccess(options)
+
+^remote_access
 
 The `allowRemoteAccess` is the only method esposed from the service instance, and it notifys the engine, that for any other environment we should proxy this api call to the environment where the service is provided from.
 
