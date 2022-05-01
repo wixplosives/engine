@@ -1,4 +1,3 @@
-import process from 'process';
 import { BaseHost } from './com/hosts/base-host';
 import { Communication, ConfigEnvironmentRecord, ICommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
@@ -75,10 +74,11 @@ export default new Feature({
         onDispose,
     }) => {
         const isNode =
+            typeof process !== 'undefined' &&
             !!process.versions?.node &&
             process.title !== 'browser' &&
             // in electron process also have type 'renderer'
-            (process as { type?: string }).type !== 'renderer';
+            process.type !== 'renderer';
 
         // worker and iframe always get `name` when initialized as Environment.
         // it can be overridden using top level config.
@@ -114,3 +114,6 @@ export default new Feature({
         };
     }
 );
+
+// rather than including the entire node types we define it locally
+declare const process: { type?: string; title?: string; versions?: { node?: string } };
