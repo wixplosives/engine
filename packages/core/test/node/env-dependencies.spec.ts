@@ -23,8 +23,9 @@ describe('ENV dependencies', () => {
             id: 'test',
             api: {
                 service: Service.withType<{ increment: (n: number) => number }>().defineEntity(baseEnv),
-                service2:
-                    Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(extendingEnv),
+                service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(
+                    extendingEnv
+                ),
             },
         });
 
@@ -55,16 +56,18 @@ describe('ENV dependencies', () => {
             id: 'entry',
             api: {
                 service: Service.withType<{ increment: (n: number) => number }>().defineEntity(baseEnv),
-                service2:
-                    Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(extendingEnv),
+                service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(
+                    extendingEnv
+                ),
             },
         });
         const extendingFeature = new Feature({
             id: 'extending',
             api: {
                 service: Service.withType<{ increment: (n: number) => number }>().defineEntity(baseEnv),
-                service2:
-                    Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(extendingEnv),
+                service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(
+                    extendingEnv
+                ),
             },
             dependencies: [entryFeature],
         });
