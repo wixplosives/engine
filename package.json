@@ -46,13 +46,13 @@
     "@types/semver": "^7.3.9",
     "@types/sinon": "^10.0.11",
     "@types/sinon-chai": "^3.2.8",
-    "@typescript-eslint/eslint-plugin": "^5.22.0",
-    "@typescript-eslint/parser": "^5.22.0",
+    "@typescript-eslint/eslint-plugin": "^5.23.0",
+    "@typescript-eslint/parser": "^5.23.0",
     "@wixc3/create-disposables": "^2.0.0",
     "@wixc3/wait-for-call": "^1.0.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
-    "electron": "^18.2.0",
+    "electron": "^18.2.2",
     "eslint": "^8.15.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
@@ -73,7 +73,7 @@
     "source-map-loader": "^3.0.1",
     "typescript": "~4.6.4",
     "util": "^0.12.4",
-    "webpack": "^5.72.0"
+    "webpack": "^5.72.1"
   },
   "license": "MIT",
   "private": true
