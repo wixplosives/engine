@@ -21,7 +21,7 @@
     "@wixc3/engineer": "^26.0.3",
     "@wixc3/resolve-directory-context": "^2.0.0",
     "electron-builder": "^23.0.3",
-    "yargs": "^17.5.0"
+    "yargs": "^17.5.1"
   },
   "files": [
     "bin",
