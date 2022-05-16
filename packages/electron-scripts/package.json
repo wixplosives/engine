@@ -19,7 +19,7 @@
     "@wixc3/engine-runtime-node": "^26.0.3",
     "@wixc3/engine-scripts": "^26.0.3",
     "@wixc3/engineer": "^26.0.3",
-    "@wixc3/resolve-directory-context": "^2.0.0",
+    "@wixc3/resolve-directory-context": "^3.0.0",
     "electron-builder": "^23.0.3",
     "yargs": "^17.5.0"
   },

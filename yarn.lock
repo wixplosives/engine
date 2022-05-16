@@ -1753,6 +1753,14 @@
     minimatch "^4.1.1"
     type-fest "^2.11.2"
 
+"@wixc3/resolve-directory-context@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-3.0.0.tgz#b5204aa6e62722c02db2c3bda92ab1e06d3744cd"
+  integrity sha512-CmA26NRG2FQDbjwAPp3jMr1FHmGgc9CJDtz2WwMMXzJcv8xKuRiTa0mtnVtdXcvWGaHZks/wG4EfZ3s1bcXzhw==
+  dependencies:
+    minimatch "^5.0.1"
+    type-fest "^2.12.2"
+
 "@wixc3/wait-for-call@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-1.0.1.tgz#71ca625a66dbe6a0262be4bd91e54be81ebe3054"

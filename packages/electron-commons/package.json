@@ -13,7 +13,7 @@
     "@wixc3/engine-core": "^26.0.3",
     "@wixc3/engine-core-node": "^26.0.3",
     "@wixc3/engine-runtime-node": "^26.0.3",
-    "@wixc3/resolve-directory-context": "^2.0.0",
+    "@wixc3/resolve-directory-context": "^3.0.0",
     "tree-kill": "^1.2.2"
   },
   "files": [
