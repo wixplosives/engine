@@ -47,7 +47,7 @@ export async function launchEngineHttpServer({
         openSockets.add(socket);
         socket.once('close', () => openSockets.delete(socket));
     });
-    const socketServer = new io.Server(httpServer, { cors: {}, ...socketServerOptions, transports: ['websocket'] });
+    const socketServer = new io.Server(httpServer, { cors: {}, transports: ['websocket'], ...socketServerOptions });
 
     return {
         close: async () => {
