@@ -14,7 +14,7 @@ export class WsClientHost extends BaseHost {
         const { promise, resolve } = deferred();
         this.connected = promise;
 
-        this.socketClient = io(url, { ...options, transports: ['websocket'], forceNew: true });
+        this.socketClient = io(url, { transports: ['websocket'], forceNew: true, ...options });
 
         this.socketClient.on('connect', () => {
             this.socketClient.on('message', (data: unknown) => {
