@@ -29,11 +29,12 @@ export class MapRegistry<K, T> {
         this.subscribe(cb);
         return () => this.unSubscribe(cb);
     }
-
+    public asMap(): ReadonlyMap<K, T> {
+        return this.items;
+    }
     public get(key: K) {
         return this.items.get(key);
     }
-
     public values() {
         return this.items.values();
     }
