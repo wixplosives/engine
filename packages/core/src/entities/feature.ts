@@ -75,22 +75,66 @@ export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
     }
 }
 
+/**
+ * Feature is a class that can be used to create a runtime feature. It is used to define the feature and its dependencies.
+ *
+ * @class Feature
+ * @template ID - Way to identify the feature. Provide a unique string or symbol.
+ * @template Deps - List of dependencies.
+ * @template API - API that the feature exposes.
+ * @template EnvironmentContext - Context that the feature is running in.
+ */
 export class Feature<
     ID extends string = string,
     Deps extends Feature[] = any[],
     API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any
 > {
+    /**
+     * Identifier of the feature.
+     *
+     * @type {Feature<ID, Feature[], API, EnvironmentContext>}
+     * @memberof Feature
+     */
     public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
+    /**
+     * Unique string or symbol that identifies the feature.
+     *
+     * @type {ID}
+     * @memberof Feature
+     */
     public id: ID;
+    /**
+     * Dependencies of the feature. This is an array of features.
+     *
+     * @type {Deps}
+     * @memberof Feature
+     */
     public dependencies: Deps;
+    /**
+     * What the feature exposes. This is an object with the key being the name of the api and the value being the api.
+     *
+     * @type {API}
+     * @memberof Feature
+     */
     public api: API;
+    /**
+     * Context that the feature is running in. Bound to the environment.
+     *
+     * @type {EnvironmentContext}
+     * @memberof Feature
+     */
     public context: EnvironmentContext;
 
     private environmentIml = new Set<string>();
     private setupHandlers = new SetMultiMap<string, SetupHandler<any, any, Deps, API, EnvironmentContext>>();
     private contextHandlers = new Map<string | number | symbol, ContextHandler<object, any, Deps>>();
 
+    /**
+     * Creates an instance of Feature.
+     * @param {FeatureDef<ID, Deps, API, EnvironmentContext>} def
+     * @memberof Feature
+     */
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
         this.dependencies = def.dependencies || ([] as Feature[] as Deps);
@@ -98,7 +142,12 @@ export class Feature<
         this.context = def.context || ({} as EnvironmentContext);
         this.identifyApis();
     }
-
+    /**
+     * Register a setup handler for the feature on a specific environment.
+     * @param env - Environment to register the handler on.
+     * @param setupHandler - Function that will be called when the feature is setup.
+     * @returns (optional) The api that the feature exposes.
+     */
     public setup<ENV extends AnyEnvironment>(
         env: ENV,
         setupHandler: SetupHandler<ENV, ID, Deps, API, EnvironmentContext>
