@@ -125,7 +125,7 @@ let executableApp: IExecutableApplication;
 if (typeof after !== 'undefined') {
     after('close browser, if open', async function () {
         this.timeout(20_000);
-        if (browser && browser.isConnected) {
+        if (browser && browser.isConnected()) {
             await browser.close();
         }
         browser = undefined;
