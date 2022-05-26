@@ -18,7 +18,6 @@ import { deferred, IDeferredPromise, SetMultiMap } from '../helpers';
 
 const emptyDispose = { dispose: () => undefined };
 
-/*************** FEATURE ***************/
 export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
@@ -78,10 +77,10 @@ export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
 /**
  * Feature is a class that can be used to create a runtime feature. It is used to define the feature and its dependencies.
  *
- * @template ID - Way to identify the feature. Provide a unique string.
- * @template Deps - List of dependencies.
- * @template API - API that the feature exposes.
- * @template EnvironmentContext - Context that the feature is running in.
+ * @template ID Way to identify the feature.
+ * @template Deps List of dependencies.
+ * @template API What the feature exposes.
+ * @template EnvironmentContext Context that the feature is running in.
  */
 export class Feature<
     ID extends string = string,
@@ -91,11 +90,10 @@ export class Feature<
 > {
     /**
      * Identifier of the feature.
-     *
      */
     public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
     /**
-     * Unique string or symbol that identifies the feature.
+     * Unique string that identifies the feature.
      */
     public id: ID;
     /**
@@ -116,7 +114,20 @@ export class Feature<
     private contextHandlers = new Map<string | number | symbol, ContextHandler<object, any, Deps>>();
 
     /**
-     * Creates an instance of Feature.
+     * Define a new feature by providing:
+     * - Unique string identifier
+     * - API
+     * - Dependencies (optional)
+     * - Context (optional)
+     *
+     * This instance will be detected by engine when exported as default, as well as being used
+     * by `<feature-name>.<environment-name>.env.ts` files to define the environment specific implementations.
+     *
+     * @example
+     * export default new Feature({
+     *   id: 'my-feature',
+     *   api: { ... },
+     * })
      */
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
@@ -126,10 +137,15 @@ export class Feature<
         this.identifyApis();
     }
     /**
-     * Register a setup handler for the feature on a specific environment.
-     * @param env - Environment to register the handler on.
-     * @param setupHandler - Function that will be called when the feature is setup.
-     * @returns The api that the feature exposes.
+     * Call this to provide the environment specific implementation for a feature.
+     *
+     * @param env Environment id to implement the api for.
+     * @param setupHandler Callback that receives:
+     * - Own feature `Slot`s
+     * - Dependencies APIs
+     * - Context API that is specific to a runtime environment.
+     *
+     * @returns Implementation for the services defined for this feature on this environment
      */
     public setup<ENV extends AnyEnvironment>(
         env: ENV,
@@ -140,10 +156,23 @@ export class Feature<
         return this;
     }
 
+    /**
+     *
+     *
+     * @param config
+     * @returns
+     */
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
         return [this.id, config];
     }
 
+    /**
+     *
+     * @param _env
+     * @param environmentContext
+     * @param contextHandler
+     * @returns
+     */
     public setupContext<K extends keyof EnvironmentContext, Env extends AnyEnvironment>(
         _env: Env,
         environmentContext: K,
@@ -154,6 +183,11 @@ export class Feature<
         return this;
     }
 
+    /**
+     *
+     * @param runningEngine
+     * @returns
+     */
     public [CREATE_RUNTIME]<ENV extends AnyEnvironment>(runningEngine: RuntimeEngine<ENV>): RuntimeFeature<this, ENV> {
         const {
             features,
