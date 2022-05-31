@@ -18,7 +18,6 @@ import { deferred, IDeferredPromise, SetMultiMap } from '../helpers';
 
 const emptyDispose = { dispose: () => undefined };
 
-/*************** FEATURE ***************/
 export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
@@ -75,22 +74,61 @@ export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
     }
 }
 
+/**
+ * Feature is a class that can be used to create a runtime feature. It is used to define the feature and its dependencies.
+ *
+ * @template ID Way to identify the feature.
+ * @template Deps List of dependencies.
+ * @template API What the feature exposes.
+ * @template EnvironmentContext Context that the feature is running in.
+ */
 export class Feature<
     ID extends string = string,
     Deps extends Feature[] = any[],
     API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any
 > {
+    /**
+     * Identifier of the feature.
+     */
     public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
+    /**
+     * Unique string that identifies the feature.
+     */
     public id: ID;
+    /**
+     * Dependencies of the feature. This is an array of features.
+     */
     public dependencies: Deps;
+    /**
+     * What the feature exposes. This is an object with the key being the name of the api and the value being the api.
+     */
     public api: API;
+    /**
+     * Context that the feature is running in. Bound to the environment.
+     */
     public context: EnvironmentContext;
 
     private environmentIml = new Set<string>();
     private setupHandlers = new SetMultiMap<string, SetupHandler<any, any, Deps, API, EnvironmentContext>>();
     private contextHandlers = new Map<string | number | symbol, ContextHandler<object, any, Deps>>();
 
+    /**
+     * Define a new feature by providing:
+     * - Unique string identifier
+     * - API
+     * - Dependencies (optional)
+     * - Context (optional)
+     *
+     * This instance will be detected by engine when exported as default, as well as being used
+     * by `<feature-name>.<environment-name>.env.ts` files to define the environment specific implementations.
+     *
+     * @example
+     * export default new Feature({
+     *   id: 'my-feature',
+     *   api: { ... },
+     * })
+     */
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
         this.dependencies = def.dependencies || ([] as Feature[] as Deps);
@@ -98,7 +136,17 @@ export class Feature<
         this.context = def.context || ({} as EnvironmentContext);
         this.identifyApis();
     }
-
+    /**
+     * Call this to provide the environment specific implementation for a feature.
+     *
+     * @param env Environment id to implement the api for.
+     * @param setupHandler Callback that receives:
+     * - Own feature `Slot`s
+     * - Dependencies APIs
+     * - Context API that is specific to a runtime environment.
+     *
+     * @returns Implementation for the services defined for this feature on this environment
+     */
     public setup<ENV extends AnyEnvironment>(
         env: ENV,
         setupHandler: SetupHandler<ENV, ID, Deps, API, EnvironmentContext>
@@ -108,10 +156,23 @@ export class Feature<
         return this;
     }
 
+    /**
+     *
+     *
+     * @param config
+     * @returns
+     */
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
         return [this.id, config];
     }
 
+    /**
+     *
+     * @param _env
+     * @param environmentContext
+     * @param contextHandler
+     * @returns
+     */
     public setupContext<K extends keyof EnvironmentContext, Env extends AnyEnvironment>(
         _env: Env,
         environmentContext: K,
@@ -122,6 +183,11 @@ export class Feature<
         return this;
     }
 
+    /**
+     *
+     * @param runningEngine
+     * @returns
+     */
     public [CREATE_RUNTIME]<ENV extends AnyEnvironment>(runningEngine: RuntimeEngine<ENV>): RuntimeFeature<this, ENV> {
         const {
             features,
