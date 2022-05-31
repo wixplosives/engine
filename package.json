@@ -47,7 +47,7 @@
     "@types/sinon": "^10.0.11",
     "@types/sinon-chai": "^3.2.8",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
-    "@typescript-eslint/parser": "^5.26.0",
+    "@typescript-eslint/parser": "^5.27.0",
     "@wixc3/create-disposables": "^2.0.0",
     "@wixc3/wait-for-call": "^1.0.1",
     "chai": "^4.3.6",
