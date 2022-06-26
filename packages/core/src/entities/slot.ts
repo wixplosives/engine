@@ -20,6 +20,9 @@ export class Registry<T> {
     public unSubscribe(cb: (item: T) => void) {
         this.callbacks.delete(cb);
     }
+    public asArray(): ReadonlyArray<T> {
+        return this.items;
+    }
     public stream(cb: (item: T) => void) {
         for (const item of this) {
             cb(item);
