@@ -17,7 +17,7 @@ describe('Processing env test', () => {
             feature: Feature,
         });
 
-        const remoteFile = await remoteFiles.readFile(fs.basename(__filename));
+        const remoteFile = remoteFiles.readFile(fs.basename(__filename));
         expect(remoteFile).to.eq(fs.readFileSync(__filename, 'utf8'));
 
         await dispose();

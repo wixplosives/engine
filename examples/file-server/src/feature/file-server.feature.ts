@@ -1,4 +1,4 @@
-import { COM, Environment, Feature, Service, Config } from '@wixc3/engine-core';
+import { COM, Config, Environment, Feature, Service } from '@wixc3/engine-core';
 import type { IDirectoryContents } from '../types';
 
 /**
@@ -11,8 +11,8 @@ export const server = new Environment('server', 'node', 'single');
  * defining the interface of the file system api which the server will implement
  */
 export interface FileSystemAPI {
-    readDir(filePath: string): Promise<IDirectoryContents>;
-    readFile(filePath: string): Promise<string>;
+    readDir(filePath: string): IDirectoryContents;
+    readFile(filePath: string): string;
 }
 
 export const MAIN_MARK = 'main';
