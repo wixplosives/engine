@@ -1,16 +1,16 @@
-import fs from '@file-services/node';
-import type { TopLevelConfig, IFeatureLoader, EngineerMetadataConfig } from '@wixc3/engine-core';
-import { createDisposables } from '@wixc3/create-disposables';
-import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import chai, { expect } from 'chai';
-import { waitFor } from 'promise-assist';
-import type { Frame, Page } from 'playwright-core';
-import { Application, IBuildManifest } from '@wixc3/engine-scripts';
-import { join } from 'path';
-import rimraf from 'rimraf';
 import { mkdtempSync } from 'fs';
 import os from 'os';
+import { join } from 'path';
+import fs from '@file-services/node';
+import { createDisposables } from '@wixc3/create-disposables';
+import type { EngineerMetadataConfig, IFeatureLoader, TopLevelConfig } from '@wixc3/engine-core';
+import { Application, IBuildManifest } from '@wixc3/engine-scripts';
+import { createBrowserProvider } from '@wixc3/engine-test-kit';
+import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import type { Frame, Page } from 'playwright-core';
+import { waitFor } from 'promise-assist';
+
 chai.use(chaiAsPromised);
 function getBodyContent(page: Page | Frame) {
     return page.evaluate(() => (document.body.textContent || '').trim());
@@ -218,7 +218,7 @@ describe('Application', function () {
             it('creates a node entry with re-mapped sources', async () => {
                 const tempDirPath = mkdtempSync(fs.join(os.tmpdir(), 'some-test'));
 
-                disposables.add(() => rimraf.sync(tempDirPath));
+                disposables.add(() => fs.rmSync(tempDirPath, { force: true, recursive: true }));
 
                 const app = new Application({
                     basePath: nodeFeatureFixturePath,
@@ -566,7 +566,7 @@ describe('Application', function () {
                 join(pluginsFolderPath, name, 'dist')
             );
             disposables.add(() => externalFeatureApp.clean());
-            disposables.add(() => rimraf.sync(pluginsFolderPath));
+            disposables.add(() => fs.rmSync(pluginsFolderPath, { force: true, recursive: true }));
 
             const app = new Application({ basePath: staticBaseWebApplicationFixturePath });
             await app.build({

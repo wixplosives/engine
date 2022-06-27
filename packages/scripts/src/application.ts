@@ -1,18 +1,29 @@
-import { promisify } from 'util';
-import express from 'express';
-import rimrafCb from 'rimraf';
-import webpack from 'webpack';
-import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import fs from '@file-services/node';
-import type io from 'socket.io';
-import { TopLevelConfig, SetMultiMap, flattenTree, AnyEnvironment } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
-
+import { AnyEnvironment, flattenTree, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import {
+    createIPC,
+    ForkedProcess,
+    IConfigDefinition,
+    IEnvironmentDescriptor,
+    IExternalDefinition,
+    IExternalFeatureNodeDescriptor,
+    launchEngineHttpServer,
+    LaunchEnvironmentMode,
+    NodeEnvironmentsManager,
+    resolveEnvironments,
+    RouteMiddleware,
+    TopLevelConfigProvider,
+} from '@wixc3/engine-runtime-node';
+import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
+import express from 'express';
+import type io from 'socket.io';
+import webpack from 'webpack';
 import { loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import {
-    createConfigMiddleware,
     createCommunicationMiddleware,
+    createConfigMiddleware,
     ensureTopLevelConfigMiddleware,
 } from './config-middleware';
 import {
@@ -20,35 +31,20 @@ import {
     createWebpackConfigForExternalFeature,
     createWebpackConfigs,
 } from './create-webpack-configs';
-import type { EngineConfig, IFeatureDefinition, IFeatureTarget } from './types';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
-import {
-    launchEngineHttpServer,
-    RouteMiddleware,
-    resolveEnvironments,
-    ForkedProcess,
-    LaunchEnvironmentMode,
-    NodeEnvironmentsManager,
-    createIPC,
-    IConfigDefinition,
-    IEnvironmentDescriptor,
-    IExternalDefinition,
-    IExternalFeatureNodeDescriptor,
-    TopLevelConfigProvider,
-} from '@wixc3/engine-runtime-node';
+import type { EngineConfig, IFeatureDefinition, IFeatureTarget } from './types';
 
+import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
+import { createExternalNodeEntrypoint } from './create-entrypoint';
 import {
     getExternalFeatureBasePath,
     getExternalFeaturesMetadata,
     getFilePathInPackage,
     scopeFilePathsToPackage,
 } from './utils';
-import { createExternalNodeEntrypoint } from './create-entrypoint';
-import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 
 import { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
 
-const rimraf = promisify(rimrafCb);
 const { basename, extname, join } = fs;
 
 const builtinTemplatesPath = fs.join(__dirname, '../templates');
@@ -152,8 +148,7 @@ export class Application {
     }
 
     public async clean() {
-        await rimraf(this.outputPath);
-        await rimraf(fs.join(this.basePath, 'npm'));
+        await fs.promises.rm(this.outputPath, { force: true, recursive: true });
     }
 
     public async build({
