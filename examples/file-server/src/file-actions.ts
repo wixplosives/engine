@@ -12,6 +12,7 @@ export class FileActions {
     constructor(basePath: string, fs: IFileSystem = nodeFs) {
         this.fs = createDirectoryFs(fs, basePath);
     }
+
     /**
      * will return the relative path of the file and the name of the file
      * @param filePath path to the file in the local file system
@@ -27,32 +28,23 @@ export class FileActions {
      * will return the file contents given an absolute file path
      * @param filePath path to the file in the local file system
      */
-    public async getFileContents(filePath: string): Promise<string> {
-        return this.fs.promises.readFile(filePath, 'utf8');
+    public getFileContents(filePath: string): string {
+        return this.fs.readFileSync(filePath, 'utf8');
     }
+
     /**
      * @description function returns directory from a path
      * @param directoryPath path on the local file system
      */
-    public async getDirectoryTree(directoryPath: string): Promise<IDirectoryContents> {
+    public getDirectoryTree(directoryPath: string): IDirectoryContents {
         const directory: IDirectoryContents = {};
-        const allDirectoryElements = this.fs.readdirSync(directoryPath);
-        await Promise.all(
-            allDirectoryElements.map(async (elementName) => {
-                if (this.fs.lstatSync(this.fs.join(directoryPath, elementName)).isFile()) {
-                    directory[elementName] = this.getFileData(this.fs.join(directoryPath, elementName));
-                } else {
-                    try {
-                        directory[elementName] = await this.getDirectoryTree(
-                            `${this.fs.join(directoryPath, elementName)}`
-                        );
-                    } catch {
-                        return;
-                    }
-                }
-            })
-        );
-
+        for (const item of this.fs.readdirSync(directoryPath, { withFileTypes: true })) {
+            if (item.isFile()) {
+                directory[item.name] = this.getFileData(this.fs.join(directoryPath, item.name));
+            } else if (item.isDirectory()) {
+                directory[item.name] = this.getDirectoryTree(this.fs.join(directoryPath, item.name));
+            }
+        }
         return directory;
     }
 }
