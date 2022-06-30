@@ -2,7 +2,7 @@
 id: 3exet4jj85h5gdb9qu9yk0d
 title: Getting started
 desc: ''
-updated: 1650184933682
+updated: 1656520641511
 created: 1649931104026
 ---
 
@@ -15,20 +15,45 @@ After understanding a bit about the engine, let's create a simple hello-world ap
 In your blank typescript repo:
 
 1. install engine-core package `yarn add @wixc3/engine-core`
-2. install engineer as a dev dependency `yarn add @wixc3/engineer -D`
-3. if this is a typescript project, in the root of the project create an `engine.config.js` file, and inside we should add one of the following:
+2. install dev-dependencies `yarn add -D typescript webpack html-webpack-plugin react stylable`
+3. install engineer as a dev dependency `yarn add @wixc3/engineer -D`
+4. if this is a typescript project, in the root of the project create an `engine.config.js` file, and inside we should add one of the following:
 
 ```ts
 module.exports = {
-  // a require hook to a library which transpiles typescript on the fly
-  require: ['@ts-tools/node/r'],
-
   // the folder where the transpiled js files will be located
   featureDiscoveryRoot: 'dist',
 };
 ```
 
-Then, let's create 2 files in the `src` folder
+create `tsconfig.json` file in the root directory
+
+```json
+{
+    "compilerOptions": {
+        /* Visit https://aka.ms/tsconfig to read more about this file */
+        "target": "es2020",
+        "lib": [
+            "dom",
+            "es2020"
+        ],
+        "jsx": "react-jsx",
+        "module": "commonjs",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "outDir": "./dist",
+        "importsNotUsedAsValues": "error",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "skipLibCheck": true
+    }
+}
+```
+
+Then, let's create 2 files in the `src/feature/hello-world` folder (every feature should have it's own `<feature_name>` directory):
+
 a. hello-world.feature.ts
 b. hello-world.my-env.env.ts
 
