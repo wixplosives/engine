@@ -2,7 +2,7 @@
 id: 3exet4jj85h5gdb9qu9yk0d
 title: Getting started
 desc: ''
-updated: 1656520641511
+updated: 1656599344424
 created: 1649931104026
 ---
 
@@ -73,6 +73,18 @@ export default new Feature({
   api: {},
 });
 ```
+
+create `webpack.plugin.js` file and add:
+
+```js
+const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
+
+module.exports = {
+    plugins: [new StylableWebpackPlugin()],
+};
+
+```
+
 
 We create the feature file, in which we declare what is the feature's API and its Id.
 We also create a new environment - `my-env`.
