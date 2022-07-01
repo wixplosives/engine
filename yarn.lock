@@ -6629,10 +6629,15 @@ playwright-chromium@^1.23.0:
   dependencies:
     playwright-core "1.23.0"
 
-playwright-core@1.23.0, playwright-core@^1.20.0, playwright-core@^1.23.0:
+playwright-core@1.23.0:
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.23.0.tgz#51e24121b3a5bbe759d79738d8eff7a63156293c"
   integrity sha512-Zzhyr5RZGoJ1ek2sgfJCt2076kdOg8hnNwFBqAYeLySiutXyxSQk93vZ5gbnFiWV1sHvueCcwla9n35acUTxtA==
+
+playwright-core@^1.20.0, playwright-core@^1.23.1:
+  version "1.23.1"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.23.1.tgz#af02bd7568af1017e477433b1b003ba84e1eb312"
+  integrity sha512-9CXsE0gawph4KXl6oUaa0ehHRySZjHvly4TybcBXDvzK3N3o6L/eZ8Q6iVWUiMn0LLS5bRFxo1qEtOETlYJxjw==
 
 plist@^3.0.1, plist@^3.0.4:
   version "3.0.5"
