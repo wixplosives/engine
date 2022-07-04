@@ -32,6 +32,10 @@ export class Registry<T> {
     }
 }
 
+/**
+ * Entity registry that is namespaced by specific context, Instanced by a feature API.
+ * To "add" entity to it use `<slotName>.register(<Entity>)`
+ */
 export class Slot<Type extends Registry<any>, ProvidedFrom extends EnvVisibility> extends FeatureInput<
     Type,
     ProvidedFrom
