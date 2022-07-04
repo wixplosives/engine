@@ -40,8 +40,16 @@ export class Slot<Type extends Registry<any>, ProvidedFrom extends EnvVisibility
     Type,
     ProvidedFrom
 > {
+    /**
+     * Define the structure of the entities that will be registered to the Slots.
+     * @returns
+     */
     public static withType<T>() {
         return {
+            /**
+             * Which env the slot will be assigned to.
+             * @param env instance of the environment that the slot will be set upon
+             */
             defineEntity<E_ENV extends EnvVisibility>(env: E_ENV) {
                 return new Slot<Registry<T>, E_ENV>(env, env);
             },
