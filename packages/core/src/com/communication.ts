@@ -339,6 +339,14 @@ export class Communication {
         return this.environments[envName]?.host;
     }
 
+    public getRegisteredEnvironments(): string[] {
+        return Object.keys(this.environments).filter((id) => id !== '*');
+    }
+
+    public resetDisposedEnvironments(): void {
+        this.disposedEnvironments.clear();
+    }
+
     private parseHandlerId(handlerId: string, prelude: string) {
         const [api, method] = handlerId.slice(prelude.length).split('@') as [string, string];
         return {
