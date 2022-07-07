@@ -339,7 +339,7 @@ export class Communication {
         return this.environments[envName]?.host;
     }
 
-    public getRegisteredEnvironmentNames(): string[] {
+    public getRegisteredEnvironmentInstances(): string[] {
         return Object.keys(this.environments).filter((id) => id !== '*');
     }
 
