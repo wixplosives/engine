@@ -3469,9 +3469,9 @@ dotenv@^9.0.2:
   integrity sha512-I9OvvrHp4pIARv4+x9iuewrWycX6CcZtoAu1XrzPxc5UygMJXJZYmBsynku8IkrJwgypE5DGNjDPmPRhDCptUg==
 
 duplexer3@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/duplexer3/-/duplexer3-0.1.4.tgz#ee01dd1cac0ed3cbc7fdbea37dc0a8f1ce002ce2"
-  integrity sha512-CEj8FwwNA4cVH2uFCoHUrmojhYh1vmCdOaneKJXwkeY1i9jnlslVo9dx+hQ5Hl9GnH/Bwy/IjxAyOePyPKYnzA==
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/duplexer3/-/duplexer3-0.1.5.tgz#0b5e4d7bad5de8901ea4440624c8e1d20099217e"
+  integrity sha512-1A8za6ws41LQgv9HrE/66jyC5yuSjQ3L/KOpFtoBilsAK2iA2wuS5rTt1OCzIvtS2V7nVmedsUU+DGRcjBmOYA==
 
 duplexer@^0.1.1:
   version "0.1.2"
@@ -3544,9 +3544,9 @@ electron-publish@23.0.9:
     mime "^2.5.2"
 
 electron-to-chromium@^1.4.172:
-  version "1.4.182"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.182.tgz#5d59214ebfe90b36f23e81cd226a42732cd8c677"
-  integrity sha512-OpEjTADzGoXABjqobGhpy0D2YsTncAax7IkER68ycc4adaq0dqEG9//9aenKPy7BGA90bqQdLac0dPp6uMkcSg==
+  version "1.4.184"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.184.tgz#381d4d111fc82d3376ed690dfb621e675f9078a9"
+  integrity sha512-IADi390FRdvxWfVX3hjzfTDNVHiTqVo9ar53/7em/SfhUG9YcjVhyQecY/XwmBHRKden/wFud7RWOUH7+7LFng==
 
 electron@^19.0.8:
   version "19.0.8"
@@ -5972,9 +5972,9 @@ node-gyp@^9.0.0:
     which "^2.0.2"
 
 node-releases@^2.0.5:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.5.tgz#280ed5bc3eba0d96ce44897d8aee478bfb3d9666"
-  integrity sha512-U9h1NLROZTq9uE1SNffn6WuPDg8icmi3ns4rEl/oTfIle4iLjTliCzgTsbaIFMq/Xn078/lfY/BL0GWZ+psK4Q==
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.6.tgz#8a7088c63a55e493845683ebf3c828d8c51c5503"
+  integrity sha512-PiVXnNuFm5+iYkLBNeq5211hvO38y63T0i2KKh2KnUs3RpzJ+JtODFjkD8yjLwnDkTYF1eKXheUwdssR+NRZdg==
 
 nopt@^5.0.0:
   version "5.0.0"
@@ -6609,17 +6609,17 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-playwright-chromium@^1.23.1:
-  version "1.23.1"
-  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.23.1.tgz#4ba218677d6838a5b96bf37aaec2de12c7c19da2"
-  integrity sha512-Cx9VkJBFPxSim7qz571aDXU+oXmqYJW2W+Po6eiq2vi/abkH87BtxM/E0tsFJavFMB8ZpBWX1Z+77LctZv3V5w==
+playwright-chromium@^1.23.2:
+  version "1.23.2"
+  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.23.2.tgz#e1effa8a8fb426354a894389db1fa9f85a3dd106"
+  integrity sha512-kQ34dgOyum93X7Q0G8CS85jloZL0xVsDnqu8ElPcEIz0YyKvJRaptq1dnq7Wx8p7llHCIDg6d30Pm5+jAwtdJw==
   dependencies:
-    playwright-core "1.23.1"
+    playwright-core "1.23.2"
 
-playwright-core@1.23.1, playwright-core@^1.20.0, playwright-core@^1.23.1:
-  version "1.23.1"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.23.1.tgz#af02bd7568af1017e477433b1b003ba84e1eb312"
-  integrity sha512-9CXsE0gawph4KXl6oUaa0ehHRySZjHvly4TybcBXDvzK3N3o6L/eZ8Q6iVWUiMn0LLS5bRFxo1qEtOETlYJxjw==
+playwright-core@1.23.2, playwright-core@^1.20.0, playwright-core@^1.23.2:
+  version "1.23.2"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.23.2.tgz#ddc15b3251e42ee0eed82a96ece3f7b2641d75a4"
+  integrity sha512-UGbutIr0nBALDHWW/HcXfyK6ZdmefC99Moo4qyTr89VNIkYZuDrW8Sw554FyFUamcFSdKOgDPk6ECSkofGIZjQ==
 
 plist@^3.0.1, plist@^3.0.4:
   version "3.0.5"
