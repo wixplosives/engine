@@ -22,9 +22,8 @@
   "devDependencies": {
     "@file-services/memory": "^6.0.0",
     "@file-services/types": "^6.0.0",
-    "@stylable/cli": "^4.13.3",
-    "@stylable/core": "^4.13.3",
-    "@stylable/webpack-plugin": "^4.13.3",
+    "@stylable/cli": "^5.0.1",
+    "@stylable/webpack-plugin": "^5.0.1",
     "@ts-tools/node": "^4.0.0",
     "@ts-tools/webpack-loader": "^4.0.0",
     "@types/chai": "^4.3.1",
