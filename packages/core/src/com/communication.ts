@@ -74,7 +74,6 @@ export class Communication {
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposListeners = new Set<(envId: string) => void>();
     private callbackToEnvMapping = new Map<string, string>();
-    private disposedEnvironments = new Set<string>();
 
     constructor(
         host: Target,
@@ -189,10 +188,10 @@ export class Communication {
         const envTarget = (target as BaseHost).parent ?? target;
         const onTargetMessage = ({ data }: { data: null | Message }) => {
             if (isMessage(data)) {
-                if (!this.disposedEnvironments.has(data.from) && !this.environments[data.from]) {
+                if (!this.environments[data.from]) {
                     this.registerEnv(data.from, envTarget);
                 }
-                if (!this.disposedEnvironments.has(data.origin) && !this.environments[data.origin]) {
+                if (!this.environments[data.origin]) {
                     this.registerEnv(data.origin, envTarget);
                 }
                 this.handleEvent({ data });
@@ -343,10 +342,6 @@ export class Communication {
         return Object.keys(this.environments).filter((id) => id !== '*');
     }
 
-    public resetDisposedEnvironments(): void {
-        this.disposedEnvironments.clear();
-    }
-
     private parseHandlerId(handlerId: string, prelude: string) {
         const [api, method] = handlerId.slice(prelude.length).split('@') as [string, string];
         return {
@@ -431,7 +426,6 @@ export class Communication {
     }
 
     private localyClear(instanceId: string) {
-        this.disposedEnvironments.add(instanceId);
         this.readyEnvs.delete(instanceId);
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
