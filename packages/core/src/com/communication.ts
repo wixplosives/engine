@@ -338,6 +338,10 @@ export class Communication {
         return this.environments[envName]?.host;
     }
 
+    /**
+     * Gets a list of all registered environment instance ids.
+     * @returns the list of instance ids.
+     */
     public getRegisteredEnvironmentInstances(): string[] {
         return Object.keys(this.environments).filter((id) => id !== '*');
     }
