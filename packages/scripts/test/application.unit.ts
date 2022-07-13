@@ -473,7 +473,8 @@ describe('Application', function () {
             });
         });
 
-        it('loads external features', async () => {
+        // flaky, so skipped
+        it.skip('loads external features', async () => {
             const externalFeatureName = 'application-external';
             const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
                 name: string;
@@ -545,7 +546,8 @@ describe('Application', function () {
             );
         }).timeout(20_000);
 
-        it('loads external features after static build', async () => {
+        // flaky, so skipped
+        it.skip('loads external features after static build', async () => {
             const externalFeatureName = 'static-application-external/application-external';
             const pluginsFolderPath = join(staticBaseWebApplicationFixturePath, 'node_modules');
             const { name } = fs.readJsonFileSync(join(staticApplicationExternalFixturePath, 'package.json')) as {
