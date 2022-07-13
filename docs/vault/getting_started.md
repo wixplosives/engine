@@ -74,7 +74,7 @@ export default new Feature({
 });
 ```
 
-create `webpack.plugin.js` file and add:
+create `webpack.config.js` file and add:
 
 ```js
 const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
