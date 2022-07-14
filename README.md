@@ -30,6 +30,7 @@ This will bump all packages version, tag current commit and push it.
 There is a [CI job](https://github.com/wixplosives/engine/actions/workflows/npm.yml) that builds and publishes packages versions to npm.
 
 This job is triggered on each commit and if current version is not yet published, it will publish it.
+
 ### License
 
 MIT
