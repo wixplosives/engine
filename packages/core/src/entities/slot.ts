@@ -36,15 +36,14 @@ export class Registry<T> {
  * Set of user typed values, consumed at any flow that requires this feature.
  *
  * @example
- * `Slot.withType<IUser>().defineEntity('main')`
+ * Slot.withType<IUser>().defineEntity('main')
  */
 export class Slot<Type extends Registry<any>, ProvidedFrom extends EnvVisibility> extends FeatureInput<
     Type,
     ProvidedFrom
 > {
     /**
-     * Define the structure of the entities that will be registered to the Slots.
-     * @returns
+     * Provides the actual interface of each unit of the slot
      */
     public static withType<T>() {
         return {
