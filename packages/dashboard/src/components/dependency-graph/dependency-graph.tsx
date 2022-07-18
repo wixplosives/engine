@@ -24,8 +24,7 @@ const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) => {
     useEffect(() => {
         if (dashboardContext.selectedFeature)
             selectedFeatureConfig(dashboardContext.selectedFeature).catch(console.warn);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dashboardContext.selectedFeature]);
+    }, [dashboardContext.selectedFeature, selectedFeatureConfig]);
 
     return (
         <>

@@ -74,9 +74,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
         [params.user_feature, serverState.features]
     );
     const [firstConfigName] = configNames;
-
-    // const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
-
     const [runtimeArguments, setRuntimeArguments] = useState<Array<IRuntimeOption>>([
         {
             key: '',
