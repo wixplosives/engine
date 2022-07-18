@@ -125,7 +125,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
     );
 
     useEffect(() => {
-        if (params.user_feature) selectedFeatureConfig(params.user_feature).catch(console.log);
+        if (params.user_feature) selectedFeatureConfig(params.user_feature).catch(console.warn);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -138,8 +138,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
         possibleFeaturesRequest().catch((error) => {
             console.error(error);
         });
-
-        if (params.user_feature) selectedFeatureConfig(params.user_feature);
     }, [fetchServerState]);
 
     const hasNodeEnvironments =
