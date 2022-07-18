@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useCallback, useMemo, createContext } from 'react';
-import { FeaturesSelection } from './feature-selection';
-import { ServerState, isServerResponseMessage, RunningEngineFeature } from '../server-types';
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import type { GraphData } from '../graph-types';
-import { style, classes } from './dashboard.st.css';
-import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
+import { isServerResponseMessage, RunningEngineFeature, ServerState } from '../server-types';
 import { ActionsContainer } from './actions-container';
-import { FeatureGraph } from './feature-graph';
 import { URLParamsValue, useUrlParams } from './dashboard-hooks';
+import { classes } from './dashboard.st.css';
+import { FeatureGraph } from './feature-graph';
+import { FeaturesSelection } from './feature-selection';
+import { IRuntimeOption, RuntimeOptionsContainer } from './runtime-options-container';
 import Sidebar from './sidebar/sidebar';
 
 export interface IDashboardProps {
@@ -106,18 +106,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
             fetchServerState,
         ]
     );
-
-    useEffect(() => {
-        const possibleFeaturesRequest = async () => {
-            const serverResponse = await fetchServerState();
-            setServerState(serverResponse.data);
-        };
-
-        possibleFeaturesRequest().catch((error) => {
-            console.error(error);
-        });
-    }, [fetchServerState]);
-
     const selectedFeatureConfig = useCallback(
         async (featureName?: string, configName?: string) => {
             setSelectedFeatureGraph(null);
@@ -135,6 +123,24 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
         },
         [setParams, fetchGraphData]
     );
+
+    useEffect(() => {
+        if (params.user_feature) selectedFeatureConfig(params.user_feature).catch(console.log);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        const possibleFeaturesRequest = async () => {
+            const serverResponse = await fetchServerState();
+            setServerState(serverResponse.data);
+        };
+
+        possibleFeaturesRequest().catch((error) => {
+            console.error(error);
+        });
+
+        if (params.user_feature) selectedFeatureConfig(params.user_feature);
+    }, [fetchServerState]);
 
     const hasNodeEnvironments =
         !!params.user_feature && !!serverState.features[params.user_feature]?.hasServerEnvironments;
