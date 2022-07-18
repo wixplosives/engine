@@ -131,9 +131,13 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
             ((!params.user_feature && !configName) || (configName && params.user_config === configName))
     );
 
-    const handleSelectedFeature = useCallback((featureName?: string) => {
-        setSelectedFeature(featureName ? featureName : '');
-    }, []);
+    const handleSelectedFeature = useCallback(
+        (featureName = '') => {
+            setSelectedFeature(featureName);
+            setParams({ user_feature: featureName, user_config: params.user_config });
+        },
+        [params.user_config, setParams]
+    );
     serverState.featuresWithRunningNodeEnvs;
 
     return (

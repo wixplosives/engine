@@ -3,23 +3,21 @@ import { DashboardContext } from '../dashboard';
 import { style, classes } from '../dashboard.st.css';
 
 const Sidebar: FC = () => {
-    const dashboardContext = useContext(DashboardContext);
+    const { serverState, params, setParams } = useContext(DashboardContext);
 
     return (
         <section className={classes.leftBar}>
-            {dashboardContext.serverState.featuresWithRunningNodeEnvs.length && (
+            {serverState.featuresWithRunningNodeEnvs.length && (
                 <div>
                     <div className={classes.title}>Running Features:</div>
-                    {dashboardContext.serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (
+                    {serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (
                         <button
                             className={style(classes.runningFeature, {
-                                selected:
-                                    f === dashboardContext.params.user_feature &&
-                                    c === dashboardContext.params.user_config,
+                                selected: f === params.user_feature && c === params.user_config,
                             })}
                             key={f + '_' + c}
                             onClick={() => {
-                                dashboardContext.setParams({
+                                setParams({
                                     user_config: c,
                                     user_feature: f,
                                 });

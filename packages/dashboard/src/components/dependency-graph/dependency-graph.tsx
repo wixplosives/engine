@@ -11,7 +11,7 @@ const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) => {
     const [showGraph, setShowGraph] = useState(false);
     const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
 
-    const dashboardContext = useContext(DashboardContext);
+    const { selectedFeature, params } = useContext(DashboardContext);
 
     const selectedFeatureConfig = useCallback(
         async (featureName: string) => {
@@ -22,9 +22,8 @@ const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) => {
     );
 
     useEffect(() => {
-        if (dashboardContext.selectedFeature)
-            selectedFeatureConfig(dashboardContext.selectedFeature).catch(console.warn);
-    }, [dashboardContext.selectedFeature, selectedFeatureConfig]);
+        if (selectedFeature) selectedFeatureConfig(selectedFeature).catch(console.warn);
+    }, [selectedFeature, selectedFeatureConfig]);
 
     return (
         <>
@@ -38,7 +37,7 @@ const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) => {
                 <label htmlFor="feature-graph">Feature Dependency Graph</label>
             </div>
             {showGraph &&
-                (dashboardContext.params.user_feature ? (
+                (params.user_feature ? (
                     selectedFeatureGraph ? (
                         <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
                     ) : (
