@@ -29,7 +29,7 @@ export interface SelectedFeature {
     runtimeArguments?: string;
 }
 
-interface IParams {
+interface IDashboardParams {
     user_feature: string | undefined;
     user_config: string | undefined;
 }
@@ -38,7 +38,7 @@ export interface IDashboardContext {
     serverState: {
         featuresWithRunningNodeEnvs: RunningEngineFeature[];
     };
-    params: IParams;
+    params: IDashboardParams;
     setParams: (t: URLParamsValue<'user_feature' | 'user_config'>) => void;
 }
 
