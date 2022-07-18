@@ -11,10 +11,13 @@ export class WsClientHost extends BaseHost {
     constructor(url: string, options?: Partial<SocketOptions>) {
         super();
 
+        const { protocol, host, pathname: path, searchParams } = new URL(url);
+        const query = Object.fromEntries(searchParams as unknown as Iterable<any>);
+
         const { promise, resolve } = deferred();
         this.connected = promise;
 
-        this.socketClient = io(url, { ...options, transports: ['websocket'], forceNew: true });
+        this.socketClient = io(`${protocol}://${host}`, { transports: ['websocket'], forceNew: true, path, query, ...options });
 
         this.socketClient.on('connect', () => {
             this.socketClient.on('message', (data: unknown) => {
