@@ -40,7 +40,6 @@ export interface IDashboardContext {
     };
     params: IParams;
     setParams: (t: URLParamsValue<'user_feature' | 'user_config'>) => void;
-    selectedFeature: string;
 }
 
 export const DashboardContext = createContext<IDashboardContext>({
@@ -50,7 +49,6 @@ export const DashboardContext = createContext<IDashboardContext>({
         user_feature: undefined,
     },
     setParams: () => console.warn('setParams was not provided to context'),
-    selectedFeature: '',
 });
 
 export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
@@ -67,7 +65,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
         user_feature: firstFeatureName,
         user_config: undefined,
     });
-    const [selectedFeature, setSelectedFeature] = useState(params.user_feature || '');
 
     const configNames = useMemo(
         () => serverState.features[params.user_feature || '']?.configurations ?? [],
@@ -133,7 +130,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
 
     const handleSelectedFeature = useCallback(
         (featureName = '') => {
-            setSelectedFeature(featureName);
             setParams({ user_feature: featureName, user_config: params.user_config });
         },
         [params.user_config, setParams]
@@ -146,7 +142,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
                 serverState: { featuresWithRunningNodeEnvs: serverState.featuresWithRunningNodeEnvs },
                 params,
                 setParams,
-                selectedFeature,
             }}
         >
             <div className={classes.root}>
