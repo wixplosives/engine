@@ -4,7 +4,7 @@ import { isServerResponseMessage, RunningEngineFeature, ServerState } from '../s
 import { ActionsContainer } from './actions-container';
 import { URLParamsValue, useUrlParams } from './dashboard-hooks';
 import { classes } from './dashboard.st.css';
-import { FeatureGraph } from './feature-graph';
+import DependencyGraph from './dependency-graph/dependency-graph';
 import { FeaturesSelection } from './feature-selection';
 import { IRuntimeOption, RuntimeOptionsContainer } from './runtime-options-container';
 import Sidebar from './sidebar/sidebar';
@@ -40,6 +40,7 @@ export interface IDashboardContext {
     };
     params: IParams;
     setParams: (t: URLParamsValue<'user_feature' | 'user_config'>) => void;
+    selectedFeature: string;
 }
 
 export const DashboardContext = createContext<IDashboardContext>({
@@ -49,6 +50,7 @@ export const DashboardContext = createContext<IDashboardContext>({
         user_feature: undefined,
     },
     setParams: () => console.warn('setParams was not provided to context'),
+    selectedFeature: '',
 });
 
 export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
@@ -65,15 +67,15 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
         user_feature: firstFeatureName,
         user_config: undefined,
     });
+    const [selectedFeature, setSelectedFeature] = useState(params.user_feature || '');
 
     const configNames = useMemo(
         () => serverState.features[params.user_feature || '']?.configurations ?? [],
         [params.user_feature, serverState.features]
     );
     const [firstConfigName] = configNames;
-    const [showGraph, setShowGraph] = useState(false);
 
-    const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
+    // const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
 
     const [runtimeArguments, setRuntimeArguments] = useState<Array<IRuntimeOption>>([
         {
@@ -106,28 +108,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
             fetchServerState,
         ]
     );
-    const selectedFeatureConfig = useCallback(
-        async (featureName?: string, configName?: string) => {
-            setSelectedFeatureGraph(null);
-            if (!featureName) {
-                setRuntimeArguments([{ key: '', value: '' }]);
-            }
-            setParams({
-                user_config: configName,
-                user_feature: featureName,
-            });
-            if (featureName) {
-                const graphData = await fetchGraphData(featureName);
-                setSelectedFeatureGraph(graphData);
-            }
-        },
-        [setParams, fetchGraphData]
-    );
-
-    useEffect(() => {
-        if (params.user_feature) selectedFeatureConfig(params.user_feature).catch(console.warn);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         const possibleFeaturesRequest = async () => {
@@ -153,13 +133,19 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
             params.user_feature === featureName &&
             ((!params.user_feature && !configName) || (configName && params.user_config === configName))
     );
+
+    const handleSelectedFeature = useCallback((featureName?: string) => {
+        setSelectedFeature(featureName ? featureName : '');
+    }, []);
     serverState.featuresWithRunningNodeEnvs;
+
     return (
         <DashboardContext.Provider
             value={{
                 serverState: { featuresWithRunningNodeEnvs: serverState.featuresWithRunningNodeEnvs },
                 params,
                 setParams,
+                selectedFeature,
             }}
         >
             <div className={classes.root}>
@@ -167,7 +153,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
                 <div className={classes.content}>
                     <FeaturesSelection
                         features={serverState.features}
-                        onSelected={selectedFeatureConfig}
+                        onSelected={handleSelectedFeature}
                         selectedConfig={params.user_config}
                         selectedFeature={params.user_feature}
                     />
@@ -188,25 +174,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
                         displayServerToggle={hasNodeEnvironments}
                         actionBtnClassName={classes.actionButton}
                     />
-                    <div>
-                        <input
-                            id="feature-graph"
-                            type="checkbox"
-                            checked={showGraph}
-                            onChange={(e) => setShowGraph(e.currentTarget.checked)}
-                        />
-                        <label htmlFor="feature-graph">Feature Dependency Graph</label>
-                    </div>
-                    {showGraph &&
-                        (params.user_feature ? (
-                            selectedFeatureGraph ? (
-                                <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
-                            ) : (
-                                <div>Loading graph data...</div>
-                            )
-                        ) : (
-                            <div>Select a feature to view its dependency graph</div>
-                        ))}
+                    <DependencyGraph fetchGraphData={fetchGraphData} />
                 </div>
             </div>
         </DashboardContext.Provider>
