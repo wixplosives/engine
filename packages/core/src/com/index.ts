@@ -7,6 +7,5 @@ export * from './message-types';
 export * from './service-config';
 export * from './types';
 export * from './hosts/ws-client-host';
-export * from './managed-iframe';
 export * from './initializers';
 export * from './hosts';
