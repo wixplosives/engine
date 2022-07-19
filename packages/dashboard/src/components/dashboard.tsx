@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { FeaturesSelection } from './feature-selection';
-import { ServerState, isServerResponseMessage } from '../server-types';
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import type { GraphData } from '../graph-types';
-import { style, classes } from './dashboard.st.css';
-import { RuntimeOptionsContainer, IRuntimeOption } from './runtime-options-container';
+import { isServerResponseMessage, RunningEngineFeature, ServerState } from '../server-types';
 import { ActionsContainer } from './actions-container';
-import { FeatureGraph } from './feature-graph';
-import { useUrlParams } from './dashboard-hooks';
+import { URLParamsValue, useUrlParams } from './dashboard-hooks';
+import { classes } from './dashboard.st.css';
+import { DependencyGraph } from './dependency-graph/dependency-graph';
+import { FeaturesSelection } from './feature-selection';
+import { IRuntimeOption, RuntimeOptionsContainer } from './runtime-options-container';
+import { Sidebar } from './sidebar/sidebar';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
@@ -28,6 +29,28 @@ export interface SelectedFeature {
     runtimeArguments?: string;
 }
 
+interface IDashboardParams {
+    user_feature: string | undefined;
+    user_config: string | undefined;
+}
+
+export interface IDashboardContext {
+    serverState: {
+        featuresWithRunningNodeEnvs: RunningEngineFeature[];
+    };
+    params: IDashboardParams;
+    setParams: (t: URLParamsValue<'user_feature' | 'user_config'>) => void;
+}
+
+export const DashboardContext = createContext<IDashboardContext>({
+    serverState: { featuresWithRunningNodeEnvs: [] },
+    params: {
+        user_config: undefined,
+        user_feature: undefined,
+    },
+    setParams: () => console.warn('setParams was not provided to context'),
+});
+
 export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
     fetchServerState,
     changeNodeEnvironmentState,
@@ -48,10 +71,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
         [params.user_feature, serverState.features]
     );
     const [firstConfigName] = configNames;
-    const [showGraph, setShowGraph] = useState(false);
-
-    const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
-
     const [runtimeArguments, setRuntimeArguments] = useState<Array<IRuntimeOption>>([
         {
             key: '',
@@ -95,24 +114,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
         });
     }, [fetchServerState]);
 
-    const selectedFeatureConfig = useCallback(
-        async (featureName?: string, configName?: string) => {
-            setSelectedFeatureGraph(null);
-            if (!featureName) {
-                setRuntimeArguments([{ key: '', value: '' }]);
-            }
-            setParams({
-                user_config: configName,
-                user_feature: featureName,
-            });
-            if (featureName) {
-                const graphData = await fetchGraphData(featureName);
-                setSelectedFeatureGraph(graphData);
-            }
-        },
-        [setParams, fetchGraphData]
-    );
-
     const hasNodeEnvironments =
         !!params.user_feature && !!serverState.features[params.user_feature]?.hasServerEnvironments;
 
@@ -126,79 +127,53 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
             params.user_feature === featureName &&
             ((!params.user_feature && !configName) || (configName && params.user_config === configName))
     );
+
+    const handleSelectedFeature = useCallback(
+        (featureName = '') => {
+            setParams({ user_feature: featureName, user_config: params.user_config });
+        },
+        [params.user_config, setParams]
+    );
     serverState.featuresWithRunningNodeEnvs;
+
     return (
-        <div className={classes.root}>
-            <div className={classes.leftBar}>
-                {serverState.featuresWithRunningNodeEnvs.length ? (
-                    <div>
-                        <div className={classes.title}>Running Features:</div>
-                        {serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (
-                            <button
-                                className={style(classes.runningFeature, {
-                                    selected: f === params.user_feature && c === params.user_config,
-                                })}
-                                key={f + '_' + c}
-                                onClick={() => {
-                                    setParams({
-                                        user_config: c,
-                                        user_feature: f,
-                                    });
-                                }}
-                            >
-                                <div>Feature: {f}</div>
-                                <div> config: {c}</div>
-                            </button>
-                        ))}
-                    </div>
-                ) : null}
-            </div>
-            <div className={classes.content}>
-                <FeaturesSelection
-                    features={serverState.features}
-                    onSelected={selectedFeatureConfig}
-                    selectedConfig={params.user_config}
-                    selectedFeature={params.user_feature}
-                />
-                {hasNodeEnvironments ? (
-                    <RuntimeOptionsContainer
-                        onOptionAdded={addRuntimeOption}
-                        runtimeOptions={runtimeArguments}
-                        setRuntimeArguments={setRuntimeArguments}
+        <DashboardContext.Provider
+            value={{
+                serverState: { featuresWithRunningNodeEnvs: serverState.featuresWithRunningNodeEnvs },
+                params,
+                setParams,
+            }}
+        >
+            <div className={classes.root}>
+                <Sidebar />
+                <div className={classes.content}>
+                    <FeaturesSelection
+                        features={serverState.features}
+                        onSelected={handleSelectedFeature}
+                        selectedConfig={params.user_config}
+                        selectedFeature={params.user_feature}
+                    />
+                    {hasNodeEnvironments && (
+                        <RuntimeOptionsContainer
+                            onOptionAdded={addRuntimeOption}
+                            runtimeOptions={runtimeArguments}
+                            setRuntimeArguments={setRuntimeArguments}
+                            actionBtnClassName={classes.actionButton}
+                        />
+                    )}
+                    <ActionsContainer
+                        configName={params.user_config}
+                        featureName={params.user_feature}
+                        isServerActive={isNodeEnvRunning}
+                        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                        onToggleChange={onServerEnvironmentStatusChange}
+                        displayServerToggle={hasNodeEnvironments}
                         actionBtnClassName={classes.actionButton}
                     />
-                ) : null}
-                <ActionsContainer
-                    configName={params.user_config}
-                    featureName={params.user_feature}
-                    isServerActive={isNodeEnvRunning}
-                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                    onToggleChange={onServerEnvironmentStatusChange}
-                    displayServerToggle={hasNodeEnvironments}
-                    actionBtnClassName={classes.actionButton}
-                />
-                <div>
-                    <input
-                        id="feature-graph"
-                        type="checkbox"
-                        checked={showGraph}
-                        onChange={(e) => setShowGraph(e.currentTarget.checked)}
-                    />
-                    <label htmlFor="feature-graph">Feature Dependency Graph</label>
+                    <DependencyGraph fetchGraphData={fetchGraphData} />
                 </div>
-                {showGraph ? (
-                    params.user_feature ? (
-                        selectedFeatureGraph ? (
-                            <FeatureGraph selectedFeatureGraph={selectedFeatureGraph} />
-                        ) : (
-                            <div>Loading graph data...</div>
-                        )
-                    ) : (
-                        <div>Select a feature to view its dependency graph</div>
-                    )
-                ) : null}
             </div>
-        </div>
+        </DashboardContext.Provider>
     );
 });
 
