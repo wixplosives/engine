@@ -4,10 +4,10 @@ import { isServerResponseMessage, RunningEngineFeature, ServerState } from '../s
 import { ActionsContainer } from './actions-container';
 import { URLParamsValue, useUrlParams } from './dashboard-hooks';
 import { classes } from './dashboard.st.css';
-import DependencyGraph from './dependency-graph/dependency-graph';
+import { DependencyGraph } from './dependency-graph/dependency-graph';
 import { FeaturesSelection } from './feature-selection';
 import { IRuntimeOption, RuntimeOptionsContainer } from './runtime-options-container';
-import Sidebar from './sidebar/sidebar';
+import { Sidebar } from './sidebar/sidebar';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{

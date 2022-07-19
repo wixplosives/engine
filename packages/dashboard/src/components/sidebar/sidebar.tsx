@@ -2,7 +2,7 @@ import React, { FC, useContext } from 'react';
 import { DashboardContext } from '../dashboard';
 import { style, classes } from '../dashboard.st.css';
 
-const Sidebar: FC = () => {
+export const Sidebar: FC = () => {
     const { serverState, params, setParams } = useContext(DashboardContext);
 
     return (
@@ -32,5 +32,3 @@ const Sidebar: FC = () => {
         </section>
     );
 };
-
-export default Sidebar;

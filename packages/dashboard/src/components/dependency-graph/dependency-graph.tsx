@@ -7,7 +7,7 @@ interface IDependencyGraphProps {
     fetchGraphData: (featureName: string) => Promise<GraphData>;
 }
 
-const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) => {
+export const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) => {
     const [showGraph, setShowGraph] = useState(false);
     const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
 
@@ -49,5 +49,3 @@ const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) => {
         </>
     );
 };
-
-export default DependencyGraph;
