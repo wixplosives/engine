@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import type { GraphData } from '../../graph-types';
 import { DashboardContext } from '../dashboard';
 import { FeatureGraph } from '../feature-graph';
