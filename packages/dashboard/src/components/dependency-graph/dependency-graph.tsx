@@ -13,17 +13,14 @@ export const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) =
 
     const { params } = useContext(DashboardContext);
 
-    const applyFeatureGraphData = useCallback(
-        async (featureName = '') => {
+    useEffect(() => {
+        const applyFeatureGraphData = async (featureName = '') => {
             const graphData = await fetchGraphData(featureName);
             setSelectedFeatureGraph(graphData);
-        },
-        [fetchGraphData]
-    );
+        };
 
-    useEffect(() => {
         if (params.user_feature) applyFeatureGraphData(params.user_feature).catch(console.warn);
-    }, [applyFeatureGraphData, params.user_feature]);
+    }, [fetchGraphData, params.user_feature]);
 
     return (
         <>
