@@ -20,8 +20,8 @@
     "prettify": "npx prettier . --write"
   },
   "devDependencies": {
-    "@file-services/memory": "^6.0.0",
-    "@file-services/types": "^6.0.0",
+    "@file-services/memory": "^7.0.0",
+    "@file-services/types": "^7.0.0",
     "@stylable/cli": "^5.0.1",
     "@stylable/webpack-plugin": "^5.0.1",
     "@ts-tools/node": "^4.0.0",
@@ -45,8 +45,8 @@
     "@types/semver": "^7.3.10",
     "@types/sinon": "^10.0.13",
     "@types/sinon-chai": "^3.2.8",
-    "@typescript-eslint/eslint-plugin": "^5.30.7",
-    "@typescript-eslint/parser": "^5.30.7",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
     "@wixc3/create-disposables": "^2.0.0",
     "@wixc3/wait-for-call": "^1.0.1",
     "chai": "^4.3.6",
