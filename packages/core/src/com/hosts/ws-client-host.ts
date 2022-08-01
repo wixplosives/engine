@@ -19,6 +19,7 @@ export class WsClientHost extends BaseHost {
         this.socketClient = io(url, {
             transports: ['websocket'],
             forceNew: true,
+            withCredentials: true, // Pass Cookie to socket io connection
             path,
             query,
             ...options
