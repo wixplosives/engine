@@ -155,12 +155,6 @@ export function buildCommand(program: Command) {
             '--staticExternalsDescriptor <staticExternalsDescriptor>',
             'relative to the output directory - a path to a json file which retrieves all external feature descriptors'
         )
-        .option(
-            '--includeExternalFeatures <includeExternalFeatures>',
-            'should include defined external features in the built output',
-            parseBoolean,
-            false
-        )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
             const {
@@ -179,8 +173,6 @@ export function buildCommand(program: Command) {
                 sourcesRoot,
                 eagerEntrypoints,
                 featureDiscoveryRoot,
-                staticExternalsDescriptor,
-                includeExternalFeatures,
                 configLoaderModuleName,
             } = cmd;
             try {
@@ -202,9 +194,7 @@ export function buildCommand(program: Command) {
                     webpackConfigPath: webpackConfig,
                     external,
                     sourcesRoot,
-                    staticExternalFeaturesFileName: staticExternalsDescriptor,
                     eagerEntrypoint: eagerEntrypoints,
-                    includeExternalFeatures,
                     configLoaderModuleName,
                 });
                 console.log(stats.toString('errors-warnings'));

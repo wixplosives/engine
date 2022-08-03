@@ -1,17 +1,12 @@
-import type io from 'socket.io';
 import fs from '@file-services/node';
-import { isFeatureFile, loadFeaturesFromPaths, getExternalFeaturesMetadata } from '@wixc3/engine-scripts';
-import { RuntimeEngine, BaseHost, TopLevelConfig, RuntimeFeature } from '@wixc3/engine-core';
+import { BaseHost, RuntimeEngine, RuntimeFeature, TopLevelConfig } from '@wixc3/engine-core';
+import { isFeatureFile, loadFeaturesFromPaths } from '@wixc3/engine-scripts';
+import type io from 'socket.io';
 
+import { LaunchEnvironmentMode, runNodeEnvironment, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
+import { TargetApplication } from './application-proxy-service';
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';
-import { TargetApplication } from './application-proxy-service';
-import {
-    IExternalDefinition,
-    LaunchEnvironmentMode,
-    runNodeEnvironment,
-    TopLevelConfigProvider,
-} from '@wixc3/engine-runtime-node';
 
 const basePath = fs.join(__dirname, './feature');
 
@@ -33,8 +28,6 @@ export interface IStartOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     inspect?: boolean;
     runtimeOptions?: Record<string, string | boolean>;
-    externalFeatureDefinitions?: IExternalDefinition[];
-    externalFeaturesPath?: string;
     featureDiscoveryRoot?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     socketServerOptions?: Partial<io.ServerOptions>;
@@ -60,8 +53,6 @@ export async function startDevServer({
     outputPath,
     inspect,
     runtimeOptions = {},
-    externalFeatureDefinitions = [],
-    externalFeaturesPath,
     featureDiscoveryRoot,
     nodeEnvironmentsMode,
     socketServerOptions,
@@ -76,15 +67,9 @@ export async function startDevServer({
     const app = new TargetApplication({
         basePath: targetApplicationPath,
     });
-    const { config: engineConfig, path: engineConfigPath } = await app.getEngineConfig();
+    const { config: engineConfig } = await app.getEngineConfig();
 
-    const {
-        externalFeatureDefinitions: configDefs = [],
-        externalFeaturesBasePath: configExternalPath,
-        require,
-        favicon: configFavicon,
-        featureDiscoveryRoot: configFeatureDiscoveryRoot,
-    } = engineConfig ?? {};
+    const { require, favicon: configFavicon, featureDiscoveryRoot: configFeatureDiscoveryRoot } = engineConfig ?? {};
 
     const featurePaths = fs.findFilesSync(basePath, {
         filterFile: ({ name }) => isFeatureFile(name),
@@ -92,15 +77,6 @@ export async function startDevServer({
     preRequire([...pathsToRequire, ...(require ?? [])], basePath);
 
     const { features } = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs);
-
-    const resolvedExternalFeaturesPath = fs.resolve(
-        externalFeaturesPath ?? (configExternalPath ? fs.dirname(engineConfigPath!) : basePath)
-    );
-
-    const externalFeatures = getExternalFeaturesMetadata(
-        app.normalizeDefinitionsPackagePath([...configDefs, ...externalFeatureDefinitions]),
-        resolvedExternalFeaturesPath
-    );
     const { engine, dispose } = await runNodeEnvironment({
         featureName: engineerEntry,
         features: [...features],
@@ -126,8 +102,6 @@ export async function startDevServer({
                     outputPath,
                     inspect,
                     defaultRuntimeOptions: runtimeOptions,
-                    externalFeatureDefinitions,
-                    externalFeaturesPath,
                     featureDiscoveryRoot: featureDiscoveryRoot ?? configFeatureDiscoveryRoot,
                     nodeEnvironmentsMode,
                     socketServerOptions,
@@ -138,12 +112,10 @@ export async function startDevServer({
             guiFeature.use({
                 engineerConfig: {
                     features,
-                    externalFeatures,
                 },
             }),
         ],
         context: targetApplicationPath,
-        externalFeatures,
         env: devServerEnv,
     });
     return {

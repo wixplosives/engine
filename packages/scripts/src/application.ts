@@ -6,8 +6,6 @@ import {
     ForkedProcess,
     IConfigDefinition,
     IEnvironmentDescriptor,
-    IExternalDefinition,
-    IExternalFeatureNodeDescriptor,
     launchEngineHttpServer,
     LaunchEnvironmentMode,
     NodeEnvironmentsManager,
@@ -26,22 +24,12 @@ import {
     createConfigMiddleware,
     ensureTopLevelConfigMiddleware,
 } from './config-middleware';
-import {
-    createWebpackConfig,
-    createWebpackConfigForExternalFeature,
-    createWebpackConfigs,
-} from './create-webpack-configs';
+import { createWebpackConfig, createWebpackConfigs } from './create-webpack-configs';
 import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
 import type { EngineConfig, IFeatureDefinition, IFeatureTarget } from './types';
 
-import { EXTERNAL_FEATURES_BASE_URI } from './build-constants';
 import { createExternalNodeEntrypoint } from './create-entrypoint';
-import {
-    getExternalFeatureBasePath,
-    getExternalFeaturesMetadata,
-    getFilePathInPackage,
-    scopeFilePathsToPackage,
-} from './utils';
+import { getFilePathInPackage, scopeFilePathsToPackage } from './utils';
 
 import { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
 
@@ -71,14 +59,9 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     featureDiscoveryRoot?: string;
     external?: boolean;
     staticBuild?: boolean;
-    externalFeaturesFilePath?: string;
     sourcesRoot?: string;
-    staticExternalFeaturesFileName?: string;
-    includeExternalFeatures?: boolean;
     eagerEntrypoint?: boolean;
     favicon?: string;
-    externalFeaturesBasePath?: string;
-    externalFeatureDefinitions?: IExternalDefinition[];
     configLoaderModuleName?: string;
 }
 
@@ -88,12 +71,6 @@ export interface WebpackMultiStats {
     hasErrors(): boolean;
     toString(mode?: string): string;
     stats: webpack.Stats[];
-}
-
-export interface IRunCommandOptions extends IRunApplicationOptions {
-    serveExternalFeaturesPath?: boolean;
-    externalFeaturesPath?: string;
-    externalFeatureDefinitions?: IExternalDefinition[];
 }
 
 export interface IBuildManifest {
@@ -129,14 +106,11 @@ export interface ICompilerOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     singleFeature?: boolean;
     isExternal: boolean;
-    externalFeaturesRoute: string;
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
     eagerEntrypoint?: boolean;
     configLoaderModuleName?: string;
 }
-
-const DEFAULT_EXTERNAL_FEATURES_PATH = 'external-features.json';
 
 export class Application {
     public outputPath: string;
@@ -163,13 +137,9 @@ export class Application {
         overrideConfig,
         external = false,
         staticBuild = true,
-        staticExternalFeaturesFileName = DEFAULT_EXTERNAL_FEATURES_PATH,
         webpackConfigPath,
-        includeExternalFeatures,
         sourcesRoot: providedSourcesRoot,
         eagerEntrypoint,
-        externalFeaturesBasePath,
-        externalFeatureDefinitions: providedExternalFeatureDefinitions = [],
         featureDiscoveryRoot: providedFeatureDiscoveryRoot,
         configLoaderModuleName,
     }: IBuildCommandOptions = {}): Promise<{
@@ -178,15 +148,8 @@ export class Application {
         configurations: SetMultiMap<string, IConfigDefinition>;
         resolvedEnvironments: ReturnType<typeof getResolvedEnvironments>;
     }> {
-        const { config, path: configPath } = await this.getEngineConfig();
-        const {
-            require,
-            externalFeatureDefinitions: configExternalFeatureDefinitions = [],
-            externalFeaturesBasePath: configExternalFeaturesBasePath,
-            sourcesRoot: configSourcesRoot,
-            favicon: configFavicon,
-            featureDiscoveryRoot,
-        } = config ?? {};
+        const { config } = await this.getEngineConfig();
+        const { require, sourcesRoot: configSourcesRoot, favicon: configFavicon, featureDiscoveryRoot } = config ?? {};
         if (require) {
             await this.importModules(require);
         }
@@ -209,10 +172,6 @@ export class Application {
             findAllEnvironments: external,
         });
 
-        const externalsFilePath = staticExternalFeaturesFileName.startsWith('/')
-            ? staticExternalFeaturesFileName
-            : `/${staticExternalFeaturesFileName}`;
-
         const { compiler } = this.createCompiler({
             mode,
             features,
@@ -228,8 +187,6 @@ export class Application {
             singleFeature,
             // should build this feature in external mode
             isExternal: external,
-            // whether should fetch at runtime for the external features metadata
-            externalFeaturesRoute: staticExternalFeaturesFileName,
             webpackConfigPath,
             environments: resolvedEnvironments,
             eagerEntrypoint,
@@ -261,69 +218,23 @@ export class Application {
             getEnvEntrypoints(workerEnvs.keys(), 'webworker', entryPoints, outDir);
         }
 
-        const resolvedExternalFeaturesBasePath = fs.resolve(
-            externalFeaturesBasePath ?? (configExternalFeaturesBasePath ? fs.dirname(configPath!) : this.basePath)
-        );
-
-        const externalFeatures = getExternalFeaturesMetadata(
-            providedExternalFeatureDefinitions,
-            resolvedExternalFeaturesBasePath
-        );
-
-        if (includeExternalFeatures && configExternalFeatureDefinitions.length) {
-            externalFeatures.push(
-                ...getExternalFeaturesMetadata(configExternalFeatureDefinitions, resolvedExternalFeaturesBasePath)
-            );
-        }
-
-        // creating external-features json either way
-        fs.writeFileSync(
-            fs.join(
-                this.outputPath,
-                staticExternalFeaturesFileName.startsWith('/')
-                    ? staticExternalFeaturesFileName.slice(1)
-                    : staticExternalFeaturesFileName
-            ),
-            JSON.stringify(externalFeatures)
-        );
-
-        // only if building this feature as a static build, we want to create a folder that will match the external feature definition. meaning that we will copy all external feature root folders into EXTERNAL_FEATURES_BASE_URI. This is correct because the mapping for each feature inside the externalFeatures object, will hold the following mapping for each web entry: `${EXTERNAL_FEATURES_BASE_URI}/${externalFeaturePackageName}/${externalFeatureOutDir}/entry-file.js`
-        if (externalFeatures.length && staticBuild) {
-            const externalFeaturesPath = fs.join(this.outputPath, EXTERNAL_FEATURES_BASE_URI);
-            for (const { packageName, packagePath } of [
-                ...providedExternalFeatureDefinitions,
-                ...configExternalFeatureDefinitions,
-            ]) {
-                const packageBaseDir = getExternalFeatureBasePath({
-                    packageName,
-                    basePath: resolvedExternalFeaturesBasePath,
-                    packagePath,
-                });
-                await fs.promises.copyDirectory(packageBaseDir, fs.join(externalFeaturesPath, packageName));
-            }
-        }
-
         await this.writeManifest({
             features,
             featureName,
             configName,
             entryPoints,
-            externalsFilePath,
             pathToSources: sourceRoot,
         });
 
         return { stats, features, configurations, resolvedEnvironments };
     }
 
-    public async run(runOptions: IRunCommandOptions = {}) {
+    public async run(runOptions: IRunApplicationOptions = {}) {
         const {
             features: manifestFeatures,
             defaultConfigName,
             defaultFeatureName,
-            externalsFilePath = DEFAULT_EXTERNAL_FEATURES_PATH,
         } = (await fs.promises.readJsonFile(join(this.outputPath, 'manifest.json'))) as IBuildManifest;
-
-        const externalFeatures: IExternalFeatureNodeDescriptor[] = [];
 
         const {
             configName = defaultConfigName,
@@ -336,12 +247,9 @@ export class Application {
             publicConfigsRoute,
             nodeEnvironmentsMode = 'new-server',
             autoLaunch = true,
-            externalFeaturesPath: providedExternalFeaturesPath,
-            serveExternalFeaturesPath: providedServeExternalFeaturesPath = true,
-            externalFeatureDefinitions: providedExternalFeaturesDefinitions = [],
             socketServerOptions: runtimeSocketServerOptions,
         } = runOptions;
-        const { config: engineConfig, path: configPath } = await this.getEngineConfig();
+        const { config: engineConfig } = await this.getEngineConfig();
 
         const disposables = createDisposables();
         const configurations = await this.readConfigs();
@@ -350,53 +258,12 @@ export class Application {
         const config: TopLevelConfig = [...(Array.isArray(userConfig) ? userConfig : [])];
 
         const {
-            externalFeatureDefinitions = [],
-            externalFeaturesBasePath: baseExternalFeaturesPath,
-            serveExternalFeaturesPath = providedServeExternalFeaturesPath,
             serveStatic = [],
             socketServerOptions: configSocketServerOptions,
             require: requiredPaths = [],
         } = engineConfig ?? {};
 
-        const fixedExternalFeatureDefinitions = this.normalizeDefinitionsPackagePath(
-            [...providedExternalFeaturesDefinitions, ...externalFeatureDefinitions],
-            providedExternalFeaturesPath,
-            baseExternalFeaturesPath,
-            configPath
-        );
-
-        if (serveExternalFeaturesPath) {
-            for (const { packageName, packagePath } of fixedExternalFeatureDefinitions) {
-                if (packagePath) {
-                    serveStatic.push({
-                        route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
-                        directoryPath: fs.resolve(packagePath),
-                    });
-                }
-            }
-        }
-
-        // this will only be true when application is built statically (without node environments)
-        if (externalsFilePath && fs.existsSync(join(this.outputPath, externalsFilePath))) {
-            externalFeatures.push(
-                ...(fs.readJsonFileSync(
-                    join(this.outputPath, externalsFilePath),
-                    'utf8'
-                ) as IExternalFeatureNodeDescriptor[])
-            );
-        }
-
         const routeMiddlewares: RouteMiddleware[] = [];
-
-        const resolvedExternalFeaturesPath = fs.resolve(
-            providedExternalFeaturesPath ??
-                baseExternalFeaturesPath ??
-                (configPath ? fs.dirname(configPath) : this.basePath)
-        );
-
-        externalFeatures.push(
-            ...getExternalFeaturesMetadata(fixedExternalFeatureDefinitions, resolvedExternalFeaturesPath)
-        );
 
         // adding the route middlewares here because the launchHttpServer statically serves the 'staticDirPath'. but we want to add handlers to existing files there, so we want the custom middleware to be applied on an existing route
         if (serveStatic.length) {
@@ -405,13 +272,6 @@ export class Application {
             }
         }
 
-        routeMiddlewares.push({
-            path: externalsFilePath.startsWith('/') ? externalsFilePath : `/${externalsFilePath}`,
-            handlers: (_, res: express.Response) => {
-                res.json(externalFeatures);
-            },
-        });
-
         const { port, close, socketServer, app } = await launchEngineHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort,
@@ -419,22 +279,6 @@ export class Application {
             routeMiddlewares,
         });
         disposables.add(close);
-
-        // since the latest release was a patch, We need to be backward compatible with broken changes.
-        // adding backward compatibility for previous engine versions.
-        // todo: remove this on next major
-        app.get('/external', (_, res) => {
-            res.json(externalFeatures);
-        });
-
-        fixedExternalFeatureDefinitions.push(
-            ...this.normalizeDefinitionsPackagePath(
-                providedExternalFeaturesDefinitions,
-                providedExternalFeaturesPath,
-                baseExternalFeaturesPath,
-                configPath
-            )
-        );
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
@@ -446,7 +290,6 @@ export class Application {
                 inspect,
                 overrideConfig: config,
                 configurations,
-                externalFeatures,
                 requiredPaths,
             },
             this.basePath,
@@ -500,31 +343,6 @@ export class Application {
                 require.resolve(filePath, { paths: [this.outputPath] }),
             ])
         );
-    }
-
-    protected normalizeDefinitionsPackagePath(
-        externalFeatureDefinitions: IExternalDefinition[],
-        providedExternalFeatuersPath: string | undefined,
-        baseExternalFeaturesPath: string | undefined,
-        configPath: string | undefined
-    ) {
-        return externalFeatureDefinitions.map((def) => {
-            const { outDir, packagePath, packageName } = def;
-            return {
-                outDir,
-                packageName,
-                packagePath:
-                    packagePath ??
-                    fs.dirname(
-                        require.resolve(fs.join(packageName, 'package.json'), {
-                            paths: [
-                                providedExternalFeatuersPath ??
-                                    (baseExternalFeaturesPath ? configPath! : this.basePath),
-                            ],
-                        })
-                    ),
-            };
-        });
     }
 
     public async remote({ port: preferredPort, socketServerOptions }: IRunApplicationOptions = {}) {
@@ -636,13 +454,11 @@ export class Application {
         featureName,
         configName,
         entryPoints,
-        externalsFilePath,
         pathToSources,
     }: {
         features: Map<string, IFeatureDefinition>;
         featureName?: string;
         configName?: string;
-        externalsFilePath: string;
         entryPoints: Record<string, Record<string, string>>;
         pathToSources: string;
     }) {
@@ -653,7 +469,6 @@ export class Application {
             defaultConfigName: configName,
             defaultFeatureName: featureName,
             entryPoints,
-            externalsFilePath,
         };
 
         await fs.promises.ensureDirectory(this.outputPath);
@@ -760,8 +575,6 @@ export class Application {
         publicConfigsRoute,
         overrideConfig,
         singleFeature,
-        isExternal,
-        externalFeaturesRoute,
         webpackConfigPath,
         environments,
         eagerEntrypoint,
@@ -790,8 +603,7 @@ export class Application {
             publicConfigsRoute,
             overrideConfig,
             singleFeature,
-            createWebpackConfig: isExternal ? createWebpackConfigForExternalFeature : createWebpackConfig,
-            externalFeaturesRoute,
+            createWebpackConfig,
             eagerEntrypoint,
             configLoaderModuleName,
         });

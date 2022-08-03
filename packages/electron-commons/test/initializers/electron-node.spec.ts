@@ -42,7 +42,6 @@ const setupRunningEnv = async ({
                 nodeEntryPath: fs.join(testProjectPath, 'entry.js'),
                 config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
                 features: Array.from(features.entries()),
-                externalFeatures: [],
                 env: serverEnv,
             }),
         processOptions: { cwd: process.cwd() },

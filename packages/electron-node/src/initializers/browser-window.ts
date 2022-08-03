@@ -1,7 +1,7 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
 import once from 'lodash.once';
-import { electronRuntimeArguments, externalFeaturesManager } from '@wixc3/engine-electron-commons';
+import { electronRuntimeArguments } from '@wixc3/engine-electron-commons';
 import type { InitializerOptions } from '@wixc3/engine-core';
 
 import { ElectronBrowserHost } from '../hosts/electron-node-host';
@@ -45,12 +45,7 @@ export async function initializeWindowEnvironment({
     configName = runOptions.get(electronRuntimeArguments.runtimeConfigName) as string | undefined,
     featureName = runOptions.get(electronRuntimeArguments.runtimeFeatureName) as string,
     runtimeArguments = {},
-    externalFeatures = [],
 }: IWindowEnvironmentOptions): Promise<InitializedBrowserEnvironment> {
-    externalFeaturesManager.add(...externalFeatures);
-    browserWindow.on('close', () => {
-        externalFeaturesManager.remove(...externalFeatures);
-    });
     const devport = runOptions.get(electronRuntimeArguments.devport) as string | undefined;
 
     const query = {

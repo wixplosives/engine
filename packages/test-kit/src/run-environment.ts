@@ -17,7 +17,7 @@ import {
     Running,
     AnyEnvironment,
 } from '@wixc3/engine-core';
-import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
 export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
@@ -35,7 +35,6 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
      */
     featureDiscoveryRoot?: string;
     env: ENV;
-    externalFeatures?: IExternalFeatureNodeDescriptor[];
 }
 
 export interface IGetRuinnnigFeatureOptions<
@@ -56,7 +55,6 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
     config = [],
     env,
     basePath = process.cwd(),
-    externalFeatures = [],
     featureDiscoveryRoot,
 }: IRunNodeEnvironmentOptions<ENV>): Promise<{
     engine: RuntimeEngine<ENV>;
@@ -97,7 +95,6 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         type: envType,
         childEnvName,
         config,
-        externalFeatures,
         options: Object.entries(runtimeOptions),
         context: basePath,
         env,

@@ -23,7 +23,6 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     type,
     options,
     host,
-    externalFeatures = [],
     context,
     env,
 }: StartEnvironmentOptions<ENV>): Promise<{
@@ -81,31 +80,10 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
                 context,
             })
         );
-
-        // mapping all features to be evaluated from the context of their package location
-        externalFeatures.map(({ packageName, packageBasePath }) =>
-            remapToUserLibrary({
-                test: (request) => request.includes(packageName),
-                context: packageBasePath,
-            })
-        );
         // initializing our module system tricks to be able to load all features from their proper context, so that features will not be loaded twice
         init();
     }
 
-    for (const { scopedName: externalFeatureName, envEntries } of externalFeatures) {
-        if (envEntries[name] && envEntries[name]!['node']) {
-            const externalFeatureLoaders = (await import(envEntries[name]!['node']!)) as {
-                [featureName: string]: IFeatureLoader;
-            };
-            for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
-                featureLoader.register(name, loader);
-            }
-            for (const feature of await featureLoader.getLoadedFeatures(externalFeatureName, optionsRecord)) {
-                runningFeatures.push(feature);
-            }
-        }
-    }
     if (context) {
         clear();
     }
