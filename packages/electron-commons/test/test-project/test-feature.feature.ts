@@ -10,5 +10,5 @@ export default new Feature({
             handleUncaught: false,
         }),
     },
-    dependencies: [COM.asEntity],
+    dependencies: [COM.asDependency],
 });

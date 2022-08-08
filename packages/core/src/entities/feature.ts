@@ -110,7 +110,7 @@ export class Feature<
      * })
      * ```
      */
-    public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
+    public asDependency: Feature<ID, Feature[], API, EnvironmentContext> = this;
 
     /**
      * Unique string that identifies the feature.
