@@ -4,7 +4,7 @@ import reactRendererFeature, { MainEnv } from './react-renderer.feature';
 
 export default new Feature({
     id: 'guiFeature',
-    dependencies: [reactRendererFeature.asDependency],
+    dependencies: [reactRendererFeature],
     api: {
         extentionSlot: Slot.withType<React.ReactElement>().defineEntity(MainEnv),
     },

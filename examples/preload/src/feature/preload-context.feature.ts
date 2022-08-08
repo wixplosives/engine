@@ -13,7 +13,7 @@ export default new Feature({
             .defineEntity(procEnv)
             .allowRemoteAccess(),
     },
-    dependencies: [COM.asDependency, nonContextualFeature.asDependency],
+    dependencies: [COM, nonContextualFeature],
     context: {
         someCtx: procEnv.withContext<{}>(),
     },

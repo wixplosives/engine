@@ -4,5 +4,5 @@ import BaseApp from '@fixture/static-base-web-application-feature/dist/base-web-
 export default new Feature({
     id: 'extenalFeature',
     api: {},
-    dependencies: [BaseApp.asDependency],
+    dependencies: [BaseApp],
 });

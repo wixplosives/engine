@@ -9,5 +9,5 @@ export const EXAMPLE_FEATURE_NAME = 'file-server-sample-feature';
 export default new Feature({
     id: EXAMPLE_FEATURE_NAME,
     api: {},
-    dependencies: [FileServer.asDependency],
+    dependencies: [FileServer],
 });

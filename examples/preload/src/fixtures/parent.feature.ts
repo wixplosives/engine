@@ -3,6 +3,6 @@ import allFeature from '../feature/all.feature';
 
 export default new Feature({
     id: 'parent',
-    dependencies: [allFeature.asDependency],
+    dependencies: [allFeature],
     api: {},
 });
