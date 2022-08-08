@@ -173,7 +173,7 @@ export type Dependency<
     ID extends string = string,
     API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any> =
-    IFeature<ID, any[], API, EnvironmentContext> & { __dep: typeof dep }
+    IFeature<ID, any[], API, EnvironmentContext> & { __try_using_Feature_asDependency: typeof dep }
 
 export interface FeatureDef<
     ID extends string,

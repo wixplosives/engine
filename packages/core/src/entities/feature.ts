@@ -107,11 +107,15 @@ export class Feature<
      * ```ts
      * new Feature({
      *    id: 'someFeature',
-     *    dependencies: [anotherFeature.asEntity],
+     *    dependencies: [anotherFeature.asDependency],
      *    api: { ... },
      * })
      * ```
      */
+    public asDependency = this as unknown as Dependency<ID, API, EnvironmentContext>;
+    
+    // TODO: remove after dependent projects are updated
+    // @defecated: use asDependency 
     public asEntity = this as unknown as Dependency<ID, API, EnvironmentContext>;
 
     /**
