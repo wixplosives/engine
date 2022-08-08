@@ -105,12 +105,12 @@ export class Feature<
      * ```ts
      * new Feature({
      *    id: 'someFeature',
-     *    dependencies: [anotherFeature..asDependency],
+     *    dependencies: [anotherFeature.asEntity],
      *    api: { ... },
      * })
      * ```
      */
-    public asDependency: Feature<ID, Feature[], API, EnvironmentContext> = this;
+    public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
 
     /**
      * Unique string that identifies the feature.
