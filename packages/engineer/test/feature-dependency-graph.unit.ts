@@ -9,7 +9,7 @@ const noDepsFeature = new Feature({
 });
 const simpleDepFeature = new Feature({
     id: 'simpleDepFeature',
-    dependencies:[noDepsFeature.asEntity],
+    dependencies: [noDepsFeature.asEntity],
     api: {},
 });
 const shareDepWithDepFeature = new Feature({
