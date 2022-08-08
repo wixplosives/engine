@@ -67,7 +67,7 @@ typeCheck(
 
 const gui = new Feature({
     id: 'gui',
-    dependencies: [logger],
+    dependencies: [logger.asEntity],
     api: {
         panelSlot: Slot.withType<{ panelID: string }>().defineEntity([MAIN]),
         guiService: Service.withType<{ someMethod(): void }>().defineEntity([MAIN, MAIN_1]),
@@ -108,7 +108,7 @@ interface ComponentDescription {
 
 const addPanel = new Feature({
     id: 'addPanel',
-    dependencies: [gui, logger],
+    dependencies: [gui.asEntity, logger.asEntity],
     api: {
         componentDescription: Slot.withType<ComponentDescription>().defineEntity(MAIN),
         service1: Service.withType<DataService>().defineEntity(MAIN),

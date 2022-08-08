@@ -3,7 +3,7 @@ import contextualFeature, { procEnv } from '../feature/preload-context.feature';
 
 export default new Feature({
     id: 'preloadContextWorker',
-    dependencies: [contextualFeature],
+    dependencies: [contextualFeature.asEntity],
     api: {},
 });
 
