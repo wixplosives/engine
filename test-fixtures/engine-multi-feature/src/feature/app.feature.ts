@@ -3,7 +3,7 @@ import { Config, Feature, Slot } from '@wixc3/engine-core';
 
 export default new Feature({
     id: 'MultiFeature',
-    dependencies:[_3rdParty.asEntity],
+    dependencies: [_3rdParty.asEntity],
     api: {
         mySlot: Slot.withType<string>().defineEntity(MAIN),
         myConfig: new Config<{ tags: string[] }>({ tags: [] }),
