@@ -24,7 +24,7 @@ export const SERVER_MARK = 'server';
  */
 export default new Feature({
     id: 'fileServerExample',
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
     api: {
         remoteFiles: Service.withType<FileSystemAPI>().defineEntity(server).allowRemoteAccess(),
         config: new Config<{ title?: string }>({}),

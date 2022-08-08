@@ -16,7 +16,7 @@ export interface SidebarItem {
 
 export default new Feature({
     id: 'playgroundCodeEditor',
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
     api: {
         sidebarSlot: Slot.withType<SidebarItem>().defineEntity(MAIN),
         codeService: Service.withType<CodeService>().defineEntity([MAIN, PROCESSING]),

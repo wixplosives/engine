@@ -10,5 +10,5 @@ export default new Feature({
         nodeEnv1: Service.withType<{ getPid: () => number }>().defineEntity(NODE_1).allowRemoteAccess(),
         nodeEnv2: Service.withType<{ getPid: () => number }>().defineEntity(NODE_2).allowRemoteAccess(),
     },
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
 });

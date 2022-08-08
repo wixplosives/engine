@@ -6,7 +6,7 @@ export const PREVIEW = new Environment('preview', 'iframe', 'single');
 
 export default new Feature({
     id: 'preview',
-    dependencies: [COM.asDependency, CodeEditor.asDependency],
+    dependencies: [COM, CodeEditor],
     api: {
         complierExtension: Slot.withType<CompilerExtension>().defineEntity(PROCESSING),
         compileService: Service.withType<BaseCompiler>().defineEntity(PROCESSING).allowRemoteAccess(),

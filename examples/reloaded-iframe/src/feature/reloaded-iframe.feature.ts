@@ -9,7 +9,7 @@ export interface IEchoService {
 
 export default new Feature({
     id: 'iframeReload',
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
     api: {
         echoService: Service.withType<IEchoService>()
             .defineEntity(iframeEnv)

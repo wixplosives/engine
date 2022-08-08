@@ -16,5 +16,5 @@ export default new Feature({
     api: {
         passedOptions: Service.withType<MyInterfaceClass>().defineEntity(PROC).allowRemoteAccess(),
     },
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
 });
