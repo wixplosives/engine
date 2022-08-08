@@ -26,7 +26,7 @@ const comEntry: IStaticFeatureDefinition = {
 const server2Env = new Environment('server-two', 'node', 'single');
 
 const engineNodeEntry: IStaticFeatureDefinition = {
-    dependencies: [comEntry.scopedName],
+    dependencies:[comEntry.scopedName],
     envFilePaths: {
         server: require.resolve('@fixture/engine-node/dist/feature/x.server.env'),
     },
@@ -43,7 +43,7 @@ const engineNodeEntry: IStaticFeatureDefinition = {
 };
 
 const engineMultiNodeSocketCommunication: IStaticFeatureDefinition = {
-    dependencies: [comEntry.scopedName],
+    dependencies:[comEntry.scopedName],
     filePath: require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.feature'),
     scopedName: 'engine-multi-socket-node/x',
     packageName: '@fixture/engine-multi-socket-node',
@@ -58,7 +58,7 @@ const engineMultiNodeSocketCommunication: IStaticFeatureDefinition = {
 };
 
 const engineMultiNodeIPCCommunication: IStaticFeatureDefinition = {
-    dependencies: [comEntry.scopedName],
+    dependencies:[comEntry.scopedName],
     filePath: require.resolve('@fixture/engine-multi-socket-node/dist/feature/x.feature'),
     scopedName: 'engine-multi-socket-node/x',
     packageName: '@fixture/engine-multi-socket-node',
@@ -194,7 +194,7 @@ describe('Node environments manager', function () {
             api: {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
-            dependencies: [SocketServerNodeFeature, COM],
+            dependencies: [SocketServerNodeFeature.asDependency, COM.asDependency],
         }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: socketServerEnv });
 
@@ -290,7 +290,7 @@ describe('Node environments manager', function () {
             api: {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
-            dependencies: [ServerNodeFeature, COM],
+            dependencies: [ServerNodeFeature.asDependency, COM.asDependency],
         }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: serverEnv });
 

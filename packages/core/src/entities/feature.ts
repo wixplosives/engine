@@ -105,7 +105,7 @@ export class Feature<
      * ```ts
      * new Feature({
      *    id: 'someFeature',
-     *    dependencies: [anotherFeature.asEntity],
+     *    dependencies: [anotherFeature..asDependency],
      *    api: { ... },
      * })
      * ```
