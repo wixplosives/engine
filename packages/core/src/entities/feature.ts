@@ -113,10 +113,6 @@ export class Feature<
      * ```
      */
     public asDependency = this as unknown as Dependency<ID, API, EnvironmentContext>;
-    
-    // TODO: remove after dependent projects are updated
-    // @defecated: use asDependency 
-    public asEntity = this as unknown as Dependency<ID, API, EnvironmentContext>;
 
     /**
      * Unique string that identifies the feature.

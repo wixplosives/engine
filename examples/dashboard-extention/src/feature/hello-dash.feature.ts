@@ -3,6 +3,6 @@ import Gui from '@wixc3/engineer/dist/feature/gui.feature';
 
 export default new Feature({
     id: 'dashboardExt',
-    dependencies: [Gui.asEntity],
+    dependencies: [Gui.asDependency],
     api: {},
 });

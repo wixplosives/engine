@@ -53,7 +53,7 @@ describe('Feature', () => {
 
         const f2 = new Feature({
             id: 'test2',
-            dependencies: [f1.asEntity],
+            dependencies: [f1.asDependency],
             api: {
                 config: Config.withType<{ name: string }>().defineEntity({ name: 'test2' }),
             },
@@ -69,7 +69,7 @@ describe('Feature', () => {
 
     it('feature run stage', async () => {
         const f0 = new Feature({ id: 'test', api: {} });
-        const entryFeature = new Feature({ id: 'test', api: {}, dependencies: [f0.asEntity] });
+        const entryFeature = new Feature({ id: 'test', api: {}, dependencies: [f0.asDependency] });
         const calls: string[] = [];
 
         f0.setup(AllEnvironments, ({ run }) => {
@@ -91,7 +91,7 @@ describe('Feature', () => {
 
     it('feature setup/run stage should not happen twice', async () => {
         const f0 = new Feature({ id: 'test', api: {} });
-        const f1 = new Feature({ id: 'test', api: {}, dependencies: [f0.asEntity] });
+        const f1 = new Feature({ id: 'test', api: {}, dependencies: [f0.asDependency] });
         const calls: string[] = [];
 
         f0.setup(AllEnvironments, ({ run }) => {
@@ -325,7 +325,7 @@ describe('Feature', () => {
             const entryFeature = new Feature({
                 id: 'testSlotsSecondFeature',
                 api: {},
-                dependencies: [maps.asEntity],
+                dependencies: [maps.asDependency],
             }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
@@ -359,7 +359,7 @@ describe('Feature', () => {
             const f1 = new Feature({
                 id: 'testSlotsFirstFeature',
                 api: {},
-                dependencies: [maps.asEntity],
+                dependencies: [maps.asDependency],
             }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
@@ -368,7 +368,7 @@ describe('Feature', () => {
             const f2 = new Feature({
                 id: 'testSlotsSecondFeature',
                 api: {},
-                dependencies: [maps.asEntity],
+                dependencies: [maps.asDependency],
             }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
             });
@@ -401,7 +401,7 @@ describe('Feature', () => {
             const entryFeature = new Feature({
                 id: 'testSlotsFirstFeature',
                 api: {},
-                dependencies: [maps.asEntity],
+                dependencies: [maps.asDependency],
             }).setup(mainEnv, () => undefined);
             const engine = await runEngine({ entryFeature, env: mainEnv });
 
@@ -488,7 +488,7 @@ describe('feature interaction', () => {
 
         const entryFeature = new Feature({
             id: 'feature2',
-            dependencies: [echoFeature.asEntity],
+            dependencies: [echoFeature.asDependency],
             api: {
                 config: Config.withType<{ prefix: string; suffix: string }>().defineEntity({ prefix: '', suffix: '' }),
             },
@@ -526,7 +526,7 @@ describe('Contextual environments', () => {
 
         const entryFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM.asEntity],
+            dependencies: [COM.asDependency],
             api: {
                 echoService: Service.withType<{ echo(s: string): string }>().defineEntity(processing),
             },
@@ -669,7 +669,7 @@ describe('service with remove access environment visibility', () => {
 
         const echoFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM.asEntity],
+            dependencies: [COM.asDependency],
             api: {
                 echoService: Service.withType<{ echo(s: string): string }>()
                     .defineEntity(processing)
@@ -698,7 +698,7 @@ describe('service with remove access environment visibility', () => {
         // const checks = [];
         const testFeature = new Feature({
             id: 'test',
-            dependencies: [echoFeature.asEntity],
+            dependencies: [echoFeature.asDependency],
             api: {},
         });
 
@@ -731,7 +731,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
         new Feature({
             id: 'echoFeature',
-            dependencies: [COM.asEntity],
+            dependencies: [COM.asDependency],
             api: {
                 slot: Slot.withType<{ name: string }>().defineEntity(main),
             },
@@ -765,7 +765,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
         const echoFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM.asEntity],
+            dependencies: [COM.asDependency],
             api: {
                 echoService: Service.withType<{ echo(s: string): string }>()
                     .defineEntity(processing)
@@ -786,7 +786,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
         const checks = [];
         const testFeature = new Feature({
             id: 'test',
-            dependencies: [echoFeature.asEntity],
+            dependencies: [echoFeature.asDependency],
             api: {},
         });
 
@@ -811,7 +811,7 @@ describe.skip('Environments Type tests 1', () => {
 
         const echoFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM.asEntity],
+            dependencies: [COM.asDependency],
             api: {
                 // processing,
                 echoService: Service.withType<{ echo(s: string): string }>()

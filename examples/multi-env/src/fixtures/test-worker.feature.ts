@@ -3,7 +3,7 @@ import MultiEnvFeature, { processingEnv } from '../feature/multi-env.feature';
 
 export default new Feature({
     id: 'use-worker-example',
-    dependencies: [MultiEnvFeature.asEntity],
+    dependencies: [MultiEnvFeature.asDependency],
     api: {},
 });
 
