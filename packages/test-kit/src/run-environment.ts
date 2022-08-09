@@ -16,6 +16,7 @@ import {
     flattenTree,
     Running,
     AnyEnvironment,
+    Dependency,
 } from '@wixc3/engine-core';
 import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
@@ -40,7 +41,7 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
 
 export interface IGetRuinnnigFeatureOptions<
     NAME extends string,
-    DEPS extends Feature[],
+    DEPS extends Dependency[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends AnyEnvironment
@@ -127,7 +128,7 @@ function locateEnvironment(
 
 export async function getRunningFeature<
     NAME extends string,
-    DEPS extends Feature[],
+    DEPS extends Dependency[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends AnyEnvironment

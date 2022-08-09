@@ -12,6 +12,8 @@ import type {
     PartialFeatureConfig,
     RunningFeatures,
     SetupHandler,
+    IFeature,
+    Dependency,
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
 import { deferred, IDeferredPromise, SetMultiMap } from '../helpers';
@@ -21,7 +23,7 @@ const emptyDispose = { dispose: () => undefined };
 /**
  * Represents a currently running feature instance.
  **/
-export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
+export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
@@ -31,7 +33,7 @@ export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
         public feature: T,
         public api: Running<T, ENV>,
         public dependencies: RunningFeatures<T['dependencies'], ENV>
-    ) {}
+    ) { }
 
     public addRunHandler(fn: () => unknown, envName: string) {
         this.runHandlers.add(envName, fn);
@@ -92,10 +94,10 @@ export class RuntimeFeature<T extends Feature, ENV extends AnyEnvironment> {
  */
 export class Feature<
     ID extends string = string,
-    Deps extends Feature[] = any[],
+    Deps extends Dependency[] = any[],
     API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any
-> {
+    > {
     /**
      * References `this` without the exact types of `Deps` (making them a generic `Feature[]`).
      * We use `someFeature.asEntity` instead of `someFeature` when we want to avoid typescript
@@ -105,12 +107,16 @@ export class Feature<
      * ```ts
      * new Feature({
      *    id: 'someFeature',
-     *    dependencies: [anotherFeature.asEntity],
+     *    dependencies: [anotherFeature.asDependency],
      *    api: { ... },
      * })
      * ```
      */
-    public asEntity: Feature<ID, Feature[], API, EnvironmentContext> = this;
+    public asDependency = this as unknown as Dependency<ID, API, EnvironmentContext>;
+    
+    // TODO: remove after dependent projects are updated
+    // @defecated: use asDependency 
+    public asEntity = this as unknown as Dependency<ID, API, EnvironmentContext>;
 
     /**
      * Unique string that identifies the feature.
@@ -155,7 +161,7 @@ export class Feature<
      */
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
-        this.dependencies = def.dependencies || ([] as Feature[] as Deps);
+        this.dependencies = def.dependencies || ([] as Dependency[] as Deps);
         this.api = def.api || ({} as API);
         this.context = def.context || ({} as EnvironmentContext);
         this.identifyApis();
