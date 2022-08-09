@@ -58,6 +58,7 @@
     { "path": "./test-fixtures/static-base-web-application-config-loader/src" },
     { "path": "./test-fixtures/using-config/src" },
     { "path": "./test-fixtures/with-iframe/src" },
+    { "path": "./test-fixtures/cross-iframe/src" },
     { "path": "./test-fixtures/workspace/packages/a/src" },
     { "path": "./test-fixtures/workspace/packages/b/src" }
   ]
