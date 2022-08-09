@@ -7,5 +7,6 @@ export * from './message-types';
 export * from './service-config';
 export * from './types';
 export * from './hosts/ws-client-host';
+export * from './minimal-window-com';
 export * from './initializers';
 export * from './hosts';

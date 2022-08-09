@@ -80,7 +80,8 @@ export default new Feature({
             // in electron process also have type 'renderer'
             process.type !== 'renderer';
 
-        // worker and iframe always get `name` when initialized as Environment.
+        // iframe get `instanceId` with top level config
+        // worker get `instanceId` set into `name` property when initialized as Environment.
         // it can be overridden using top level config.
         // main frame might not have that configured, so we use 'main' fallback for it.
         const comId =
