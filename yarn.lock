@@ -80,14 +80,14 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@file-services/directory@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-7.0.0.tgz#2f601baa4c344b61ac8ad462eb52252f251df6fa"
-  integrity sha512-b13OEKuPXeohBUIyyzWdg6bLkLaArbm6ns92P4p9t0ShuzEGa38yD8YWLaZtTDSkgLAVJdluyzQbhl175Ls2kA==
+"@file-services/directory@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-7.0.1.tgz#75e51396258f04dcad7c180566a4ee09bb0e2682"
+  integrity sha512-rM3R5xFunCcEDnAa8wHpdF7GRN0w5p9o/CPa8saYxuFaNxj+Isi3ow9J8mCFu2wHShswp6oOSJ1IsgM9JrEqbg==
   dependencies:
-    "@file-services/path" "^7.0.0"
-    "@file-services/types" "^7.0.0"
-    "@file-services/utils" "^7.0.0"
+    "@file-services/path" "^7.0.1"
+    "@file-services/types" "^7.0.1"
+    "@file-services/utils" "^7.0.1"
 
 "@file-services/memory@^7.0.0":
   version "7.0.0"
@@ -106,29 +106,29 @@
     "@file-services/types" "^7.0.0"
     "@file-services/utils" "^7.0.0"
 
-"@file-services/path@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/path/-/path-7.0.0.tgz#b4efc10a1cc6770bceccd8e231114f6b79af07bb"
-  integrity sha512-mk/rNPVC+xzRjTCJQ8bJVX5Ofx2Veyjz5GxK93DMTERHOSvWU8xJRbxKR8S1P1NXXFvOI4FYXJairPAWAj0oeQ==
+"@file-services/path@^7.0.0", "@file-services/path@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/path/-/path-7.0.1.tgz#e86c900592f9eb9b6f63e3dad3c29f8910706087"
+  integrity sha512-uTBrAG8hFoxlroX0cGqUYHvTPIZNhj2XoomJfplTT6c1s7hlxQT6qaMkIOnSJZju6YObS2xSfjzgEgY3XLnn/A==
   dependencies:
-    "@file-services/types" "^7.0.0"
+    "@file-services/types" "^7.0.1"
 
 "@file-services/resolve@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-7.0.0.tgz#7661f16a7f3dcb22e95f186d7ae065accddbd2fb"
   integrity sha512-B/59iF+3BmJzf3o3QCKbIvfgUcLCJyq/dxlYHff/B50omo6bJ30w0MVJb1iCsDKUawAlPi2Dpwh2xAd6X7sOxA==
 
-"@file-services/types@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-7.0.0.tgz#4ba1847828ac1417961c5190e62797dba2971004"
-  integrity sha512-yJVDkjirwZdvwj0SgEhFa0epS2xhbkHPx1dZ94o80sHdz1BHcbGRLegbfBAuAgg/GqfM7YXct5FdHOnGpNCkvA==
+"@file-services/types@^7.0.0", "@file-services/types@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-7.0.1.tgz#13d9f8fa54cce100a60e4b289556adf9c4671b75"
+  integrity sha512-Xe6u3qaOqUFAexQLi5NU+yehZ7HrlL561njL3Ki8zroOw5sBOcU33NPKNAe8zgnXqNwkGf2xu9b11bdKVWr4jg==
 
-"@file-services/utils@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-7.0.0.tgz#50b30495e2de3f7c5e8f0c1f49ce9d409df3e5f4"
-  integrity sha512-BWiI7TRjE8t2XNEflM+HDgRVJuT1rdVLnqTugq5mn51oqmQlCPyNyYmiWr+9CDLSTDdA1fc9b1HHNAlM2/917A==
+"@file-services/utils@^7.0.0", "@file-services/utils@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-7.0.1.tgz#525ef4c7ae0578b1c84254e2874f90e926275242"
+  integrity sha512-zPhNloT2YVfGlh2+VxzbGnV/OPo53VaVDwNW2cKLbAex97dF6lh9xHjYBUHnt3nFA0HPc3Xd6QkSAC/BXfGBNA==
   dependencies:
-    "@file-services/types" "^7.0.0"
+    "@file-services/types" "^7.0.1"
 
 "@gar/promisify@^1.1.3":
   version "1.1.3"
