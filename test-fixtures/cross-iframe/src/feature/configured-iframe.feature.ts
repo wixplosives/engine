@@ -15,5 +15,5 @@ export default new Feature({
             managed: false,
         }),
     },
-    dependencies: [COM.asEntity, echoFeature.asEntity],
+    dependencies: [COM.asDependency, echoFeature.asDependency],
 });
