@@ -48,7 +48,7 @@ export type ServerListeningHandler = (params: ServerListeningParams) => void | P
 
 export default new Feature({
     id: 'buildFeature',
-    dependencies: [COM.asEntity],
+    dependencies: [COM.asDependency],
     api: {
         /**
          * service providing application level behavior and info, such as node env management, feature detection etc

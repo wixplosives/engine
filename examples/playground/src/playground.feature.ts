@@ -5,6 +5,6 @@ import Preview from './preview/compiler.feature';
 
 export default new Feature({
     id: 'enginePlayGroundExample',
-    dependencies: [Code.asEntity, Preview.asEntity, EndWithCompiler.asEntity],
+    dependencies: [Code.asDependency, Preview.asDependency, EndWithCompiler.asDependency],
     api: {},
 });
