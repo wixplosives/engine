@@ -1,6 +1,4 @@
-import type { WindowHost } from '../types';
 import type { Communication } from '../communication';
-import { isIframe } from '../helpers';
 import { injectScript } from '../../helpers';
 import type { InitializerOptions } from './types';
 import { createIframeMessaging } from '../minimal-window-com';

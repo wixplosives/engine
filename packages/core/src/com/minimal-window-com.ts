@@ -55,7 +55,7 @@ function createWindowPostMessaging<API extends Api, M extends Extract<keyof API,
                         Promise.resolve(handler(...callMessage.params))
                             .then((data) => {
                                 const returnMessage: ReturnMessage<M> = {
-                                    type: createReturnMessageType(method as M),
+                                    type: createReturnMessageType(method),
                                     data,
                                     callId: callMessage.callId,
                                 };
