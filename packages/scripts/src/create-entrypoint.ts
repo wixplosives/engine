@@ -132,7 +132,7 @@ ${staticBuild ? createConfigLoadersObject(configLoaderModuleName, configs) : ''}
 async function main() {
     const envName = '${envName}';
     const currentWindow = typeof self !== 'undefined' ? self : window;
-    const topWindow = currentWindow.parent;
+    const topWindow = currentWindow.parent ?? currentWindow;
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
     if (!isMainEntrypoint) {
         createIframeMessaging(currentWindow, topWindow).registerHandlers();
