@@ -1,8 +1,7 @@
 import type { Communication } from '../communication';
 import { injectScript } from '../../helpers';
 import type { InitializerOptions } from './types';
-import { createIframeMessaging } from '../minimal-window-com';
-import { canAccessWindow } from '../..';
+import { WindowInitializerService } from '../window-initializer-service';
 
 export const INSTANCE_ID_PARAM_NAME = 'iframe-instance-id';
 export interface IIframeInitializerOptions {
@@ -19,12 +18,16 @@ export interface IIframeInitializerOptions {
      */
     hashParams?: string;
     /**
-     * if true, allows control over ifrsme content via hash parameters also.
+     * if true, allows control over iframe content via hash parameters also.
+     *
      * @default false
      */
     managed?: boolean;
     /**
-     * target host for iframe, @property {src} will overrule this
+     * target host for iframe
+     * can be used to isolate environment on cross origin
+     * works only with managed: true
+     * @property {src} will overrule this
      * @example http://127.0.0.1
      */
     origin?: string;
@@ -78,7 +81,10 @@ interface StartIframeParams {
     envReadyPromise: Promise<void>;
     iframe: HTMLIFrameElement;
 }
-
+/**
+ * initializes iframe on same origin relies on direct access to child frames
+ * may be deprecated in the future
+ */
 async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
     if (!iframe.contentWindow) {
         throw new Error('cannot spawn detached iframe.');
@@ -120,38 +126,44 @@ async function startManagedIframe({
 
     try {
         const contentWindow = iframe.contentWindow;
-        com.registerEnv(instanceId, contentWindow);
         const url = new URL(src, window.location.href);
         const search = new URLSearchParams(url.search);
+
+        com.registerEnv(instanceId, contentWindow);
+        // previously instance id was set to iframe window by host, but
+        // setting name to iframe window is not possible on cross origin and lead to race condition
+        // when multiple engine frames try to initialize in to the same iframe
+        // instead instance id is set via query param
+        // no race because latest url wins + no cross origin problems
         search.set(INSTANCE_ID_PARAM_NAME, instanceId);
         url.search = search.toString();
-
         iframe.src = url.href;
-        await Promise.race([waitForCancel, waitForLoad(iframe)]);
 
-        // bridge to communicate cross origin windows during initialization
-        const iframeBridge = createIframeMessaging(window, contentWindow);
-        iframeBridge.registerHandlers();
-        const postInitHref = await iframeBridge.call(5000, 'getHref');
+        await Promise.race([waitForCancel, waitForLoad(iframe), envReadyPromise]);
+
+        const api = com.apiProxy<WindowInitializerService>(
+            { id: instanceId },
+            { id: WindowInitializerService.apiId },
+            {
+                oncePageHide: {
+                    listener: true,
+                },
+            }
+        );
+        const postInitHref = await api.getHref();
 
         if (iframe.contentWindow !== contentWindow || postInitHref !== url.href) {
             throw new Error('Iframe location has changed during environment initialization');
         }
 
-        if (canAccessWindow(contentWindow)) {
-            contentWindow.addEventListener('unload', cleanup);
-        } else {
-            iframeBridge
-                .call(null, 'oncePagehide')
-                .then(() => cleanup())
-                .catch((e) => {
-                    throw e;
-                });
-        }
-
-        await Promise.race([waitForCancel, envReadyPromise]);
-
+        // pagehide is used on purpose since it is more reliable than onUnload
+        // onUnload does not send postMessages on cross origin
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=964950
+        api.oncePageHide(() => {
+            cleanup();
+        });
         cancellationTriggers.delete(iframe);
+
         return instanceId;
     } catch (e) {
         cleanup();

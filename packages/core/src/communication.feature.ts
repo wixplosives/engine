@@ -9,6 +9,7 @@ import { Value } from './entities/value';
 import { Slot } from './entities/slot';
 import { RUN_OPTIONS, ENGINE } from './symbols';
 import { LoggerTransport, LogLevel } from './types';
+import { WindowInitializerService } from './com/window-initializer-service';
 
 export interface IComConfig {
     id?: string;
@@ -101,6 +102,10 @@ export default new Feature({
             isNode,
             comOptions
         );
+
+        // manually register window initialization api service to be used during
+        // start of managed iframe in packages/core/src/com/initializers/iframe.ts
+        communication.registerAPI({ id: WindowInitializerService.apiId }, new WindowInitializerService());
 
         const loggerService = new LoggerService(
             loggerTransports,

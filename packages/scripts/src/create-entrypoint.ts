@@ -121,7 +121,7 @@ import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
-const { getTopWindow, FeatureLoadersRegistry, runEngineApp, createIframeMessaging } = EngineCore;
+const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
 const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), childEnvs, target, env, eagerEntrypoint, featuresBundleName)}
 }));
@@ -134,9 +134,6 @@ async function main() {
     const currentWindow = typeof self !== 'undefined' ? self : window;
     const topWindow = currentWindow.parent ?? currentWindow;
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
-    if (!isMainEntrypoint) {
-        createIframeMessaging(currentWindow, topWindow).registerHandlers();
-    }
     const options = new URLSearchParams(currentWindow.location.search);
     const env = ${JSON.stringify(
         new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])

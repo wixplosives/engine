@@ -1,4 +1,4 @@
-import { Communication, createIframeMessaging, INSTANCE_ID_PARAM_NAME } from '@wixc3/engine-core';
+import { Communication, INSTANCE_ID_PARAM_NAME, WindowInitializerService } from '@wixc3/engine-core';
 import {
     multiTanentServiceId,
     MultiTenantTestService,
@@ -9,8 +9,8 @@ import {
 
 const options = new URLSearchParams(window.location.search);
 const instanceId = options.get(INSTANCE_ID_PARAM_NAME)!;
-createIframeMessaging(window, window.top!).registerHandlers();
 const com = new Communication(window, self.name || instanceId);
+com.registerAPI({ id: WindowInitializerService.apiId }, new WindowInitializerService());
 com.registerAPI({ id: 'TestService' }, new TestService());
 com.registerAPI({ id: multiTanentServiceId }, new MultiTenantTestService());
 com.registerAPI({ id: hashParamsRetriever }, new HashParamsRetriever());
