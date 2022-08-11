@@ -1049,9 +1049,9 @@
     infer-owner "^1.0.4"
 
 "@npmcli/run-script@^4.1.0", "@npmcli/run-script@^4.1.3", "@npmcli/run-script@^4.1.7":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@npmcli/run-script/-/run-script-4.2.0.tgz#2c25758f80831ba138afe25225d456e89acedac3"
-  integrity sha512-e/QgLg7j2wSJp1/7JRl0GC8c7PMX+uYlA/1Tb+IDOLdSM4T7K1VQ9mm9IGU3WRtY5vEIObpqCLb3aCNCug18DA==
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/@npmcli/run-script/-/run-script-4.2.1.tgz#c07c5c71bc1c70a5f2a06b0d4da976641609b946"
+  integrity sha512-7dqywvVudPSrRCW5nTHpHgeWnbBtz8cFkOuKrecm6ih+oO9ciydhWt6OF7HlqupRRmB8Q/gECVdB9LMfToJbRg==
   dependencies:
     "@npmcli/node-gyp" "^2.0.0"
     "@npmcli/promise-spawn" "^3.0.0"
@@ -1573,9 +1573,9 @@
   integrity sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==
 
 "@types/node@*", "@types/node@>=10.0.0":
-  version "18.6.5"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.6.5.tgz#06caea822caf9e59d5034b695186ee74154d2802"
-  integrity sha512-Xjt5ZGUa5WusGZJ4WJPbOT8QOqp6nDynVFRKcUt32bOgvXEoc6o085WNkYTMO7ifAj2isEfQQ2cseE+wT6jsRw==
+  version "18.7.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.7.1.tgz#352bee64f93117d867d05f7406642a52685cbca6"
+  integrity sha512-GKX1Qnqxo4S+Z/+Z8KKPLpH282LD7jLHWJcVryOflnsnH+BtSDfieR6ObwBMwpnNws0bUK8GI7z0unQf9bARNQ==
 
 "@types/node@16", "@types/node@^16.11.26":
   version "16.11.47"
@@ -2584,9 +2584,9 @@ camelcase@^6.0.0, camelcase@^6.2.0:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 caniuse-lite@^1.0.30001370:
-  version "1.0.30001374"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001374.tgz#3dab138e3f5485ba2e74bd13eca7fe1037ce6f57"
-  integrity sha512-mWvzatRx3w+j5wx/mpFN5v5twlPrabG8NqX2c6e45LCpymdoGqNvRkRutFUqpRTXKFQFNQJasvK0YT7suW6/Hw==
+  version "1.0.30001375"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001375.tgz#8e73bc3d1a4c800beb39f3163bf0190d7e5d7672"
+  integrity sha512-kWIMkNzLYxSvnjy0hL8w1NOaWNr2rn39RTAVyIwcw8juu60bZDWiF1/loOYANzjtJmy6qPgNmn38ro5Pygagdw==
 
 chai-as-promised@^7.1.1:
   version "7.1.1"
@@ -3101,12 +3101,12 @@ css-selector-tokenizer@^0.8.0:
     cssesc "^3.0.0"
     fastparse "^1.1.2"
 
-css-tree@~2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/css-tree/-/css-tree-2.0.4.tgz#be44314f17e9ac85fe894a5888941782e1123c29"
-  integrity sha512-b4IS9ZUMtGBiNjzYbcj9JhYbyei99R3ai2CSxlu8GQDnoPA/P+NU85hAm0eKDc/Zp660rpK6tFJQ2OSdacMHVg==
+css-tree@~2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/css-tree/-/css-tree-2.2.0.tgz#2fd0b2548029e8fbdb70803ebe80fe0feb94318d"
+  integrity sha512-7y32czN0VBL8WkevhC/mrHnoHOmQaJ1Wvp8sjRuTz6/n9cjL83jQaUru2MvP7kzjpGVwrSy5CE4XyQObWGIHQQ==
   dependencies:
-    mdn-data "2.0.23"
+    mdn-data "2.0.28"
     source-map-js "^1.0.1"
 
 css-what@^6.0.1:
@@ -3120,11 +3120,11 @@ cssesc@^3.0.0:
   integrity sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==
 
 csso@^5.0.4:
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/csso/-/csso-5.0.4.tgz#ea5e6c023faf0baa9230e69b4f91ccaaa0a3db8b"
-  integrity sha512-AxnuDS5yBhDT5TQMdNS+6o2OdWTKC8ioi7C+G5a30Zgo8XMAQSuMItktj/jvqh8QWOH85kDf0/S6mH1DMgyq1Q==
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/csso/-/csso-5.0.5.tgz#f9b7fe6cc6ac0b7d90781bb16d5e9874303e2ca6"
+  integrity sha512-0LrrStPOdJj+SPCCrGhzryycLjwcgUSHBtxNA8aIDxf0GLsRh1cKYhB00Gd1lDOS4yGH69+SNn13+TWbVHETFQ==
   dependencies:
-    css-tree "~2.0.4"
+    css-tree "~2.2.0"
 
 csstype@^3.0.2:
   version "3.1.0"
@@ -3538,9 +3538,9 @@ electron-publish@23.3.3:
     mime "^2.5.2"
 
 electron-to-chromium@^1.4.202:
-  version "1.4.212"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.212.tgz#20cd48e88288fd2428138c108804edb1961bf559"
-  integrity sha512-LjQUg1SpLj2GfyaPDVBUHdhmlDU1vDB4f0mJWSGkISoXQrn5/lH3ECPCuo2Bkvf6Y30wO+b69te+rZK/llZmjg==
+  version "1.4.215"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.215.tgz#553372e74bde3164290d61f6792f93e443b16733"
+  integrity sha512-vqZxT8C5mlDZ//hQFhneHmOLnj1LhbzxV0+I1yqHV8SB1Oo4Y5Ne9+qQhwHl7O1s9s9cRuo2l5CoLEHdhMTwZg==
 
 electron@^20.0.2:
   version "20.0.2"
@@ -4601,9 +4601,9 @@ hosted-git-info@^4.0.0, hosted-git-info@^4.0.1, hosted-git-info@^4.1.0:
     lru-cache "^6.0.0"
 
 hosted-git-info@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-5.0.0.tgz#df7a06678b4ebd722139786303db80fdf302ea56"
-  integrity sha512-rRnjWu0Bxj+nIfUOkz0695C0H6tRrN5iYIzYejb0tDEefe2AekHu/U5Kn9pEie5vsJqpNQU02az7TGSH3qpz4Q==
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-5.1.0.tgz#9786123f92ef3627f24abc3f15c20d98ec4a6594"
+  integrity sha512-Ek+QmMEqZF8XrbFdwoDjSbm7rT23pCgEMOJmz6GPk/s4yH//RQfNPArhIxbguNxROq/+5lNBwCDHMhA903Kx1Q==
   dependencies:
     lru-cache "^7.5.1"
 
@@ -5570,10 +5570,10 @@ matcher@^3.0.0:
   dependencies:
     escape-string-regexp "^4.0.0"
 
-mdn-data@2.0.23:
-  version "2.0.23"
-  resolved "https://registry.yarnpkg.com/mdn-data/-/mdn-data-2.0.23.tgz#dfb6c41e50a0edb808cf340973ab29321b70808e"
-  integrity sha512-IonVb7pfla2U4zW8rc7XGrtgq11BvYeCxWN8HS+KFBnLDE7XDK9AAMVhRuG6fj9BBsjc69Fqsp6WEActEdNTDQ==
+mdn-data@2.0.28:
+  version "2.0.28"
+  resolved "https://registry.yarnpkg.com/mdn-data/-/mdn-data-2.0.28.tgz#5ec48e7bef120654539069e1ae4ddc81ca490eba"
+  integrity sha512-aylIc7Z9y4yzHYAJNuESG3hfhC+0Ibp/MAMiaOZgNv4pmEdFyfZhhhny4MNiAfWdBQ1RQ2mfDWmM1x8SvGyp8g==
 
 media-typer@0.3.0:
   version "0.3.0"
@@ -6614,17 +6614,17 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-playwright-chromium@^1.24.2:
-  version "1.24.2"
-  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.24.2.tgz#a6cb0f2f4914bfea7b5ced33ac230439ed4c7627"
-  integrity sha512-L9U/T7GC0dmuHH1xUdS9tOmpOy2Pg2VF/BwkhXCwNnRJ9P9Ah+N5k659cobXfSj8CjKOHPMNTCpgM4X6ZdiDbw==
+playwright-chromium@^1.25.0:
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.25.0.tgz#e1f1ead715e93e4eb01620ace9ea93d8e21329f5"
+  integrity sha512-FH9ho3noAWVStCJx4XW78+D8QW0A99WDp53DDkYeVdEpJqCmAIKHCSE6dl5XtaDKrZPYC1ZG5hGXQh1K5H/p+g==
   dependencies:
-    playwright-core "1.24.2"
+    playwright-core "1.25.0"
 
-playwright-core@1.24.2, playwright-core@^1.20.0, playwright-core@^1.24.2:
-  version "1.24.2"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.24.2.tgz#47bc5adf3dcfcc297a5a7a332449c9009987db26"
-  integrity sha512-zfAoDoPY/0sDLsgSgLZwWmSCevIg1ym7CppBwllguVBNiHeixZkc1AdMuYUPZC6AdEYc4CxWEyLMBTw2YcmRrA==
+playwright-core@1.25.0, playwright-core@^1.20.0, playwright-core@^1.25.0:
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.25.0.tgz#54dc867c6c2cc5e4233905e249206a02914d14f1"
+  integrity sha512-kZ3Jwaf3wlu0GgU0nB8UMQ+mXFTqBIFz9h1svTlNduNKjnbPXFxw7mJanLVjqxHJRn62uBfmgBj93YHidk2N5Q==
 
 plist@^3.0.1, plist@^3.0.4:
   version "3.0.6"
