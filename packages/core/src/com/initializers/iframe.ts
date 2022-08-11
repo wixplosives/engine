@@ -159,7 +159,7 @@ async function startManagedIframe({
         // pagehide is used on purpose since it is more reliable than onUnload
         // onUnload does not send postMessages on cross origin
         // https://bugs.chromium.org/p/chromium/issues/detail?id=964950
-        api.oncePageHide(() => {
+        void api.oncePageHide(() => {
             cleanup();
         });
         cancellationTriggers.delete(iframe);
