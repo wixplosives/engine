@@ -89,8 +89,9 @@ async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: St
     if (!iframe.contentWindow) {
         throw new Error('cannot spawn detached iframe.');
     }
-
-    iframe.contentWindow.location.search = window.location.search;
+    const search = new URLSearchParams(window.location.search);
+    search.set(INSTANCE_ID_PARAM_NAME, instanceId);
+    iframe.contentWindow.location.search = search.toString();
     await waitForLoad(iframe);
     const win = iframe.contentWindow;
     com.registerEnv(instanceId, win);
@@ -130,11 +131,8 @@ async function startManagedIframe({
         const search = new URLSearchParams(url.search);
 
         com.registerEnv(instanceId, contentWindow);
-        // previously instance id was set to iframe window by host, but
-        // setting name to iframe window is not possible on cross origin and lead to race condition
-        // when multiple engine frames try to initialize in to the same iframe
-        // instead instance id is set via query param
-        // no race because latest url wins + no cross origin problems
+        // pass instance id in query param for engine initialization
+        // script that will run in the iframe can pick it up
         search.set(INSTANCE_ID_PARAM_NAME, instanceId);
         url.search = search.toString();
         iframe.src = url.href;
