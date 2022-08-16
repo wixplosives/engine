@@ -15,7 +15,7 @@ export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
 /**
  * Spawn a node-based environment from the renderer process.
  * Should be invoked *only* from the renderer process.
- * The caller should await returned `environmentIsReady` to ensure environment initialization is finished.
+ * The caller should await returned `environmentIsReady` promise to ensure environment initialization is finished.
  */
 
 export const initializeNodeEnvironment: EnvironmentInitializer<
