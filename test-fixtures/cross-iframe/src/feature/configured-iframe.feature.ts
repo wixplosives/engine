@@ -8,12 +8,9 @@ export default new Feature({
     id: 'managedCrossOriginIframeFeature',
     api: {
         config: new Config<{
-            managed: boolean;
             message?: string;
             origin?: string;
-        }>({
-            managed: false,
-        }),
+        }>({}),
     },
     dependencies: [COM.asDependency, echoFeature.asDependency],
 });

@@ -7,10 +7,10 @@ fixture.setup(mainEnv, ({ run, config }, { COM: { communication }, echoFeature: 
     myFrame.id = 'iframe';
     document.body.append(myFrame);
     const fConfigs = [
-        { managed: true, host: '127.0.0.1:3000', param: 'abc' },
-        { managed: true, host: '127.0.0.1:3000', param: '123' },
-        { managed: true, host: 'localhost:3000', param: 'bebebe' },
-        { managed: true, host: '127.0.0.1:3000', param: 'tutut' },
+        { host: '127.0.0.1:3000', param: 'abc' },
+        { host: '127.0.0.1:3000', param: '123' },
+        { host: 'localhost:3000', param: 'bebebe' },
+        { host: '127.0.0.1:3000', param: 'tutut' },
     ];
 
     for (const fConfig of fConfigs) {
@@ -25,12 +25,9 @@ fixture.setup(mainEnv, ({ run, config }, { COM: { communication }, echoFeature: 
                 communication,
                 env: iframeEnv,
                 iframeElement: myFrame,
-                managed: config.managed,
                 src: url.toString(),
             });
-            void echoService
-                .get({ id })
-                .echo(`${config.managed ? 'managed ' : ''}${fConfig.host ?? ''} id ${id} echo ${config.message ?? ''}`);
+            void echoService.get({ id }).echo(`${fConfig.host ?? ''} id ${id} echo ${config.message ?? ''}`);
         };
         document.body.append(button);
     }
@@ -39,11 +36,8 @@ fixture.setup(mainEnv, ({ run, config }, { COM: { communication }, echoFeature: 
             communication,
             env: iframeEnv,
             iframeElement: myFrame,
-            managed: config.managed,
             origin: config.origin,
         });
-        await echoService
-            .get({ id })
-            .echo(`${config.managed ? 'managed ' : ''}${config.origin ?? ''} id ${id} echo ${config.message ?? ''}`);
+        await echoService.get({ id }).echo(`${config.origin ?? ''} id ${id} echo ${config.message ?? ''}`);
     });
 });

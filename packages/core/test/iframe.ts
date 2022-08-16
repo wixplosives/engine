@@ -14,3 +14,8 @@ com.registerAPI({ id: WindowInitializerService.apiId }, new WindowInitializerSer
 com.registerAPI({ id: 'TestService' }, new TestService());
 com.registerAPI({ id: multiTanentServiceId }, new MultiTenantTestService());
 com.registerAPI({ id: hashParamsRetriever }, new HashParamsRetriever());
+
+const optionalMessage = options.get('optional_message');
+if (optionalMessage) {
+    document.body.appendChild(document.createTextNode(optionalMessage));
+}
