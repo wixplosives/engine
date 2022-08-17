@@ -15,16 +15,20 @@ import type { EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-c
 
 export const initializeNodeEnvironmentInBrowser: EnvironmentInitializer<
     Promise<IActiveEnvironment>,
-    Omit<InitializeNodeEnvironmentOptions, 'getApplicationMetaData'>
+    Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
 > = async ({ communication, env, environmentStartupOptions, processOptions }) => {
-    const { id, dispose, onDisconnect } = await initializeNodeEnvironment({
+    const runtimeArguments = await getApplicationMetaData();
+    const { id, dispose, onDisconnect, environmentIsReady } = initializeNodeEnvironment({
         environmentStartupOptions,
         env,
         communication,
-        getApplicationMetaData,
+        runtimeArguments,
         processOptions,
     });
     window.addEventListener('beforeunload', dispose);
+
+    await environmentIsReady;
+
     return { id, onDisconnect };
 };
 
