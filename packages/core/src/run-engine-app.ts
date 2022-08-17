@@ -94,7 +94,7 @@ export class FeatureLoadersRegistry {
         return [...this.featureMapping.keys()];
     }
     /**
-     * returns all features which were actially loaded
+     * returns all features which were actually loaded
      */
     async getLoadedFeatures(
         rootFeatureName: string,
