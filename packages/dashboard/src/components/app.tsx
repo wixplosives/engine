@@ -32,11 +32,7 @@ const changeNodeEnvironmentState = async (
 export const App: React.FC = () => {
     return (
         <div className={classes.root}>
-            <Dashboard
-                fetchServerState={fetchServerState}
-                changeNodeEnvironmentState={changeNodeEnvironmentState}
-                fetchGraphData={fetchGraphData}
-            ></Dashboard>
+            <Dashboard {...{fetchServerState, changeNodeEnvironmentState, fetchGraphData}}></Dashboard>
         </div>
     );
 };
