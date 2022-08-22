@@ -57,7 +57,7 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
                 iframe: iframeElement,
                 src: src ?? defaultHtmlSourceFactory(env, publicPath, hashParams, origin),
             };
-            return startManagedIframe(startIframeParams);
+            return startIframe(startIframeParams);
         },
     };
 }
@@ -72,13 +72,7 @@ interface StartIframeParams {
 
 const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
-async function startManagedIframe({
-    com,
-    iframe,
-    instanceId,
-    src,
-    envReadyPromise,
-}: StartIframeParams): Promise<string> {
+async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
     if (!iframe.contentWindow) {
         throw new Error('Cannot initialize environment in a detached iframe');
     }
@@ -98,13 +92,13 @@ async function startManagedIframe({
     try {
         const contentWindow = iframe.contentWindow;
         const url = new URL(src, window.location.href);
-        const search = new URLSearchParams(url.search);
+        const searchParams = new URLSearchParams(url.search);
 
         com.registerEnv(instanceId, contentWindow);
         // pass instance id in query param for engine initialization
         // script that will run in the iframe can pick it up
-        search.set(INSTANCE_ID_PARAM_NAME, instanceId);
-        url.search = search.toString();
+        searchParams.set(INSTANCE_ID_PARAM_NAME, instanceId);
+        url.search = searchParams.toString();
         iframe.src = url.href;
 
         await Promise.race([waitForCancel, waitForLoad(iframe), envReadyPromise]);
