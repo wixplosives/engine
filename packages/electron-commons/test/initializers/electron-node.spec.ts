@@ -31,23 +31,23 @@ const setupRunningEnv = async ({
 }: { errorMode?: 'exception' | 'exit' | 'promiseReject'; handleUncaught?: boolean } = {}) => {
     const communication = new Communication(new BaseHost(), 'someId');
     const { features } = findFeatures(testProjectPath, 'dist');
-    const { onDisconnect, dispose } = await initializeNodeEnvironment({
+    const { onDisconnect, dispose, environmentIsReady } = initializeNodeEnvironment({
         communication,
         env: serverEnv,
-        getApplicationMetaData: () =>
-            Promise.resolve({
-                featureName: testFeature.id,
-                basePath: testProjectPath,
-                outputPath: fs.join(testProjectPath, 'dist-app'),
-                nodeEntryPath: fs.join(testProjectPath, 'entry.js'),
-                config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
-                features: Array.from(features.entries()),
-                externalFeatures: [],
-                env: serverEnv,
-            }),
+        runtimeArguments: {
+            featureName: testFeature.id,
+            basePath: testProjectPath,
+            outputPath: fs.join(testProjectPath, 'dist-app'),
+            nodeEntryPath: fs.join(testProjectPath, 'entry.js'),
+            config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
+            features: Array.from(features.entries()),
+            externalFeatures: [],
+        },
         processOptions: { cwd: process.cwd() },
         environmentStartupOptions: {},
     });
+
+    await environmentIsReady;
 
     const disconnectPromise = new Promise<boolean>((res) => {
         onDisconnect(() => {

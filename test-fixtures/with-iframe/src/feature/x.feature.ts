@@ -9,5 +9,5 @@ export default new Feature({
             .defineEntity(iframeEnv)
             .allowRemoteAccess(),
     },
-    dependencies: [COM],
+    dependencies: [COM.asDependency],
 });

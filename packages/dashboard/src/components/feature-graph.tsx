@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { memo, useEffect } from 'react';
 import { hierarchy, cluster, HierarchyPointNode } from 'd3-hierarchy';
 import { line, curveBundle } from 'd3-shape';
-import { select } from 'd3-selection';
+import { select, selectAll } from 'd3-selection';
 import { classes } from './feature-graph.st.css';
 import { translateNodeToHierarchy, xAccessor, yAccessor } from '../graph-utils';
 import type { GraphNode, Node, IFeatureGraphProps } from '../graph-types';
 
-export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
+export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) => {
     useEffect(() => {
         // Canvas constants
         const diameter = 600;
@@ -18,6 +18,9 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
 
         // Line rendering function
         const graphLine = line<HierarchyPointNode<Node>>().x(xAccessor).y(yAccessor).curve(curveBundle.beta(0.7));
+
+        // Clear Graph content
+        selectAll('#graph_root > *').remove();
 
         // Svg canvas init
         const svg = select('#graph_root')
@@ -126,6 +129,6 @@ export const FeatureGraph = ({ selectedFeatureGraph }: IFeatureGraphProps) => {
             });
     });
     return <svg id="graph_root" />;
-};
+});
 
 FeatureGraph.displayName = 'FeatureGraph';

@@ -194,8 +194,8 @@ describe('Node environments manager', function () {
             api: {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
-            dependencies: [SocketServerNodeFeature, COM],
-        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+            dependencies: [SocketServerNodeFeature.asDependency, COM.asDependency],
+        }).setup(env, ({ }, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: socketServerEnv });
 
             return {
@@ -290,8 +290,8 @@ describe('Node environments manager', function () {
             api: {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
-            dependencies: [ServerNodeFeature, COM],
-        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+            dependencies: [ServerNodeFeature.asDependency, COM.asDependency],
+        }).setup(env, ({ }, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: serverEnv });
 
             return {

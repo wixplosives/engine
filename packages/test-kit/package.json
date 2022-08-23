@@ -1,20 +1,20 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "26.1.0",
+  "version": "27.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
-    "@file-services/node": "^6.0.0",
+    "@file-services/node": "^7.0.1",
     "@wixc3/create-disposables": "^2.0.0",
-    "@wixc3/engine-core": "^26.1.0",
-    "@wixc3/engine-runtime-node": "^26.1.0",
-    "@wixc3/engine-scripts": "^26.1.0",
+    "@wixc3/engine-core": "^27.0.0",
+    "@wixc3/engine-runtime-node": "^27.0.0",
+    "@wixc3/engine-scripts": "^27.0.0",
     "create-temp-directory": "^1.1.1",
     "is-ci": "^3.0.1",
-    "playwright-core": "^1.22.2",
+    "playwright-core": "^1.25.0",
     "promise-assist": "^1.3.0",
     "sinon": "^14.0.0"
   },

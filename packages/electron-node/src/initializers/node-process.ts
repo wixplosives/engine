@@ -14,13 +14,17 @@ import {
 
 export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
     Promise<IActiveEnvironment>,
-    Omit<InitializeNodeEnvironmentOptions, 'getApplicationMetaData'>
+    Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
 > = async (options) => {
-    const { id, dispose, onDisconnect } = await initializeNodeEnvironment({
-        getApplicationMetaData: (com) => getApplicationMetaData(com),
+    const runtimeArguments = await getApplicationMetaData(options.communication);
+    const { id, dispose, onDisconnect, environmentIsReady } = initializeNodeEnvironment({
+        runtimeArguments,
         ...options,
     });
     process.on('exit', dispose);
+
+    await environmentIsReady;
+
     return { id, onDisconnect };
 };
 

@@ -53,7 +53,7 @@ describe('Feature', () => {
 
         const f2 = new Feature({
             id: 'test2',
-            dependencies: [f1],
+            dependencies: [f1.asDependency],
             api: {
                 config: Config.withType<{ name: string }>().defineEntity({ name: 'test2' }),
             },
@@ -69,7 +69,7 @@ describe('Feature', () => {
 
     it('feature run stage', async () => {
         const f0 = new Feature({ id: 'test', api: {} });
-        const entryFeature = new Feature({ id: 'test', api: {}, dependencies: [f0] });
+        const entryFeature = new Feature({ id: 'test', api: {}, dependencies: [f0.asDependency] });
         const calls: string[] = [];
 
         f0.setup(AllEnvironments, ({ run }) => {
@@ -91,7 +91,7 @@ describe('Feature', () => {
 
     it('feature setup/run stage should not happen twice', async () => {
         const f0 = new Feature({ id: 'test', api: {} });
-        const f1 = new Feature({ id: 'test', api: {}, dependencies: [f0] });
+        const f1 = new Feature({ id: 'test', api: {}, dependencies: [f0.asDependency] });
         const calls: string[] = [];
 
         f0.setup(AllEnvironments, ({ run }) => {
@@ -325,8 +325,8 @@ describe('Feature', () => {
             const entryFeature = new Feature({
                 id: 'testSlotsSecondFeature',
                 api: {},
-                dependencies: [maps],
-            }).setup(mainEnv, ({}, { testSlotsFeature: { mapSlot } }) => {
+                dependencies: [maps.asDependency],
+            }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
             });
@@ -359,8 +359,8 @@ describe('Feature', () => {
             const f1 = new Feature({
                 id: 'testSlotsFirstFeature',
                 api: {},
-                dependencies: [maps],
-            }).setup(mainEnv, ({}, { testSlotsFeature: { mapSlot } }) => {
+                dependencies: [maps.asDependency],
+            }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
             });
@@ -368,8 +368,8 @@ describe('Feature', () => {
             const f2 = new Feature({
                 id: 'testSlotsSecondFeature',
                 api: {},
-                dependencies: [maps],
-            }).setup(mainEnv, ({}, { testSlotsFeature: { mapSlot } }) => {
+                dependencies: [maps.asDependency],
+            }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
             });
 
@@ -401,7 +401,7 @@ describe('Feature', () => {
             const entryFeature = new Feature({
                 id: 'testSlotsFirstFeature',
                 api: {},
-                dependencies: [maps],
+                dependencies: [maps.asDependency],
             }).setup(mainEnv, () => undefined);
             const engine = await runEngine({ entryFeature, env: mainEnv });
 
@@ -488,7 +488,7 @@ describe('feature interaction', () => {
 
         const entryFeature = new Feature({
             id: 'feature2',
-            dependencies: [echoFeature],
+            dependencies: [echoFeature.asDependency],
             api: {
                 config: Config.withType<{ prefix: string; suffix: string }>().defineEntity({ prefix: '', suffix: '' }),
             },
@@ -526,7 +526,7 @@ describe('Contextual environments', () => {
 
         const entryFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM],
+            dependencies: [COM.asDependency],
             api: {
                 echoService: Service.withType<{ echo(s: string): string }>().defineEntity(processing),
             },
@@ -548,7 +548,7 @@ describe('Contextual environments', () => {
             };
         });
 
-        entryFeature.setup(processing, ({}, {}, { processingContext: { name }, processingContext2: { age } }) => {
+        entryFeature.setup(processing, ({ }, { }, { processingContext: { name }, processingContext2: { age } }) => {
             return {
                 echoService: {
                     echo(s: string) {
@@ -573,7 +573,7 @@ describe('feature disposal', () => {
             api: {},
         });
         const dispose = spy(() => Promise.resolve());
-        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
             onDispose(dispose);
         });
 
@@ -597,7 +597,7 @@ describe('feature disposal', () => {
         const dispose = spy(() => Promise.resolve());
         const dispose2 = spy(() => Promise.resolve());
 
-        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
             onDispose(dispose);
             onDispose(dispose2);
         });
@@ -623,7 +623,7 @@ describe('feature disposal', () => {
         const disposeFirst = spy(() => Promise.resolve());
         const disposeSecond = spy(() => Promise.reject('err'));
 
-        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
             onDispose(disposeFirst);
             onDispose(disposeSecond);
         });
@@ -647,7 +647,7 @@ describe('feature disposal', () => {
             api: {},
         });
         const dispose = spy(() => new Promise((res) => setTimeout(res, 0)));
-        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
             onDispose(dispose);
         });
 
@@ -669,7 +669,7 @@ describe('service with remove access environment visibility', () => {
 
         const echoFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM],
+            dependencies: [COM.asDependency],
             api: {
                 echoService: Service.withType<{ echo(s: string): string }>()
                     .defineEntity(processing)
@@ -698,16 +698,16 @@ describe('service with remove access environment visibility', () => {
         // const checks = [];
         const testFeature = new Feature({
             id: 'test',
-            dependencies: [echoFeature],
+            dependencies: [echoFeature.asDependency],
             api: {},
         });
 
-        testFeature.setup(processing, ({}, { echoFeature: { echoService } }) => {
+        testFeature.setup(processing, ({ }, { echoFeature: { echoService } }) => {
             // this is the real service since we are in the same env!.
             expect(typeof echoService.echo === 'function');
         });
 
-        testFeature.setup(main, ({}, { echoFeature: { echoService } }) => {
+        testFeature.setup(main, ({ }, { echoFeature: { echoService } }) => {
             // this is the proxy! because we are in different env.
             expect(typeof echoService.get === 'function');
         });
@@ -731,7 +731,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
         new Feature({
             id: 'echoFeature',
-            dependencies: [COM],
+            dependencies: [COM.asDependency],
             api: {
                 slot: Slot.withType<{ name: string }>().defineEntity(main),
             },
@@ -765,7 +765,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
         const echoFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM],
+            dependencies: [COM.asDependency],
             api: {
                 echoService: Service.withType<{ echo(s: string): string }>()
                     .defineEntity(processing)
@@ -786,7 +786,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
         const checks = [];
         const testFeature = new Feature({
             id: 'test',
-            dependencies: [echoFeature],
+            dependencies: [echoFeature.asDependency],
             api: {},
         });
 
@@ -811,7 +811,7 @@ describe.skip('Environments Type tests 1', () => {
 
         const echoFeature = new Feature({
             id: 'echoFeature',
-            dependencies: [COM],
+            dependencies: [COM.asDependency],
             api: {
                 // processing,
                 echoService: Service.withType<{ echo(s: string): string }>()
@@ -820,7 +820,7 @@ describe.skip('Environments Type tests 1', () => {
             },
         });
 
-        echoFeature.setup(processing, ({}, {}) => {
+        echoFeature.setup(processing, ({ }, { }) => {
             return {
                 echoService: {
                     echo(s: string) {
