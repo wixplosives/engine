@@ -1,6 +1,7 @@
 version: 5
 dev:
     enablePreviewV2: true
+    enableSelfContainedVaults: true
 commands:
     lookup:
         note:
@@ -11,18 +12,19 @@ commands:
             bubbleUpCreateNew: true
             fuzzThreshold: 0.2
     randomNote: {}
-    insertNote:
-        initialValue: templates
     insertNoteLink:
         aliasMode: none
         enableMultiSelect: false
     insertNoteIndex:
         enableMarker: false
     copyNoteLink: {}
+    templateHierarchy: template
 workspace:
     vaults:
         -
-            fsPath: vault
+            fsPath: .
+            selfContained: true
+            name: docs
     journal:
         dailyDomain: daily
         name: journal
@@ -33,9 +35,9 @@ workspace:
         dateFormat: y.MM.dd.HHmmss
         addBehavior: asOwnDomain
     task:
-        name: ''
-        dateFormat: ''
-        addBehavior: childOfCurrent
+        name: task
+        dateFormat: y.MM.dd
+        addBehavior: asOwnDomain
         statusSymbols:
             '': ' '
             wip: w
@@ -46,6 +48,9 @@ workspace:
             delegated: l
             dropped: d
             pending: 'y'
+        taskCompleteStatus:
+            - done
+            - x
         prioritySymbols:
             H: high
             M: medium
@@ -54,6 +59,7 @@ workspace:
         createTaskSelectionType: selection2link
     graph:
         zoomSpeed: 1
+        createStub: false
     enableAutoCreateOnDefinition: false
     enableXVaultWikiLink: false
     enableRemoteVaultInit: true
@@ -65,6 +71,7 @@ workspace:
     maxPreviewsCached: 10
     maxNoteLength: 204800
     enableFullHierarchyNoteTitle: false
+    enableSmartRefs: true
 preview:
     enableFMTitle: true
     enableNoteTitleForLink: true
@@ -75,7 +82,6 @@ preview:
     enableKatex: true
     automaticallyShowPreview: false
 publishing:
-    siteUrl: https://wixplosives.github.io/engine
     enableFMTitle: true
     enableNoteTitleForLink: true
     enableMermaid: true
@@ -87,8 +93,8 @@ publishing:
     writeStubs: false
     siteRootDir: docs
     seo:
-        title: Engine
-        description: Cross-env JS framework
+        title: Dendron
+        description: Personal Knowledge Space
     github:
         enableEditLink: true
         editLinkText: Edit this page on GitHub
@@ -98,8 +104,5 @@ publishing:
     enableFrontmatterTags: true
     enableHashesForFMTags: false
     enableRandomlyColoredTags: true
+    enableTaskNotes: true
     enablePrettyLinks: true
-    duplicateNoteBehavior:
-        action: useVault
-        payload:
-            - vault
