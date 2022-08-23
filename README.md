@@ -14,6 +14,16 @@
 
 - **[@wixc3/engine-test-kit](https://github.com/wixplosives/engine/tree/master/packages/test-kit)** - `withFeature` and other test mechanisms.
 
+### DOCS
+
+Docs are generated using dendron, At the moment we are running docs only locally.
+
+In order to do so, do the following:
+
+- Navigate to docs
+- `npx dendron publish init`
+- `npx dendron publish dev`
+
 ### License
 
 MIT
