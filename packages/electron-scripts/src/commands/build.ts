@@ -64,6 +64,10 @@ export interface IBuildCommandOptions extends IBundleEngineArguments {
      * publish flag for electron builder
      */
     publish?: string;
+    /**
+     * should we sign the release
+     */
+    sign?: boolean;    
 }
 
 const ELECTRON_ENTRY_FILE_NAME = 'electron-entry.js';
@@ -84,6 +88,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         windows,
         featureDiscoveryRoot = configFeatureDiscoveryRoot,
         publish,
+        sign
     } = options;
     const outputPath = fs.join(basePath, outDir);
     if (!isPublishValid(publish)) {
@@ -119,7 +124,9 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
     });
 
     const builderConfig = fs.readJsonFileSync(fs.join(basePath, electronBuilderConfigFileName)) as Configuration;
-
+    if (!sign) {
+        builderConfig.win.certificateSubjectName = null
+    }
     const extraFiles: (string | FileSet)[] = [
         {
             from: dirname(require.resolve('@wixc3/engine-electron-host/package.json')),
