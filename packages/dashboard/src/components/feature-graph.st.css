@@ -1,16 +1,41 @@
-.link {
-    fill: none;
-    stroke: #999;
-    stroke-opacity: 0.6;
-    stroke-width: 1.5px;
-}
-
 .node {
-    font: 10px sans-serif;
+    -st-states: isSelected, isLeaf, isRoot;
 }
 
-.node_circle {
-    fill: #d62333;
-    stroke: #fff;
-    stroke-width: 1px;
+.node rect {
+    stroke-width: 0;
+    stroke: #999;
+    /* fill: aqua; */
+    /* width: 30px;
+    height: 30px;
+    rx: 15px;
+    y: -15;
+    x: -15; */
+}
+
+.node:isSelected rect {
+    stroke-width: 2;
+    stroke-dasharray: 1 1;
+    stroke: rgb(89, 28, 28);
+    /* fill: rgb(143, 48, 48); */
+}
+
+.node:isSelected text {}
+
+.node text {
+    font: 6px sans-serif;
+    fill: black;
+    text-anchor: middle;
+}
+
+.node:isRoot rect {}
+
+.node:isLeaf Rect {
+    stroke-dasharray: 1 2;
+}
+
+.link {
+    /* stroke: black; */
+    stroke-width: 1.5px;
+    fill: none;
 }

@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import type { GraphData } from '../graph-types';
+import type { SerializedGraphData } from '../graph-types';
 import { isServerResponseMessage, RunningEngineFeature, ServerState } from '../server-types';
 import { ActionsContainer } from './actions-container';
 import { URLParamsValue, useUrlParams } from './dashboard-hooks';
@@ -20,7 +20,7 @@ export interface IDashboardProps {
         isNodeEnvActive: boolean,
         runtimeOptions: Array<IRuntimeOption>
     ) => Promise<unknown>;
-    fetchGraphData: (featureName: string) => Promise<GraphData>;
+    fetchGraphData: (featureName: string) => Promise<SerializedGraphData>;
 }
 
 export interface SelectedFeature {

@@ -1,22 +1,24 @@
 import React, { FC, useContext, useEffect, useState } from 'react';
-import type { GraphData } from '../../graph-types';
+import type { SerializedGraphData } from '../../graph-types';
 import { DashboardContext } from '../dashboard';
 import { FeatureGraph } from '../feature-graph';
+import { data as sampleData } from './sample-graph';
 
 interface IDependencyGraphProps {
-    fetchGraphData: (featureName: string) => Promise<GraphData>;
+    fetchGraphData: (featureName: string) => Promise<SerializedGraphData>;
 }
 
 export const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) => {
     const [showGraph, setShowGraph] = useState(false);
-    const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<GraphData | null>(null);
+    const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<SerializedGraphData | null>(null);
 
     const { params } = useContext(DashboardContext);
 
     useEffect(() => {
         const applyFeatureGraphData = async (featureName = '') => {
-            const graphData = await fetchGraphData(featureName);
-            setSelectedFeatureGraph(graphData);
+            // const graphData = await fetchGraphData(featureName);
+            // setSelectedFeatureGraph(graphData);
+            setSelectedFeatureGraph(sampleData);
         };
 
         if (params.user_feature) applyFeatureGraphData(params.user_feature).catch(console.warn);
