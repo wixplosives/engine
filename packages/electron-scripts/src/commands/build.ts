@@ -88,7 +88,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         windows,
         featureDiscoveryRoot = configFeatureDiscoveryRoot,
         publish,
-        sign
+        sign,
     } = options;
     const outputPath = fs.join(basePath, outDir);
     if (!isPublishValid(publish)) {
@@ -123,7 +123,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         outDir,
     });
 
-    const builderConfig = fs.readJsonFileSync(fs.join(basePath, electronBuilderConfigFileName)) as Configur ation;
+    const builderConfig = fs.readJsonFileSync(fs.join(basePath, electronBuilderConfigFileName)) as Configuration;
 
     if (!sign) {
         // Disable code signing on windows
