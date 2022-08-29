@@ -1,20 +1,14 @@
-export interface Link {
-    source: string;
-    target: string;
-}
+import type { Node, Link } from '@wixc3/engineer'
 
-export interface Node {
-    name: string;
-    group: number;
-}
+export {Node, Link}
 
-export interface GraphData {
+export interface SerializedGraphData {
     nodes: Node[];
     links: Link[];
 }
 
 export interface IFeatureGraphProps {
-    selectedFeatureGraph: GraphData;
+    selectedFeatureGraph: SerializedGraphData;
 }
 
 export interface GraphNode extends Node {
