@@ -6,7 +6,11 @@ import type { EnvVisibility } from '../types';
 import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
 import { FeatureOutput } from './output';
 
-export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<string, EnvironmentTypes, 'single'>
+export type ServiceRuntime<T extends object, ProvidedFrom> = ProvidedFrom extends Environment<
+    string,
+    EnvironmentTypes,
+    'single'
+>
     ? AsyncApi<T>
     : ProvidedFrom extends Environment<string, EnvironmentTypes, 'multi', any>
     ? {
@@ -15,13 +19,13 @@ export type ServiceRuntime<T, ProvidedFrom> = ProvidedFrom extends Environment<s
     : AsyncApi<T>;
 
 export class Service<
-    T,
+    T extends object,
     PT,
     ProvidedFrom extends EnvVisibility,
     VisibleAt extends EnvVisibility,
     RemoteAccess extends boolean
 > extends FeatureOutput<T, PT, ProvidedFrom, VisibleAt, RemoteAccess> {
-    public static withType<T>() {
+    public static withType<T extends object>() {
         return {
             defineEntity<E_ENV extends EnvVisibility>(providedFrom: E_ENV) {
                 return new Service<T, T, E_ENV, E_ENV, false>(providedFrom, providedFrom, false);
