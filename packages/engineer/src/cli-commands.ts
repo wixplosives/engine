@@ -13,6 +13,7 @@ import fs from '@file-services/node';
 import { Application } from '@wixc3/engine-scripts';
 import { startDevServer } from './utils';
 import { parseCliArguments } from '@wixc3/engine-runtime-node';
+import type { ServerListeningHandler } from './feature/dev-server.feature';
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
@@ -123,12 +124,12 @@ export const startCommand: CliCommand = (program) =>
                     log,
                 });
 
-                const { port } = await new Promise((resolve) => {
+                const { port } = await new Promise((resolve: ServerListeningHandler) => {
                     devServerFeature.serverListeningHandlerSlot.register(resolve);
                 });
 
                 if (!process.send && featureName && configName && openBrowser === 'true') {
-                    await open(`http://localhost:${port as string}/main.html`);
+                    await open(`http://localhost:${port}/main.html`);
                 }
             } catch (e) {
                 printErrorAndExit(e);
