@@ -198,17 +198,12 @@ devServerFeature.setup(
 
             app.get('/feature-graph', (req, res) => {
                 const featureName = req.query['feature-name'] as string;
-                if (!featureName) {
+                if (!featureName || !features.has(featureName)) {
                     res.statusCode = 404;
                     res.json({ error: 'feature was not found' });
                     return;
                 }
-                const { links, nodes } = buildFeatureLinks(features.get(featureName)!.exportedFeature);
-
-                const graph = {
-                    nodes,
-                    links,
-                };
+                const graph = buildFeatureLinks(features, featureName);
                 res.json(graph);
             });
 

@@ -1,7 +1,17 @@
-import type { Dependency, Feature, IFeature } from '@wixc3/engine-core';
+import type { AnyEnvironment, IFeature } from '@wixc3/engine-core';
+import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import type { IFeatureDefinition } from '@wixc3/engine-scripts';
 
-// { featureName, depth of dep from root feature }
-export type Nodes = Record<string, { name: string; group: number }>;
+export type Node = {
+    name: string;
+    envs: IEnvironmentDescriptor<AnyEnvironment>[]
+    packageName: string
+}
+export type Nodes = Map<string, Node>;
+export type Link = {
+    source: string;
+    target: string;
+}
 
 /**
  *
@@ -9,31 +19,36 @@ export type Nodes = Record<string, { name: string; group: number }>;
  *
  * recursive function to build a tree of features, their distance from the root and the links between all features
  */
-export const buildFeatureLinks = (entry: Feature) => {
-    const nodes: Nodes = {};
-    const links = buildFeatureLinksHelper(entry, nodes, 0);
-    return { nodes: Object.values(nodes), links };
+export const buildFeatureLinks = (features: Map<string, IFeatureDefinition>, name: string) => {
+    const featuresById = new Map<string, IFeatureDefinition>()
+    for (const f of features.values()) {
+        featuresById.set(f.exportedFeature.id, f)
+    }
+    const entry = features.get(name)
+    if (entry) {
+        return parseNode(entry.exportedFeature)
+    } else {
+        return { links: [], nodes: [] }
+    }
+
+    function parseNode(entry: IFeature, nodes: Nodes = new Map(), links: Link[] = []) {
+        const { dependencies, id } = entry;
+        const node = nodes.get(id) ?? {
+            name: id, 
+            envs: featuresById.get(id)?.exportedEnvs || [],
+            packageName: featuresById.get(id)?.packageName || ''
+        }
+        nodes.set(id, node)
+
+        for (const dep of dependencies) {
+            links.push({ source: entry.id, target: dep.id });
+            if (!nodes.has(dep.id)) {
+                parseNode(dep, nodes, links)
+            }
+        }
+        return { links, nodes: [...nodes.values()] };
+    };
 };
 
-const buildFeatureLinksHelper = (entry: IFeature<string, Dependency[]>, visitedFeatures: Nodes, level: number) => {
-    const featureLinks: Array<{
-        source: string;
-        target: string;
-    }> = [];
-    const { dependencies, id } = entry;
-    if (!visitedFeatures[id]) {
-        visitedFeatures[id] = { name: id, group: level };
-    }
-    for (const dep of dependencies) {
-        featureLinks.push({ source: entry.id, target: dep.id });
-        if (!(dep.id in visitedFeatures)) {
-            visitedFeatures[dep.id] = { name: dep.id, group: level + 1 };
-        }
-    }
-    for (const dep of dependencies) {
-        if (visitedFeatures[dep.id]!.group === level + 1) {
-            featureLinks.push(...buildFeatureLinksHelper(dep, visitedFeatures, level + 1));
-        }
-    }
-    return featureLinks;
-};
+
+
