@@ -123,17 +123,9 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         outDir,
     });
 
-    const builderConfig = fs.readJsonFileSync(fs.join(basePath, electronBuilderConfigFileName)) as Configuration;
-
-    if (!sign) {
-        // Disable code signing on windows
-        if (builderConfig.win) {
-            Object.assign(builderConfig.win, {certificateSubjectName: null});
-        }
-        // Disable code signing on mac
-        process.env.CSC_IDENTITY_AUTO_DISCOVERY = 'false';
-    }
-
+    const configFullPath = fs.resolve(fs.join(basePath, electronBuilderConfigFileName));
+    const builderConfig = require(configFullPath);
+    
     const extraFiles: (string | FileSet)[] = [
         {
             from: dirname(require.resolve('@wixc3/engine-electron-host/package.json')),
