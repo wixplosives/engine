@@ -1,10 +1,3 @@
----
-id: f7ah7322kpincz2m51giooo
-title: Build
-desc: ''
-updated: 1649951735342
-created: 1646819757038
----
 Usage: engineer build [options] [path]
 
 Options:

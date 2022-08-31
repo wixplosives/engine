@@ -1,11 +1,3 @@
----
-id: 7ymyhy88vmwyzkaql4918pl
-title: Slot
-desc: ''
-updated: 1651067566987
-created: 1646817063393
----
-
 Features declares slots - which are integration points for other features of the application. The reason behind this is separation of concerns.
 
 ^slots-pitch

@@ -1,11 +1,3 @@
----
-id: 5jom0ayqorrbn2pqdn1xhyp
-title: Feature
-desc: ''
-updated: 1650898670264
-created: 1646817042514
----
-
 A feature is combined of several files: ^feature_pitch
 
 - `<feature-name>.feature.ts` - feature definition file.

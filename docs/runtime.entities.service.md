@@ -1,11 +1,3 @@
----
-id: 1slf4w0hj8j3keg577chhur
-title: Service
-desc: ''
-updated: 1651050065168
-created: 1646819667337
----
-
 Service is an entiry defined in the feature's API and it represents the an 'output' of the feature.
 
 Each [[runtime.entities.feature]] defines integration points and services, which other features will be able to use.

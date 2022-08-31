@@ -1,11 +1,3 @@
----
-id: hnu0b3ifu0r82za5ti2y49r
-title: React
-desc: ''
-updated: 1650271580479
-created: 1650190944611
----
-
 ## How to run it
 
 - Go to example react `Feature` (`examples/react`).

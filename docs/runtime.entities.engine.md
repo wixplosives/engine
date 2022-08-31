@@ -1,11 +1,3 @@
----
-id: h2xyrvb15fmarce04l82y5n
-title: Engine
-desc: ''
-updated: 1650889170707
-created: 1646817029920
----
-
 Any engine application consists of 2 things.
 
 - [[runtime.entities.feature]]

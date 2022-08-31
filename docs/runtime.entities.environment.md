@@ -1,11 +1,3 @@
----
-id: vwijkf6kssesvezejnjzw36
-title: Environment
-desc: ''
-updated: 1650974801824
-created: 1646817074058
----
-
 An Environment is basically a semantic name for an engine instance in a runtime.
 
 In engine applications, [[runtime.entities.feature]]s sets themselfes up in an environment, and when that environment will be launched at runtime, these setups will happen.

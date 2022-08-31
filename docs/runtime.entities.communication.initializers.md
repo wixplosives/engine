@@ -1,11 +1,3 @@
----
-id: 68xd2duf2qfgjb8imw8pr92
-title: Initializers
-desc: ''
-updated: 1651067471488
-created: 1646819734789
----
-
 The initializers are helper methods to simplify environment initiation/communication.
 
 Every initializer returns a Promise to the id of the initiated environment, or just the id.

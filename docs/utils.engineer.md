@@ -1,11 +1,3 @@
----
-id: k45i9vtrbr3qqlikfbzxzym
-title: Engineer
-desc: ''
-updated: 1651061624204
-created: 1646816729824
----
-
 The engineer is the CLI tool of the engine, It's responsible to start (in dev mode), build and run engine applications.
 
 The flow of the major 3 commands (start, build, run) can be summarized as follows:

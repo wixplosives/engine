@@ -1,11 +1,3 @@
----
-id: 71r7yqloexvnam09iamg00x
-title: Intro
-desc: ''
-updated: 1650190942576
-created: 1646816329621
----
-
 ## Approach
 
 - An application is a set of one or more features.

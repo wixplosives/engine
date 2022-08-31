@@ -1,11 +1,3 @@
----
-id: t0lgnv9pw368s3xao04bx7q
-title: Scripts
-desc: ''
-updated: 1649320344709
-created: 1646816743364
----
-
 # @wixc3/engine-scripts
 
 Tooling for building and running of applications written using the `@wixc3/engine-core` package.

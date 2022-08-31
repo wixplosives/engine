@@ -1,10 +1,3 @@
----
-id: 2xzorhenqx19gpiblrcjm67
-title: Multi Environments
-desc: ''
-updated: 1649145801921
-created: 1649145801921
----
 ## Environments
 
 ### Multi-env
