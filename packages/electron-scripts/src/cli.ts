@@ -83,10 +83,6 @@ yargs
                 type: 'boolean',
                 default: false,
             })
-            .option('sign', {
-                type: 'boolean',
-                default: false,
-            })
             .parseSync();
 
         await build({
