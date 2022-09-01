@@ -33,6 +33,7 @@
     { "path": "./examples/electron-app/src" },
     { "path": "./examples/file-server/src" },
     { "path": "./examples/multi-env/src" },
+    { "path": "./examples/cross-iframe/src" },
     { "path": "./examples/node-only/src" },
     { "path": "./examples/playground/src" },
     { "path": "./examples/preload/src" },
@@ -58,7 +59,6 @@
     { "path": "./test-fixtures/static-base-web-application-config-loader/src" },
     { "path": "./test-fixtures/using-config/src" },
     { "path": "./test-fixtures/with-iframe/src" },
-    { "path": "./test-fixtures/cross-iframe/src" },
     { "path": "./test-fixtures/workspace/packages/a/src" },
     { "path": "./test-fixtures/workspace/packages/b/src" }
   ]
