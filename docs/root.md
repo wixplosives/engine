@@ -57,44 +57,38 @@ feat2.setup(env1, ({}, {feat1: {echoService}})=> {
 
 ## Topics
 
-- [[getting_started]]
-- [[examples]]
-    - [[examples.best_practices]]
-    - [[examples.best_practices.multi_env]]
-    - [[examples.react]]
-- [[runtime]]
-  - [[runtime.entities]]
-    - [[runtime.entities.engine]]
-    - [[runtime.entities.feature]]
-    - [[runtime.entities.config]]
-    - [[runtime.entities.slot]]
-    - [[runtime.entities.service]]
-    - [[runtime.entities.communication]]
-      - [[runtime.entities.communication.initializers]]
-    - [[runtime.entities.environment]]
-      - [[runtime.entities.environment.targets]]
-        - [[runtime.entities.environment.targets.node]]
-        - [[runtime.entities.environment.targets.electron]]
-        - [[runtime.entities.environment.targets.iframe]]
-        - [[runtime.entities.environment.targets.context]]
-- [[utils]]
-  - [[utils.engineer]]
-    - [[utils.engineer.start]]
-    - [[utils.engineer.build]]
-    - [[utils.engineer.create]]
-    - [[utils.engineer.run]]
-    - [[utils.engineer.clean]]
-  - [[utils.scripts]]
-    - [[utils.scripts.featureAnalysis]]
-    - [[utils.scripts.build]]
-  - [[utils.electron]]
-  - [[utils.testkit]]
-  - [[utils.performance]]
-  - [[utils.runtime-node]]
-    - [[utils.runtime-node.node-environment-manager]]
-
-
-## Powered by Dendron
-
-This is the root of your dendron vault. If you decide to publish your entire vault, this will be your landing page. You are free to customize any part of this page except the formatter on top.
-This section contains useful links to related resources.
+- [getting_started](./getting_started.md)
+- [examples](./examples.md')
+    - [examples.best_practices](./examples.best_practices.md)
+    - [examples.best_practices.multi_env](./examples.best_practices.multi_env.md)
+    - [examples.react](./examples.react.md)
+- [runtime](./runtime.md')
+  - [runtime.entities](./runtime.entities.md)
+    - [runtime.entities.engine](./runtime.entities.engine.md)
+    - [runtime.entities.feature](./runtime.entities.feature.md)
+    - [runtime.entities.config](./runtime.entities.config.md)
+    - [runtime.entities.slot](./runtime.entities.slot.md)
+    - [runtime.entities.service](./runtime.entities.service.md)
+    - [runtime.entities.communication](./runtime.entities.communication.md)
+      - [runtime.entities.communication.initializers](./runtime.entities.communication.initializers.md)
+    - [runtime.entities.environment](./runtime.entities.environment.md)
+      - [runtime.entities.environment.targets](./runtime.entities.environment.targets.md)
+        - [runtime.entities.environment.targets.node](./runtime.entities.environment.targets.node.md)
+        - [runtime.entities.environment.targets.electron](./runtime.entities.environment.targets.electron.md)
+        - [runtime.entities.environment.targets.iframe](./runtime.entities.environment.targets.iframe.md)
+        - [runtime.entities.environment.targets.context](./runtime.entities.environment.targets.context.md)
+- [utils](./utils.md')
+  - [utils.engineer](./utils.engineer.md)
+    - [utils.engineer.start](./utils.engineer.start.md)
+    - [utils.engineer.build](./utils.engineer.build.md)
+    - [utils.engineer.create](./utils.engineer.create.md)
+    - [utils.engineer.run](./utils.engineer.run.md)
+    - [utils.engineer.clean](./utils.engineer.clean.md)
+  - [utils.scripts](./utils.scripts.md)
+    - [utils.scripts.featureAnalysis](./utils.scripts.featureAnalysis.md)
+    - [utils.scripts.build](./utils.scripts.build.md)
+  - [utils.electron](./utils.electron.md)
+  - [utils.testkit](./utils.testkit.md)
+  - [utils.performance](./utils.performance.md)
+  - [utils.runtime-node](./utils.runtime-node.md)
+    - [utils.runtime-node.node-environment-manager](./utils.runtime-node.node-environment-manager.md)
