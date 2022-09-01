@@ -18,7 +18,6 @@ export interface IIframeInitializerOptions {
     /**
      * target host for iframe
      * can be used to isolate environment on cross origin
-     * works only with managed: true
      * @property {src} will overrule this
      * @example http://127.0.0.1
      */
@@ -92,13 +91,11 @@ async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: St
     try {
         const contentWindow = iframe.contentWindow;
         const url = new URL(src, window.location.href);
-        const searchParams = new URLSearchParams(url.search);
 
         com.registerEnv(instanceId, contentWindow);
         // pass instance id in query param for engine initialization
         // script that will run in the iframe can pick it up
-        searchParams.set(INSTANCE_ID_PARAM_NAME, instanceId);
-        url.search = searchParams.toString();
+        url.searchParams.set(INSTANCE_ID_PARAM_NAME, instanceId);
         iframe.src = url.href;
 
         await Promise.race([waitForCancel, waitForLoad(iframe), envReadyPromise]);
