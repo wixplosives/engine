@@ -7,20 +7,20 @@ fixture.setup(mainEnv, ({ run }, { COM: { communication }, echoFeature: { echoSe
     myFrame.id = 'iframe';
     document.body.append(myFrame);
     const fConfigs = [
-        { hostname: '127.0.0.1', param: 'abc' },
-        { hostname: '127.0.0.1', param: '123' },
-        { hostname: 'localhost', param: 'bebebe' },
-        { hostname: '127.0.0.1', param: 'tutut' },
+        { hostname: '127.0.0.1', param: 'p0' },
+        { hostname: '127.0.0.1', param: 'p1' },
+        { hostname: 'localhost', param: 'p2' },
     ];
 
-    for (const fConfig of fConfigs) {
+    for (let i = 0; i < fConfigs.length; i++) {
+        const fConfig = fConfigs[i]!;
         const button = document.createElement('button');
         const url = new URL(window.location.href);
         url.pathname = 'iframe.html';
         url.hostname = fConfig.hostname;
         url.search = url.search + '&test=' + fConfig.param;
         button.appendChild(document.createTextNode(url.toString()));
-        button.className = 'init-iframe-button';
+        button.className = `init-iframe-button-${i}`;
         button.onclick = async () => {
             const { id } = await iframeInitializer({
                 communication,

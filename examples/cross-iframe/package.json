@@ -1,5 +1,10 @@
 {
   "name": "@fixture/cross-iframe",
   "version": "26.2.0",
-  "private": true
+  "private": true,
+  "scripts": {
+    "start": "engineer start",
+    "test": "yarn test:ix",
+    "test:ix": "mocha \"dist/test/**/*.ix.js\""
+  }
 }
