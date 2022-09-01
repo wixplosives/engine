@@ -33,7 +33,11 @@ describe('Cross Iframes Example', function () {
         expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0');
 
         await crossFrameDriver.clickNavigationButton(0);
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/1'));
+
         await crossFrameDriver.clickNavigationButton(0);
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/2'));
+
         await crossFrameDriver.clickNavigationButton(0);
         await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/3'));
     });
