@@ -48,7 +48,6 @@ describe('Communication API', function () {
         disposables.add(com);
 
         const env = iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
-
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
         const res = await api.testApi(1, 2, 3);
 
@@ -60,27 +59,18 @@ describe('Communication API', function () {
         disposables.add(com);
 
         const iframeElement = createIframe();
-
-        const { initialize, id } = deferredIframeInitializer({
+        const { initialize } = deferredIframeInitializer({
             communication: com,
             env: iframeEnv,
         });
         const testContent = 'hello world';
-        const jsContent = `const p = document.createElement('p');
-p.innerText = '${testContent}';
-document.body.appendChild(p);
-const id = '${id}';
-window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
-        const src = URL.createObjectURL(
-            new Blob([jsContent], {
-                type: 'application/javascript',
-            })
-        );
+        const src = `iframe.html?optional_message=${testContent}`;
+
         await initialize({
             iframeElement,
             src,
         });
-        expect(iframeElement.contentWindow?.document.body.textContent).to.eq(testContent);
+        expect(iframeElement.contentWindow?.document.body.textContent?.trim()).to.eq(testContent);
     });
 
     it('should proxy exceptions thrown in remote service api', async () => {
@@ -182,7 +172,6 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
             communication: com,
             env: delayedIframeEnv,
             iframeElement: createIframe(),
-            managed: false,
         });
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
@@ -201,7 +190,6 @@ window.parent.postMessage({ type: 'ready', from: id, to: '*', origin: id });`;
             env: iframeEnv,
             iframeElement: createIframe(),
             hashParams: '#test',
-            managed: true,
         });
 
         const api = com.apiProxy<HashParamsRetriever>(env, { id: hashParamsRetriever });

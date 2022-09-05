@@ -28,7 +28,6 @@ ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
             communication: COM.communication,
             env: iframeEnv,
             iframeElement: iframe,
-            managed: true,
         });
 
         echoButton.onclick = async () => {

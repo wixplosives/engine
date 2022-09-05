@@ -9,6 +9,7 @@ import { Value } from './entities/value';
 import { Slot } from './entities/slot';
 import { RUN_OPTIONS, ENGINE } from './symbols';
 import { LoggerTransport, LogLevel } from './types';
+import { WindowInitializerService } from './com/window-initializer-service';
 
 export interface IComConfig {
     id?: string;
@@ -80,7 +81,8 @@ export default new Feature({
             // in electron process also have type 'renderer'
             process.type !== 'renderer';
 
-        // worker and iframe always get `name` when initialized as Environment.
+        // iframe get `instanceId` with top level config
+        // worker get `instanceId` set into `name` property when initialized as Environment.
         // it can be overridden using top level config.
         // main frame might not have that configured, so we use 'main' fallback for it.
         const comId =
@@ -100,6 +102,10 @@ export default new Feature({
             isNode,
             comOptions
         );
+
+        // manually register window initialization api service to be used during
+        // start of managed iframe in packages/core/src/com/initializers/iframe.ts
+        communication.registerAPI({ id: WindowInitializerService.apiId }, new WindowInitializerService());
 
         const loggerService = new LoggerService(
             loggerTransports,

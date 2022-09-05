@@ -33,6 +33,7 @@
     { "path": "./examples/electron-app/src" },
     { "path": "./examples/file-server/src" },
     { "path": "./examples/multi-env/src" },
+    { "path": "./examples/cross-iframe/src" },
     { "path": "./examples/node-only/src" },
     { "path": "./examples/playground/src" },
     { "path": "./examples/preload/src" },

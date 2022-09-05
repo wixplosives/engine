@@ -122,7 +122,6 @@ if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
 const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
-
 const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), childEnvs, target, env, eagerEntrypoint, featuresBundleName)}
 }));
@@ -133,9 +132,9 @@ ${staticBuild ? createConfigLoadersObject(configLoaderModuleName, configs) : ''}
 async function main() {
     const envName = '${envName}';
     const currentWindow = typeof self !== 'undefined' ? self : window;
-    const topWindow = getTopWindow(currentWindow);
-    const options = new URLSearchParams(topWindow.location.search);
+    const topWindow = currentWindow.parent ?? currentWindow;
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
+    const options = new URLSearchParams(currentWindow.location.search);
     const env = ${JSON.stringify(
         new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
     )}
@@ -148,7 +147,11 @@ async function main() {
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];
-
+    const instanceId = options.get(EngineCore.INSTANCE_ID_PARAM_NAME);
+    
+    if (instanceId) {
+        currentWindow.name = instanceId;
+    }
     ${populateConfig(envName, staticBuild, publicConfigsRoute, config)}
 
     const rootFeatureLoader = featureLoaders.get(featureName);
@@ -444,7 +447,7 @@ function addConfigsEventListenerForParentEnvironments(publicConfigsRoute: string
                 source.postMessage({
                     id,
                     config: fetchedConfigs[envName]
-                });
+                }, '*');
             }
         }
         currentWindow.addEventListener('message', configsEventListener);
@@ -459,11 +462,11 @@ function getConfigsFromParent(publicConfigsRoute: string, envName: string) {
                 res(config);
             }
         };
-        currentWindow.addEventListener('message', configsHandler)
+        currentWindow.addEventListener('message', configsHandler);
         topWindow.postMessage({
             id: '${publicConfigsRoute}',
             envName: '${envName}'
-        });
+        }, '*');
     });`;
 }
 
@@ -516,7 +519,7 @@ function addExternalsEventListenerForParentEnvironments(externalsFilePath: strin
                 source.postMessage({
                     id,
                     externalFeatures
-                })
+                }, '*');
             }
         }
         currentWindow.addEventListener('message', externalFeaturesEventListener);
@@ -545,7 +548,7 @@ function getExternalFeaturesFromParent(externalFeaturesRoute: string) {
         currentWindow.addEventListener('message', externalsHandler)
         topWindow.postMessage({
             id: '${externalFeaturesRoute}'
-        });
+        }, '*');
     });`;
 }
 

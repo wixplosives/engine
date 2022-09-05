@@ -3,6 +3,7 @@ export * from './communication';
 export * from './errors';
 export * from './helpers';
 export * from './logger-service';
+export * from './window-initializer-service';
 export * from './message-types';
 export * from './service-config';
 export * from './types';
