@@ -1,6 +1,5 @@
 import _ from "lodash";
-import type { Node } from "../graph-types";
-
+import type { SerializedNode as Node } from "../graph-types";
 
 type Direction = 'target' | 'source'
 const direction = {

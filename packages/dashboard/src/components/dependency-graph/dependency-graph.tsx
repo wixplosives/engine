@@ -1,6 +1,6 @@
 import React, { FC, useContext, useEffect, useState } from 'react';
 import type { SerializedGraphData } from '../../graph-types';
-import { DashboardContext } from '../dashboard';
+import { DashboardCtx } from '../dashboard-ctx';
 import { FeatureGraph } from '../feature-graph';
 import { data as sampleData } from './sample-graph';
 
@@ -12,13 +12,12 @@ export const DependencyGraph: FC<IDependencyGraphProps> = ({ fetchGraphData }) =
     const [showGraph, setShowGraph] = useState(false);
     const [selectedFeatureGraph, setSelectedFeatureGraph] = useState<SerializedGraphData | null>(null);
 
-    const { params } = useContext(DashboardContext);
+    const { selected, graphData } = useContext(DashboardCtx);
 
     useEffect(() => {
         const applyFeatureGraphData = async (featureName = '') => {
-            // const graphData = await fetchGraphData(featureName);
-            // setSelectedFeatureGraph(graphData);
-            setSelectedFeatureGraph(sampleData);
+            const graphData = await fetchGraphData(featureName);
+            setSelectedFeatureGraph(graphData);
         };
 
         if (params.user_feature) applyFeatureGraphData(params.user_feature).catch(console.warn);

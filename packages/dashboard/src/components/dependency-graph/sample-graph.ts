@@ -4,6 +4,7 @@ export const data: SerializedGraphData = {
     "nodes": [
         {
             "name": "liveExecute",
+            "api": {},
             "envs": [
                 {
                     "name": "main-dashboard",
@@ -21,6 +22,7 @@ export const data: SerializedGraphData = {
         },
         {
             "name": "typescript",
+            "api": {},
             "envs": [
                 {
                     "name": "main-dashboard",
@@ -38,6 +40,7 @@ export const data: SerializedGraphData = {
         },
         {
             "name": "typescriptCompiler",
+            "api": {},
             "envs": [
                 {
                     "name": "main-dashboard",
@@ -55,6 +58,7 @@ export const data: SerializedGraphData = {
         },
         {
             "name": "project",
+            "api": {},
             "envs": [
                 {
                     "name": "main-dashboard",
@@ -72,6 +76,7 @@ export const data: SerializedGraphData = {
         },
         {
             "name": "codeLanguages",
+            "api": {},
             "envs": [
                 {
                     "name": "dev-server",
@@ -89,6 +94,7 @@ export const data: SerializedGraphData = {
         },
         {
             "name": "compilation",
+            "api": {},
             "envs": [
                 {
                     "name": "dev-server",
@@ -106,6 +112,7 @@ export const data: SerializedGraphData = {
         },
         {
             "name": "codeExecution",
+            "api": {},
             "envs": [
 
             ],
@@ -113,6 +120,7 @@ export const data: SerializedGraphData = {
         },
         {
             "name": "fileAssets",
+            "api": {},
             "envs": [
                 {
                     "name": "main-dashboard",
@@ -143,6 +151,7 @@ export const data: SerializedGraphData = {
         {
             "name": "envLogger",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": [
                 {
                     "name": "main-dashboard",
@@ -170,11 +179,13 @@ export const data: SerializedGraphData = {
         {
             "name": "COM",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": []
         },
         {
             "name": "gui",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": [
                 {
                     "name": "main-dashboard",
@@ -192,6 +203,7 @@ export const data: SerializedGraphData = {
         {
             "name": "Resources",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": [
                 {
                     "name": "main-dashboard",
@@ -219,6 +231,7 @@ export const data: SerializedGraphData = {
         {
             "name": "analytics",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": [
                 {
                     "name": "dev-server",
@@ -236,29 +249,34 @@ export const data: SerializedGraphData = {
         {
             "name": "reactRenderer",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": []
         },
         {
             "name": "storage",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": []
 
         },
         {
             "name": "shortcuts",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": []
 
         },
         {
             "name": "reactResources",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": []
 
         },
         {
             "name": "projectUI",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": [{
                 "name": "main-dashboard",
                 "type": "window",
@@ -284,6 +302,7 @@ export const data: SerializedGraphData = {
         {
             "name": "codeEditor",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": [{
                 "name": "main-dashboard",
                 "type": "window",
@@ -309,6 +328,7 @@ export const data: SerializedGraphData = {
         {
             "name": "userApplicationServer",
             "packageName": "@wixc3/engineer",
+            "api": {},
             "envs": [{
                 "name": "main-dashboard",
                 "type": "window",

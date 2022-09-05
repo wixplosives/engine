@@ -4,7 +4,7 @@ import type { IFeatureGraphProps } from '../graph-types';
 import { updateGraph } from './graph';
 import { zoom } from 'd3-zoom'
 
-export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) => {
+export const FeatureGraph = memo(({ selectedFeatureGraph, selected, setSelected }: IFeatureGraphProps) => {
     const svgRef = useRef<SVGSVGElement>(null)
 
     useEffect(() => {
@@ -33,7 +33,7 @@ export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) 
         svg.call(zoomBehavior as any)
 
         // Translate raw graph data to hierarchy
-        updateGraph(selectedFeatureGraph, stage);
+        updateGraph(selectedFeatureGraph, select, setSelected, stage);
     }, [svgRef.current]);
     return <svg ref={svgRef} />;
 });

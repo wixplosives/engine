@@ -1,17 +1,28 @@
-import type { Node, Link } from '@wixc3/engineer'
+import type { AnyEnvironment } from "@wixc3/engine-core";
+import type { IEnvironmentDescriptor } from "@wixc3/engine-runtime-node";
 
-export {Node, Link}
+type Name = string
+type Type = string
+
+export type SerializedNode = {
+    name: string;
+    envs: IEnvironmentDescriptor<AnyEnvironment>[]
+    api: Record<Name, Type>
+    packageName: string
+}
+
+export type SerializedLink = {
+    source: string;
+    target: string;
+}
 
 export interface SerializedGraphData {
-    nodes: Node[];
-    links: Link[];
+    nodes: SerializedNode[];
+    links: SerializedLink[];
 }
 
 export interface IFeatureGraphProps {
     selectedFeatureGraph: SerializedGraphData;
-}
-
-export interface GraphNode extends Node {
-    children: Array<GraphNode | Node>;
-    parent?: GraphNode;
+    selected: string;
+    setSelected: (name: string) => void;
 }
