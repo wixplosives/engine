@@ -113,10 +113,10 @@
   dependencies:
     "@file-services/types" "^7.0.1"
 
-"@file-services/resolve@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-7.0.1.tgz#8441f6bc5434ce72cad1f83e31fd2e19d29ef956"
-  integrity sha512-qsWlwemJwiXT+HwRepBb5W9zyxvdllEA583J1q2UmGkm+rCS8UpQwzSlLGe37wHI8sR/ziSW3XbYe2pbEkYiDg==
+"@file-services/resolve@^7.1.0":
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-7.1.0.tgz#623b82045a8470f8d4365e6da90b49b5775644e4"
+  integrity sha512-JuIEh+mqUt1RDhQPM+VAf+rq1la9L4NoYJtRIZSRrmBwtMxP8FPVNbiYD+m0aQun8r4Hy46HTfFpUnsM7oInHQ==
 
 "@file-services/types@^7.0.1":
   version "7.0.1"
