@@ -20,7 +20,7 @@ import { dirname, resolve } from 'path';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
 import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
-import { buildFeatureLinks } from '../feature-dependency-graph';
+import { serializeFeaturesGraph } from '../feature-dependency-graph';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
@@ -185,8 +185,8 @@ devServerFeature.setup(
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
-                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                      }
+                        [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+                    }
                     : undefined;
 
             app.use(`/${publicConfigsRoute}`, [
@@ -196,15 +196,8 @@ devServerFeature.setup(
                 createConfigMiddleware(overrideConfig),
             ]);
 
-            app.get('/feature-graph', (req, res) => {
-                const featureName = req.query['feature-name'] as string;
-                if (!featureName || !features.has(featureName)) {
-                    res.statusCode = 404;
-                    res.json({ error: 'feature was not found' });
-                    return;
-                }
-                const graph = buildFeatureLinks(features, featureName);
-                res.json(graph);
+            app.get('/feature-graph', (_, res) => {
+                res.json(serializeFeaturesGraph(features));
             });
 
             app.get(externalFeaturesRoute, (_, res) => {

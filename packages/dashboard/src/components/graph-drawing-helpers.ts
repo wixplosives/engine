@@ -1,5 +1,5 @@
 import type { GroupSelection, LinkDatum, NodeDatum } from "./graph"
-import { interpolateCool, schemePastel1, schemeSet2 } from 'd3-scale-chromatic'
+import { interpolateCool, interpolateWarm, schemePastel1, schemeSet2 } from 'd3-scale-chromatic'
 import { scaleLinear } from "d3-scale";
 import { arc } from 'd3-shape'
 import { cssStates } from './feature-graph.st.css';
@@ -121,8 +121,11 @@ export const generateColorPicker = (nodes: NodeDatum[]) => {
             if (d.source) {
                 return interpolateCool(scale(d.source.distance))
             }
-            if (d.distance || d.isSelected) {
+            if (d.distance) {
                 return interpolateCool(scale(d.distance))
+            }
+            if (d.isSelected) {
+                return interpolateWarm(0.6)
             }
             return schemePastel1[0]!
         }
