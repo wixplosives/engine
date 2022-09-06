@@ -119,7 +119,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
     });
 
     const configFullPath = fs.resolve(fs.join(basePath, electronBuilderConfigFileName));
-    const builderConfig: Configuration = await import(configFullPath) as Configuration;
+    const {default: builderConfig} = (await import(configFullPath)) as {default: Configuration}
     
     const extraFiles: (string | FileSet)[] = [
         {
