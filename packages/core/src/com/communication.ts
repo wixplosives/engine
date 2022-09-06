@@ -150,7 +150,7 @@ export class Communication {
     /**
      * Creates a Proxy for a remote service api.
      */
-    public apiProxy<T>(
+    public apiProxy<T extends object>(
         instanceToken: EnvironmentInstanceToken | Promise<EnvironmentInstanceToken>,
         { id: api }: IDTag,
         serviceComConfig: ServiceComConfig<T> = {}
