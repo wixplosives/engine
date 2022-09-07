@@ -83,7 +83,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         mac,
         windows,
         featureDiscoveryRoot = configFeatureDiscoveryRoot,
-        publish,
+        publish
     } = options;
     const outputPath = fs.join(basePath, outDir);
     if (!isPublishValid(publish)) {
@@ -118,7 +118,8 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         outDir,
     });
 
-    const builderConfig = fs.readJsonFileSync(fs.join(basePath, electronBuilderConfigFileName)) as Configuration;
+    const configFullPath = fs.resolve(fs.join(basePath, electronBuilderConfigFileName));
+    const { default: builderConfig } = (await import(configFullPath)) as { default: Configuration };
 
     const extraFiles: (string | FileSet)[] = [
         {
