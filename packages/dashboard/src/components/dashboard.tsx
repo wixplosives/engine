@@ -93,7 +93,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
                             setRuntimeArguments={setRuntimeArguments}
                             actionBtnClassName={classes.actionButton}
                         />
-                    )} */}
+                    )} */} */}
                     <ActionsContainer
                         configName={selected.config}
                         featureName={selected.fixture}
