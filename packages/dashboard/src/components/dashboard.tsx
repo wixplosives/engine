@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SerializedGraphData } from '../server/common';
-import { isServerResponseMessage, ServerState } from '../server-types';
+import { isServerResponseMessage, ServerState } from '../server/server-types';
 import { useLocalStorage } from '../use-local-storage';
 import { ActionsContainer } from './actions-container';
 import { CtxProvider, defaultEnvRuntimeOptions, defaultFeaturesGraph, defaultSelection, defaultServerState, EnvRuntimeOptions } from './dashboard-ctx';
@@ -26,9 +26,13 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
     fetchGraphData,
 }) {
     const [serverState, setServerState] = useState(defaultServerState);
-    const [selected, setSelected] = useLocalStorage('selection', defaultSelection)
+    const [selectKey, envOptionsKey] = useMemo(()=>[
+        `selection/${serverState.path}`,
+        `runtime/${serverState.path}`,
+     ], [serverState.path])
+    const [selected, setSelected, setSelectedKey] = useLocalStorage(`selection/${serverState.path}`, defaultSelection)
     const [featuresGraph, setFeaturesGraph] = useState(defaultFeaturesGraph)
-    const [envRuntimeOptions, setEnvRuntimeOptions] = useLocalStorage('runtime', defaultEnvRuntimeOptions);
+    const [envRuntimeOptions, setEnvRuntimeOptions, setEnvRuntimeOptionsKey] = useLocalStorage('runtime', defaultEnvRuntimeOptions);
 
     const onServerEnvironmentStatusChange = useCallback(
         async (isNodeEnvActive: boolean) => {
@@ -59,6 +63,11 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
         fetchGraphData().then(setFeaturesGraph).catch(console.error)
     }, [fetchServerState, fetchGraphData]);
 
+    useEffect(()=>{
+        setSelectedKey(selectKey)
+        setEnvRuntimeOptionsKey(envOptionsKey)
+    },[selectKey, envOptionsKey])
+
     const isNodeEnvRunning = !!serverState.featuresWithRunningNodeEnvs.find(
         ([featureName, configName]) =>
             selected.fixture === featureName &&
@@ -66,7 +75,6 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
     );
 
     serverState.featuresWithRunningNodeEnvs;
-    console.log(featuresGraph)
 
     return (
         <CtxProvider

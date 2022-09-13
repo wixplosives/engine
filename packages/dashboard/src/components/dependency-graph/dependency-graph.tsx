@@ -18,9 +18,13 @@ export const DependencyGraph = () => {
         }
     }, [svgRef.current, setStage]);
 
-    if (stage) {
-        updateGraph(featuresGraph, selected.feature, () => { }, stage);
-    }
+    useEffect(()=>{
+        if (stage) {
+            updateGraph(featuresGraph, selected.feature, () => { }, stage);
+        }
+    }, [stage, selected.feature, featuresGraph])
+
+ 
     return <svg ref={svgRef} />;
 };
 

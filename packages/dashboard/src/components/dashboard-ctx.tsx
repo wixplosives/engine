@@ -1,17 +1,15 @@
-import type { Value } from '@wixc3/engine-core/src/entities/value';
-import { selection } from 'd3-selection';
-import { features } from 'process';
 import React, { createContext } from 'react';
-import type { valid } from 'semver';
 import type { SerializedGraphData } from '../server/common';
-import type { ServerState } from '../server-types';
+import type { ServerState } from '../server/server-types';
 
-type WithSetter<T> = [T, (v: T) => void]
+export type Setter<T=string> = (v: T) => void
+type WithSetter<T> = [T, Setter<T>]
 function withSetter<T>(v: T) {
     return [v, () => { }] as WithSetter<T>
 }
 // ServerStateCtx
 export const defaultServerState: ServerState = {
+    path:'',
     features: {},
     featuresWithRunningNodeEnvs: []
 }
@@ -26,6 +24,7 @@ export const defaultSelection = {
     fixture: '',
     config: ''
 }
+export type Selection = typeof defaultSelection;
 export const SelectCtx = createContext(withSetter(defaultSelection));
 
 // EnvRuntimeOptionsCtx

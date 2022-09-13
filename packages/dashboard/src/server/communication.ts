@@ -1,6 +1,7 @@
 import type { EnvRuntimeOptions } from "../components/dashboard-ctx";
-import type { ServerState } from "../server-types";
-import { ENGINE_FEATURE_URL, ENGINE_STATE_URL, FEATURE_GRAPH_URL, SerializedGraphData } from "./common";
+import type { ServerState } from "./server-types";
+import { ENGINE_FEATURE_URL, ENGINE_STATE_URL, FEATURE_GRAPH_URL } from "./consts";
+import type { SerializedGraphData } from "./common";
 
 export const fetchServerState = async () => (await (await fetch(ENGINE_STATE_URL)).json()) as ServerState;
 export const fetchGraphData = async () => (await (await fetch(FEATURE_GRAPH_URL)).json()) as SerializedGraphData;

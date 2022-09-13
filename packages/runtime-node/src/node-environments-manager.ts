@@ -308,7 +308,7 @@ export class NodeEnvironmentsManager {
     }
 
     public getFeaturesWithRunningEnvironments() {
-        return Array.from(this.runningFeatures.keys()).map((runningFeature) => runningFeature.split(delimiter));
+        return Array.from(this.runningFeatures.keys()).map((runningFeature) => runningFeature.split(delimiter) as [string,string]);
     }
 
     public getTopology(featureName: string, configName?: string) {

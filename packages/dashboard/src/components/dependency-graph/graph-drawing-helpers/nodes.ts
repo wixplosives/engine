@@ -2,7 +2,7 @@ import type { GroupSelection, NodeDatum } from "../../graph"
 import { interpolateCool, schemeSet2 } from 'd3-scale-chromatic'
 import { arc } from 'd3-shape'
 import { cssStates } from '../feature-graph.st.css';
-import { chain, kebabCase } from "lodash";
+import { chain } from "lodash";
 import { ColorPicker, size } from "./common";
 import type { BaseType, Selection } from 'd3-selection'
 
@@ -34,7 +34,7 @@ function addBackgroud(node: Selection<SVGGElement | BaseType, NodeDatum, SVGGEle
 }
 
 const addText = (node: Selection<SVGGElement | BaseType, NodeDatum, SVGGElement, unknown>) => {
-    const parseName = ({ name }: NodeDatum) => name.replace(/([A-Z\-])/g, '\n$1').split('\n')
+    const parseName = ({ name }: NodeDatum) => name.replace(/([A-Z\-]+)/g, '\n$1').split('\n')
     node.selectChildren('text').remove()
     node.append('text')
         .attr('y', d => `-${parseName(d).length / 2 + 0.25}em`)

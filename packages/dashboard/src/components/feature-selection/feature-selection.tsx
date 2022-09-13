@@ -1,16 +1,17 @@
-import React, { useMemo, useCallback, useState, useContext, useEffect } from 'react';
-import { SelectCtx, ServerStateCtx } from './dashboard-ctx';
+import React, { useMemo, useCallback, useState, useContext } from 'react';
+import { SelectCtx, ServerStateCtx } from '../dashboard-ctx';
 import { classes } from './feature-selection.st.css';
-import { TitledElement } from './titled-element';
+import { TitledElement } from '../titled-element';
+import { useOnCtxSelectionChanged, useOnUserSelection } from './effects';
 
 const useHandler = <T extends Function>(setter: T): React.ChangeEventHandler<any> => useCallback(
-    ({ currentTarget: { value } }) => {
-        setter(value)
+    ({ currentTarget: { type, value, checked } }) => {
+        setter(type === 'checkbox' ? checked : value)
     },
     [setter]
 )
 
-export const FeaturesSelection = React.memo<{}>(
+export const FeaturesSelection = React.memo(
     () => {
         const [{ features }] = useContext(ServerStateCtx)
         const [selected, setSelected] = useContext(SelectCtx)
@@ -18,19 +19,20 @@ export const FeaturesSelection = React.memo<{}>(
         const [feature, setFeature] = useState((selected.feature || ''))
         const [fixture, setFixture] = useState(selected.fixture || '')
         const [config, setConfig] = useState(selected.config || '')
-        
-        useEffect(() => {
-            const name = fixture || feature;
-            if (features[name]) {
-                setSelected({
-                    feature, fixture, config
-                })
-            } else {
-                setFixture('')
-                setConfig('')
-            }
-        }, [feature, fixture, config, features])
+        const [filterFixtures, setFilterFixtures] = useState(false)
+        useOnUserSelection(features, feature, fixture, config, setSelected, setFixture, setConfig);
+        useOnCtxSelectionChanged(selected, setFeature, setFixture, setConfig);
+        const displayFeature = useMemo(() =>
+            featureNames
+                .filter(i => !i.includes("/") &&
+                    (!filterFixtures || featureNames.some(
+                        fn => fn.startsWith(`${i}/`)
+                    )))
+            , [featureNames, filterFixtures]
+        )
+
         const stripFeature = (name: string) => name.replace(`${feature}/`, '')
+
 
         return (
             <div className={classes.root}>
@@ -38,28 +40,21 @@ export const FeaturesSelection = React.memo<{}>(
                     <input
                         list="features"
                         value={feature}
-                        // defaultValue={featureNames[0]}
                         disabled={!featureNames.length}
                         onChange={useHandler(setFeature)}
                         onFocus={() => setFeature('')}
                         autoComplete="false"
                     />
                     <datalist id="features"> {
-                        featureNames.filter(i => !i.includes("/")).sort().map((featureName) => (
+                        displayFeature.sort().map((featureName) => (
                             <option key={`feature-${featureName}`} value={featureName}>
                                 {featureName}
                             </option>
                         ))}
                     </datalist>
-                    <input type="checkbox" id="onlyFixture"
-                        checked={false}
-                        onChange={() => { }}
-                    />
-                    <label>Must have fixtures</label>
-
                 </TitledElement>
                 <TitledElement title='Fixture' className={classes.option}>
-                    <select onChange={useHandler(setFixture)} defaultValue={selected.fixture}>
+                    <select onChange={useHandler(setFixture)} value={selected.fixture}>
                         <option value={feature}>{'<None>'}</option>
                         {
                             featureNames
@@ -70,9 +65,14 @@ export const FeaturesSelection = React.memo<{}>(
                                     </option>))
                         }
                     </select>
+                    <input type="checkbox" id="fixtureFilter"
+                        checked={filterFixtures}
+                        onChange={useHandler(setFilterFixtures)}
+                    />
+                    <label htmlFor="fixtureFilter">Fixtures filter</label>
                 </TitledElement>
                 <TitledElement title={'Config'} className={classes.option}>
-                    <select onChange={useHandler(setConfig)} defaultValue={selected.config} >
+                    <select onChange={useHandler(setConfig)} value={selected.config} >
                         <option value={''}>{'<None>'}</option>
                         {
                             features[fixture || feature]

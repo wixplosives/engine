@@ -22,6 +22,7 @@ export type ServerFeatureDef = {
 export type RunningEngineFeature = [string, string];
 
 export interface ServerState {
+    path: string;
     features: Record<string, ServerFeatureDef>;
     featuresWithRunningNodeEnvs: RunningEngineFeature[];
 }
