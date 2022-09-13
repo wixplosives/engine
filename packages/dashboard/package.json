@@ -38,6 +38,7 @@
   "devDependencies": {
     "@types/d3-scale": "^4.0.2",
     "@types/d3-scale-chromatic": "^3.0.0",
-    "@types/d3-zoom": "^3.0.1"
+    "@types/d3-zoom": "^3.0.1",
+    "@wixc3/react-board": "^2.0.3"
   }
 }

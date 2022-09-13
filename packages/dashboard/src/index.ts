@@ -1,2 +1,2 @@
 export { App } from './components/app';
-export type { SerializedGraphData, SerializedLink, SerializedNode } from './graph-types'
+export type { SerializedGraphData, SerializedLink, SerializedNode } from './server/common'

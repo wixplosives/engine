@@ -1,80 +1,65 @@
-import React, { useMemo, useCallback, useState, useContext } from 'react';
-import type { ServerFeatureDef } from '../server-types';
-import { DashboardContext } from './dashboard';
+import React, { useMemo, useCallback, useState, useContext, useEffect } from 'react';
+import { SelectCtx, ServerStateCtx } from './dashboard-ctx';
 import { classes } from './feature-selection.st.css';
 import { TitledElement } from './titled-element';
 
-export interface FeaturesSelectionProps {
-    features: Record<string, ServerFeatureDef>;
-    selectedFeature?: string;
-    selectedConfig?: string;
-    onSelected?: (featureName?: string, configName?: string) => unknown;
-}
+const useHandler = <T extends Function>(setter: T): React.ChangeEventHandler<any> => useCallback(
+    ({ currentTarget: { value } }) => {
+        setter(value)
+    },
+    [setter]
+)
 
 export const FeaturesSelection = React.memo<{}>(
     () => {
-        const { serverState: {features }, selected} = useContext(DashboardContext)
+        const [{ features }] = useContext(ServerStateCtx)
+        const [selected, setSelected] = useContext(SelectCtx)
         const featureNames = useMemo(() => Object.keys(features), [features]);
-        const [feature, setFeature] = useState((selected.feature || '').replace(/\/.*/, ''))
-        const [fixture, setFixtures] = useState(selected.fixture || '')
+        const [feature, setFeature] = useState((selected.feature || ''))
+        const [fixture, setFixture] = useState(selected.fixture || '')
         const [config, setConfig] = useState(selected.config || '')
         
-        const stripFeature =  (name:string) => name.replace(`${feature}/`, '')
-
-        const onSelectionChanged = () => {
+        useEffect(() => {
             const name = fixture || feature;
             if (features[name]) {
+                setSelected({
+                    feature, fixture, config
+                })
+            } else {
+                setFixture('')
+                setConfig('')
             }
-        }
-
-        const onFeatureChange: React.ChangeEventHandler<any> = useCallback(
-            ({ currentTarget }) => {
-                const { value: newFeatureName } = currentTarget;
-                setFeature(newFeatureName)
-                onSelectionChanged()
-            },
-            [onSelectionChanged]
-        );
-
-        const onFixtureChange: React.ChangeEventHandler<HTMLSelectElement> = useCallback(
-            ({ currentTarget }) => {
-                const { value: newFeatureName } = currentTarget;
-                setConfig(newFeatureName)
-                onSelectionChanged()
-            },
-            [onSelectionChanged]
-        );
-
-        const onConfigChange: React.ChangeEventHandler<HTMLSelectElement> = useCallback(
-            ({ currentTarget }) => {
-                const { value: newFeatureName } = currentTarget;
-                setFixtures(newFeatureName)
-                onSelectionChanged()
-            },
-            [onSelectionChanged]
-        );
+        }, [feature, fixture, config, features])
+        const stripFeature = (name: string) => name.replace(`${feature}/`, '')
 
         return (
             <div className={classes.root}>
                 <TitledElement title={'Feature'} className={classes.option}>
                     <input
                         list="features"
-                        value={selectedFeature}
+                        value={feature}
+                        // defaultValue={featureNames[0]}
                         disabled={!featureNames.length}
-                        onChange={onFeatureChange}
+                        onChange={useHandler(setFeature)}
+                        onFocus={() => setFeature('')}
                         autoComplete="false"
                     />
-                    <datalist id="features">
-                        {
-                            featureNames.filter(i => !i.includes("/")).sort().map((featureName) => (
-                                <option key={`feature-${featureName}`} value={featureName}>
-                                    {featureName}
-                                </option>
-                            ))}
+                    <datalist id="features"> {
+                        featureNames.filter(i => !i.includes("/")).sort().map((featureName) => (
+                            <option key={`feature-${featureName}`} value={featureName}>
+                                {featureName}
+                            </option>
+                        ))}
                     </datalist>
+                    <input type="checkbox" id="onlyFixture"
+                        checked={false}
+                        onChange={() => { }}
+                    />
+                    <label>Must have fixtures</label>
+
                 </TitledElement>
                 <TitledElement title='Fixture' className={classes.option}>
-                    <select onChange={onFixtureChange} >
+                    <select onChange={useHandler(setFixture)} defaultValue={selected.fixture}>
                         <option value={feature}>{'<None>'}</option>
                         {
                             featureNames
@@ -87,8 +72,8 @@ export const FeaturesSelection = React.memo<{}>(
                     </select>
                 </TitledElement>
                 <TitledElement title={'Config'} className={classes.option}>
-                    <select onChange={onConfigChange} >
-                        <option>{'<None>'}</option>
+                    <select onChange={useHandler(setConfig)} defaultValue={selected.config} >
+                        <option value={''}>{'<None>'}</option>
                         {
                             features[fixture || feature]
                                 ?.configurations

@@ -1,27 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import type { SerializedGraphData } from '../graph-types';
+import React, { useCallback, useEffect, useState } from 'react';
+import type { SerializedGraphData } from '../server/common';
 import { isServerResponseMessage, ServerState } from '../server-types';
+import { useLocalStorage } from '../use-local-storage';
 import { ActionsContainer } from './actions-container';
-import { DashboardCtx, defaultDashboardCtx, defaultSelection } from './dashboard-ctx';
-import { useUrlParams } from './dashboard-hooks';
+import { CtxProvider, defaultEnvRuntimeOptions, defaultFeaturesGraph, defaultSelection, defaultServerState, EnvRuntimeOptions } from './dashboard-ctx';
 import { classes } from './dashboard.st.css';
 import { DependencyGraph } from './dependency-graph/dependency-graph';
 import { FeaturesSelection } from './feature-selection';
-import type { IRuntimeOption, RuntimeOptionsContainer } from './runtime-options-container';
 import { Sidebar } from './sidebar/sidebar';
 
 export interface IDashboardProps {
-    fetchServerState: () => Promise<{
-        result: 'success' | 'error';
-        data: ServerState;
-    }>;
+    fetchServerState: () => Promise<ServerState>;
     changeNodeEnvironmentState: (
         featureName: string,
         configName: string,
         isNodeEnvActive: boolean,
-        runtimeOptions: Array<IRuntimeOption>
+        runtimeOptions: EnvRuntimeOptions
     ) => Promise<unknown>;
-    fetchGraphData: (featureName: string) => Promise<SerializedGraphData>;
+    fetchGraphData: () => Promise<SerializedGraphData>;
 }
 
 export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
@@ -29,24 +25,10 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
     changeNodeEnvironmentState,
     fetchGraphData,
 }) {
-    const [serverState, setServerState] = useState<ServerState>({
-        featuresWithRunningNodeEnvs: [],
-        features: {},
-    });
-    const [selected, setSelected] = useState({
-        ...defaultSelection
-    })
-    const [featuresGraph, setFeaturesGraph] = useState<SerializedGraphData>({
-        nodes:[],
-        links: []
-    })
-
-    const [runtimeArguments, setRuntimeArguments] = useState<Array<IRuntimeOption>>([
-        {
-            key: '',
-            value: '',
-        },
-    ]);
+    const [serverState, setServerState] = useState(defaultServerState);
+    const [selected, setSelected] = useLocalStorage('selection', defaultSelection)
+    const [featuresGraph, setFeaturesGraph] = useState(defaultFeaturesGraph)
+    const [envRuntimeOptions, setEnvRuntimeOptions] = useLocalStorage('runtime', defaultEnvRuntimeOptions);
 
     const onServerEnvironmentStatusChange = useCallback(
         async (isNodeEnvActive: boolean) => {
@@ -54,11 +36,11 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
                 selected.fixture,
                 selected.config,
                 !isNodeEnvActive,
-                runtimeArguments
+                envRuntimeOptions
             );
             if (isServerResponseMessage(serverResponse)) {
                 const serverStateResponse = await fetchServerState();
-                setServerState(serverStateResponse.data);
+                setServerState(serverStateResponse);
             } else {
                 console.error(serverResponse);
             }
@@ -67,27 +49,15 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
             changeNodeEnvironmentState,
             selected.fixture,
             selected.config,
-            runtimeArguments,
+            envRuntimeOptions,
             fetchServerState,
         ]
     );
 
     useEffect(() => {
-        const possibleFeaturesRequest = async () => {
-            const serverResponse = await fetchServerState();
-            setServerState(serverResponse.data);
-        };
-
-        possibleFeaturesRequest().catch((error) => {
-            console.error(error);
-        });
-    }, [fetchServerState]);
-
-   
-    const addRuntimeOption = useCallback(
-        () => setRuntimeArguments([...runtimeArguments, { key: '', value: '' }]),
-        [runtimeArguments, setRuntimeArguments]
-    );
+        fetchServerState().then(setServerState).catch(console.error)
+        fetchGraphData().then(setFeaturesGraph).catch(console.error)
+    }, [fetchServerState, fetchGraphData]);
 
     const isNodeEnvRunning = !!serverState.featuresWithRunningNodeEnvs.find(
         ([featureName, configName]) =>
@@ -96,16 +66,14 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
     );
 
     serverState.featuresWithRunningNodeEnvs;
+    console.log(featuresGraph)
 
     return (
-        <DashboardCtx.Provider
-            value={{
-                serverState,
-                selected,
-                setSelected,
-                featuresGraph
-            }}
-        >
+        <CtxProvider
+            selection={[selected, setSelected] }
+            features={[featuresGraph, setFeaturesGraph]}
+            envRuntimeOptions={[envRuntimeOptions, setEnvRuntimeOptions] }
+            serverState={[serverState, setServerState] }>
             <div className={classes.root}>
                 <Sidebar />
                 <div className={classes.content}>
@@ -124,13 +92,13 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
                         isServerActive={isNodeEnvRunning}
                         // eslint-disable-next-line @typescript-eslint/no-misused-promises
                         onToggleChange={onServerEnvironmentStatusChange}
-                        displayServerToggle={hasNodeEnvironments}
+                        displayServerToggle={true}
                         actionBtnClassName={classes.actionButton}
                     />
-                    <DependencyGraph fetchGraphData={fetchGraphData} />
+                    <DependencyGraph />
                 </div>
             </div>
-        </DashboardCtx.Provider>
+        </CtxProvider>
     );
 });
 

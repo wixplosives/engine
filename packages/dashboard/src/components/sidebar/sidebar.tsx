@@ -1,9 +1,10 @@
 import React, { FC, useContext } from 'react';
-import { DashboardContext } from '../dashboard';
+import { SelectCtx, ServerStateCtx } from '../dashboard-ctx';
 import { style, classes } from '../dashboard.st.css';
 
 export const Sidebar: FC = () => {
-    const { serverState, params, setParams } = useContext(DashboardContext);
+    const [ selected ] = useContext(SelectCtx);
+    const [ serverState ] = useContext(ServerStateCtx);
 
     return (
         <section className={classes.leftBar}>
@@ -13,14 +14,11 @@ export const Sidebar: FC = () => {
                     {serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (
                         <button
                             className={style(classes.runningFeature, {
-                                selected: f === params.user_feature && c === params.user_config,
+                                selected: f === selected.fixture && c === selected.config,
                             })}
                             key={f + '_' + c}
                             onClick={() => {
-                                setParams({
-                                    user_config: c,
-                                    user_feature: f,
-                                });
+                               
                             }}
                         >
                             <div>Feature: {f}</div>

@@ -20,15 +20,12 @@
     /* fill: rgb(143, 48, 48); */
 }
 
-.node:isSelected text {}
 
 .node text {
     font: 6px sans-serif;
     fill: black;
     text-anchor: middle;
 }
-
-.node:isRoot rect {}
 
 .node:isLeaf Rect {
     stroke-dasharray: 1 2;

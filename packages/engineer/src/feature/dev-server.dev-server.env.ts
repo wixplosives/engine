@@ -21,6 +21,7 @@ import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-r
 import { createDisposables } from '@wixc3/create-disposables';
 import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
 import { serializeFeaturesGraph } from '../feature-dependency-graph';
+import { ENGINE_FEATURE_URL, ENGINE_STATE_URL, FEATURE_GRAPH_URL } from '@wixc3/engine-dashboard/src/server/common';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
@@ -51,7 +52,7 @@ devServerFeature.setup(
             mode,
             autoLaunch,
             nodeEnvironmentsMode,
-            basePath = process.cwd(),
+            basePath = process.cwd() as string,
             overrideConfig,
             defaultRuntimeOptions,
             outputPath,
@@ -196,7 +197,7 @@ devServerFeature.setup(
                 createConfigMiddleware(overrideConfig),
             ]);
 
-            app.get('/feature-graph', (_, res) => {
+            app.get(FEATURE_GRAPH_URL, (_, res) => {
                 res.json(serializeFeaturesGraph(features));
             });
 
@@ -241,19 +242,16 @@ devServerFeature.setup(
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
             app.use(
-                '/engine-feature',
+                ENGINE_FEATURE_URL,
                 createFeaturesEngineRouter(application.getOverrideConfigsMap(), application.getNodeEnvManager()!)
             );
 
-            app.get('/engine-state', (_req, res) => {
-                res.json({
-                    result: 'success',
-                    data: {
+            app.get(ENGINE_STATE_URL, (_req, res) => {
+                res.json( {
                         features: featureEnvDefinitions,
                         featuresWithRunningNodeEnvs: application
                             .getNodeEnvManager()
                             ?.getFeaturesWithRunningEnvironments(),
-                    },
                 });
             });
 
