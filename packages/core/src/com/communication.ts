@@ -706,9 +706,10 @@ export class Communication {
         }
     }
     private async handleUnListen(message: UnListenMessage) {
-        const dispatcher = this.eventDispatchers[message.handlerId];
+        const namespacedHandlerId = message.handlerId + message.origin
+        const dispatcher = this.eventDispatchers[namespacedHandlerId];
         if (dispatcher) {
-            delete this.eventDispatchers[message.handlerId];
+            delete this.eventDispatchers[namespacedHandlerId];
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
             if (message.callbackId) {
                 this.sendTo(message.from, {
@@ -760,7 +761,9 @@ export class Communication {
 
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
-            const dispatcher = this.eventDispatchers[message.handlerId] || this.createDispatcher(message.from, message);
+            const namespacedHandlerId = message.handlerId + message.origin
+
+            const dispatcher = this.eventDispatchers[namespacedHandlerId] || this.createDispatcher(message.from, message);
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
 
             if (message.callbackId) {
@@ -833,14 +836,15 @@ export class Communication {
     }
 
     private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
-        const handlerId = message.handlerId;
-        return (this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
+        const namespacedHandlerId = message.handlerId + message.origin
+
+        return (this.eventDispatchers[namespacedHandlerId] = (...args: SerializableArguments) => {
             this.sendTo(envId, {
                 to: envId,
                 from: this.rootEnvId,
                 type: 'event',
                 data: args,
-                handlerId,
+                handlerId: message.handlerId,
                 origin: this.rootEnvId,
             });
         });
