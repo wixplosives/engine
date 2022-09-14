@@ -706,7 +706,7 @@ export class Communication {
         }
     }
     private async handleUnListen(message: UnListenMessage) {
-        const namespacedHandlerId = message.handlerId + message.origin
+        const namespacedHandlerId = message.handlerId + message.origin;
         const dispatcher = this.eventDispatchers[namespacedHandlerId];
         if (dispatcher) {
             delete this.eventDispatchers[namespacedHandlerId];
@@ -761,9 +761,10 @@ export class Communication {
 
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
-            const namespacedHandlerId = message.handlerId + message.origin
+            const namespacedHandlerId = message.handlerId + message.origin;
 
-            const dispatcher = this.eventDispatchers[namespacedHandlerId] || this.createDispatcher(message.from, message);
+            const dispatcher =
+                this.eventDispatchers[namespacedHandlerId] || this.createDispatcher(message.from, message);
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
 
             if (message.callbackId) {
@@ -836,7 +837,7 @@ export class Communication {
     }
 
     private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
-        const namespacedHandlerId = message.handlerId + message.origin
+        const namespacedHandlerId = message.handlerId + message.origin;
 
         return (this.eventDispatchers[namespacedHandlerId] = (...args: SerializableArguments) => {
             this.sendTo(envId, {
