@@ -14,7 +14,7 @@
     "@file-services/node": "^7.0.1",
     "@file-services/resolve": "^7.1.0",
     "@file-services/types": "^7.0.1",
-    "@types/express": "^4.17.13",
+    "@types/express": "^4.17.14",
     "@wixc3/create-disposables": "^2.0.0",
     "@wixc3/cross-performance": "^29.0.0",
     "@wixc3/engine-core": "^29.0.0",
