@@ -41,12 +41,8 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         }
         for (const feature of features) {
             this.initFeature(feature);
-        }
-        const runPromises: Array<Promise<void>> = [];
-        for (const feature of features) {
-            runPromises.push(this.runFeature(feature));
-        }
-        await Promise.all(runPromises);
+        }    
+        await Promise.all(features.map(f => this.runFeature(f)));
         return this;
     }
 
