@@ -260,15 +260,14 @@ describe('engineer:dev-server', function () {
         // modifying the config file
         await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(modifiedConfigValue));
 
+        await page.reload();
+
         await waitFor(
             async () => {
                 // reload the page (to see if the config file was changed, without re-running the application)
-                await page.reload({
-                    waitUntil: 'networkidle',
-                });
                 expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
             },
-            { timeout: 10_000, delay: 500 }
+            { timeout: 2000 }
         );
     });
 
