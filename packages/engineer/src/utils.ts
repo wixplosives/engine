@@ -1,108 +1,50 @@
-import type io from 'socket.io';
 import fs from '@file-services/node';
 import { isFeatureFile, loadFeaturesFromPaths, getExternalFeaturesMetadata } from '@wixc3/engine-scripts';
-import { RuntimeEngine, BaseHost, TopLevelConfig, RuntimeFeature } from '@wixc3/engine-core';
-
+import { RuntimeEngine, BaseHost, RuntimeFeature } from '@wixc3/engine-core';
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';
 import { TargetApplication } from './application-proxy-service';
-import {
-    IExternalDefinition,
-    LaunchEnvironmentMode,
-    runNodeEnvironment,
-    TopLevelConfigProvider,
-} from '@wixc3/engine-runtime-node';
+import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import { defaultsDeep as _defaultsDeep } from 'lodash';
+import { defaultOptions, defaultsEngineConfig, DEngineConfig, DStartOptions, IStartOptions } from './utils.types';
+import type { DevServerConfig } from './feature/dev-server.types';
 
 const basePath = fs.join(__dirname, './feature');
 
-export interface IStartOptions {
-    publicPath?: string;
-    targetApplicationPath: string;
-    outputPath?: string;
-    featureName?: string;
-    configName?: string;
-    httpServerPort?: number;
-    singleFeature?: boolean;
-    pathsToRequire?: string[];
-    mode?: 'development' | 'production';
-    title?: string;
-    favicon?: string;
-    publicConfigsRoute?: string;
-    autoLaunch?: boolean;
-    engineerEntry?: string;
-    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    inspect?: boolean;
-    runtimeOptions?: Record<string, string | boolean>;
-    externalFeatureDefinitions?: IExternalDefinition[];
-    externalFeaturesPath?: string;
-    featureDiscoveryRoot?: string;
-    nodeEnvironmentsMode?: LaunchEnvironmentMode;
-    socketServerOptions?: Partial<io.ServerOptions>;
-    webpackConfigPath?: string;
-    log?: boolean;
-}
-
-export async function startDevServer({
-    featureName,
-    configName,
-    httpServerPort = 3000,
-    singleFeature,
-    pathsToRequire = [],
-    publicPath = '/',
-    mode = 'development',
-    title,
-    favicon,
-    publicConfigsRoute = 'configs/',
-    autoLaunch = true,
-    targetApplicationPath,
-    engineerEntry = 'engineer/gui',
-    overrideConfig = [],
-    outputPath,
-    inspect,
-    runtimeOptions = {},
-    externalFeatureDefinitions = [],
-    externalFeaturesPath,
-    featureDiscoveryRoot,
-    nodeEnvironmentsMode,
-    socketServerOptions,
-    webpackConfigPath,
-    log,
-}: IStartOptions): Promise<{
+export async function startDevServer(options: IStartOptions): Promise<{
     dispose: () => Promise<void>;
     engine: RuntimeEngine;
     devServerFeature: RuntimeFeature<typeof devServerFeature, typeof devServerEnv>['api'];
     outputPath: string | undefined;
 }> {
+    const serverOpts = defaults(options, defaultOptions)
     const app = new TargetApplication({
-        basePath: targetApplicationPath,
+        basePath: serverOpts.targetApplicationPath,
     });
-    const { config: engineConfig, path: engineConfigPath } = await app.getEngineConfig();
-
-    const {
-        externalFeatureDefinitions: configDefs = [],
-        externalFeaturesBasePath: configExternalPath,
-        require,
-        favicon: configFavicon,
-        featureDiscoveryRoot: configFeatureDiscoveryRoot,
-    } = engineConfig ?? {};
-
+    const { config, path: engineConfigPath } = await app.getEngineConfig();
+    const engineCnf = defaults(config, defaultsEngineConfig)
     const featurePaths = fs.findFilesSync(basePath, {
         filterFile: ({ name }) => isFeatureFile(name),
     });
-    preRequire([...pathsToRequire, ...(require ?? [])], basePath);
+    preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
     const { features } = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs);
-
     const resolvedExternalFeaturesPath = fs.resolve(
-        externalFeaturesPath ?? (configExternalPath ? fs.dirname(engineConfigPath!) : basePath)
+        serverOpts.externalFeaturesPath ?? (
+            engineCnf.externalFeaturesBasePath
+                ? fs.dirname(engineConfigPath!)
+                : basePath)
     );
 
     const externalFeatures = getExternalFeaturesMetadata(
-        app.normalizeDefinitionsPackagePath([...configDefs, ...externalFeatureDefinitions]),
+        app.normalizeDefinitionsPackagePath([
+            ...engineCnf.externalFeatureDefinitions,
+            ...serverOpts.externalFeatureDefinitions]),
         resolvedExternalFeaturesPath
     );
+
     const { engine, dispose } = await runNodeEnvironment({
-        featureName: engineerEntry,
+        featureName: serverOpts.engineerEntry,
         features: [...features],
         bundlePath: app.outputPath,
         name: devServerEnv.env,
@@ -110,30 +52,7 @@ export async function startDevServer({
         host: new BaseHost(),
         config: [
             devServerFeature.use({
-                devServerConfig: {
-                    httpServerPort,
-                    featureName,
-                    singleFeature,
-                    publicPath,
-                    mode,
-                    configName,
-                    title,
-                    favicon: favicon ?? configFavicon,
-                    publicConfigsRoute,
-                    autoLaunch,
-                    basePath: targetApplicationPath,
-                    overrideConfig,
-                    outputPath,
-                    inspect,
-                    defaultRuntimeOptions: runtimeOptions,
-                    externalFeatureDefinitions,
-                    externalFeaturesPath,
-                    featureDiscoveryRoot: featureDiscoveryRoot ?? configFeatureDiscoveryRoot,
-                    nodeEnvironmentsMode,
-                    socketServerOptions,
-                    webpackConfigPath,
-                    log,
-                },
+                devServerConfig: asDevConfig(serverOpts, engineCnf),
             }),
             guiFeature.use({
                 engineerConfig: {
@@ -142,7 +61,7 @@ export async function startDevServer({
                 },
             }),
         ],
-        context: targetApplicationPath,
+        context: serverOpts.targetApplicationPath,
         externalFeatures,
         env: devServerEnv,
     });
@@ -153,6 +72,20 @@ export async function startDevServer({
         devServerFeature: engine.get(devServerFeature).api,
     };
 }
+
+function asDevConfig(options: DStartOptions, engineConfig: DEngineConfig): Partial<DevServerConfig> {
+    return {
+        ...options,
+        favicon: options.favicon ?? engineConfig.favicon,
+        basePath: options.targetApplicationPath,
+        defaultRuntimeOptions: options.runtimeOptions,
+        featureDiscoveryRoot: options.featureDiscoveryRoot ?? engineConfig.featureDiscoveryRoot,
+    };
+}
+
+const defaults = <T, D>(src: T, defaultOptions?: D): T & D =>
+    _defaultsDeep(src, defaultOptions) as T & D;
+
 
 function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
