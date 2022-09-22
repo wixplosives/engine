@@ -1931,13 +1931,13 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.0.0.tgz#c3a1121a2d02e38be9bc737d1c4362486fd89871"
   integrity sha512-WH6hy2/1Cl5N1/uTXlqt9jzyyeoaCmBw+g+X+SOKE7z0Cw+kCM2tMkyeOFSFNsKd7jVdG35i9jIacHbXi9d3cg==
 
-"@wixc3/resolve-directory-context@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-3.0.0.tgz#b5204aa6e62722c02db2c3bda92ab1e06d3744cd"
-  integrity sha512-CmA26NRG2FQDbjwAPp3jMr1FHmGgc9CJDtz2WwMMXzJcv8xKuRiTa0mtnVtdXcvWGaHZks/wG4EfZ3s1bcXzhw==
+"@wixc3/resolve-directory-context@^3.0.0", "@wixc3/resolve-directory-context@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-3.0.1.tgz#6050ad775527c769efba100c3008c2f732d71ea9"
+  integrity sha512-AMfGOizf3y1S1db2bwO0XiYjfKJPnsjeBh8SQqWw+wzfxiAppqSFPIZHIWnq9XcKfAVLlY1cNqPDIHS406wPBQ==
   dependencies:
-    minimatch "^5.0.1"
-    type-fest "^2.12.2"
+    minimatch "^5.1.0"
+    type-fest "^3.0.0"
 
 "@wixc3/wait-for-call@^1.0.1":
   version "1.0.1"
@@ -5712,7 +5712,7 @@ minimatch@^3.0.4, minimatch@^3.1.1, minimatch@^3.1.2:
   dependencies:
     brace-expansion "^1.1.7"
 
-minimatch@^5.0.1:
+minimatch@^5.0.1, minimatch@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-5.1.0.tgz#1717b464f4971b144f6aabe8f2d0b8e4511e09c7"
   integrity sha512-9TPBGGak4nHfGZsPBohm9AWg6NoT7QTCehS3BIJABslyZbzxfV78QM2Y6+i741OPZIafFAaiiEMh5OyIrJPgtg==
@@ -7907,10 +7907,15 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-type-fest@^2.12.2, type-fest@^2.19.0:
+type-fest@^2.19.0:
   version "2.19.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
   integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
+
+type-fest@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.0.0.tgz#678e2e8d916e3b7dc1c3a6591d399ba3f7521584"
+  integrity sha512-MINvUN5ug9u+0hJDzSZNSnuKXI8M4F5Yvb6SQZ2CYqe7SgKXKOosEcU5R7tRgo85I6eAVBbkVF7TCvB4AUK2xQ==
 
 type-is@~1.6.18:
   version "1.6.18"
