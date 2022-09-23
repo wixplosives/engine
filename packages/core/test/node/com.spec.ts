@@ -56,6 +56,7 @@ describe('Communication', () => {
 
         expect(res).to.be.equal('Yoo!');
     });
+
     it('multi communication', async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main');
@@ -121,7 +122,7 @@ describe('Communication', () => {
         expect(res).to.be.equal('child echo Yoo!');
     });
 
-    it('doesnt send callback message on a method that was defined not to send one', async () => {
+    it(`doesn't send callback message on a method that was defined not to send one`, async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main', undefined, undefined, undefined, {
             warnOnSlow: true,
@@ -132,7 +133,7 @@ describe('Communication', () => {
             warnOnSlow: true,
         });
 
-        // handleMessage is called when message is recieved from remote
+        // handleMessage is called when message is received from remote
         const handleMessageStub = stub(main, 'handleMessage');
 
         // callMethod is being called when sending call/listen request to other origin
@@ -370,10 +371,10 @@ describe('Communication', () => {
             echoServiceComID
         );
 
-        const resposeToClient1 = await echoServiceProxyInClient1.echo(testText);
+        const responseToClient1 = await echoServiceProxyInClient1.echo(testText);
         const responseToClient2 = await echoServiceInstanceInClient2.echo(testText);
 
-        expect(resposeToClient1, 'allow communication between calling environment and base').to.be.equal(testText);
+        expect(responseToClient1, 'allow communication between calling environment and base').to.be.equal(testText);
         expect(responseToClient2, 'allow communication between calling environment and base').to.be.equal(testText);
 
         client1.registerAPI(echoServiceComID, echoService);
