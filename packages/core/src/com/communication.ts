@@ -72,7 +72,7 @@ export class Communication {
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
-    private disposListeners = new Set<(envId: string) => void>();
+    private disposeListeners = new Set<(envId: string) => void>();
     private callbackToEnvMapping = new Map<string, string>();
 
     constructor(
@@ -141,10 +141,10 @@ export class Communication {
     }
 
     public subscribeToEnvironmentDispose(handler: (envId: string) => void) {
-        this.disposListeners.add(handler);
+        this.disposeListeners.add(handler);
     }
     public unsubscribeToEnvironmentDispose(handler: (envId: string) => void) {
-        this.disposListeners.delete(handler);
+        this.disposeListeners.delete(handler);
     }
 
     /**
@@ -314,11 +314,11 @@ export class Communication {
                 host.dispose();
             }
             this.removeMessageHandler(host);
-            this.localyClear(id);
+            this.locallyClear(id);
         }
 
-        this.localyClear(this.rootEnvId);
-        this.disposListeners.clear();
+        this.locallyClear(this.rootEnvId);
+        this.disposeListeners.clear();
 
         for (const [id, { timerId }] of Object.entries(this.callbacks)) {
             clearTimeout(timerId);
@@ -426,10 +426,10 @@ export class Communication {
                 }
             }
         }
-        this.localyClear(instanceId);
+        this.locallyClear(instanceId);
     }
 
-    private localyClear(instanceId: string) {
+    private locallyClear(instanceId: string) {
         this.readyEnvs.delete(instanceId);
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
@@ -443,7 +443,7 @@ export class Communication {
                 this.callbackToEnvMapping.delete(callbackId);
             }
         }
-        for (const dispose of this.disposListeners) {
+        for (const dispose of this.disposeListeners) {
             dispose(instanceId);
         }
     }
