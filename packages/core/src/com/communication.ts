@@ -471,7 +471,7 @@ export class Communication {
             this.sendTo(message.from, {
                 ...responseMessage,
                 error: new Error(
-                    `cannot reach environment '${message.to}' from '${message.from}' as stuck in circular message forwarding`
+                    `cannot reach environment '${message.to}' from '${message.from}' since it's stuck in circular messaging loop`
                 ),
             });
             return;
