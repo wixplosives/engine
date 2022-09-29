@@ -175,7 +175,8 @@ export class Communication {
                                 method,
                                 args,
                                 this.rootEnvId,
-                                serviceComConfig as Record<string, AnyServiceMethodOptions>
+                                serviceComConfig as Record<string, AnyServiceMethodOptions>,
+                                []
                             );
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         obj[method] = runtimeMethod;
@@ -233,7 +234,8 @@ export class Communication {
         method: string,
         args: unknown[],
         origin: string,
-        serviceComConfig: Record<string, AnyServiceMethodOptions>
+        serviceComConfig: Record<string, AnyServiceMethodOptions>,
+        forwardingChain: string[]
     ): Promise<unknown> {
         return new Promise<void>((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
@@ -247,7 +249,7 @@ export class Communication {
                     origin,
                     serviceComConfig,
                     args[0] as UnknownFunction,
-                    [],
+                    forwardingChain,
                     res,
                     rej
                 );
@@ -259,7 +261,7 @@ export class Communication {
                     data: { api, method, args },
                     callbackId,
                     origin,
-                    forwardingChain: [this.rootEnvId],
+                    forwardingChain,
                 };
                 this.callWithCallback(envId, message, callbackId, res, rej);
             }
@@ -488,7 +490,8 @@ export class Communication {
                     message.data.method,
                     message.data.args,
                     message.origin,
-                    {}
+                    {},
+                    message.forwardingChain
                 );
 
                 if (message.callbackId) {
