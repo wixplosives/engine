@@ -12,6 +12,7 @@ export interface BaseMessage {
     callbackId?: string;
     error?: Error;
     origin: string;
+    forwardingChain: string[];
 }
 
 export interface CallMessage extends BaseMessage {

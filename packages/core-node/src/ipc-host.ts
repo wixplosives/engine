@@ -20,6 +20,7 @@ export class IPCHost extends BaseHost implements IDisposable {
                     type: 'dispose',
                     to: '*',
                     origin: env,
+                    forwardingChain: [],
                 });
             }
         });
@@ -41,6 +42,7 @@ export class IPCHost extends BaseHost implements IDisposable {
                     type: 'dispose',
                     to: '*',
                     origin: data.to,
+                    forwardingChain: [],
                 });
             }
         };

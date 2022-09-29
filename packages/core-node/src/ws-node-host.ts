@@ -81,6 +81,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
                     from: env,
                     origin: env,
                     to: '*',
+                    forwardingChain: [],
                 });
             }
         });
