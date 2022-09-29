@@ -247,6 +247,7 @@ export class Communication {
                     origin,
                     serviceComConfig,
                     args[0] as UnknownFunction,
+                    [],
                     res,
                     rej
                 );
@@ -543,6 +544,7 @@ export class Communication {
                 message.origin,
                 { [message.data.method]: { listener: true } },
                 handler,
+                message.forwardingChain,
                 res,
                 rej
             );
@@ -582,6 +584,7 @@ export class Communication {
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
         fn: UnknownFunction,
+        forwardingChain: string[],
         res: () => void,
         rej: () => void
     ) {
@@ -612,7 +615,7 @@ export class Communication {
                     },
                     handlerId: listenerHandlerId,
                     origin,
-                    forwardingChain: [this.rootEnvId],
+                    forwardingChain,
                 };
                 // sometimes the callback will never happen since target environment is already dead
                 this.sendTo(envId, message);
@@ -644,7 +647,7 @@ export class Communication {
                         handlerId: this.createHandlerRecord(envId, api, method, fn),
                         callbackId,
                         origin,
-                        forwardingChain: [this.rootEnvId],
+                        forwardingChain,
                     };
 
                     this.callWithCallback(envId, message, callbackId, res, rej);
@@ -772,6 +775,7 @@ export class Communication {
                     },
                 },
                 this.eventDispatchers[message.handlerId]!,
+                message.forwardingChain,
                 res,
                 rej
             )
