@@ -612,7 +612,7 @@ export class Communication {
                     },
                     handlerId: listenerHandlerId,
                     origin,
-                    forwardingChain: [],
+                    forwardingChain: [this.rootEnvId],
                 };
                 // sometimes the callback will never happen since target environment is already dead
                 this.sendTo(envId, message);
@@ -644,7 +644,7 @@ export class Communication {
                         handlerId: this.createHandlerRecord(envId, api, method, fn),
                         callbackId,
                         origin,
-                        forwardingChain: [],
+                        forwardingChain: [this.rootEnvId],
                     };
 
                     this.callWithCallback(envId, message, callbackId, res, rej);
