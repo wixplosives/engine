@@ -1,4 +1,5 @@
-import { Environment, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import { Environment, TopLevelConfig } from '@wixc3/engine-core';
+import type { SetMultiMap } from '@wixc3/common';
 import type { IConfigDefinition, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import { parse } from 'path';
 import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';

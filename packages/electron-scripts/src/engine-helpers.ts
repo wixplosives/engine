@@ -1,5 +1,5 @@
-import type { TopLevelConfig, SetMultiMap } from '@wixc3/engine-core';
-
+import type { SetMultiMap } from '@wixc3/common';
+import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 
 export function getConfig(

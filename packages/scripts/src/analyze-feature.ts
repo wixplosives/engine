@@ -8,11 +8,11 @@ import {
     Feature,
     getFeaturesDeep,
     SingleEndpointContextualEnvironment,
-    SetMultiMap,
     flattenTree,
     AnyEnvironment,
     MultiEnvironment,
 } from '@wixc3/engine-core';
+import { SetMultiMap } from '@wixc3/common';
 import {
     isFeatureFile,
     parseConfigFileName,

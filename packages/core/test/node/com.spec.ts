@@ -9,7 +9,6 @@ import {
     BaseHost,
     Communication,
     EventEmitterHost,
-    EventEmitter,
     Message,
     Environment,
     Feature,
@@ -19,6 +18,7 @@ import {
     Slot,
     ReadyMessage,
 } from '@wixc3/engine-core';
+import { EventEmitter } from '@wixc3/common';
 import { createDisposables } from '@wixc3/create-disposables';
 import { waitFor } from 'promise-assist';
 

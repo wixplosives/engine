@@ -2,7 +2,8 @@ import fs from '@file-services/node';
 import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import semverLessThan from 'semver/functions/lt';
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { TopLevelConfig } from '@wixc3/engine-core';
+import type { SetMultiMap } from '@wixc3/common';
 import { createRequestResolver } from '@file-services/resolve';
 import {
     createMainEntrypoint,

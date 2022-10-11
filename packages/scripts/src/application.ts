@@ -1,6 +1,7 @@
 import fs from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
-import { AnyEnvironment, flattenTree, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import { AnyEnvironment, flattenTree, TopLevelConfig } from '@wixc3/engine-core';
+import { SetMultiMap } from '@wixc3/common';
 import {
     createIPC,
     ForkedProcess,
