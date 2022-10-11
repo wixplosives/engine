@@ -3,6 +3,7 @@ import type { IFileSystemSync } from '@file-services/types';
 import { Environment, EnvironmentContext, Feature, flattenTree, getFeaturesDeep, SingleEndpointContextualEnvironment } from '@wixc3/engine-core';
 import { isPlainObject, isSetMultiMap, SetMultiMap } from '@wixc3/common';
 import {
+    FileNameParser,
     isFeatureFile,
     parseConfigFileName,
     parseContextFileName,
@@ -17,7 +18,7 @@ import type { IFeatureDefinition, IFeatureModule } from '../types';
 import { basename } from 'path';
 import { instanceOf } from '../utils/instance-of';
 import { parseContextualEnv, parseEnv } from './parse-env';
-import { DirFeatures } from './features-from-packages';
+import type { DirFeatures } from './features-from-packages';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -26,7 +27,8 @@ interface IPackageDescriptor {
 }
 export function loadFeaturesFromPaths(
     locations: DirFeatures,
-    fs: IFileSystemSync
+    fs: IFileSystemSync,
+    override={}
 ) {
     const { dirs: ownFeatureDirectoryPaths, files: ownFeatureFilePaths } = locations
 
