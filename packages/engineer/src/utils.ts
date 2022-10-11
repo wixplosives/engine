@@ -5,9 +5,9 @@ import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';
 import { TargetApplication } from './application-proxy-service';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
-import { defaultsDeep as _defaultsDeep } from 'lodash';
 import { defaultOptions, defaultsEngineConfig, DEngineConfig, DStartOptions, IStartOptions } from './utils.types';
 import type { DevServerConfig } from './feature/dev-server.types';
+import { defaults } from '@wixc3/common'
 
 const basePath = fs.join(__dirname, './feature');
 
@@ -82,10 +82,6 @@ function asDevConfig(options: DStartOptions, engineConfig: DEngineConfig): Parti
         featureDiscoveryRoot: options.featureDiscoveryRoot ?? engineConfig.featureDiscoveryRoot,
     };
 }
-
-const defaults = <T, D>(src: T, defaultOptions?: D): T & D =>
-    _defaultsDeep(src, defaultOptions) as T & D;
-
 
 function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
