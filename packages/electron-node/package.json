@@ -7,7 +7,6 @@
     "@wixc3/engine-core-node": "^29.1.1",
     "@wixc3/engine-electron-commons": "^29.1.1",
     "@wixc3/engine-runtime-node": "^29.1.1",
-    "lodash.once": "^4.1.1"
   },
   "peerDependencies": {
     "electron": ">=9"

@@ -1936,6 +1936,14 @@
     "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
+"@wixc3/common@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-2.0.0.tgz#491a68bbc51d5c0952019079e8a0bf7985c3c544"
+  integrity sha512-8FiQh/JrWTD/r13xyk4B5Dz21FzTp9O97jIzMznRTH/A/RcTRkA5TaFdExWdKvM6HZ2oK1xXkTEevRd+v6QWOA==
+  dependencies:
+    "@file-services/path" "^7.0.1"
+    "@file-services/types" "^7.0.1"
+
 "@wixc3/create-disposables@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.0.0.tgz#c3a1121a2d02e38be9bc737d1c4362486fd89871"
@@ -5427,11 +5435,6 @@ lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
-
-lodash.once@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
-  integrity sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==
 
 lodash.upperfirst@^4.3.1:
   version "4.3.1"

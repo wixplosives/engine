@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
-import once from 'lodash.once';
+import { once } from '@wixc3/common';
 import { electronRuntimeArguments, externalFeaturesManager } from '@wixc3/engine-electron-commons';
 import type { InitializerOptions } from '@wixc3/engine-core';
 
