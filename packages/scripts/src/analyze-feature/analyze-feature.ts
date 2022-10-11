@@ -1,31 +1,21 @@
-import { basename } from 'path';
 import type { PackageJson } from 'type-fest';
 import type { INpmPackage } from '@wixc3/resolve-directory-context';
 import type { IFileSystemSync } from '@file-services/types';
-import {
-    Environment,
-    EnvironmentContext,
-    Feature,
-    getFeaturesDeep,
-    SingleEndpointContextualEnvironment,
-    flattenTree,
-    AnyEnvironment,
-    MultiEnvironment,
-} from '@wixc3/engine-core';
+import type { Feature } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/common';
 import {
     isFeatureFile,
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
-    parseFeatureFileName,
     parsePreloadFileName,
-} from './build-constants';
-import { IFeatureDirectory, loadFeatureDirectory } from './load-feature-directory';
-import { evaluateModule } from './utils/evaluate-module';
-import { instanceOf } from './utils/instance-of';
-import type { IConfigDefinition, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
-import type { IFeatureDefinition, IFeatureModule } from './types';
+} from '../build-constants';
+import { IFeatureDirectory, loadFeatureDirectory } from '../load-feature-directory';
+import { evaluateModule } from '../utils/evaluate-module';
+import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import type { IFeatureDefinition } from '../types';
+import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils';
+import { scopeToPackage, simplifyPackageName } from './package-utils';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -34,43 +24,6 @@ interface IPackageDescriptor {
 }
 
 const featureRoots = ['.', 'feature', 'fixtures'] as const;
-
-const convertEnvToIEnv = (env: AnyEnvironment): IEnvironmentDescriptor => {
-    const { env: name, envType: type } = env;
-    return {
-        name,
-        type,
-        env,
-        flatDependencies: [],
-    };
-};
-
-export function parseEnv<ENV extends AnyEnvironment>(env: ENV): IEnvironmentDescriptor {
-    type MultiEnvironmentType = MultiEnvironment<ENV['envType']>;
-    const [parsedEnv, ...dependencies] = [
-        ...flattenTree<ENV | MultiEnvironmentType>(env, (node) => node.dependencies),
-    ].map((e) => convertEnvToIEnv(e));
-    return {
-        ...parsedEnv!,
-        flatDependencies: dependencies as IEnvironmentDescriptor<MultiEnvironmentType>[],
-    };
-}
-
-export function parseContextualEnv(
-    env: SingleEndpointContextualEnvironment<string, Environment[]>
-): IEnvironmentDescriptor[] {
-    const { env: name, environments } = env;
-    const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e: Environment) =>
-        convertEnvToIEnv(e)
-    );
-    return environments.map<IEnvironmentDescriptor>((childEnv) => ({
-        name,
-        flatDependencies: dependencies as IEnvironmentDescriptor<MultiEnvironment<typeof childEnv.envType>>[],
-        type: childEnv.envType,
-        childEnvName: childEnv.env,
-        env: new Environment(name, childEnv.envType, 'single'),
-    }));
-}
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
     const ownFeatureFilePaths = new Set<string>();
@@ -248,91 +201,4 @@ export function loadFeaturesFromPaths(
     }
 
     return { features: foundFeatures, configurations: foundConfigs };
-}
-
-const featurePackagePostfix = '-feature';
-
-function scopeToPackage(packageName: string, entityName: string) {
-    return packageName === entityName ? entityName : `${packageName}/${entityName}`;
-}
-
-/**
- * Removes package scope (e.g `@wix`) and posfix `-feature`.
- */
-export function simplifyPackageName(name: string) {
-    const indexOfSlash = name.indexOf('/');
-    if (name.startsWith('@') && indexOfSlash !== -1) {
-        name = name.slice(indexOfSlash + 1);
-    }
-    if (name.endsWith(featurePackagePostfix)) {
-        name = name.slice(0, -featurePackagePostfix.length);
-    }
-    return name;
-}
-
-export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {
-    if (typeof exports !== 'object' || exports === null) {
-        throw new Error(`${filePath} does not export an object.`);
-    }
-
-    const { default: exportedFeature } = exports as { default: Feature };
-
-    if (!instanceOf(exportedFeature, Feature)) {
-        throw new Error(`${filePath} does not "export default" a Feature.`);
-    }
-
-    const featureFile: IFeatureModule = {
-        filePath,
-        name: parseFeatureFileName(basename(filePath)),
-        exportedFeature,
-        exportedEnvs: [],
-        usedContexts: {},
-    };
-
-    if (typeof exports === 'object' && exports !== null) {
-        const { exportedEnvs: envs = [], usedContexts = {} } = featureFile;
-        for (const exportValue of Object.values(exports)) {
-            if (instanceOf(exportValue, Environment)) {
-                if (instanceOf(exportValue, SingleEndpointContextualEnvironment)) {
-                    envs.push(...parseContextualEnv(exportValue));
-                } else {
-                    envs.push(parseEnv(exportValue));
-                }
-            } else if (instanceOf(exportValue, EnvironmentContext)) {
-                usedContexts[exportValue.env] = exportValue.activeEnvironmentName;
-            }
-        }
-    }
-    return featureFile;
-}
-
-export const getFeatureModules = (module: NodeJS.Module) =>
-    flattenTree(
-        module,
-        (m) => m.children,
-        (m) => isFeatureFile(basename(m.filename))
-    );
-
-export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
-    const featureToDef = new Map<Feature, IFeatureDefinition>();
-    for (const featureDef of features.values()) {
-        featureToDef.set(featureDef.exportedFeature, featureDef);
-    }
-
-    const feature = features.get(featureName);
-    if (!feature) {
-        throw new Error(`context compute: cannot find feature "${featureName}"`);
-    }
-
-    return Array.from(getFeaturesDeep(feature.exportedFeature))
-        .reverse()
-        .map((f) => {
-            if (!featureToDef.has(f)) {
-                throw new Error(
-                    `Cannot find feature definition for feature with id: ${f.id}. This usually occurs due to duplicate engine/feature versions. Check your lock file.`
-                );
-            }
-            return featureToDef.get(f)!;
-        })
-        .reduce((acc, { usedContexts }) => Object.assign(acc, usedContexts), {} as Record<string, string>);
 }
