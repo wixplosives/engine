@@ -1,6 +1,20 @@
 import { SetMultiMap } from "@wixc3/common"
-import { mergeResults } from "../src/analyze-feature/merge"
+import { mergeAll, mergeResults } from "../src/analyze-feature/merge"
 import { expect } from "chai"
+
+describe('mergeAll', () => {
+    it('merges all elements of an iterable', () => {
+        const actual: { a: Map<number, number>, b: Set<number> } = mergeAll([
+            { a: new Map([[0, 0]]), b: new Set([0]) },
+            { a: new Map([[1, 1]]), b: new Set([1]) },
+            { a: new Map([[2, 2]]), b: new Set([2]) }
+        ])
+        expect(actual).to.eql({
+            a: new Map([[0, 0], [1, 1], [2,2]]),
+            b: new Set([0, 1, 2])
+        })
+    })
+})
 
 describe('mergeResults', () => {
     describe('maps', () => {
@@ -87,16 +101,16 @@ describe('mergeResults', () => {
         })
     })
 
-    describe('type mismatch', ()=>{
-        it('throws a type mismatch error', ()=>{
-            expect(()=>{
+    describe('type mismatch', () => {
+        it('throws a type mismatch error', () => {
+            expect(() => {
                 mergeResults(new Set, new Map)
             }).to.throw(`Invalid results: type mismatch, expected Set, got Map`)
         })
     })
 
-    describe('empty results', ()=>{
-        it('returns the non empty result', ()=>{
+    describe('empty results', () => {
+        it('returns the non empty result', () => {
             expect(mergeResults({}, undefined)).to.eql({})
             expect(mergeResults(undefined, {})).to.eql({})
             expect(mergeResults(new Set([1]))).to.eql(new Set([1]))

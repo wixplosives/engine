@@ -1,6 +1,9 @@
 import { isPlainObject, isSetMultiMap, SetMultiMap, concat, isMap, isSet, reduce } from "@wixc3/common"
 
-export const mergeAll=<T>(results:Iterable<T>) => reduce(results, (merged:T, newItem:T) => mergeResults(merged, new), undefined as unknown as T)
+export const mergeAll=<T>(results:Iterable<T>):T => reduce(results, 
+    // @ts-expect-error making overloading the function redundant
+    (merged, newItem) => mergeResults(merged, newItem) as T, 
+    undefined as unknown as T)
 
 export function mergeResults<K, V>(a?: Map<K, V>, b?: Map<K, V>): Map<K, V>;
 export function mergeResults<V>(a?: Set<V>, b?: Set<V>): Set<V>;
