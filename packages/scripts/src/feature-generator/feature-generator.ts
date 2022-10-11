@@ -1,7 +1,7 @@
 import type { IFileSystem } from '@file-services/types';
 import type { IGeneratorOptions } from './types';
 import { mapDirectory, writeDirectoryContentsSync, enrichContext, readDirectoryContentsSync } from './utils';
-import { templateCompilerProvider } from '../utils';
+import { templateCompilerProvider } from '@wixc3/common';
 
 export const TEMPLATE_EXTENSION = '.tmpl';
 export const DEFAULT_FEATURE_DIR_NAME_TEMPLATE = '${featureName.dashCase}';
