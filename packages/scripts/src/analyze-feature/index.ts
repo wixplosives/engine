@@ -1,1 +1,1 @@
-export { loadFeaturesFromPackages } from './analyze-feature'
+export { loadFeaturesFromPackages, loadFeaturesFromPaths } from './analyze-feature'
