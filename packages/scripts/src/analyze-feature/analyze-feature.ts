@@ -16,6 +16,7 @@ import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '../types';
 import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils';
 import { scopeToPackage, simplifyPackageName } from './package-utils';
+import { mergeResults } from './merge';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -23,41 +24,43 @@ interface IPackageDescriptor {
     name: string;
 }
 
-const featureRoots = ['.', 'feature', 'fixtures'] as const;
-
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
     const ownFeatureFilePaths = new Set<string>();
     const ownFeatureDirectoryPaths = new Set<string>();
+    const ownFixtureDirectoryPaths = new Set<string>();
+    const ownFixtureFilePaths = new Set<string>();
 
     // pick up own feature files in provided npm packages
     for (const { directoryPath } of npmPackages) {
-        for (const rootName of featureRoots) {
-            const rootPath = fs.join(directoryPath, featureDiscoveryRoot, rootName);
-            if (!fs.directoryExistsSync(rootPath)) {
-                continue;
-            }
-            ownFeatureDirectoryPaths.add(rootPath);
-            for (const rootItem of fs.readdirSync(rootPath, { withFileTypes: true })) {
-                const itemPath = fs.join(rootPath, rootItem.name);
-                if (rootItem.isFile()) {
-                    const itemName = rootItem.name;
-                    if (isFeatureFile(itemName)) {
-                        ownFeatureFilePaths.add(itemPath);
-                    }
-                } else if (rootName === 'fixtures' && rootItem.isDirectory()) {
-                    ownFeatureDirectoryPaths.add(itemPath);
-                    for (const subFixtureItem of fs.readdirSync(itemPath, { withFileTypes: true })) {
-                        const subFixtureItemPath = fs.join(itemPath, subFixtureItem.name);
-                        const itemName = subFixtureItem.name;
-                        if (subFixtureItem.isFile() && isFeatureFile(itemName)) {
-                            ownFeatureFilePaths.add(subFixtureItemPath);
-                        }
-                    }
-                }
+        const path = fs.join(directoryPath, featureDiscoveryRoot)
+        getDirFeatures(fs, path, '.', ownFeatureDirectoryPaths, ownFeatureFilePaths);
+        getDirFeatures(fs, path, 'feature', ownFeatureDirectoryPaths, ownFeatureFilePaths);
+        getDirFeatures(fs, path, 'fixtures', ownFixtureDirectoryPaths, ownFixtureFilePaths);
+    }
+
+    return mergeResults(
+        loadFeaturesFromPaths(ownFixtureFilePaths, ownFixtureDirectoryPaths, fs),
+        loadFeaturesFromPaths(ownFeatureFilePaths, ownFeatureDirectoryPaths, fs)
+    )
+}
+
+function getDirFeatures(fs: IFileSystemSync, path: string, directory: string, featureDirs: Set<string>, featureFiles: Set<string>, maxDepth = 0) {
+    const rootPath = fs.join(path, directory);
+    if (fs.directoryExistsSync(rootPath)) {
+        featureDirs.add(rootPath);
+        for (const dirItem of fs.readdirSync(rootPath, { withFileTypes: true })) {
+            const { name } = dirItem
+            const isFile = dirItem.isFile.bind(dirItem)
+            const isDirectory = dirItem.isDirectory.bind(dirItem)
+
+            const fullPath = fs.join(rootPath, name);
+            if (isFile() && isFeatureFile(name)) {
+                featureFiles.add(fullPath);
+            } else if (maxDepth > 0 && isDirectory()) {
+                getDirFeatures(fs, fullPath, '.', featureDirs, featureFiles)
             }
         }
     }
-    return loadFeaturesFromPaths(ownFeatureFilePaths, ownFeatureDirectoryPaths, fs);
 }
 
 export function loadFeaturesFromPaths(
