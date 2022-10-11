@@ -28,7 +28,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
     });
     preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
-    const { features } = loadFeaturesFromPaths(new Set(featurePaths), new Set([basePath]), fs);
+    const { features } = loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
     const resolvedExternalFeaturesPath = fs.resolve(
         serverOpts.externalFeaturesPath ?? (
             engineCnf.externalFeaturesBasePath
