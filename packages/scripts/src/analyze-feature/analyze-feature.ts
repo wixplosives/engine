@@ -2,7 +2,7 @@ import type { PackageJson } from 'type-fest';
 import type { INpmPackage } from '@wixc3/resolve-directory-context';
 import type { IFileSystemSync } from '@file-services/types';
 import type { Feature } from '@wixc3/engine-core';
-import { SetMultiMap } from '@wixc3/common';
+import { concat, map, SetMultiMap } from '@wixc3/common';
 import {
     isFeatureFile,
     parseConfigFileName,
@@ -25,17 +25,13 @@ interface IPackageDescriptor {
 }
 
 export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
-    const ownFeatureFilePaths = new Set<string>();
-    const ownFeatureDirectoryPaths = new Set<string>();
-    const ownFixtureDirectoryPaths = new Set<string>();
-    const ownFixtureFilePaths = new Set<string>();
-
+    let features:DirFeatures, fixtures:DirFeatures;
     // pick up own feature files in provided npm packages
     for (const { directoryPath } of npmPackages) {
         const path = fs.join(directoryPath, featureDiscoveryRoot)
-        getDirFeatures(fs, path, '.', ownFeatureDirectoryPaths, ownFeatureFilePaths);
-        getDirFeatures(fs, path, 'feature', ownFeatureDirectoryPaths, ownFeatureFilePaths);
-        getDirFeatures(fs, path, 'fixtures', ownFixtureDirectoryPaths, ownFixtureFilePaths);
+        getDirFeatures(fs, path, '.');
+        getDirFeatures(fs, path, 'feature');
+        getDirFeatures(fs, path, 'fixtures');
     }
 
     return mergeResults(
@@ -44,10 +40,13 @@ export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSy
     )
 }
 
-function getDirFeatures(fs: IFileSystemSync, path: string, directory: string, featureDirs: Set<string>, featureFiles: Set<string>, maxDepth = 0) {
+type DirFeatures = {dirs:Set<string>, files:Set<string>}
+function getDirFeatures(fs: IFileSystemSync, path: string, directory: string,  maxDepth = 0):DirFeatures {
     const rootPath = fs.join(path, directory);
+    let dirs = new Set<string>()
+    let files = new Set<string>()
     if (fs.directoryExistsSync(rootPath)) {
-        featureDirs.add(rootPath);
+        dirs.add(rootPath);
         for (const dirItem of fs.readdirSync(rootPath, { withFileTypes: true })) {
             const { name } = dirItem
             const isFile = dirItem.isFile.bind(dirItem)
@@ -55,12 +54,15 @@ function getDirFeatures(fs: IFileSystemSync, path: string, directory: string, fe
 
             const fullPath = fs.join(rootPath, name);
             if (isFile() && isFeatureFile(name)) {
-                featureFiles.add(fullPath);
+                files.add(fullPath);
             } else if (maxDepth > 0 && isDirectory()) {
-                getDirFeatures(fs, fullPath, '.', featureDirs, featureFiles)
+                const child = getDirFeatures(fs, fullPath, '.', maxDepth-1)
+                dirs = new Set(concat(dirs, child.dirs))
+                files = new Set(concat(files, child.files))
             }
         }
     }
+    return {dirs, files}
 }
 
 export function loadFeaturesFromPaths(
