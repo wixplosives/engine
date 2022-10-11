@@ -1,0 +1,1 @@
+export { loadFeaturesFromPackages } from './analyze-feature'
