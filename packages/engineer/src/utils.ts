@@ -25,8 +25,9 @@ export async function startDevServer(options: IStartOptions): Promise<{
     const engineCnf = defaults(config, defaultsEngineConfig)
     const featurePaths = fs.findFilesSync(basePath, {
         filterFile: ({ name }) => isFeatureFile(name),
-    });
+    }).filter(path => options.includeGui || !fs.basename(path).includes('gui'))
     preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
+
 
     const { features } = loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
     const resolvedExternalFeaturesPath = fs.resolve(
