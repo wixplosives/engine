@@ -16,11 +16,10 @@ import {
     RouteMiddleware,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
-import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import express from 'express';
 import type io from 'socket.io';
 import webpack from 'webpack';
-import { loadFeaturesFromPackages } from './analyze-feature';
+import { readFeatures as loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import {
     createCommunicationMiddleware,
@@ -807,10 +806,10 @@ export class Application {
         const { basePath } = this;
 
         console.time(`Analyzing Features`);
-        const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
-        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
+        // const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
+        const featuresAndConfigs = loadFeaturesFromPackages(basePath, fs, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features');
-        return { ...featuresAndConfigs, packages };
+        return featuresAndConfigs;
     }
 
     protected createNodeEntry(
