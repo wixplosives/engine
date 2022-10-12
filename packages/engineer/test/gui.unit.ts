@@ -17,6 +17,7 @@ describe('engineer:gui', function () {
         const { dispose, engine, devServerFeature } = await startDevServer({
             engineerEntry: 'engineer/gui',
             targetApplicationPath: basePath,
+            includeGui: true
         });
 
         const runtimeFeature = engine.get(guiFeature);
