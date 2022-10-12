@@ -1,2 +1,2 @@
-export { loadFeaturesFromPaths, findPackageJson } from './analyze-feature'
-export { loadFeaturesFromPackages } from './features-from-packages'
+export {  findPackageJson } from './analyze-feature'
+export { readFeatures } from './features-from-packages'
