@@ -4,7 +4,6 @@ import fs from '@file-services/node';
 import { BaseHost, Communication } from '@wixc3/engine-core';
 import { readFeatures } from '@wixc3/engine-scripts';
 import { initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
-
 import testFeature, { serverEnv } from '../test-project/test-feature.feature';
 
 const { expect } = chai;
@@ -30,7 +29,7 @@ const setupRunningEnv = async ({
             features: Array.from(features.entries()),
             externalFeatures: [],
         },
-        processOptions: { cwd: process.cwd() },
+        processOptions: { cwd: process.cwd(), stdio: ['ignore', 'ignore', 'ignore', 'ipc'] },
         environmentStartupOptions: {},
     });
 
@@ -58,11 +57,11 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
             await expect(disconnectPromise).to.eventually.eq(true);
         });
-        it('should catch on env exit intentinally', async () => {
+        it('should catch on env exit intentionally', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exit' });
             await expect(disconnectPromise).to.eventually.eq(true);
         });
-        it('shuold catch on env throwing uncaught exception', async () => {
+        it('should catch on env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
 
             await expect(disconnectPromise).to.eventually.eq(true);
@@ -82,11 +81,11 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
             await expect(disconnectPromise).to.eventually.eq(true);
         });
-        it('should catch on env exit intentinally', async () => {
+        it('should catch on env exit intentionally', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exit', handleUncaught });
             await expect(disconnectPromise).to.eventually.eq(true);
         });
-        it('shuold catch on env throwing uncaught exception', async () => {
+        it('should catch on env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception', handleUncaught });
 
             await expect(disconnectPromise).to.eventually.eq(true);

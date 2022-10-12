@@ -9,7 +9,7 @@ const promisifiedTreeKill = promisify(treeKill);
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
     environmentStartupOptions?: Partial<NodeEnvironmentStartupOptions>;
-    processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env'>;
+    processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env' | 'stdio'>;
 }
 
 /**
@@ -37,8 +37,8 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         environmentStartupOptions?.execPath ?? process.execPath,
         ['--unhandled-rejections=strict', runtimeArguments.nodeEntryPath],
         {
-            ...processOptions,
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+            ...processOptions,
             detached: true,
             env: {
                 ...process.env,
