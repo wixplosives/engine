@@ -1,21 +1,24 @@
-import type { INpmPackage } from '@wixc3/resolve-directory-context';
+import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import type { IFileSystemSync } from '@file-services/types';
 import { isFeatureFile } from '../build-constants';
 import { loadFeaturesFromPaths } from './analyze-feature';
 import { concat } from '@wixc3/common';
 import { mergeAll, mergeResults } from './merge';
 
-export function loadFeaturesFromPackages(npmPackages: INpmPackage[], fs: IFileSystemSync, featureDiscoveryRoot = '.') {
+export function readFeatures(path:string, fs: IFileSystemSync, featureDiscoveryRoot = '.') {
+    const npmPackages = childPackagesFromContext(resolveDirectoryContext(path, fs))
     const paths = npmPackages.map(({ directoryPath })=>fs.join(directoryPath, featureDiscoveryRoot))
-    const root = paths.map(path => getDirFeatures(fs, path, '.'))
+    const cwd = paths.map(path => getDirFeatures(fs, path, '.'))
     const feature = paths.map(path => getDirFeatures(fs, path, 'feature'))
-    const features = mergeAll(concat(root, feature))
+    const features = mergeAll(concat(cwd, feature))
     const fixtures = mergeAll(paths.map(path => getDirFeatures(fs, path, 'fixtures',1)))
 
-    return mergeResults(
-        loadFeaturesFromPaths(features, fs),
-        loadFeaturesFromPaths(fixtures, fs)
-    )
+    return {
+        ...mergeResults(
+        loadFeaturesFromPaths(features, fs, npmPackages),
+        loadFeaturesFromPaths(fixtures, fs, npmPackages)),
+        packages:npmPackages
+    }
 }
 
 export type DirFeatures = { dirs: Set<string>, files: Set<string> }

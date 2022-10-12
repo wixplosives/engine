@@ -16,6 +16,7 @@ import type { IFeatureDefinition, IFeatureModule } from '../types';
 import type { DirFeatures } from './features-from-packages';
 import { scopeToPackage, simplifyPackageName } from './package-utils';
 import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils';
+import type { INpmPackage } from '@wixc3/resolve-directory-context';
 
 interface IPackageDescriptor {
     simplifiedName: string;
@@ -25,6 +26,7 @@ interface IPackageDescriptor {
 export function loadFeaturesFromPaths(
     locations: DirFeatures,
     fs: IFileSystemSync,
+    npmPackages: INpmPackage[] = [],
     override = {}
 ) {
     const { dirs, files } = locations
@@ -35,7 +37,7 @@ export function loadFeaturesFromPaths(
     const featureDirectories: IFeatureDirectory[] = parseFeatureDirs(allFeatureDirs, dirs, fs);
 
     // find closest package.json for each feature directory and generate package name
-    const directoryToPackage = findPackageJsons(allFeatureDirs, fs);
+    const directoryToPackage = findPackageJsons(allFeatureDirs, fs, npmPackages);
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
@@ -194,17 +196,27 @@ function getImportedFeatures(ownFeatureFilePaths: Set<string>, ownFeatureDirecto
     return { featureDirectoryPaths, featureFilePaths };
 }
 
-function findPackageJsons(featureDirectoryPaths: Set<string>, fs: IFileSystemSync) {
+function findPackageJsons(featureDirectoryPaths: Set<string>, fs: IFileSystemSync, npmPackages: INpmPackage[]) {
+    const pkgs = new Map(npmPackages.map(pkg => [pkg.directoryPath, pkg]))
     const directoryToPackage = new Map<string, IPackageDescriptor>();
     for (const featureDirectoryPath of featureDirectoryPaths) {
-        const packageJsonPath = findPackageJson(fs, featureDirectoryPath);
-        const { name } = fs.readJsonFileSync(packageJsonPath) as PackageJson;
+        let name: string|undefined, directoryPath: string,  packageJsonPath:string;
+        if (pkgs.has(featureDirectoryPath)) {
+            const pkg = pkgs.get(featureDirectoryPath)!
+            name = pkg.packageJson.name
+            directoryPath = pkg.directoryPath
+            packageJsonPath = pkg.packageJsonPath
+        } else {
+            packageJsonPath = findPackageJson(fs, featureDirectoryPath);
+            directoryPath = fs.dirname(packageJsonPath)
+            name = (fs.readJsonFileSync(packageJsonPath) as PackageJson).name;
+        }
         if (!name) {
             throw new Error(`Invalid package.json: ${packageJsonPath} does not contain a name`)
         }
         directoryToPackage.set(featureDirectoryPath, {
             simplifiedName: simplifyPackageName(name),
-            directoryPath: fs.dirname(packageJsonPath),
+            directoryPath,
             name,
         });
     }
