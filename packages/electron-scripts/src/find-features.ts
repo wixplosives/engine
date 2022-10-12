@@ -1,15 +1,12 @@
 import fs from '@file-services/node';
-import { loadFeaturesFromPackages, EngineConfig, ENGINE_CONFIG_FILE_NAME } from '@wixc3/engine-scripts';
+import { loadFeaturesFromPackages, EngineConfig, ENGINE_CONFIG_FILE_NAME, findPackageJson } from '@wixc3/engine-scripts';
 import { resolveDirectoryContext, childPackagesFromContext } from '@wixc3/resolve-directory-context';
 
 export function findFeatures(
     initialDirectoryPath: string,
     featureDiscoveryRoot = '.'
 ): ReturnType<typeof loadFeaturesFromPackages> {
-    const packagePath = fs.findClosestFileSync(initialDirectoryPath, 'package.json');
-    if (!packagePath) {
-        throw new Error(`Couldn't find package.json relative to ${initialDirectoryPath}`);
-    }
+    const packagePath = findPackageJson(fs, initialDirectoryPath)
     const packages = childPackagesFromContext(resolveDirectoryContext(packagePath, fs));
     return loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
 }
