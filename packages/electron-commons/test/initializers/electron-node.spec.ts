@@ -2,23 +2,10 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import fs from '@file-services/node';
 import { BaseHost, Communication } from '@wixc3/engine-core';
-import { loadFeaturesFromPackages } from '@wixc3/engine-scripts';
+import { readFeatures } from '@wixc3/engine-scripts';
 import { initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
 
 import testFeature, { serverEnv } from '../test-project/test-feature.feature';
-import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
-
-export function findFeatures(
-    initialDirectoryPath: string,
-    featureDiscoveryRoot = '.'
-): ReturnType<typeof loadFeaturesFromPackages> {
-    const packagePath = fs.findClosestFileSync(initialDirectoryPath, 'package.json');
-    if (!packagePath) {
-        throw new Error(`Couldn't find package.json relative to ${initialDirectoryPath}`);
-    }
-    const packages = childPackagesFromContext(resolveDirectoryContext(packagePath, fs));
-    return loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
-}
 
 const { expect } = chai;
 chai.use(chaiAsPromised);
@@ -30,7 +17,7 @@ const setupRunningEnv = async ({
     handleUncaught,
 }: { errorMode?: 'exception' | 'exit' | 'promiseReject'; handleUncaught?: boolean } = {}) => {
     const communication = new Communication(new BaseHost(), 'someId');
-    const { features } = findFeatures(testProjectPath, 'dist');
+    const { features } = readFeatures(testProjectPath, fs, 'dist');
     const { onDisconnect, dispose, environmentIsReady } = initializeNodeEnvironment({
         communication,
         env: serverEnv,

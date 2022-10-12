@@ -1,14 +1,6 @@
-import type { IFileSystem } from '@file-services/types';
 import type { SetMultiMap } from '@wixc3/common';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
-import { resolveDirectoryContext, childPackagesFromContext } from '@wixc3/resolve-directory-context';
-import { loadFeaturesFromPackages } from './analyze-feature';
-
-export function readFeatures(fs: IFileSystem, basePath: string, featureDiscoveryRoot?: string) {
-    const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
-    return loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
-}
 
 export function evaluateConfig(
     configName: string,
