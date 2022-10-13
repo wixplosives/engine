@@ -19,7 +19,7 @@ import {
 import express from 'express';
 import type io from 'socket.io';
 import webpack from 'webpack';
-import { readFeatures as loadFeaturesFromPackages } from './analyze-feature';
+import { findFeatures as loadFeaturesFromPackages } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
 import {
     createCommunicationMiddleware,
