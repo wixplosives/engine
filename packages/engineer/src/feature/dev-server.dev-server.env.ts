@@ -283,6 +283,7 @@ devServerFeature.setup(
              *  but we will keep on watching on the users application
              *  2. the createCompiler function is not extendable with more configs with the current API
              */
+            console.time('Bundling files')
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             if (engineerCompilers.compilers.length > 0) {
                 // This assumes we have only one engineer config - for the dashboard
@@ -305,7 +306,7 @@ devServerFeature.setup(
             }
 
             await Promise.all(compilationPromises);
-
+            console.timeEnd('Bundling files')
             if (log) {
                 const mainUrl = `http://localhost:${actualPort}`;
                 if (featureName) {
