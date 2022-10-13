@@ -1,3 +1,3 @@
-export { loadFeaturesFromPaths } from './analyze-feature'
-export { findFeatures } from './features-from-packages'
+export { loadFeaturesFromPaths } from './load-features-from-paths'
+export { findFeatures } from './find-features'
 export { findPackageJson } from './package-utils'

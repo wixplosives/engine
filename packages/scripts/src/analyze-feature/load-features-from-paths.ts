@@ -12,12 +12,19 @@ import { loadFeatureDirectory } from '../load-feature-directory';
 import { evaluateModule } from '../utils/evaluate-module';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition, IFeatureModule } from '../types';
-import type { DirFeatures } from './features-from-packages';
+import type { DirFeatures } from './find-features';
 import { findPackageJsons, IPackageDescriptor, scopeToPackage } from './package-utils';
 import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils';
 import type { INpmPackage } from '@wixc3/resolve-directory-context';
 
-
+/**
+ * Loads the features and configs of given roots and their imported dependencies
+ * @param roots files: feature files to load. dirs: dirs to scan for configurations
+ * @param fs 
+ * @param npmPackages known npmPackages
+ * @param override overrides to apply to found features
+ * @returns 
+ */
 export function loadFeaturesFromPaths(
     roots: DirFeatures,
     fs: IFileSystemSync,

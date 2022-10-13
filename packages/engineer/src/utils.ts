@@ -25,7 +25,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
     const engineCnf = defaults(config, defaultsEngineConfig)
     const featurePaths = options.minimal
         // include only dev-server.feature
-        ? fs.join(basePath, 'feature', 'dev-server.feature.ts')
+        ? fs.join(basePath, 'dev-server.feature.ts')
         // include all features (gui, managed etc)
         : fs.findFilesSync(basePath, {
             filterFile: ({ name }) => isFeatureFile(name),

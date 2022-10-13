@@ -1,7 +1,7 @@
 import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import type { IFileSystemSync } from '@file-services/types';
 import { isFeatureFile } from '../build-constants';
-import { loadFeaturesFromPaths } from './analyze-feature';
+import { loadFeaturesFromPaths } from './load-features-from-paths';
 import { concat } from '@wixc3/common';
 import { mergeAll, mergeResults } from './merge';
 
