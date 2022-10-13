@@ -10,7 +10,7 @@ export interface IFeatureDirectory {
     preloads: string[];
 }
 
-export function loadFeatureDirectory(directoryPath:string, fs:IFileSystemSync): IFeatureDirectory {
+export function loadFeatureDirectory(directoryPath:string, fs:IFileSystemSync, ignoreConfigs=false): IFeatureDirectory {
     const dir = {
         features:[] as string[], 
         envs:[] as string[], 
@@ -25,6 +25,9 @@ export function loadFeatureDirectory(directoryPath:string, fs:IFileSystemSync): 
         if (item.isFile() && type && type in dir) {
             dir[type].push(path)
         }
+    }
+    if (ignoreConfigs) {
+        dir.configurations = []
     }
     return { directoryPath, ...dir};
 }

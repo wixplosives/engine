@@ -7,7 +7,7 @@ export interface StartServerNewProcessOptions {
     featureName: string;
     runtimeOptions?: Record<string, string | boolean>;
     launchOptions?: playwright.LaunchOptions;
-    includeGui?:boolean;
+    minimal?:boolean;
 }
 
 export const startServerNewProcess = async ({
@@ -15,7 +15,7 @@ export const startServerNewProcess = async ({
     featureName,
     runtimeOptions = {},
     launchOptions,
-    includeGui
+    minimal
 }: StartServerNewProcessOptions) => {
     const { dispose, devServerFeature } = await startDevServer({
         targetApplicationPath: projectPath,
@@ -26,7 +26,7 @@ export const startServerNewProcess = async ({
         // This is required in this set of tests because it validates changes to globals
         nodeEnvironmentsMode: 'forked',
         runtimeOptions,
-        includeGui
+        minimal
     });
 
     const runningPort = await new Promise<number>((resolve) => {

@@ -2,7 +2,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import fs from '@file-services/node';
 import { BaseHost, Communication } from '@wixc3/engine-core';
-import { readFeatures } from '@wixc3/engine-scripts';
+import { findFeatures } from '@wixc3/engine-scripts';
 import { initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
 import testFeature, { serverEnv } from '../test-project/test-feature.feature';
 
@@ -16,7 +16,7 @@ const setupRunningEnv = async ({
     handleUncaught,
 }: { errorMode?: 'exception' | 'exit' | 'promiseReject'; handleUncaught?: boolean } = {}) => {
     const communication = new Communication(new BaseHost(), 'someId');
-    const { features } = readFeatures(testProjectPath, fs, 'dist');
+    const { features } = findFeatures(testProjectPath, fs, 'dist');
     const { onDisconnect, dispose, environmentIsReady } = initializeNodeEnvironment({
         communication,
         env: serverEnv,
