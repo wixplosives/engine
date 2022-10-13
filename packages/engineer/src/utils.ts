@@ -23,9 +23,13 @@ export async function startDevServer(options: IStartOptions): Promise<{
     });
     const { config, path: engineConfigPath } = await app.getEngineConfig();
     const engineCnf = defaults(config, defaultsEngineConfig)
-    const featurePaths = fs.findFilesSync(basePath, {
-        filterFile: ({ name }) => isFeatureFile(name),
-    }).filter(path => options.includeGui || !fs.basename(path).includes('gui'))
+    const featurePaths = options.minimal
+        // include only dev-server.feature
+        ? fs.join(basePath, 'feature', 'dev-server.feature.ts')
+        // include all features (gui, managed etc)
+        : fs.findFilesSync(basePath, {
+            filterFile: ({ name }) => isFeatureFile(name),
+        })
     preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
 
@@ -55,12 +59,14 @@ export async function startDevServer(options: IStartOptions): Promise<{
             devServerFeature.use({
                 devServerConfig: asDevConfig(serverOpts, engineCnf),
             }),
-            guiFeature.use({
-                engineerConfig: {
-                    features,
-                    externalFeatures,
-                },
-            }),
+            ...options.minimal
+                ? []
+                : [guiFeature.use({
+                    engineerConfig: {
+                        features,
+                        externalFeatures,
+                    },
+                })]
         ],
         context: serverOpts.targetApplicationPath,
         externalFeatures,
