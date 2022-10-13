@@ -5,7 +5,7 @@ import { loadFeaturesFromPaths } from './analyze-feature';
 import { concat } from '@wixc3/common';
 import { mergeAll, mergeResults } from './merge';
 
-export function readFeatures(path:string, fs: IFileSystemSync, featureDiscoveryRoot = '.') {
+export function findFeatures(path:string, fs: IFileSystemSync, featureDiscoveryRoot = '.') {
     const npmPackages = childPackagesFromContext(resolveDirectoryContext(path, fs))
     const paths = npmPackages.map(({ directoryPath })=>fs.join(directoryPath, featureDiscoveryRoot))
     const cwd = paths.map(path => getDirFeatures(fs, path, '.'))
