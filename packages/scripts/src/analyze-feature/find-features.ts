@@ -1,11 +1,13 @@
-import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
+import { childPackagesFromContext, INpmPackage, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import type { IFileSystemSync } from '@file-services/types';
 import { isFeatureFile } from '../build-constants';
 import { loadFeaturesFromPaths } from './load-features-from-paths';
-import { concat } from '@wixc3/common';
+import { concat, SetMultiMap } from '@wixc3/common';
 import { mergeAll, mergeResults } from './merge';
+import type { IFeatureDefinition } from '../types';
+import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 
-export function findFeatures(path:string, fs: IFileSystemSync, featureDiscoveryRoot = '.') {
+export function findFeatures(path:string, fs: IFileSystemSync, featureDiscoveryRoot = '.'):FoundFeatures {
     const npmPackages = childPackagesFromContext(resolveDirectoryContext(path, fs))
     const paths = npmPackages.map(({ directoryPath })=>fs.join(directoryPath, featureDiscoveryRoot))
     const cwd = paths.map(path => getDirFeatures(fs, path, '.'))
@@ -41,4 +43,10 @@ function getDirFeatures(fs: IFileSystemSync, path: string, directory: string, ma
         }
     }
     return result
+}
+
+export type FoundFeatures = {
+    packages: INpmPackage[];
+    features: Map<string, IFeatureDefinition>;
+    configurations: SetMultiMap<string, IConfigDefinition>;
 }

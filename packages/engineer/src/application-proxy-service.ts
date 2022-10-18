@@ -56,14 +56,14 @@ export class TargetApplication extends Application {
 
     public normalizeDefinitionsPackagePath(
         externalFeatureDefinitions: IExternalDefinition[],
-        providedExternalFeatuersPath?: string,
-        configExternalFeatuersPath?: string,
+        providedExternalFeaturesPath?: string,
+        configExternalFeaturesPath?: string,
         configPath?: string
     ) {
         return super.normalizeDefinitionsPackagePath(
             externalFeatureDefinitions,
-            providedExternalFeatuersPath,
-            configExternalFeatuersPath,
+            providedExternalFeaturesPath,
+            configExternalFeaturesPath,
             configPath
         );
     }
