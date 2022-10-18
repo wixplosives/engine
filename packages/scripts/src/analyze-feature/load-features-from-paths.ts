@@ -21,14 +21,14 @@ import type { INpmPackage } from '@wixc3/resolve-directory-context';
  * Loads the features and configs of given roots and their imported dependencies
  * @param roots files: feature files to load. dirs: dirs to scan for configurations
  * @param fs 
- * @param npmPackages known npmPackages
+ * @param packages known npmPackages
  * @param override overrides to apply to found features
  * @returns 
  */
 export function loadFeaturesFromPaths(
     roots: DirFeatures,
     fs: IFileSystemSync,
-    npmPackages: INpmPackage[] = [],
+    packages: INpmPackage[] = [],
     override = {}
 ) {
     const imported = getImportedFeatures(roots, fs);
@@ -41,7 +41,7 @@ export function loadFeaturesFromPaths(
     )
 
     // find closest package.json for each feature directory and generate package name
-    const directoryToPackage = findPackageJsons(concat(roots.dirs, imported.dirs), fs, npmPackages);
+    const directoryToPackage = findPackageJsons(concat(roots.dirs, imported.dirs), fs, packages);
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();

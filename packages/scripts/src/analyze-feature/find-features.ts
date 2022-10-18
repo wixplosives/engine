@@ -8,8 +8,8 @@ import type { IFeatureDefinition } from '../types';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 
 export function findFeatures(path:string, fs: IFileSystemSync, featureDiscoveryRoot = '.'):FoundFeatures {
-    const npmPackages = childPackagesFromContext(resolveDirectoryContext(path, fs))
-    const paths = npmPackages.map(({ directoryPath })=>fs.join(directoryPath, featureDiscoveryRoot))
+    const packages = childPackagesFromContext(resolveDirectoryContext(path, fs))
+    const paths = packages.map(({ directoryPath })=>fs.join(directoryPath, featureDiscoveryRoot))
     const cwd = paths.map(path => getDirFeatures(fs, path, '.'))
     const feature = paths.map(path => getDirFeatures(fs, path, 'feature'))
     const features = mergeAll(concat(cwd, feature))
@@ -17,9 +17,9 @@ export function findFeatures(path:string, fs: IFileSystemSync, featureDiscoveryR
 
     return {
         ...mergeResults(
-        loadFeaturesFromPaths(features, fs, npmPackages),
-        loadFeaturesFromPaths(fixtures, fs, npmPackages)),
-        packages:npmPackages
+        loadFeaturesFromPaths(features, fs, packages),
+        loadFeaturesFromPaths(fixtures, fs, packages)),
+        packages
     }
 }
 

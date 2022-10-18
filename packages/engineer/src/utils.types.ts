@@ -28,7 +28,8 @@ export interface IStartOptions {
     socketServerOptions?: Partial<io.ServerOptions>;
     webpackConfigPath?: string;
     log?: boolean;
-    minimal?:boolean;
+    // exclude "gui" and "managed" features
+    devServerOnly?:boolean;
 }
 
 export const defaultOptions = {
@@ -42,7 +43,7 @@ export const defaultOptions = {
     overrideConfig: [],
     runtimeOptions: {},
     externalFeatureDefinitions: [],
-    minimal: true
+    devServerOnly: true
 }
 export type DStartOptions = IStartOptions & typeof defaultOptions;
 

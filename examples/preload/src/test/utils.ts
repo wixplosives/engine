@@ -26,7 +26,7 @@ export const startServerNewProcess = async ({
         // This is required in this set of tests because it validates changes to globals
         nodeEnvironmentsMode: 'forked',
         runtimeOptions,
-        minimal
+        devServerOnly: minimal
     });
 
     const runningPort = await new Promise<number>((resolve) => {

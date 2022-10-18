@@ -23,7 +23,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
     });
     const { config, path: engineConfigPath } = await app.getEngineConfig();
     const engineCnf = defaults(config, defaultsEngineConfig)
-    const featurePaths = options.minimal
+    const featurePaths = options.devServerOnly
         // include only dev-server.feature
         ? fs.join(basePath, 'dev-server.feature.ts')
         // include all features (gui, managed etc)
@@ -59,7 +59,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
             devServerFeature.use({
                 devServerConfig: asDevConfig(serverOpts, engineCnf),
             }),
-            ...options.minimal
+            ...options.devServerOnly
                 ? []
                 : [guiFeature.use({
                     engineerConfig: {

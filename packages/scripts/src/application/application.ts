@@ -607,7 +607,7 @@ export class Application {
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
-        return { compiler};
+        return { compiler };
     }
 
     protected analyzeFeatures(featureDiscoveryRoot = '.') {
