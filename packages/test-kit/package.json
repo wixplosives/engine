@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "29.0.3",
+  "version": "29.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,9 +9,9 @@
   "dependencies": {
     "@file-services/node": "^7.0.1",
     "@wixc3/create-disposables": "^2.0.0",
-    "@wixc3/engine-core": "^29.0.3",
-    "@wixc3/engine-runtime-node": "^29.0.3",
-    "@wixc3/engine-scripts": "^29.0.3",
+    "@wixc3/engine-core": "^29.1.0",
+    "@wixc3/engine-runtime-node": "^29.1.0",
+    "@wixc3/engine-scripts": "^29.1.0",
     "create-temp-directory": "^2.0.0",
     "is-ci": "^3.0.1",
     "playwright-core": "^1.27.1",
