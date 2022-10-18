@@ -13,7 +13,7 @@ import { evaluateModule } from '../utils/evaluate-module';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition, IFeatureModule } from '../types';
 import type { DirFeatures } from './find-features';
-import { findPackageJsons, IPackageDescriptor, scopeToPackage } from './package-utils';
+import { findPackageOfDirs, IPackageDescriptor, scopeToPackage } from './package-utils';
 import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils';
 import type { INpmPackage } from '@wixc3/resolve-directory-context';
 
@@ -41,7 +41,7 @@ export function loadFeaturesFromPaths(
     )
 
     // find closest package.json for each feature directory and generate package name
-    const directoryToPackage = findPackageJsons(concat(roots.dirs, imported.dirs), fs, packages);
+    const directoryToPackage = findPackageOfDirs(concat(roots.dirs, imported.dirs), fs, packages);
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();

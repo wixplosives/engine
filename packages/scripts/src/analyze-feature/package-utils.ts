@@ -29,7 +29,7 @@ export interface IPackageDescriptor {
     name: string;
 }
 
-export function findPackageJsons(featureDirs: Iterable<string>, fs: IFileSystemSync, npmPackages: INpmPackage[]) {
+export function findPackageOfDirs(featureDirs: Iterable<string>, fs: IFileSystemSync, npmPackages: INpmPackage[]) {
     const pkgs = new Map(npmPackages.map(pkg => [pkg.directoryPath, pkg]))
     const directoryToPackage = new Map<string, IPackageDescriptor>();
     for (const featureDirectoryPath of featureDirs) {

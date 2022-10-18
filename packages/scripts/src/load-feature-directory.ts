@@ -21,7 +21,7 @@ export function loadFeatureDirectory(directoryPath:string, fs:IFileSystemSync, i
     for (const item of fs.readdirSync(directoryPath, { withFileTypes: true })) {
         const name = item.name;
         const path = fs.join(directoryPath, name);
-        const type = fileType(name)
+        const type = getFileType(name)
         if (item.isFile() && type && type in dir) {
             dir[type].push(path)
         }
@@ -32,7 +32,7 @@ export function loadFeatureDirectory(directoryPath:string, fs:IFileSystemSync, i
     return { directoryPath, ...dir};
 }
 
-const fileType = (fileName: string) => {
+const getFileType = (fileName: string) => {
     if (isFeatureFile(fileName)) return 'features'
     if (isConfigFile(fileName)) return 'configurations'
     if (isEnvFile(fileName)) return 'envs'
