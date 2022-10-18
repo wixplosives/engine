@@ -244,6 +244,7 @@ devServerFeature.setup(
                             devMiddleware.close((e) => (e ? rej(e) : res()));
                         })
                 );
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 app.use(devMiddleware);
                 compilationPromises.push(
                     new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve()))
@@ -294,6 +295,7 @@ devServerFeature.setup(
                             engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
                         })
                 );
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 app.use(engineerDevMiddleware);
                 compilationPromises.push(
                     new Promise<void>((resolve) =>

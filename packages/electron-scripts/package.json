@@ -20,8 +20,8 @@
     "@wixc3/engine-scripts": "^29.0.3",
     "@wixc3/engineer": "^29.0.3",
     "@wixc3/resolve-directory-context": "^3.0.1",
-    "electron-builder": "^23.3.3",
-    "yargs": "^17.5.1"
+    "electron-builder": "^23.6.0",
+    "yargs": "^17.6.0"
   },
   "files": [
     "bin",
