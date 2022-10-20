@@ -46,8 +46,8 @@
     "@types/sinon-chai": "^3.2.8",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
-    "@wixc3/create-disposables": "^2.0.0",
-    "@wixc3/wait-for-call": "^1.0.1",
+    "@wixc3/create-disposables": "^2.2.0",
+    "@wixc3/wait-for-call": "^2.2.0",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "electron": "^21.2.0",
@@ -76,6 +76,6 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@wixc3/common": "^2.2.0"
+    "@wixc3/common": "^2.2.1"
   }
 }
