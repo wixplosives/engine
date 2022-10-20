@@ -1,7 +1,8 @@
 import fs from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
-import { backSlash, chain, defaults, SetMultiMap } from '@wixc3/common';
+import { chain, defaults, SetMultiMap } from '@wixc3/common';
+import { backSlash } from '@wixc3/fs-utils';
 import {
     createIPC, ForkedProcess, IConfigDefinition, IExternalDefinition, IExternalFeatureNodeDescriptor, launchEngineHttpServer, NodeEnvironmentsManager, resolveEnvironments, RouteMiddleware,
 } from '@wixc3/engine-runtime-node';
