@@ -74,5 +74,8 @@
     "webpack": "^5.74.0"
   },
   "license": "MIT",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@wixc3/common": "^2.2.0"
+  }
 }

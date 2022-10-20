@@ -1944,10 +1944,25 @@
     "@file-services/path" "^7.0.1"
     "@file-services/types" "^7.0.1"
 
+"@wixc3/common@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-2.2.0.tgz#2566585df40bad6d142c39edd44b227c4ae31ad8"
+  integrity sha512-ewLpXiNiGFbbFU+tAiEAOwYPVvQVYZZOnHBicqYxellAJ7a5GsFNJkvJmt5wsTIxBUefykuimPmxjYYpnQYPJQ==
+  dependencies:
+    "@file-services/path" "^7.0.1"
+    "@file-services/types" "^7.0.1"
+
 "@wixc3/create-disposables@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.0.0.tgz#c3a1121a2d02e38be9bc737d1c4362486fd89871"
   integrity sha512-WH6hy2/1Cl5N1/uTXlqt9jzyyeoaCmBw+g+X+SOKE7z0Cw+kCM2tMkyeOFSFNsKd7jVdG35i9jIacHbXi9d3cg==
+
+"@wixc3/fs-utils@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-2.2.0.tgz#641a8243913044a36afc34b1eea1276a2fff0872"
+  integrity sha512-B4Ve5LyaYqGjoUC3Cb8O7cDzjaEFU6bLH8S1XNqdFR8bFj92jnj5TF/EW0IJimuUK3kuC0lAKQ8+t8AiZaQLjQ==
+  dependencies:
+    "@file-services/memory" "^7.0.1"
 
 "@wixc3/resolve-directory-context@^3.0.0", "@wixc3/resolve-directory-context@^3.0.1":
   version "3.0.1"
