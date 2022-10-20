@@ -1,6 +1,6 @@
 import type { DirectoryContentMapper, ITemplateContext, IEnrichedTemplateContext } from './types';
 import type { IDirectoryContents, IFileSystem } from '@file-services/types';
-import { toKebabCase, toCamelCase, toCapitalCase } from '../utils';
+import { toKebabCase, toCamelCase, capitalizeFirstLetter } from '@wixc3/common';
 
 // adds display options to each context value
 export function enrichContext(context: ITemplateContext): IEnrichedTemplateContext {
@@ -9,7 +9,7 @@ export function enrichContext(context: ITemplateContext): IEnrichedTemplateConte
         return Object.assign(new String(value), {
             camelCase: camel,
             dashCase: toKebabCase(value),
-            pascalCase: toCapitalCase(camel),
+            pascalCase: capitalizeFirstLetter(camel),
         });
     });
 }

@@ -185,8 +185,8 @@ devServerFeature.setup(
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
-                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                      }
+                        [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+                    }
                     : undefined;
 
             app.use(`/${publicConfigsRoute}`, [
@@ -217,7 +217,7 @@ devServerFeature.setup(
             });
 
             // Write middleware for each of the apps
-            const { compiler } = application.createCompiler({
+            const {compiler} = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
@@ -283,6 +283,7 @@ devServerFeature.setup(
              *  but we will keep on watching on the users application
              *  2. the createCompiler function is not extendable with more configs with the current API
              */
+            console.time('Bundling features and engine')
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             if (engineerCompilers.compilers.length > 0) {
                 // This assumes we have only one engineer config - for the dashboard
@@ -305,7 +306,7 @@ devServerFeature.setup(
             }
 
             await Promise.all(compilationPromises);
-
+            console.timeEnd('Bundling features and engine')
             if (log) {
                 const mainUrl = `http://localhost:${actualPort}`;
                 if (featureName) {

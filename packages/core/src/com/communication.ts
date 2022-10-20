@@ -33,7 +33,8 @@ import type {
 
 import { SERVICE_CONFIG } from '../symbols';
 
-import { SetMultiMap, deferred, serializeError } from '../helpers';
+import { serializeError } from '../helpers';
+import { SetMultiMap, deferred } from '@wixc3/common';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';

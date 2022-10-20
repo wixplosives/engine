@@ -2,23 +2,9 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import fs from '@file-services/node';
 import { BaseHost, Communication } from '@wixc3/engine-core';
-import { loadFeaturesFromPackages } from '@wixc3/engine-scripts';
+import { findFeatures } from '@wixc3/engine-scripts';
 import { initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
-
 import testFeature, { serverEnv } from '../test-project/test-feature.feature';
-import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
-
-export function findFeatures(
-    initialDirectoryPath: string,
-    featureDiscoveryRoot = '.'
-): ReturnType<typeof loadFeaturesFromPackages> {
-    const packagePath = fs.findClosestFileSync(initialDirectoryPath, 'package.json');
-    if (!packagePath) {
-        throw new Error(`Couldn't find package.json relative to ${initialDirectoryPath}`);
-    }
-    const packages = childPackagesFromContext(resolveDirectoryContext(packagePath, fs));
-    return loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
-}
 
 const { expect } = chai;
 chai.use(chaiAsPromised);
@@ -30,7 +16,7 @@ const setupRunningEnv = async ({
     handleUncaught,
 }: { errorMode?: 'exception' | 'exit' | 'promiseReject'; handleUncaught?: boolean } = {}) => {
     const communication = new Communication(new BaseHost(), 'someId');
-    const { features } = findFeatures(testProjectPath, 'dist');
+    const { features } = findFeatures(testProjectPath, fs, 'dist');
     const { onDisconnect, dispose, environmentIsReady } = initializeNodeEnvironment({
         communication,
         env: serverEnv,
@@ -43,7 +29,7 @@ const setupRunningEnv = async ({
             features: Array.from(features.entries()),
             externalFeatures: [],
         },
-        processOptions: { cwd: process.cwd() },
+        processOptions: { cwd: process.cwd(), stdio: ['ignore', 'ignore', 'ignore', 'ipc'] },
         environmentStartupOptions: {},
     });
 
@@ -71,11 +57,11 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
             await expect(disconnectPromise).to.eventually.eq(true);
         });
-        it('should catch on env exit intentinally', async () => {
+        it('should catch on env exit intentionally', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exit' });
             await expect(disconnectPromise).to.eventually.eq(true);
         });
-        it('shuold catch on env throwing uncaught exception', async () => {
+        it('should catch on env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
 
             await expect(disconnectPromise).to.eventually.eq(true);
@@ -95,11 +81,11 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
             await expect(disconnectPromise).to.eventually.eq(true);
         });
-        it('should catch on env exit intentinally', async () => {
+        it('should catch on env exit intentionally', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exit', handleUncaught });
             await expect(disconnectPromise).to.eventually.eq(true);
         });
-        it('shuold catch on env throwing uncaught exception', async () => {
+        it('should catch on env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception', handleUncaught });
 
             await expect(disconnectPromise).to.eventually.eq(true);

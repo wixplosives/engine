@@ -13,7 +13,7 @@ import fs from '@file-services/node';
 import { Application } from '@wixc3/engine-scripts';
 import { startDevServer } from './utils';
 import { parseCliArguments } from '@wixc3/engine-runtime-node';
-import type { ServerListeningHandler } from './feature/dev-server.feature';
+import type { ServerListeningHandler } from './feature/dev-server.types';
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
