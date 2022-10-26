@@ -39,7 +39,7 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
     externalFeatures?: IExternalFeatureNodeDescriptor[];
 }
 
-export interface IGetRuinnnigFeatureOptions<
+export interface IGetRunnigFeatureOptions<
     NAME extends string,
     DEPS extends Dependency[],
     API extends EntityRecord,
@@ -133,7 +133,7 @@ export async function getRunningFeature<
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends AnyEnvironment
 >(
-    options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
+    options: IGetRunnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
     runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV>;
