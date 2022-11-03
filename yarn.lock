@@ -1938,10 +1938,10 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/fs-utils@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-2.2.0.tgz#641a8243913044a36afc34b1eea1276a2fff0872"
-  integrity sha512-B4Ve5LyaYqGjoUC3Cb8O7cDzjaEFU6bLH8S1XNqdFR8bFj92jnj5TF/EW0IJimuUK3kuC0lAKQ8+t8AiZaQLjQ==
+"@wixc3/fs-utils@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-3.0.0.tgz#04fe48c78d31edb13409c8c045453eaa3b7c8b4e"
+  integrity sha512-Gj/0H5OEDGf/2x5IFm1gY97Jyq8Cl/oOdudY/mXwbyDel/qnA0fZMjdRjdDnBvlpihBsh9Fqo9TKc/u88y0nFg==
   dependencies:
     "@file-services/memory" "^7.0.1"
 
