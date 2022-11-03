@@ -1953,10 +1953,10 @@
     minimatch "^5.1.0"
     type-fest "^3.0.0"
 
-"@wixc3/wait-for-call@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-2.2.0.tgz#18375d423a53176c2889d02ae0e7ea246584209d"
-  integrity sha512-gT2IdpCTRAVmuMwEiKFZJKzLjiXCJipGymUWXbJB+iUzZnh1ma6OKDWtVjyrrGwlh3wnToysAymBuJruiLszXg==
+"@wixc3/wait-for-call@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-3.0.0.tgz#72f3d96edfee7e0d55cd67776b36783b86cdd09e"
+  integrity sha512-MuLbFlg4tNEiEvxFBg/NtZWunpdSQjmwKPHx1dpqCxjSQsJSiLWpf2FnVP4w11Sc6pkYQ5xj3/IiBN6UpDm/ww==
   dependencies:
     promise-assist "^1.3.0"
 
