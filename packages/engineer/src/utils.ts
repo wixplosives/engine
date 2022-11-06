@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import { isFeatureFile, loadFeaturesFromPaths, getExternalFeaturesMetadata } from '@wixc3/engine-scripts';
+import { isFeatureFile, loadFeaturesFromPaths, getExternalFeaturesMetadata, EngineConfig } from '@wixc3/engine-scripts';
 import { RuntimeEngine, BaseHost, RuntimeFeature } from '@wixc3/engine-core';
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import guiFeature from './feature/gui.feature';
@@ -22,7 +22,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
         basePath: serverOpts.targetApplicationPath,
     });
     const { config, path: engineConfigPath } = await app.getEngineConfig();
-    const engineCnf = defaults(config, defaultsEngineConfig)
+    const engineCnf = defaults(config || {} as EngineConfig, defaultsEngineConfig)
     const featurePaths = options.devServerOnly
         // include only dev-server.feature
         ? fs.join(basePath, 'dev-server.feature.ts')

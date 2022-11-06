@@ -1,4 +1,4 @@
-import { SetMultiMap } from "@wixc3/common"
+import { SetMultiMap } from "@wixc3/patterns"
 import { mergeAll, mergeResults } from "../src/analyze-feature/merge"
 import { expect } from "chai"
 

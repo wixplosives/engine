@@ -16,7 +16,9 @@ import type {
     Dependency,
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
-import { deferred, IDeferredPromise, SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
+import { deferred, IDeferredPromise } from 'promise-assist';
+
 
 const emptyDispose = { dispose: () => undefined };
 

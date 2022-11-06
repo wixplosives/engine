@@ -1,5 +1,5 @@
 import type { LogMessage, LogMetadata } from '../common-types';
-import { EventEmitter } from '@wixc3/common';
+import { EventEmitter } from '@wixc3/patterns';
 import { LoggerTransport, LogLevel } from '../types';
 
 export interface LogValueData {

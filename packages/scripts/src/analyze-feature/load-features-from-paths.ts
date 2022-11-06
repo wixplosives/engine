@@ -1,6 +1,7 @@
 import type { IFileSystemSync } from '@file-services/types';
 import type { Feature } from '@wixc3/engine-core';
-import { concat, getValue, isPlainObject, map, SetMultiMap } from '@wixc3/common';
+import { concat, getValue, isPlainObject, map } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import {
     FileNameParser,
     parseConfigFileName,
@@ -63,11 +64,11 @@ export function loadFeaturesFromPaths(
             // i.e. that exist on the directory but are not required
             .filter(f => imported.files.has(f) || roots.files.has(f))
             .map(f => analyzeFeature(f, featurePackage))
-        analyzedFeatures.forEach(a =>{
+        analyzedFeatures.forEach(a => {
             foundFeatures.set(a.scopedName, parseFoundFeature(a, featurePackage, roots.files.has(a.filePath)))
             featureToScopedName.set(a.module.exportedFeature, a.scopedName)
         })
-    
+
         // pick up environments, configs and preloads
         envs.forEach(setEnvPath('envFilePaths', parseEnvFileName, fs, foundFeatures, featurePackage))
         contexts.forEach(setEnvPath('contextFilePaths', parseContextFileName, fs, foundFeatures, featurePackage));
@@ -103,7 +104,7 @@ function setEnvPath(field: keyof IFeatureDefinition, parser: FileNameParser, fs:
     }
 }
 
-function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor):  AnalyzedFeatureModule  {
+function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): AnalyzedFeatureModule {
     const [evaluated] = evaluateModule(filePath).children;
     const module = analyzeFeatureModule(evaluated!);
     const scopedName = scopeToPackage(featurePackage.simplifiedName, module.name)!;

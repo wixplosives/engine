@@ -2,7 +2,8 @@ import { childPackagesFromContext, INpmPackage, resolveDirectoryContext } from '
 import type { IFileSystemSync } from '@file-services/types';
 import { isFeatureFile } from '../build-constants';
 import { loadFeaturesFromPaths } from './load-features-from-paths';
-import { concat, SetMultiMap } from '@wixc3/common';
+import { concat } from '@wixc3/common';
+import type { SetMultiMap } from '@wixc3/patterns';
 import { mergeAll, mergeResults } from './merge';
 import type { IFeatureDefinition } from '../types';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';

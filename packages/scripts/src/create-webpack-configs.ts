@@ -3,7 +3,7 @@ import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import semverLessThan from 'semver/functions/lt';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { SetMultiMap } from '@wixc3/common';
+import type { SetMultiMap } from '@wixc3/patterns';
 import { createRequestResolver } from '@file-services/resolve';
 import {
     createMainEntrypoint,
