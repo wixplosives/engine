@@ -19,6 +19,10 @@
     "test:unit": "lerna run test --stream --concurrency=1",
     "prettify": "npx prettier . --write"
   },
+  "dependencies": {
+    "@wixc3/common": "^3.0.2",
+    "@wixc3/patterns": "^3.0.2"
+  },
   "devDependencies": {
     "@file-services/memory": "^7.0.1",
     "@file-services/types": "^7.0.1",
@@ -46,8 +50,6 @@
     "@types/sinon-chai": "^3.2.8",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
-    "@wixc3/common": "^2.2.1",
-    "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/wait-for-call": "^3.0.0",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",

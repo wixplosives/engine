@@ -1925,10 +1925,10 @@
     "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-2.2.1.tgz#c866e0da6ce0d217d0257b33619fd51558cf11b7"
-  integrity sha512-fMPoTn7GfmzENpFz7EWHNrrlIMW7kfIIStiYcf01hKH8Y7acL7avIU5fFAK7p8Vlgf4UqbBbmQi3CwHfngi2IQ==
+"@wixc3/common@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-3.0.2.tgz#c87e551ef9efec39c23783e1bb30fab987a43661"
+  integrity sha512-HImab7StFuugq22eCeCoIjTuRmvyYsICLL9C2104z+6aiGkffMnEZfGtYhzdWRrdip4BIaqvS0KadYV3w3gbSg==
   dependencies:
     "@file-services/path" "^7.0.1"
     "@file-services/types" "^7.0.1"
@@ -1938,12 +1938,21 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/fs-utils@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-3.0.0.tgz#04fe48c78d31edb13409c8c045453eaa3b7c8b4e"
-  integrity sha512-Gj/0H5OEDGf/2x5IFm1gY97Jyq8Cl/oOdudY/mXwbyDel/qnA0fZMjdRjdDnBvlpihBsh9Fqo9TKc/u88y0nFg==
+"@wixc3/fs-utils@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-3.0.2.tgz#3e562a2fce32a0f5622fffd1c35edfe8479c2286"
+  integrity sha512-ql7xluQDnaE9cyNMrQWf4TnIHuE0WrYzL3Fr2XVp1TIU91j55ayDW0qs62Vnr30uiLQfmnvuxK8BIxTFfklfpw==
   dependencies:
     "@file-services/memory" "^7.0.1"
+    "@wixc3/common" "^3.0.2"
+
+"@wixc3/patterns@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-3.0.2.tgz#1d9c6dadcd701561a4a73d98d985dd6cb96f6cdd"
+  integrity sha512-C6riXbTP88phfHRHt+XZKUMfeHVvD7KhgXId7ssTbli3zWXqKmkS8/wAYMwvGo7QIpQxkAmV5Og0M3/pda7OiQ==
+  dependencies:
+    "@wixc3/common" "^3.0.2"
+    promise-assist "^1.3.0"
 
 "@wixc3/resolve-directory-context@^3.0.0", "@wixc3/resolve-directory-context@^3.0.1":
   version "3.0.1"
