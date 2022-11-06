@@ -19,6 +19,10 @@
     "test:unit": "lerna run test --stream --concurrency=1",
     "prettify": "npx prettier . --write"
   },
+  "dependencies": {
+    "@wixc3/common": "^3.0.2",
+    "@wixc3/patterns": "^3.0.2"
+  },
   "devDependencies": {
     "@file-services/memory": "^7.0.1",
     "@file-services/types": "^7.0.1",
