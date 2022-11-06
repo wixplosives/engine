@@ -66,12 +66,12 @@ export function loadFeaturesFromPaths(
         const analyzedFeatures = features
             // filter out features that are not root, nor imported -
             // i.e. that exist on the directory but are not required
-            .filter((f) => imported.files.has(f) || roots.files.has(f))
-            .map((f) => analyzeFeature(f, featurePackage));
-        analyzedFeatures.forEach((a) => {
-            foundFeatures.set(a.scopedName, parseFoundFeature(a, featurePackage, roots.files.has(a.filePath)));
-            featureToScopedName.set(a.module.exportedFeature, a.scopedName);
-        });
+            .filter(f => imported.files.has(f) || roots.files.has(f))
+            .map(f => analyzeFeature(f, featurePackage))
+        analyzedFeatures.forEach(a => {
+            foundFeatures.set(a.scopedName, parseFoundFeature(a, featurePackage, roots.files.has(a.filePath)))
+            featureToScopedName.set(a.module.exportedFeature, a.scopedName)
+        })
 
         // pick up environments, configs and preloads
         envs.forEach(setEnvPath('envFilePaths', parseEnvFileName, fs, foundFeatures, featurePackage));

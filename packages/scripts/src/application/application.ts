@@ -9,7 +9,7 @@ import {
     launchEngineHttpServer,
     NodeEnvironmentsManager,
     resolveEnvironments,
-    RouteMiddleware,
+    RouteMiddleware
 } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
@@ -19,7 +19,7 @@ import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
 import {
     createCommunicationMiddleware,
     createConfigMiddleware,
-    ensureTopLevelConfigMiddleware,
+    ensureTopLevelConfigMiddleware
 } from '../config-middleware';
 import { createExternalNodeEntrypoint } from '../create-entrypoint';
 import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs';
@@ -115,7 +115,7 @@ export class Application {
         const {
             serveStatic = [],
             socketServerOptions: configSocketServerOptions,
-            require: requiredPaths = [],
+            require: requiredPaths = []
         } = engineConfig ?? {};
 
         const routeMiddlewares: RouteMiddleware[] = [];
@@ -131,7 +131,7 @@ export class Application {
             staticDirPath: this.outputPath,
             httpServerPort,
             socketServerOptions,
-            routeMiddlewares,
+            routeMiddlewares
         });
         disposables.add(close);
 
@@ -156,7 +156,7 @@ export class Application {
             app.use(`/${publicConfigsRoute}`, [
                 ensureTopLevelConfigMiddleware,
                 createCommunicationMiddleware(nodeEnvironmentManager, publicPath),
-                createConfigMiddleware(config),
+                createConfigMiddleware(config)
             ]);
         }
 
@@ -164,7 +164,7 @@ export class Application {
             await nodeEnvironmentManager.runServerEnvironments({
                 featureName,
                 configName,
-                mode: nodeEnvironmentsMode ?? engineConfig?.nodeEnvironmentsMode,
+                mode: nodeEnvironmentsMode ?? engineConfig?.nodeEnvironmentsMode
             });
         }
 
@@ -172,7 +172,7 @@ export class Application {
             port,
             router: app,
             nodeEnvironmentManager,
-            close: disposables.dispose,
+            close: disposables.dispose
         };
     }
 
@@ -185,7 +185,7 @@ export class Application {
                 filePath: require.resolve(filePath, { paths: [this.outputPath] }),
                 envFilePaths: this.resolveManifestPaths(envFilePaths),
                 contextFilePaths: this.resolveManifestPaths(contextFilePaths),
-                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths),
+                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths)
             });
         }
         return features;
@@ -195,7 +195,7 @@ export class Application {
         return Object.fromEntries(
             Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
                 envName,
-                require.resolve(filePath, { paths: [this.outputPath] }),
+                require.resolve(filePath, { paths: [this.outputPath] })
             ])
         );
     }
@@ -211,7 +211,7 @@ export class Application {
         const { socketServer, close, port } = await launchEngineHttpServer({
             staticDirPath: this.outputPath,
             httpServerPort: preferredPort,
-            socketServerOptions,
+            socketServerOptions
         });
 
         const parentProcess = new ForkedProcess(process);
@@ -239,7 +239,7 @@ export class Application {
             featureName,
             targetPath,
             templatesDirPath,
-            featureDirNameTemplate,
+            featureDirNameTemplate
         });
     }
 
@@ -249,7 +249,7 @@ export class Application {
             try {
                 return {
                     config: (await import(engineConfigFilePath)) as EngineConfig,
-                    path: engineConfigFilePath,
+                    path: engineConfigFilePath
                 };
             } catch (ex) {
                 throw new Error(`failed evaluating config file: ${engineConfigFilePath}`);
@@ -282,7 +282,7 @@ export class Application {
                     const featureName = entity.name;
                     const featureConfigsDirectory = join(configsDirectoryPath, featureName);
                     const featureConfigsEntities = await fs.promises.readdir(featureConfigsDirectory, {
-                        withFileTypes: true,
+                        withFileTypes: true
                     });
                     for (const possibleConfigFile of featureConfigsEntities) {
                         const fileExtention = extname(possibleConfigFile.name);
@@ -333,8 +333,8 @@ export class Application {
             featureName,
             {
                 ...{ ...featureDef },
-                ...this.mapFeatureFiles(featureDef, sourcesRoot),
-            } as IFeatureDefinition,
+                ...this.mapFeatureFiles(featureDef, sourcesRoot)
+            } as IFeatureDefinition
         ];
     }
 
@@ -346,7 +346,7 @@ export class Application {
             packageName,
             preloadFilePaths,
             isRoot,
-            directoryPath,
+            directoryPath
         }: IFeatureDefinition,
         sourcesRoot: string
     ) {
@@ -398,7 +398,7 @@ export class Application {
                 context,
                 isRoot && outputDirInBasePath,
                 preloadFilePaths
-            ),
+            )
         };
     }
 
@@ -426,7 +426,7 @@ export class Application {
         webpackConfigPath,
         environments,
         eagerEntrypoint,
-        configLoaderModuleName,
+        configLoaderModuleName
     }: ICompilerOptions) {
         const { basePath, outputPath } = this;
         const baseConfigPath = webpackConfigPath
@@ -453,7 +453,7 @@ export class Application {
             singleFeature,
             createWebpackConfig,
             eagerEntrypoint,
-            configLoaderModuleName,
+            configLoaderModuleName
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
@@ -481,7 +481,7 @@ export class Application {
             const entryCode = createExternalNodeEntrypoint({
                 ...reMappedFeature,
                 childEnvs,
-                env,
+                env
             });
             fs.writeFileSync(entryPath, entryCode);
         }
@@ -503,7 +503,7 @@ export class Application {
             featureEnvDefinitions[scopedName] = {
                 configurations: configNames.filter((name) => name.includes(rootFeatureName)),
                 hasServerEnvironments: resolveEnvironments(scopedName, features, 'node').size > 0,
-                featureName: scopedName,
+                featureName: scopedName
             };
         }
 
@@ -526,7 +526,7 @@ export class Application {
                     }
                     return feature;
                 })
-            ),
+            )
         ].map(({ scopedName }) => scopedName);
         if (nonFoundDependencies.length) {
             throw new Error(
