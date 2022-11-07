@@ -126,7 +126,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-_docs
-temp
-tsdoc-metadata.json
