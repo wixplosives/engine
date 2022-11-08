@@ -19,7 +19,7 @@
 
 #### Setup
 
-The `setup` method are running in sync and are in the dependency order 
+The `setup` method are running in sync and are in the dependency order
 
 Example
 
@@ -59,9 +59,9 @@ feat2.setup(env1, ({}, {feat1: {echoService}})=> {
 
 - [getting_started](./getting_started.md)
 - [examples](./examples.md')
-    - [examples.best_practices](./examples.best_practices.md)
-    - [examples.best_practices.multi_env](./examples.best_practices.multi_env.md)
-    - [examples.react](./examples.react.md)
+  - [examples.best_practices](./examples.best_practices.md)
+  - [examples.best_practices.multi_env](./examples.best_practices.multi_env.md)
+  - [examples.react](./examples.react.md)
 - [runtime](./runtime.md')
   - [runtime.entities](./runtime.entities.md)
     - [runtime.entities.engine](./runtime.entities.engine.md)

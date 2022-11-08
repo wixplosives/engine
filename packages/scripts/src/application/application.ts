@@ -4,26 +4,51 @@ import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 import { chain, defaults, SetMultiMap } from '@wixc3/common';
 import { backSlash } from '@wixc3/fs-utils';
 import {
-    createIPC, ForkedProcess, IConfigDefinition, IExternalDefinition, IExternalFeatureNodeDescriptor, launchEngineHttpServer, NodeEnvironmentsManager, resolveEnvironments, RouteMiddleware,
+    createIPC,
+    ForkedProcess,
+    IConfigDefinition,
+    IExternalDefinition,
+    IExternalFeatureNodeDescriptor,
+    launchEngineHttpServer,
+    NodeEnvironmentsManager,
+    resolveEnvironments,
+    RouteMiddleware,
 } from '@wixc3/engine-runtime-node';
 import express from 'express';
 import webpack from 'webpack';
 import { findFeatures } from '../analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
 import {
-    createCommunicationMiddleware, createConfigMiddleware, ensureTopLevelConfigMiddleware,
+    createCommunicationMiddleware,
+    createConfigMiddleware,
+    ensureTopLevelConfigMiddleware,
 } from '../config-middleware';
 import {
-    createWebpackConfig, createWebpackConfigForExternalFeature, createWebpackConfigs,
+    createWebpackConfig,
+    createWebpackConfigForExternalFeature,
+    createWebpackConfigs,
 } from '../create-webpack-configs';
 import { generateFeature, pathToFeaturesDirectory } from '../feature-generator';
 import type { EngineConfig, IFeatureDefinition } from '../types';
 import { EXTERNAL_FEATURES_BASE_URI } from '../build-constants';
 import { createExternalNodeEntrypoint } from '../create-entrypoint';
 import {
-    getExternalFeatureBasePath, getExternalFeaturesMetadata, getFilePathInPackage, scopeFilePathsToPackage, IResolvedEnvironment
+    getExternalFeatureBasePath,
+    getExternalFeaturesMetadata,
+    getFilePathInPackage,
+    scopeFilePathsToPackage,
+    IResolvedEnvironment,
 } from '../utils';
-import type { IApplicationOptions, IBuildCommandOptions, WebpackMultiStats, IRunCommandOptions, IBuildManifest, IRunApplicationOptions, ICreateOptions, ICompilerOptions } from './types';
+import type {
+    IApplicationOptions,
+    IBuildCommandOptions,
+    WebpackMultiStats,
+    IRunCommandOptions,
+    IBuildManifest,
+    IRunApplicationOptions,
+    ICreateOptions,
+    ICompilerOptions,
+} from './types';
 import { buildDefaults, DEFAULT_EXTERNAL_FEATURES_PATH } from './defaults';
 import { addEnvEntrypoints, hookCompilerToConsole, toCompilerOptions, getResolvedEnvironments, compile } from './utils';
 
@@ -50,9 +75,9 @@ export class Application {
         configurations: SetMultiMap<string, IConfigDefinition>;
         resolvedEnvironments: ReturnType<typeof getResolvedEnvironments>;
     }> {
-        const opts = defaults(options, buildDefaults)
+        const opts = defaults(options, buildDefaults);
         const { config: _config, path: configPath } = await this.getEngineConfig();
-        const config: EngineConfig = defaults(_config, { externalFeatureDefinitions: [] as IExternalDefinition[] })
+        const config: EngineConfig = defaults(_config, { externalFeatureDefinitions: [] as IExternalDefinition[] });
 
         if (opts.external && !opts.featureName) {
             throw new Error('You must specify a feature name when building a feature in external mode');
@@ -70,7 +95,7 @@ export class Application {
         const { compiler } = this.createCompiler(toCompilerOptions(opts, analyzed, config, envs));
         const outDir = fs.basename(this.outputPath);
 
-        const stats = await compile(compiler)
+        const stats = await compile(compiler);
 
         const sourceRoot =
             opts.sourcesRoot ?? config.sourcesRoot ?? opts.featureDiscoveryRoot ?? config.featureDiscoveryRoot ?? '.';
@@ -115,17 +140,33 @@ export class Application {
         return { ...analyzed, stats, resolvedEnvironments: envs };
     }
 
-    private writeExtFeaturesJson(opts: IBuildCommandOptions & { mode: string; external: boolean; staticBuild: boolean; staticExternalFeaturesFileName: string; externalFeatureDefinitions: never[]; }, externalFeatures: IExternalFeatureNodeDescriptor[]) {
+    private writeExtFeaturesJson(
+        opts: IBuildCommandOptions & {
+            mode: string;
+            external: boolean;
+            staticBuild: boolean;
+            staticExternalFeaturesFileName: string;
+            externalFeatureDefinitions: never[];
+        },
+        externalFeatures: IExternalFeatureNodeDescriptor[]
+    ) {
         fs.writeFileSync(
-            fs.join(
-                this.outputPath,
-                backSlash(opts.staticExternalFeaturesFileName, 'none')
-            ),
+            fs.join(this.outputPath, backSlash(opts.staticExternalFeaturesFileName, 'none')),
             JSON.stringify(externalFeatures)
         );
     }
 
-    private async copyExternalFeatureFiles(opts: IBuildCommandOptions & { mode: string; external: boolean; staticBuild: boolean; staticExternalFeaturesFileName: string; externalFeatureDefinitions: never[]; }, config: EngineConfig, resolvedExternalFeaturesBasePath: string) {
+    private async copyExternalFeatureFiles(
+        opts: IBuildCommandOptions & {
+            mode: string;
+            external: boolean;
+            staticBuild: boolean;
+            staticExternalFeaturesFileName: string;
+            externalFeatureDefinitions: never[];
+        },
+        config: EngineConfig,
+        resolvedExternalFeaturesBasePath: string
+    ) {
         const externalFeaturesPath = fs.join(this.outputPath, EXTERNAL_FEATURES_BASE_URI);
         const copying = chain(opts.externalFeatureDefinitions as IExternalDefinition[])
             .concat(config.externalFeatureDefinitions)
@@ -136,8 +177,8 @@ export class Application {
                     packagePath,
                 });
                 return fs.promises.copyDirectory(packageBaseDir, fs.join(externalFeaturesPath, packageName));
-            }).iterable
-        await Promise.all(copying)
+            }).iterable;
+        await Promise.all(copying);
     }
 
     public async run(runOptions: IRunCommandOptions = {}) {
@@ -215,8 +256,8 @@ export class Application {
 
         const resolvedExternalFeaturesPath = fs.resolve(
             providedExternalFeaturesPath ??
-            baseExternalFeaturesPath ??
-            (configPath ? fs.dirname(configPath) : this.basePath)
+                baseExternalFeaturesPath ??
+                (configPath ? fs.dirname(configPath) : this.basePath)
         );
 
         externalFeatures.push(
@@ -344,7 +385,7 @@ export class Application {
                         require.resolve(fs.join(packageName, 'package.json'), {
                             paths: [
                                 providedExternalFeatuersPath ??
-                                (baseExternalFeaturesPath ? configPath! : this.basePath),
+                                    (baseExternalFeaturesPath ? configPath! : this.basePath),
                             ],
                         })
                     ),
@@ -456,7 +497,12 @@ export class Application {
         return configurations;
     }
 
-    protected async writeManifest(features: Map<string, IFeatureDefinition>, opts: IBuildCommandOptions, entryPoints: Record<string, Record<string, string>>, pathToSources: string) {
+    protected async writeManifest(
+        features: Map<string, IFeatureDefinition>,
+        opts: IBuildCommandOptions,
+        entryPoints: Record<string, Record<string, string>>,
+        pathToSources: string
+    ) {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()).map(([featureName, featureDef]) =>
                 this.generateReMappedFeature(featureDef, pathToSources, featureName)

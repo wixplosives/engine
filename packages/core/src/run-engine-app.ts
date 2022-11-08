@@ -73,7 +73,7 @@ export class FeatureLoadersRegistry {
     constructor(
         private featureMapping = new Map<string, IFeatureLoader>(),
         private resolvedContexts: Record<string, string> = {}
-    ) { }
+    ) {}
     public register(name: string, featureLoader: IFeatureLoader) {
         this.featureMapping.set(name, featureLoader);
         this.pendingLoaderRequests.get(name)?.resolve(featureLoader);

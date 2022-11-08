@@ -22,7 +22,7 @@ export class WsClientHost extends BaseHost {
             withCredentials: true, // Pass Cookie to socket io connection
             path,
             query,
-            ...options
+            ...options,
         });
 
         this.socketClient.on('connect', () => {

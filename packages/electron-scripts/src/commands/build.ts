@@ -83,7 +83,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         mac,
         windows,
         featureDiscoveryRoot = configFeatureDiscoveryRoot,
-        publish
+        publish,
     } = options;
     const outputPath = fs.join(basePath, outDir);
     if (!isPublishValid(publish)) {

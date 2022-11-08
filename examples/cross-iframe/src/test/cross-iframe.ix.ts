@@ -7,7 +7,7 @@ describe('Cross Iframes Example', function () {
     const { getLoadedFeature } = withFeature({
         featureName: 'cross-iframe/configured-iframe',
     });
-    this.timeout(15_000)
+    this.timeout(15_000);
 
     it('initial iframe rendered', async () => {
         const { page } = await getLoadedFeature();
