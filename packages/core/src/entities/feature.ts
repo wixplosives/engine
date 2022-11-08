@@ -264,7 +264,7 @@ export class Feature<
                     continue;
                 }
                 for (const key of Object.keys(featureOutput)) {
-                    settingUpFeature[key] = (featureOutput as any)[key];
+                    settingUpFeature[key] = (featureOutput)[key as keyof typeof featureOutput];
                 }
                 Object.assign(providedAPI, featureOutput);
             }
