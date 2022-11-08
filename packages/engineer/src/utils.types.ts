@@ -1,6 +1,6 @@
-import type { TopLevelConfig } from "@wixc3/engine-core";
-import type { TopLevelConfigProvider, IExternalDefinition, LaunchEnvironmentMode } from "@wixc3/engine-runtime-node";
-import type { EngineConfig } from "@wixc3/engine-scripts";
+import type { TopLevelConfig } from '@wixc3/engine-core';
+import type { TopLevelConfigProvider, IExternalDefinition, LaunchEnvironmentMode } from '@wixc3/engine-runtime-node';
+import type { EngineConfig } from '@wixc3/engine-scripts';
 import type io from 'socket.io';
 
 export interface IStartOptions {
@@ -29,7 +29,7 @@ export interface IStartOptions {
     webpackConfigPath?: string;
     log?: boolean;
     // exclude "gui" and "managed" features
-    devServerOnly?:boolean;
+    devServerOnly?: boolean;
 }
 
 export const defaultOptions = {
@@ -43,12 +43,12 @@ export const defaultOptions = {
     overrideConfig: [],
     runtimeOptions: {},
     externalFeatureDefinitions: [],
-    devServerOnly: true
-}
+    devServerOnly: true,
+};
 export type DStartOptions = IStartOptions & typeof defaultOptions;
 
 export const defaultsEngineConfig = {
     externalFeatureDefinitions: [],
     require: [],
-}
-export type DEngineConfig = EngineConfig & typeof defaultsEngineConfig
+};
+export type DEngineConfig = EngineConfig & typeof defaultsEngineConfig;

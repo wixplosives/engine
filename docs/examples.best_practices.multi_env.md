@@ -8,15 +8,16 @@ For example, If we are in the `main` env and we need the `fs` module from the `p
 The `main` shouldn't know which env provides the `fs` module since it could come from either a worker env or a node server.
 
 **Assumptions**
+
 - Multi env on main interacts with multiEnv on processing
 - Main is not aware of the contexts of processing (live server/worker etc..)
 - liveServer \ worker contexts provide the platform specific API's to the `processing` env
-(actual API or polyfill)
+  (actual API or polyfill)
 
 ```mermaid
 flowchart TD
     mainEnv([multiEnv])-- "fs API request" -->processing
-    
+
     subgraph main[Main feature]
         mainEnv([multiEnv])
     end

@@ -19,7 +19,6 @@ import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
 import { SetMultiMap } from '@wixc3/patterns';
 import { deferred, IDeferredPromise } from 'promise-assist';
 
-
 const emptyDispose = { dispose: () => undefined };
 
 /**
@@ -35,7 +34,7 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
         public feature: T,
         public api: Running<T, ENV>,
         public dependencies: RunningFeatures<T['dependencies'], ENV>
-    ) { }
+    ) {}
 
     public addRunHandler(fn: () => unknown, envName: string) {
         this.runHandlers.add(envName, fn);
@@ -99,7 +98,7 @@ export class Feature<
     Deps extends Dependency[] = any[],
     API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any
-    > {
+> {
     /**
      * References `this` without the exact types of `Deps` (making them a generic `Feature[]`).
      * We use `someFeature.asEntity` instead of `someFeature` when we want to avoid typescript

@@ -69,7 +69,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}
     ) as EngineConfig;
 
-    const { features, configurations } = findFeatures( basePath, fs, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
+    const { features, configurations } = findFeatures(basePath, fs, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
 
     if (configName) {
         config = [...evaluateConfig(configName, configurations, envName), ...config];

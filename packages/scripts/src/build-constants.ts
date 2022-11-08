@@ -46,10 +46,10 @@ export function parseConfigFileName(fileName: string) {
 }
 
 export type FileNameParser = (fileName: string) => {
-    featureName: string,
-    envName: string,
-    childEnvName?: string
-}
+    featureName: string;
+    envName: string;
+    childEnvName?: string;
+};
 
 export const parseEnvFileName: FileNameParser = (fileName) => {
     const [featureName, envName, childEnvName] = fileName.split(ENV_FILENAME_HINT).shift()!.split('.');
@@ -59,18 +59,18 @@ export const parseEnvFileName: FileNameParser = (fileName) => {
     }
 
     return { featureName, envName, childEnvName };
-}
+};
 
-export const parseContextFileName: FileNameParser= (fileName) => {
+export const parseContextFileName: FileNameParser = (fileName) => {
     const [featureName, envName, childEnvName] = fileName.split(CONTEXT_FILENAME_HINT).shift()!.split('.');
 
     if (!featureName || !envName || !childEnvName) {
         throw new Error(`cannot parse context file: ${fileName}`);
     }
     return { featureName, envName, childEnvName };
-}
+};
 
-export const parsePreloadFileName:FileNameParser = (fileName) => {
+export const parsePreloadFileName: FileNameParser = (fileName) => {
     const [featureName, envName, childEnvNameCandidate] = fileName.split(PRELOAD_FILENAME_HINT).shift()!.split('.');
 
     if (!featureName || !envName) {
@@ -78,4 +78,4 @@ export const parsePreloadFileName:FileNameParser = (fileName) => {
     }
 
     return { featureName, envName, childEnvName: childEnvNameCandidate };
-}
+};

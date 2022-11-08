@@ -22,25 +22,22 @@ create `tsconfig.json` file in the root directory
 
 ```json
 {
-    "compilerOptions": {
-        /* Visit https://aka.ms/tsconfig to read more about this file */
-        "target": "es2020",
-        "lib": [
-            "dom",
-            "es2020"
-        ],
-        "jsx": "react-jsx",
-        "module": "commonjs",
-        "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true,
-        "outDir": "./dist",
-        "importsNotUsedAsValues": "error",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "skipLibCheck": true
-    }
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig to read more about this file */
+    "target": "es2020",
+    "lib": ["dom", "es2020"],
+    "jsx": "react-jsx",
+    "module": "commonjs",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "importsNotUsedAsValues": "error",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  }
 }
 ```
 
@@ -72,11 +69,9 @@ create `webpack.config.js` file and add:
 const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
 
 module.exports = {
-    plugins: [new StylableWebpackPlugin()],
+  plugins: [new StylableWebpackPlugin()],
 };
-
 ```
-
 
 We create the feature file, in which we declare what is the feature's API and its Id.
 We also create a new environment - `my-env`.
