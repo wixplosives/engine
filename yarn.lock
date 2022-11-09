@@ -1060,17 +1060,17 @@
     read-package-json-fast "^2.0.3"
     which "^2.0.2"
 
-"@nrwl/cli@15.0.12":
-  version "15.0.12"
-  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-15.0.12.tgz#d5722d2e1775a6aa2c973845ce2df9cb2757d2b8"
-  integrity sha512-x5QJoon7neXvZ43ClcyUzuqGuAfz6aU/z23kSUquzB8z69lQWsBmt6jpJircb0id23u+PEEl9D8AMRnEBdQ25g==
+"@nrwl/cli@15.0.13":
+  version "15.0.13"
+  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-15.0.13.tgz#25b632e68464f9673e936a31b3bb2b3e6de87ebf"
+  integrity sha512-w0oOP4v176CbD34+VytiAItIH3fOeiaccq7T2Un/hhx+/Q9mdO/VWyYZOKmp85uGodx/yZ6LyGW6rX0BjM0Rsg==
   dependencies:
-    nx "15.0.12"
+    nx "15.0.13"
 
 "@nrwl/devkit@>=14.8.6 < 16":
-  version "15.0.12"
-  resolved "https://registry.yarnpkg.com/@nrwl/devkit/-/devkit-15.0.12.tgz#3019ab4454e575534b703306fb557f8ba35f60d8"
-  integrity sha512-esQoF8CZpKRCnvme0sXbkbM45NfXIpQK0Ur0MIx+Y16DnieTHhpbH94ugoL/COBsoMVwJ5MTRjKGIgHALQOikA==
+  version "15.0.13"
+  resolved "https://registry.yarnpkg.com/@nrwl/devkit/-/devkit-15.0.13.tgz#3943e6967cf93cb3115b04a4dc48494a5453e645"
+  integrity sha512-/8k7wbBRFf2UC+T4F+vWMy3bfSGi+uK6RwXk53moLq3nxehXaQhRiCqasC6VJFUw3zK6luu2T7xkPUlA9K9l4w==
   dependencies:
     "@phenomnomnominal/tsquery" "4.1.1"
     ejs "^3.1.7"
@@ -1078,12 +1078,12 @@
     semver "7.3.4"
     tslib "^2.3.0"
 
-"@nrwl/tao@15.0.12":
-  version "15.0.12"
-  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-15.0.12.tgz#03b5cdb03e934fc988ddf1f5c467bc1d0d9bc301"
-  integrity sha512-FCgGNQWFl/02BW3POKyEwSaDF4t4VZW1YP3oxM6J2zP/BZEhGB3GVsKyiki5JZY1zxV7g/tyVZrlf6heg2Yu1g==
+"@nrwl/tao@15.0.13":
+  version "15.0.13"
+  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-15.0.13.tgz#41120d7582d5bc2136c9d152b4c10aa3dce60f37"
+  integrity sha512-z55RKnVOYsiABKFUIj+QBf6I4fUwTlObxJpgUJp0i3E97P3BgbzhTG1EhuBxLH8fGKrbOAPs0ct38Asl+zGZfQ==
   dependencies:
-    nx "15.0.12"
+    nx "15.0.13"
 
 "@octokit/auth-token@^3.0.0":
   version "3.0.2"
@@ -3590,10 +3590,10 @@ electron-to-chromium@^1.4.251:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.284.tgz#61046d1e4cab3a25238f6bf7413795270f125592"
   integrity sha512-M8WEXFuKXMYMVr45fo8mq0wUrrJHheiKZf6BArTKk9ZBYCKJEOU5H8cdWgDT+qCVZf7Na4lVUaZsA+h6uA9+PA==
 
-electron@^21.2.2:
-  version "21.2.2"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-21.2.2.tgz#e2f3dd014981df555d2cd1655590168b404edae4"
-  integrity sha512-Q0j1tzLTM5JRjSJVAfDSONZgdtuyruHR1pc1y2IbMYQz62pVJWVWAvcJXzpty5iRh2HKzW9+B9WVlmfWNFA8ag==
+electron@^21.2.3:
+  version "21.2.3"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-21.2.3.tgz#7bd190f57b154ab85c92a2e52e0329fd40cbc7b9"
+  integrity sha512-Wyj0ri3P8hnWEvX7+2Q1OtNzJI8Qn4V9J+aeypoXh+wtlX/fjfHxi4vZkos/XRncoIeYCeUZ5nhGjsOIQwSElQ==
   dependencies:
     "@electron/get" "^1.14.1"
     "@types/node" "^16.11.26"
@@ -6153,13 +6153,13 @@ nth-check@^2.0.1:
   dependencies:
     boolbase "^1.0.0"
 
-nx@15.0.12, "nx@>=14.8.6 < 16":
-  version "15.0.12"
-  resolved "https://registry.yarnpkg.com/nx/-/nx-15.0.12.tgz#dc16da9503e5c5c27b994d2fae347848b1a2c155"
-  integrity sha512-y3fjeUhPNhBGMr9Q2B15ry6Os57BVX9ovYeSpqNtkd9YxHVrR43+Y40Kfeq/gXhKnE2UBEv3gD6S+XJt6h9JGg==
+nx@15.0.13, "nx@>=14.8.6 < 16":
+  version "15.0.13"
+  resolved "https://registry.yarnpkg.com/nx/-/nx-15.0.13.tgz#0ea00f2a7c3d31085014a1de40fa101f4b0307b7"
+  integrity sha512-5mJGWz91B9/sxzLjXdD+pmZTel54NeNNxFDis8OhtGDn6eRZ25qWsZNDgzqIDtwKn3c9gThAMHU4XH2OTgWUnA==
   dependencies:
-    "@nrwl/cli" "15.0.12"
-    "@nrwl/tao" "15.0.12"
+    "@nrwl/cli" "15.0.13"
+    "@nrwl/tao" "15.0.13"
     "@parcel/watcher" "2.0.4"
     "@yarnpkg/lockfile" "^1.1.0"
     "@yarnpkg/parsers" "^3.0.0-rc.18"
@@ -8146,10 +8146,10 @@ webpack-sources@^3.2.3:
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-3.2.3.tgz#2d4daab8451fd4b240cc27055ff6a0c2ccea0cde"
   integrity sha512-/DyMEOrDgLKKIG0fmvtz+4dUX/3Ghozwgm6iPp8KRhvn+eQf9+Q7GWxVNMk3+uCPWfdXYC4ExGBckIXdFEfH1w==
 
-webpack@^5.74.0:
-  version "5.74.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.74.0.tgz#02a5dac19a17e0bb47093f2be67c695102a55980"
-  integrity sha512-A2InDwnhhGN4LYctJj6M1JEaGL7Luj6LOmyBHjcI8529cm5p6VXiTIW2sn6ffvEAKmveLzvu4jrihwXtPojlAA==
+webpack@^5.75.0:
+  version "5.75.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.75.0.tgz#1e440468647b2505860e94c9ff3e44d5b582c152"
+  integrity sha512-piaIaoVJlqMsPtX/+3KTTO6jfvrSYgauFVdt8cr9LTHKmcq/AMd4mhzsiP7ZF/PGRNPGA8336jldh9l2Kt2ogQ==
   dependencies:
     "@types/eslint-scope" "^3.7.3"
     "@types/estree" "^0.0.51"
