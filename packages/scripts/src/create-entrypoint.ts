@@ -457,10 +457,8 @@ function getConfigsFromParent(publicConfigsRoute: string, envName: string) {
         }, '*');
     });`;
 }
-
 //#endregion
 
-//#endregion
 function normalizeRoute(route: string) {
     return route + (route && !route.endsWith('/') ? '/' : '');
 }

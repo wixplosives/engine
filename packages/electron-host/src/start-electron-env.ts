@@ -20,13 +20,11 @@ export interface ElectronEnvParams {
     devport?: number;
     devtools?: boolean;
     outDir?: string;
-    externalsPath?: string;
     features: Map<string, Required<IStaticFeatureDefinition>>;
     config: TopLevelConfig;
     requiredModules?: string[];
     env: Environment;
 }
-export const DEFAULT_EXTERNAL_FEATURES_PATH = '/external-features.json';
 
 export async function runElectronEnv({
     basePath,
@@ -35,7 +33,6 @@ export async function runElectronEnv({
     featureName,
     devport,
     devtools,
-    externalsPath = DEFAULT_EXTERNAL_FEATURES_PATH,
     features,
     config,
     requiredModules,
@@ -74,7 +71,6 @@ export async function runElectronEnv({
             nodeEntryPath,
             devtools,
             devport,
-            externalsPath,
             features: Array.from(features.entries()),
             config: generalConfig,
             requiredModules,

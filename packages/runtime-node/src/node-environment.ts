@@ -71,7 +71,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
 
-    // if context is not provided, environment will not load external features
+    // TODO! Investigate if this is for external features only
     if (context) {
         // mapping all found feature file requests to the current running context, so that external features, when importing feature files, will evaluate the files under the current context
         [...features.values()].map(([, { packageName }]) =>

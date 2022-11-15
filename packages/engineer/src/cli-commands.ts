@@ -142,8 +142,6 @@ export function buildCommand(program: Command) {
         .option('--outDir <outDir>', 'output directory for the built application', 'dist-app')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
-        .option('--external [true|false]', 'build feature as external', parseBoolean, false)
-        .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
         .option(
             '--configLoaderModuleName [configLoaderModuleName]',
             'custom config loader module name. used for static builds only'
@@ -151,10 +149,6 @@ export function buildCommand(program: Command) {
         .option(
             '--sourcesRoot <sourcesRoot>',
             'the directory where the feature library will be published at (relative to the base path). default: "."'
-        )
-        .option(
-            '--staticExternalsDescriptor <staticExternalsDescriptor>',
-            'relative to the output directory - a path to a json file which retrieves all external feature descriptors'
         )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -170,7 +164,6 @@ export function buildCommand(program: Command) {
                 faviconPath,
                 publicConfigsRoute,
                 webpackConfig,
-                external,
                 sourcesRoot,
                 eagerEntrypoints,
                 featureDiscoveryRoot,
@@ -193,7 +186,6 @@ export function buildCommand(program: Command) {
                     favicon,
                     publicConfigsRoute,
                     webpackConfigPath: webpackConfig,
-                    external,
                     sourcesRoot,
                     eagerEntrypoint: eagerEntrypoints,
                     configLoaderModuleName,

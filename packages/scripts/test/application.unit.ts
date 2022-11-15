@@ -92,23 +92,6 @@ describe('Application', function () {
                 expect(manifest.defaultFeatureName).to.eq('engine-single/x');
             });
 
-            it('includes entrypoint locations when built externally', async () => {
-                const app = new Application({ basePath: engineFeatureFixturePath });
-
-                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
-                await app.build({
-                    featureName: 'engine-single/x',
-                    external: true,
-                });
-                disposables.add(() => app.clean());
-                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-
-                expect(manifest.entryPoints).to.not.eq(undefined);
-                expect(Object.keys(manifest.entryPoints)).have.lengthOf(1);
-                expect(manifest.entryPoints['main']).to.not.eq(undefined);
-                expect(manifest.entryPoints['main']!['web']).to.eq('dist-app/main.web.js');
-            });
-
             it('maps own feature requests to relative requests if output path inside package directory', async () => {
                 const app = new Application({ basePath: engineFeatureFixturePath });
 
@@ -175,69 +158,6 @@ describe('Application', function () {
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
                 expect(filePath).to.eq('@fixture/engine-single-feature/lib/dist/feature/x.feature');
-            });
-        });
-
-        describe('external mode', () => {
-            it('allows building features in external mode', async () => {
-                const app = new Application({ basePath: engineFeatureFixturePath });
-                await app.build({ external: true, featureName: 'engine-single/x' });
-                disposables.add(() => app.clean());
-                expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
-                const contents = fs.readdirSync(app.outputPath);
-                expect(contents).to.include('main.web.js');
-            });
-
-            it('creates a node entry', async () => {
-                const app = new Application({ basePath: nodeFeatureFixturePath });
-                await app.build({ external: true, featureName: 'engine-node/x' });
-                disposables.add(() => app.clean());
-
-                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
-                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-                expect(manifest.entryPoints['server']).to.not.eq(undefined);
-                const nodeEntryModule = (await import(
-                    fs.join(nodeFeatureFixturePath, manifest.entryPoints['server']!['node']!)
-                )) as Record<string, IFeatureLoader>;
-
-                expect(nodeEntryModule['engine-node/x']).to.not.eq(undefined);
-                const loadedModule = await nodeEntryModule['engine-node/x']?.load({});
-                expect(loadedModule).to.not.eq({});
-            });
-
-            it('creates a node entry with re-mapped sources', async () => {
-                const tempDirPath = mkdtempSync(fs.join(os.tmpdir(), 'some-test'));
-
-                disposables.add(() => fs.rmSync(tempDirPath, { force: true, recursive: true }));
-
-                const app = new Application({
-                    basePath: nodeFeatureFixturePath,
-                    outputPath: fs.join(tempDirPath, 'dist'),
-                });
-                await app.build({ external: true, featureName: 'engine-node/x', sourcesRoot: 'lib' });
-
-                disposables.add(() => app.clean());
-
-                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
-                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-                expect(manifest.entryPoints['server']).to.not.eq(undefined);
-                const nodeEntryModule = (await import(
-                    fs.join(tempDirPath, manifest.entryPoints['server']!['node']!)
-                )) as Record<string, IFeatureLoader>;
-                expect(nodeEntryModule['engine-node/x']).to.not.eq(undefined);
-
-                fs.symlinkSync(
-                    fs.join(__dirname, '../../../node_modules'),
-                    fs.join(tempDirPath, 'node_modules'),
-                    'junction'
-                );
-
-                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.be.rejectedWith();
-                fs.copyDirectorySync(
-                    fs.join(nodeFeatureFixturePath, 'dist/feature'),
-                    fs.join(tempDirPath, 'lib/feature')
-                );
-                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.not.be.rejectedWith();
             });
         });
     });

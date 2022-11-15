@@ -27,9 +27,6 @@ export const isFeatureFile = (fileName: string) =>
 export const isContextFile = (fileName: string) =>
     fileName.indexOf(CONTEXT_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 
-// external features
-export const EXTERNAL_FEATURES_BASE_URI = 'external-features';
-
 export function parseFeatureFileName(fileName: string): string {
     return fileName.split(FEATURE_FILENAME_HINT).shift()!;
 }

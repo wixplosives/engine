@@ -1,5 +1,5 @@
+import type { SetMultiMap } from '@wixc3/common';
 import performance from '@wixc3/cross-performance';
-import type { SetMultiMap } from '@wixc3/engine-core';
 import type { IConfigDefinition, LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
     Application,
