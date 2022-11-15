@@ -1,13 +1,12 @@
 {
   "name": "@wixc3/engine-electron-node",
-  "version": "26.3.0",
+  "version": "29.1.1",
   "main": "dist/index.js",
   "dependencies": {
-    "@wixc3/engine-core": "^26.3.0",
-    "@wixc3/engine-core-node": "^26.3.0",
-    "@wixc3/engine-electron-commons": "^26.3.0",
-    "@wixc3/engine-runtime-node": "^26.3.0",
-    "lodash.once": "^4.1.1"
+    "@wixc3/engine-core": "^29.1.1",
+    "@wixc3/engine-core-node": "^29.1.1",
+    "@wixc3/engine-electron-commons": "^29.1.1",
+    "@wixc3/engine-runtime-node": "^29.1.1"
   },
   "peerDependencies": {
     "electron": ">=9"

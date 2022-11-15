@@ -1,29 +1,29 @@
 import { spawn, SpawnOptions } from 'child_process';
 import { IPCHost } from '@wixc3/engine-core-node';
-import type { Communication, EnvironmentInitializer, InitializerOptions } from '@wixc3/engine-core';
+import type { EnvironmentInitializer, InitializerOptions } from '@wixc3/engine-core';
 import type { IEngineRuntimeArguments, INodeEnvStartupMessage, NodeEnvironmentStartupOptions } from '../types';
 import treeKill from 'tree-kill';
 import { promisify } from 'util';
 const promisifiedTreeKill = promisify(treeKill);
 
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
-    getApplicationMetaData: (com: Communication) => Promise<IEngineRuntimeArguments>;
+    runtimeArguments: IEngineRuntimeArguments;
     environmentStartupOptions?: Partial<NodeEnvironmentStartupOptions>;
-    processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env'>;
+    processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env' | 'stdio'>;
 }
 
 /**
  * Spawn a node-based environment from the renderer process.
  * Should be invoked *only* from the renderer process.
+ * The caller should await returned `environmentIsReady` promise to ensure environment initialization is finished.
  */
 
 export const initializeNodeEnvironment: EnvironmentInitializer<
-    Promise<{ id: string; dispose: () => void; onDisconnect: (cb: () => void) => void }>,
+    { id: string; dispose: () => void; onDisconnect: (cb: () => void) => void; environmentIsReady: Promise<void> },
     InitializeNodeEnvironmentOptions
-> = async ({ communication, env, getApplicationMetaData, processOptions, environmentStartupOptions }) => {
+> = ({ communication, env, runtimeArguments, processOptions, environmentStartupOptions }) => {
     const environmentIsReady = communication.envReady(env.env);
 
-    const runtimeArguments = await getApplicationMetaData(communication);
     const nodeEnvStartupArguments: NodeEnvironmentStartupOptions = {
         ...runtimeArguments,
         ...environmentStartupOptions,
@@ -37,8 +37,8 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         environmentStartupOptions?.execPath ?? process.execPath,
         ['--unhandled-rejections=strict', runtimeArguments.nodeEntryPath],
         {
-            ...processOptions,
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+            ...processOptions,
             detached: true,
             env: {
                 ...process.env,
@@ -61,7 +61,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     child.stderr?.setEncoding('utf8');
     child.stdout?.on('data', console.log); // eslint-disable-line no-console
     child.stderr?.on('data', console.error); // eslint-disable-line no-console
-    await environmentIsReady;
+
     return {
         id: env.env,
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -73,5 +73,6 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         onDisconnect: (cb: () => void) => {
             child.on('exit', cb);
         },
+        environmentIsReady,
     };
 };

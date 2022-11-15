@@ -5,7 +5,7 @@ import { safeListeningHttpServer } from 'create-listening-server';
 import io from 'socket.io';
 
 import { expect } from 'chai';
-import sinon from 'sinon';
+import sinon, { spy } from 'sinon';
 import { waitFor } from 'promise-assist';
 
 import {
@@ -98,6 +98,63 @@ describe('Socket communication', () => {
 
         const methods = clientCom.apiProxy<ICommunicationTestApi>({ id: 'server-host' }, { id: COMMUNICATION_ID });
         expect(await methods.sayHelloWithDataAndParams('test')).to.eq('hello test');
+    });
+
+    it('Should be able to subscribe/unsubscribe to server', async () => {
+        const COMMUNICATION_ID = 'node-com';
+        const clientCom = new Communication(clientHost, 'client-host', serverTopology);
+        const serverCom = new Communication(serverHost, 'server-host');
+
+        let data = 0;
+        const listeners = new Set<(data: string) => void>();
+        const subscribableApi = {
+            getListenerCount() {
+                return listeners.size;
+            },
+            sub(listener: (data: string) => void) {
+                listeners.add(listener);
+            },
+            unsub(listener: (data: string) => void) {
+                listeners.delete(listener);
+            },
+            invoke() {
+                data++;
+                listeners.forEach((cb) => cb(`${data}`));
+            },
+        };
+
+        serverCom.registerAPI<typeof subscribableApi>({ id: COMMUNICATION_ID }, subscribableApi);
+
+        const methods = clientCom.apiProxy<typeof subscribableApi>(
+            { id: 'server-host' },
+            { id: COMMUNICATION_ID },
+            {
+                sub: {
+                    listener: true,
+                },
+                unsub: {
+                    removeListener: 'sub',
+                },
+            }
+        );
+
+        const listener = spy();
+        await methods.sub(listener);
+
+        await methods.invoke();
+        expect(listener.calledWith('1')).to.eql(true);
+        await methods.invoke();
+        expect(listener.calledWith('2')).to.eql(true);
+
+        expect(await methods.getListenerCount()).to.eql(1);
+
+        listener.resetHistory();
+        await methods.unsub(listener);
+
+        await methods.invoke();
+
+        expect(listener.calledWith('3')).to.eql(false);
+        expect(await methods.getListenerCount()).to.eql(0);
     });
 
     it('One client should get messages from 2 server communications', async () => {

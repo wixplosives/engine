@@ -1,8 +1,8 @@
+import { once } from '@wixc3/common';
+import type { InitializerOptions } from '@wixc3/engine-core';
+import { electronRuntimeArguments } from '@wixc3/engine-electron-commons';
 import { BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
-import once from 'lodash.once';
-import { electronRuntimeArguments } from '@wixc3/engine-electron-commons';
-import type { InitializerOptions } from '@wixc3/engine-core';
 
 import { ElectronBrowserHost } from '../hosts/electron-node-host';
 import type { InitializedBrowserEnvironment, IWindowEnvironmentOptions } from './types';

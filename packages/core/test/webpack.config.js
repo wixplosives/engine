@@ -27,5 +27,9 @@ module.exports = {
             filename: `iframe.html`,
             chunks: ['iframe'],
         }),
+        new HtmlWebpackPlugin({
+            filename: `delayed-iframe.html`,
+            chunks: ['delayed-iframe'],
+        }),
     ],
 };

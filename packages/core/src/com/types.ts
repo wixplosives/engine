@@ -42,7 +42,7 @@ export interface EnvironmentRecord {
 
 export type UnknownFunction = (...args: unknown[]) => unknown;
 
-export type AsyncApi<T> = {
+export type AsyncApi<T extends object> = {
     [P in keyof T]: P extends keyof ServiceConfig<T>
         ? MultiTanentProxyFunction<T, P extends string ? P : never>
         : T[P] extends (...args: any[]) => PromiseLike<any>

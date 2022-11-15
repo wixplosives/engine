@@ -1,4 +1,5 @@
-import type { SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import type { SetMultiMap } from '@wixc3/common';
+import type { TopLevelConfig } from '@wixc3/engine-core';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import type webpack from 'webpack';
 import { createMainEntrypoint } from './create-entrypoint';

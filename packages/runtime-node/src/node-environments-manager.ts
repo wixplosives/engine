@@ -5,7 +5,6 @@ import io from 'socket.io';
 import { safeListeningHttpServer } from 'create-listening-server';
 import {
     TopLevelConfig,
-    SetMultiMap,
     Communication,
     BaseHost,
     COM,
@@ -13,7 +12,7 @@ import {
     ConfigEnvironmentRecord,
     ReadyMessage,
 } from '@wixc3/engine-core';
-
+import type { SetMultiMap } from '@wixc3/common';
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
 import {

@@ -1,27 +1,27 @@
-import type { WindowHost } from '../types';
 import type { Communication } from '../communication';
-import { isIframe } from '../helpers';
-import { injectScript } from '../../helpers';
 import type { InitializerOptions } from './types';
+import { WindowInitializerService } from '../window-initializer-service';
 
+export const INSTANCE_ID_PARAM_NAME = 'iframe-instance-id';
 export interface IIframeInitializerOptions {
     /** the iframe element to launch the environment on */
     iframeElement: HTMLIFrameElement;
     /**
      * custom source url
-     * if launching a managed iframe, the src should point to an html content
-     * if launching not managed iframe, the src should point to a js content
+     * the src should point to an html content
      */
     src?: string;
     /**
-     * if launching iframe in "managed" mode, it will parse the hash params on the other hand and listen to them
+     * it will parse the hash params on the other hand and listen to them
      */
     hashParams?: string;
     /**
-     * if true, allows control over ifrsme content via hash parameters also.
-     * @default false
+     * target host for iframe
+     * can be used to isolate environment on cross origin
+     * @property {src} will overrule this
+     * @example http://127.0.0.1
      */
-    managed?: boolean;
+    origin?: string;
 }
 
 export interface IframeInitializerOptions extends InitializerOptions, IIframeInitializerOptions {}
@@ -47,66 +47,31 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
 
     return {
         id: instanceId,
-        initialize: ({ managed, iframeElement, hashParams, src }: IIframeInitializerOptions) => {
+        initialize: ({ iframeElement, hashParams, src, origin }: IIframeInitializerOptions) => {
             const publicPath = com.getPublicPath();
-            const baseStartIframeParams: StartIframeBaseOptions = {
+            const startIframeParams: StartIframeParams = {
                 com,
                 envReadyPromise,
                 instanceId,
-                src:
-                    src ??
-                    (managed
-                        ? defaultHtmlSourceFactory(env, publicPath, hashParams)
-                        : defaultSourceFactory(env, publicPath)),
+                iframe: iframeElement,
+                src: src ?? defaultHtmlSourceFactory(env, publicPath, hashParams, origin),
             };
-            return managed
-                ? startManagedIframe({
-                      ...baseStartIframeParams,
-                      iframe: iframeElement,
-                  })
-                : startIframe({
-                      ...baseStartIframeParams,
-                      host: iframeElement,
-                  });
+            return startIframe(startIframeParams);
         },
     };
 }
 
-interface StartIframeBaseOptions {
+interface StartIframeParams {
     com: Communication;
     instanceId: string;
     src: string;
     envReadyPromise: Promise<void>;
-}
-
-interface StartIframeParams extends StartIframeBaseOptions {
-    host: WindowHost;
-}
-
-interface StartManagedIframeParams extends StartIframeBaseOptions {
     iframe: HTMLIFrameElement;
-}
-
-async function startIframe({ com, host, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
-    const win = isIframe(host) ? host.contentWindow : host;
-    if (!win) {
-        throw new Error('cannot spawn detached iframe.');
-    }
-    com.registerEnv(instanceId, win);
-    await injectScript(win, instanceId, src);
-    await envReadyPromise;
-    return instanceId;
 }
 
 const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
-async function startManagedIframe({
-    com,
-    iframe,
-    instanceId,
-    src,
-    envReadyPromise,
-}: StartManagedIframeParams): Promise<string> {
+async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
     if (!iframe.contentWindow) {
         throw new Error('Cannot initialize environment in a detached iframe');
     }
@@ -119,44 +84,45 @@ async function startManagedIframe({
         });
     });
 
-    // If the iframe already has a page loaded into it, that page doesn't immediately
-    // get disposed on URL change, and its scripts keep running. Changing `window.name`
-    // before the old page has unloaded could cause it to incorrectly use the new
-    // environment's ID as its own. To prevent any kinds of race conditions we wait
-    // for the old page to fully unload before initializing the new one.
-    //
-    // The consumers might be listening to the iframe's URL changes to detect when
-    // the iframe's contents were lost after it had been moved in the DOM. Changing
-    // the URL to 'about:blank' would inadvertently trigger that detection, to avoid
-    // this we add an unused URL param '?not-blank'.
-
-    if (!iframe.contentWindow.location.href.startsWith('about:blank')) {
-        iframe.contentWindow.location.replace('about:blank?not-blank');
-        await Promise.race([waitForCancel, waitForLoad(iframe)]);
-    }
-
-    if (!iframe.contentWindow.location.href.startsWith('about:blank')) {
-        throw new Error('Iframe location has changed during environment initialization');
-    }
-
-    const cleanup = () => com.clearEnvironment(instanceId);
+    const cleanup = () => {
+        com.clearEnvironment(instanceId);
+    };
 
     try {
-        const href = new URL(src, window.location.href).href;
         const contentWindow = iframe.contentWindow;
-        contentWindow.name = instanceId;
-        com.registerEnv(instanceId, contentWindow);
-        contentWindow.location.replace(href);
-        await Promise.race([waitForCancel, waitForLoad(iframe)]);
+        const url = new URL(src, window.location.href);
 
-        if (iframe.contentWindow !== contentWindow || iframe.contentWindow.location.href !== href) {
+        com.registerEnv(instanceId, contentWindow);
+        // pass instance id in query param for engine initialization
+        // script that will run in the iframe can pick it up
+        url.searchParams.set(INSTANCE_ID_PARAM_NAME, instanceId);
+        iframe.src = url.href;
+
+        await Promise.race([waitForCancel, waitForLoad(iframe), envReadyPromise]);
+
+        const api = com.apiProxy<WindowInitializerService>(
+            { id: instanceId },
+            { id: WindowInitializerService.apiId },
+            {
+                oncePageHide: {
+                    listener: true,
+                },
+            }
+        );
+        const postInitHref = await api.getHref();
+
+        if (iframe.contentWindow !== contentWindow || postInitHref !== url.href) {
             throw new Error('Iframe location has changed during environment initialization');
         }
 
-        contentWindow.addEventListener('unload', cleanup);
-        await Promise.race([waitForCancel, envReadyPromise]);
-
+        // pagehide is used on purpose since it is more reliable than onUnload
+        // onUnload does not send postMessages on cross origin
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=964950
+        await api.oncePageHide(() => {
+            cleanup();
+        });
         cancellationTriggers.delete(iframe);
+
         return instanceId;
     } catch (e) {
         cleanup();
@@ -167,10 +133,6 @@ async function startManagedIframe({
 const waitForLoad = (elem: HTMLElement) =>
     new Promise((resolve) => elem.addEventListener('load', resolve, { once: true }));
 
-const defaultHtmlSourceFactory = (envName: string, publicPath = '', hashParams?: string) => {
-    return `${publicPath}${envName}.html${location.search}${hashParams ?? ''}`;
-};
-
-const defaultSourceFactory = (envName: string, publicPath = '') => {
-    return `${publicPath}${envName}.web.js${location.search}`;
+const defaultHtmlSourceFactory = (envName: string, publicPath = '', hashParams?: string, origin = '') => {
+    return `${origin}${publicPath}${envName}.html${location.search}${hashParams ?? ''}`;
 };

@@ -10,33 +10,37 @@ export interface IFeatureDirectory {
     preloads: string[];
 }
 
-export interface ILoadFeatureDirectoryOptions {
-    directoryPath: string;
-    fs: IFileSystemSync;
-}
-
-export function loadFeatureDirectory({ fs, directoryPath }: ILoadFeatureDirectoryOptions): IFeatureDirectory {
-    const features: string[] = [];
-    const configurations: string[] = [];
-    const envs: string[] = [];
-    const contexts: string[] = [];
-    const preloads: string[] = [];
+export function loadFeatureDirectory(
+    directoryPath: string,
+    fs: IFileSystemSync,
+    ignoreConfigs = false
+): IFeatureDirectory {
+    const dir = {
+        features: [] as string[],
+        envs: [] as string[],
+        configurations: [] as string[],
+        contexts: [] as string[],
+        preloads: [] as string[],
+    };
     for (const item of fs.readdirSync(directoryPath, { withFileTypes: true })) {
-        const itemName = item.name;
-        const itemPath = fs.join(directoryPath, itemName);
-        if (item.isFile()) {
-            if (isFeatureFile(itemName)) {
-                features.push(itemPath);
-            } else if (isConfigFile(itemName)) {
-                configurations.push(itemPath);
-            } else if (isEnvFile(itemName)) {
-                envs.push(itemPath);
-            } else if (isContextFile(itemName)) {
-                contexts.push(itemPath);
-            } else if (isPreloadFile(itemName)) {
-                preloads.push(itemPath);
-            }
+        const name = item.name;
+        const path = fs.join(directoryPath, name);
+        const type = getFileType(name);
+        if (item.isFile() && type && type in dir) {
+            dir[type].push(path);
         }
     }
-    return { directoryPath, features, envs, configurations, contexts, preloads };
+    if (ignoreConfigs) {
+        dir.configurations = [];
+    }
+    return { directoryPath, ...dir };
 }
+
+const getFileType = (fileName: string) => {
+    if (isFeatureFile(fileName)) return 'features';
+    if (isConfigFile(fileName)) return 'configurations';
+    if (isEnvFile(fileName)) return 'envs';
+    if (isContextFile(fileName)) return 'contexts';
+    if (isPreloadFile(fileName)) return 'preloads';
+    return undefined;
+};

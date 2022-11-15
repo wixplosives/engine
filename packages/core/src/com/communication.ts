@@ -33,7 +33,8 @@ import type {
 
 import { SERVICE_CONFIG } from '../symbols';
 
-import { SetMultiMap, deferred, serializeError } from '../helpers';
+import { serializeError } from '../helpers';
+import { SetMultiMap, deferred } from '@wixc3/common';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
@@ -72,7 +73,7 @@ export class Communication {
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
-    private disposListeners = new Set<(envId: string) => void>();
+    private disposeListeners = new Set<(envId: string) => void>();
     private callbackToEnvMapping = new Map<string, string>();
 
     constructor(
@@ -90,7 +91,13 @@ export class Communication {
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
 
-        this.post(this.getPostEndpoint(host), { type: 'ready', from: id, to: '*', origin: id });
+        this.post(this.getPostEndpoint(host), {
+            type: 'ready',
+            from: id,
+            to: '*',
+            origin: id,
+            forwardingChain: [],
+        });
 
         for (const [id, envEntry] of Object.entries(this.options.connectedEnvironments)) {
             if (envEntry.registerMessageHandler) {
@@ -141,16 +148,16 @@ export class Communication {
     }
 
     public subscribeToEnvironmentDispose(handler: (envId: string) => void) {
-        this.disposListeners.add(handler);
+        this.disposeListeners.add(handler);
     }
     public unsubscribeToEnvironmentDispose(handler: (envId: string) => void) {
-        this.disposListeners.delete(handler);
+        this.disposeListeners.delete(handler);
     }
 
     /**
      * Creates a Proxy for a remote service api.
      */
-    public apiProxy<T>(
+    public apiProxy<T extends object>(
         instanceToken: EnvironmentInstanceToken | Promise<EnvironmentInstanceToken>,
         { id: api }: IDTag,
         serviceComConfig: ServiceComConfig<T> = {}
@@ -169,7 +176,8 @@ export class Communication {
                                 method,
                                 args,
                                 this.rootEnvId,
-                                serviceComConfig as Record<string, AnyServiceMethodOptions>
+                                serviceComConfig as Record<string, AnyServiceMethodOptions>,
+                                []
                             );
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         obj[method] = runtimeMethod;
@@ -227,7 +235,8 @@ export class Communication {
         method: string,
         args: unknown[],
         origin: string,
-        serviceComConfig: Record<string, AnyServiceMethodOptions>
+        serviceComConfig: Record<string, AnyServiceMethodOptions>,
+        forwardingChain: string[]
     ): Promise<unknown> {
         return new Promise<void>((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
@@ -241,6 +250,7 @@ export class Communication {
                     origin,
                     serviceComConfig,
                     args[0] as UnknownFunction,
+                    forwardingChain,
                     res,
                     rej
                 );
@@ -252,6 +262,7 @@ export class Communication {
                     data: { api, method, args },
                     callbackId,
                     origin,
+                    forwardingChain,
                 };
                 this.callWithCallback(envId, message, callbackId, res, rej);
             }
@@ -314,11 +325,11 @@ export class Communication {
                 host.dispose();
             }
             this.removeMessageHandler(host);
-            this.localyClear(id);
+            this.locallyClear(id);
         }
 
-        this.localyClear(this.rootEnvId);
-        this.disposListeners.clear();
+        this.locallyClear(this.rootEnvId);
+        this.disposeListeners.clear();
 
         for (const [id, { timerId }] of Object.entries(this.callbacks)) {
             clearTimeout(timerId);
@@ -367,6 +378,7 @@ export class Communication {
                 callbackId: this.idsCounter.next('c'),
                 origin: this.rootEnvId,
                 handlerId,
+                forwardingChain: [],
             };
             this.createCallbackRecord(message, message.callbackId!, res, rej);
             this.sendTo(instanceId, message);
@@ -422,14 +434,15 @@ export class Communication {
                         from: this.rootEnvId,
                         to: env,
                         origin: instanceId,
+                        forwardingChain: [],
                     });
                 }
             }
         }
-        this.localyClear(instanceId);
+        this.locallyClear(instanceId);
     }
 
-    private localyClear(instanceId: string) {
+    private locallyClear(instanceId: string) {
         this.readyEnvs.delete(instanceId);
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
@@ -443,20 +456,34 @@ export class Communication {
                 this.callbackToEnvMapping.delete(callbackId);
             }
         }
-        for (const dispose of this.disposListeners) {
+        for (const dispose of this.disposeListeners) {
             dispose(instanceId);
         }
     }
 
     private async forwardMessage(message: Message, env: EnvironmentRecord): Promise<void> {
+        const responseMessage: Message = {
+            from: message.to,
+            to: message.from,
+            callbackId: message.callbackId,
+            origin: message.to,
+            type: 'callback',
+            forwardingChain: [this.rootEnvId],
+        };
+
+        if (message.forwardingChain.indexOf(this.rootEnvId) > -1) {
+            this.sendTo(message.from, {
+                ...responseMessage,
+                error: new Error(
+                    `cannot reach environment '${message.to}' from '${message.from}' since it's stuck in circular messaging loop`
+                ),
+            });
+            return;
+        }
+
+        message.forwardingChain = [...message.forwardingChain, this.rootEnvId];
+
         if (message.type === 'call') {
-            const responseMessage: Message = {
-                from: message.to,
-                to: message.from,
-                callbackId: message.callbackId,
-                origin: message.to,
-                type: 'callback',
-            };
             try {
                 const data = await this.callMethod(
                     env.id,
@@ -464,7 +491,8 @@ export class Communication {
                     message.data.method,
                     message.data.args,
                     message.origin,
-                    {}
+                    {},
+                    message.forwardingChain
                 );
 
                 if (message.callbackId) {
@@ -507,6 +535,7 @@ export class Communication {
                     data: args,
                     handlerId,
                     origin: message.from,
+                    forwardingChain: [],
                 });
             };
             this.eventDispatchers[handlerId] = handler;
@@ -519,6 +548,7 @@ export class Communication {
                 message.origin,
                 { [message.data.method]: { listener: true } },
                 handler,
+                message.forwardingChain,
                 res,
                 rej
             );
@@ -531,6 +561,7 @@ export class Communication {
             from: message.to,
             origin: message.origin,
             data,
+            forwardingChain: [],
         };
 
         this.sendTo(message.from, replyCallback);
@@ -557,6 +588,7 @@ export class Communication {
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
         fn: UnknownFunction,
+        forwardingChain: string[],
         res: () => void,
         rej: () => void
     ) {
@@ -587,6 +619,7 @@ export class Communication {
                     },
                     handlerId: listenerHandlerId,
                     origin,
+                    forwardingChain,
                 };
                 // sometimes the callback will never happen since target environment is already dead
                 this.sendTo(envId, message);
@@ -618,6 +651,7 @@ export class Communication {
                         handlerId: this.createHandlerRecord(envId, api, method, fn),
                         callbackId,
                         origin,
+                        forwardingChain,
                     };
 
                     this.callWithCallback(envId, message, callbackId, res, rej);
@@ -634,10 +668,13 @@ export class Communication {
         res: () => void,
         rej: () => void
     ) {
-        this.sendTo(envId, message);
         if (callbackId) {
             this.createCallbackRecord(message, callbackId, res, rej);
-        } else {
+        }
+
+        this.sendTo(envId, message);
+
+        if (!callbackId) {
             res();
         }
     }
@@ -706,9 +743,10 @@ export class Communication {
         }
     }
     private async handleUnListen(message: UnListenMessage) {
-        const dispatcher = this.eventDispatchers[message.handlerId];
+        const namespacedHandlerId = message.handlerId + message.origin;
+        const dispatcher = this.eventDispatchers[namespacedHandlerId];
         if (dispatcher) {
-            delete this.eventDispatchers[message.handlerId];
+            delete this.eventDispatchers[namespacedHandlerId];
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
             if (message.callbackId) {
                 this.sendTo(message.from, {
@@ -718,6 +756,7 @@ export class Communication {
                     data,
                     callbackId: message.callbackId,
                     origin: this.rootEnvId,
+                    forwardingChain: [],
                 });
             }
         }
@@ -740,6 +779,7 @@ export class Communication {
                     },
                 },
                 this.eventDispatchers[message.handlerId]!,
+                message.forwardingChain,
                 res,
                 rej
             )
@@ -754,13 +794,17 @@ export class Communication {
                 data,
                 callbackId: message.callbackId,
                 origin: message.to,
+                forwardingChain: [],
             });
         }
     }
 
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
-            const dispatcher = this.eventDispatchers[message.handlerId] || this.createDispatcher(message.from, message);
+            const namespacedHandlerId = message.handlerId + message.origin;
+
+            const dispatcher =
+                this.eventDispatchers[namespacedHandlerId] || this.createDispatcher(message.from, message);
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
 
             if (message.callbackId) {
@@ -771,6 +815,7 @@ export class Communication {
                     data,
                     callbackId: message.callbackId,
                     origin: this.rootEnvId,
+                    forwardingChain: [],
                 });
             }
         } catch (error) {
@@ -781,6 +826,7 @@ export class Communication {
                 error: serializeError(error),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
+                forwardingChain: [],
             });
         }
     }
@@ -796,6 +842,7 @@ export class Communication {
                     data,
                     callbackId: message.callbackId,
                     origin: this.rootEnvId,
+                    forwardingChain: [],
                 });
             }
         } catch (error) {
@@ -806,6 +853,7 @@ export class Communication {
                 error: serializeError(error),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
+                forwardingChain: [],
             });
         }
     }
@@ -833,15 +881,17 @@ export class Communication {
     }
 
     private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
-        const handlerId = message.handlerId;
-        return (this.eventDispatchers[handlerId] = (...args: SerializableArguments) => {
+        const namespacedHandlerId = message.handlerId + message.origin;
+
+        return (this.eventDispatchers[namespacedHandlerId] = (...args: SerializableArguments) => {
             this.sendTo(envId, {
                 to: envId,
                 from: this.rootEnvId,
                 type: 'event',
                 data: args,
-                handlerId,
+                handlerId: message.handlerId,
                 origin: this.rootEnvId,
+                forwardingChain: [],
             });
         });
     }

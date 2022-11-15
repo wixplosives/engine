@@ -1,4 +1,4 @@
-import type { Feature } from '@wixc3/engine-core';
+import type { Dependency, Feature, IFeature } from '@wixc3/engine-core';
 
 // { featureName, depth of dep from root feature }
 export type Nodes = Record<string, { name: string; group: number }>;
@@ -15,7 +15,7 @@ export const buildFeatureLinks = (entry: Feature) => {
     return { nodes: Object.values(nodes), links };
 };
 
-const buildFeatureLinksHelper = (entry: Feature<string, Array<Feature>>, visitedFeatures: Nodes, level: number) => {
+const buildFeatureLinksHelper = (entry: IFeature<string, Dependency[]>, visitedFeatures: Nodes, level: number) => {
     const featureLinks: Array<{
         source: string;
         target: string;

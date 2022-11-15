@@ -1,6 +1,6 @@
 import fs from '@file-services/node';
 import {
-    readFeatures,
+    findFeatures,
     evaluateConfig,
     IFeatureDefinition,
     ENGINE_CONFIG_FILE_NAME,
@@ -16,6 +16,7 @@ import {
     flattenTree,
     Running,
     AnyEnvironment,
+    Dependency,
 } from '@wixc3/engine-core';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
@@ -37,9 +38,9 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
     env: ENV;
 }
 
-export interface IGetRuinnnigFeatureOptions<
+export interface IGetRunnigFeatureOptions<
     NAME extends string,
-    DEPS extends Feature[],
+    DEPS extends Dependency[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends AnyEnvironment
@@ -66,7 +67,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}
     ) as EngineConfig;
 
-    const { features, configurations } = readFeatures(fs, basePath, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
+    const { features, configurations } = findFeatures(basePath, fs, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
 
     if (configName) {
         config = [...evaluateConfig(configName, configurations, envName), ...config];
@@ -124,12 +125,12 @@ function locateEnvironment(
 
 export async function getRunningFeature<
     NAME extends string,
-    DEPS extends Feature[],
+    DEPS extends Dependency[],
     API extends EntityRecord,
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends AnyEnvironment
 >(
-    options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
+    options: IGetRunnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
     runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV>;

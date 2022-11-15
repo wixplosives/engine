@@ -6,10 +6,10 @@ import {
     AnyEnvironment,
 } from './entities';
 import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
-import type { IRunOptions, TopLevelConfig } from './types';
+import type { IFeature, IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
-    public features = new Map<Feature, RuntimeFeature<Feature, ENV>>();
+    public features = new Map<IFeature, RuntimeFeature<IFeature, ENV>>();
     public referencedEnvs: Set<string>;
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
@@ -50,7 +50,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         return this;
     }
 
-    public initFeature<T extends Feature>(feature: T): RuntimeFeature<Feature, ENV> {
+    public initFeature<T extends IFeature>(feature: T): RuntimeFeature<IFeature, ENV> {
         let instance = this.features.get(feature);
         if (!instance) {
             instance = feature[CREATE_RUNTIME](this);

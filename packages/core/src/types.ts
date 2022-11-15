@@ -1,12 +1,11 @@
 import type { TupleToUnion } from 'typescript-type-utils';
 import type { LogMessage } from './common-types';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
-import type { Feature } from './entities/feature';
+import type { RuntimeFeature } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
 /*************** HELPER TYPES  ***************/
-
 export type MapBy<T extends any[] | undefined, FIELD extends keyof TupleToUnion<T>> = {
     [key in TupleToUnion<T>[FIELD]]: Extract<TupleToUnion<T>, { [exc in FIELD]: key }>;
 };
@@ -156,10 +155,29 @@ type MapTypesForEnv<
 export type MapVisibleInputs<T extends EntityRecord, EnvFilter extends AnyEnvironment> = MapType<
     FilterEnv<GetInputs<T>, EnvFilter, 'visibleAt'>
 >;
+export type IFeature<
+    ID extends string = string,
+    Deps extends Dependency[] = any[],
+    API extends EntityRecord = any,
+    EnvironmentContext extends Record<string, DisposableContext<any>> = any
+> = {
+    id: ID;
+    api: API;
+    context: EnvironmentContext;
+    dependencies: Deps;
+    [CREATE_RUNTIME]: <ENV extends AnyEnvironment>(runningEngine: RuntimeEngine<ENV>) => RuntimeFeature<IFeature, ENV>;
+};
+
+const dep = Symbol('');
+export type Dependency<
+    ID extends string = string,
+    API extends EntityRecord = any,
+    EnvironmentContext extends Record<string, DisposableContext<any>> = any
+> = IFeature<ID, any[], API, EnvironmentContext> & { __try_using_Feature_asDependency: typeof dep };
 
 export interface FeatureDef<
     ID extends string,
-    Deps extends Feature[],
+    Deps extends Dependency[],
     API extends EntityRecord,
     EnvironmentContext extends Record<string, Context<any>>
 > {
@@ -169,11 +187,11 @@ export interface FeatureDef<
     context?: EnvironmentContext;
 }
 
-export type UnknownFeatureDef = FeatureDef<string, Feature[], EntityRecord, Record<string, Context<any>>>;
+export type UnknownFeatureDef = FeatureDef<string, Dependency[], EntityRecord, Record<string, Context<any>>>;
 export type Running<T extends { api: EntityRecord }, ENV extends AnyEnvironment> = MapAllTypesForEnv<T['api'], ENV>;
 
 export type RunningFeatures<
-    T extends Feature[],
+    T extends Dependency[],
     ENV extends AnyEnvironment,
     FeatureMap extends MapBy<T, 'id'> = MapBy<T, 'id'>
 > = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
@@ -242,7 +260,7 @@ export type DisposableContext<T> = Context<T & IContextDispose>;
 export type SetupHandler<
     ENV extends AnyEnvironment,
     ID extends string,
-    FeatureDeps extends Feature[],
+    FeatureDeps extends Dependency[],
     API extends EntityRecord,
     EnvironmentContext extends Record<string, Context<any>>
 > = (
@@ -251,7 +269,7 @@ export type SetupHandler<
     context: MapRecordType<EnvironmentContext>
 ) => RegisteringFeature<API, Environment<ENV['env'], ENV['envType'], ENV['endpointType'], []>>;
 
-export type ContextHandler<C, EnvFilter extends AnyEnvironment, Deps extends Feature[]> = (
+export type ContextHandler<C, EnvFilter extends AnyEnvironment, Deps extends Dependency[]> = (
     runningFeatures: RunningFeatures<Deps, EnvFilter>
 ) => C;
 

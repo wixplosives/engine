@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/wixplosives/engine/workflows/tests/badge.svg)](https://github.com/wixplosives/engine/actions)
 
-### Packages
+## Packages
 
 - **[@wixc3/engine-core](https://github.com/wixplosives/engine/tree/master/packages/core)** - core runtime entities.
 
@@ -14,6 +14,10 @@
 
 - **[@wixc3/engine-test-kit](https://github.com/wixplosives/engine/tree/master/packages/test-kit)** - `withFeature` and other test mechanisms.
 
-### License
+## License
 
 MIT
+
+## Guides
+
+Refer to the [docs section](./docs/root.md)

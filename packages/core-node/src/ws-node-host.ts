@@ -29,11 +29,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
         if (data.to !== '*') {
             if (this.socketToEnvId.has(data.to)) {
                 const { socket, clientID } = this.socketToEnvId.get(data.to)!;
-                const tenantId = data.to;
                 data.to = clientID;
-                if (data.type === 'event') {
-                    data.handlerId = data.handlerId.slice(0, data.handlerId.length - tenantId.length);
-                }
                 socket.emit('message', data);
             } else {
                 this.server.emit('message', data);
@@ -62,9 +58,6 @@ export class WsServerHost extends BaseHost implements IDisposable {
             // maybe we can notify from client about the new connected id
             const originId = nameSpace(message.origin);
             const fromId = nameSpace(message.from);
-            if (message.type === 'listen') {
-                message.handlerId += originId;
-            }
             this.socketToEnvId.set(fromId, { socket, clientID: message.from });
             this.socketToEnvId.set(originId, { socket, clientID: message.origin });
             message.from = fromId;
@@ -88,6 +81,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
                     from: env,
                     origin: env,
                     to: '*',
+                    forwardingChain: [],
                 });
             }
         });

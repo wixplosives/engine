@@ -201,6 +201,7 @@ devServerFeature.setup(
                             devMiddleware.close((e) => (e ? rej(e) : res()));
                         })
                 );
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 app.use(devMiddleware);
                 compilationPromises.push(
                     new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve()))
@@ -239,6 +240,7 @@ devServerFeature.setup(
              *  but we will keep on watching on the users application
              *  2. the createCompiler function is not extendable with more configs with the current API
              */
+            console.time('Bundling features and engine');
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             if (engineerCompilers.compilers.length > 0) {
                 // This assumes we have only one engineer config - for the dashboard
@@ -251,6 +253,7 @@ devServerFeature.setup(
                             engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
                         })
                 );
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 app.use(engineerDevMiddleware);
                 compilationPromises.push(
                     new Promise<void>((resolve) =>
@@ -260,7 +263,7 @@ devServerFeature.setup(
             }
 
             await Promise.all(compilationPromises);
-
+            console.timeEnd('Bundling features and engine');
             if (log) {
                 const mainUrl = `http://localhost:${actualPort}`;
                 if (featureName) {

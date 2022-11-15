@@ -1,11 +1,12 @@
+import fs from '@file-services/node';
 import { spawn } from 'child_process';
 import { startDevServer } from '@wixc3/engineer';
 import { IRunOptionsMessage, provideApiForChildProcess } from '@wixc3/engine-electron-host';
 import type { TopLevelConfig, DisposeFunction } from '@wixc3/engine-core';
-import { getEngineConfig, findFeatures } from '../find-features';
+import { getEngineConfig } from '../find-features';
 import { getConfig } from '../engine-helpers';
 import { join } from 'path';
-import { getExportedEnvironments } from '@wixc3/engine-scripts';
+import { getExportedEnvironments, findFeatures } from '@wixc3/engine-scripts';
 
 // electron node lib exports the electron executable path; inside electron, it's the api itself.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -69,7 +70,7 @@ export async function start({
     // registering to the dev server ready event
     serverListeningHandlerSlot.register(({ port, router }) => {
         const config: TopLevelConfig = [];
-        const { features, configurations } = findFeatures(basePath, resolvedFeatureDiscoveryRoot);
+        const { features, configurations } = findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
 
         const environments = getExportedEnvironments(features);
 

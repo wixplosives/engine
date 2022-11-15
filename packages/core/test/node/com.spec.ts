@@ -9,7 +9,6 @@ import {
     BaseHost,
     Communication,
     EventEmitterHost,
-    EventEmitter,
     Message,
     Environment,
     Feature,
@@ -19,6 +18,7 @@ import {
     Slot,
     ReadyMessage,
 } from '@wixc3/engine-core';
+import { EventEmitter } from '@wixc3/common';
 import { createDisposables } from '@wixc3/create-disposables';
 import { waitFor } from 'promise-assist';
 
@@ -56,6 +56,7 @@ describe('Communication', () => {
 
         expect(res).to.be.equal('Yoo!');
     });
+
     it('multi communication', async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main');
@@ -121,7 +122,7 @@ describe('Communication', () => {
         expect(res).to.be.equal('child echo Yoo!');
     });
 
-    it('doesnt send callback message on a method that was defined not to send one', async () => {
+    it(`doesn't send callback message on a method that was defined not to send one`, async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main', undefined, undefined, undefined, {
             warnOnSlow: true,
@@ -132,7 +133,7 @@ describe('Communication', () => {
             warnOnSlow: true,
         });
 
-        // handleMessage is called when message is recieved from remote
+        // handleMessage is called when message is received from remote
         const handleMessageStub = stub(main, 'handleMessage');
 
         // callMethod is being called when sending call/listen request to other origin
@@ -370,10 +371,10 @@ describe('Communication', () => {
             echoServiceComID
         );
 
-        const resposeToClient1 = await echoServiceProxyInClient1.echo(testText);
+        const responseToClient1 = await echoServiceProxyInClient1.echo(testText);
         const responseToClient2 = await echoServiceInstanceInClient2.echo(testText);
 
-        expect(resposeToClient1, 'allow communication between calling environment and base').to.be.equal(testText);
+        expect(responseToClient1, 'allow communication between calling environment and base').to.be.equal(testText);
         expect(responseToClient2, 'allow communication between calling environment and base').to.be.equal(testText);
 
         client1.registerAPI(echoServiceComID, echoService);
@@ -464,6 +465,39 @@ describe('Communication', () => {
         expect(await apiProxy.echo('name')).to.eq('hello name');
         await expect(apiProxy.fail()).to.be.rejectedWith('fail');
     });
+
+    it('does not stuck in endless forwarding message', async () => {
+        /**
+         * The flow of the test is as follows:
+         * there are env 1 and env 2.
+         * env 2 is registered in com1 but with wrong host
+         *
+         * call some API from 1 to 2 and check if env 1 is not stuck in endless message forwarding
+         */
+
+        const host1 = new BaseHost();
+        const host2 = new BaseHost();
+
+        const com1 = new Communication(host1, 'com1');
+        const com2 = new Communication(host2, 'com2');
+
+        disposables.add(com1);
+        disposables.add(com2);
+
+        // 1 to 2 with wrong host
+        com1.registerEnv('com2', host1);
+
+        // create a service at 4
+        const echoService = {
+            test: () => 'hello',
+        };
+        com2.registerAPI({ id: 'service' }, echoService);
+
+        // call it from 1
+        const apiProxy = com1.apiProxy<typeof echoService>({ id: 'com2' }, { id: 'service' });
+
+        await expect(apiProxy.test()).to.be.rejected;
+    }).timeout(100);
 });
 
 describe('environment-dependencies communication', () => {
@@ -481,7 +515,7 @@ describe('environment-dependencies communication', () => {
                 slot1: Slot.withType<string>().defineEntity(base),
                 service2: Service.withType<{ echo: () => string[] }>().defineEntity(env1).allowRemoteAccess(),
             },
-            dependencies: [COM],
+            dependencies: [COM.asDependency],
         });
 
         f.setup(base, ({ slot1 }) => {

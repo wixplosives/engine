@@ -15,7 +15,7 @@ describe('loadFeatureDirectory', () => {
         });
 
         const directoryPath = '/src';
-        const results = loadFeatureDirectory({ fs, directoryPath });
+        const results = loadFeatureDirectory(directoryPath, fs);
 
         expect(results).to.eql({
             directoryPath,
@@ -40,7 +40,7 @@ describe('loadFeatureDirectory', () => {
         });
 
         const directoryPath = '/src';
-        const { configurations } = loadFeatureDirectory({ fs, directoryPath });
+        const { configurations } = loadFeatureDirectory(directoryPath, fs);
         expect(configurations).to.not.include('/src/sub/my-config3.config.ts');
     });
 
@@ -53,7 +53,7 @@ describe('loadFeatureDirectory', () => {
         });
 
         const directoryPath = '/';
-        const results = loadFeatureDirectory({ fs, directoryPath });
+        const results = loadFeatureDirectory(directoryPath, fs);
 
         expect(results).to.eql({
             directoryPath,
@@ -74,7 +74,7 @@ describe('loadFeatureDirectory', () => {
         });
 
         const directoryPath = '/src';
-        const results = loadFeatureDirectory({ fs, directoryPath });
+        const results = loadFeatureDirectory(directoryPath, fs);
 
         expect(results).to.eql({
             directoryPath,

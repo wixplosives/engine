@@ -7,6 +7,7 @@ export interface StartServerNewProcessOptions {
     featureName: string;
     runtimeOptions?: Record<string, string | boolean>;
     launchOptions?: playwright.LaunchOptions;
+    minimal?: boolean;
 }
 
 export const startServerNewProcess = async ({
@@ -14,16 +15,18 @@ export const startServerNewProcess = async ({
     featureName,
     runtimeOptions = {},
     launchOptions,
+    minimal,
 }: StartServerNewProcessOptions) => {
     const { dispose, devServerFeature } = await startDevServer({
         targetApplicationPath: projectPath,
         featureName,
         autoLaunch: true,
         singleFeature: true,
-        // We are using forked to guarentee that each node env runs in its own process
-        // This is retquired in this set of tests because it validates changes to globals
+        // We are using forked to guarantee that each node env runs in its own process
+        // This is required in this set of tests because it validates changes to globals
         nodeEnvironmentsMode: 'forked',
         runtimeOptions,
+        devServerOnly: minimal,
     });
 
     const runningPort = await new Promise<number>((resolve) => {

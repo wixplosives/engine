@@ -1,116 +1,45 @@
 import fs from '@file-services/node';
+import { defaults, SetMultiMap } from '@wixc3/common';
 import { createDisposables } from '@wixc3/create-disposables';
-import { AnyEnvironment, flattenTree, SetMultiMap, TopLevelConfig } from '@wixc3/engine-core';
+import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 import {
     createIPC,
     ForkedProcess,
     IConfigDefinition,
-    IEnvironmentDescriptor,
     launchEngineHttpServer,
-    LaunchEnvironmentMode,
     NodeEnvironmentsManager,
     resolveEnvironments,
     RouteMiddleware,
-    TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
-import { childPackagesFromContext, resolveDirectoryContext } from '@wixc3/resolve-directory-context';
 import express from 'express';
-import type io from 'socket.io';
 import webpack from 'webpack';
-import { loadFeaturesFromPackages } from './analyze-feature';
-import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
+import { findFeatures } from '../analyze-feature';
+import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
 import {
     createCommunicationMiddleware,
     createConfigMiddleware,
     ensureTopLevelConfigMiddleware,
-} from './config-middleware';
-import { createWebpackConfig, createWebpackConfigs } from './create-webpack-configs';
-import { generateFeature, pathToFeaturesDirectory } from './feature-generator';
-import type { EngineConfig, IFeatureDefinition, IFeatureTarget } from './types';
-
-import { createExternalNodeEntrypoint } from './create-entrypoint';
-import { getFilePathInPackage, scopeFilePathsToPackage } from './utils';
-
-import { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
+} from '../config-middleware';
+import { createExternalNodeEntrypoint } from '../create-entrypoint';
+import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs';
+import { generateFeature, pathToFeaturesDirectory } from '../feature-generator';
+import type { EngineConfig, IFeatureDefinition } from '../types';
+import { getFilePathInPackage, IResolvedEnvironment, scopeFilePathsToPackage } from '../utils';
+import { buildDefaults } from './defaults';
+import type {
+    IApplicationOptions,
+    IBuildCommandOptions,
+    IBuildManifest,
+    ICompilerOptions,
+    ICreateOptions,
+    IRunApplicationOptions,
+    WebpackMultiStats,
+} from './types';
+import { compile, getResolvedEnvironments, hookCompilerToConsole, toCompilerOptions } from './utils';
 
 const { basename, extname, join } = fs;
 
 const builtinTemplatesPath = fs.join(__dirname, '../templates');
-
-export interface IRunFeatureOptions extends IFeatureTarget {
-    featureName: string;
-}
-
-export interface IRunApplicationOptions extends IFeatureTarget {
-    singleFeature?: boolean;
-    inspect?: boolean;
-    port?: number;
-    publicPath?: string;
-    mode?: 'development' | 'production';
-    title?: string;
-    publicConfigsRoute?: string;
-    nodeEnvironmentsMode?: LaunchEnvironmentMode;
-    autoLaunch?: boolean;
-    socketServerOptions?: Partial<io.ServerOptions>;
-    webpackConfigPath?: string;
-}
-
-export interface IBuildCommandOptions extends IRunApplicationOptions {
-    featureDiscoveryRoot?: string;
-    external?: boolean;
-    staticBuild?: boolean;
-    sourcesRoot?: string;
-    eagerEntrypoint?: boolean;
-    favicon?: string;
-    configLoaderModuleName?: string;
-}
-
-// inlined to stay type-compatible with @types/webpack
-export interface WebpackMultiStats {
-    hasWarnings(): boolean;
-    hasErrors(): boolean;
-    toString(mode?: string): string;
-    stats: webpack.Stats[];
-}
-
-export interface IBuildManifest {
-    features: Array<[string, IFeatureDefinition]>;
-    defaultFeatureName?: string;
-    defaultConfigName?: string;
-    entryPoints: Record<string, Record<string, string>>;
-    externalsFilePath?: string;
-}
-
-export interface ICreateOptions {
-    featureName?: string;
-    templatesDir?: string;
-    featuresDir?: string;
-}
-
-export interface IApplicationOptions {
-    basePath?: string;
-    outputPath?: string;
-}
-
-export interface ICompilerOptions {
-    features: Map<string, IFeatureDefinition>;
-    featureName?: string;
-    configName?: string;
-    publicPath?: string;
-    mode?: 'production' | 'development';
-    title?: string;
-    favicon?: string;
-    configurations: SetMultiMap<string, IConfigDefinition>;
-    staticBuild: boolean;
-    publicConfigsRoute?: string;
-    overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    singleFeature?: boolean;
-    isExternal: boolean;
-    webpackConfigPath?: string;
-    environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
-    eagerEntrypoint?: boolean;
-    configLoaderModuleName?: string;
-}
 
 export class Application {
     public outputPath: string;
@@ -125,108 +54,33 @@ export class Application {
         await fs.promises.rm(this.outputPath, { force: true, recursive: true });
     }
 
-    public async build({
-        featureName,
-        configName,
-        publicPath,
-        mode = 'production',
-        singleFeature,
-        title,
-        favicon,
-        publicConfigsRoute,
-        overrideConfig,
-        external = false,
-        staticBuild = true,
-        webpackConfigPath,
-        sourcesRoot: providedSourcesRoot,
-        eagerEntrypoint,
-        featureDiscoveryRoot: providedFeatureDiscoveryRoot,
-        configLoaderModuleName,
-    }: IBuildCommandOptions = {}): Promise<{
+    public async build(options: IBuildCommandOptions = {}): Promise<{
         stats: WebpackMultiStats;
         features: Map<string, IFeatureDefinition>;
         configurations: SetMultiMap<string, IConfigDefinition>;
         resolvedEnvironments: ReturnType<typeof getResolvedEnvironments>;
     }> {
-        const { config } = await this.getEngineConfig();
-        const { require, sourcesRoot: configSourcesRoot, favicon: configFavicon, featureDiscoveryRoot } = config ?? {};
-        if (require) {
-            await this.importModules(require);
-        }
+        const opts = defaults(options, buildDefaults);
+        const { config: _config } = await this.getEngineConfig();
+        const config = defaults(_config, buildDefaults);
+
         const entryPoints: Record<string, Record<string, string>> = {};
-
-        if (external && !featureName) {
-            throw new Error('You must specify a feature name when building a feature in external mode');
+        const analyzed = this.analyzeFeatures(opts.featureDiscoveryRoot ?? config.featureDiscoveryRoot);
+        if (opts.singleFeature && opts.featureName) {
+            this.filterByFeatureName(analyzed.features, opts.featureName);
         }
 
-        const { features, configurations } = this.analyzeFeatures(providedFeatureDiscoveryRoot ?? featureDiscoveryRoot);
-        if (singleFeature && featureName) {
-            this.filterByFeatureName(features, featureName);
-        }
+        const envs = getResolvedEnvironments(opts, analyzed.features);
+        const { compiler } = this.createCompiler(toCompilerOptions(opts, analyzed, config, envs));
 
-        const resolvedEnvironments = getResolvedEnvironments({
-            featureName,
-            features,
-            filterContexts: singleFeature,
-            environments: [...getExportedEnvironments(features)],
-            findAllEnvironments: external,
-        });
+        const stats = await compile(compiler);
 
-        const { compiler } = this.createCompiler({
-            mode,
-            features,
-            featureName,
-            configName,
-            publicPath,
-            title,
-            favicon: favicon ?? configFavicon,
-            configurations,
-            staticBuild,
-            publicConfigsRoute,
-            overrideConfig,
-            singleFeature,
-            // should build this feature in external mode
-            isExternal: external,
-            webpackConfigPath,
-            environments: resolvedEnvironments,
-            eagerEntrypoint,
-            configLoaderModuleName,
-        });
-        const outDir = fs.basename(this.outputPath);
+        const sourceRoot = opts.sourcesRoot ?? opts.featureDiscoveryRoot ?? '.';
 
-        const stats = await new Promise<webpack.MultiStats>((resolve, reject) =>
-            compiler.run((e, s) => {
-                if (e) {
-                    reject(e);
-                } else if (s!.hasErrors()) {
-                    reject(new Error(s!.toString('errors-warnings')));
-                } else {
-                    resolve(s!);
-                }
-            })
-        );
+        const manifest = this.writeManifest(analyzed.features, opts, entryPoints, sourceRoot);
 
-        const sourceRoot =
-            providedSourcesRoot ?? configSourcesRoot ?? providedFeatureDiscoveryRoot ?? featureDiscoveryRoot ?? '.';
-        if (external) {
-            const feature = features.get(featureName!)!;
-            const { nodeEnvs, electronRendererEnvs, webEnvs, workerEnvs } = resolvedEnvironments;
-            this.createNodeEntry(feature, resolvedEnvironments.nodeEnvs, sourceRoot);
-            getEnvEntrypoints(nodeEnvs.keys(), 'node', entryPoints, outDir);
-            getEnvEntrypoints(electronRendererEnvs.keys(), 'electron-renderer', entryPoints, outDir);
-            getEnvEntrypoints(webEnvs.keys(), 'web', entryPoints, outDir);
-            getEnvEntrypoints(workerEnvs.keys(), 'webworker', entryPoints, outDir);
-        }
-
-        await this.writeManifest({
-            features,
-            featureName,
-            configName,
-            entryPoints,
-            pathToSources: sourceRoot,
-        });
-
-        return { stats, features, configurations, resolvedEnvironments };
+        await manifest;
+        return { ...analyzed, stats, resolvedEnvironments: envs };
     }
 
     public async run(runOptions: IRunApplicationOptions = {}) {
@@ -449,25 +303,18 @@ export class Application {
         return configurations;
     }
 
-    protected async writeManifest({
-        features,
-        featureName,
-        configName,
-        entryPoints,
-        pathToSources,
-    }: {
-        features: Map<string, IFeatureDefinition>;
-        featureName?: string;
-        configName?: string;
-        entryPoints: Record<string, Record<string, string>>;
-        pathToSources: string;
-    }) {
+    protected async writeManifest(
+        features: Map<string, IFeatureDefinition>,
+        opts: IBuildCommandOptions,
+        entryPoints: Record<string, Record<string, string>>,
+        pathToSources: string
+    ) {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()).map(([featureName, featureDef]) =>
                 this.generateReMappedFeature(featureDef, pathToSources, featureName)
             ),
-            defaultConfigName: configName,
-            defaultFeatureName: featureName,
+            defaultConfigName: opts.configName,
+            defaultFeatureName: opts.featureName,
             entryPoints,
         };
 
@@ -609,22 +456,20 @@ export class Application {
         });
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
-        return {
-            compiler,
-        };
+        return { compiler };
     }
 
     protected analyzeFeatures(featureDiscoveryRoot = '.') {
         const { basePath } = this;
 
         console.time(`Analyzing Features`);
-        const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
-        const featuresAndConfigs = loadFeaturesFromPackages(packages, fs, featureDiscoveryRoot);
+        // const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
+        const featuresAndConfigs = findFeatures(basePath, fs, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features');
-        return { ...featuresAndConfigs, packages };
+        return featuresAndConfigs;
     }
 
-    protected createNodeEntry(
+    protected createNodeEntrypoint(
         feature: IFeatureDefinition,
         nodeEnvs: Map<string, IResolvedEnvironment>,
         pathToSources: string
@@ -693,43 +538,4 @@ export class Application {
             }
         }
     }
-}
-
-const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
-    console.log(`Bundling ${target as string} using webpack...`);
-
-function getEnvEntrypoints(
-    envs: Iterable<string>,
-    target: 'node' | 'web' | 'webworker' | 'electron-renderer',
-    entryPoints: Record<string, Record<string, string>>,
-    outDir: string
-) {
-    for (const envName of envs) {
-        entryPoints[envName] = { ...entryPoints[envName], [target]: fs.posix.join(outDir, `${envName}.${target}.js`) };
-    }
-}
-
-export function getExportedEnvironments(
-    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
-): Set<IEnvironmentDescriptor> {
-    const environments = new Set<IEnvironmentDescriptor>();
-    for (const { exportedEnvs } of features.values()) {
-        for (const exportedEnv of exportedEnvs) {
-            environments.add(exportedEnv);
-        }
-    }
-    return environments;
-}
-
-function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
-    compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
-    compiler.hooks.watchRun.tap('engine-scripts', bundleStartMessage);
-
-    compiler.hooks.done.tap('engine-scripts stats printing', ({ stats }) => {
-        for (const childStats of stats) {
-            if (childStats.hasErrors() || childStats.hasWarnings()) {
-                console.log(childStats.toString('errors-warnings'));
-            }
-        }
-    });
 }

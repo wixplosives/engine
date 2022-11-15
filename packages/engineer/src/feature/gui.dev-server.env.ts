@@ -1,7 +1,7 @@
 import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import fs from '@file-services/node';
-import { SetMultiMap } from '@wixc3/engine-core';
+import { SetMultiMap } from '@wixc3/common';
 import { createMainEntrypoint, createVirtualEntries } from '@wixc3/engine-scripts';
 import guiFeature, { mainDashboardEnv } from './gui.feature';
 import { devServerEnv } from './dev-server.feature';
