@@ -132,20 +132,3 @@ export interface IConfigDefinition {
     envName?: string;
     filePath: string;
 }
-
-export interface IExternalDefinition {
-    /**
-     * name of the package containing the external feature
-     */
-    packageName: string;
-    /**
-     * the directory where the built source code is located at
-     * @default dist
-     */
-    outDir?: string;
-
-    /**
-     * path to the package of the external feature
-     */
-    packagePath?: string;
-}
