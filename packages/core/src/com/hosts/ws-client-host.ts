@@ -1,7 +1,8 @@
 import { io, Socket, SocketOptions } from 'socket.io-client';
 import type { Message } from '../message-types';
 import { BaseHost } from './base-host';
-import { deferred, EventEmitter } from '@wixc3/common';
+import { deferred } from 'promise-assist';
+import { EventEmitter } from '@wixc3/common';
 
 export class WsClientHost extends BaseHost {
     public connected: Promise<void>;
