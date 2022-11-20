@@ -54,7 +54,7 @@ const createFeatureMapper = (templateCompiler: (template: string) => string) => 
  * ```
  * pathToFeaturesDirectory(fs, '/proj', 'packages');
  * // => '/proj/packages'
- * 
+ *
  * pathToFeaturesDirectory(fs, '/proj/packages/some-feature', 'packages');
  * // => '/proj/packages'
  *
