@@ -8,7 +8,7 @@ import {
     OverrideConfig,
     IFeatureDefinition,
 } from '@wixc3/engine-scripts';
-import type { SetMultiMap } from '@wixc3/common';
+import type { SetMultiMap } from '@wixc3/patterns';
 import performance from '@wixc3/cross-performance';
 import type {
     IConfigDefinition,

@@ -1,7 +1,8 @@
 import fs from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
-import { chain, defaults, SetMultiMap } from '@wixc3/common';
+import { chain, defaults } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import { backSlash } from '@wixc3/fs-utils';
 import {
     createIPC,
@@ -77,7 +78,9 @@ export class Application {
     }> {
         const opts = defaults(options, buildDefaults);
         const { config: _config, path: configPath } = await this.getEngineConfig();
-        const config: EngineConfig = defaults(_config, { externalFeatureDefinitions: [] as IExternalDefinition[] });
+        const config: EngineConfig = defaults(_config || {}, {
+            externalFeatureDefinitions: [] as IExternalDefinition[],
+        });
 
         if (opts.external && !opts.featureName) {
             throw new Error('You must specify a feature name when building a feature in external mode');

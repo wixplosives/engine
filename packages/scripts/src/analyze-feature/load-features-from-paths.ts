@@ -1,6 +1,7 @@
 import type { IFileSystemSync } from '@file-services/types';
 import type { Feature } from '@wixc3/engine-core';
-import { concat, getValue, isPlainObject, map, SetMultiMap } from '@wixc3/common';
+import { concat, getValue, isPlainObject, map } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import {
     FileNameParser,
     parseConfigFileName,
@@ -19,10 +20,10 @@ import type { INpmPackage } from '@wixc3/resolve-directory-context';
 
 /**
  * Loads the features and configs of given roots and their imported dependencies
- * @param roots files: feature files to load. dirs: dirs to scan for configurations
- * @param fs
- * @param packages known npmPackages
- * @param override overrides to apply to found features
+ * @param roots - files: feature files to load. dirs: dirs to scan for configurations
+ * @param fs -
+ * @param packages - known npmPackages
+ * @param override - overrides to apply to found features
  * @returns
  */
 export function loadFeaturesFromPaths(

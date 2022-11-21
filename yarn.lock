@@ -1947,10 +1947,10 @@
     "@file-services/path" "^7.0.1"
     "@file-services/types" "^7.0.1"
 
-"@wixc3/common@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-3.0.3.tgz#f6932911bb6bde6057f8b9d59b2315b95b95cd78"
-  integrity sha512-7nRIJnHH5loEIrwW1+bBSkncUMmPsKjFGorEUzvGlgDzPnaBnW+WwuhTakItKg2AteI+yV08YHqKa5e9LOpF8A==
+"@wixc3/common@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-3.0.4.tgz#12285ace098a677e73da14c1a47bdf793bd3ebc0"
+  integrity sha512-qhzsY9482lkFxUu6zamfggtHI44PF2u2e+QQTgLRZ6oBMpudHmdswd5jGuN7H0l4Ohxlgz4I0eSy8uotVKu2mA==
   dependencies:
     "@file-services/path" "^7.0.1"
     "@file-services/types" "^7.0.1"
@@ -1960,13 +1960,21 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/fs-utils@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-3.0.3.tgz#e3c961947c97af02f98c49aeecc3d5b2da3f4f64"
-  integrity sha512-eMOuNwFXPvh0txsLctXP0WjjhH4ErQQQEK64HaOO3EkCn2lv0SXi0fMYXgIgFVJzP5wsoIH3Mbn5VPl05hKHBA==
+"@wixc3/fs-utils@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-3.0.4.tgz#bf7930bace3203b630f1f4e91662f602d1cfa4b1"
+  integrity sha512-Ew63zcdpaWkzvFESfH0OtH77BJULIH27F0BsLnqx4xZTi5vUWB3zUeU8TN1LCsvlMRGT7DjKAhvjo6BfWCXZYw==
   dependencies:
     "@file-services/memory" "^7.0.1"
-    "@wixc3/common" "^3.0.3"
+    "@wixc3/common" "^3.0.4"
+
+"@wixc3/patterns@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-3.0.4.tgz#c1716ae055b230163c142ea2fe036efc27da41b6"
+  integrity sha512-PREGCzyooB7r6BS1pQzSUY/wow7UFH/0LJor9sGNhsSYXiIIXBzJliDLccVhNrHrCAza9ynkLhjE5PQak2bTsw==
+  dependencies:
+    "@wixc3/common" "^3.0.4"
+    promise-assist "^1.3.0"
 
 "@wixc3/resolve-directory-context@^3.0.1":
   version "3.0.1"
