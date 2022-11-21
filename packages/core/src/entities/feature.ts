@@ -34,7 +34,7 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
         public feature: T,
         public api: Running<T, ENV>,
         public dependencies: RunningFeatures<T['dependencies'], ENV>
-    ) { }
+    ) {}
 
     public addRunHandler(fn: () => unknown, envName: string) {
         this.runHandlers.add(envName, fn);
@@ -169,8 +169,8 @@ export class Feature<
     /**
      * Call this to provide the environment specific implementation for a feature.
      *
-     * @param env - Environment id to implement the api for.
-     * @param setupHandler - Callback that receives:
+     * @param env Environment id to implement the api for.
+     * @param setupHandler Callback that receives:
      * - Own feature `Slot`s
      * - Dependencies APIs
      * - Context API that is specific to a runtime environment.
@@ -189,7 +189,7 @@ export class Feature<
     /**
      *
      *
-     * @param config -
+     * @param config
      * @returns
      */
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {

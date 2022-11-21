@@ -13,12 +13,12 @@ export interface BrowserWindowEnvironmentInitializerOptions extends InitializerO
 
 /**
  * registers a message handler inside the electron main process, which will respond to communication messages coming from the `browserWindow`
- * @param browserWindow - the browser winodow that requires communication with the main host
+ * @param browserWindow the browser winodow that requires communication with the main host
  */
 export function windowEnvironmentInitializer({
     browserWindow,
     env: { env: envName },
-    communication: com,
+    communication: com
 }: BrowserWindowEnvironmentInitializerOptions): InitializedBrowserEnvironment {
     const host = new ElectronBrowserHost(ipcMain, browserWindow.webContents);
     com.registerEnv(envName, host);
@@ -30,7 +30,7 @@ export function windowEnvironmentInitializer({
             com.clearEnvironment(envName);
             com.removeMessageHandler(host);
         }),
-        browserWindow,
+        browserWindow
     };
 }
 
@@ -51,7 +51,7 @@ export async function initializeWindowEnvironment({
     const query = {
         feature: featureName,
         config: configName ?? '',
-        ...runtimeArguments,
+        ...runtimeArguments
     };
     if (devport) {
         const url = new URL(`http://localhost:${devport}/${env.env}.html`);
