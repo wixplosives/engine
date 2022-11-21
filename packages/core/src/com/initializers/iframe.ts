@@ -16,10 +16,11 @@ export interface IIframeInitializerOptions {
      */
     hashParams?: string;
     /**
-     * target host for iframe
+     * target host for iframe,
      * can be used to isolate environment on cross origin
-     * @property {src} will overrule this
-     * @example http://127.0.0.1
+     *
+     * {@link IIframeInitializerOptions.src | src} will overrule this
+     * @example `http://127.0.0.1`
      */
     origin?: string;
 }

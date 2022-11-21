@@ -15,7 +15,7 @@ export class FileActions {
 
     /**
      * will return the relative path of the file and the name of the file
-     * @param filePath path to the file in the local file system
+     * @param filePath - path to the file in the local file system
      */
     public getFileData(filePath: string): FileData {
         return {
@@ -26,7 +26,7 @@ export class FileActions {
 
     /**
      * will return the file contents given an absolute file path
-     * @param filePath path to the file in the local file system
+     * @param filePath - path to the file in the local file system
      */
     public getFileContents(filePath: string): string {
         return this.fs.readFileSync(filePath, 'utf8');
@@ -34,7 +34,7 @@ export class FileActions {
 
     /**
      * @description function returns directory from a path
-     * @param directoryPath path on the local file system
+     * @param directoryPath - path on the local file system
      */
     public getDirectoryTree(directoryPath: string): IDirectoryContents {
         const directory: IDirectoryContents = {};

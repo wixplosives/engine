@@ -25,8 +25,8 @@ export class ElectronClientHost extends BaseHost {
 
 /**
  * register the ipcRenderer protocol as a host for envName
- * @param envName name of the environment to register
- * @param communication runtime instance of current environment communication
+ * @param envName - name of the environment to register
+ * @param communication - runtime instance of current environment communication
  */
 export function registerElectronHostEnvironment(
     ipcRenderer: IpcRenderer,

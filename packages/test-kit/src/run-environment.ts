@@ -28,7 +28,7 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
     config?: TopLevelConfig;
     /**
      * from where to locate features
-     * @default {process.cwd()}
+     * @defaultValue process.cwd()
      */
     basePath?: string;
     /**

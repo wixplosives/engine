@@ -46,11 +46,12 @@ const createFeatureMapper = (templateCompiler: (template: string) => string) => 
 
 /**
  * returns the path to features directory in the project
- * @param fs IFileSystem
- * @param path A general path in an project
- * @param featuresDir The features directory name (optional, if not used, returns `path` normalized)
+ * @param fs - IFileSystem
+ * @param path - A general path in an project
+ * @param featuresDir - The features directory name (optional, if not used, returns `path` normalized)
  *
- * @examples
+ * @example
+ * ```
  * pathToFeaturesDirectory(fs, '/proj', 'packages');
  * // => '/proj/packages'
  *
@@ -59,6 +60,7 @@ const createFeatureMapper = (templateCompiler: (template: string) => string) => 
  *
  * pathToFeaturesDirectory(fs, '/proj');
  * // => '/proj'
+ * ```
  */
 export const pathToFeaturesDirectory = (fs: IFileSystem, path: string, featuresDir?: string) => {
     if (!featuresDir) {

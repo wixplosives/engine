@@ -4,7 +4,7 @@ import Module from 'module';
 /**
  * Evaluate modules and return a root module.
  *
- * @param filePaths list of modules files to evaluate
+ * @param filePaths - list of modules files to evaluate
  */
 export function evaluateModule(filePaths: string | Iterable<string>): NodeJS.Module {
     filePaths = typeof filePaths === 'string' ? [filePaths] : filePaths;

@@ -169,7 +169,7 @@ export interface CreateElectronEntryOptions {
 
 /**
  * Create an entry for the built electron application
- * @param outputPath where to sabe the file to
+ * @param outputPath - where to sabe the file to
  */
 export function createElectronEntryFile({
     outputPath,

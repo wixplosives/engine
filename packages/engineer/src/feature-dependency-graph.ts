@@ -5,7 +5,7 @@ export type Nodes = Record<string, { name: string; group: number }>;
 
 /**
  *
- * @param entry - The entry feature we want to build the graph from
+ * @param entry - - The entry feature we want to build the graph from
  *
  * recursive function to build a tree of features, their distance from the root and the links between all features
  */

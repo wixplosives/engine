@@ -13,7 +13,7 @@ export interface BrowserWindowEnvironmentInitializerOptions extends InitializerO
 
 /**
  * registers a message handler inside the electron main process, which will respond to communication messages coming from the `browserWindow`
- * @param browserWindow the browser winodow that requires communication with the main host
+ * @param browserWindow - the browser winodow that requires communication with the main host
  */
 export function windowEnvironmentInitializer({
     browserWindow,
