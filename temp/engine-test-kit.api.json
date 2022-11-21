@@ -1,0 +1,2948 @@
+{
+  "metadata": {
+    "toolPackage": "@microsoft/api-extractor",
+    "toolVersion": "7.33.6",
+    "schemaVersion": 1010,
+    "oldestForwardsCompatibleVersion": 1001,
+    "tsdocConfig": {
+      "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+      "noStandardTags": true,
+      "tagDefinitions": [
+        {
+          "tagName": "@alpha",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@beta",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@defaultValue",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@decorator",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@deprecated",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@eventProperty",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@example",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@experimental",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@inheritDoc",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@internal",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@label",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@link",
+          "syntaxKind": "inline",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@override",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@packageDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@param",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@privateRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@public",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@readonly",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@remarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@returns",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@sealed",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@see",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@throws",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@typeParam",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@virtual",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@betaDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@internalRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@preapproved",
+          "syntaxKind": "modifier"
+        }
+      ],
+      "supportForTags": {
+        "@alpha": true,
+        "@beta": true,
+        "@defaultValue": true,
+        "@decorator": true,
+        "@deprecated": true,
+        "@eventProperty": true,
+        "@example": true,
+        "@experimental": true,
+        "@inheritDoc": true,
+        "@internal": true,
+        "@label": true,
+        "@link": true,
+        "@override": true,
+        "@packageDocumentation": true,
+        "@param": true,
+        "@privateRemarks": true,
+        "@public": true,
+        "@readonly": true,
+        "@remarks": true,
+        "@returns": true,
+        "@sealed": true,
+        "@see": true,
+        "@throws": true,
+        "@typeParam": true,
+        "@virtual": true,
+        "@betaDocumentation": true,
+        "@internalRemarks": true,
+        "@preapproved": true
+      },
+      "reportUnsupportedHtmlElements": false
+    }
+  },
+  "kind": "Package",
+  "canonicalReference": "@wixc3/engine-test-kit!",
+  "docComment": "",
+  "name": "@wixc3/engine-test-kit",
+  "preserveMemberOrder": false,
+  "members": [
+    {
+      "kind": "EntryPoint",
+      "canonicalReference": "@wixc3/engine-test-kit!",
+      "name": "",
+      "preserveMemberOrder": false,
+      "members": [
+        {
+          "kind": "Function",
+          "canonicalReference": "@wixc3/engine-test-kit!createBrowserProvider:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function createBrowserProvider(options?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "playwright.LaunchOptions",
+              "canonicalReference": "playwright-core!LaunchOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    loadPage(url: string): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "playwright.Page",
+              "canonicalReference": "playwright-core!Page:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    dispose(): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<void>;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/create-browser-provider.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 10
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "options",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": true
+            }
+          ],
+          "name": "createBrowserProvider"
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "@wixc3/engine-test-kit!ForkedProcessApplication:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class ForkedProcessApplication implements "
+            },
+            {
+              "kind": "Reference",
+              "text": "IExecutableApplication",
+              "canonicalReference": "@wixc3/engine-test-kit!IExecutableApplication:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/forked-process-application.ts",
+          "releaseTag": "Public",
+          "name": "ForkedProcessApplication",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "@wixc3/engine-test-kit!ForkedProcessApplication:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `ForkedProcessApplication` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(cliEntry: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", basePath: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", featureDiscoveryRoot?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string | undefined"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "cliEntry",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "basePath",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "featureDiscoveryRoot",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  },
+                  "isOptional": true
+                }
+              ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!ForkedProcessApplication#closeFeature:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "closeFeature(payload: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureTarget",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureTarget:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "payload",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "name": "closeFeature"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!ForkedProcessApplication#closeServer:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "closeServer(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "name": "closeServer"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!ForkedProcessApplication#getMetrics:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getMetrics(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "PerformanceMetrics",
+                  "canonicalReference": "@wixc3/engine-runtime-node!PerformanceMetrics:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "name": "getMetrics"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!ForkedProcessApplication#getServerPort:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getServerPort(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<number>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "name": "getServerPort"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!ForkedProcessApplication#runFeature:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "runFeature(payload: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureTarget",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureTarget:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureMessagePayload",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureMessagePayload:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 7
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "payload",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "name": "runFeature"
+            }
+          ],
+          "implementsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 2
+            }
+          ]
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "@wixc3/engine-test-kit!getRunningFeature:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function getRunningFeature<NAME extends "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", DEPS extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Dependency",
+              "canonicalReference": "@wixc3/engine-core!Dependency:type"
+            },
+            {
+              "kind": "Content",
+              "text": "[]"
+            },
+            {
+              "kind": "Content",
+              "text": ", API extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "EntityRecord",
+              "canonicalReference": "@wixc3/engine-core!EntityRecord:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", CONTEXT extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, "
+            },
+            {
+              "kind": "Reference",
+              "text": "DisposableContext",
+              "canonicalReference": "@wixc3/engine-core!DisposableContext:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<any>>"
+            },
+            {
+              "kind": "Content",
+              "text": ", ENV extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "AnyEnvironment",
+              "canonicalReference": "@wixc3/engine-core!AnyEnvironment:type"
+            },
+            {
+              "kind": "Content",
+              "text": ">(options: "
+            },
+            {
+              "kind": "Reference",
+              "text": "IGetRunnigFeatureOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IGetRunnigFeatureOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<NAME, DEPS, API, CONTEXT, ENV>"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n    dispose: () => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<void>;\n    runningApi: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Running",
+              "canonicalReference": "@wixc3/engine-core!Running:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "Feature",
+              "canonicalReference": "@wixc3/engine-core!Feature:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<NAME, DEPS, API, CONTEXT>, ENV>;\n    engine: "
+            },
+            {
+              "kind": "Reference",
+              "text": "RuntimeEngine",
+              "canonicalReference": "@wixc3/engine-core!RuntimeEngine:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n}>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/run-environment.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 18,
+            "endIndex": 28
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "options",
+              "parameterTypeTokenRange": {
+                "startIndex": 15,
+                "endIndex": 17
+              },
+              "isOptional": false
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "NAME",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "DEPS",
+              "constraintTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "API",
+              "constraintTokenRange": {
+                "startIndex": 6,
+                "endIndex": 7
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "CONTEXT",
+              "constraintTokenRange": {
+                "startIndex": 8,
+                "endIndex": 12
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "ENV",
+              "constraintTokenRange": {
+                "startIndex": 13,
+                "endIndex": 14
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "getRunningFeature"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "@wixc3/engine-test-kit!IEnvironmentHttpCall:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface IEnvironmentHttpCall<T> "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/remote-http-application.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "IEnvironmentHttpCall",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IEnvironmentHttpCall#defaultValue:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "defaultValue?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "T"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "defaultValue",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IEnvironmentHttpCall#featureTarget:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "featureTarget?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureTarget",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureTarget:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "featureTarget",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IEnvironmentHttpCall#method:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "method: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "'PUT' | 'POST' | 'GET'"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "method",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IEnvironmentHttpCall#path:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "path?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "path",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "@wixc3/engine-test-kit!IExecutableApplication:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface IExecutableApplication "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/types.ts",
+          "releaseTag": "Public",
+          "name": "IExecutableApplication",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IExecutableApplication#closeFeature:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "closeFeature(featureTarget: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureTarget",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureTarget:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "featureTarget",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "closeFeature"
+            },
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IExecutableApplication#closeServer:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "closeServer(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "closeServer"
+            },
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IExecutableApplication#getMetrics:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getMetrics(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "PerformanceMetrics",
+                  "canonicalReference": "@wixc3/engine-runtime-node!PerformanceMetrics:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "getMetrics"
+            },
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IExecutableApplication#getServerPort:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getServerPort(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<number>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "getServerPort"
+            },
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IExecutableApplication#runFeature:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "runFeature(featureTarget: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureTarget",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureTarget:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureMessagePayload",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureMessagePayload:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 7
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "featureTarget",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "runFeature"
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface IFeatureExecutionOptions "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/with-feature.ts",
+          "releaseTag": "Public",
+          "name": "IFeatureExecutionOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#allowedErrors:member",
+              "docComment": "/**\n * Error messages that are allowed to stay unhandled without failing the tests. strings are tested for exact match.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "allowedErrors?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Array",
+                  "canonicalReference": "!Array:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string | "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "RegExp",
+                  "canonicalReference": "!RegExp:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "allowedErrors",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#browserContextOptions:member",
+              "docComment": "/**\n * Passed down to `browser.newContext()`\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "browserContextOptions?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "playwright.BrowserContextOptions",
+                  "canonicalReference": "playwright-core!BrowserContextOptions:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "browserContextOptions",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#config:member",
+              "docComment": "/**\n * Allows providing a Top level config If configName was provided, the matching configurations will be overriden by the config provided\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "config?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "TopLevelConfig",
+                  "canonicalReference": "@wixc3/engine-core!TopLevelConfig:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "config",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#configName:member",
+              "docComment": "/**\n * configuration file name scoped to feature root directory.\n *\n * @example\n *\n * given the following structure: --my-feature -- feature -- my-feature.feature.ts -- production.config.ts -- fixtures -- dev.config.ts possible feature names will be: `my-feature/production` `my-feature/dev`\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "configName?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "configName",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#featureName:member",
+              "docComment": "/**\n * feature file name scoped to feature root directory. if feature name is the same as folder name, scoping is unnecessary.\n *\n * @example\n *\n * given the following structure:\n *\n * --my-feature -- feature -- my-feature.feature.ts -- my-feature2.feature.ts -- fixtures -- my-feature-fixture.feature.ts possible feature names will be: `my-feature` `my-feature/my-feature1` `my-feature/my-feature-fixture`\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "featureName?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "featureName",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#navigationOptions:member",
+              "docComment": "/**\n * Creates a playwright trace file for the test\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "navigationOptions?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Parameters",
+                  "canonicalReference": "!Parameters:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "playwright.Page",
+                  "canonicalReference": "playwright-core!Page:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "['goto']>[1]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "navigationOptions",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#queryParams:member",
+              "docComment": "/**\n * query parameters to open the page with\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "queryParams?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, string>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "queryParams",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#runOptions:member",
+              "docComment": "/**\n * runtime options that will be provided to the node environments\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "runOptions?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, string>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "runOptions",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions#tracing:member",
+              "docComment": "/**\n * Creates a playwright trace file for the test\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "tracing?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean | "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Tracing",
+                  "canonicalReference": "@wixc3/engine-test-kit!Tracing:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "tracing",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "@wixc3/engine-test-kit!IGetRunnigFeatureOptions:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface IGetRunnigFeatureOptions<NAME extends "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", DEPS extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Dependency",
+              "canonicalReference": "@wixc3/engine-core!Dependency:type"
+            },
+            {
+              "kind": "Content",
+              "text": "[]"
+            },
+            {
+              "kind": "Content",
+              "text": ", API extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "EntityRecord",
+              "canonicalReference": "@wixc3/engine-core!EntityRecord:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", CONTEXT extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, "
+            },
+            {
+              "kind": "Reference",
+              "text": "DisposableContext",
+              "canonicalReference": "@wixc3/engine-core!DisposableContext:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<any>>"
+            },
+            {
+              "kind": "Content",
+              "text": ", ENV extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "AnyEnvironment",
+              "canonicalReference": "@wixc3/engine-core!AnyEnvironment:type"
+            },
+            {
+              "kind": "Content",
+              "text": "> extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "IRunNodeEnvironmentOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<ENV>"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/run-environment.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "NAME",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "DEPS",
+              "constraintTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "API",
+              "constraintTokenRange": {
+                "startIndex": 6,
+                "endIndex": 7
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "CONTEXT",
+              "constraintTokenRange": {
+                "startIndex": 8,
+                "endIndex": 12
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "ENV",
+              "constraintTokenRange": {
+                "startIndex": 13,
+                "endIndex": 14
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "IGetRunnigFeatureOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IGetRunnigFeatureOptions#feature:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "feature: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Feature",
+                  "canonicalReference": "@wixc3/engine-core!Feature:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<NAME, DEPS, API, CONTEXT>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "feature",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ],
+          "extendsTokenRanges": [
+            {
+              "startIndex": 15,
+              "endIndex": 17
+            }
+          ]
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface IRunNodeEnvironmentOptions<ENV extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "AnyEnvironment",
+              "canonicalReference": "@wixc3/engine-core!AnyEnvironment:type"
+            },
+            {
+              "kind": "Content",
+              "text": " = "
+            },
+            {
+              "kind": "Reference",
+              "text": "Environment",
+              "canonicalReference": "@wixc3/engine-core!Environment:class"
+            },
+            {
+              "kind": "Content",
+              "text": "> "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/run-environment.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "ENV",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            }
+          ],
+          "name": "IRunNodeEnvironmentOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#basePath:member",
+              "docComment": "/**\n * from where to locate features\n *\n * @defaultValue\n *\n * process.cwd()\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "basePath?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "basePath",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#bundlePath:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "bundlePath?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "bundlePath",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#config:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "config?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "TopLevelConfig",
+                  "canonicalReference": "@wixc3/engine-core!TopLevelConfig:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "config",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#configName:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "configName?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "configName",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#env:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "env: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "ENV"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "env",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#externalFeatures:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "externalFeatures?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IExternalFeatureNodeDescriptor",
+                  "canonicalReference": "@wixc3/engine-runtime-node!IExternalFeatureNodeDescriptor:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "externalFeatures",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#featureDiscoveryRoot:member",
+              "docComment": "/**\n * base folder to locate features from within basePath\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "featureDiscoveryRoot?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "featureDiscoveryRoot",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#featureName:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "featureName: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "featureName",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions#runtimeOptions:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "runtimeOptions?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, string | boolean>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "runtimeOptions",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "@wixc3/engine-test-kit!IWithFeatureOptions:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface IWithFeatureOptions extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Omit",
+              "canonicalReference": "!Omit:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "IFeatureExecutionOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", 'tracing'>"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "playwright.LaunchOptions",
+              "canonicalReference": "playwright-core!LaunchOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/with-feature.ts",
+          "releaseTag": "Public",
+          "name": "IWithFeatureOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IWithFeatureOptions#featureDiscoveryRoot:member",
+              "docComment": "/**\n * Specify directory where features will be looked up within the package\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "featureDiscoveryRoot?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "featureDiscoveryRoot",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IWithFeatureOptions#runningApplicationPort:member",
+              "docComment": "/**\n * If we want to test the engine against a running application, proveide the port of the application. It can be extracted from the log printed after 'engineer start' or 'engine run'\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "runningApplicationPort?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "runningApplicationPort",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IWithFeatureOptions#tracing:member",
+              "docComment": "/**\n * add tracing for the entire suite, the name of the test will be used as the zip name\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "tracing?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean | "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Omit",
+                  "canonicalReference": "!Omit:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Tracing",
+                  "canonicalReference": "@wixc3/engine-test-kit!Tracing:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", 'name'>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "tracing",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 6
+              }
+            }
+          ],
+          "extendsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 5
+            },
+            {
+              "startIndex": 6,
+              "endIndex": 7
+            }
+          ]
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "@wixc3/engine-test-kit!IWithLocalFixtureOptions:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface IWithLocalFixtureOptions extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "IWithFeatureOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IWithFeatureOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/with-local-fixture.ts",
+          "releaseTag": "Public",
+          "name": "IWithLocalFixtureOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!IWithLocalFixtureOptions#fixturePath:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "fixturePath?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "fixturePath",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 2
+            }
+          ]
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "@wixc3/engine-test-kit!RemoteHttpApplication:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class RemoteHttpApplication implements "
+            },
+            {
+              "kind": "Reference",
+              "text": "IExecutableApplication",
+              "canonicalReference": "@wixc3/engine-test-kit!IExecutableApplication:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/remote-http-application.ts",
+          "releaseTag": "Public",
+          "name": "RemoteHttpApplication",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "@wixc3/engine-test-kit!RemoteHttpApplication:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `RemoteHttpApplication` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(port: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", hostname?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "port",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "hostname",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": true
+                }
+              ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!RemoteHttpApplication#closeFeature:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "closeFeature(featureTarget: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureTarget",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureTarget:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "featureTarget",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "name": "closeFeature"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!RemoteHttpApplication#closeServer:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "closeServer(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "name": "closeServer"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!RemoteHttpApplication#getMetrics:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getMetrics(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "PerformanceMetrics",
+                  "canonicalReference": "@wixc3/engine-runtime-node!PerformanceMetrics:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "name": "getMetrics"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!RemoteHttpApplication#getServerPort:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getServerPort(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<number>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [],
+              "isOptional": false,
+              "name": "getServerPort"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "@wixc3/engine-test-kit!RemoteHttpApplication#runFeature:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "runFeature(featureTarget: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureTarget",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureTarget:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFeatureMessagePayload",
+                  "canonicalReference": "@wixc3/engine-scripts!IFeatureMessagePayload:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 7
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "featureTarget",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "name": "runFeature"
+            }
+          ],
+          "implementsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 2
+            }
+          ]
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "@wixc3/engine-test-kit!runEngineEnvironment:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function runEngineEnvironment<ENV extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "AnyEnvironment",
+              "canonicalReference": "@wixc3/engine-core!AnyEnvironment:type"
+            },
+            {
+              "kind": "Content",
+              "text": ">({ featureName, configName, bundlePath, runtimeOptions, config, env, basePath, externalFeatures, featureDiscoveryRoot, }: "
+            },
+            {
+              "kind": "Reference",
+              "text": "IRunNodeEnvironmentOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IRunNodeEnvironmentOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<ENV>"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n    engine: "
+            },
+            {
+              "kind": "Reference",
+              "text": "RuntimeEngine",
+              "canonicalReference": "@wixc3/engine-core!RuntimeEngine:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<ENV>;\n    dispose: () => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<void>;\n}>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/run-environment.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 6,
+            "endIndex": 12
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "{ featureName, configName, bundlePath, runtimeOptions, config, env, basePath, externalFeatures, featureDiscoveryRoot, }",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "isOptional": false
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "ENV",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "runEngineEnvironment"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "@wixc3/engine-test-kit!Tracing:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface Tracing "
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/with-feature.ts",
+          "releaseTag": "Public",
+          "name": "Tracing",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!Tracing#name:member",
+              "docComment": "/**\n * name of the trace file\n *\n * @defaultValue\n *\n * random string\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "name?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "name",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!Tracing#outPath:member",
+              "docComment": "/**\n * path to a directory where the trace file will be saved\n *\n * @defaultValue\n *\n * process.cwd()\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "outPath?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "outPath",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!Tracing#screenshots:member",
+              "docComment": "/**\n * should trace include screenshots\n *\n * @defaultValue\n *\n * true\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "screenshots?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "screenshots",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@wixc3/engine-test-kit!Tracing#snapshots:member",
+              "docComment": "/**\n * should trace include snapshots\n *\n * @defaultValue\n *\n * true\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "snapshots?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "snapshots",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "@wixc3/engine-test-kit!withFeature:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function withFeature(withFeatureOptions?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "IWithFeatureOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IWithFeatureOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    getLoadedFeature({ featureName, configName, runOptions, queryParams, config, browserContextOptions, tracing, allowedErrors, navigationOptions, }?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "IFeatureExecutionOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        page: "
+            },
+            {
+              "kind": "Reference",
+              "text": "playwright.Page",
+              "canonicalReference": "playwright-core!Page:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n        response: "
+            },
+            {
+              "kind": "Reference",
+              "text": "playwright.Response",
+              "canonicalReference": "playwright-core!Response:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | null;\n        getMetrics: () => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "PerformanceMetrics",
+              "canonicalReference": "@wixc3/engine-runtime-node!PerformanceMetrics:type"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    }>;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/with-feature.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 16
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "withFeatureOptions",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": true
+            }
+          ],
+          "name": "withFeature"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "@wixc3/engine-test-kit!withLocalFixture:function(1)",
+          "docComment": "/**\n * Similar to `withFeature`, but creates a temp directory and optionally copies a fixture to it as a \"project\".\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function withLocalFixture(suiteOptions: "
+            },
+            {
+              "kind": "Reference",
+              "text": "IWithLocalFixtureOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IWithLocalFixtureOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    getLoadedFeature: (testOptions?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "IWithLocalFixtureOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IWithLocalFixtureOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        projectPath: string;\n        spawn: (command: string, args?: string[], spawnOptions?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "SpawnSyncOptions",
+              "canonicalReference": "!\"\\\"child_process\\\"\".SpawnSyncOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ") => import(\"child_process\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "SpawnSyncReturns",
+              "canonicalReference": "!\"\\\"child_process\\\"\".SpawnSyncReturns:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string | "
+            },
+            {
+              "kind": "Reference",
+              "text": "Buffer",
+              "canonicalReference": "!\"\\\"buffer\\\"\".__global.Buffer:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n        loadFeature: (options?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "IFeatureExecutionOptions",
+              "canonicalReference": "@wixc3/engine-test-kit!IFeatureExecutionOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n            page: import(\"playwright-core\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "Page",
+              "canonicalReference": "playwright-core!Page:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n            response: import(\"playwright-core\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "Response",
+              "canonicalReference": "playwright-core!Response:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | null;\n            getMetrics: () => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<import(\"@wixc3/engine-runtime-node\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "PerformanceMetrics",
+              "canonicalReference": "@wixc3/engine-runtime-node!PerformanceMetrics:type"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n        }>;\n    }>;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "packages/test-kit/src/with-local-fixture.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 26
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "suiteOptions",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "withLocalFixture"
+        }
+      ]
+    }
+  ]
+}
