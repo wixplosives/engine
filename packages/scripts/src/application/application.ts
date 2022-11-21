@@ -60,24 +60,26 @@ export class Application {
         configurations: SetMultiMap<string, IConfigDefinition>;
         resolvedEnvironments: ReturnType<typeof getResolvedEnvironments>;
     }> {
-        const opts = defaults(options, buildDefaults);
+        const buildOptions = defaults(options, buildDefaults);
         const { config: _config } = await this.getEngineConfig();
         const config = defaults(_config, buildDefaults);
 
+        if (config.require) await this.importModules(config.require);
+
         const entryPoints: Record<string, Record<string, string>> = {};
-        const analyzed = this.analyzeFeatures(opts.featureDiscoveryRoot ?? config.featureDiscoveryRoot);
-        if (opts.singleFeature && opts.featureName) {
-            this.filterByFeatureName(analyzed.features, opts.featureName);
+        const analyzed = this.analyzeFeatures(buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot);
+        if (buildOptions.singleFeature && buildOptions.featureName) {
+            this.filterByFeatureName(analyzed.features, buildOptions.featureName);
         }
 
-        const envs = getResolvedEnvironments(opts, analyzed.features);
-        const { compiler } = this.createCompiler(toCompilerOptions(opts, analyzed, config, envs));
+        const envs = getResolvedEnvironments(buildOptions, analyzed.features);
+        const { compiler } = this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
 
         const stats = await compile(compiler);
 
-        const sourceRoot = opts.sourcesRoot ?? opts.featureDiscoveryRoot ?? '.';
+        const sourceRoot = buildOptions.sourcesRoot ?? buildOptions.featureDiscoveryRoot ?? '.';
 
-        const manifest = this.writeManifest(analyzed.features, opts, entryPoints, sourceRoot);
+        const manifest = this.writeManifest(analyzed.features, buildOptions, entryPoints, sourceRoot);
 
         await manifest;
         return { ...analyzed, stats, resolvedEnvironments: envs };
