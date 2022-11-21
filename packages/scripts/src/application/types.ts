@@ -1,5 +1,5 @@
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { SetMultiMap } from '@wixc3/common';
+import type { SetMultiMap } from '@wixc3/patterns';
 import type {
     IConfigDefinition,
     IExternalDefinition,

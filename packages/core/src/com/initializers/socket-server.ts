@@ -27,10 +27,10 @@ export const socketClientInitializer = async ({
     return {
         id: instanceId,
         onDisconnect: (cb: () => void) => {
-            host.subscribers.listeners.add('disconnect', cb);
+            host.subscribers.on('disconnect', cb);
         },
         onReconnect: (cb: () => void) => {
-            host.subscribers.listeners.add('reconnect', cb);
+            host.subscribers.on('reconnect', cb);
         },
     };
 };
