@@ -1,4 +1,5 @@
-import { isPlainObject, isSetMultiMap, SetMultiMap, concat, isMap, isSet, reduce } from '@wixc3/common';
+import { isPlainObject, concat, isMap, isSet, reduce } from '@wixc3/common';
+import { isSetMultiMap, SetMultiMap } from '@wixc3/patterns';
 
 export const mergeAll = <T>(results: Iterable<T>): T =>
     reduce(
@@ -20,7 +21,7 @@ export function mergeResults<M extends Map<K, V> | Set<V> | SetMultiMap<K, V> | 
         return reduce(
             concat(Object.entries(a), Object.entries(b)),
             (result, [key, value]) => {
-                result[key] = mergeResults(result[key], value);
+                result[key] = mergeResults(result[key], value as object);
                 return result;
             },
             {} as any

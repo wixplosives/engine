@@ -34,12 +34,13 @@ import type {
 import { SERVICE_CONFIG } from '../symbols';
 
 import { serializeError } from '../helpers';
-import { SetMultiMap, deferred } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
 import { isMessage } from './message-types';
+import { deferred } from 'promise-assist';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;

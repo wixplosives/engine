@@ -16,7 +16,8 @@ import type {
     Dependency,
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
-import { deferred, IDeferredPromise, SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
+import { deferred, IDeferredPromise } from 'promise-assist';
 
 const emptyDispose = { dispose: () => undefined };
 
@@ -33,7 +34,7 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
         public feature: T,
         public api: Running<T, ENV>,
         public dependencies: RunningFeatures<T['dependencies'], ENV>
-    ) {}
+    ) { }
 
     public addRunHandler(fn: () => unknown, envName: string) {
         this.runHandlers.add(envName, fn);
@@ -87,10 +88,10 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
  * When calling `runEngineApp` and providing it with a Feature[], it uses the definitions
  * to initialize a `RuntimeFeature` for each.
  *
- * @template ID Unique string identity
- * @template Deps Dependencies needed by this Feature (to consume their API)
- * @template API Entities (Slots, Services, etc.) this Feature exposes for other Features to consume.
- * @template EnvironmentContext Environment-specific APIs consumed by this feature
+ * @typeParam ID - Unique string identity
+ * @typeParam Deps - Dependencies needed by this Feature (to consume their API)
+ * @typeParam API - Entities (Slots, Services, etc.) this Feature exposes for other Features to consume.
+ * @typeParam EnvironmentContext - Environment-specific APIs consumed by this feature
  */
 export class Feature<
     ID extends string = string,
@@ -150,10 +151,12 @@ export class Feature<
      * by `<feature-name>.<environment-name>.env.ts` files to define the environment specific implementations.
      *
      * @example
+     * ```
      * export default new Feature({
      *   id: 'my-feature',
      *   api: { ... },
      * })
+     * ```
      */
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
@@ -166,8 +169,8 @@ export class Feature<
     /**
      * Call this to provide the environment specific implementation for a feature.
      *
-     * @param env Environment id to implement the api for.
-     * @param setupHandler Callback that receives:
+     * @param env - Environment id to implement the api for.
+     * @param setupHandler - Callback that receives:
      * - Own feature `Slot`s
      * - Dependencies APIs
      * - Context API that is specific to a runtime environment.
@@ -186,7 +189,7 @@ export class Feature<
     /**
      *
      *
-     * @param config
+     * @param config -
      * @returns
      */
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
@@ -262,8 +265,8 @@ export class Feature<
                 if (!featureOutput) {
                     continue;
                 }
-                for (const key of Object.keys(featureOutput)) {
-                    settingUpFeature[key] = (featureOutput as any)[key];
+                for (const [key, value] of Object.entries(featureOutput)) {
+                    settingUpFeature[key] = value;
                 }
                 Object.assign(providedAPI, featureOutput);
             }

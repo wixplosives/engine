@@ -1,14 +1,13 @@
-import type { SetMultiMap } from '@wixc3/common';
-import type { TopLevelConfig } from '@wixc3/engine-core';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
 import type webpack from 'webpack';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import type { TopLevelConfig } from '@wixc3/engine-core';
 import { createMainEntrypoint } from './create-entrypoint';
-
 import type { IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from './types';
 import type { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
 import { createVirtualEntries } from './virtual-modules-loader';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+import type { SetMultiMap } from '@wixc3/common';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;

@@ -12,7 +12,7 @@ import {
     ConfigEnvironmentRecord,
     ReadyMessage,
 } from '@wixc3/engine-core';
-import type { SetMultiMap } from '@wixc3/common';
+import type { SetMultiMap } from '@wixc3/patterns';
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
 import {
