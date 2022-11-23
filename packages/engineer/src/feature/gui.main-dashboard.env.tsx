@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import guiFeature, { mainDashboardEnv } from './gui.feature';
 import { devServerEnv } from './dev-server.feature';
 import { socketClientInitializer } from '@wixc3/engine-core';
@@ -11,6 +11,6 @@ guiFeature.setup(mainDashboardEnv, ({ run }, { COM: { communication } }) => {
         const appContainer = document.createElement('div');
         document.body.appendChild(appContainer);
 
-        render(<App />, appContainer);
+        createRoot(appContainer).render(<App />);
     });
 });
