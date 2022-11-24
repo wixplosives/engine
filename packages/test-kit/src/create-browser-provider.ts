@@ -8,7 +8,7 @@ export function createBrowserProvider(options?: playwright.LaunchOptions) {
                 browser = await playwright.chromium.launch(options);
             }
             const page = await browser.newPage();
-            await page.goto(url, { waitUntil: 'networkidle' });
+            await page.goto(url);
             return page;
         },
         async dispose() {

@@ -33,7 +33,7 @@ export interface IStartOptions {
 export const defaultOptions = {
     httpServerPort: 3000,
     pathsToRequire: [],
-    publicPath: '/',
+    publicPath: '',
     mode: 'development',
     publicConfigsRoute: 'configs/',
     autoLaunch: true,

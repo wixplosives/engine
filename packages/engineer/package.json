@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engineer",
-  "version": "29.1.1",
+  "version": "30.0.1",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,16 +18,16 @@
   "dependencies": {
     "@file-services/node": "^7.0.1",
     "@wixc3/common": "^3.0.4",
-    "@wixc3/cross-performance": "^29.1.1",
-    "@wixc3/engine-core": "^29.1.1",
-    "@wixc3/engine-core-node": "^29.1.1",
-    "@wixc3/engine-dashboard": "^29.1.1",
-    "@wixc3/engine-runtime-node": "^29.1.1",
-    "@wixc3/engine-scripts": "^29.1.1",
+    "@wixc3/cross-performance": "^30.0.1",
+    "@wixc3/engine-core": "^30.0.1",
+    "@wixc3/engine-core-node": "^30.0.1",
+    "@wixc3/engine-dashboard": "^30.0.1",
+    "@wixc3/engine-runtime-node": "^30.0.1",
+    "@wixc3/engine-scripts": "^30.0.1",
     "@wixc3/patterns": "^3.0.4",
     "commander": "^9.4.1",
     "open": "^8.4.0",
-    "socket.io": "^4.5.3",
+    "socket.io": "^4.5.4",
     "webpack-dev-middleware": "^6.0.0"
   },
   "files": [
