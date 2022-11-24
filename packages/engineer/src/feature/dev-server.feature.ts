@@ -25,8 +25,6 @@ export default new Feature({
             overrideConfig: [],
             defaultRuntimeOptions: {},
             publicConfigsRoute: 'configs/',
-            externalFeatureDefinitions: [],
-            externalFeaturesRoute: '/external-features.json',
         }),
         /**
          * a slot for registering callback that will be called when the devserver is listening

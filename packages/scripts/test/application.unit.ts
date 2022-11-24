@@ -1,13 +1,12 @@
-import { mkdtempSync } from 'fs';
-import os from 'os';
-import { join } from 'path';
 import fs from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
-import type { EngineerMetadataConfig, IFeatureLoader, TopLevelConfig } from '@wixc3/engine-core';
+import type { EngineerMetadataConfig, TopLevelConfig } from '@wixc3/engine-core';
 import { Application, IBuildManifest } from '@wixc3/engine-scripts';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import { mkdtempSync } from 'fs';
+import os from 'os';
 import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
 
@@ -34,17 +33,8 @@ describe('Application', function () {
     };
 
     const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
-    const baseWebApplicationFixturePath = fs.dirname(
-        require.resolve('@fixture/base-web-application-feature/package.json')
-    );
     const staticBaseWebApplicationFixturePath = fs.dirname(
         require.resolve('@fixture/static-base-web-application-feature/package.json')
-    );
-    const applicationExternalFixturePath = fs.dirname(
-        require.resolve('@fixture/application-external-feature/package.json')
-    );
-    const staticApplicationExternalFixturePath = fs.dirname(
-        require.resolve('@fixture/static-application-external-feature/package.json')
     );
     const withIframeFixturePath = fs.dirname(require.resolve('@fixture/with-iframe/package.json'));
     const nodeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-node/package.json'));
@@ -100,23 +90,6 @@ describe('Application', function () {
                 const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
 
                 expect(manifest.defaultFeatureName).to.eq('engine-single/x');
-            });
-
-            it('includes entrypoint locations when built externally', async () => {
-                const app = new Application({ basePath: engineFeatureFixturePath });
-
-                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
-                await app.build({
-                    featureName: 'engine-single/x',
-                    external: true,
-                });
-                disposables.add(() => app.clean());
-                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-
-                expect(manifest.entryPoints).to.not.eq(undefined);
-                expect(Object.keys(manifest.entryPoints)).have.lengthOf(1);
-                expect(manifest.entryPoints['main']).to.not.eq(undefined);
-                expect(manifest.entryPoints['main']!['web']).to.eq('dist-app/main.web.js');
             });
 
             it('maps own feature requests to relative requests if output path inside package directory', async () => {
@@ -185,69 +158,6 @@ describe('Application', function () {
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
                 expect(filePath).to.eq('@fixture/engine-single-feature/lib/dist/feature/x.feature');
-            });
-        });
-
-        describe('external mode', () => {
-            it('allows building features in external mode', async () => {
-                const app = new Application({ basePath: engineFeatureFixturePath });
-                await app.build({ external: true, featureName: 'engine-single/x' });
-                disposables.add(() => app.clean());
-                expect(fs.directoryExistsSync(app.outputPath), 'has dist folder').to.equal(true);
-                const contents = fs.readdirSync(app.outputPath);
-                expect(contents).to.include('main.web.js');
-            });
-
-            it('creates a node entry', async () => {
-                const app = new Application({ basePath: nodeFeatureFixturePath });
-                await app.build({ external: true, featureName: 'engine-node/x' });
-                disposables.add(() => app.clean());
-
-                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
-                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-                expect(manifest.entryPoints['server']).to.not.eq(undefined);
-                const nodeEntryModule = (await import(
-                    fs.join(nodeFeatureFixturePath, manifest.entryPoints['server']!['node']!)
-                )) as Record<string, IFeatureLoader>;
-
-                expect(nodeEntryModule['engine-node/x']).to.not.eq(undefined);
-                const loadedModule = await nodeEntryModule['engine-node/x']?.load({});
-                expect(loadedModule).to.not.eq({});
-            });
-
-            it('creates a node entry with re-mapped sources', async () => {
-                const tempDirPath = mkdtempSync(fs.join(os.tmpdir(), 'some-test'));
-
-                disposables.add(() => fs.rmSync(tempDirPath, { force: true, recursive: true }));
-
-                const app = new Application({
-                    basePath: nodeFeatureFixturePath,
-                    outputPath: fs.join(tempDirPath, 'dist'),
-                });
-                await app.build({ external: true, featureName: 'engine-node/x', sourcesRoot: 'lib' });
-
-                disposables.add(() => app.clean());
-
-                const manifestFilePath = fs.join(app.outputPath, manifestFileName);
-                const manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf-8')) as IBuildManifest;
-                expect(manifest.entryPoints['server']).to.not.eq(undefined);
-                const nodeEntryModule = (await import(
-                    fs.join(tempDirPath, manifest.entryPoints['server']!['node']!)
-                )) as Record<string, IFeatureLoader>;
-                expect(nodeEntryModule['engine-node/x']).to.not.eq(undefined);
-
-                fs.symlinkSync(
-                    fs.join(__dirname, '../../../node_modules'),
-                    fs.join(tempDirPath, 'node_modules'),
-                    'junction'
-                );
-
-                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.be.rejectedWith();
-                fs.copyDirectorySync(
-                    fs.join(nodeFeatureFixturePath, 'dist/feature'),
-                    fs.join(tempDirPath, 'lib/feature')
-                );
-                await expect(nodeEntryModule['engine-node/x']?.load({})).to.eventually.not.be.rejectedWith();
             });
         });
     });
@@ -471,149 +381,6 @@ describe('Application', function () {
                 const parsedBodyConfig = JSON.parse(bodyConfig!.trim()) as { value: number };
                 expect(parsedBodyConfig.value).to.eq(1);
             });
-        });
-
-        // flaky, so skipped
-        it.skip('loads external features', async () => {
-            const externalFeatureName = 'application-external';
-            const { name } = fs.readJsonFileSync(join(applicationExternalFixturePath, 'package.json')) as {
-                name: string;
-            };
-            const distExternal = 'dist-external';
-
-            const outputPath = join(applicationExternalFixturePath, distExternal);
-            const externalFeatureApp = new Application({
-                basePath: applicationExternalFixturePath,
-                outputPath,
-            });
-            const publicConfigsRoute = 'config';
-            await externalFeatureApp.build({
-                external: true,
-                featureName: externalFeatureName,
-            });
-
-            const app = new Application({ basePath: baseWebApplicationFixturePath });
-            await app.build({
-                featureName: 'base-web-application',
-                singleFeature: true,
-                publicConfigsRoute: '/config',
-            });
-            disposables.add(() => app.clean());
-
-            const { close, port } = await app.run({
-                serveExternalFeaturesPath: true,
-                externalFeatureDefinitions: [
-                    {
-                        packageName: name,
-                        packagePath: applicationExternalFixturePath,
-                        outDir: distExternal,
-                    },
-                ],
-                autoLaunch: true,
-                publicConfigsRoute,
-            });
-            disposables.add(() => close());
-
-            const page = await loadPage(`http://localhost:${port}/main.html`);
-            await waitFor(
-                async () => {
-                    const bodyContent = await getBodyContent(page);
-                    expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
-                },
-                { timeout: 5_000 }
-            );
-            const button = await page.$('#server-slot');
-            await waitFor(
-                async () => {
-                    await button?.click();
-                    const elem = await page.$('#server-slot-value');
-                    expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
-                },
-                { timeout: 5_000 }
-            );
-            const frames = page.frames();
-            await waitFor(
-                async () => {
-                    for (const iframe of frames) {
-                        const child = await iframe.$('#main-container');
-                        if (!child) {
-                            continue;
-                        }
-                        expect(await getBodyContent(iframe)).to.eq('hello external');
-                    }
-                },
-                { timeout: 5_000 }
-            );
-        }).timeout(20_000);
-
-        // flaky, so skipped
-        it.skip('loads external features after static build', async () => {
-            const externalFeatureName = 'static-application-external/application-external';
-            const pluginsFolderPath = join(staticBaseWebApplicationFixturePath, 'node_modules');
-            const { name } = fs.readJsonFileSync(join(staticApplicationExternalFixturePath, 'package.json')) as {
-                name: string;
-            };
-            const externalFeatureApp = new Application({
-                basePath: staticApplicationExternalFixturePath,
-            });
-            const publicConfigsRoute = 'config';
-            await externalFeatureApp.build({
-                external: true,
-                featureName: externalFeatureName,
-            });
-
-            fs.copyDirectorySync(staticApplicationExternalFixturePath, join(pluginsFolderPath, name, 'dist'));
-            fs.copyDirectorySync(
-                join(staticApplicationExternalFixturePath, 'dist'),
-                join(pluginsFolderPath, name, 'dist')
-            );
-            disposables.add(() => externalFeatureApp.clean());
-            disposables.add(() => fs.rmSync(pluginsFolderPath, { force: true, recursive: true }));
-
-            const app = new Application({ basePath: staticBaseWebApplicationFixturePath });
-            await app.build({
-                featureName: 'static-base-web-application/base-web-application',
-                singleFeature: true,
-                publicConfigsRoute: '/config',
-                staticBuild: true,
-                externalFeatureDefinitions: [
-                    {
-                        packageName: name,
-                    },
-                ],
-            });
-            disposables.add(() => app.clean());
-
-            const { close, port } = await app.run({
-                publicConfigsRoute,
-            });
-            disposables.add(() => close());
-
-            const page = await loadPage(`http://localhost:${port}/main.html`);
-            await waitFor(
-                async () => {
-                    const bodyContent = await getBodyContent(page);
-                    expect(bodyContent, `external feature is not loaded in the browser`).include(
-                        'client from external'
-                    );
-                },
-                { timeout: 5_000 }
-            );
-            const frames = page.frames();
-            await waitFor(
-                async () => {
-                    for (const iframe of frames) {
-                        const child = await iframe.$('#main-container');
-                        if (!child) {
-                            continue;
-                        }
-                        expect(await getBodyContent(iframe), `external feature is not loaded in the iframe`).to.contain(
-                            'iframe from external'
-                        );
-                    }
-                },
-                { timeout: 5_000 }
-            );
         });
 
         it('loads config', async () => {

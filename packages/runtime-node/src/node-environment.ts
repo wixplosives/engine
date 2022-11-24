@@ -23,7 +23,6 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     type,
     options,
     host,
-    externalFeatures = [],
     context,
     env,
 }: StartEnvironmentOptions<ENV>): Promise<{
@@ -72,7 +71,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
 
-    // if context is not provided, environment will not load external features
+    // TODO! Investigate if this is for external features only
     if (context) {
         // mapping all found feature file requests to the current running context, so that external features, when importing feature files, will evaluate the files under the current context
         [...features.values()].map(([, { packageName }]) =>
@@ -81,31 +80,10 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
                 context,
             })
         );
-
-        // mapping all features to be evaluated from the context of their package location
-        externalFeatures.map(({ packageName, packageBasePath }) =>
-            remapToUserLibrary({
-                test: (request) => request.includes(packageName),
-                context: packageBasePath,
-            })
-        );
         // initializing our module system tricks to be able to load all features from their proper context, so that features will not be loaded twice
         init();
     }
 
-    for (const { scopedName: externalFeatureName, envEntries } of externalFeatures) {
-        if (envEntries[name] && envEntries[name]!['node']) {
-            const externalFeatureLoaders = (await import(envEntries[name]!['node']!)) as {
-                [featureName: string]: IFeatureLoader;
-            };
-            for (const [name, loader] of Object.entries(externalFeatureLoaders)) {
-                featureLoader.register(name, loader);
-            }
-            for (const feature of await featureLoader.getLoadedFeatures(externalFeatureName, optionsRecord)) {
-                runningFeatures.push(feature);
-            }
-        }
-    }
     if (context) {
         clear();
     }

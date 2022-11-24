@@ -1,12 +1,11 @@
-import type io from 'socket.io';
-import type { Environment, EnvironmentContext, TopLevelConfig, Feature, AnyEnvironment } from '@wixc3/engine-core';
+import type { AnyEnvironment, Environment, EnvironmentContext, Feature, TopLevelConfig } from '@wixc3/engine-core';
 import type {
     IEnvironmentDescriptor,
-    IExternalDefinition,
     IStaticFeatureDefinition,
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
+import type io from 'socket.io';
 
 export type JSRuntime = 'web' | 'webworker' | 'node';
 
@@ -153,9 +152,6 @@ export interface EngineConfig {
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
-    externalFeatureDefinitions: Array<IExternalDefinition>;
-    externalFeaturesBasePath?: string;
-    serveExternalFeaturesPath?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
     sourcesRoot?: string;
     favicon?: string;

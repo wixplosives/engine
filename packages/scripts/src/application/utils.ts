@@ -56,7 +56,6 @@ export const getResolvedEnvironments = (options: IBuildCommandOptions, features:
         features,
         filterContexts: options.singleFeature,
         environments: [...getExportedEnvironments(features)],
-        findAllEnvironments: options.external,
     });
 
 export const toCompilerOptions = (
@@ -77,10 +76,7 @@ export const toCompilerOptions = (
     publicConfigsRoute: opts.publicConfigsRoute,
     overrideConfig: opts.overrideConfig,
     singleFeature: opts.singleFeature,
-    // should build this feature in external mode
-    isExternal: opts.external,
     // whether should fetch at runtime for the external features metadata
-    externalFeaturesRoute: opts.staticExternalFeaturesFileName,
     webpackConfigPath: opts.webpackConfigPath,
     eagerEntrypoint: opts.eagerEntrypoint,
     configLoaderModuleName: opts.configLoaderModuleName,

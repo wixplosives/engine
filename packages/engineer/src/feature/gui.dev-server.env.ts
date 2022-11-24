@@ -14,7 +14,7 @@ guiFeature.setup(
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute, log },
+                devServerConfig: { title, favicon, publicConfigsRoute, log },
                 serverListeningHandlerSlot,
                 application,
             },
@@ -40,7 +40,6 @@ guiFeature.setup(
             configurations,
             featureName: 'engineer/gui',
             target: 'web',
-            externalFeaturesRoute,
             featuresBundleName: 'dashboard-features',
         });
 

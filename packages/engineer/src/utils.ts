@@ -1,13 +1,13 @@
 import fs from '@file-services/node';
-import { isFeatureFile, loadFeaturesFromPaths, getExternalFeaturesMetadata, EngineConfig } from '@wixc3/engine-scripts';
+import { EngineConfig, isFeatureFile, loadFeaturesFromPaths } from '@wixc3/engine-scripts';
 import { RuntimeEngine, BaseHost, RuntimeFeature } from '@wixc3/engine-core';
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
+import type { DevServerConfig } from './feature/dev-server.types';
 import guiFeature from './feature/gui.feature';
+import { defaultOptions, defaultsEngineConfig, DEngineConfig, DStartOptions, IStartOptions } from './utils.types';
+import { defaults } from '@wixc3/common';
 import { TargetApplication } from './application-proxy-service';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
-import { defaultOptions, defaultsEngineConfig, DEngineConfig, DStartOptions, IStartOptions } from './utils.types';
-import type { DevServerConfig } from './feature/dev-server.types';
-import { defaults } from '@wixc3/common';
 
 const basePath = fs.join(__dirname, './feature');
 
@@ -21,7 +21,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
     const app = new TargetApplication({
         basePath: serverOpts.targetApplicationPath,
     });
-    const { config, path: engineConfigPath } = await app.getEngineConfig();
+    const { config } = await app.getEngineConfig();
     const engineCnf = defaults(config || ({} as EngineConfig), defaultsEngineConfig);
     const featurePaths = options.devServerOnly
         ? // include only dev-server.feature
@@ -33,18 +33,6 @@ export async function startDevServer(options: IStartOptions): Promise<{
     preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
     const { features } = loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
-    const resolvedExternalFeaturesPath = fs.resolve(
-        serverOpts.externalFeaturesPath ??
-            (engineCnf.externalFeaturesBasePath ? fs.dirname(engineConfigPath!) : basePath)
-    );
-
-    const externalFeatures = getExternalFeaturesMetadata(
-        app.normalizeDefinitionsPackagePath([
-            ...engineCnf.externalFeatureDefinitions,
-            ...serverOpts.externalFeatureDefinitions,
-        ]),
-        resolvedExternalFeaturesPath
-    );
 
     const { engine, dispose } = await runNodeEnvironment({
         featureName: serverOpts.engineerEntry,
@@ -63,13 +51,11 @@ export async function startDevServer(options: IStartOptions): Promise<{
                       guiFeature.use({
                           engineerConfig: {
                               features,
-                              externalFeatures,
                           },
                       }),
                   ]),
         ],
         context: serverOpts.targetApplicationPath,
-        externalFeatures,
         env: devServerEnv,
     });
     return {

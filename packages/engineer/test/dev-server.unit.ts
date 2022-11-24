@@ -1,36 +1,22 @@
-import { expect } from 'chai';
 import fs from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type { EngineerMetadataConfig, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
-import type { IExternalDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
-import { Application } from '@wixc3/engine-scripts';
+import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
+import { expect } from 'chai';
 import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
 
 const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
-
 const engineRuntimeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-run-options/package.json'));
-
 const engineFeatureRoots = fs.dirname(require.resolve('@fixture/engine-feature-roots/package.json'));
-
 const multiFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-multi-feature/package.json'));
-
 const nodeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-node/package.json'));
 const contextualFeatureFixturePath = fs.dirname(require.resolve('@fixture/contextual-feature/package.json'));
-
 const useConfigsFeaturePath = fs.dirname(require.resolve('@fixture/configs/package.json'));
-const baseWebApplicationFixturePath = fs.dirname(require.resolve('@fixture/base-web-application-feature/package.json'));
-
-const applicationExternalFixturePath = fs.dirname(
-    require.resolve('@fixture/application-external-feature/package.json')
-);
-
 const environmentExtensionFeaturePath = fs.dirname(require.resolve('@fixture/engine-env-dependency/package.json'));
-
 const engineConfigFixturePath = fs.dirname(require.resolve('@fixture/engine-config-feature/package.json'));
-
 const engineRuntimeMetadataFixturePath = fs.dirname(require.resolve('@fixture/engine-runtime-metadata/package.json'));
 
 function getBodyContent(page: Page | Frame) {
@@ -54,8 +40,6 @@ describe('engineer:dev-server', function () {
         overrideConfig = [],
         outputPath,
         runtimeOptions = {},
-        externalFeatureDefinitions,
-        externalFeaturesPath,
         singleFeature,
         featureDiscoveryRoot,
         nodeEnvironmentsMode,
@@ -69,8 +53,6 @@ describe('engineer:dev-server', function () {
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
         outputPath?: string;
         runtimeOptions?: Record<string, string | boolean>;
-        externalFeatureDefinitions?: IExternalDefinition[];
-        externalFeaturesPath?: string;
         singleFeature?: boolean;
         featureDiscoveryRoot?: string;
         nodeEnvironmentsMode?: LaunchEnvironmentMode;
@@ -91,8 +73,6 @@ describe('engineer:dev-server', function () {
             overrideConfig,
             outputPath,
             runtimeOptions,
-            externalFeatureDefinitions,
-            externalFeaturesPath,
             singleFeature,
             featureDiscoveryRoot,
             nodeEnvironmentsMode,
@@ -483,72 +463,6 @@ describe('engineer:dev-server', function () {
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
         await page.locator('body', { hasText: '{"foo":"bar"}' }).waitFor({ state: 'visible' });
-    });
-
-    // flaky, so skipped
-    it.skip('loads external features', async () => {
-        const externalFeatureName = 'application-external';
-        const pluginsFolderPath = fs.join(baseWebApplicationFixturePath, 'node_modules');
-        const externalFeatureApp = new Application({
-            basePath: applicationExternalFixturePath,
-        });
-
-        await externalFeatureApp.build({
-            external: true,
-            featureName: externalFeatureName,
-        });
-
-        fs.copyDirectorySync(
-            fs.join(applicationExternalFixturePath, 'dist'),
-            fs.join(pluginsFolderPath, '@fixture/application-external-feature', 'dist')
-        );
-
-        fs.copyDirectorySync(
-            applicationExternalFixturePath,
-            fs.join(pluginsFolderPath, '@fixture/application-external-feature', 'dist')
-        );
-
-        disposables.add(() => externalFeatureApp.clean());
-        disposables.add(() => fs.rmSync(pluginsFolderPath, { force: true, recursive: true }));
-        const {
-            dispose,
-            config: { port },
-        } = await setup({
-            basePath: baseWebApplicationFixturePath,
-            featureName: 'base-web-application',
-            externalFeatureDefinitions: [
-                {
-                    packageName: '@fixture/application-external-feature',
-                },
-            ],
-            externalFeaturesPath: pluginsFolderPath,
-        });
-        disposables.add(() => dispose());
-
-        const page = await loadPage(`http://localhost:${port}/main.html`);
-        await waitFor(async () => {
-            const bodyContent = await getBodyContent(page);
-            expect(bodyContent, `external feature is not loaded in the browser`).include('from ext,external');
-        });
-        const button = await page.$('#server-slot');
-        await waitFor(async () => {
-            await button?.click();
-            const elem = await page.$('#server-slot-value');
-            expect(await elem?.evaluate((e) => e.textContent)).to.eq('external');
-        });
-        const frames = page.frames();
-        await waitFor(
-            async () => {
-                for (const iframe of frames) {
-                    const child = await iframe.$('#main-container');
-                    if (!child) {
-                        continue;
-                    }
-                    expect(await getBodyContent(iframe)).to.eq('hello external');
-                }
-            },
-            { timeout }
-        );
     });
 
     it('allows setting up node env mode via config file', async () => {

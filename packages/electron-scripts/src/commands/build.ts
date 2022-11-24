@@ -1,7 +1,6 @@
 import fs from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import { importModules } from '@wixc3/engine-electron-commons/dist/import-modules';
-import { DEFAULT_EXTERNAL_FEATURES_PATH } from '@wixc3/engine-electron-host';
 import type { IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import {
     Application,
@@ -100,7 +99,6 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         ...options,
         basePath,
         outputPath,
-        staticExternalFeaturesFileName: DEFAULT_EXTERNAL_FEATURES_PATH,
         featureDiscoveryRoot,
     });
 
