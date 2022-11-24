@@ -39,6 +39,8 @@ function getBodyContent(page: Page | Frame) {
 
 describe('engineer:dev-server', function () {
     this.timeout(15_000);
+    const timeout = 5000;
+
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
 
@@ -128,9 +130,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        const text = await getBodyContent(page);
-
-        expect(text).to.include('App is running');
+        await page.locator('body', { hasText: 'App is running' }).waitFor({ state: 'visible' });
     });
 
     it('serves a root feature without featureDiscoveryRoot ', async () => {
@@ -140,9 +140,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/x`);
 
-        const text = await getBodyContent(page);
-
-        expect(text).to.include('Root Feature is running');
+        await page.locator('body', { hasText: 'Root Feature is running' }).waitFor({ state: 'visible' });
     });
 
     it('serves a build feature with featureDiscoveryRoot ', async () => {
@@ -152,9 +150,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-feature-roots/y`);
 
-        const text = await getBodyContent(page);
-
-        expect(text).to.include('Custom Feature is running');
+        await page.locator('body', { hasText: 'Custom Feature is running' }).waitFor({ state: 'visible' });
     });
 
     it('serves a fixture feature', async () => {
@@ -163,15 +159,21 @@ describe('engineer:dev-server', function () {
         } = await setup({ basePath: multiFeatureFixturePath });
 
         const page = await loadPage(`http://localhost:${port}/main.html?feature=engine-multi/variant`);
-        const { myConfig, mySlot } = await page.evaluate(() => ({
-            mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!) as string[],
-            myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!) as { tags: string[] },
-        }));
 
-        expect(myConfig).to.eql({
-            tags: [],
-        });
-        expect(mySlot).to.eql(['testing 1 2 3']);
+        await waitFor(
+            async () => {
+                const { myConfig, mySlot } = await page.evaluate(() => ({
+                    mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!) as string[],
+                    myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!) as { tags: string[] },
+                }));
+
+                expect(myConfig).to.eql({
+                    tags: [],
+                });
+                expect(mySlot).to.eql(['testing 1 2 3']);
+            },
+            { timeout }
+        );
     });
 
     it(`runs node environments`, async () => {
@@ -181,9 +183,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        await waitFor(async () => {
-            expect(await getBodyContent(page)).to.equal('Hello');
-        });
+        await page.locator('body', { hasText: 'Hello' }).waitFor({ state: 'visible' });
     });
 
     it('launches a feature with contextual environment with worker context', async () => {
@@ -193,9 +193,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        await waitFor(async () => {
-            expect(await getBodyContent(page)).to.equal('from worker');
-        });
+        await page.locator('body', { hasText: 'from worker' }).waitFor({ state: 'visible' });
     });
 
     it(`allows specfiying a config`, async () => {
@@ -207,15 +205,20 @@ describe('engineer:dev-server', function () {
             `http://localhost:${port}/main.html?feature=engine-multi/variant&config=engine-multi/variant2`
         );
 
-        const { myConfig, mySlot } = await page.evaluate(() => ({
-            mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!) as string[],
-            myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!) as { tags: string[] },
-        }));
+        await waitFor(
+            async () => {
+                const { myConfig, mySlot } = await page.evaluate(() => ({
+                    mySlot: JSON.parse(document.getElementById('mySlot')!.textContent!) as string[],
+                    myConfig: JSON.parse(document.getElementById('myConfig')!.textContent!) as { tags: string[] },
+                }));
 
-        expect(myConfig).to.eql({
-            tags: ['variant', '2'],
-        });
-        expect(mySlot).to.eql(['testing 1 2 3']);
+                expect(myConfig).to.eql({
+                    tags: ['variant', '2'],
+                });
+                expect(mySlot).to.eql(['testing 1 2 3']);
+            },
+            { timeout }
+        );
     });
 
     it('launches a feature with contextual environment with server context', async () => {
@@ -228,9 +231,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        await waitFor(async () => {
-            expect(await getBodyContent(page)).to.equal('from server');
-        });
+        await page.locator('body', { hasText: 'from server' }).waitFor({ state: 'visible' });
     });
 
     it('hot reloads config files', async () => {
@@ -253,27 +254,17 @@ describe('engineer:dev-server', function () {
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
         // validate original config file is used
-        await waitFor(async () => {
-            expect(await getBodyContent(page)).to.equal(originalConfigValue);
-        });
+        await page.locator('body', { hasText: originalConfigValue }).waitFor({ state: 'visible' });
 
         // modifying the config file
         await fs.promises.writeFile(configFilePathInRepo, getConfigFileContent(modifiedConfigValue));
 
         await page.reload();
 
-        await waitFor(
-            async () => {
-                // reload the page (to see if the config file was changed, without re-running the application)
-                expect(await getBodyContent(page)).to.equal(modifiedConfigValue);
-            },
-            { timeout: 2000 }
-        );
+        await page.locator('body', { hasText: modifiedConfigValue }).waitFor({ state: 'visible' });
     });
 
     it('runs node environments with inspect mode', async function () {
-        // these tests takes longer in CI
-        this.timeout(25_000);
         const {
             config: { port },
         } = await setup({
@@ -284,9 +275,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        await waitFor(async () => {
-            expect(await getBodyContent(page)).to.equal('Hello');
-        });
+        await page.locator('body', { hasText: 'Hello' }).waitFor({ state: 'visible' });
     });
 
     it('runs http server on different port', async () => {
@@ -298,9 +287,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${expectedPort}/main.html`);
 
-        const text = await getBodyContent(page);
-
-        expect(text).to.include('App is running');
+        await page.locator('body', { hasText: 'App is running' }).waitFor({ state: 'visible' });
     });
 
     it('allows providing top level config', async () => {
@@ -314,16 +301,20 @@ describe('engineer:dev-server', function () {
         });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
-        await waitFor(async () => {
-            const bodyContent = await getBodyContent(page);
-            if (bodyContent) {
-                const [, bodyConfig] = bodyContent.split(': ');
-                if (bodyConfig) {
-                    const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
-                    expect(parsedBodyConfig.value).to.eq(1);
+
+        await waitFor(
+            async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
                 }
-            }
-        });
+            },
+            { timeout }
+        );
     });
 
     it('allows providing top level config through the override config', async () => {
@@ -337,16 +328,20 @@ describe('engineer:dev-server', function () {
         });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
-        await waitFor(async () => {
-            const bodyContent = await getBodyContent(page);
-            if (bodyContent) {
-                const [, bodyConfig] = bodyContent.split(': ');
-                if (bodyConfig) {
-                    const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
-                    expect(parsedBodyConfig.value).to.eq(1);
+
+        await waitFor(
+            async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
                 }
-            }
-        });
+            },
+            { timeout }
+        );
     });
 
     it('allows providing top level config with default config', async () => {
@@ -361,16 +356,19 @@ describe('engineer:dev-server', function () {
         });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
-        await waitFor(async () => {
-            const bodyContent = await getBodyContent(page);
-            if (bodyContent) {
-                const [, bodyConfig] = bodyContent.split(': ');
-                if (bodyConfig) {
-                    const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
-                    expect(parsedBodyConfig.value).to.eq(1);
+        await waitFor(
+            async () => {
+                const bodyContent = await getBodyContent(page);
+                if (bodyContent) {
+                    const [, bodyConfig] = bodyContent.split(': ');
+                    if (bodyConfig) {
+                        const parsedBodyConfig = JSON.parse(bodyConfig.trim()) as { value: number };
+                        expect(parsedBodyConfig.value).to.eq(1);
+                    }
                 }
-            }
-        });
+            },
+            { timeout }
+        );
     });
 
     it('runs 2 node features simultaniously', async () => {
@@ -426,10 +424,8 @@ describe('engineer:dev-server', function () {
             `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName!}`
         );
 
-        await waitFor(async () => {
-            expect(await getBodyContent(pageOne)).to.equal('1');
-            expect(await getBodyContent(pageTwo)).to.equal('2');
-        });
+        await pageOne.locator('body', { hasText: '1' }).waitFor({ state: 'visible' });
+        await pageTwo.locator('body', { hasText: '2' }).waitFor({ state: 'visible' });
     });
 
     it('runs 2 apps simultaniously', async () => {
@@ -442,12 +438,10 @@ describe('engineer:dev-server', function () {
         } = await setup({ featureName: 'engine-single/x', basePath: engineFeatureFixturePath });
 
         const page1 = await loadPage(`http://localhost:${app1Port}/main.html`);
-        const text1 = await getBodyContent(page1);
-        expect(text1).to.include('App is running');
+        await page1.locator('body', { hasText: 'App is running' }).waitFor({ state: 'visible' });
 
         const page2 = await loadPage(`http://localhost:${app2Port}/main.html`);
-        const text2 = await getBodyContent(page2);
-        expect(text2).to.include('App is running');
+        await page2.locator('body', { hasText: 'App is running' }).waitFor({ state: 'visible' });
     });
 
     it('can run from arbitrary output dirs', async () => {
@@ -462,16 +456,19 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        const text = await getBodyContent(page);
-
-        expect(text).to.include('App is running');
+        await page.locator('body', { hasText: 'App is running' }).waitFor({ state: 'visible' });
 
         const someArbFileFromTheOutputPath = await loadPage(`http://localhost:${port}/package.json`);
 
-        const responseText = JSON.stringify(JSON.parse(await getBodyContent(someArbFileFromTheOutputPath)));
-        const fileContent = JSON.stringify(JSON.parse(fs.readFileSync(packageFile).toString().trim()));
+        await waitFor(
+            async () => {
+                const responseText = JSON.stringify(JSON.parse(await getBodyContent(someArbFileFromTheOutputPath)));
+                const fileContent = JSON.stringify(JSON.parse(fs.readFileSync(packageFile).toString().trim()));
 
-        expect(responseText).to.eq(fileContent);
+                expect(responseText).to.eq(fileContent);
+            },
+            { timeout }
+        );
     });
 
     it('can run runtime configs', async () => {
@@ -485,9 +482,7 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        const text = await getBodyContent(page);
-
-        expect(text).to.include('{"foo":"bar"}');
+        await page.locator('body', { hasText: '{"foo":"bar"}' }).waitFor({ state: 'visible' });
     });
 
     // flaky, so skipped
@@ -552,9 +547,9 @@ describe('engineer:dev-server', function () {
                     expect(await getBodyContent(iframe)).to.eq('hello external');
                 }
             },
-            { timeout: 5_000 }
+            { timeout }
         );
-    }).timeout(30_000);
+    });
 
     it('allows setting up node env mode via config file', async () => {
         const {
@@ -566,12 +561,17 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        const text = await getBodyContent(page);
-        const [pid1, pid2] = text.split(';').map(Number);
+        await waitFor(
+            async () => {
+                const text = await getBodyContent(page);
+                const [pid1, pid2] = text.split(';').map(Number);
 
-        expect(pid1).not.to.eq(pid2);
-        expect(pid1).not.to.eq(process.pid);
-        expect(pid2).not.to.eq(process.pid);
+                expect(pid1).not.to.eq(pid2);
+                expect(pid1).not.to.eq(process.pid);
+                expect(pid2).not.to.eq(process.pid);
+            },
+            { timeout }
+        );
     });
 
     it('allows runtime options to take precedent over engine config', async () => {
@@ -585,11 +585,16 @@ describe('engineer:dev-server', function () {
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        const text = await getBodyContent(page);
-        const [pid1, pid2] = text.split(';').map(Number);
+        await waitFor(
+            async () => {
+                const text = await getBodyContent(page);
+                const [pid1, pid2] = text.split(';').map(Number);
 
-        expect(pid1).to.eq(pid2);
-        expect(pid1).to.eq(process.pid);
+                expect(pid1).to.eq(pid2);
+                expect(pid1).to.eq(process.pid);
+            },
+            { timeout }
+        );
     });
 
     it('supports simple environment extension', async () => {
@@ -603,8 +608,8 @@ describe('engineer:dev-server', function () {
         disposables.add(() => dispose);
 
         const page = await loadPage(`http://localhost:${port}/page1.html`);
-        const text = await getBodyContent(page);
-        expect(text).to.eq('page1');
+
+        await page.locator('body', { hasText: 'page1' }).waitFor({ state: 'visible' });
     });
 
     it('supports base environment extension in dependent features', async () => {
@@ -618,8 +623,8 @@ describe('engineer:dev-server', function () {
         disposables.add(() => dispose);
 
         const page = await loadPage(`http://localhost:${port}/page2.html`);
-        const text = await getBodyContent(page);
-        expect(text).to.eq('variant added to client page2');
+
+        await page.locator('body', { hasText: 'variant added to client page2' }).waitFor({ state: 'visible' });
     });
 
     it('in extending environment invokes parent environment setup prior to own', async () => {
@@ -633,8 +638,10 @@ describe('engineer:dev-server', function () {
         disposables.add(() => dispose);
 
         const page = await loadPage(`http://localhost:${port}/page1.html`);
-        const text = await getBodyContent(page);
-        expect(text).to.eq('variant added to variant added to client page1');
+
+        await page
+            .locator('body', { hasText: 'variant added to variant added to client page1' })
+            .waitFor({ state: 'visible' });
     });
     it('runs app with the correct runtime metadata', async () => {
         const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
@@ -649,22 +656,28 @@ describe('engineer:dev-server', function () {
         });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
-        const text = await getBodyContent(page);
 
-        const metadata = JSON.parse(text) as EngineerMetadataConfig;
+        await waitFor(
+            async () => {
+                const text = await getBodyContent(page);
 
-        expect(metadata).to.eql({
-            devport: port,
-            applicationPath: outputPath,
-            featureName,
-            isWorkspace: false,
-            foundFeatures: [
-                {
-                    configurations: [],
+                const metadata = JSON.parse(text) as EngineerMetadataConfig;
+
+                expect(metadata).to.eql({
+                    devport: port,
+                    applicationPath: outputPath,
                     featureName,
-                },
-            ],
-        });
+                    isWorkspace: false,
+                    foundFeatures: [
+                        {
+                            configurations: [],
+                            featureName,
+                        },
+                    ],
+                });
+            },
+            { timeout }
+        );
     });
 });
 
