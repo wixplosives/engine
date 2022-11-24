@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import { defaults, SetMultiMap } from '@wixc3/common';
+import { defaults } from '@wixc3/common';
 import { createDisposables } from '@wixc3/create-disposables';
 import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 import {
@@ -11,6 +11,7 @@ import {
     resolveEnvironments,
     RouteMiddleware,
 } from '@wixc3/engine-runtime-node';
+import { SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
 import webpack from 'webpack';
 import { findFeatures } from '../analyze-feature';
@@ -62,23 +63,21 @@ export class Application {
     }> {
         const buildOptions = defaults(options, buildDefaults);
         const { config: _config } = await this.getEngineConfig();
-        const config = defaults(_config, buildDefaults);
-
+        const config = defaults(_config || {}, buildDefaults);
+        
         if (config.require) await this.importModules(config.require);
 
         const entryPoints: Record<string, Record<string, string>> = {};
         const analyzed = this.analyzeFeatures(buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot);
+        
         if (buildOptions.singleFeature && buildOptions.featureName) {
             this.filterByFeatureName(analyzed.features, buildOptions.featureName);
         }
 
         const envs = getResolvedEnvironments(buildOptions, analyzed.features);
         const { compiler } = this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
-
         const stats = await compile(compiler);
-
         const sourceRoot = buildOptions.sourcesRoot ?? buildOptions.featureDiscoveryRoot ?? '.';
-
         const manifest = this.writeManifest(analyzed.features, buildOptions, entryPoints, sourceRoot);
 
         await manifest;

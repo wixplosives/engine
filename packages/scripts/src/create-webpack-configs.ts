@@ -7,7 +7,7 @@ import type { IFeatureDefinition } from './types';
 import type { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
 import { createVirtualEntries } from './virtual-modules-loader';
 import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
-import type { SetMultiMap } from '@wixc3/common';
+import type { SetMultiMap } from '@wixc3/patterns';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
