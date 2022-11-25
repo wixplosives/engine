@@ -1938,13 +1938,14 @@
     "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-3.0.4.tgz#12285ace098a677e73da14c1a47bdf793bd3ebc0"
-  integrity sha512-qhzsY9482lkFxUu6zamfggtHI44PF2u2e+QQTgLRZ6oBMpudHmdswd5jGuN7H0l4Ohxlgz4I0eSy8uotVKu2mA==
+"@wixc3/common@^3.0.4", "@wixc3/common@^3.0.5":
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-3.0.5.tgz#d27259db26d0a922feb5262a438271079cc4ca1c"
+  integrity sha512-PMnfz5o1xMUVLwP/3zprR285REGEOOp0IyxaokxK4QVUmwwVkz/YEurLKWkVoDXLxztzgB4eCFO6vPtmA1yorA==
   dependencies:
     "@file-services/path" "^7.0.1"
     "@file-services/types" "^7.0.1"
+    promise-assist "^1.3.0"
 
 "@wixc3/create-disposables@^2.2.0":
   version "2.2.0"
