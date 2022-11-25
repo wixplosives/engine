@@ -1938,7 +1938,7 @@
     "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^3.0.4", "@wixc3/common@^3.0.5":
+"@wixc3/common@^3.0.5":
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-3.0.5.tgz#d27259db26d0a922feb5262a438271079cc4ca1c"
   integrity sha512-PMnfz5o1xMUVLwP/3zprR285REGEOOp0IyxaokxK4QVUmwwVkz/YEurLKWkVoDXLxztzgB4eCFO6vPtmA1yorA==
@@ -1952,13 +1952,13 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/fs-utils@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-3.0.4.tgz#bf7930bace3203b630f1f4e91662f602d1cfa4b1"
-  integrity sha512-Ew63zcdpaWkzvFESfH0OtH77BJULIH27F0BsLnqx4xZTi5vUWB3zUeU8TN1LCsvlMRGT7DjKAhvjo6BfWCXZYw==
+"@wixc3/fs-utils@^3.0.5":
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-3.0.5.tgz#8a34463099489547f2fa9814e216f2a3ace2e811"
+  integrity sha512-bm28bZJr59Tzk3P4GBSSizDbk6Ld4QDdC/FKzi30DfA6ZbvIV3ne64thvZWFVoWZetAXlqDUpD3Q9q2Rr+zEjw==
   dependencies:
     "@file-services/memory" "^7.0.1"
-    "@wixc3/common" "^3.0.4"
+    "@wixc3/common" "^3.0.5"
 
 "@wixc3/patterns@^3.0.5":
   version "3.0.5"
