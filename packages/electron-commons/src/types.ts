@@ -13,11 +13,9 @@ export interface IEngineRuntimeArguments {
     configName?: string;
     devport?: number;
     nodeEntryPath: string;
-    externalsPath?: string;
     features: [featureName: string, featureDefinition: Required<IStaticFeatureDefinition>][];
     config: TopLevelConfig;
     requiredModules?: string[];
-    externalFeatures?: IExternalFeatureNodeDescriptor[];
     runtimeOptions?: StartEnvironmentOptions['options'];
 }
 
@@ -57,11 +55,9 @@ export interface IExtenalFeatureDescriptor {
     envEntries: Record<string, Record<string, string>>;
     packageBasePath: string;
 }
-export interface IExternalFeatureNodeDescriptor extends IExtenalFeatureDescriptor, IStaticFeatureDefinition {}
 
 export interface MetadataCollectionAPI {
     getRuntimeArguments: () => IEngineRuntimeArguments;
-    getExternalFeatures: () => IExternalFeatureNodeDescriptor[];
 }
 
 export const metadataApiToken = {

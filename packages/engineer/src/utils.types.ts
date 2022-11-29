@@ -1,5 +1,5 @@
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { TopLevelConfigProvider, IExternalDefinition, LaunchEnvironmentMode } from '@wixc3/engine-runtime-node';
+import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { EngineConfig } from '@wixc3/engine-scripts';
 import type io from 'socket.io';
 
@@ -21,8 +21,6 @@ export interface IStartOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     inspect?: boolean;
     runtimeOptions?: Record<string, string | boolean>;
-    externalFeatureDefinitions?: IExternalDefinition[];
-    externalFeaturesPath?: string;
     featureDiscoveryRoot?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     socketServerOptions?: Partial<io.ServerOptions>;
@@ -35,20 +33,18 @@ export interface IStartOptions {
 export const defaultOptions = {
     httpServerPort: 3000,
     pathsToRequire: [],
-    publicPath: '/',
+    publicPath: '',
     mode: 'development',
     publicConfigsRoute: 'configs/',
     autoLaunch: true,
     engineerEntry: 'engineer/dev-server',
     overrideConfig: [],
     runtimeOptions: {},
-    externalFeatureDefinitions: [],
     devServerOnly: true,
 };
 export type DStartOptions = IStartOptions & typeof defaultOptions;
 
 export const defaultsEngineConfig = {
-    externalFeatureDefinitions: [],
     require: [],
 };
 export type DEngineConfig = EngineConfig & typeof defaultsEngineConfig;

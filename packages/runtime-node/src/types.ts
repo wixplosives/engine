@@ -9,11 +9,6 @@ import type {
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
-export interface IExternalFeatureDescriptor {
-    envEntries: Record<string, Record<string, string>>;
-    packageBasePath: string;
-}
-
 export interface IStaticFeatureDefinition {
     contextFilePaths?: Record<string, string>;
     envFilePaths?: Record<string, string>;
@@ -35,8 +30,6 @@ export interface IStaticFeatureDefinition {
     exportedEnvs?: IEnvironmentDescriptor<AnyEnvironment>[];
 }
 
-export interface IExternalFeatureNodeDescriptor extends IExternalFeatureDescriptor, IStaticFeatureDefinition {}
-
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
 
@@ -49,7 +42,6 @@ export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnviron
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
     host?: BaseHost;
-    externalFeatures?: IExternalFeatureNodeDescriptor[];
     context?: string;
 }
 
@@ -139,21 +131,4 @@ export interface IConfigDefinition {
     name: string;
     envName?: string;
     filePath: string;
-}
-
-export interface IExternalDefinition {
-    /**
-     * name of the package containing the external feature
-     */
-    packageName: string;
-    /**
-     * the directory where the built source code is located at
-     * @default dist
-     */
-    outDir?: string;
-
-    /**
-     * path to the package of the external feature
-     */
-    packagePath?: string;
 }
