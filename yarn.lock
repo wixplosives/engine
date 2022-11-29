@@ -2929,7 +2929,7 @@ commander@^8.3.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-8.3.0.tgz#4837ea1b2da67b9c616a67afbb0fafee567bca66"
   integrity sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==
 
-commander@^9.1.0, commander@^9.4.1:
+commander@^9.4.1:
   version "9.4.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-9.4.1.tgz#d1dd8f2ce6faf93147295c0df13c7c21141cfbdd"
   integrity sha512-5EEkTNyHNGFPD2H+c/dXXfQZYa/scCKasxWcXJaWnNJ99pnQN9Vnmqow+p+PlFPE63Q6mThaZws1T+HxfpgtPw==
@@ -3971,7 +3971,7 @@ execa@^5.0.0:
     signal-exit "^3.0.3"
     strip-final-newline "^2.0.0"
 
-express@^4.17.3, express@^4.18.2:
+express@^4.18.2:
   version "4.18.2"
   resolved "https://registry.yarnpkg.com/express/-/express-4.18.2.tgz#3fabe08296e930c796c19e3c516979386ba9fd59"
   integrity sha512-5/PsL6iGPdfQ/lKM1UuielYgv3BUoJfz1aUwU9vHZ+J7gyvwdQXFEBIEIaxeGf0GIcreATNyBExtalisDbuMqQ==
@@ -4459,7 +4459,7 @@ glob@7.2.0:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^7.1.3, glob@^7.1.4, glob@^7.1.6, glob@^7.2.0:
+glob@^7.1.3, glob@^7.1.4, glob@^7.1.6:
   version "7.2.3"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.2.3.tgz#b8df0fb802bbfa8e89bd1d938b4e16578ed44f2b"
   integrity sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==
@@ -5613,7 +5613,7 @@ media-typer@0.3.0:
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
   integrity sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==
 
-memfs@^3.4.12, memfs@^3.4.3:
+memfs@^3.4.12:
   version "3.4.12"
   resolved "https://registry.yarnpkg.com/memfs/-/memfs-3.4.12.tgz#d00f8ad8dab132dc277c659dc85bfd14b07d03bd"
   integrity sha512-BcjuQn6vfqP+k100e0E9m61Hyqa//Brp+I3f0OBmN0ATHlFA8vx3Lt8z57R3u2bPqe3WGDBC+nF72fTH7isyEw==
@@ -5827,19 +5827,19 @@ mkdirp@^1.0.3, mkdirp@^1.0.4:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-mocha-play@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/mocha-play/-/mocha-play-3.1.0.tgz#1dc39bbdf89f0734089cacaaa088bbac6e920abc"
-  integrity sha512-akhWxo/7TFA93gahYJfPEiKiVD21nPw60B3aLTrVgwmHD2u6Uixr07JNVSWmnHL0eWOUXgFTrB1JcSrN2sMKnA==
+mocha-play@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/mocha-play/-/mocha-play-4.0.0.tgz#cb5162084206113e13bf8569ed4f1305871cea83"
+  integrity sha512-tvVgqPeXtea1OFbsKEwybIBrV172DL8in4s8rtF7u0vYC+okkVZrxWCjhaq/Dfzsar79CDj1qCNka3M33ThNlg==
   dependencies:
-    commander "^9.1.0"
+    commander "^9.4.1"
     create-listening-server "^1.0.0"
-    express "^4.17.3"
+    express "^4.18.2"
     find-up "^6.3.0"
-    glob "^7.2.0"
+    glob "^8.0.3"
     html-webpack-plugin "^5.5.0"
-    playwright-core "^1.20.0"
-    webpack-dev-middleware "^5.3.1"
+    playwright-core "^1.28.1"
+    webpack-dev-middleware "^6.0.1"
 
 mocha@^10.1.0:
   version "10.1.0"
@@ -6657,7 +6657,7 @@ playwright-chromium@^1.28.1:
   dependencies:
     playwright-core "1.28.1"
 
-playwright-core@1.28.1, playwright-core@^1.20.0, playwright-core@^1.28.1:
+playwright-core@1.28.1, playwright-core@^1.28.1:
   version "1.28.1"
   resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.28.1.tgz#8400be9f4a8d1c0489abdb9e75a4cc0ffc3c00cb"
   integrity sha512-3PixLnGPno0E8rSBJjtwqTwJe3Yw72QwBBBxNoukIj3lEeBNXwbNiKrNuB1oyQgTBw5QHUhNO3SteEtHaMK6ag==
@@ -8142,21 +8142,10 @@ webidl-conversions@^3.0.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-3.0.1.tgz#24534275e2a7bc6be7bc86611cc16ae0a5654871"
   integrity sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==
 
-webpack-dev-middleware@^5.3.1:
-  version "5.3.3"
-  resolved "https://registry.yarnpkg.com/webpack-dev-middleware/-/webpack-dev-middleware-5.3.3.tgz#efae67c2793908e7311f1d9b06f2a08dcc97e51f"
-  integrity sha512-hj5CYrY0bZLB+eTO+x/j67Pkrquiy7kWepMHmUMoPsmcUaeEnQJqFzHJOyxgWlq746/wUuA64p9ta34Kyb01pA==
-  dependencies:
-    colorette "^2.0.10"
-    memfs "^3.4.3"
-    mime-types "^2.1.31"
-    range-parser "^1.2.1"
-    schema-utils "^4.0.0"
-
-webpack-dev-middleware@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/webpack-dev-middleware/-/webpack-dev-middleware-6.0.0.tgz#e860862f04e364348a3483da7bb9f0b957147bbb"
-  integrity sha512-A7jSXBifCJsJqUCVISlcbx9pkmCuP0KriMRcOJ13pOb6/xMXZvh4/ygeJeSArjRd50IT5IVbBFuejGDA/zWrNQ==
+webpack-dev-middleware@^6.0.0, webpack-dev-middleware@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/webpack-dev-middleware/-/webpack-dev-middleware-6.0.1.tgz#fd585127ed44dab3f253daf0d98f4d58a5088cc2"
+  integrity sha512-PZPZ6jFinmqVPJZbisfggDiC+2EeGZ1ZByyMP5sOFJcPPWSexalISz+cvm+j+oYPT7FIJyxT76esjnw9DhE5sw==
   dependencies:
     colorette "^2.0.10"
     memfs "^3.4.12"
