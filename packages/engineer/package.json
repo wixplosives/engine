@@ -28,7 +28,7 @@
     "commander": "^9.4.1",
     "open": "^8.4.0",
     "socket.io": "^4.5.4",
-    "webpack-dev-middleware": "^6.0.0"
+    "webpack-dev-middleware": "^6.0.1"
   },
   "files": [
     "bin",
