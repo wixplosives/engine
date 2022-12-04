@@ -7,7 +7,7 @@ import {
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
-    parsePreloadFileName,
+    parsePreloadFileName
 } from '../build-constants';
 import { loadFeatureDirectory } from '../load-feature-directory';
 import { evaluateModule } from '../utils/evaluate-module';
@@ -20,10 +20,10 @@ import type { INpmPackage } from '@wixc3/resolve-directory-context';
 
 /**
  * Loads the features and configs of given roots and their imported dependencies
- * @param roots - files: feature files to load. dirs: dirs to scan for configurations
- * @param fs -
- * @param packages - known npmPackages
- * @param override - overrides to apply to found features
+ * @param roots files: feature files to load. dirs: dirs to scan for configurations
+ * @param fs
+ * @param packages known npmPackages
+ * @param override overrides to apply to found features
  * @returns
  */
 export function loadFeaturesFromPaths(
@@ -122,7 +122,7 @@ function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): A
         scopedName,
         evaluated,
         module,
-        filePath,
+        filePath
     };
 }
 
@@ -153,16 +153,16 @@ function parseFoundFeature(
                 exportedEnvs: this.exportedEnvs,
                 resolvedContexts: this.resolvedContexts,
                 packageName: this.packageName,
-                scopedName,
+                scopedName
             };
-        },
+        }
     };
 }
 
 function getImportedFeatures(roots: DirFeatures, fs: IFileSystemSync): DirFeatures {
     const imported = {
         dirs: new Set<string>(),
-        files: new Set<string>(),
+        files: new Set<string>()
     };
     // find all require()'ed feature files from initial ones
     const featureModules = getFeatureModules(evaluateModule(roots.files));

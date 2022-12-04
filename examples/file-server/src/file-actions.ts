@@ -20,7 +20,7 @@ export class FileActions {
     public getFileData(filePath: string): FileData {
         return {
             filePath,
-            fileName: this.fs.basename(filePath),
+            fileName: this.fs.basename(filePath)
         };
     }
 

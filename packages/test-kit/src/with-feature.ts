@@ -98,22 +98,22 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
 export interface Tracing {
     /**
      * path to a directory where the trace file will be saved
-     * @default process.cwd()
+     * @defaultValue process.cwd()
      */
     outPath?: string;
     /**
      * should trace include screenshots
-     * @default true
+     * @defaultValue true
      */
     screenshots?: boolean;
     /**
      * should trace include snapshots
-     * @default true
+     * @defaultValue true
      */
     snapshots?: boolean;
     /**
      * name of the trace file
-     * @default random string
+     * @defaultValue random string
      */
     name?: string;
 }

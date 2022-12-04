@@ -13,7 +13,7 @@ import type {
     RunningFeatures,
     SetupHandler,
     IFeature,
-    Dependency,
+    Dependency
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
 import { SetMultiMap } from '@wixc3/patterns';
@@ -34,7 +34,7 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
         public feature: T,
         public api: Running<T, ENV>,
         public dependencies: RunningFeatures<T['dependencies'], ENV>
-    ) { }
+    ) {}
 
     public addRunHandler(fn: () => unknown, envName: string) {
         this.runHandlers.add(envName, fn);
@@ -63,7 +63,7 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
 
     public async [DISPOSE](context: RuntimeEngine) {
         const {
-            entryEnvironment: { env: envName },
+            entryEnvironment: { env: envName }
         } = context;
         if (this.disposing) {
             return this.disposing.promise;
@@ -169,8 +169,8 @@ export class Feature<
     /**
      * Call this to provide the environment specific implementation for a feature.
      *
-     * @param env - Environment id to implement the api for.
-     * @param setupHandler - Callback that receives:
+     * @param env Environment id to implement the api for.
+     * @param setupHandler Callback that receives:
      * - Own feature `Slot`s
      * - Dependencies APIs
      * - Context API that is specific to a runtime environment.
@@ -189,7 +189,7 @@ export class Feature<
     /**
      *
      *
-     * @param config -
+     * @param config
      * @returns
      */
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
@@ -211,7 +211,7 @@ export class Feature<
             features,
             runOptions,
             referencedEnvs,
-            entryEnvironment: { env: envName },
+            entryEnvironment: { env: envName }
         } = runningEngine;
 
         const deps: any = {};
@@ -248,7 +248,7 @@ export class Feature<
             },
             [RUN_OPTIONS]: runOptions,
             [ENGINE]: runningEngine,
-            runningEnvironmentName: envName,
+            runningEnvironmentName: envName
         };
 
         for (const [key, contextHandler] of this.contextHandlers) {

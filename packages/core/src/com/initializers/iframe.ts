@@ -16,10 +16,11 @@ export interface IIframeInitializerOptions {
      */
     hashParams?: string;
     /**
-     * target host for iframe
+     * target host for iframe,
      * can be used to isolate environment on cross origin
-     * @property {src} will overrule this
-     * @example http://127.0.0.1
+     *
+     * {@link IIframeInitializerOptions.src | src} will overrule this
+     * @example `http://127.0.0.1`
      */
     origin?: string;
 }
@@ -34,7 +35,7 @@ export async function iframeInitializer({
     const { initialize } = deferredIframeInitializer({ communication, env });
     const id = await initialize(initializerOptions);
     return {
-        id,
+        id
     };
 }
 
@@ -54,10 +55,10 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
                 envReadyPromise,
                 instanceId,
                 iframe: iframeElement,
-                src: src ?? defaultHtmlSourceFactory(env, publicPath, hashParams, origin),
+                src: src ?? defaultHtmlSourceFactory(env, publicPath, hashParams, origin)
             };
             return startIframe(startIframeParams);
-        },
+        }
     };
 }
 
@@ -105,8 +106,8 @@ async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: St
             { id: WindowInitializerService.apiId },
             {
                 oncePageHide: {
-                    listener: true,
-                },
+                    listener: true
+                }
             }
         );
         const postInitHref = await api.getHref();

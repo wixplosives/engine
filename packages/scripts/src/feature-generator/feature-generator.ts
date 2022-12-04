@@ -11,7 +11,7 @@ export function generateFeature({
     featureName,
     targetPath,
     templatesDirPath,
-    featureDirNameTemplate = DEFAULT_FEATURE_DIR_NAME_TEMPLATE,
+    featureDirNameTemplate = DEFAULT_FEATURE_DIR_NAME_TEMPLATE
 }: IGeneratorOptions) {
     const templatesDir = readDirectoryContentsSync(fs, templatesDirPath);
     const templateContext = enrichContext({ featureName });
@@ -37,7 +37,7 @@ export const templateParser = (
 
     return {
         name: mappedFileName,
-        content: content ? templateCompiler(content) : undefined,
+        content: content ? templateCompiler(content) : undefined
     };
 };
 
@@ -50,7 +50,8 @@ const createFeatureMapper = (templateCompiler: (template: string) => string) => 
  * @param path A general path in an project
  * @param featuresDir The features directory name (optional, if not used, returns `path` normalized)
  *
- * @examples
+ * @example
+ * ```
  * pathToFeaturesDirectory(fs, '/proj', 'packages');
  * // => '/proj/packages'
  *
@@ -59,6 +60,7 @@ const createFeatureMapper = (templateCompiler: (template: string) => string) => 
  *
  * pathToFeaturesDirectory(fs, '/proj');
  * // => '/proj'
+ * ```
  */
 export const pathToFeaturesDirectory = (fs: IFileSystem, path: string, featuresDir?: string) => {
     if (!featuresDir) {

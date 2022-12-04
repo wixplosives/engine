@@ -17,9 +17,11 @@ export interface IStaticFeatureDefinition {
     /**
      * the feature's name scoped to the package.json package name.
      * @example
-     * package name = @some-scope/my-package
-     * feature name = my-feature
-     * scopedName === 'my-package/my-feature'.
+     * ```
+     * packageName = '@some-scope/my-package'
+     * featureName = 'my-feature'
+     * scopedName === 'my-package/my-feature'
+     * ```
      * if package name is equal to the feature name, then the scoped name will just be the package name
      * if package name ends with - feature, we remove it from the scope
      */
