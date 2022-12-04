@@ -2067,7 +2067,6 @@
   version "3.0.7"
   resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-3.0.7.tgz#4ce7c15c27d4cc93aedfb35cff9d1863a832d954"
   integrity sha512-oVG4e3A1n0LE8TmxkuyUbkC3nNHzwYe+3ptHxwpaxjnQmQ6gTQ1zEK1evy0Mo7QkdrQ4LnO3+12/MxVo5eLutw==
-
   dependencies:
     "@file-services/path" "^7.0.1"
     "@file-services/types" "^7.0.1"
@@ -2078,10 +2077,10 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/fs-utils@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-3.0.4.tgz#bf7930bace3203b630f1f4e91662f602d1cfa4b1"
-  integrity sha512-Ew63zcdpaWkzvFESfH0OtH77BJULIH27F0BsLnqx4xZTi5vUWB3zUeU8TN1LCsvlMRGT7DjKAhvjo6BfWCXZYw==
+"@wixc3/docs@^3.0.4":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-3.2.3.tgz#06a92b83a51578c6ecdd86e332859fe9fef8a20b"
+  integrity sha512-c/QP7qLCUM27HaeTDvM8wJGBHJxEgt8AAcMqsuPdaD7TpQU+L1/ApGAi9IrTt2qbA0Bwvhf1f9by1bYqjY/2mg==
   dependencies:
     "@microsoft/api-documenter" "^7.19.25"
     "@microsoft/api-extractor" "^7.33.6"
@@ -2090,6 +2089,7 @@
     "@wixc3/fs-utils" "^3.0.7"
     "@wixc3/typescript" "^3.1.0"
     glob "^8.0.3"
+    yargs "^17.6.2"
 
 "@wixc3/fs-utils@^3.0.7":
   version "3.0.7"
