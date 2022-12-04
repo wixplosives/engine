@@ -78,11 +78,16 @@ export interface IFeatureExecutionOptions {
      * strings are tested for exact match.
      */
     allowedErrors?: Array<string | RegExp>;
+
+    /**
+     * console.error allowed errors (defaults to false)
+     */
+    consoleLogAllowedErrors?: boolean;
 }
 
 export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
     /**
-     * If we want to test the engine against a running application, proveide the port of the application.
+     * If we want to test the engine against a running application, provide the port of the application.
      * It can be extracted from the log printed after 'engineer start' or 'engine run'
      */
     runningApplicationPort?: number;
@@ -156,6 +161,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         featureDiscoveryRoot,
         tracing: suiteTracing = process.env.TRACING ? true : undefined,
         allowedErrors: suiteAllowedErrors = [],
+        consoleLogAllowedErrors = false,
         navigationOptions: suiteNavigationOptions,
     } = withFeatureOptions;
 
@@ -292,8 +298,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     )
                 ) {
                     capturedErrors.push(e);
+                    console.error(e);
+                } else {
+                    if (consoleLogAllowedErrors) {
+                        console.error(e);
+                    }
                 }
-                console.error(e);
             }
 
             function onPageCreation(page: playwright.Page) {
