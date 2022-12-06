@@ -28,7 +28,7 @@
     "@ts-tools/webpack-loader": "^4.0.0",
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
-    "@types/cors": "^2.8.12",
+    "@types/cors": "^2.8.13",
     "@types/d3-hierarchy": "^3.1.0",
     "@types/d3-selection": "^3.0.3",
     "@types/d3-shape": "^3.1.0",
