@@ -79,55 +79,46 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@file-services/directory@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/directory/-/directory-7.0.1.tgz#75e51396258f04dcad7c180566a4ee09bb0e2682"
-  integrity sha512-rM3R5xFunCcEDnAa8wHpdF7GRN0w5p9o/CPa8saYxuFaNxj+Isi3ow9J8mCFu2wHShswp6oOSJ1IsgM9JrEqbg==
+"@file-services/memory@^7.0.1", "@file-services/memory@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-7.2.0.tgz#23df673cefc8144199dc44f9116b64f6f10613d5"
+  integrity sha512-V/Q3vTfcqMbOWm070ReMs7t5uybMDZ3wmqNxP6gezCfx3+fDhlhcKgN+T2Utf5GxbnENo3AW0iBTHlfnaNwt9w==
   dependencies:
-    "@file-services/path" "^7.0.1"
-    "@file-services/types" "^7.0.1"
-    "@file-services/utils" "^7.0.1"
+    "@file-services/path" "^7.2.0"
+    "@file-services/types" "^7.2.0"
+    "@file-services/utils" "^7.2.0"
 
-"@file-services/memory@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-7.0.1.tgz#3b17d8c1545f8fa0b77a590d1efa6733af99240c"
-  integrity sha512-qY2L8ZVoec55ieMCKNXfT6s/3jJDjwNT64AJ39PhEURFxER7GRX2moNR1lDkpKFxtoKxuty0GBjbe+l1h3orMQ==
+"@file-services/node@^7.0.1", "@file-services/node@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-7.2.0.tgz#87b9badba6707bd7ecbb1b7feeb4a06a1aa95dcb"
+  integrity sha512-9VpLobHt0KKF7t3pcPMI1UXKrsi4LcU8RQj1TqbtXSF2RiDT48wTX9ViOQ9mG620WX4tlYFYNbsltVACfdF/Tw==
   dependencies:
-    "@file-services/path" "^7.0.1"
-    "@file-services/types" "^7.0.1"
-    "@file-services/utils" "^7.0.1"
+    "@file-services/types" "^7.2.0"
+    "@file-services/utils" "^7.2.0"
 
-"@file-services/node@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-7.0.1.tgz#b6d16ecacb2999af7bf447dd5c6f8e245619a3b7"
-  integrity sha512-jDdlHPaqm/QImo5wmb5xXcePacEedofHhDIhMvO/prYpZwm+rmfA+/jRM/cg15z9/DL5WgbrjuBD0+b9XQUmkg==
+"@file-services/path@^7.0.1", "@file-services/path@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/path/-/path-7.2.0.tgz#5f1499ac6511d835a0ed07daf50d61575956d218"
+  integrity sha512-IRjF+lda/RyztLFaJ+/B1yg8HJ2j+qNzF0yzrefxvQzD8I3wYMtqYy6A38vY16w/AaqjDfFxVaH8n7VHSvl2Eg==
   dependencies:
-    "@file-services/types" "^7.0.1"
-    "@file-services/utils" "^7.0.1"
+    "@file-services/types" "^7.2.0"
 
-"@file-services/path@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/path/-/path-7.0.1.tgz#e86c900592f9eb9b6f63e3dad3c29f8910706087"
-  integrity sha512-uTBrAG8hFoxlroX0cGqUYHvTPIZNhj2XoomJfplTT6c1s7hlxQT6qaMkIOnSJZju6YObS2xSfjzgEgY3XLnn/A==
+"@file-services/resolve@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-7.2.0.tgz#f0a50a2146549acb92291a10bf48201168d195eb"
+  integrity sha512-vkl439ghGzKAPdRfKTsg9LQ240/OPThoWeVc4ujEklDMEdbWiOfAqe9CTstGr4DnXdZ7tBi2+T5A+4ufNYUPuQ==
+
+"@file-services/types@^7.0.1", "@file-services/types@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-7.2.0.tgz#bc6df89c8ec1597b8442146aba2b17f3e1532bac"
+  integrity sha512-HIJrujg/kA7/l0RJsex7ZUHKP4FQblAbc1QcYqGBSdFQInw34mQLAex2GEDDV6uPhkzbP8x0hHpgNb/+iFwm1w==
+
+"@file-services/utils@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-7.2.0.tgz#82035db0fe5474d41e1593bee853c347e72a63c4"
+  integrity sha512-nnxXn6c7ab4LHRQxo/cvmyAu79z0TQUMHdIYovr6o1McqLswHeX/mUQr4JC7WFJuFePuOoYjq9+RzeKnhYag6w==
   dependencies:
-    "@file-services/types" "^7.0.1"
-
-"@file-services/resolve@^7.1.0":
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-7.1.0.tgz#623b82045a8470f8d4365e6da90b49b5775644e4"
-  integrity sha512-JuIEh+mqUt1RDhQPM+VAf+rq1la9L4NoYJtRIZSRrmBwtMxP8FPVNbiYD+m0aQun8r4Hy46HTfFpUnsM7oInHQ==
-
-"@file-services/types@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-7.0.1.tgz#13d9f8fa54cce100a60e4b289556adf9c4671b75"
-  integrity sha512-Xe6u3qaOqUFAexQLi5NU+yehZ7HrlL561njL3Ki8zroOw5sBOcU33NPKNAe8zgnXqNwkGf2xu9b11bdKVWr4jg==
-
-"@file-services/utils@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/utils/-/utils-7.0.1.tgz#525ef4c7ae0578b1c84254e2874f90e926275242"
-  integrity sha512-zPhNloT2YVfGlh2+VxzbGnV/OPo53VaVDwNW2cKLbAex97dF6lh9xHjYBUHnt3nFA0HPc3Xd6QkSAC/BXfGBNA==
-  dependencies:
-    "@file-services/types" "^7.0.1"
+    "@file-services/types" "^7.2.0"
 
 "@gar/promisify@^1.1.3":
   version "1.1.3"
@@ -1114,17 +1105,17 @@
     read-package-json-fast "^2.0.3"
     which "^2.0.2"
 
-"@nrwl/cli@15.3.0":
-  version "15.3.0"
-  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-15.3.0.tgz#61b145d2ba613f9df4dbb9188e631ca50a4e42cb"
-  integrity sha512-WAki2+puBp6qel/VAxdQmr/L/sLyw8K6bynYNmMl4eIlR5hjefrUChPzUiJDAS9/CUYQNOyva2VV5wofzdv95w==
+"@nrwl/cli@15.3.2":
+  version "15.3.2"
+  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-15.3.2.tgz#dd713e6d6a064587a0ededd75d301b72f820e222"
+  integrity sha512-3xlH5LlNDzQ1mvVk+8w2WPoDwaOuUKR+9+38nnxTW6jW8g8S+h259/2IGsXnJ+cD7oEv3TARTC6aCrwVNn7egA==
   dependencies:
-    nx "15.3.0"
+    nx "15.3.2"
 
 "@nrwl/devkit@>=14.8.6 < 16":
-  version "15.3.0"
-  resolved "https://registry.yarnpkg.com/@nrwl/devkit/-/devkit-15.3.0.tgz#4b0fc4c94f0b92413aa3d028f8cc75f586936d27"
-  integrity sha512-1O9QLB/eYS6ddw4MZnV4yj4CEqLIbpleZZiG/9w1TaiVO/jfNfXVaxc8EA87XSzMpk2W+/4Qggmabt6gAQaabA==
+  version "15.3.2"
+  resolved "https://registry.yarnpkg.com/@nrwl/devkit/-/devkit-15.3.2.tgz#44ea9bc038ce87d9ea24447f6b3f3e1351a58787"
+  integrity sha512-h0MmDOjvhBJCrpXaAEK6eojpO5juaV6OEX0XjadPAQs4McxTALJxNP7Te6wIfgsY8t9WecARPIt85zKsLJeCjg==
   dependencies:
     "@phenomnomnominal/tsquery" "4.1.1"
     ejs "^3.1.7"
@@ -1132,12 +1123,12 @@
     semver "7.3.4"
     tslib "^2.3.0"
 
-"@nrwl/tao@15.3.0":
-  version "15.3.0"
-  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-15.3.0.tgz#20266f1269815cb28e21677b0aa7f913a7e31b17"
-  integrity sha512-alyzKKSgfgPwQ/FUozvk43VGOZHyNMiSM6Udl49ZaQwT77GXRFkrOu21odW6dciWPd3iUOUjfJISNqrEJmxvpw==
+"@nrwl/tao@15.3.2":
+  version "15.3.2"
+  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-15.3.2.tgz#3498bd6596e582cbc5b922a45e5d8db5bcb2ce47"
+  integrity sha512-iP7e7gxSLn7xahz13Mj0c6KMSd9S2sUmD1Z6+F/H/lThikkrgURckSyZFtAW6OQNYOkWWi9RwdzVsH5He0syhQ==
   dependencies:
-    nx "15.3.0"
+    nx "15.3.2"
 
 "@octokit/auth-token@^3.0.0":
   version "3.0.2"
@@ -6339,13 +6330,13 @@ nth-check@^2.0.1:
   dependencies:
     boolbase "^1.0.0"
 
-nx@15.3.0, "nx@>=14.8.6 < 16":
-  version "15.3.0"
-  resolved "https://registry.yarnpkg.com/nx/-/nx-15.3.0.tgz#50916064145cf33ba68fb8bd03ff8ffc2b9ebc7b"
-  integrity sha512-5tBrEF2zDkGBDfe8wThazJqBDhsVkRrxc6OttzfBmkXP4VPp8w5MMtUEOry181AXKfjDGkw//UnCSkUNynTDlw==
+nx@15.3.2, "nx@>=14.8.6 < 16":
+  version "15.3.2"
+  resolved "https://registry.yarnpkg.com/nx/-/nx-15.3.2.tgz#3269b7c1c0be4dc4c389a4c54f463eb43636d542"
+  integrity sha512-i/y9pkZj6OACnk/+VmJaqrRIhY9VZw0twyeUp9z3gy7KElFoQZ7EMm4LcacFpVYy/MTsHYi0c87CDzkSyPogOA==
   dependencies:
-    "@nrwl/cli" "15.3.0"
-    "@nrwl/tao" "15.3.0"
+    "@nrwl/cli" "15.3.2"
+    "@nrwl/tao" "15.3.2"
     "@parcel/watcher" "2.0.4"
     "@yarnpkg/lockfile" "^1.1.0"
     "@yarnpkg/parsers" "^3.0.0-rc.18"

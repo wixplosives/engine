@@ -20,8 +20,8 @@
     "prettify": "npx prettier . --write"
   },
   "devDependencies": {
-    "@file-services/memory": "^7.0.1",
-    "@file-services/types": "^7.0.1",
+    "@file-services/memory": "^7.2.0",
+    "@file-services/types": "^7.2.0",
     "@stylable/cli": "^5.4.0",
     "@stylable/webpack-plugin": "^5.4.0",
     "@ts-tools/node": "^4.0.0",
