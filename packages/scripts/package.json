@@ -21,7 +21,7 @@
     "@wixc3/engine-core": "^30.0.1",
     "@wixc3/engine-core-node": "^30.0.1",
     "@wixc3/engine-runtime-node": "^30.0.1",
-    "@wixc3/fs-utils": "^3.0.7",
+    "@wixc3/fs-utils": "^5.1.0",
     "@wixc3/patterns": "^3.0.7",
     "@wixc3/resolve-directory-context": "^3.0.1",
     "cors": "^2.8.5",
