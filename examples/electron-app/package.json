@@ -9,7 +9,6 @@
     "build": "engine-electron build -f electron-app/example -e host --featureDiscoveryRoot ./dist"
   },
   "dependencies": {
-    "@file-services/directory": "^7.0.1",
     "@file-services/node": "^7.0.1",
     "@wixc3/engine-core": "^30.0.1",
     "@wixc3/engine-electron": "^30.0.1",
