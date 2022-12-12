@@ -1,21 +1,37 @@
+import fs from '@file-services/node';
 import performance from '@wixc3/cross-performance';
 import { FileSystemAPI, SERVER_MARK } from './feature/file-server.feature';
-import type { IDirectoryContents } from './types';
-import { FileActions } from './file-actions';
+import type { FileData, IDirectoryContents } from './types';
 
 export class RemoteFilesAPI implements FileSystemAPI {
-    private fileActions: FileActions;
-
-    constructor(basePath: string) {
-        this.fileActions = new FileActions(basePath);
-    }
+    constructor(private basePath: string) {}
 
     public readDir(directoryPath: string): IDirectoryContents {
         performance.mark(SERVER_MARK);
-        return this.fileActions.getDirectoryTree(directoryPath);
+        return this.getDirectoryTree(fs.join(this.basePath, directoryPath));
     }
 
     public readFile(filePath: string): string {
-        return this.fileActions.getFileContents(filePath);
+        return fs.readFileSync(fs.join(this.basePath, filePath), 'utf8');
+    }
+
+    public getDirectoryTree(directoryPath: string): IDirectoryContents {
+        const directory: IDirectoryContents = {};
+        for (const item of fs.readdirSync(directoryPath, { withFileTypes: true })) {
+            const itemPath = fs.join(directoryPath, item.name);
+            if (item.isFile()) {
+                directory[item.name] = this.getFileData(itemPath);
+            } else if (item.isDirectory()) {
+                directory[item.name] = this.getDirectoryTree(itemPath);
+            }
+        }
+        return directory;
+    }
+
+    public getFileData(filePath: string): FileData {
+        return {
+            filePath: fs.relative(this.basePath, filePath).replace(/\\/g, '/'),
+            fileName: fs.basename(filePath),
+        };
     }
 }
