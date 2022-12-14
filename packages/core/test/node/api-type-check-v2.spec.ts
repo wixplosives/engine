@@ -30,8 +30,8 @@ class Logger {
         config: Config.withType<{ time: number }>().defineEntity({ time: 1 }),
         transport: Slot.withType<{ transportName: string }>().defineEntity(MAIN),
         sink: Service.withType<{ log: (message: string) => void }>().defineEntity(MAIN).allowRemoteAccess(),
-    } as const;
-    static dependencies = [] as const;
+    };
+    static dependencies = [];
 }
 
 // const logger = new Feature({
@@ -80,8 +80,8 @@ class GUI {
     static api = {
         panelSlot: Slot.withType<{ panelID: string }>().defineEntity([MAIN]),
         guiService: Service.withType<{ someMethod(): void }>().defineEntity([MAIN, MAIN_1]),
-    } as const;
-    static dependencies = [Logger] as const;
+    };
+    static dependencies = [Logger];
 }
 
 interface SomeApi {

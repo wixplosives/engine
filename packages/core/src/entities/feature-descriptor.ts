@@ -99,36 +99,38 @@ export type ContextHandlerV2<F extends FeatureDescriptor, E extends Environment,
 // const processingWorker = new Environment('processing-worker', 'worker', 'single');
 // const processingEnv = new SingleEndpointContextualEnvironment('processing', [processingWorker]);
 
-// class Compilation {
-//     public static id = 'Compilation' as const;
-//     public static dependencies = [] as const;
-//     public static api = {
+// export class Compilation {
+//     static id = 'Compilation' as const;
+//     static dependencies = [];
+//     static api = {
 //         compilers: Slot.withType<(filePath: string) => string>().defineEntity(processingEnv),
 //         someService: Service.withType<{ run(): string }>().defineEntity(mainEnv),
-//     } as const;
+//     };
 // }
 
 // class Compilation2 {
-//     public static id = 'Compilation2' as const;
-//     public static dependencies = [] as const;
-//     public static api = {
+//     static id = 'Compilation2' as const;
+//     static dependencies = [];
+//     static api = {
 //         compilers2: Slot.withType<(filePath: string) => string>().defineEntity(processingEnv),
 //         someService2: Service.withType<{ run(): string }>().defineEntity(mainEnv),
-//     } as const;
+//     };
 // }
 
 // class Typescript {
-//     public static id = 'Typescript' as const;
-//     public static dependencies = [Compilation, Compilation2] as const;
-//     public static api = {} as const;
-//     public static context = {
+//     static id = 'Typescript' as const;
+//     static dependencies = [Compilation, Compilation2];
+//     static api = {};
+//     static context = {
 //         processingContext: processingEnv.withContext<{ name: string }>(),
-//     } as const;
+//     };
 // }
 
 // setup(Typescript, mainEnv, (feature, runningFeatures, context) => {
 //     runningFeatures.Compilation.someService.run();
 //     runningFeatures.Compilation2.someService2.run();
+
+//     context.processingContext.name;
 
 //     console.log(feature, runningFeatures, context);
 // });
