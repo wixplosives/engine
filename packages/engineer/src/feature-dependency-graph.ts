@@ -1,4 +1,4 @@
-import type { FeatureDescriptor } from '@wixc3/engine-core/src/entities/new-feature2';
+import type { FeatureDescriptor } from '@wixc3/engine-core';
 
 // { featureName, depth of dep from root feature }
 export type Nodes = Record<string, { name: string; group: number }>;
