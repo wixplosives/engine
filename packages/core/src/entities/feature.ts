@@ -1,83 +1,28 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, DISPOSE, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from '../symbols';
 import type {
     ContextHandler,
     DisposableContext,
-    DisposeFunction,
     EntityRecord,
     FeatureDef,
-    Running,
     PartialFeatureConfig,
-    RunningFeatures,
     SetupHandler,
-    IFeature,
     Dependency,
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
-import { deferred, IDeferredPromise, SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/common';
 
-const emptyDispose = { dispose: () => undefined };
+function createRuntimeInfo() {
+    const setup = new SetMultiMap<string, SetupHandler<any, any, any, any, any>>();
+    const context = new Map<string | number | symbol, ContextHandler<any, any, any>>();
 
-/**
- * Represents a currently running feature instance.
- **/
-export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
-    private running = false;
-    private runHandlers = new SetMultiMap<string, () => unknown>();
-    private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
-    private disposing: IDeferredPromise<void> | undefined;
-
-    constructor(
-        public feature: T,
-        public api: Running<T, ENV>,
-        public dependencies: RunningFeatures<T['dependencies'], ENV>
-    ) { }
-
-    public addRunHandler(fn: () => unknown, envName: string) {
-        this.runHandlers.add(envName, fn);
-    }
-    public addOnDisposeHandler(fn: DisposeFunction, envName: string) {
-        this.disposeHandlers.add(envName, fn);
-    }
-    public async [RUN](context: RuntimeEngine): Promise<void> {
-        if (this.running) {
-            return;
-        }
-        this.running = true;
-        const runPromises: Array<unknown> = [];
-        for (const envName of context.referencedEnvs) {
-            for (const dep of this.feature.dependencies) {
-                runPromises.push(context.runFeature(dep));
-            }
-            const envRunHandlers = this.runHandlers.get(envName) || [];
-            for (const handler of envRunHandlers) {
-                runPromises.push(handler());
-            }
-        }
-
-        await Promise.all(runPromises);
-    }
-
-    public async [DISPOSE](context: RuntimeEngine) {
-        const {
-            entryEnvironment: { env: envName },
-        } = context;
-        if (this.disposing) {
-            return this.disposing.promise;
-        }
-        this.disposing = deferred();
-        for (const dep of this.feature.dependencies) {
-            await context.dispose(dep);
-        }
-        const featureDisposeHandlers = this.disposeHandlers.get(envName) || new Set();
-        for (const handler of featureDisposeHandlers) {
-            await handler();
-        }
-        return this.disposing.resolve();
-    }
+    return {
+        setup,
+        context,
+    };
 }
+
+// const emptyDispose = { dispose: () => undefined };
 
 /**
  * Feature instances define an area of functionality of an app.
@@ -97,7 +42,7 @@ export class Feature<
     Deps extends Dependency[] = any[],
     API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any
-    > {
+> {
     /**
      * References `this` without the exact types of `Deps` (making them a generic `Feature[]`).
      * We use `someFeature.asEntity` instead of `someFeature` when we want to avoid typescript
@@ -135,9 +80,10 @@ export class Feature<
      */
     public context: EnvironmentContext;
 
+    public runtimeInfo = createRuntimeInfo();
     private environmentIml = new Set<string>();
-    private setupHandlers = new SetMultiMap<string, SetupHandler<any, any, Deps, API, EnvironmentContext>>();
-    private contextHandlers = new Map<string | number | symbol, ContextHandler<object, any, Deps>>();
+    // private setupHandlers = new SetMultiMap<string, SetupHandler<any, any, Deps, API, EnvironmentContext>>();
+    // private contextHandlers = new Map<string | number | symbol, ContextHandler<object, any, Deps>>();
 
     /**
      * Define a new feature by providing:
@@ -160,7 +106,6 @@ export class Feature<
         this.dependencies = def.dependencies || ([] as Dependency[] as Deps);
         this.api = def.api || ({} as API);
         this.context = def.context || ({} as EnvironmentContext);
-        this.identifyApis();
     }
 
     /**
@@ -179,7 +124,7 @@ export class Feature<
         setupHandler: SetupHandler<ENV, ID, Deps, API, EnvironmentContext>
     ): this {
         validateNoDuplicateEnvRegistration(env, this.id, this.environmentIml);
-        this.setupHandlers.add(env.env, setupHandler);
+        this.runtimeInfo.setup.add(env.env, setupHandler);
         return this;
     }
 
@@ -198,94 +143,9 @@ export class Feature<
         environmentContext: K,
         contextHandler: ContextHandler<EnvironmentContext[K]['type'], Env, Deps>
     ) {
-        validateNoDuplicateContextRegistration(environmentContext, this.id, this.contextHandlers);
-        this.contextHandlers.set(environmentContext, contextHandler);
+        validateNoDuplicateContextRegistration(environmentContext, this.id, this.runtimeInfo.context);
+        this.runtimeInfo.context.set(environmentContext, contextHandler);
         return this;
-    }
-
-    public [CREATE_RUNTIME]<ENV extends AnyEnvironment>(runningEngine: RuntimeEngine<ENV>): RuntimeFeature<this, ENV> {
-        const {
-            features,
-            runOptions,
-            referencedEnvs,
-            entryEnvironment: { env: envName },
-        } = runningEngine;
-
-        const deps: any = {};
-        const depsApis: any = {};
-        const runningApi: any = {};
-        const inputApi: any = {};
-        const providedAPI: any = {};
-        const environmentContext: any = {};
-        const apiEntries = Object.entries(this.api);
-
-        const feature = new RuntimeFeature<this, ENV>(this, runningApi, deps);
-
-        features.set(this, feature);
-
-        for (const dep of this.dependencies) {
-            deps[dep.id] = runningEngine.initFeature(dep);
-            depsApis[dep.id] = deps[dep.id].api;
-        }
-
-        for (const [key, entity] of apiEntries) {
-            const provided = entity[CREATE_RUNTIME](runningEngine, this.id, key);
-            if (provided !== undefined) {
-                inputApi[key] = provided;
-            }
-        }
-        const settingUpFeature = {
-            ...inputApi,
-            id: this.id,
-            run(fn: () => void) {
-                feature.addRunHandler(fn, envName);
-            },
-            onDispose(fn: DisposeFunction) {
-                feature.addOnDisposeHandler(fn, envName);
-            },
-            [RUN_OPTIONS]: runOptions,
-            [ENGINE]: runningEngine,
-            runningEnvironmentName: envName,
-        };
-
-        for (const [key, contextHandler] of this.contextHandlers) {
-            environmentContext[key] = { ...emptyDispose, ...contextHandler(depsApis) };
-        }
-
-        for (const envName of referencedEnvs) {
-            const environmentSetupHandlers = this.setupHandlers.get(envName);
-            if (!environmentSetupHandlers) {
-                continue;
-            }
-            for (const setupHandler of environmentSetupHandlers) {
-                const featureOutput = setupHandler(settingUpFeature, depsApis, environmentContext);
-                if (!featureOutput) {
-                    continue;
-                }
-                for (const key of Object.keys(featureOutput)) {
-                    settingUpFeature[key] = (featureOutput as any)[key];
-                }
-                Object.assign(providedAPI, featureOutput);
-            }
-        }
-
-        for (const [key, entity] of apiEntries) {
-            const registered = entity[REGISTER_VALUE](runningEngine, providedAPI[key], inputApi[key], this.id, key);
-            if (registered !== undefined) {
-                runningApi[key] = registered;
-            }
-        }
-
-        return feature;
-    }
-
-    private identifyApis() {
-        for (const [key, api] of Object.entries(this.api)) {
-            const entityFn = api[IDENTIFY_API];
-            if (entityFn) {
-                entityFn.call(api, this.id, key);
-            }
-        }
     }
 }
 

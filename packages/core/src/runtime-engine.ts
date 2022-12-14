@@ -1,15 +1,11 @@
-import {
-    RuntimeFeature,
-    Feature,
-    globallyProvidingEnvironments,
-    orderedEnvDependencies,
-    AnyEnvironment,
-} from './entities';
-import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
-import type { IFeature, IRunOptions, TopLevelConfig } from './types';
+import { globallyProvidingEnvironments, orderedEnvDependencies, AnyEnvironment } from './entities';
+import { createFeatureRuntime, RuntimeFeature } from './runtime-feature';
+import type { FeatureDescriptor } from './entities/feature-descriptor';
+import { DISPOSE, RUN } from './symbols';
+import type { IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
-    public features = new Map<IFeature, RuntimeFeature<IFeature, ENV>>();
+    public features = new Map<FeatureDescriptor, RuntimeFeature<FeatureDescriptor, ENV>>();
     public referencedEnvs: Set<string>;
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
@@ -22,7 +18,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         this.referencedEnvs = new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(entryEnvironment)]);
     }
 
-    public get<T extends Feature>(feature: T): RuntimeFeature<T, ENV> {
+    public get<T extends FeatureDescriptor>(feature: T): RuntimeFeature<T, ENV> {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
             return runningFeature as RuntimeFeature<T, ENV>;
@@ -31,7 +27,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         }
     }
 
-    public async run(features: Feature | Feature[]): Promise<this> {
+    public async run(features: FeatureDescriptor | FeatureDescriptor[]): Promise<this> {
         if (this.running) {
             throw new Error('Engine already running!');
         }
@@ -50,15 +46,15 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         return this;
     }
 
-    public initFeature<T extends IFeature>(feature: T): RuntimeFeature<IFeature, ENV> {
+    public initFeature<T extends FeatureDescriptor>(feature: T): RuntimeFeature<FeatureDescriptor, ENV> {
         let instance = this.features.get(feature);
         if (!instance) {
-            instance = feature[CREATE_RUNTIME](this);
+            instance = createFeatureRuntime(feature, this);
         }
         return instance;
     }
 
-    public async runFeature(feature: Feature): Promise<void> {
+    public async runFeature(feature: FeatureDescriptor): Promise<void> {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
@@ -66,7 +62,13 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         await featureInstance[RUN](this);
     }
 
-    public async dispose(feature: Feature) {
+    /**
+     * @deprecated use disposeFeature instead
+     */
+    public async dispose(feature: FeatureDescriptor) {
+        return this.disposeFeature(feature);
+    }
+    public async disposeFeature(feature: FeatureDescriptor) {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
             await runningFeature[DISPOSE](this);

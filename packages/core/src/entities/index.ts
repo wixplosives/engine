@@ -7,3 +7,4 @@ export * from './ordered-slot';
 export * from './output';
 export * from './service';
 export * from './slot';
+export * from './feature-descriptor';
