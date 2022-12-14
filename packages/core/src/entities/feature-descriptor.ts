@@ -23,7 +23,7 @@ import type {
 import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
 
 type RuntimeInfo = {
-    setup: SetMultiMap<string, SetupHandlerV2<any, any>>;
+    setup: SetMultiMap<string, SetupHandler<any, any>>;
     context: Map<string | number | symbol, ContextHandlerV2<any, any, any>>;
     envs: Set<string>;
 };
@@ -46,7 +46,7 @@ export function provideConfig<T extends FeatureDescriptor>(
 export function setup<T extends FeatureDescriptor, E extends AnyEnvironment>(
     feature: T,
     environment: E,
-    setupHandler: SetupHandlerV2<T, E>
+    setupHandler: SetupHandler<T, E>
 ) {
     // TODO: add the validation
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
@@ -122,7 +122,7 @@ export type RunningFeaturesV2<T extends FeatureDependencies, E extends AnyEnviro
     [K in T[number]['id']]: Running<Extract<T[number], { id: K }>, E>;
 };
 
-type SettingUpFeatureV2<F extends FeatureDescriptor, E extends AnyEnvironment> = {
+type SettingUpFeature<F extends FeatureDescriptor, E extends AnyEnvironment> = {
     id: F['id'];
     run: (fn: () => unknown) => void;
     onDispose: (fn: () => unknown) => void;
@@ -134,10 +134,9 @@ type SettingUpFeatureV2<F extends FeatureDescriptor, E extends AnyEnvironment> =
     MapType<GetDependenciesOutput<F['api'], DeepEnvironmentDeps<E>>> &
     MapToProxyType<FilterNotEnv<GetRemoteOutputs<F['api']>, DeepEnvironmentDeps<E>, 'providedFrom'>>;
 
-export type SetupHandlerV2<F extends FeatureDescriptor, E extends AnyEnvironment> = (
-    feature: SettingUpFeatureV2<F, E>,
+export type SetupHandler<F extends FeatureDescriptor, E extends AnyEnvironment> = (
+    feature: SettingUpFeature<F, E>,
     runningFeatures: RunningFeaturesV2<F['dependencies'], E>,
-    // TODO: test this
     context: MapRecordType<F['context']>
 ) => RegisteringFeature<F['api'], OmitCompositeEnvironment<E>>;
 

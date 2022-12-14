@@ -1,8 +1,8 @@
 import type { LogMessage } from './common-types';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
-import type { FeatureDependencies, FeatureDescriptor } from './entities/feature-descriptor';
+import type { FeatureDependencies } from './entities/feature-descriptor';
 import type { RuntimeEngine } from './runtime-engine';
-import { CONFIGURABLE, CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
+import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './symbols';
 
 /*************** HELPER TYPES  ***************/
 type TupleToUnion<T> = T extends ReadonlyArray<infer ITEMS> ? ITEMS : never;
@@ -171,12 +171,6 @@ export interface FeatureDef<
 
 export type Running<T extends { api: EntityRecord }, ENV extends AnyEnvironment> = MapAllTypesForEnv<T['api'], ENV>;
 
-export type RunningFeatures<
-    T extends FeatureDescriptor[] | ReadonlyArray<FeatureDescriptor>,
-    ENV extends AnyEnvironment,
-    FeatureMap extends MapBy<T, 'id'> = MapBy<T, 'id'>
-> = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
-
 export type ExtendedEnvs<
     API extends EntityRecord,
     ENVS extends AnyEnvironment[],
@@ -189,18 +183,6 @@ export interface IRunOptions {
     has(key: string): boolean;
     get(key: string): string | boolean | null | undefined;
 }
-
-export type SettingUpFeature<ID extends string, API extends EntityRecord, ENV extends AnyEnvironment> = {
-    id: ID;
-    run: (fn: () => unknown) => void;
-    onDispose: (fn: DisposeFunction) => void;
-    [RUN_OPTIONS]: IRunOptions;
-    [ENGINE]: RuntimeEngine<ENV>;
-} & MapVisibleInputs<API, GloballyProvidingEnvironments> &
-    MapVisibleInputs<API, ENV> &
-    MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
-    MapType<GetDependenciesOutput<API, DeepEnvironmentDeps<ENV>>> &
-    MapToProxyType<FilterNotEnv<GetRemoteOutputs<API>, DeepEnvironmentDeps<ENV>, 'providedFrom'>>;
 
 export type RegisteringFeature<
     API extends EntityRecord,
@@ -238,23 +220,12 @@ export interface IDisposable {
 
 export type DisposableContext<T> = Context<T & IContextDispose>;
 
-export type SetupHandler<
-    ENV extends AnyEnvironment,
-    ID extends string,
-    FeatureDeps extends FeatureDependencies,
-    API extends EntityRecord,
-    EnvironmentContext extends Record<string, Context<any>>
-> = (
-    feature: SettingUpFeature<ID, API, ENV>,
-    runningFeatures: RunningFeatures<FeatureDeps, ENV>,
-    context: MapRecordType<EnvironmentContext>
-) => RegisteringFeature<API, OmitCompositeEnvironment<ENV>>;
-
-export type OmitCompositeEnvironment<T extends AnyEnvironment> = Environment<T['env'], T['envType'], T['endpointType'], []>;
-
-export type ContextHandler<C, EnvFilter extends AnyEnvironment, Deps extends FeatureDependencies> = (
-    runningFeatures: RunningFeatures<Deps, EnvFilter>
-) => C;
+export type OmitCompositeEnvironment<T extends AnyEnvironment> = Environment<
+    T['env'],
+    T['envType'],
+    T['endpointType'],
+    []
+>;
 
 export interface Configurable<T> {
     [CONFIGURABLE]: true;

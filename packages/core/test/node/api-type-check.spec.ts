@@ -10,11 +10,11 @@ import {
     Feature,
     Registry,
     Running,
-    RunningFeatures,
     RuntimeEngine,
     Service,
     Slot,
     ENGINE,
+    RunningFeaturesV2,
 } from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
@@ -85,7 +85,7 @@ typeCheck((_: EQUAL<SomeApiPromisified, { someMethod(): Promise<boolean> }>) => 
 typeCheck(
     (
         _runningDependencies: EQUAL<
-            RunningFeatures<typeof gui['dependencies'], typeof MAIN>,
+            RunningFeaturesV2<typeof gui['dependencies'], typeof MAIN>,
             { logger: Running<typeof logger, typeof MAIN> }
         >,
         _runningFeature: EQUAL<
@@ -127,7 +127,7 @@ typeCheck(
             }
         >,
         _runningDependencies: EQUAL<
-            RunningFeatures<typeof addPanel['dependencies'], typeof MAIN>,
+            RunningFeaturesV2<typeof addPanel['dependencies'], typeof MAIN>,
             {
                 logger: Running<typeof logger, typeof MAIN>;
                 gui: Running<typeof gui, typeof MAIN>;

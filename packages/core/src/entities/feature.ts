@@ -6,23 +6,10 @@ import {
     ContextHandlerV2,
     createRuntimeInfo,
     FeatureDependencies,
-    SetupHandlerV2,
+    SetupHandler,
     validateNoDuplicateContextRegistration,
     validateNoDuplicateEnvRegistration,
 } from './feature-descriptor';
-
-// function createRuntimeInfo() {
-//     const setup = new SetMultiMap<string, SetupHandler<any, any, any, any, any>>();
-//     const context = new Map<string | number | symbol, ContextHandler<any, any, any>>();
-//     const envs = new Set<string>();
-//     return {
-//         setup,
-//         context,
-//         envs,
-//     };
-// }
-
-// const emptyDispose = { dispose: () => undefined };
 
 /**
  * Feature instances define an area of functionality of an app.
@@ -117,7 +104,7 @@ export class Feature<
      */
     public setup<ENV extends AnyEnvironment>(
         env: ENV,
-        setupHandler: SetupHandlerV2<this, ENV>
+        setupHandler: SetupHandler<this, ENV>
     ): this {
         validateNoDuplicateEnvRegistration(env, this.id, this.runtimeInfo.envs);
         this.runtimeInfo.setup.add(env.env, setupHandler);
