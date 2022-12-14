@@ -1,12 +1,12 @@
 import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
-import type { AnyEnvironment, Feature } from './entities';
+import type { AnyEnvironment, FeatureDescriptor } from './entities';
 import { flattenTree } from './helpers';
 import { deferred, IDeferredPromise } from '@wixc3/common';
 
 export interface IRunEngineOptions<ENV extends AnyEnvironment> {
-    entryFeature: Feature | Feature[];
+    entryFeature: FeatureDescriptor | FeatureDescriptor[];
     topLevelConfig?: TopLevelConfig;
     env: ENV;
     runOptions?: IRunOptions;
@@ -21,10 +21,10 @@ export function run<ENV extends AnyEnvironment>({
     return new RuntimeEngine(env, topLevelConfig, runOptions).run(entryFeature);
 }
 
-export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
+export const getFeaturesDeep = (feature: FeatureDescriptor) => flattenTree(feature, (f) => f.dependencies);
 
 export interface IFeatureLoader {
-    load: (resolvedContexts: Record<string, string>) => Promise<Feature> | Feature;
+    load: (resolvedContexts: Record<string, string>) => Promise<FeatureDescriptor> | FeatureDescriptor;
     preload: (
         resolveContexts: Record<string, string>
     ) => Promise<Array<(runtimeOptions: Record<string, string | boolean>) => void | Promise<void>>> | undefined;
@@ -41,7 +41,7 @@ export interface IRunEngineAppOptions<ENV extends AnyEnvironment> {
     options?: Map<string, string | boolean>;
     env: ENV;
     publicPath?: string;
-    features?: Feature[];
+    features?: FeatureDescriptor[];
     resolvedContexts: Record<string, string>;
 }
 
@@ -73,7 +73,7 @@ export class FeatureLoadersRegistry {
     constructor(
         private featureMapping = new Map<string, IFeatureLoader>(),
         private resolvedContexts: Record<string, string> = {}
-    ) { }
+    ) {}
     public register(name: string, featureLoader: IFeatureLoader) {
         this.featureMapping.set(name, featureLoader);
         this.pendingLoaderRequests.get(name)?.resolve(featureLoader);
@@ -100,7 +100,7 @@ export class FeatureLoadersRegistry {
     async getLoadedFeatures(
         rootFeatureName: string,
         runtimeOptions: Record<string, string | boolean> = {}
-    ): Promise<Feature[]> {
+    ): Promise<FeatureDescriptor[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);
         for await (const depName of dependencies.reverse()) {

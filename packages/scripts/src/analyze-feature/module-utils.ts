@@ -6,24 +6,33 @@ import {
     getFeaturesDeep,
     SingleEndpointContextualEnvironment,
     flattenTree,
+    FeatureDescriptor,
 } from '@wixc3/engine-core';
-import {
-    isFeatureFile,
-    parseFeatureFileName,
-} from '../build-constants';
+import { isFeatureFile, parseFeatureFileName } from '../build-constants';
 import { instanceOf } from '../utils/instance-of';
 import type { IFeatureDefinition, IFeatureModule } from '../types';
 import { parseContextualEnv, parseEnv } from './parse-env';
 
+function duckCheckFeature(maybeFeature: unknown): maybeFeature is FeatureDescriptor {
+    return (
+        typeof maybeFeature === 'object' &&
+        maybeFeature !== null &&
+        'id' in maybeFeature &&
+        'api' in maybeFeature &&
+        typeof (maybeFeature as any).id === 'string' &&
+        typeof (maybeFeature as any).api === 'object' &&
+        (maybeFeature as any).api !== null
+    );
+}
 
 export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {
     if (typeof exports !== 'object' || exports === null) {
         throw new Error(`${filePath} does not export an object.`);
     }
 
-    const { default: exportedFeature } = exports as { default: Feature };
+    const { default: exportedFeature } = exports as { default: FeatureDescriptor };
 
-    if (!instanceOf(exportedFeature, Feature)) {
+    if (!instanceOf(exportedFeature, Feature) || !duckCheckFeature(exportedFeature)) {
         throw new Error(`${filePath} does not "export default" a Feature.`);
     }
 
@@ -60,7 +69,7 @@ export const getFeatureModules = (module: NodeJS.Module) =>
     );
 
 export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
-    const featureToDef = new Map<Feature, IFeatureDefinition>();
+    const featureToDef = new Map<FeatureDescriptor, IFeatureDefinition>();
     for (const featureDef of features.values()) {
         featureToDef.set(featureDef.exportedFeature, featureDef);
     }

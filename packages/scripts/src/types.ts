@@ -1,5 +1,12 @@
 import type io from 'socket.io';
-import type { Environment, EnvironmentContext, TopLevelConfig, Feature, AnyEnvironment } from '@wixc3/engine-core';
+import type {
+    Environment,
+    EnvironmentContext,
+    TopLevelConfig,
+    Feature,
+    AnyEnvironment,
+    FeatureDescriptor,
+} from '@wixc3/engine-core';
 import type {
     IEnvironmentDescriptor,
     IExternalDefinition,
@@ -38,7 +45,7 @@ export interface IFeatureModule {
     /**
      * Actual evaluated Feature instance exported from the file.
      */
-    exportedFeature: Feature;
+    exportedFeature: FeatureDescriptor;
 
     /**
      * Exported environments from module.

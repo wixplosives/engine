@@ -1,26 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type {
-    ContextHandler,
-    DisposableContext,
-    EntityRecord,
-    FeatureDef,
-    PartialFeatureConfig,
-    SetupHandler,
-    Dependency,
-} from '../types';
-import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
-import { SetMultiMap } from '@wixc3/common';
+import type { DisposableContext, EntityRecord, FeatureDef, PartialFeatureConfig } from '../types';
+import type { AnyEnvironment } from './env';
+import {
+    ContextHandlerV2,
+    createRuntimeInfo,
+    FeatureDependencies,
+    SetupHandlerV2,
+    validateNoDuplicateContextRegistration,
+    validateNoDuplicateEnvRegistration,
+} from './feature-descriptor';
 
-function createRuntimeInfo() {
-    const setup = new SetMultiMap<string, SetupHandler<any, any, any, any, any>>();
-    const context = new Map<string | number | symbol, ContextHandler<any, any, any>>();
-
-    return {
-        setup,
-        context,
-    };
-}
+// function createRuntimeInfo() {
+//     const setup = new SetMultiMap<string, SetupHandler<any, any, any, any, any>>();
+//     const context = new Map<string | number | symbol, ContextHandler<any, any, any>>();
+//     const envs = new Set<string>();
+//     return {
+//         setup,
+//         context,
+//         envs,
+//     };
+// }
 
 // const emptyDispose = { dispose: () => undefined };
 
@@ -39,7 +39,7 @@ function createRuntimeInfo() {
  */
 export class Feature<
     ID extends string = string,
-    Deps extends Dependency[] = any[],
+    Deps extends FeatureDependencies = any[],
     API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any
 > {
@@ -57,7 +57,7 @@ export class Feature<
      * })
      * ```
      */
-    public asDependency = this as unknown as Dependency<ID, API, EnvironmentContext>;
+    public asDependency = this;
 
     /**
      * Unique string that identifies the feature.
@@ -81,10 +81,6 @@ export class Feature<
     public context: EnvironmentContext;
 
     public runtimeInfo = createRuntimeInfo();
-    private environmentIml = new Set<string>();
-    // private setupHandlers = new SetMultiMap<string, SetupHandler<any, any, Deps, API, EnvironmentContext>>();
-    // private contextHandlers = new Map<string | number | symbol, ContextHandler<object, any, Deps>>();
-
     /**
      * Define a new feature by providing:
      * - Unique string identifier
@@ -103,7 +99,7 @@ export class Feature<
      */
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
-        this.dependencies = def.dependencies || ([] as Dependency[] as Deps);
+        this.dependencies = def.dependencies || ([] as unknown as Deps);
         this.api = def.api || ({} as API);
         this.context = def.context || ({} as EnvironmentContext);
     }
@@ -121,19 +117,12 @@ export class Feature<
      */
     public setup<ENV extends AnyEnvironment>(
         env: ENV,
-        setupHandler: SetupHandler<ENV, ID, Deps, API, EnvironmentContext>
+        setupHandler: SetupHandlerV2<this, ENV>
     ): this {
-        validateNoDuplicateEnvRegistration(env, this.id, this.environmentIml);
+        validateNoDuplicateEnvRegistration(env, this.id, this.runtimeInfo.envs);
         this.runtimeInfo.setup.add(env.env, setupHandler);
         return this;
     }
-
-    /**
-     *
-     *
-     * @param config
-     * @returns
-     */
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
         return [this.id, config];
     }
@@ -141,35 +130,10 @@ export class Feature<
     public setupContext<K extends keyof EnvironmentContext, Env extends AnyEnvironment>(
         _env: Env,
         environmentContext: K,
-        contextHandler: ContextHandler<EnvironmentContext[K]['type'], Env, Deps>
+        contextHandler: ContextHandlerV2<this, Env, K>
     ) {
         validateNoDuplicateContextRegistration(environmentContext, this.id, this.runtimeInfo.context);
         this.runtimeInfo.context.set(environmentContext, contextHandler);
         return this;
-    }
-}
-
-function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureId: string, registered: Set<string>) {
-    const hasCollision = testEnvironmentCollision(env, registered);
-    if (hasCollision.length) {
-        const collisions = hasCollision.join(', ');
-        throw new Error(
-            `Feature can only have single setup for each environment. ${featureId} Feature already implements: ${collisions}`
-        );
-    }
-}
-
-function validateNoDuplicateContextRegistration(
-    environmentContext: string | number | symbol,
-    featureId: string,
-    contextHandlers: Map<string | number | symbol, ContextHandler<object, Environment, any>>
-) {
-    const registeredContext = contextHandlers.get(environmentContext);
-    if (registeredContext) {
-        throw new Error(
-            `Feature can only have single setupContext for each context id. ${featureId} Feature already implements: ${String(
-                environmentContext
-            )}`
-        );
     }
 }

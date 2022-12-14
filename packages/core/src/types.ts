@@ -1,7 +1,6 @@
 import type { LogMessage } from './common-types';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
-import type { RuntimeFeature } from './runtime-feature';
-import type { FeatureDescriptor } from './entities/feature-descriptor';
+import type { FeatureDependencies, FeatureDescriptor } from './entities/feature-descriptor';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
 
@@ -157,31 +156,12 @@ type MapTypesForEnv<
 export type MapVisibleInputs<T extends EntityRecord, EnvFilter extends AnyEnvironment> = MapType<
     FilterEnv<GetInputs<T>, EnvFilter, 'visibleAt'>
 >;
-export type IFeature<
-    ID extends string = string,
-    Deps extends Dependency[] = any[],
-    API extends EntityRecord = any,
-    EnvironmentContext extends Record<string, DisposableContext<any>> = any
-> = {
-    id: ID;
-    api: API;
-    context: EnvironmentContext;
-    dependencies: Deps;
-    [CREATE_RUNTIME]: <ENV extends AnyEnvironment>(runningEngine: RuntimeEngine<ENV>) => RuntimeFeature<IFeature, ENV>;
-};
-
-// const dep = Symbol('')
-export type Dependency<
-    ID extends string = string,
-    API extends EntityRecord = any,
-    EnvironmentContext extends Record<string, DisposableContext<any>> = any
-> = IFeature<ID, any[], API, EnvironmentContext>;
 
 export interface FeatureDef<
     ID extends string,
-    Deps extends Dependency[],
+    Deps extends FeatureDependencies,
     API extends EntityRecord,
-    EnvironmentContext extends Record<string, Context<any>>
+    EnvironmentContext extends Record<string, DisposableContext<any>>
 > {
     id: ID;
     dependencies?: Deps;
@@ -189,7 +169,6 @@ export interface FeatureDef<
     context?: EnvironmentContext;
 }
 
-export type UnknownFeatureDef = FeatureDef<string, Dependency[], EntityRecord, Record<string, Context<any>>>;
 export type Running<T extends { api: EntityRecord }, ENV extends AnyEnvironment> = MapAllTypesForEnv<T['api'], ENV>;
 
 export type RunningFeatures<
@@ -262,16 +241,18 @@ export type DisposableContext<T> = Context<T & IContextDispose>;
 export type SetupHandler<
     ENV extends AnyEnvironment,
     ID extends string,
-    FeatureDeps extends Dependency[],
+    FeatureDeps extends FeatureDependencies,
     API extends EntityRecord,
     EnvironmentContext extends Record<string, Context<any>>
 > = (
     feature: SettingUpFeature<ID, API, ENV>,
     runningFeatures: RunningFeatures<FeatureDeps, ENV>,
     context: MapRecordType<EnvironmentContext>
-) => RegisteringFeature<API, Environment<ENV['env'], ENV['envType'], ENV['endpointType'], []>>;
+) => RegisteringFeature<API, OmitCompositeEnvironment<ENV>>;
 
-export type ContextHandler<C, EnvFilter extends AnyEnvironment, Deps extends Dependency[]> = (
+export type OmitCompositeEnvironment<T extends AnyEnvironment> = Environment<T['env'], T['envType'], T['endpointType'], []>;
+
+export type ContextHandler<C, EnvFilter extends AnyEnvironment, Deps extends FeatureDependencies> = (
     runningFeatures: RunningFeatures<Deps, EnvFilter>
 ) => C;
 

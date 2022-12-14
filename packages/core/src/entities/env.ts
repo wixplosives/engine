@@ -90,20 +90,3 @@ export function normEnvVisibility(envVisibility: EnvVisibility): Set<string> {
     }
     return envSet;
 }
-
-export function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: Set<string>): string[] {
-    const containsEnv = new Set<string>();
-    const test = (env: string) => {
-        envSet.has(env) ? containsEnv.add(env) : envSet.add(env);
-    };
-    if (Array.isArray(envVisibility)) {
-        for (const e of envVisibility) {
-            test(e.env);
-        }
-    } else if (typeof envVisibility === 'string') {
-        test(envVisibility);
-    } else {
-        test(envVisibility.env);
-    }
-    return [...containsEnv];
-}
