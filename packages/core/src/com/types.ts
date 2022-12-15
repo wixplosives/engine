@@ -14,7 +14,7 @@ export type EnvironmentTypes =
 /**
  * TODO: remove onReconnect and onDisconnect
  */
-export interface IActiveEnvironment {
+export interface ActiveEnvironment {
     id: string;
     onDisconnect?: (cb: () => void) => void;
     onReconnect?: (cb: () => void) => void;
@@ -56,7 +56,7 @@ export interface EnvironmentInstanceToken {
     id: string;
 }
 
-export interface IServiceMethodOptions<T, K> {
+export interface ServiceMethodOptions<T, K> {
     emitOnly?: boolean;
     listener?: boolean;
     removeListener?: Exclude<keyof T, K>;
@@ -70,14 +70,8 @@ export interface AnyServiceMethodOptions {
     removeAllListeners?: string;
 }
 
-export interface ILiveEnvironment {
-    id: string;
-    onDisconnect?: (cb: () => void) => void;
-    onReconnect?: (cb: () => void) => void;
-}
-
 export type ServiceComConfig<T> = {
-    [K in keyof T]?: T[K] extends (...args: any[]) => unknown ? IServiceMethodOptions<T, K> : never;
+    [K in keyof T]?: T[K] extends (...args: any[]) => unknown ? ServiceMethodOptions<T, K> : never;
 };
 
 export type ValuePromise<R> = R extends Promise<unknown> ? R : Promise<R>;

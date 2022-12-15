@@ -6,7 +6,7 @@ import {
     InitializeNodeEnvironmentOptions,
 } from '@wixc3/engine-electron-commons';
 
-import type { EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-core';
+import type { EnvironmentInitializer, ActiveEnvironment } from '@wixc3/engine-core';
 
 /**
  * Spawn a node-based environment from the renderer process.
@@ -14,7 +14,7 @@ import type { EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-c
  */
 
 export const initializeNodeEnvironmentInBrowser: EnvironmentInitializer<
-    Promise<IActiveEnvironment>,
+    Promise<ActiveEnvironment>,
     Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
 > = async ({ communication, env, environmentStartupOptions, processOptions }) => {
     const runtimeArguments = await getApplicationMetaData();

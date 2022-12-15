@@ -525,7 +525,7 @@ describe('Contextual environments', () => {
         const workerEnv = new Environment('worker', 'worker', 'single');
         const processing = new SingleEndpointContextualEnvironment('processing', [workerEnv]);
 
-        interface IProcessingContext {
+        interface ProcessingContext {
             name: string;
         }
 
@@ -536,7 +536,7 @@ describe('Contextual environments', () => {
                 echoService: Service.withType<{ echo(s: string): string }>().defineEntity(processing),
             },
             context: {
-                processingContext: processing.withContext<IProcessingContext>(),
+                processingContext: processing.withContext<ProcessingContext>(),
                 processingContext2: processing.withContext<{ age: number }>(),
             },
         });

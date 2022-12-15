@@ -9,7 +9,7 @@ import {
 } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
 import {
-    ITestServiceData,
+    TestServiceData,
     multiTanentServiceId,
     MultiTenantTestService,
     TestService,
@@ -92,7 +92,7 @@ describe('Communication API', function () {
 
         const env = iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
         const api = com.apiProxy<TestService>(env, { id: testServiceId }, declareComEmitter('listen', '', ''));
-        const capturedCalls: ITestServiceData[] = [];
+        const capturedCalls: TestServiceData[] = [];
         await api.listen((data) => capturedCalls.push(data));
 
         await api.testApi(1, 2, 3);
@@ -145,8 +145,8 @@ describe('Communication API', function () {
         const api1 = com.apiProxy<TestService>(env1, { id: testServiceId }, { listen: { listener: true } });
         const api2 = com.apiProxy<TestService>(env2, { id: testServiceId }, { listen: { listener: true } });
 
-        const capturedCallsApi1: ITestServiceData[] = [];
-        const capturedCallsApi2: ITestServiceData[] = [];
+        const capturedCallsApi1: TestServiceData[] = [];
+        const capturedCallsApi2: TestServiceData[] = [];
         await api1.listen((data) => capturedCallsApi1.push(data));
         await api2.listen((data) => capturedCallsApi2.push(data));
 
@@ -234,7 +234,7 @@ describe('Communication API', function () {
                 },
             }
         );
-        const { promise, resolve } = deferred<ITestServiceData>();
+        const { promise, resolve } = deferred<TestServiceData>();
 
         void api.listen(resolve);
         void api.testApi(1, 2, 3);

@@ -1,4 +1,4 @@
-import { BaseHost, Communication, EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-core';
+import { BaseHost, Communication, EnvironmentInitializer, ActiveEnvironment } from '@wixc3/engine-core';
 import { LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
 import {
     initializeNodeEnvironment,
@@ -13,7 +13,7 @@ import {
  */
 
 export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
-    Promise<IActiveEnvironment>,
+    Promise<ActiveEnvironment>,
     Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
 > = async (options) => {
     const runtimeArguments = await getApplicationMetaData(options.communication);

@@ -1,5 +1,5 @@
 import { BaseHost } from './com/hosts/base-host';
-import { Communication, ConfigEnvironmentRecord, ICommunicationOptions } from './com/communication';
+import { Communication, ConfigEnvironmentRecord, CommunicationOptions } from './com/communication';
 import { LoggerService } from './com/logger-service';
 import type { Target } from './com/types';
 import { Config } from './entities/config';
@@ -88,7 +88,7 @@ export default new Feature({
         const comId =
             id || (host && host.name) || (typeof self !== 'undefined' && self.name) || engine.entryEnvironment.env;
 
-        const comOptions: ICommunicationOptions = {
+        const comOptions: CommunicationOptions = {
             warnOnSlow: runOptions.has('warnOnSlow'),
             publicPath,
             connectedEnvironments,

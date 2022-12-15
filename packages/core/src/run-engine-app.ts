@@ -5,7 +5,7 @@ import type { AnyEnvironment, FeatureDescriptor } from './entities';
 import { flattenTree } from './helpers';
 import { deferred, IDeferredPromise } from 'promise-assist';
 
-export interface IRunEngineOptions<ENV extends AnyEnvironment> {
+export interface RunEngineOptions<ENV extends AnyEnvironment> {
     entryFeature: FeatureDescriptor | FeatureDescriptor[];
     topLevelConfig?: TopLevelConfig;
     env: ENV;
@@ -17,7 +17,7 @@ export function run<ENV extends AnyEnvironment>({
     topLevelConfig = [],
     env,
     runOptions,
-}: IRunEngineOptions<ENV>) {
+}: RunEngineOptions<ENV>) {
     return new RuntimeEngine(env, topLevelConfig, runOptions).run(entryFeature);
 }
 
