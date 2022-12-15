@@ -24,18 +24,22 @@ const MAIN = new Environment('main', 'window', 'single');
 const ZAG = new Environment('zag', 'window', 'single');
 const MAIN_1 = new Environment('main1', 'window', 'single');
 
-const logger = new Feature({
-    id: 'logger',
-    api: {
+
+// show case both the old and new way of defining features working together
+class Logger {
+    static id = 'logger' as const;
+    static api = {
         config: Config.withType<{ time: number }>().defineEntity({ time: 1 }),
         transport: Slot.withType<{ transportName: string }>().defineEntity(MAIN),
         sink: Service.withType<{ log: (message: string) => void }>().defineEntity(MAIN).allowRemoteAccess(),
-    },
-});
+    };
+    static dependencies = [];
+}
+
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<typeof logger, typeof MAIN>,
+            Running<typeof Logger, typeof MAIN>,
             {
                 config: { time: number };
                 transport: Registry<{
@@ -52,7 +56,7 @@ typeCheck(
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<typeof logger, typeof ZAG>,
+            Running<typeof Logger, typeof ZAG>,
             {
                 config: { time: number };
 
@@ -67,7 +71,7 @@ typeCheck(
 
 const gui = new Feature({
     id: 'gui',
-    dependencies: [logger.asDependency],
+    dependencies: [Logger],
     api: {
         panelSlot: Slot.withType<{ panelID: string }>().defineEntity([MAIN]),
         guiService: Service.withType<{ someMethod(): void }>().defineEntity([MAIN, MAIN_1]),
@@ -86,7 +90,7 @@ typeCheck(
     (
         _runningDependencies: EQUAL<
             RunningFeaturesV2<typeof gui['dependencies'], typeof MAIN>,
-            { logger: Running<typeof logger, typeof MAIN> }
+            { logger: Running<typeof Logger, typeof MAIN> }
         >,
         _runningFeature: EQUAL<
             Running<typeof gui, typeof MAIN>,
@@ -108,7 +112,7 @@ interface ComponentDescription {
 
 const addPanel = new Feature({
     id: 'addPanel',
-    dependencies: [gui.asDependency, logger.asDependency],
+    dependencies: [gui.asDependency, Logger],
     api: {
         componentDescription: Slot.withType<ComponentDescription>().defineEntity(MAIN),
         service1: Service.withType<DataService>().defineEntity(MAIN),
@@ -129,7 +133,7 @@ typeCheck(
         _runningDependencies: EQUAL<
             RunningFeaturesV2<typeof addPanel['dependencies'], typeof MAIN>,
             {
-                logger: Running<typeof logger, typeof MAIN>;
+                logger: Running<typeof Logger, typeof MAIN>;
                 gui: Running<typeof gui, typeof MAIN>;
             }
         >,
@@ -188,7 +192,7 @@ export async function dontRun() {
                     typeof features,
                     {
                         gui: Running<typeof gui, typeof MAIN>;
-                        logger: Running<typeof logger, typeof MAIN>;
+                        logger: Running<typeof Logger, typeof MAIN>;
                     }
                 >,
                 _: true
