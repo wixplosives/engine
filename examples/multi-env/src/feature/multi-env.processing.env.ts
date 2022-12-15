@@ -7,11 +7,7 @@ MultiEnvFeature.setup(processingEnv, ({ onDispose }, {}, { processingContext: { 
         },
     };
 
-    onDispose(() => {
-        if (dispose) {
-            dispose();
-        }
-    });
+    onDispose(() => dispose?.());
 
     return { echoService };
 });

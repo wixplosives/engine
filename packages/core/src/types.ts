@@ -161,7 +161,7 @@ export interface FeatureDef<
     ID extends string,
     Deps extends FeatureDependencies,
     API extends EntityRecord,
-    EnvironmentContext extends Record<string, DisposableContext<any>>
+    EnvironmentContext extends Record<string, Context<any>>
 > {
     id: ID;
     dependencies?: Deps;
@@ -170,14 +170,6 @@ export interface FeatureDef<
 }
 
 export type Running<T extends { api: EntityRecord }, ENV extends AnyEnvironment> = MapAllTypesForEnv<T['api'], ENV>;
-
-export type ExtendedEnvs<
-    API extends EntityRecord,
-    ENVS extends AnyEnvironment[],
-    EnvMap extends MapBy<ENVS, 'env'> = MapBy<ENVS, 'env'>
-> = {
-    [E in keyof EnvMap]: MapTypesForEnv<GetOutputs<API>, EnvMap[E], 'providedFrom'>;
-};
 
 export interface IRunOptions {
     has(key: string): boolean;
@@ -194,16 +186,8 @@ export type RegisteringFeature<
     >
 > = keyof ProvidedOutputs extends never ? undefined | void : ProvidedOutputs;
 
-export interface SetupHandlerEnvironmentContext<EnvironmentContext extends Record<string, Context<any>>> {
-    context: EnvironmentContext;
-}
-
 export interface Context<T> {
-    type: T;
-}
-
-export interface IContextDispose {
-    dispose?: DisposeFunction;
+    type: T & { dispose?: DisposeFunction };
 }
 
 export interface IDisposable {
@@ -217,8 +201,6 @@ export interface IDisposable {
      */
     isDisposed(): boolean;
 }
-
-export type DisposableContext<T> = Context<T & IContextDispose>;
 
 export type OmitCompositeEnvironment<T extends AnyEnvironment> = Environment<
     T['env'],

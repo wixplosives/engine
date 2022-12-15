@@ -22,12 +22,6 @@ import type {
 } from '../types';
 import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
 
-type RuntimeInfo = {
-    setup: SetMultiMap<string, SetupHandler<any, any>>;
-    context: Map<string | number | symbol, ContextHandlerV2<any, any, any>>;
-    envs: Set<string>;
-};
-
 export function createRuntimeInfo(): RuntimeInfo {
     return {
         setup: new SetMultiMap(),
@@ -48,7 +42,6 @@ export function setup<T extends FeatureDescriptor, E extends AnyEnvironment>(
     environment: E,
     setupHandler: SetupHandler<T, E>
 ) {
-    // TODO: add the validation
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateEnvRegistration(environment, feature.id, info.envs);
     info.setup.add(environment.env, setupHandler);
@@ -58,9 +51,8 @@ export function setupContext<T extends FeatureDescriptor, E extends AnyEnvironme
     feature: T,
     _environment: E, // TODO: add handlers in environments buckets with validation per environment?
     environmentContextKey: K,
-    contextHandler: ContextHandlerV2<T, E, K>
+    contextHandler: ContextHandler<T, E, K>
 ) {
-    // TODO: add the validation
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateContextRegistration(environmentContextKey, feature.id, info.context);
     info.context.set(environmentContextKey, contextHandler);
@@ -96,7 +88,7 @@ export function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: S
 export function validateNoDuplicateContextRegistration(
     environmentContext: string | number | symbol,
     featureId: string,
-    contextHandlers: Map<string | number | symbol, ContextHandlerV2<any, any, any>>
+    contextHandlers: Map<string | number | symbol, ContextHandler<any, any, any>>
 ) {
     const registeredContext = contextHandlers.get(environmentContext);
     if (registeredContext) {
@@ -107,6 +99,12 @@ export function validateNoDuplicateContextRegistration(
         );
     }
 }
+
+type RuntimeInfo = {
+    setup: SetMultiMap<string, SetupHandler<any, any>>;
+    context: Map<string | number | symbol, ContextHandler<any, any, any>>;
+    envs: Set<string>;
+};
 
 export type FeatureDependencies = ReadonlyArray<FeatureDescriptor>;
 
@@ -140,53 +138,6 @@ export type SetupHandler<F extends FeatureDescriptor, E extends AnyEnvironment> 
     context: MapRecordType<F['context']>
 ) => RegisteringFeature<F['api'], OmitCompositeEnvironment<E>>;
 
-export type ContextHandlerV2<F extends FeatureDescriptor, E extends AnyEnvironment, K extends keyof F['context']> = (
+export type ContextHandler<F extends FeatureDescriptor, E extends AnyEnvironment, K extends keyof F['context']> = (
     runningFeatures: RunningFeaturesV2<F['dependencies'], E>
 ) => F['context'][K] extends Context<infer U> ? U & {} : {};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-// const mainEnv = new Environment('main', 'window', 'single');
-// const processingWorker = new Environment('processing-worker', 'worker', 'single');
-// const processingEnv = new SingleEndpointContextualEnvironment('processing', [processingWorker]);
-
-// export class Compilation {
-//     static id = 'Compilation' as const;
-//     static dependencies = [];
-//     static api = {
-//         compilers: Slot.withType<(filePath: string) => string>().defineEntity(processingEnv),
-//         someService: Service.withType<{ run(): string }>().defineEntity(mainEnv),
-//     };
-// }
-
-// class Compilation2 {
-//     static id = 'Compilation2' as const;
-//     static dependencies = [];
-//     static api = {
-//         compilers2: Slot.withType<(filePath: string) => string>().defineEntity(processingEnv),
-//         someService2: Service.withType<{ run(): string }>().defineEntity(mainEnv),
-//     };
-// }
-
-// class Typescript {
-//     static id = 'Typescript' as const;
-//     static dependencies = [Compilation, Compilation2];
-//     static api = {};
-//     static context = {
-//         processingContext: processingEnv.withContext<{ name: string }>(),
-//     };
-// }
-
-// setup(Typescript, mainEnv, (feature, runningFeatures, context) => {
-//     runningFeatures.Compilation.someService.run();
-//     runningFeatures.Compilation2.someService2.run();
-
-//     context.processingContext.name;
-
-//     console.log(feature, runningFeatures, context);
-// });

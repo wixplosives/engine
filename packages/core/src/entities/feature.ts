@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type { DisposableContext, EntityRecord, FeatureDef, PartialFeatureConfig } from '../types';
+import type { Context, EntityRecord, FeatureDef, PartialFeatureConfig } from '../types';
 import type { AnyEnvironment } from './env';
 import {
-    ContextHandlerV2,
+    ContextHandler,
     createRuntimeInfo,
     FeatureDependencies,
     SetupHandler,
@@ -28,7 +28,7 @@ export class Feature<
     ID extends string = string,
     Deps extends FeatureDependencies = any[],
     API extends EntityRecord = any,
-    EnvironmentContext extends Record<string, DisposableContext<any>> = any
+    EnvironmentContext extends Record<string, Context<any>> = any
 > {
     /**
      * References `this` without the exact types of `Deps` (making them a generic `Feature[]`).
@@ -119,7 +119,7 @@ export class Feature<
     public setupContext<K extends keyof EnvironmentContext, Env extends AnyEnvironment>(
         _env: Env,
         environmentContext: K,
-        contextHandler: ContextHandlerV2<this, Env, K>
+        contextHandler: ContextHandler<this, Env, K>
     ) {
         validateNoDuplicateContextRegistration(environmentContext, this.id, this.runtimeInfo.context);
         this.runtimeInfo.context.set(environmentContext, contextHandler);

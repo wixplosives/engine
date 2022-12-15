@@ -11,7 +11,7 @@ import {
     Environment,
     Feature,
     EntityRecord,
-    DisposableContext,
+    Context,
     RuntimeEngine,
     flattenTree,
     Running,
@@ -38,11 +38,11 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
     env: ENV;
 }
 
-export interface IGetRunnigFeatureOptions<
+export interface RunningFeatureOptions<
     NAME extends string,
     DEPS extends FeatureDependencies,
     API extends EntityRecord,
-    CONTEXT extends Record<string, DisposableContext<any>>,
+    CONTEXT extends Record<string, Context<unknown>>,
     ENV extends AnyEnvironment
 > extends IRunNodeEnvironmentOptions<ENV> {
     feature: Feature<NAME, DEPS, API, CONTEXT>;
@@ -127,10 +127,10 @@ export async function getRunningFeature<
     NAME extends string,
     DEPS extends FeatureDependencies,
     API extends EntityRecord,
-    CONTEXT extends Record<string, DisposableContext<any>>,
+    CONTEXT extends Record<string, Context<any>>,
     ENV extends AnyEnvironment
 >(
-    options: IGetRunnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
+    options: RunningFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
     runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV>;

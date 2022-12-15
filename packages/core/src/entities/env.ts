@@ -1,6 +1,6 @@
 import type { EnvironmentTypes } from '../com/types';
 import { runtimeType } from '../entity-helpers';
-import type { DisposableContext, EnvVisibility, MapBy } from '../types';
+import type { Context, EnvVisibility, MapBy } from '../types';
 
 export type EnvironmentMode = 'single' | 'multi';
 export type AnyEnvironment = Environment<
@@ -64,7 +64,7 @@ export class SingleEndpointContextualEnvironment<NAME extends string, ENVS exten
         return new EnvironmentContext(this.env, contextEnv);
     }
 
-    public withContext<I extends object>(): DisposableContext<I> {
+    public withContext<I extends object>(): Context<I> {
         return {
             type: runtimeType<I & { dispose(): unknown }>(this.env + ' context'),
         };
