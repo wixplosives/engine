@@ -1,21 +1,16 @@
+import type { SetMultiMap } from '@wixc3/patterns';
+import performance from '@wixc3/cross-performance';
+import type { IConfigDefinition, LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
     Application,
-    IRunFeatureOptions,
-    IApplicationOptions,
-    IFeatureMessagePayload,
     generateConfigName,
+    IApplicationOptions,
     ICompilerOptions,
-    OverrideConfig,
     IFeatureDefinition,
+    IFeatureMessagePayload,
+    IRunFeatureOptions,
+    OverrideConfig,
 } from '@wixc3/engine-scripts';
-import type { SetMultiMap } from '@wixc3/common';
-import performance from '@wixc3/cross-performance';
-import type {
-    IConfigDefinition,
-    IExternalDefinition,
-    LaunchEnvironmentMode,
-    NodeEnvironmentsManager,
-} from '@wixc3/engine-runtime-node';
 
 export class TargetApplication extends Application {
     public nodeEnvironmentsMode?: LaunchEnvironmentMode;
@@ -52,20 +47,6 @@ export class TargetApplication extends Application {
 
     public createCompiler(compilerArgs: ICompilerOptions) {
         return super.createCompiler(compilerArgs);
-    }
-
-    public normalizeDefinitionsPackagePath(
-        externalFeatureDefinitions: IExternalDefinition[],
-        providedExternalFeaturesPath?: string,
-        configExternalFeaturesPath?: string,
-        configPath?: string
-    ) {
-        return super.normalizeDefinitionsPackagePath(
-            externalFeatureDefinitions,
-            providedExternalFeaturesPath,
-            configExternalFeaturesPath,
-            configPath
-        );
     }
 
     public getFeatureEnvDefinitions(

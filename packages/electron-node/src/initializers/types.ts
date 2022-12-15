@@ -1,6 +1,5 @@
 import type { BrowserWindow } from 'electron';
 import type { Environment, IRunOptions, Communication } from '@wixc3/engine-core';
-import type { IExternalFeatureNodeDescriptor } from '@wixc3/engine-runtime-node';
 
 export interface InitializedBrowserEnvironment {
     id: string;
@@ -16,5 +15,4 @@ export interface IWindowEnvironmentOptions {
     featureName?: string;
     configName?: string;
     runtimeArguments?: Record<string, string | number | boolean | undefined | null>;
-    externalFeatures?: IExternalFeatureNodeDescriptor[];
 }

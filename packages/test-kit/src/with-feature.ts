@@ -78,11 +78,16 @@ export interface IFeatureExecutionOptions {
      * strings are tested for exact match.
      */
     allowedErrors?: Array<string | RegExp>;
+
+    /**
+     * console.error allowed errors (defaults to false)
+     */
+    consoleLogAllowedErrors?: boolean;
 }
 
 export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
     /**
-     * If we want to test the engine against a running application, proveide the port of the application.
+     * If we want to test the engine against a running application, provide the port of the application.
      * It can be extracted from the log printed after 'engineer start' or 'engine run'
      */
     runningApplicationPort?: number;
@@ -98,22 +103,22 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
 export interface Tracing {
     /**
      * path to a directory where the trace file will be saved
-     * @default process.cwd()
+     * @defaultValue process.cwd()
      */
     outPath?: string;
     /**
      * should trace include screenshots
-     * @default true
+     * @defaultValue true
      */
     screenshots?: boolean;
     /**
      * should trace include snapshots
-     * @default true
+     * @defaultValue true
      */
     snapshots?: boolean;
     /**
      * name of the trace file
-     * @default random string
+     * @defaultValue random string
      */
     name?: string;
 }
@@ -156,9 +161,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         featureDiscoveryRoot,
         tracing: suiteTracing = process.env.TRACING ? true : undefined,
         allowedErrors: suiteAllowedErrors = [],
-        navigationOptions: suiteNavigationOptions = process.env.SKIP_NETWORK_WAIT
-            ? undefined
-            : { waitUntil: 'networkidle' },
+        consoleLogAllowedErrors = false,
+        navigationOptions: suiteNavigationOptions,
     } = withFeatureOptions;
 
     if (
@@ -294,8 +298,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     )
                 ) {
                     capturedErrors.push(e);
+                    console.error(e);
+                } else {
+                    if (consoleLogAllowedErrors) {
+                        console.error(e);
+                    }
                 }
-                console.error(e);
             }
 
             function onPageCreation(page: playwright.Page) {

@@ -1,26 +1,23 @@
-import type io from 'socket.io';
-import devServerFeature, { devServerEnv } from './dev-server.feature';
-import { TargetApplication } from '../application-proxy-service';
-import express from 'express';
+import { createDisposables } from '@wixc3/create-disposables';
+import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
+import { WsServerHost } from '@wixc3/engine-core-node';
+import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
-    ensureTopLevelConfigMiddleware,
     createCommunicationMiddleware,
-    createLiveConfigsMiddleware,
     createConfigMiddleware,
     createFeaturesEngineRouter,
-    getExternalFeaturesMetadata,
-    EXTERNAL_FEATURES_BASE_URI,
+    createLiveConfigsMiddleware,
+    ensureTopLevelConfigMiddleware,
     getExportedEnvironments,
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
+import express from 'express';
+import type io from 'socket.io';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-import { WsServerHost } from '@wixc3/engine-core-node';
-import { dirname, resolve } from 'path';
-import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
-import { createDisposables } from '@wixc3/create-disposables';
-import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
+import { TargetApplication } from '../application-proxy-service';
 import { buildFeatureLinks } from '../feature-dependency-graph';
+import devServerFeature, { devServerEnv } from './dev-server.feature';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
@@ -55,13 +52,9 @@ devServerFeature.setup(
             overrideConfig,
             defaultRuntimeOptions,
             outputPath,
-            externalFeatureDefinitions: providedExternalDefinitions,
-            externalFeaturesPath: providedExternalFeaturesPath,
-            serveExternalFeaturesPath = true,
             featureDiscoveryRoot: providedFeatureDiscoveryRoot,
             socketServerOptions = {},
             webpackConfigPath,
-            externalFeaturesRoute,
             log,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, outputPath });
@@ -71,13 +64,11 @@ devServerFeature.setup(
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????
-            const { config: engineConfig, path: engineConfigPath } = await application.getEngineConfig();
+            const { config: engineConfig } = await application.getEngineConfig();
 
             const {
-                externalFeatureDefinitions = [],
                 require: requiredPaths = [],
                 socketServerOptions: configServerOptions = {},
-                externalFeaturesBasePath: configExternalFeaturesPath,
                 serveStatic = [],
                 featureDiscoveryRoot,
             } = engineConfig ?? {};
@@ -86,18 +77,6 @@ devServerFeature.setup(
                 ...socketServerOptions,
                 ...configServerOptions,
             };
-            const externalFeaturesPath = resolve(
-                providedExternalFeaturesPath ?? (configExternalFeaturesPath ? dirname(engineConfigPath!) : basePath)
-            );
-
-            externalFeatureDefinitions.push(...providedExternalDefinitions);
-
-            const fixedExternalFeatureDefinitions = application.normalizeDefinitionsPackagePath(
-                externalFeatureDefinitions,
-                providedExternalFeaturesPath,
-                configExternalFeaturesPath,
-                engineConfigPath
-            );
             const {
                 port: actualPort,
                 app,
@@ -119,8 +98,6 @@ devServerFeature.setup(
                 featureName,
                 providedFeatureDiscoveryRoot ?? featureDiscoveryRoot
             );
-            const externalFeatures = getExternalFeaturesMetadata(fixedExternalFeatureDefinitions, externalFeaturesPath);
-
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
 
@@ -151,7 +128,6 @@ devServerFeature.setup(
 
                             return config;
                         },
-                        externalFeatures,
                         requiredPaths,
                     },
                     basePath,
@@ -162,20 +138,6 @@ devServerFeature.setup(
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll());
 
-            if (serveExternalFeaturesPath) {
-                for (const { packageName, packagePath } of fixedExternalFeatureDefinitions) {
-                    if (packagePath) {
-                        serveStatic.push({
-                            route: `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`,
-                            directoryPath: resolve(
-                                engineConfigPath ? dirname(engineConfigPath) : basePath,
-                                packagePath
-                            ),
-                        });
-                    }
-                }
-            }
-
             if (serveStatic.length) {
                 for (const { route, directoryPath } of serveStatic) {
                     app.use(route, express.static(directoryPath));
@@ -185,8 +147,8 @@ devServerFeature.setup(
             const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
                 featureName.indexOf('engineer/') === 0
                     ? {
-                        [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                    }
+                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+                      }
                     : undefined;
 
             app.use(`/${publicConfigsRoute}`, [
@@ -212,18 +174,13 @@ devServerFeature.setup(
                 res.json(graph);
             });
 
-            app.get(externalFeaturesRoute, (_, res) => {
-                res.json(externalFeatures);
-            });
-
             // Write middleware for each of the apps
-            const {compiler} = application.createCompiler({
+            const { compiler } = application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,
                 mode,
                 configurations,
-                isExternal: false,
                 webpackConfigPath,
                 environments: getResolvedEnvironments({
                     featureName,
@@ -231,7 +188,6 @@ devServerFeature.setup(
                     filterContexts: singleFeature,
                     environments: [...getExportedEnvironments(features)],
                 }),
-                externalFeaturesRoute,
             });
 
             const compilationPromises: Promise<void>[] = [];
@@ -283,7 +239,7 @@ devServerFeature.setup(
              *  but we will keep on watching on the users application
              *  2. the createCompiler function is not extendable with more configs with the current API
              */
-            console.time('Bundling features and engine')
+            console.time('Bundling features and engine');
             const engineerCompilers = webpack([...engineerWebpackConfigs]);
             if (engineerCompilers.compilers.length > 0) {
                 // This assumes we have only one engineer config - for the dashboard
@@ -306,7 +262,7 @@ devServerFeature.setup(
             }
 
             await Promise.all(compilationPromises);
-            console.timeEnd('Bundling features and engine')
+            console.timeEnd('Bundling features and engine');
             if (log) {
                 const mainUrl = `http://localhost:${actualPort}`;
                 if (featureName) {

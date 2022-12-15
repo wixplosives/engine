@@ -1,0 +1,15 @@
+{
+  "packages": "packages",
+  "conf": "docs-conf",
+  "docs": "_docs",
+  "siteUrl": "https://<org>.github.io/<repo>",
+  "base": ".",
+  "temp": "temp",
+  "git": {
+    "host": "github.com",
+    "org": "wixplosives",
+    "repo": "engine",
+    "pages": "https://wixplosives.github.io/engine",
+    "github": "https://github.com/wixplosives/engine"
+  }
+}

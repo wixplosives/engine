@@ -1,5 +1,5 @@
 import type { Express } from 'express';
-import type { IExternalDefinition, TopLevelConfigProvider, LaunchEnvironmentMode } from '@wixc3/engine-runtime-node';
+import type { TopLevelConfigProvider, LaunchEnvironmentMode } from '@wixc3/engine-runtime-node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type io from 'socket.io';
 
@@ -20,13 +20,9 @@ export interface DevServerConfig {
     overrideConfig: TopLevelConfig | TopLevelConfigProvider;
     defaultRuntimeOptions: Record<string, string | boolean>;
     outputPath?: string;
-    externalFeatureDefinitions: IExternalDefinition[];
-    externalFeaturesPath?: string;
-    serveExternalFeaturesPath?: boolean;
     featureDiscoveryRoot?: string;
     socketServerOptions?: Partial<io.ServerOptions>;
     webpackConfigPath?: string;
-    externalFeaturesRoute: string;
     log?: boolean;
 }
 

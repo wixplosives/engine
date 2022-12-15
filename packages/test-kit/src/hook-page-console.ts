@@ -1,5 +1,5 @@
 import type playwright from 'playwright-core';
-import { deferred } from '@wixc3/common';
+import { deferred } from 'promise-assist';
 
 /**
  * Hooks the console of a `playwright.Page` to Node's console,

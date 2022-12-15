@@ -1,4 +1,4 @@
-import { SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import type { RuntimeEngine } from '../runtime-engine';
 import type { ENGINE, RUN_OPTIONS } from '../symbols';
 import type {

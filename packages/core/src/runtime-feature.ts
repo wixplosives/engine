@@ -2,8 +2,9 @@ import type { RuntimeEngine } from './runtime-engine';
 import type { AnyEnvironment } from './entities/env';
 import type { FeatureDescriptor, RunningFeaturesV2 } from './entities/feature-descriptor';
 import { CREATE_RUNTIME, DISPOSE, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
-import { deferred, IDeferredPromise, SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import type { DisposeFunction, Running } from './types';
+import { deferred, IDeferredPromise } from 'promise-assist';
 
 // interface RuntimeFeature<F, E> {
 //     [RUN](engine: RuntimeEngine): Promise<void>;
@@ -65,7 +66,7 @@ export class RuntimeFeature<T extends FeatureDescriptor, ENV extends AnyEnvironm
         this.disposing = deferred();
         // THIS IS WRONG!
         for (const dep of this.feature.dependencies) {
-            await engine.dispose(dep);
+            await engine.disposeFeature(dep);
         }
         const featureDisposeHandlers = this.disposeHandlers.get(envName) || new Set();
         for (const handler of featureDisposeHandlers) {

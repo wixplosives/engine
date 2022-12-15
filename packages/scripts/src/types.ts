@@ -9,7 +9,6 @@ import type {
 } from '@wixc3/engine-core';
 import type {
     IEnvironmentDescriptor,
-    IExternalDefinition,
     IStaticFeatureDefinition,
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
@@ -160,9 +159,6 @@ export interface EngineConfig {
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
-    externalFeatureDefinitions: Array<IExternalDefinition>;
-    externalFeaturesBasePath?: string;
-    serveExternalFeaturesPath?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
     sourcesRoot?: string;
     favicon?: string;

@@ -1,4 +1,4 @@
-import { SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '../types';
 

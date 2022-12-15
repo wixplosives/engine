@@ -19,10 +19,10 @@ import {
  * When calling `runEngineApp` and providing it with a Feature[], it uses the definitions
  * to initialize a `RuntimeFeature` for each.
  *
- * @template ID Unique string identity
- * @template Deps Dependencies needed by this Feature (to consume their API)
- * @template API Entities (Slots, Services, etc.) this Feature exposes for other Features to consume.
- * @template EnvironmentContext Environment-specific APIs consumed by this feature
+ * @typeParam ID - Unique string identity
+ * @typeParam Deps - Dependencies needed by this Feature (to consume their API)
+ * @typeParam API - Entities (Slots, Services, etc.) this Feature exposes for other Features to consume.
+ * @typeParam EnvironmentContext - Environment-specific APIs consumed by this feature
  */
 export class Feature<
     ID extends string = string,
@@ -79,10 +79,12 @@ export class Feature<
      * by `<feature-name>.<environment-name>.env.ts` files to define the environment specific implementations.
      *
      * @example
+     * ```
      * export default new Feature({
      *   id: 'my-feature',
      *   api: { ... },
      * })
+     * ```
      */
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;

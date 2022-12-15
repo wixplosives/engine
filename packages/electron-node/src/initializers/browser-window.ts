@@ -1,8 +1,8 @@
+import { once } from '@wixc3/common';
+import type { InitializerOptions } from '@wixc3/engine-core';
+import { electronRuntimeArguments } from '@wixc3/engine-electron-commons';
 import { BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
-import { once } from '@wixc3/common';
-import { electronRuntimeArguments, externalFeaturesManager } from '@wixc3/engine-electron-commons';
-import type { InitializerOptions } from '@wixc3/engine-core';
 
 import { ElectronBrowserHost } from '../hosts/electron-node-host';
 import type { InitializedBrowserEnvironment, IWindowEnvironmentOptions } from './types';
@@ -18,7 +18,7 @@ export interface BrowserWindowEnvironmentInitializerOptions extends InitializerO
 export function windowEnvironmentInitializer({
     browserWindow,
     env: { env: envName },
-    communication: com,
+    communication: com
 }: BrowserWindowEnvironmentInitializerOptions): InitializedBrowserEnvironment {
     const host = new ElectronBrowserHost(ipcMain, browserWindow.webContents);
     com.registerEnv(envName, host);
@@ -30,7 +30,7 @@ export function windowEnvironmentInitializer({
             com.clearEnvironment(envName);
             com.removeMessageHandler(host);
         }),
-        browserWindow,
+        browserWindow
     };
 }
 
@@ -45,18 +45,13 @@ export async function initializeWindowEnvironment({
     configName = runOptions.get(electronRuntimeArguments.runtimeConfigName) as string | undefined,
     featureName = runOptions.get(electronRuntimeArguments.runtimeFeatureName) as string,
     runtimeArguments = {},
-    externalFeatures = [],
 }: IWindowEnvironmentOptions): Promise<InitializedBrowserEnvironment> {
-    externalFeaturesManager.add(...externalFeatures);
-    browserWindow.on('close', () => {
-        externalFeaturesManager.remove(...externalFeatures);
-    });
     const devport = runOptions.get(electronRuntimeArguments.devport) as string | undefined;
 
     const query = {
         feature: featureName,
         config: configName ?? '',
-        ...runtimeArguments,
+        ...runtimeArguments
     };
     if (devport) {
         const url = new URL(`http://localhost:${devport}/${env.env}.html`);

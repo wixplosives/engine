@@ -32,15 +32,28 @@ export class Registry<T> {
     }
 }
 
+/**
+ * Set of user typed values, consumed at any flow that requires this feature.
+ *
+ * @example
+ * Slot.withType<IUser>().defineEntity('main')
+ */
 export class Slot<Type extends Registry<any>, ProvidedFrom extends EnvVisibility> extends FeatureInput<
     Type,
     ProvidedFrom
 > {
+    /**
+     * Provides the actual interface of each unit of the slot
+     */
     public static withType<T>() {
         return {
+            /**
+             * Which env the slot will be assigned to.
+             * @param env instance of the environment that the slot will be set upon
+             */
             defineEntity<E_ENV extends EnvVisibility>(env: E_ENV) {
                 return new Slot<Registry<T>, E_ENV>(env, env);
-            },
+            }
         };
     }
     public [CREATE_RUNTIME]() {

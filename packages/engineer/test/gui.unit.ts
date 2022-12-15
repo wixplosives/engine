@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import fs from '@file-services/node';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
@@ -17,7 +16,7 @@ describe('engineer:gui', function () {
         const { dispose, engine, devServerFeature } = await startDevServer({
             engineerEntry: 'engineer/gui',
             targetApplicationPath: basePath,
-            devServerOnly: false
+            devServerOnly: false,
         });
 
         const runtimeFeature = engine.get(guiFeature);
@@ -57,10 +56,8 @@ describe('engineer:gui', function () {
 
         const page = await loadPage(`http://localhost:${port}/dashboard`);
 
-        const text = await page.evaluate(() => document.body.textContent!.trim());
-
-        expect(text).to.include('Feature');
-        expect(text).to.include('Config');
+        await page.locator('body', { hasText: 'Feature' }).waitFor({ state: 'visible' });
+        await page.locator('body', { hasText: 'Config' }).waitFor({ state: 'visible' });
     });
 
     it('should allow visit of dashboard gui through full path', async () => {

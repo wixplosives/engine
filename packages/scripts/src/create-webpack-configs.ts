@@ -1,23 +1,13 @@
-import fs from '@file-services/node';
-import webpack from 'webpack';
+import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import semverLessThan from 'semver/functions/lt';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { SetMultiMap } from '@wixc3/common';
-import { createRequestResolver } from '@file-services/resolve';
-import {
-    createMainEntrypoint,
-    createExternalBrowserEntrypoint,
-    createExternalFeatureMapping,
-    webpackImportStatement,
-    LOADED_FEATURE_MODULES_NAMESPACE,
-} from './create-entrypoint';
-
-import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
-import { createVirtualEntries } from './virtual-modules-loader';
+import { createMainEntrypoint } from './create-entrypoint';
 import type { IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
-import type { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
 import type { IFeatureDefinition } from './types';
+import type { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';
+import { createVirtualEntries } from './virtual-modules-loader';
+import { WebpackScriptAttributesPlugin } from './webpack-html-attributes-plugins';
+import type { SetMultiMap } from '@wixc3/patterns';
 
 export interface ICreateWebpackConfigsOptions {
     baseConfig?: webpack.Configuration;
@@ -37,7 +27,6 @@ export interface ICreateWebpackConfigsOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     createWebpackConfig: (options: ICreateWebpackConfigOptions) => webpack.Configuration;
-    externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     configLoaderModuleName?: string;
 }
@@ -113,7 +102,6 @@ interface ICreateWebpackConfigOptions {
     staticBuild: boolean;
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    externalFeaturesRoute: string;
     eagerEntrypoint?: boolean;
     plugins?: webpack.WebpackPluginInstance[];
     configLoaderModuleName?: string;
@@ -135,7 +123,6 @@ export function createWebpackConfig({
     staticBuild,
     publicConfigsRoute,
     overrideConfig,
-    externalFeaturesRoute,
     eagerEntrypoint,
     favicon,
     configLoaderModuleName,
@@ -160,7 +147,6 @@ export function createWebpackConfig({
             publicConfigsRoute,
             config,
             target,
-            externalFeaturesRoute,
             eagerEntrypoint,
             configLoaderModuleName,
         });
@@ -205,126 +191,3 @@ export function createWebpackConfig({
         stats: 'errors-warnings',
     };
 }
-
-export function createWebpackConfigForExternalFeature({
-    baseConfig,
-    target,
-    environments,
-    features,
-    context,
-    mode = 'development',
-    outputPath,
-    featureName,
-}: ICreateWebpackConfigOptions): webpack.Configuration {
-    const feature = features.get(featureName!);
-    if (!feature) {
-        throw new Error(`${featureName!} was not found after analyzing features`);
-    }
-    const resolver = createRequestResolver({ fs });
-
-    const { module: baseModule = {} } = baseConfig;
-    const { rules: baseRules = [] } = baseModule;
-
-    const entryModules: Record<string, string> = {};
-
-    for (const [envName, { childEnvs, env }] of environments) {
-        entryModules[envName] = createExternalBrowserEntrypoint({
-            ...feature,
-            childEnvs,
-            env,
-            target: target === 'webworker' ? 'webworker' : 'web',
-            eagerEntrypoint: true,
-            loadStatement: webpackImportStatement,
-        });
-    }
-    const externalFeatures: Record<string, string> = {
-        '@wixc3/engine-core': 'EngineCore',
-    };
-    const externals: webpack.Configuration['externals'] = [externalFeatures];
-    const { packageName, scopedName, filePath } = feature;
-
-    const userExternals = baseConfig.externals;
-    if (userExternals) {
-        if (Array.isArray(userExternals)) {
-            externals.push(...userExternals);
-        } else {
-            externals.push(userExternals);
-        }
-    }
-    const { loaderRule, entries } = createVirtualEntries(entryModules);
-
-    const extractExternalsMethod = extractExternals(filePath, Object.keys(entries), resolver);
-
-    const webpackConfig: webpack.Configuration = {
-        ...baseConfig,
-        target,
-        entry: entries,
-        mode,
-        module: { ...baseModule, rules: [...baseRules, loaderRule] },
-        devtool: mode === 'development' ? 'source-map' : false,
-        context,
-        output: {
-            ...baseConfig.output,
-            path: outputPath,
-            filename: `[name].${target}.js`,
-            chunkFilename: `[name].${target}.js`,
-        },
-        externals,
-        optimization: {
-            ...baseConfig.optimization,
-            moduleIds: 'named',
-        },
-        stats: 'errors-warnings',
-    };
-    if (semverLessThan(webpack.version, '5.0.0')) {
-        webpackConfig.output!.libraryTarget = 'var';
-        (webpackConfig.output as { jsonpFunction: string }).jsonpFunction = packageName + scopedName;
-        const webpack4ExtractExternalsAdaptation: any = (
-            context: string,
-            request: string,
-            cb: (e?: Error, target?: string) => void
-        ) => extractExternalsMethod({ context, request }, cb);
-        externals.push(webpack4ExtractExternalsAdaptation);
-    } else {
-        externals.push(extractExternalsMethod);
-    }
-    return webpackConfig;
-}
-
-const extractExternals =
-    (featurePath: string, ignoredRequests: string[], resolver: ReturnType<typeof createRequestResolver>) =>
-    ({ context, request }: { context?: string; request?: string }, cb: (e?: Error, target?: string) => void) => {
-        try {
-            if (
-                !request ||
-                !context ||
-                ignoredRequests.includes(request) ||
-                request.includes('!=!') ||
-                request.startsWith('!')
-            ) {
-                return cb();
-            }
-
-            const { resolvedFile: resolvedRequest } = resolver(context, request);
-            if (
-                resolvedRequest &&
-                resolvedRequest !== featurePath &&
-                fs.basename(resolvedRequest).includes('.feature.')
-            ) {
-                const packageJson = fs.findClosestFileSync(fs.dirname(resolvedRequest), 'package.json');
-                if (!packageJson) {
-                    throw new Error(`could not find package.json for ${resolvedRequest}`);
-                }
-                const { name } = fs.readJsonFileSync(packageJson) as { name: string };
-                return cb(
-                    undefined,
-                    `self.${LOADED_FEATURE_MODULES_NAMESPACE}[${JSON.stringify(
-                        createExternalFeatureMapping(name, resolvedRequest)
-                    )}]`
-                );
-            }
-            cb();
-        } catch (err) {
-            cb(err as Error | undefined);
-        }
-    };

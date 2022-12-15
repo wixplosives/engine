@@ -1,18 +1,15 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import { BaseHost, TopLevelConfig, RuntimeEngine, Environment } from '@wixc3/engine-core';
 import fs from '@file-services/node';
-import { IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
 import {
     communicationChannels,
     electronRuntimeArguments,
-    externalFeaturesManager,
     IEngineRuntimeArguments,
 } from '@wixc3/engine-electron-commons';
 import { importModules } from '@wixc3/engine-electron-commons/dist/import-modules';
-import { getParentProcessApi } from './ipc-communication';
+import { IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import runtimeArgumentsProvider from './runtime-arguments-provider';
 
-const EXTERNAL_FEATURES_BASE_URI = 'external-features';
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
 
 export interface ElectronEnvParams {
@@ -23,13 +20,11 @@ export interface ElectronEnvParams {
     devport?: number;
     devtools?: boolean;
     outDir?: string;
-    externalsPath?: string;
     features: Map<string, Required<IStaticFeatureDefinition>>;
     config: TopLevelConfig;
     requiredModules?: string[];
     env: Environment;
 }
-export const DEFAULT_EXTERNAL_FEATURES_PATH = '/external-features.json';
 
 export async function runElectronEnv({
     basePath,
@@ -38,7 +33,6 @@ export async function runElectronEnv({
     featureName,
     devport,
     devtools,
-    externalsPath = DEFAULT_EXTERNAL_FEATURES_PATH,
     features,
     config,
     requiredModules,
@@ -68,16 +62,8 @@ export async function runElectronEnv({
     const generalConfig: TopLevelConfig = [...config];
     const runOptions = new Map<string, string | boolean>();
 
-    const getRuntimeArguments: () => Promise<IEngineRuntimeArguments> = async () => {
-        const externalFeatures = await Promise.all(
-            externalFeaturesManager
-                .getMapped()
-                .map(async (externalFeaturesResult) =>
-                    externalFeaturesResult instanceof Promise ? await externalFeaturesResult : externalFeaturesResult
-                )
-        );
-
-        return {
+    const getRuntimeArguments: () => Promise<IEngineRuntimeArguments> = () => {
+        return Promise.resolve({
             basePath,
             featureName,
             outputPath,
@@ -85,17 +71,14 @@ export async function runElectronEnv({
             nodeEntryPath,
             devtools,
             devport,
-            externalsPath,
             features: Array.from(features.entries()),
             config: generalConfig,
             requiredModules,
-            externalFeatures,
             runtimeOptions: Array.from(runOptions.entries()),
-        };
+        });
     };
     runtimeArgumentsProvider.setProvider(getRuntimeArguments);
     ipcMain.handle(communicationChannels.engineRuntimeArguments, () => runtimeArgumentsProvider.getRuntimeArguments());
-    ipcMain.handle(externalsPath, () => externalFeaturesManager.getMapped());
 
     // creating runOptions for the electron host environment. ipcMain cannot invoke events from itself, only ipcRenderer can, so we cannot use communicationChannels.engineRuntimeArguments
     runOptions.set(electronRuntimeArguments.runtimeFeatureName, featureName);
@@ -107,32 +90,6 @@ export async function runElectronEnv({
     // in dev mode, we always have to have a port from where the main environment is being served from
     if (devport) {
         runOptions.set(electronRuntimeArguments.devport, `${devport}`);
-        const api = getParentProcessApi();
-        const routes = new Map<string, string>();
-        externalFeaturesManager.setEntryMapper((externalFeature) => {
-            const { envEntries, packageName } = externalFeature;
-            for (const [envName, entries] of Object.entries(envEntries)) {
-                for (const [target, entryPath] of Object.entries(entries)) {
-                    if (target !== 'node') {
-                        if (!routes.has(entryPath)) {
-                            const route = `/${EXTERNAL_FEATURES_BASE_URI}/${packageName}`;
-                            api.registerExternalRoute(fs.dirname(entryPath), route).catch((ex) => {
-                                routes.delete(entryPath);
-                                // eslint-disable-next-line no-console
-                                console.error(ex);
-                            });
-                            routes.set(entryPath, route);
-                        }
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                        envEntries[envName]![target] = routes.get(entryPath)! + '/' + fs.basename(entryPath);
-                    }
-                }
-            }
-            return {
-                ...externalFeature,
-                envEntries,
-            };
-        });
     } else {
         runOptions.set(electronRuntimeArguments.outPath, basePath);
     }

@@ -1,12 +1,13 @@
 import type { IFileSystemSync } from '@file-services/types';
 import type { FeatureDescriptor } from '@wixc3/engine-core';
-import { concat, getValue, isPlainObject, map, SetMultiMap } from '@wixc3/common';
+import { concat, getValue, isPlainObject, map } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import {
     FileNameParser,
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
-    parsePreloadFileName,
+    parsePreloadFileName
 } from '../build-constants';
 import { loadFeatureDirectory } from '../load-feature-directory';
 import { evaluateModule } from '../utils/evaluate-module';
@@ -152,9 +153,9 @@ function parseFoundFeature(
                 exportedEnvs: this.exportedEnvs,
                 resolvedContexts: this.resolvedContexts,
                 packageName: this.packageName,
-                scopedName,
+                scopedName
             };
-        },
+        }
     };
 }
 

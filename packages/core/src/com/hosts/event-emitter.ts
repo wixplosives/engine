@@ -1,4 +1,4 @@
-import type { EventEmitter } from '@wixc3/common';
+import type { EventEmitter } from '@wixc3/patterns';
 import type { Message } from '../message-types';
 import { BaseHost } from './base-host';
 

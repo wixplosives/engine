@@ -12,7 +12,7 @@ import {
     ConfigEnvironmentRecord,
     ReadyMessage,
 } from '@wixc3/engine-core';
-import type { SetMultiMap } from '@wixc3/common';
+import type { SetMultiMap } from '@wixc3/patterns';
 import { startRemoteNodeEnvironment } from './remote-node-environment';
 import { runWSEnvironment } from './ws-environment';
 import {
@@ -24,7 +24,6 @@ import {
     StartEnvironmentOptions,
     TopLevelConfigProvider,
     ICommunicationMessage,
-    IExternalFeatureNodeDescriptor,
     IStaticFeatureDefinition,
 } from './types';
 import { resolveEnvironments } from './environments';
@@ -95,7 +94,6 @@ export interface INodeEnvironmentsManagerOptions {
     port: number;
     inspect?: boolean;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
-    externalFeatures?: IExternalFeatureNodeDescriptor[];
     requiredPaths?: string[];
 }
 
@@ -112,7 +110,6 @@ export interface ILaunchEnvironmentOptions {
     config: TopLevelConfig;
     options: Record<string, string | boolean>;
     mode?: LaunchEnvironmentMode;
-    externalFeatures?: IExternalFeatureNodeDescriptor[];
     com: Communication;
     baseHost: BaseHost;
     features: Map<string, Required<IStaticFeatureDefinition>>;
@@ -225,7 +222,6 @@ export class NodeEnvironmentsManager {
                     ...runtimeOptions,
                 },
                 mode,
-                externalFeatures: this.options.externalFeatures,
                 com,
                 baseHost,
                 features: featuresWithDefaults,
@@ -337,7 +333,6 @@ export class NodeEnvironmentsManager {
         config,
         options,
         mode,
-        externalFeatures = [],
         com,
         features,
     }: ILaunchEnvironmentOptions) {
@@ -351,7 +346,6 @@ export class NodeEnvironmentsManager {
             features: Array.from(features.entries()),
             options: Object.entries(options),
             inspect,
-            externalFeatures,
             context: this.context,
         };
 

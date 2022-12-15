@@ -1,11 +1,6 @@
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { SetMultiMap } from '@wixc3/common';
-import type {
-    IConfigDefinition,
-    IExternalDefinition,
-    LaunchEnvironmentMode,
-    TopLevelConfigProvider,
-} from '@wixc3/engine-runtime-node';
+import type { SetMultiMap } from '@wixc3/patterns';
+import type { IConfigDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type io from 'socket.io';
 import type webpack from 'webpack';
 import type { IFeatureDefinition, IFeatureTarget } from '../types';
@@ -31,16 +26,10 @@ export interface IRunApplicationOptions extends IFeatureTarget {
 
 export interface IBuildCommandOptions extends IRunApplicationOptions {
     featureDiscoveryRoot?: string;
-    external?: boolean;
     staticBuild?: boolean;
-    externalFeaturesFilePath?: string;
     sourcesRoot?: string;
-    staticExternalFeaturesFileName?: string;
-    includeExternalFeatures?: boolean;
     eagerEntrypoint?: boolean;
     favicon?: string;
-    externalFeaturesBasePath?: string;
-    externalFeatureDefinitions?: IExternalDefinition[];
     configLoaderModuleName?: string;
 }
 
@@ -52,18 +41,11 @@ export interface WebpackMultiStats {
     stats: webpack.Stats[];
 }
 
-export interface IRunCommandOptions extends IRunApplicationOptions {
-    serveExternalFeaturesPath?: boolean;
-    externalFeaturesPath?: string;
-    externalFeatureDefinitions?: IExternalDefinition[];
-}
-
 export interface IBuildManifest {
     features: Array<[string, IFeatureDefinition]>;
     defaultFeatureName?: string;
     defaultConfigName?: string;
     entryPoints: Record<string, Record<string, string>>;
-    externalsFilePath?: string;
 }
 
 export interface ICreateOptions {
@@ -90,8 +72,6 @@ export interface ICompilerOptions {
     publicConfigsRoute?: string;
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     singleFeature?: boolean;
-    isExternal: boolean;
-    externalFeaturesRoute: string;
     webpackConfigPath?: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
     eagerEntrypoint?: boolean;

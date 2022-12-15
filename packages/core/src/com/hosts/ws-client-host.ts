@@ -1,7 +1,8 @@
 import { io, Socket, SocketOptions } from 'socket.io-client';
 import type { Message } from '../message-types';
 import { BaseHost } from './base-host';
-import { deferred, EventEmitter } from '@wixc3/common';
+import { EventEmitter } from '@wixc3/patterns';
+import { deferred } from 'promise-assist';
 
 export class WsClientHost extends BaseHost {
     public connected: Promise<void>;
@@ -22,7 +23,7 @@ export class WsClientHost extends BaseHost {
             withCredentials: true, // Pass Cookie to socket io connection
             path,
             query,
-            ...options
+            ...options,
         });
 
         this.socketClient.on('connect', () => {

@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "29.1.1",
+  "version": "31.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,16 +11,18 @@
     "webpack": "^4.0.0 || ^5.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^7.0.1",
-    "@file-services/resolve": "^7.1.0",
-    "@file-services/types": "^7.0.1",
-    "@types/express": "^4.17.14",
+    "@file-services/node": "^7.2.0",
+    "@file-services/resolve": "^7.2.0",
+    "@file-services/types": "^7.2.0",
+    "@types/express": "^4.17.15",
+    "@wixc3/common": "^5.2.4",
     "@wixc3/create-disposables": "^2.2.0",
-    "@wixc3/cross-performance": "^29.1.1",
-    "@wixc3/engine-core": "^29.1.1",
-    "@wixc3/engine-core-node": "^29.1.1",
-    "@wixc3/engine-runtime-node": "^29.1.1",
-    "@wixc3/fs-utils": "^3.0.0",
+    "@wixc3/cross-performance": "^31.0.0",
+    "@wixc3/engine-core": "^31.0.0",
+    "@wixc3/engine-core-node": "^31.0.0",
+    "@wixc3/engine-runtime-node": "^31.0.0",
+    "@wixc3/fs-utils": "^5.2.4",
+    "@wixc3/patterns": "^5.2.4",
     "@wixc3/resolve-directory-context": "^3.0.1",
     "cors": "^2.8.5",
     "create-listening-server": "^1.0.0",
@@ -28,8 +30,8 @@
     "import-fresh": "^3.3.0",
     "rimraf": "^3.0.2",
     "semver": "^7.3.8",
-    "socket.io": "^4.5.3",
-    "type-fest": "^3.2.0"
+    "socket.io": "^4.5.4",
+    "type-fest": "^3.4.0"
   },
   "files": [
     "dist",

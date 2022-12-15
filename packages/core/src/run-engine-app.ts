@@ -3,7 +3,7 @@ import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
 import type { AnyEnvironment, FeatureDescriptor } from './entities';
 import { flattenTree } from './helpers';
-import { deferred, IDeferredPromise } from '@wixc3/common';
+import { deferred, IDeferredPromise } from 'promise-assist';
 
 export interface IRunEngineOptions<ENV extends AnyEnvironment> {
     entryFeature: FeatureDescriptor | FeatureDescriptor[];

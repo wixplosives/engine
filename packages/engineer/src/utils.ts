@@ -1,13 +1,13 @@
 import fs from '@file-services/node';
-import { isFeatureFile, loadFeaturesFromPaths, getExternalFeaturesMetadata } from '@wixc3/engine-scripts';
+import { EngineConfig, isFeatureFile, loadFeaturesFromPaths } from '@wixc3/engine-scripts';
 import { RuntimeEngine, BaseHost, RuntimeFeature } from '@wixc3/engine-core';
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
+import type { DevServerConfig } from './feature/dev-server.types';
 import guiFeature from './feature/gui.feature';
+import { defaultOptions, defaultsEngineConfig, DEngineConfig, DStartOptions, IStartOptions } from './utils.types';
+import { defaults } from '@wixc3/common';
 import { TargetApplication } from './application-proxy-service';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
-import { defaultOptions, defaultsEngineConfig, DEngineConfig, DStartOptions, IStartOptions } from './utils.types';
-import type { DevServerConfig } from './feature/dev-server.types';
-import { defaults } from '@wixc3/common'
 
 const basePath = fs.join(__dirname, './feature');
 
@@ -17,36 +17,22 @@ export async function startDevServer(options: IStartOptions): Promise<{
     devServerFeature: RuntimeFeature<typeof devServerFeature, typeof devServerEnv>['api'];
     outputPath: string | undefined;
 }> {
-    const serverOpts = defaults(options, defaultOptions)
+    const serverOpts = defaults(options, defaultOptions);
     const app = new TargetApplication({
-        basePath: serverOpts.targetApplicationPath,
+        basePath: serverOpts.targetApplicationPath
     });
-    const { config, path: engineConfigPath } = await app.getEngineConfig();
-    const engineCnf = defaults(config, defaultsEngineConfig)
+    const { config } = await app.getEngineConfig();
+    const engineCnf = defaults(config || ({} as EngineConfig), defaultsEngineConfig);
     const featurePaths = options.devServerOnly
-        // include only dev-server.feature
-        ? fs.join(basePath, 'dev-server.feature.ts')
-        // include all features (gui, managed etc)
-        : fs.findFilesSync(basePath, {
-            filterFile: ({ name }) => isFeatureFile(name),
-        })
+        ? // include only dev-server.feature
+          fs.join(basePath, 'dev-server.feature.ts')
+        : // include all features (gui, managed etc)
+          fs.findFilesSync(basePath, {
+              filterFile: ({ name }) => isFeatureFile(name)
+          });
     preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
-
     const { features } = loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
-    const resolvedExternalFeaturesPath = fs.resolve(
-        serverOpts.externalFeaturesPath ?? (
-            engineCnf.externalFeaturesBasePath
-                ? fs.dirname(engineConfigPath!)
-                : basePath)
-    );
-
-    const externalFeatures = getExternalFeaturesMetadata(
-        app.normalizeDefinitionsPackagePath([
-            ...engineCnf.externalFeatureDefinitions,
-            ...serverOpts.externalFeatureDefinitions]),
-        resolvedExternalFeaturesPath
-    );
 
     const { engine, dispose } = await runNodeEnvironment({
         featureName: serverOpts.engineerEntry,
@@ -57,26 +43,26 @@ export async function startDevServer(options: IStartOptions): Promise<{
         host: new BaseHost(),
         config: [
             devServerFeature.use({
-                devServerConfig: asDevConfig(serverOpts, engineCnf),
+                devServerConfig: asDevConfig(serverOpts, engineCnf)
             }),
-            ...options.devServerOnly
+            ...(options.devServerOnly
                 ? []
-                : [guiFeature.use({
-                    engineerConfig: {
-                        features,
-                        externalFeatures,
-                    },
-                })]
+                : [
+                      guiFeature.use({
+                          engineerConfig: {
+                              features,
+                          },
+                      }),
+                  ]),
         ],
         context: serverOpts.targetApplicationPath,
-        externalFeatures,
         env: devServerEnv,
     });
     return {
         engine,
         outputPath: app.outputPath,
         dispose,
-        devServerFeature: engine.get(devServerFeature).api,
+        devServerFeature: engine.get(devServerFeature).api
     };
 }
 
@@ -86,7 +72,7 @@ function asDevConfig(options: DStartOptions, engineConfig: DEngineConfig): Parti
         favicon: options.favicon ?? engineConfig.favicon,
         basePath: options.targetApplicationPath,
         defaultRuntimeOptions: options.runtimeOptions,
-        featureDiscoveryRoot: options.featureDiscoveryRoot ?? engineConfig.featureDiscoveryRoot,
+        featureDiscoveryRoot: options.featureDiscoveryRoot ?? engineConfig.featureDiscoveryRoot
     };
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core-node",
-  "version": "29.1.1",
+  "version": "31.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -8,10 +8,10 @@
     "test:node": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
-    "@wixc3/engine-core": "^29.1.1",
+    "@wixc3/engine-core": "^31.0.0",
     "create-listening-server": "^1.0.0",
     "express": "^4.18.2",
-    "socket.io": "^4.5.3"
+    "socket.io": "^4.5.4"
   },
   "files": [
     "dist",
