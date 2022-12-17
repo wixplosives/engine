@@ -160,13 +160,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         allowedErrors: suiteAllowedErrors = [],
         consoleLogAllowedErrors = false,
         navigationOptions: suiteNavigationOptions,
-    } = withFeatureOptions;
-
-    const {   
         headless=(process.env.DEBUG !== 'true'),
         devtools=(process.env.DEBUG === 'true'),
         slowMo
-    } = withFeatureOptions
+    } = withFeatureOptions;
 
     if (
         isCI &&
