@@ -148,9 +148,6 @@ if (typeof after !== 'undefined') {
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const disposeAfterEach = createDisposables();
     const {
-        headless,
-        devtools,
-        slowMo,
         browserContextOptions: suiteBrowserContextOptions,
         featureName: suiteFeatureName,
         configName: suiteConfigName,
@@ -164,6 +161,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         consoleLogAllowedErrors = false,
         navigationOptions: suiteNavigationOptions,
     } = withFeatureOptions;
+
+    const {   
+        headless=!process.env.DEBUG,
+        devtools=!!process.env.DEBUG,
+        slowMo
+    } = withFeatureOptions
 
     if (
         isCI &&
