@@ -163,8 +163,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     } = withFeatureOptions;
 
     const {   
-        headless=!process.env.DEBUG,
-        devtools=!!process.env.DEBUG,
+        headless=(process.env.DEBUG !== 'true'),
+        devtools=(process.env.DEBUG === 'true'),
         slowMo
     } = withFeatureOptions
 
