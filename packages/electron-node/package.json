@@ -3,7 +3,7 @@
   "version": "31.0.1",
   "main": "dist/index.js",
   "dependencies": {
-    "@wixc3/common": "^5.2.4",
+    "@wixc3/common": "^5.3.0",
     "@wixc3/engine-core": "^31.0.1",
     "@wixc3/engine-core-node": "^31.0.1",
     "@wixc3/engine-electron-commons": "^31.0.1",
