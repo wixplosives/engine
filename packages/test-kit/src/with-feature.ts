@@ -147,7 +147,7 @@ if (typeof after !== 'undefined') {
 
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const disposeAfterEach = createDisposables();
-    const envDebugMode = 'DEBUG' in process.env || undefined;
+    const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
     const {
         browserContextOptions: suiteBrowserContextOptions,
@@ -162,8 +162,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         allowedErrors: suiteAllowedErrors = [],
         consoleLogAllowedErrors = false,
         navigationOptions: suiteNavigationOptions,
-        headless = envDebugMode && !debugMode,
-        devtools = envDebugMode && debugMode,
+        headless = envDebugMode ? !debugMode : undefined,
+        devtools = envDebugMode ? debugMode : undefined,
         slowMo,
     } = withFeatureOptions;
 
