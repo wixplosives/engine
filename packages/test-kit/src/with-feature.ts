@@ -160,8 +160,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         allowedErrors: suiteAllowedErrors = [],
         consoleLogAllowedErrors = false,
         navigationOptions: suiteNavigationOptions,
-        headless=(process.env.DEBUG !== 'true'),
-        devtools=(process.env.DEBUG === 'true'),
+        headless='DEBUG' in process.env ?(process.env.DEBUG !== 'true') : undefined,
+        devtools='DEBUG' in process.env ?(process.env.DEBUG === 'true') : undefined,
         slowMo
     } = withFeatureOptions;
 
