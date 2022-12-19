@@ -191,6 +191,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             this.timeout(60_000); // 1 minute
             browser = await playwright.chromium.launch({
                 ...withFeatureOptions,
+                headless,
+                devtools,
                 args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
             });
         }
