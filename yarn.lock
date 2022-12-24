@@ -1105,17 +1105,17 @@
     read-package-json-fast "^2.0.3"
     which "^2.0.2"
 
-"@nrwl/cli@15.3.3":
-  version "15.3.3"
-  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-15.3.3.tgz#9d7f09e336c39ecc54155f21f394b0fc740054eb"
-  integrity sha512-ZWTmVP9H3ukppWWGaS/s3Nym2nOYgnt6eHtuUFNsroz8LesG5oFAJviOz9jDEM/b+pLIrvYfU5aAGZqrtM3Z2A==
+"@nrwl/cli@15.4.1":
+  version "15.4.1"
+  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-15.4.1.tgz#9ca387be4bc515836f5bf45e76181ef6a633ae40"
+  integrity sha512-n/bhYH/nT+9k0otYgTX2Up3oPzk841NwUzxZrLHKklJkzPVAGuTOOcKF8yuBhzAnDdpZAmU3z+8YlbdtjoHb9Q==
   dependencies:
-    nx "15.3.3"
+    nx "15.4.1"
 
 "@nrwl/devkit@>=14.8.6 < 16":
-  version "15.3.3"
-  resolved "https://registry.yarnpkg.com/@nrwl/devkit/-/devkit-15.3.3.tgz#8a038334cf5b563befdad4b201e0b146dfd2969a"
-  integrity sha512-48R9HAp6r6umWNXTlVTMsH94YYjU/XUPLDTtXBgKESMVbdq8Fk+HDHuN0thXG5dL6DFkXgD0MICLm3jSQU6xMw==
+  version "15.4.1"
+  resolved "https://registry.yarnpkg.com/@nrwl/devkit/-/devkit-15.4.1.tgz#312ad812dfe6b2f9ace9f8a21b04ef10cd625392"
+  integrity sha512-6AWWXyUpoqWkVARgUeARSmFanvgqlb81GN8SBwUQhezTbalOPmi0TsUN6n7MHAc611MAFE9eZBd+29UM+sFXeg==
   dependencies:
     "@phenomnomnominal/tsquery" "4.1.1"
     ejs "^3.1.7"
@@ -1123,12 +1123,12 @@
     semver "7.3.4"
     tslib "^2.3.0"
 
-"@nrwl/tao@15.3.3":
-  version "15.3.3"
-  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-15.3.3.tgz#b54a4f28833d11f96f69796b6d2c1624123734e5"
-  integrity sha512-f9+VwhlJ/7TWpjHSgoUOAA067uP9DmzABMY9HC5OREEDaCx+rzYEvbLAPv6cXzWw+6IYM6cyKw0zWSQrdEVrWg==
+"@nrwl/tao@15.4.1":
+  version "15.4.1"
+  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-15.4.1.tgz#0cb7f3984bf57872f1d38f42dbf66b837084a6a1"
+  integrity sha512-WPCvzr1kTPcEN4suTQs0CJ4OHMszatR+kD7j2inLyZKz3sltyw2HiancrWpHKPgAMfQNyjHezpjlBFTgZeT3dw==
   dependencies:
-    nx "15.3.3"
+    nx "15.4.1"
 
 "@octokit/auth-token@^3.0.0":
   version "3.0.2"
@@ -1746,10 +1746,10 @@
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.4.tgz#cd667bcfdd025213aafb7ca5915a932590acdcdc"
   integrity sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==
 
-"@types/react-dom@^18.0.9":
-  version "18.0.9"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-18.0.9.tgz#ffee5e4bfc2a2f8774b15496474f8e7fe8d0b504"
-  integrity sha512-qnVvHxASt/H7i+XG1U1xMiY5t+IHcPGUK7TDMDzom08xa7e86eCeKOiLZezwCKVxJn6NEiiy2ekgX8aQssjIKg==
+"@types/react-dom@^18.0.10":
+  version "18.0.10"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-18.0.10.tgz#3b66dec56aa0f16a6cc26da9e9ca96c35c0b4352"
+  integrity sha512-E42GW/JA4Qv15wQdqJq8DL4JhNpB3prJgjgapN3qJT9K2zO5IIAQh4VXvCEDupoqAwnz0cY4RlXeC/ajX5SFHg==
   dependencies:
     "@types/react" "*"
 
@@ -6322,13 +6322,13 @@ nth-check@^2.0.1:
   dependencies:
     boolbase "^1.0.0"
 
-nx@15.3.3, "nx@>=14.8.6 < 16":
-  version "15.3.3"
-  resolved "https://registry.yarnpkg.com/nx/-/nx-15.3.3.tgz#4ad357310112bad1c4fbfded965bbbe00a2a906f"
-  integrity sha512-yR102AlVW5Sb7X1e9cyR+0h44RD6c3eLJbAZ0yVFKPCKw+zQTdGvAqITtB6ZeFnPkg6Qq6f1oWu6G0n6f2cTpw==
+nx@15.4.1, "nx@>=14.8.6 < 16":
+  version "15.4.1"
+  resolved "https://registry.yarnpkg.com/nx/-/nx-15.4.1.tgz#138f92aaff8bef69037b3fb7b3b9ac71793ebdfe"
+  integrity sha512-BQXxlUZhO3QsrGDsHFYBH8ncrauaTkGE5gW5TpHVZqlrqldhDMVxg+lGZwnj+hJPdW5BgO3rc1OGKAJlwkxELg==
   dependencies:
-    "@nrwl/cli" "15.3.3"
-    "@nrwl/tao" "15.3.3"
+    "@nrwl/cli" "15.4.1"
+    "@nrwl/tao" "15.4.1"
     "@parcel/watcher" "2.0.4"
     "@yarnpkg/lockfile" "^1.1.0"
     "@yarnpkg/parsers" "^3.0.0-rc.18"
