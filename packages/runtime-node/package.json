@@ -1,17 +1,17 @@
 {
   "name": "@wixc3/engine-runtime-node",
-  "version": "31.0.0",
+  "version": "31.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
-    "@wixc3/common": "^5.2.4",
-    "@wixc3/cross-performance": "^31.0.0",
-    "@wixc3/engine-core": "^31.0.0",
-    "@wixc3/engine-core-node": "^31.0.0",
-    "@wixc3/patterns": "^5.2.4",
+    "@wixc3/common": "^5.3.0",
+    "@wixc3/cross-performance": "^31.0.1",
+    "@wixc3/engine-core": "^31.1.0",
+    "@wixc3/engine-core-node": "^31.1.0",
+    "@wixc3/patterns": "^5.3.0",
     "create-listening-server": "^1.0.0",
     "minimist": "^1.2.7",
     "socket.io": "^4.5.4"

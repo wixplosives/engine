@@ -147,22 +147,25 @@ if (typeof after !== 'undefined') {
 
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const disposeAfterEach = createDisposables();
+    const envDebugMode = 'DEBUG' in process.env;
+    const debugMode = !!process.env.DEBUG;
+    const port = parseInt(process.env.DEBUG!);
     const {
-        headless,
-        devtools,
-        slowMo,
         browserContextOptions: suiteBrowserContextOptions,
         featureName: suiteFeatureName,
         configName: suiteConfigName,
         runOptions: suiteOptions = {},
         queryParams: suiteQueryParams,
-        runningApplicationPort,
+        runningApplicationPort = port >= 3000 ? port : undefined,
         config: suiteConfig,
         featureDiscoveryRoot,
         tracing: suiteTracing = process.env.TRACING ? true : undefined,
         allowedErrors: suiteAllowedErrors = [],
         consoleLogAllowedErrors = false,
         navigationOptions: suiteNavigationOptions,
+        headless = envDebugMode ? !debugMode : undefined,
+        devtools = envDebugMode ? debugMode : undefined,
+        slowMo,
     } = withFeatureOptions;
 
     if (
@@ -189,6 +192,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             this.timeout(60_000); // 1 minute
             browser = await playwright.chromium.launch({
                 ...withFeatureOptions,
+                headless,
+                devtools,
                 args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
             });
         }

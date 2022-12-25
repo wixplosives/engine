@@ -142,6 +142,7 @@ export function buildCommand(program: Command) {
         .option('--outDir <outDir>', 'output directory for the built application', 'dist-app')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
+        .option('--eagerEntrypoints [true|false]', 'bundle environments into a single bundle', parseBoolean, false)
         .option(
             '--configLoaderModuleName [configLoaderModuleName]',
             'custom config loader module name. used for static builds only'
