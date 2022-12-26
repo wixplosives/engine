@@ -21,7 +21,7 @@
     "@wixc3/engine-scripts": "^31.1.0",
     "@wixc3/engineer": "^31.1.0",
     "@wixc3/patterns": "^5.3.0",
-    "@wixc3/resolve-directory-context": "^3.0.1",
+    "@wixc3/resolve-directory-context": "^3.0.2",
     "electron-builder": "^23.6.0",
     "yargs": "^17.6.2"
   },
