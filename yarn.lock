@@ -2065,17 +2065,17 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^5.5.2":
-  version "5.5.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-5.5.2.tgz#9e5930e890474f7df5e267f4e36cb5c8af8bc92d"
-  integrity sha512-s8YWAw8QTqx9T47spCmwZxENQjZ6qvj7p1YIM6p1GPzOcgjJDDjVjPFM42Nel6i5zdOsj8iVKJejFsMSvm9QHA==
+"@wixc3/docs@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-6.0.0.tgz#1e6889c8588ac33b333d85490fe7814921867a4c"
+  integrity sha512-Gx+di6pwqJxKOD1VA+PoqKu0JLvABwVIVMDr1UKORjXsEsc6zKKFq44YRgDmJsR4di1QO/klc91woYkCcgMeAQ==
   dependencies:
     "@microsoft/api-documenter" "^7.19.27"
     "@microsoft/api-extractor" "^7.33.7"
     "@microsoft/api-extractor-model" "^7.25.3"
-    "@wixc3/common" "^5.3.0"
-    "@wixc3/fs-utils" "^5.3.0"
-    "@wixc3/typescript" "^5.2.4"
+    "@wixc3/common" "^6.0.0"
+    "@wixc3/fs-utils" "^6.0.0"
+    "@wixc3/typescript" "^6.0.0"
     glob "^8.0.3"
     yargs "^17.6.2"
 
@@ -2086,6 +2086,14 @@
   dependencies:
     "@file-services/memory" "^7.2.0"
     "@wixc3/common" "^5.3.0"
+
+"@wixc3/fs-utils@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-6.0.0.tgz#bba5285cc6e6eea116bf2ffb8ca12ce345ef072d"
+  integrity sha512-z+8xrE1M1RRWiSkQG6g8Cnd3JD2MONEPz06asflqymA6kcGfxzy8rj8O05KZK+nbJW6DQbOMHrA/p6RY5tbX8Q==
+  dependencies:
+    "@file-services/memory" "^7.2.0"
+    "@wixc3/common" "^6.0.0"
 
 "@wixc3/patterns@^6.0.0":
   version "6.0.0"
@@ -2103,10 +2111,10 @@
     minimatch "^5.1.2"
     type-fest "^3.5.0"
 
-"@wixc3/typescript@^5.2.4":
-  version "5.2.4"
-  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-5.2.4.tgz#daa70a9a2c8e7c6bc17288a7a413d81dd9227a36"
-  integrity sha512-SoX/P53778QqLEDUGH849UMO4+5KEAlRlUI+x8twWQNqGRCUzat1OLT8hz+9fsQeDjN56XKuukCCkzgZlnmjkQ==
+"@wixc3/typescript@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-6.0.0.tgz#6640fc5eb5aafc3977062251fc5e370a2462a4c2"
+  integrity sha512-sxD0nM81v1hvZxweEN7ZpYMqJ9uBvWET8DfTNn19GmRGoIvTf0P3hTU874FqHRh+KT/VMfXg6QGASVGhiOcJmg==
 
 "@wixc3/wait-for-call@^6.0.0":
   version "6.0.0"
