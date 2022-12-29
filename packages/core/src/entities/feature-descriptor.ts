@@ -22,6 +22,38 @@ import type {
 } from '../types';
 import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
 
+/**
+ @example
+    import { EngineFeature, Config } from '@wixc3/engine-core';
+    import { FeatureA } from './a.feature';
+    import { FeatureB } from './b.feature';
+
+    export class MyFeature extends EngineFeature<'my-feature'> {
+        public id = 'my-feature' as const;
+        public api = {
+            config: Config.withType<{ id: string }>().defineEntity({ id: '' }),
+        };
+        public dependencies = [new FeatureA(), new FeatureB()];
+        public context = {};
+    }
+ */
+export class EngineFeature<T extends string> implements FeatureDescriptor {
+    constructor() {
+        validateRegistration(this);
+    }
+    public id: T = '' as T;
+    public api: EntityRecord = {};
+    public dependencies: FeatureDependencies = [];
+    public context?: Record<string, Context<unknown>> = {};
+    use = (c: PartialFeatureConfig<this['api']>) => provideConfig(this, c);
+    setup = <E extends AnyEnvironment>(e: E, s: SetupHandler<this, E>) => setup(this, e, s);
+    setupContext = <E extends AnyEnvironment, K extends keyof this['context']>(
+        e: E,
+        k: K,
+        s: ContextHandler<this, E, K>
+    ) => setupContext(this, e, k, s);
+}
+
 export function createRuntimeInfo(): RuntimeInfo {
     return {
         setup: new SetMultiMap(),
@@ -97,6 +129,12 @@ export function validateNoDuplicateContextRegistration(
                 environmentContext
             )}`
         );
+    }
+}
+
+function validateRegistration(feature: FeatureDescriptor) {
+    if (!feature.id) {
+        throw new Error('Feature must have an id');
     }
 }
 
