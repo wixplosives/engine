@@ -68,8 +68,8 @@ describe('Feature', () => {
     });
 
     it('feature run stage', async () => {
-        const f0 = new Feature({ id: 'test', api: {} });
-        const entryFeature = new Feature({ id: 'test', api: {}, dependencies: [f0.asDependency] });
+        const f0 = new Feature({ id: 'test1', api: {} });
+        const entryFeature = new Feature({ id: 'test2', api: {}, dependencies: [f0.asDependency] });
         const calls: string[] = [];
 
         f0.setup(AllEnvironments, ({ run }) => {
@@ -90,8 +90,8 @@ describe('Feature', () => {
     });
 
     it('feature setup/run stage should not happen twice', async () => {
-        const f0 = new Feature({ id: 'test', api: {} });
-        const f1 = new Feature({ id: 'test', api: {}, dependencies: [f0.asDependency] });
+        const f0 = new Feature({ id: 'test1', api: {} });
+        const f1 = new Feature({ id: 'test2', api: {}, dependencies: [f0.asDependency] });
         const calls: string[] = [];
 
         f0.setup(AllEnvironments, ({ run }) => {

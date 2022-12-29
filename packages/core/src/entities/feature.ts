@@ -26,10 +26,11 @@ import {
  */
 export class Feature<
     ID extends string = string,
-    Deps extends FeatureDependencies = any[],
-    API extends EntityRecord = any,
-    EnvironmentContext extends Record<string, Context<any>> = any
+    Deps extends FeatureDependencies = FeatureDependencies,
+    API extends EntityRecord = EntityRecord,
+    EnvironmentContext extends Record<string, Context<any>> = Record<string, Context<any>>
 > {
+    
     /**
      * References `this` without the exact types of `Deps` (making them a generic `Feature[]`).
      * We use `someFeature.asEntity` instead of `someFeature` when we want to avoid typescript
@@ -104,10 +105,7 @@ export class Feature<
      *
      * @returns Implementation for the services defined for this feature on this environment
      */
-    public setup<ENV extends AnyEnvironment>(
-        env: ENV,
-        setupHandler: SetupHandler<this, ENV>
-    ): this {
+    public setup<ENV extends AnyEnvironment>(env: ENV, setupHandler: SetupHandler<this, ENV>): this {
         validateNoDuplicateEnvRegistration(env, this.id, this.runtimeInfo.envs);
         this.runtimeInfo.setup.add(env.env, setupHandler);
         return this;

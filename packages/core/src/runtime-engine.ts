@@ -5,7 +5,7 @@ import { DISPOSE, RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
-    public features = new Map<FeatureDescriptor, RuntimeFeature<FeatureDescriptor, ENV>>();
+    public features = new Map<FeatureDescriptor['id'], RuntimeFeature<FeatureDescriptor, ENV>>();
     public referencedEnvs: Set<string>;
     private running = false;
     private topLevelConfigMap: Record<string, object[]>;
@@ -19,7 +19,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     }
 
     public get<T extends FeatureDescriptor>(feature: T): RuntimeFeature<T, ENV> {
-        const runningFeature = this.features.get(feature);
+        const runningFeature = this.features.get(feature.id);
         if (runningFeature) {
             return runningFeature as RuntimeFeature<T, ENV>;
         } else {
@@ -47,7 +47,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     }
 
     public initFeature<T extends FeatureDescriptor>(feature: T): RuntimeFeature<FeatureDescriptor, ENV> {
-        let instance = this.features.get(feature);
+        let instance = this.features.get(feature.id);
         if (!instance) {
             instance = createFeatureRuntime(feature, this);
         }
@@ -55,7 +55,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     }
 
     public async runFeature(feature: FeatureDescriptor): Promise<void> {
-        const featureInstance = this.features.get(feature);
+        const featureInstance = this.features.get(feature.id);
         if (!featureInstance) {
             throw new Error('Could not find running feature: ' + feature.id);
         }
@@ -69,10 +69,10 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         return this.disposeFeature(feature);
     }
     public async disposeFeature(feature: FeatureDescriptor) {
-        const runningFeature = this.features.get(feature);
+        const runningFeature = this.features.get(feature.id);
         if (runningFeature) {
             await runningFeature[DISPOSE](this);
-            this.features.delete(feature);
+            this.features.delete(feature.id);
         }
     }
 

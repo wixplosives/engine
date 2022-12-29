@@ -107,7 +107,7 @@ export function createFeatureRuntime<F extends FeatureDescriptor, E extends AnyE
     }
 
     const featureRuntime = new RuntimeFeature(feature, runningApi, deps);
-    features.set(feature, featureRuntime);
+    features.set(feature.id, featureRuntime);
 
     for (const dep of feature.dependencies) {
         const instance = runningEngine.initFeature(dep);
