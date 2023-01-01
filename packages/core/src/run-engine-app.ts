@@ -54,15 +54,12 @@ export function runEngineApp<ENV extends AnyEnvironment>({
     resolvedContexts = {},
 }: IRunEngineAppOptions<ENV>) {
     const engine = new RuntimeEngine(env, [COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    const runningPromise = engine.run(features);
+    void engine.run(features);
 
     return {
         engine,
         async dispose() {
-            await runningPromise;
-            for (const feature of features) {
-                await engine.dispose(feature);
-            }
+            await engine.shutdown();
         },
     };
 }

@@ -1,19 +1,10 @@
 import type { RuntimeEngine } from './runtime-engine';
 import type { AnyEnvironment } from './entities/env';
-import type { FeatureDescriptor, RunningFeaturesV2 } from './entities/feature-descriptor';
-import { CREATE_RUNTIME, DISPOSE, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
+import type { FeatureDescriptor, RunningFeatures } from './entities/feature-descriptor';
+import { CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { DisposeFunction, Running } from './types';
 import { deferred, IDeferredPromise } from 'promise-assist';
-
-// interface RuntimeFeature<F, E> {
-//     [RUN](engine: RuntimeEngine): Promise<void>;
-//     [DISPOSE](engine: RuntimeEngine): Promise<void>;
-//     addRunHandler(fn: () => unknown, envName: string): void;
-//     addOnDisposeHandler(fn: DisposeFunction, envName: string): void;
-//     api: Running<F, E>;
-//     dependencies: RunningFeatures<F['dependencies'], E>;
-// }
 
 /**
  * Represents a currently running feature instance.
@@ -27,14 +18,26 @@ export class RuntimeFeature<T extends FeatureDescriptor, ENV extends AnyEnvironm
     constructor(
         public feature: T,
         public api: Running<T, ENV>,
-        public dependencies: RunningFeaturesV2<T['dependencies'], ENV>
+        public dependencies: RunningFeatures<T['dependencies'], ENV>,
+        public environment: ENV
     ) {}
 
-    public addRunHandler(fn: () => unknown, envName: string) {
-        this.runHandlers.add(envName, fn);
+    public addRunHandler(fn: () => unknown) {
+        this.runHandlers.add(this.environment.env, fn);
     }
-    public addOnDisposeHandler(fn: DisposeFunction, envName: string) {
-        this.disposeHandlers.add(envName, fn);
+    public addOnDisposeHandler(fn: DisposeFunction) {
+        this.disposeHandlers.add(this.environment.env, fn);
+    }
+    public async dispose() {
+        if (this.disposing) {
+            return this.disposing.promise;
+        }
+        this.disposing = deferred();
+        const featureDisposeHandlers = this.disposeHandlers.get(this.environment.env) || new Set();
+        for (const handler of featureDisposeHandlers) {
+            await handler();
+        }
+        this.disposing.resolve();
     }
     public async [RUN](engine: RuntimeEngine): Promise<void> {
         if (this.running) {
@@ -56,37 +59,13 @@ export class RuntimeFeature<T extends FeatureDescriptor, ENV extends AnyEnvironm
 
         await Promise.all(runPromises);
     }
-    public async [DISPOSE](engine: RuntimeEngine) {
-        const {
-            entryEnvironment: { env: envName },
-        } = engine;
-        if (this.disposing) {
-            return this.disposing.promise;
-        }
-        this.disposing = deferred();
-        // THIS IS WRONG!
-        for (const dep of this.feature.dependencies) {
-            await engine.disposeFeature(dep);
-        }
-        const featureDisposeHandlers = this.disposeHandlers.get(envName) || new Set();
-        for (const handler of featureDisposeHandlers) {
-            await handler();
-        }
-        this.running = false;
-        return this.disposing.resolve();
-    }
 }
 
 export function createFeatureRuntime<F extends FeatureDescriptor, E extends AnyEnvironment>(
     feature: F,
     runningEngine: RuntimeEngine<E>
 ): RuntimeFeature<F, E> {
-    const {
-        features,
-        runOptions,
-        referencedEnvs,
-        entryEnvironment: { env: envName },
-    } = runningEngine;
+    const { features, runOptions, referencedEnvs, entryEnvironment } = runningEngine;
 
     const deps: any = {};
     const depsApis: any = {};
@@ -106,7 +85,7 @@ export function createFeatureRuntime<F extends FeatureDescriptor, E extends AnyE
         }
     }
 
-    const featureRuntime = new RuntimeFeature(feature, runningApi, deps);
+    const featureRuntime = new RuntimeFeature(feature, runningApi, deps, entryEnvironment);
     features.set(feature.id, featureRuntime);
 
     for (const dep of feature.dependencies) {
@@ -124,15 +103,11 @@ export function createFeatureRuntime<F extends FeatureDescriptor, E extends AnyE
     const settingUpFeature = {
         ...inputApi,
         id: feature.id,
-        run(fn: () => void) {
-            featureRuntime.addRunHandler(fn, envName);
-        },
-        onDispose(fn: () => unknown) {
-            featureRuntime.addOnDisposeHandler(fn, envName);
-        },
+        run: featureRuntime.addRunHandler,
+        onDispose: featureRuntime.addOnDisposeHandler,
         [RUN_OPTIONS]: runOptions,
         [ENGINE]: runningEngine,
-        runningEnvironmentName: envName,
+        runningEnvironmentName: entryEnvironment.env,
     };
 
     for (const [key, contextHandler] of contextHandlers) {

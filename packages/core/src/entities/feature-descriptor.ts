@@ -138,7 +138,7 @@ function validateRegistration(feature: FeatureDescriptor) {
     }
 }
 
-type RuntimeInfo = {
+export type RuntimeInfo = {
     setup: SetMultiMap<string, SetupHandler<any, any>>;
     context: Map<string | number | symbol, ContextHandler<any, any, any>>;
     envs: Set<string>;
@@ -154,11 +154,11 @@ export interface FeatureDescriptor {
     context?: Record<string, Context<unknown>>;
 }
 
-export type RunningFeaturesV2<T extends FeatureDependencies, E extends AnyEnvironment> = {
+export type RunningFeatures<T extends FeatureDependencies, E extends AnyEnvironment> = {
     [K in T[number]['id']]: Running<Extract<T[number], { id: K }>, E>;
 };
 
-type SettingUpFeature<F extends FeatureDescriptor, E extends AnyEnvironment> = {
+export type SettingUpFeature<F extends FeatureDescriptor, E extends AnyEnvironment> = {
     id: F['id'];
     run: (fn: () => unknown) => void;
     onDispose: (fn: () => unknown) => void;
@@ -172,10 +172,10 @@ type SettingUpFeature<F extends FeatureDescriptor, E extends AnyEnvironment> = {
 
 export type SetupHandler<F extends FeatureDescriptor, E extends AnyEnvironment> = (
     feature: SettingUpFeature<F, E>,
-    runningFeatures: RunningFeaturesV2<F['dependencies'], E>,
+    runningFeatures: RunningFeatures<F['dependencies'], E>,
     context: MapRecordType<F['context']>
 ) => RegisteringFeature<F['api'], OmitCompositeEnvironment<E>>;
 
 export type ContextHandler<F extends FeatureDescriptor, E extends AnyEnvironment, K extends keyof F['context']> = (
-    runningFeatures: RunningFeaturesV2<F['dependencies'], E>
+    runningFeatures: RunningFeatures<F['dependencies'], E>
 ) => F['context'][K] extends Context<infer U> ? U & {} : {};

@@ -1,13 +1,14 @@
 import { globallyProvidingEnvironments, orderedEnvDependencies, AnyEnvironment } from './entities';
 import { createFeatureRuntime, RuntimeFeature } from './runtime-feature';
 import type { FeatureDescriptor } from './entities/feature-descriptor';
-import { DISPOSE, RUN } from './symbols';
+import { RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
+import { deferred, IDeferredPromise } from 'promise-assist';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public features = new Map<FeatureDescriptor['id'], RuntimeFeature<FeatureDescriptor, ENV>>();
     public referencedEnvs: Set<string>;
-    private running = false;
+    private running: IDeferredPromise<void> | undefined;
     private topLevelConfigMap: Record<string, object[]>;
     constructor(
         public entryEnvironment: ENV,
@@ -27,22 +28,27 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         }
     }
 
-    public async run(features: FeatureDescriptor | FeatureDescriptor[]): Promise<this> {
+    public async run(features: FeatureDescriptor | FeatureDescriptor[]) {
         if (this.running) {
             throw new Error('Engine already running!');
         }
-        this.running = true;
         if (!Array.isArray(features)) {
             features = [features];
         }
-        for (const feature of features) {
-            this.initFeature(feature);
+        this.running = deferred();
+        try {
+            for (const feature of features) {
+                this.initFeature(feature);
+            }
+            const runPromises: Array<Promise<void>> = [];
+            for (const feature of features) {
+                runPromises.push(this.runFeature(feature));
+            }
+            await Promise.all(runPromises);
+            this.running.resolve();
+        } catch (e) {
+            this.running.reject(e);
         }
-        const runPromises: Array<Promise<void>> = [];
-        for (const feature of features) {
-            runPromises.push(this.runFeature(feature));
-        }
-        await Promise.all(runPromises);
         return this;
     }
 
@@ -62,18 +68,15 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         await featureInstance[RUN](this);
     }
 
-    /**
-     * @deprecated use disposeFeature instead
-     */
-    public async dispose(feature: FeatureDescriptor) {
-        return this.disposeFeature(feature);
-    }
-    public async disposeFeature(feature: FeatureDescriptor) {
-        const runningFeature = this.features.get(feature.id);
-        if (runningFeature) {
-            await runningFeature[DISPOSE](this);
-            this.features.delete(feature.id);
+    public async shutdown() {
+        if (!this.running) {
+            return;
         }
+        await this.running.promise;
+        for (const feature of this.features.values()) {
+            await feature.dispose();
+        }
+        this.running = undefined;
     }
 
     public getTopLevelConfig(featureId: string, configId: string) {
