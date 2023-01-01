@@ -14,7 +14,7 @@ export interface IServerApi {
 
 export default new Feature({
     id: 'electronExample',
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
     api: {
         echoService: Service.withType<IServerApi>()
             .defineEntity(server)

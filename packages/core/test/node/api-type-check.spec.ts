@@ -112,7 +112,7 @@ interface ComponentDescription {
 
 const addPanel = new Feature({
     id: 'addPanel',
-    dependencies: [gui.asDependency, Logger],
+    dependencies: [gui, Logger],
     api: {
         componentDescription: Slot.withType<ComponentDescription>().defineEntity(MAIN),
         service1: Service.withType<DataService>().defineEntity(MAIN),

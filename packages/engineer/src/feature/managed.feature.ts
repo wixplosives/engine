@@ -3,6 +3,6 @@ import devServer from './dev-server.feature';
 
 export default new Feature({
     id: 'managedFeature',
-    dependencies: [devServer.asDependency],
+    dependencies: [devServer],
     api: {},
 });

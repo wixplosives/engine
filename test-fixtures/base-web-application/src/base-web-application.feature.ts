@@ -12,5 +12,5 @@ export default new Feature({
         iframeSlot: Slot.withType<string>().defineEntity(iframe),
         dataProvider: Service.withType<{ getData(): string[] }>().defineEntity(server).allowRemoteAccess(),
     },
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
 });

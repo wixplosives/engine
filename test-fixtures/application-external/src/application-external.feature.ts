@@ -6,5 +6,5 @@ export default new Feature({
     api: {
         getValue: Service.withType<{ provider: () => string }>().defineEntity(server).allowRemoteAccess(),
     },
-    dependencies: [BaseApp.asDependency],
+    dependencies: [BaseApp],
 });

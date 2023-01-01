@@ -10,7 +10,7 @@ export interface EngineerConfig {
 
 export default new Feature({
     id: 'dashboard-gui',
-    dependencies: [buildFeature.asDependency, COM.asDependency],
+    dependencies: [buildFeature, COM],
     api: {
         /**
          * configuration for building and running the dashboard

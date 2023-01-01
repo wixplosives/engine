@@ -515,7 +515,7 @@ describe('environment-dependencies communication', () => {
                 slot1: Slot.withType<string>().defineEntity(base),
                 service2: Service.withType<{ echo: () => string[] }>().defineEntity(env1).allowRemoteAccess(),
             },
-            dependencies: [COM.asDependency],
+            dependencies: [COM],
         });
 
         f.setup(base, ({ slot1 }) => {

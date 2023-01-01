@@ -4,5 +4,5 @@ import ElectronApp from '../feature/electron-app.feature';
 export default new Feature({
     id: 'electronAppFixture',
     api: {},
-    dependencies: [ElectronApp.asDependency],
+    dependencies: [ElectronApp],
 });

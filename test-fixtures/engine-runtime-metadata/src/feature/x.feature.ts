@@ -10,5 +10,5 @@ export default new Feature({
             .defineEntity(server)
             .allowRemoteAccess(),
     },
-    dependencies: [COM.asDependency, RuntimeMetadata.asDependency],
+    dependencies: [COM, RuntimeMetadata],
 });

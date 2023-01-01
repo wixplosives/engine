@@ -15,7 +15,7 @@ export default new Feature({
     api: {
         serverService: Service.withType<{ echo: () => string }>().defineEntity(contextualEnv).allowRemoteAccess(),
     },
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
     context: {
         echoContext: contextualEnv.withContext<IEchoContext>(),
     },

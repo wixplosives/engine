@@ -5,5 +5,5 @@ export const page2 = new Environment('page2', 'window', 'single', [client]);
 export default new Feature({
     id: 'engine-env-dependency-user',
     api: {},
-    dependencies: [App.asDependency],
+    dependencies: [App],
 });

@@ -14,5 +14,5 @@ export default new Feature({
         clientSlot: Slot.withType<string>().defineEntity(client),
         iframeSlot: Slot.withType<string>().defineEntity(iframe),
     },
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
 });

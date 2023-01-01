@@ -15,7 +15,7 @@ export interface INameProvider {
 
 export default new Feature({
     id: 'contextual-environment-test',
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
     api: {
         config: new Config<{ name: string }>({
             name: 'test',

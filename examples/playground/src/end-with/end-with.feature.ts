@@ -3,6 +3,6 @@ import Preview from '../preview/compiler.feature';
 
 export default new Feature({
     id: 'endWith',
-    dependencies: [Preview.asDependency],
+    dependencies: [Preview],
     api: {},
 });

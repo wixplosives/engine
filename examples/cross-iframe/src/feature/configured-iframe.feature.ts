@@ -7,5 +7,5 @@ export const iframeEnv = new Environment('iframe', 'iframe', 'multi');
 export default new Feature({
     id: 'managedCrossOriginIframeFeature',
     api: {},
-    dependencies: [COM.asDependency, echoFeature.asDependency],
+    dependencies: [COM, echoFeature],
 });

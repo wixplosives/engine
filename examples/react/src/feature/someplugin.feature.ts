@@ -4,5 +4,5 @@ import guiFeature from './gui.feature';
 export default new Feature({
     id: 'plugin',
     api: {},
-    dependencies: [guiFeature.asDependency],
+    dependencies: [guiFeature],
 });

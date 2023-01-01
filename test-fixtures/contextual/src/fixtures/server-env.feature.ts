@@ -4,7 +4,7 @@ import MultiEnvFeature, { contextualEnv } from '../feature/some-feature.feature'
 export default new Feature({
     id: 'serverMultiEnvFeature',
     api: {},
-    dependencies: [MultiEnvFeature.asDependency],
+    dependencies: [MultiEnvFeature],
 });
 
 export const Context = contextualEnv.useContext('server');

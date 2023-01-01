@@ -7,7 +7,7 @@ export const devServerEnv = new Environment('dev-server', 'node', 'single');
 
 export default new Feature({
     id: 'buildFeature',
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
     api: {
         /**
          * service providing application level behavior and info, such as node env management, feature detection etc

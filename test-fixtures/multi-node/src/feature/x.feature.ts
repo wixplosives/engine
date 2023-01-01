@@ -14,5 +14,5 @@ export default new Feature({
             .allowRemoteAccess(),
         config: Config.withType<{ value: string }>().defineEntity({ value: 'Hello' }, undefined, serverEnv),
     },
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
 });

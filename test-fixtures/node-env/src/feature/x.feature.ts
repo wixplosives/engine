@@ -8,5 +8,5 @@ export default new Feature({
         echoService: Service.withType<{ echo: () => string }>().defineEntity(serverEnv).allowRemoteAccess(),
         config: Config.withType<{ value: string }>().defineEntity({ value: 'Hello' }, undefined, serverEnv),
     },
-    dependencies: [COM.asDependency],
+    dependencies: [COM],
 });

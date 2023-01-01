@@ -69,7 +69,7 @@ describe('ENV dependencies', () => {
                     extendingEnv
                 ),
             },
-            dependencies: [entryFeature.asDependency],
+            dependencies: [entryFeature],
         });
         entryFeature.setup(baseEnv, ({}) => {
             return {
@@ -152,7 +152,7 @@ describe('ENV dependencies', () => {
 
         new Feature({
             id: 'testFeatureDeps',
-            dependencies: [entryFeature.asDependency],
+            dependencies: [entryFeature],
             api: {},
         }).setup(env3, ({}, { entry }) => {
             // We only asset that the types are correct feature runtime does not care.

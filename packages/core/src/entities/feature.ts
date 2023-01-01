@@ -30,23 +30,6 @@ export class Feature<
     API extends EntityRecord = EntityRecord,
     EnvironmentContext extends Record<string, Context<any>> = Record<string, Context<any>>
 > {
-    
-    /**
-     * References `this` without the exact types of `Deps` (making them a generic `Feature[]`).
-     * We use `someFeature.asEntity` instead of `someFeature` when we want to avoid typescript
-     * inlining these types during inference of `.d.ts` files.
-     *
-     * Mainly used where a Feature has dependencies:
-     * ```ts
-     * new Feature({
-     *    id: 'someFeature',
-     *    dependencies: [anotherFeature.asDependency],
-     *    api: { ... },
-     * })
-     * ```
-     */
-    public asDependency = this;
-
     /**
      * Unique string that identifies the feature.
      */
