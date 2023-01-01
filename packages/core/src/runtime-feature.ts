@@ -21,13 +21,12 @@ export class RuntimeFeature<T extends FeatureDescriptor, ENV extends AnyEnvironm
         public dependencies: RunningFeatures<T['dependencies'], ENV>,
         public environment: ENV
     ) {}
-
-    public addRunHandler(fn: () => unknown) {
+    public addRunHandler = (fn: () => unknown) => {
         this.runHandlers.add(this.environment.env, fn);
-    }
-    public addOnDisposeHandler(fn: DisposeFunction) {
+    };
+    public addOnDisposeHandler = (fn: DisposeFunction) => {
         this.disposeHandlers.add(this.environment.env, fn);
-    }
+    };
     public async dispose() {
         if (this.disposing) {
             return this.disposing.promise;
