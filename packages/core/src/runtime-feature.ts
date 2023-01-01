@@ -75,8 +75,8 @@ export function createFeatureRuntime<F extends FeatureDescriptor, E extends AnyE
     const environmentContext: any = {};
     const apiEntries = Object.entries(feature.api);
 
-    const setupHandlers = feature.runtimeInfo!.setup || [];
-    const contextHandlers = feature.runtimeInfo!.context || [];
+    const setupHandlers = feature.runtimeInfo!.setups || [];
+    const contextHandlers = feature.runtimeInfo!.contexts || [];
 
     for (const [key, api] of Object.entries(feature.api)) {
         const entityFn = api[IDENTIFY_API];

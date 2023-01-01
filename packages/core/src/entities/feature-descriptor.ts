@@ -56,8 +56,8 @@ export class EngineFeature<T extends string> implements FeatureDescriptor {
 
 export function createRuntimeInfo(): RuntimeInfo {
     return {
-        setup: new SetMultiMap(),
-        context: new Map(),
+        setups: new SetMultiMap(),
+        contexts: new Map(),
         envs: new Set(),
     };
 }
@@ -76,7 +76,7 @@ export function setup<T extends FeatureDescriptor, E extends AnyEnvironment>(
 ) {
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateEnvRegistration(environment, feature.id, info.envs);
-    info.setup.add(environment.env, setupHandler);
+    info.setups.add(environment.env, setupHandler);
 }
 
 export function setupContext<T extends FeatureDescriptor, E extends AnyEnvironment, K extends keyof T['context']>(
@@ -86,8 +86,8 @@ export function setupContext<T extends FeatureDescriptor, E extends AnyEnvironme
     contextHandler: ContextHandler<T, E, K>
 ) {
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
-    validateNoDuplicateContextRegistration(environmentContextKey, feature.id, info.context);
-    info.context.set(environmentContextKey, contextHandler);
+    validateNoDuplicateContextRegistration(environmentContextKey, feature.id, info.contexts);
+    info.contexts.set(environmentContextKey, contextHandler);
 }
 
 export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureId: string, registered: Set<string>) {
@@ -139,8 +139,8 @@ function validateRegistration(feature: FeatureDescriptor) {
 }
 
 export type RuntimeInfo = {
-    setup: SetMultiMap<string, SetupHandler<any, any>>;
-    context: Map<string | number | symbol, ContextHandler<any, any, any>>;
+    setups: SetMultiMap<string, SetupHandler<any, any>>;
+    contexts: Map<string | number | symbol, ContextHandler<any, any, any>>;
     envs: Set<string>;
 };
 

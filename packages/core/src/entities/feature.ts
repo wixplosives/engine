@@ -90,7 +90,7 @@ export class Feature<
      */
     public setup<ENV extends AnyEnvironment>(env: ENV, setupHandler: SetupHandler<this, ENV>): this {
         validateNoDuplicateEnvRegistration(env, this.id, this.runtimeInfo.envs);
-        this.runtimeInfo.setup.add(env.env, setupHandler);
+        this.runtimeInfo.setups.add(env.env, setupHandler);
         return this;
     }
     public use(config: PartialFeatureConfig<API>): [ID, PartialFeatureConfig<API>] {
@@ -102,8 +102,8 @@ export class Feature<
         environmentContext: K,
         contextHandler: ContextHandler<this, Env, K>
     ) {
-        validateNoDuplicateContextRegistration(environmentContext, this.id, this.runtimeInfo.context);
-        this.runtimeInfo.context.set(environmentContext, contextHandler);
+        validateNoDuplicateContextRegistration(environmentContext, this.id, this.runtimeInfo.contexts);
+        this.runtimeInfo.contexts.set(environmentContext, contextHandler);
         return this;
     }
 }
