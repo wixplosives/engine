@@ -97,7 +97,7 @@ export class Feature<
         return [this.id, config];
     }
 
-    public setupContext<K extends keyof EnvironmentContext, Env extends AnyEnvironment>(
+    public setupContext<K extends keyof EnvironmentContext & string, Env extends AnyEnvironment>(
         _env: Env,
         environmentContext: K,
         contextHandler: ContextHandler<this, Env, K>

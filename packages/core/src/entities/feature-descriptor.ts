@@ -47,7 +47,7 @@ export class EngineFeature<T extends string> implements FeatureDescriptor {
     public context?: Record<string, Context<unknown>> = {};
     use = (c: PartialFeatureConfig<this['api']>) => provideConfig(this, c);
     setup = <E extends AnyEnvironment>(e: E, s: SetupHandler<this, E>) => setup(this, e, s);
-    setupContext = <E extends AnyEnvironment, K extends keyof this['context']>(
+    setupContext = <E extends AnyEnvironment, K extends keyof this['context'] & string>(
         e: E,
         k: K,
         s: ContextHandler<this, E, K>
@@ -79,7 +79,11 @@ export function setup<T extends FeatureDescriptor, E extends AnyEnvironment>(
     info.setups.add(environment.env, setupHandler);
 }
 
-export function setupContext<T extends FeatureDescriptor, E extends AnyEnvironment, K extends keyof T['context']>(
+export function setupContext<
+    T extends FeatureDescriptor,
+    E extends AnyEnvironment,
+    K extends keyof T['context'] & string
+>(
     feature: T,
     _environment: E, // TODO: add handlers in environments buckets with validation per environment?
     environmentContextKey: K,
@@ -118,9 +122,9 @@ export function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: S
 }
 
 export function validateNoDuplicateContextRegistration(
-    environmentContext: string | number | symbol,
+    environmentContext: string,
     featureId: string,
-    contextHandlers: Map<string | number | symbol, ContextHandler<any, any, any>>
+    contextHandlers: Map<string, ContextHandler<any, any, any>>
 ) {
     const registeredContext = contextHandlers.get(environmentContext);
     if (registeredContext) {
@@ -140,7 +144,7 @@ function validateRegistration(feature: FeatureDescriptor) {
 
 export type RuntimeInfo = {
     setups: SetMultiMap<string, SetupHandler<any, any>>;
-    contexts: Map<string | number | symbol, ContextHandler<any, any, any>>;
+    contexts: Map<string, ContextHandler<any, any, any>>;
     envs: Set<string>;
 };
 
