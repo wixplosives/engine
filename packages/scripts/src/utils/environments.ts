@@ -46,6 +46,8 @@ export function getResolvedEnvironments({
                 addEnv(nodeEnvs, env);
             } else if (type === 'electron-main') {
                 addEnv(electronMainEnvs, env);
+            } else {
+                throw new Error(`unknown environment type: ${type}`);
             }
     }
     return {
