@@ -312,7 +312,7 @@ describe('Application', function () {
 
             await waitFor(async () => {
                 const textFromWebWorker = await getBodyContent(webWorkerAppPage);
-                expect(textFromWebWorker).to.contain('worker');
+                expect(textFromWebWorker).to.contain('webworker');
             });
 
             const { close: closeServer, port: serverAppPort } = await app.run({

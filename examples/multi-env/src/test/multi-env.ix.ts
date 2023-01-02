@@ -5,7 +5,7 @@ import MultiEnv from '../feature/multi-env.feature';
 
 describe('Multi Environment', () => {
     const { getLoadedFeature } = withFeature({
-        featureName: 'multi-env/test-worker',
+        featureName: 'multi-env/test-webworker',
     });
 
     it('allows providing custom top level config', async () => {

@@ -38,7 +38,7 @@ export function getResolvedEnvironments({
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
             if (type === 'window' || type === 'iframe') {
                 addEnv(webEnvs, env);
-            } else if (type === 'worker') {
+            } else if (type === 'webworker') {
                 addEnv(workerEnvs, env);
             } else if (type === 'electron-renderer') {
                 addEnv(electronRendererEnvs, env);

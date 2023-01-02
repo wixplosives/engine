@@ -166,14 +166,14 @@ describe('engineer:dev-server', function () {
         await page.locator('body', { hasText: 'Hello' }).waitFor({ state: 'visible' });
     });
 
-    it('launches a feature with contextual environment with worker context', async () => {
+    it('launches a feature with contextual environment with webworker context', async () => {
         const {
             config: { port },
         } = await setup({ basePath: contextualFeatureFixturePath, featureName: 'contextual/some-feature' });
 
         const page = await loadPage(`http://localhost:${port}/main.html`);
 
-        await page.locator('body', { hasText: 'from worker' }).waitFor({ state: 'visible' });
+        await page.locator('body', { hasText: 'from webworker' }).waitFor({ state: 'visible' });
     });
 
     it(`allows specfiying a config`, async () => {

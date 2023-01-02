@@ -21,7 +21,7 @@ describe('Parent feature', function () {
 
         await page.waitForSelector('#envMessages');
         const content = await page.$eval('#envMessages', (e) => e.textContent!);
-        const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; worker: string[] };
+        const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; webworker: string[] };
 
         expect(parsedContent.node).to.eql([
             'node',
