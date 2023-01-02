@@ -43,8 +43,8 @@ export interface IFeatureModule {
     exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[];
 
     /**
-     * If module exports any `processingEnv.use('worker')`,
-     * it will be set as `'processing': 'worker'`
+     * If module exports any `processingEnv.use('webworker')`,
+     * it will be set as `'processing': 'webworker'`
      */
     usedContexts?: Record<string, string>;
 }

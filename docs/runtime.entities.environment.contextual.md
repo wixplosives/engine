@@ -14,7 +14,7 @@ The declaration will look something like this:
 // the 'webserver' environment name of the workerEnv will be used to reference the "'ctx' environment when it's resolved to the 'webserver' context", which will cause engineer to bundle the code for this environment, and load it in the browser
 
 const serverEnv = new Environment('server', 'node', 'single');
-const workerEnv = new Environment('webserver', 'worker', 'single');
+const workerEnv = new Environment('webserver', 'webworker', 'single');
 
 export const myContextual = new SingleEndpointContextualEnvironment('ctx', [serverEnv, workerEnv]);
 ```
@@ -60,7 +60,7 @@ f1.setupContext(myContextual, 'contextName', () => {
 });
 ```
 
-For the `webserver` context (which will be executed in a browser worker), we would provide this implementation (for an example)
+For the `webserver` context (which will be executed in a browser webworker), we would provide this implementation (for an example)
 
 ```ts
 f1.setupContext(myContextual, 'contextName', () => {

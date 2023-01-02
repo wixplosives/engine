@@ -33,7 +33,7 @@ describe('All Environment', () => {
     it('loads preload files in all environments, non-contextual', async () => {
         await page!.waitForSelector('#envMessages');
         const content = await page!.$eval('#envMessages', (e) => e.textContent!);
-        const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; worker: string[] };
+        const parsedContent = JSON.parse(content) as { window: string[]; node: string[]; webworker: string[] };
 
         expect(parsedContent.node).to.eql(['node', 'preload', 'preloadInit', 'feature', 'enveval']);
 

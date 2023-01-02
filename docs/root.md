@@ -5,7 +5,7 @@
 - Features may depend on other features, consume their exposed services and register into their slots.
 - A service is a set of functions exposed as an API of a feature.
 - A slot is a registry of any type, which allows pluggability via registration.
-- Environments (browser/worker/iframe) are defined by features, and have semantic names (main/processing/preview).
+- Environments (browser/webworker/iframe) are defined by features, and have semantic names (main/processing/preview).
 - Each slot and service is available in a specific environment.
 - Services can be marked as accessible cross-environments, which exposes them as async APIs in those environment.
 
