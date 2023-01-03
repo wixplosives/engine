@@ -215,7 +215,9 @@ export interface Configurable<T> {
 }
 
 export type PartialFeatureConfig<API> = {
-    [key in keyof API]?: API[key] extends Configurable<infer T> ? Partial<T> : never;
+    [key in keyof API as API[key] extends Configurable<any> ? key : never]?: API[key] extends Configurable<infer T>
+        ? Partial<T>
+        : never;
 };
 
 export type TopLevelConfig = Array<[string, object]>;

@@ -1,6 +1,6 @@
 import type { RuntimeEngine } from './runtime-engine';
 import type { AnyEnvironment } from './entities/env';
-import type { FeatureDescriptor, RunningFeatures } from './entities/feature-descriptor';
+import type { EngineFeatureConstructor, FeatureDescriptor, RunningFeatures } from './entities/feature-descriptor';
 import { CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { DisposeFunction, Running } from './types';
@@ -60,12 +60,12 @@ export class RuntimeFeature<T extends FeatureDescriptor, ENV extends AnyEnvironm
     }
 }
 
-export function createFeatureRuntime<F extends FeatureDescriptor, E extends AnyEnvironment>(
-    feature: F,
+export function createFeatureRuntime<F extends EngineFeatureConstructor, E extends AnyEnvironment>(
+    FeatureConstructor: F,
     runningEngine: RuntimeEngine<E>
-): RuntimeFeature<F, E> {
+): RuntimeFeature<InstanceType<F>, E> {
     const { features, runOptions, referencedEnvs, entryEnvironment } = runningEngine;
-
+    const feature = new FeatureConstructor() as InstanceType<F>;
     const deps: any = {};
     const depsApis: any = {};
     const runningApi: any = {};
@@ -74,8 +74,8 @@ export function createFeatureRuntime<F extends FeatureDescriptor, E extends AnyE
     const environmentContext: any = {};
     const apiEntries = Object.entries(feature.api);
 
-    const setupHandlers = feature.runtimeInfo!.setups || [];
-    const contextHandlers = feature.runtimeInfo!.contexts || [];
+    const setupHandlers = FeatureConstructor.runtimeInfo!.setups || [];
+    const contextHandlers = FeatureConstructor.runtimeInfo!.contexts || [];
 
     for (const [key, api] of Object.entries(feature.api)) {
         const entityFn = api[IDENTIFY_API];
@@ -85,12 +85,12 @@ export function createFeatureRuntime<F extends FeatureDescriptor, E extends AnyE
     }
 
     const featureRuntime = new RuntimeFeature(feature, runningApi, deps, entryEnvironment);
-    features.set(feature.id, featureRuntime);
+    features.set(FeatureConstructor, featureRuntime);
 
     for (const dep of feature.dependencies) {
         const instance = runningEngine.initFeature(dep);
-        deps[dep.id] = instance;
-        depsApis[dep.id] = instance.api;
+        deps[instance.feature.id] = instance;
+        depsApis[instance.feature.id] = instance.api;
     }
 
     for (const [key, entity] of apiEntries) {

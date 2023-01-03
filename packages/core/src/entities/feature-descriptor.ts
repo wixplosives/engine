@@ -45,14 +45,33 @@ export class EngineFeature<T extends string> implements FeatureDescriptor {
     public api: EntityRecord = {};
     public dependencies: FeatureDependencies = [];
     public context?: Record<string, Context<unknown>> = {};
-    use = (c: PartialFeatureConfig<this['api']>) => provideConfig(this, c);
-    setup = <E extends AnyEnvironment>(e: E, s: SetupHandler<this, E>) => setup(this, e, s);
-    setupContext = <E extends AnyEnvironment, K extends keyof this['context'] & string>(
+    static get id() {
+        return new this().id;
+    }
+    static use<T extends EngineFeatureConstructor>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
+        return provideConfig(this, c);
+    }
+    static setup<T extends EngineFeatureConstructor, E extends AnyEnvironment>(
+        this: T,
         e: E,
-        k: K,
-        s: ContextHandler<this, E, K>
-    ) => setupContext(this, e, k, s);
+        s: SetupHandler<InstanceType<T>, E>
+    ) {
+        return setup(this, e, s);
+    }
+    static setupContext<
+        T extends EngineFeatureConstructor,
+        E extends AnyEnvironment,
+        K extends keyof InstanceType<T>['context'] & string
+    >(this: T, e: E, k: K, s: ContextHandler<InstanceType<T>, E, K>) {
+        return setupContext(this, e, k, s);
+    }
 }
+
+export type EngineFeatureConstructor = {
+    id: string;
+    runtimeInfo?: RuntimeInfo;
+    new (): FeatureDescriptor;
+};
 
 export function createRuntimeInfo(): RuntimeInfo {
     return {
@@ -62,17 +81,21 @@ export function createRuntimeInfo(): RuntimeInfo {
     };
 }
 
-export function provideConfig<T extends FeatureDescriptor>(
+export function provideConfig<T extends FeatureDescriptor | EngineFeatureConstructor>(
     feature: T,
-    config: PartialFeatureConfig<T['api']>
-): [T['id'], PartialFeatureConfig<T['api']>] {
+    config: PartialFeatureConfig<DescriptorType<T>['api']>
+): [DescriptorType<T>['id'], PartialFeatureConfig<DescriptorType<T>['api']>] {
     return [feature.id, config];
 }
 
-export function setup<T extends FeatureDescriptor, E extends AnyEnvironment>(
+type DescriptorType<T extends FeatureDescriptor | EngineFeatureConstructor> = T extends EngineFeatureConstructor
+    ? InstanceType<T>
+    : T;
+
+export function setup<T extends FeatureDescriptor | EngineFeatureConstructor, E extends AnyEnvironment>(
     feature: T,
     environment: E,
-    setupHandler: SetupHandler<T, E>
+    setupHandler: SetupHandler<DescriptorType<T>, E>
 ) {
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateEnvRegistration(environment, feature.id, info.envs);
@@ -80,14 +103,14 @@ export function setup<T extends FeatureDescriptor, E extends AnyEnvironment>(
 }
 
 export function setupContext<
-    T extends FeatureDescriptor,
+    T extends FeatureDescriptor | EngineFeatureConstructor,
     E extends AnyEnvironment,
-    K extends keyof T['context'] & string
+    K extends keyof DescriptorType<T>['context'] & string
 >(
     feature: T,
     _environment: E, // TODO: add handlers in environments buckets with validation per environment?
     environmentContextKey: K,
-    contextHandler: ContextHandler<T, E, K>
+    contextHandler: ContextHandler<DescriptorType<T>, E, K>
 ) {
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateContextRegistration(environmentContextKey, feature.id, info.contexts);
@@ -148,7 +171,7 @@ export type RuntimeInfo = {
     envs: Set<string>;
 };
 
-export type FeatureDependencies = ReadonlyArray<FeatureDescriptor>;
+export type FeatureDependencies = ReadonlyArray<{ new (): FeatureDescriptor }>;
 
 export interface FeatureDescriptor {
     runtimeInfo?: RuntimeInfo;
@@ -159,7 +182,7 @@ export interface FeatureDescriptor {
 }
 
 export type RunningFeatures<T extends FeatureDependencies, E extends AnyEnvironment> = {
-    [K in T[number]['id']]: Running<Extract<T[number], { id: K }>, E>;
+    [K in InstanceType<T[number]>['id']]: Running<Extract<InstanceType<T[number]>, { id: K }>, E>;
 };
 
 export type SettingUpFeature<F extends FeatureDescriptor, E extends AnyEnvironment> = {

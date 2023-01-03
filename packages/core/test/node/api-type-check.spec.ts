@@ -7,7 +7,6 @@ import {
     Universal,
     AsyncApi,
     Config,
-    Feature,
     Registry,
     Running,
     RuntimeEngine,
@@ -15,6 +14,7 @@ import {
     Slot,
     ENGINE,
     RunningFeatures,
+    EngineFeature,
 } from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
@@ -24,22 +24,21 @@ const MAIN = new Environment('main', 'window', 'single');
 const ZAG = new Environment('zag', 'window', 'single');
 const MAIN_1 = new Environment('main1', 'window', 'single');
 
-
 // show case both the old and new way of defining features working together
-class Logger {
-    static id = 'logger' as const;
-    static api = {
+class Logger extends EngineFeature<'logger'> {
+    id = 'logger' as const;
+    api = {
         config: Config.withType<{ time: number }>().defineEntity({ time: 1 }),
         transport: Slot.withType<{ transportName: string }>().defineEntity(MAIN),
         sink: Service.withType<{ log: (message: string) => void }>().defineEntity(MAIN).allowRemoteAccess(),
     };
-    static dependencies = [];
+    dependencies = [];
 }
 
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<typeof Logger, typeof MAIN>,
+            Running<Logger, typeof MAIN>,
             {
                 config: { time: number };
                 transport: Registry<{
@@ -56,7 +55,7 @@ typeCheck(
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<typeof Logger, typeof ZAG>,
+            Running<Logger, typeof ZAG>,
             {
                 config: { time: number };
 
@@ -69,14 +68,14 @@ typeCheck(
 );
 /* ------------------------------------------------- */
 
-const gui = new Feature({
-    id: 'gui',
-    dependencies: [Logger],
-    api: {
-        panelSlot: Slot.withType<{ panelID: string }>().defineEntity([MAIN]),
+class GUI extends EngineFeature<'gui'> {
+    id = 'gui' as const;
+    api = {
+        panelSlot: Slot.withType<{ panelID: string }>().defineEntity(MAIN),
         guiService: Service.withType<{ someMethod(): void }>().defineEntity([MAIN, MAIN_1]),
-    },
-});
+    };
+    dependencies = [Logger];
+}
 
 interface SomeApi {
     someMethod: () => boolean;
@@ -89,11 +88,11 @@ typeCheck((_: EQUAL<SomeApiPromisified, { someMethod(): Promise<boolean> }>) => 
 typeCheck(
     (
         _runningDependencies: EQUAL<
-            RunningFeatures<typeof gui['dependencies'], typeof MAIN>,
-            { logger: Running<typeof Logger, typeof MAIN> }
+            RunningFeatures<GUI['dependencies'], typeof MAIN>,
+            { logger: Running<Logger, typeof MAIN> }
         >,
         _runningFeature: EQUAL<
-            Running<typeof gui, typeof MAIN>,
+            Running<GUI, typeof MAIN>,
             { panelSlot: Registry<{ panelID: string }>; guiService: { someMethod(): void } }
         >
     ) => true
@@ -110,20 +109,21 @@ interface ComponentDescription {
     description: string;
 }
 
-const addPanel = new Feature({
-    id: 'addPanel',
-    dependencies: [gui, Logger],
-    api: {
+class AddPanel extends EngineFeature<'addPanel'> {
+    id = 'addPanel' as const;
+    api = {
         componentDescription: Slot.withType<ComponentDescription>().defineEntity(MAIN),
         service1: Service.withType<DataService>().defineEntity(MAIN),
         service2: Service.withType<DataService>().defineEntity(MAIN_1),
         service3: Service.withType<DataService>().defineEntity(Universal),
-    },
-});
+    };
+    dependencies = [GUI, Logger];
+}
+
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<typeof addPanel, typeof MAIN>,
+            Running<AddPanel, typeof MAIN>,
             {
                 componentDescription: Registry<ComponentDescription>;
                 service1: DataService;
@@ -131,10 +131,10 @@ typeCheck(
             }
         >,
         _runningDependencies: EQUAL<
-            RunningFeatures<typeof addPanel['dependencies'], typeof MAIN>,
+            RunningFeatures<AddPanel['dependencies'], typeof MAIN>,
             {
-                logger: Running<typeof Logger, typeof MAIN>;
-                gui: Running<typeof gui, typeof MAIN>;
+                logger: Running<Logger, typeof MAIN>;
+                gui: Running<GUI, typeof MAIN>;
             }
         >,
         _: true
@@ -145,7 +145,7 @@ const env = new Environment('main', 'window', 'single');
 
 /*************** EXAMPLE SETUP FILES ***************/
 export async function dontRun() {
-    addPanel.setup(MAIN, (feature, features) => {
+    AddPanel.setup(MAIN, (feature, features) => {
         feature.componentDescription.register({ component: '', description: '' });
         feature.componentDescription.register({ component: '', description: '' });
         features.logger.transport.register({ transportName: `test${features.logger.config.time}` });
@@ -191,8 +191,8 @@ export async function dontRun() {
                 _engineTest: EQUAL<
                     typeof features,
                     {
-                        gui: Running<typeof gui, typeof MAIN>;
-                        logger: Running<typeof Logger, typeof MAIN>;
+                        gui: Running<GUI, typeof MAIN>;
+                        logger: Running<Logger, typeof MAIN>;
                     }
                 >,
                 _: true
@@ -204,5 +204,5 @@ export async function dontRun() {
         };
     });
 
-    await new RuntimeEngine(env, []).run(addPanel);
+    await new RuntimeEngine(env, []).run(AddPanel);
 }
