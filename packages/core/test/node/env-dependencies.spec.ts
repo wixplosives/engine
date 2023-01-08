@@ -5,7 +5,7 @@ import {
     AsyncApi,
     Environment,
     EnvironmentInstanceToken,
-    Feature,
+    EngineFeature,
     run as runEngine,
     Service,
 } from '@wixc3/engine-core';
@@ -19,16 +19,17 @@ describe('ENV dependencies', () => {
     it('simple env dependency', async () => {
         const baseEnv = new Environment('baseEnv', 'node', 'multi', []);
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
-        const entryFeature = new Feature({
-            id: 'test',
-            api: {
-                service: Service.withType<{ increment: (n: number) => number }>().defineEntity(baseEnv),
-                service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(
-                    extendingEnv
-                ),
-            },
-        });
-
+        class entryFeature extends EngineFeature<'test'> {
+            id = 'test' as const;
+            api = {
+                service: Service.withType<{
+                    increment: (n: number) => number;
+                }>().defineEntity(baseEnv),
+                service2: Service.withType<{
+                    multiplyThenIncrement: (n: number) => number;
+                }>().defineEntity(extendingEnv),
+            };
+        }
         entryFeature.setup(baseEnv, ({}) => {
             return {
                 service: {
@@ -45,32 +46,35 @@ describe('ENV dependencies', () => {
         });
         const engine = await runEngine({ entryFeature, env: extendingEnv });
         const runningFeature = engine.get(entryFeature);
-
         expect(runningFeature.api.service2.multiplyThenIncrement(5)).to.equal(11);
         expect(runningFeature.api.service.increment(5)).to.equal(6);
     });
     it('env and feature dependency dependency', async () => {
         const baseEnv = new Environment('baseEnv', 'node', 'multi');
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
-        const entryFeature = new Feature({
-            id: 'entry',
-            api: {
-                service: Service.withType<{ increment: (n: number) => number }>().defineEntity(baseEnv),
-                service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(
-                    extendingEnv
-                ),
-            },
-        });
-        const extendingFeature = new Feature({
-            id: 'extending',
-            api: {
-                service: Service.withType<{ increment: (n: number) => number }>().defineEntity(baseEnv),
-                service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>().defineEntity(
-                    extendingEnv
-                ),
-            },
-            dependencies: [entryFeature],
-        });
+        class entryFeature extends EngineFeature<'entry'> {
+            id = 'entry' as const;
+            api = {
+                service: Service.withType<{
+                    increment: (n: number) => number;
+                }>().defineEntity(baseEnv),
+                service2: Service.withType<{
+                    multiplyThenIncrement: (n: number) => number;
+                }>().defineEntity(extendingEnv),
+            };
+        }
+        class extendingFeature extends EngineFeature<'extending'> {
+            id = 'extending' as const;
+            api = {
+                service: Service.withType<{
+                    increment: (n: number) => number;
+                }>().defineEntity(baseEnv),
+                service2: Service.withType<{
+                    multiplyThenIncrement: (n: number) => number;
+                }>().defineEntity(extendingEnv),
+            };
+            dependencies = [entryFeature];
+        }
         entryFeature.setup(baseEnv, ({}) => {
             return {
                 service: {
@@ -111,16 +115,14 @@ describe('ENV dependencies', () => {
         type EchoService = {
             echo: (n: string) => string;
         };
-
-        const entryFeature = new Feature({
-            id: 'entry',
-            api: {
+        class entryFeature extends EngineFeature<'entry'> {
+            id = 'entry' as const;
+            api = {
                 service1: Service.withType<EchoService>().defineEntity(env1),
                 service2: Service.withType<EchoService>().defineEntity(env2),
                 service3: Service.withType<EchoService>().defineEntity(env3),
-            },
-        });
-
+            };
+        }
         entryFeature.setup(env1, ({}) => {
             return {
                 service1: {
@@ -149,12 +151,11 @@ describe('ENV dependencies', () => {
         expect(runningFeature.api.service1.echo('Test')).to.equal('env1 Test');
         expect(runningFeature.api.service2.echo('Test')).to.equal('env2 Test');
         expect(runningFeature.api.service3.echo('Test')).to.equal('env3 Test');
-
-        new Feature({
-            id: 'testFeatureDeps',
-            dependencies: [entryFeature],
-            api: {},
-        }).setup(env3, ({}, { entry }) => {
+        (class TestFeatureDeps extends EngineFeature<'testFeatureDeps'> {
+            id = 'testFeatureDeps' as const;
+            api = {};
+            dependencies = [entryFeature];
+        }.setup(env3, ({}, { entry }) => {
             // We only asset that the types are correct feature runtime does not care.
             typeCheck(
                 (
@@ -168,23 +169,26 @@ describe('ENV dependencies', () => {
                     >
                 ) => true
             );
-        });
+        }));
     });
     it('env dependency preserve multi when accessing from other env', () => {
         const baseEnv = new Environment('baseEnv', 'node', 'multi');
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
-
-        const entryFeature = new Feature({
-            id: 'test',
-            api: {
-                service: Service.withType<{ increment: (n: number) => number }>()
+        class entryFeature extends EngineFeature<'test'> {
+            id = 'test' as const;
+            api = {
+                service: Service.withType<{
+                    increment: (n: number) => number;
+                }>()
                     .defineEntity(baseEnv)
                     .allowRemoteAccess(),
-                service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>()
+                service2: Service.withType<{
+                    multiplyThenIncrement: (n: number) => number;
+                }>()
                     .defineEntity(extendingEnv)
                     .allowRemoteAccess(),
-            },
-        });
+            };
+        }
 
         const otherEnv = new Environment('otherEnv', 'node', 'single');
         entryFeature.setup(otherEnv, (entry) => {
@@ -193,7 +197,9 @@ describe('ENV dependencies', () => {
                     _runningFeature: EQUAL<
                         typeof entry['service'],
                         {
-                            get(token: EnvironmentInstanceToken): AsyncApi<{ increment: (n: number) => number }>;
+                            get(token: EnvironmentInstanceToken): AsyncApi<{
+                                increment: (n: number) => number;
+                            }>;
                         }
                     >
                 ) => true
@@ -203,9 +209,9 @@ describe('ENV dependencies', () => {
                     _runningFeature: EQUAL<
                         typeof entry['service2'],
                         {
-                            get(
-                                token: EnvironmentInstanceToken
-                            ): AsyncApi<{ multiplyThenIncrement: (n: number) => number }>;
+                            get(token: EnvironmentInstanceToken): AsyncApi<{
+                                multiplyThenIncrement: (n: number) => number;
+                            }>;
                         }
                     >
                 ) => true

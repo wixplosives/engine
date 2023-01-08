@@ -1,8 +1,7 @@
-import { Feature } from '@wixc3/engine-core';
+import { EngineFeature } from '@wixc3/engine-core';
 import devServer from './dev-server.feature';
-
-export default new Feature({
-    id: 'managedFeature',
-    dependencies: [devServer],
-    api: {},
-});
+export default class ManagedFeature extends EngineFeature<'managedFeature'> {
+    id = 'managedFeature' as const;
+    api = {};
+    dependencies = [devServer];
+}

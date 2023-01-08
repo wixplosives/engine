@@ -1,14 +1,12 @@
 import type webpack from 'webpack';
-import { Feature, Service, Environment, COM, Config, Slot } from '@wixc3/engine-core';
+import { EngineFeature, Service, Environment, COM, Config, Slot } from '@wixc3/engine-core';
 import type { TargetApplication } from '../application-proxy-service';
 import type { DevServerActions, DevServerConfig, ServerListeningHandler } from './dev-server.types';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
-
-export default new Feature({
-    id: 'buildFeature',
-    dependencies: [COM],
-    api: {
+export default class BuildFeature extends EngineFeature<'buildFeature'> {
+    id = 'buildFeature' as const;
+    api = {
         /**
          * service providing application level behavior and info, such as node env management, feature detection etc
          */
@@ -38,5 +36,6 @@ export default new Feature({
          * Actions that can be performed on the dev server, currently only close
          */
         devServerActions: Service.withType<DevServerActions>().defineEntity(devServerEnv),
-    },
-});
+    };
+    dependencies = [COM];
+}

@@ -1,4 +1,8 @@
-import { Environment, Feature } from '@wixc3/engine-core';
+import { Environment, EngineFeature } from '@wixc3/engine-core';
 
 export const MAIN = new Environment('main', 'window', 'single');
-export default new Feature({ id: 'TestFeature', api: {} });
+
+export default class TestFeature extends EngineFeature<'TestFeature'> {
+    id = 'TestFeature' as const;
+    api = {};
+}

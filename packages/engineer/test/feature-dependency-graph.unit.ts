@@ -1,27 +1,27 @@
 import { buildFeatureLinks } from '@wixc3/engineer/dist/feature-dependency-graph';
-import { Feature } from '@wixc3/engine-core';
+import { EngineFeature } from '@wixc3/engine-core';
 import { expect } from 'chai';
 
-const noDepsFeature = new Feature({
-    id: 'noDepsFeature',
-    dependencies: [],
-    api: {},
-});
-const simpleDepFeature = new Feature({
-    id: 'simpleDepFeature',
-    dependencies: [noDepsFeature],
-    api: {},
-});
-const shareDepWithDepFeature = new Feature({
-    id: 'shareDepWithDepFeature',
-    dependencies: [noDepsFeature, simpleDepFeature],
-    api: {},
-});
-const multiLevelFeature = new Feature({
-    id: 'multLevel',
-    dependencies: [simpleDepFeature, shareDepWithDepFeature],
-    api: {},
-});
+class noDepsFeature extends EngineFeature<'noDepsFeature'> {
+    id = 'noDepsFeature' as const;
+    api = {};
+    dependencies = [];
+}
+class simpleDepFeature extends EngineFeature<'simpleDepFeature'> {
+    id = 'simpleDepFeature' as const;
+    api = {};
+    dependencies = [noDepsFeature];
+}
+class shareDepWithDepFeature extends EngineFeature<'shareDepWithDepFeature'> {
+    id = 'shareDepWithDepFeature' as const;
+    api = {};
+    dependencies = [noDepsFeature, simpleDepFeature];
+}
+class multiLevelFeature extends EngineFeature<'multLevel'> {
+    id = 'multLevel' as const;
+    api = {};
+    dependencies = [simpleDepFeature, shareDepWithDepFeature];
+}
 
 describe('buildFeatureLinks', () => {
     it('should handle feature with no dependencies', () => {
@@ -61,7 +61,6 @@ describe('buildFeatureLinks', () => {
                 { name: shareDepWithDepFeature.id, group: 1 },
                 { name: noDepsFeature.id, group: 2 },
             ],
-
             links: [
                 { source: multiLevelFeature.id, target: simpleDepFeature.id },
                 { source: multiLevelFeature.id, target: shareDepWithDepFeature.id },

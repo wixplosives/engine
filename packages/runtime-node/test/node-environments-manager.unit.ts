@@ -1,6 +1,6 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { COM, Environment, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
+import { COM, Environment, EngineFeature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
@@ -72,7 +72,7 @@ const engineMultiNodeIPCCommunication: IStaticFeatureDefinition = {
     ],
 };
 describe('Node environments manager', function () {
-    this.timeout(10_000);
+    this.timeout(10000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
     let socketServer: io.Server;
@@ -189,13 +189,15 @@ describe('Node environments manager', function () {
     });
 
     describe('Node environment manager socket communication', () => {
-        const proxyFeature = new Feature({
-            id: 'test',
-            api: {
-                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
-            },
-            dependencies: [SocketServerNodeFeature, COM],
-        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        const proxyFeature = class Test extends EngineFeature<'test'> {
+            id = 'test' as const;
+            api = {
+                echoService: Service.withType<{
+                    echo: () => Promise<string>;
+                }>().defineEntity(env),
+            };
+            dependencies = [SocketServerNodeFeature, COM];
+        }.setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: socketServerEnv });
 
             return {
@@ -285,13 +287,15 @@ describe('Node environments manager', function () {
         });
     });
     describe('Node environment manager ipc communication', () => {
-        const testFeature = new Feature({
-            id: 'test',
-            api: {
-                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
-            },
-            dependencies: [ServerNodeFeature, COM],
-        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        const testFeature = class Test extends EngineFeature<'test'> {
+            id = 'test' as const;
+            api = {
+                echoService: Service.withType<{
+                    echo: () => Promise<string>;
+                }>().defineEntity(env),
+            };
+            dependencies = [ServerNodeFeature, COM];
+        }.setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: serverEnv });
 
             return {

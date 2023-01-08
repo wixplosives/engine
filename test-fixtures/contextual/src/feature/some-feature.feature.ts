@@ -1,4 +1,4 @@
-import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment } from '@wixc3/engine-core';
+import { COM, Environment, EngineFeature, Service, SingleEndpointContextualEnvironment } from '@wixc3/engine-core';
 
 export const mainEnv = new Environment('main', 'window', 'single');
 
@@ -9,16 +9,19 @@ export const contextualEnv = new SingleEndpointContextualEnvironment('contextual
 export interface IEchoContext {
     echoWord: () => string;
 }
-
-export default new Feature({
-    id: 'multiEnv',
-    api: {
-        serverService: Service.withType<{ echo: () => string }>().defineEntity(contextualEnv).allowRemoteAccess(),
-    },
-    dependencies: [COM],
-    context: {
+export default class MultiEnv extends EngineFeature<'multiEnv'> {
+    id = 'multiEnv' as const;
+    api = {
+        serverService: Service.withType<{
+            echo: () => string;
+        }>()
+            .defineEntity(contextualEnv)
+            .allowRemoteAccess(),
+    };
+    dependencies = [COM];
+    context = {
         echoContext: contextualEnv.withContext<IEchoContext>(),
-    },
-});
+    };
+}
 
 export const Context = contextualEnv.useContext('worker');

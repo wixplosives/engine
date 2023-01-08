@@ -1,12 +1,14 @@
-import { Config, Environment, Feature, Slot } from '@wixc3/engine-core';
+import { Config, Environment, EngineFeature, Slot } from '@wixc3/engine-core';
 
 export const MAIN = new Environment('main', 'window', 'single');
 
-export default new Feature({
-    id: 'XTestFeature',
-    api: {
+export default class XTestFeature extends EngineFeature<'XTestFeature'> {
+    id = 'XTestFeature' as const;
+    api = {
         mySlot: Slot.withType<{}>().defineEntity(MAIN),
-        config: new Config<{ value?: number }>({}),
-    },
-    dependencies: [],
-});
+        config: new Config<{
+            value?: number;
+        }>({}),
+    };
+    dependencies = [];
+}

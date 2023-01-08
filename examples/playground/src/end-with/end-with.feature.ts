@@ -1,8 +1,8 @@
-import { Feature } from '@wixc3/engine-core';
+import { EngineFeature } from '@wixc3/engine-core';
 import Preview from '../preview/compiler.feature';
 
-export default new Feature({
-    id: 'endWith',
-    dependencies: [Preview],
-    api: {},
-});
+export default class EndWith extends EngineFeature<'endWith'> {
+    id = 'endWith' as const;
+    api = {};
+    dependencies = [Preview];
+}
