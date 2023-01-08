@@ -1,6 +1,6 @@
 import { SetMultiMap } from '@wixc3/patterns';
 import type { RuntimeEngine } from '../runtime-engine';
-import type { ENGINE, RUN_OPTIONS } from '../symbols';
+import { ENGINE, RUN_OPTIONS } from '../symbols';
 import type {
     Context,
     DeepEnvironmentDeps,
@@ -37,41 +37,46 @@ import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
         public context = {};
     }
  */
-export class EngineFeature<T extends string> implements FeatureDescriptor {
-    constructor() {
-        validateRegistration(this);
-    }
+export class EngineFeature<T extends string> {
     public id: T = '' as T;
     public api: EntityRecord = {};
     public dependencies: FeatureDependencies = [];
-    public context?: Record<string, Context<unknown>> = {};
-    static get id() {
-        return new this().id;
+    public context: Record<string, Context<unknown>> = {};
+    static runtimeInfo = undefined; // each class should have its own runtime info
+    static isEngineFeature = true;
+    constructor() {
+        return ((this.constructor as any).instance ||= this);
     }
-    static use<T extends EngineFeatureConstructor>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
+    static get id(): string {
+        return validateRegistration(new this());
+    }
+    static get dependencies(): FeatureDependencies {
+        return new this().dependencies;
+    }
+    static get api(): EntityRecord {
+        return new this().api;
+    }
+    static get context(): Record<string, Context<unknown>> {
+        return new this().context;
+    }
+    static use<T extends FeatureClass>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
         return provideConfig(this, c);
     }
-    static setup<T extends EngineFeatureConstructor, E extends AnyEnvironment>(
+    static setup<T extends FeatureClass, E extends AnyEnvironment>(
         this: T,
         e: E,
         s: SetupHandler<InstanceType<T>, E>
-    ) {
+    ): T {
         return setup(this, e, s);
     }
     static setupContext<
-        T extends EngineFeatureConstructor,
+        T extends FeatureClass,
         E extends AnyEnvironment,
         K extends keyof InstanceType<T>['context'] & string
-    >(this: T, e: E, k: K, s: ContextHandler<InstanceType<T>, E, K>) {
+    >(this: T, e: E, k: K, s: ContextHandler<InstanceType<T>, E, K>): T {
         return setupContext(this, e, k, s);
     }
 }
-
-export type EngineFeatureConstructor = {
-    id: string;
-    runtimeInfo?: RuntimeInfo;
-    new (): FeatureDescriptor;
-};
 
 export function createRuntimeInfo(): RuntimeInfo {
     return {
@@ -81,40 +86,47 @@ export function createRuntimeInfo(): RuntimeInfo {
     };
 }
 
-export function provideConfig<T extends FeatureDescriptor | EngineFeatureConstructor>(
+export function provideConfig<T extends FeatureClass>(
     feature: T,
-    config: PartialFeatureConfig<DescriptorType<T>['api']>
-): [DescriptorType<T>['id'], PartialFeatureConfig<DescriptorType<T>['api']>] {
+    config: PartialFeatureConfig<InstanceType<T>['api']>
+): [InstanceType<T>['id'], PartialFeatureConfig<InstanceType<T>['api']>] {
     return [feature.id, config];
 }
 
-type DescriptorType<T extends FeatureDescriptor | EngineFeatureConstructor> = T extends EngineFeatureConstructor
-    ? InstanceType<T>
-    : T;
-
-export function setup<T extends FeatureDescriptor | EngineFeatureConstructor, E extends AnyEnvironment>(
+export const setup = <T extends FeatureClass, E extends AnyEnvironment>(
     feature: T,
     environment: E,
-    setupHandler: SetupHandler<DescriptorType<T>, E>
-) {
+    setupHandler: SetupHandler<InstanceType<T>, E>
+): T => {
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateEnvRegistration(environment, feature.id, info.envs);
     info.setups.add(environment.env, setupHandler);
-}
+    return feature;
+};
+
+export const setup2 = <API, E extends AnyEnvironment>(
+    api: API,
+    environment: E,
+    setupHandler: SetupHandler2<API extends EntityRecord ? API : never, E>
+) => {
+    console.log(api, environment, setupHandler);
+    /** */
+};
 
 export function setupContext<
-    T extends FeatureDescriptor | EngineFeatureConstructor,
+    T extends FeatureClass,
     E extends AnyEnvironment,
-    K extends keyof DescriptorType<T>['context'] & string
+    K extends keyof InstanceType<T>['context'] & string
 >(
     feature: T,
     _environment: E, // TODO: add handlers in environments buckets with validation per environment?
     environmentContextKey: K,
-    contextHandler: ContextHandler<DescriptorType<T>, E, K>
-) {
+    contextHandler: ContextHandler<InstanceType<T>, E, K>
+): T {
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateContextRegistration(environmentContextKey, feature.id, info.contexts);
     info.contexts.set(environmentContextKey, contextHandler);
+    return feature;
 }
 
 export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureId: string, registered: Set<string>) {
@@ -163,18 +175,29 @@ function validateRegistration(feature: FeatureDescriptor) {
     if (!feature.id) {
         throw new Error('Feature must have an id');
     }
+    return feature.id;
 }
 
-export type RuntimeInfo = {
+type RuntimeInfo = {
     setups: SetMultiMap<string, SetupHandler<any, any>>;
     contexts: Map<string, ContextHandler<any, any, any>>;
     envs: Set<string>;
 };
 
-export type FeatureDependencies = ReadonlyArray<{ new (): FeatureDescriptor }>;
+export type FeatureClass = {
+    id: string;
+    dependencies: FeatureDependencies;
+    context: Record<string, Context<unknown>>;
+    api: EntityRecord;
+    runtimeInfo?: RuntimeInfo;
+    isEngineFeature: boolean;
+    new (): FeatureDescriptor;
+};
+// export type FeatureClass = typeof EngineFeature<string>;
+
+export type FeatureDependencies = ReadonlyArray<FeatureClass>;
 
 export interface FeatureDescriptor {
-    runtimeInfo?: RuntimeInfo;
     id: string;
     api: EntityRecord;
     dependencies: FeatureDependencies;
@@ -206,3 +229,21 @@ export type SetupHandler<F extends FeatureDescriptor, E extends AnyEnvironment> 
 export type ContextHandler<F extends FeatureDescriptor, E extends AnyEnvironment, K extends keyof F['context']> = (
     runningFeatures: RunningFeatures<F['dependencies'], E>
 ) => F['context'][K] extends Context<infer U> ? U & {} : {};
+
+export type SetupHandler2<API extends EntityRecord, E extends AnyEnvironment> = (
+    feature: SettingUpFeature2<API, E>
+    // runningFeatures: RunningFeatures<F['dependencies'], E>,
+    // context: MapRecordType<F['context']>
+) => RegisteringFeature<API, OmitCompositeEnvironment<E>>;
+
+export type SettingUpFeature2<API extends EntityRecord, E extends AnyEnvironment> = {
+    id: string;
+    run: (fn: () => unknown) => void;
+    onDispose: (fn: () => unknown) => void;
+    [RUN_OPTIONS]: IRunOptions;
+    [ENGINE]: RuntimeEngine<E>;
+} & MapVisibleInputs<API, GloballyProvidingEnvironments> &
+    MapVisibleInputs<API, E> &
+    MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
+    MapType<GetDependenciesOutput<API, DeepEnvironmentDeps<E>>> &
+    MapToProxyType<FilterNotEnv<GetRemoteOutputs<API>, DeepEnvironmentDeps<E>, 'providedFrom'>>;

@@ -1,5 +1,5 @@
 import type { IFileSystemSync } from '@file-services/types';
-import type { FeatureDescriptor } from '@wixc3/engine-core';
+import type { FeatureClass } from '@wixc3/engine-core';
 import { concat, getValue, isPlainObject, map } from '@wixc3/common';
 import { SetMultiMap } from '@wixc3/patterns';
 import {
@@ -7,7 +7,7 @@ import {
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
-    parsePreloadFileName
+    parsePreloadFileName,
 } from '../build-constants';
 import { loadFeatureDirectory } from '../load-feature-directory';
 import { evaluateModule } from '../utils/evaluate-module';
@@ -46,7 +46,7 @@ export function loadFeaturesFromPaths(
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
-    const featureToScopedName = new Map<FeatureDescriptor, string>();
+    const featureToScopedName = new Map<FeatureClass, string>();
 
     // TODO change this loop into individual loops per task
     for (const { directoryPath, features, configurations, envs, contexts, preloads } of featureDirectories) {
@@ -153,9 +153,9 @@ function parseFoundFeature(
                 exportedEnvs: this.exportedEnvs,
                 resolvedContexts: this.resolvedContexts,
                 packageName: this.packageName,
-                scopedName
+                scopedName,
             };
-        }
+        },
     };
 }
 

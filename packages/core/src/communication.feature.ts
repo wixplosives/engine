@@ -4,13 +4,12 @@ import { LoggerService } from './com/logger-service';
 import type { Target } from './com/types';
 import { Config } from './entities/config';
 import { AllEnvironments, Universal } from './entities/env';
-import { Feature } from './entities/feature';
+import { EngineFeature } from './entities/feature-descriptor';
 import { Value } from './entities/value';
 import { Slot } from './entities/slot';
 import { RUN_OPTIONS, ENGINE } from './symbols';
 import { LoggerTransport, LogLevel } from './types';
 import { WindowInitializerService } from './com/window-initializer-service';
-
 export interface IComConfig {
     id?: string;
     host?: Target;
@@ -20,12 +19,13 @@ export interface IComConfig {
     logToConsole?: boolean;
     maxLogMessages: number;
     publicPath?: string;
-    connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
+    connectedEnvironments?: {
+        [environmentId: string]: ConfigEnvironmentRecord;
+    };
 }
-
-export default new Feature({
-    id: 'COM',
-    api: {
+export default class COM extends EngineFeature<'COM'> {
+    id = 'COM' as const;
+    api = {
         config: Config.withType<IComConfig>().defineEntity(
             {
                 id: '',
@@ -54,8 +54,10 @@ export default new Feature({
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Value.withType<LoggerService>().defineEntity(Universal),
         communication: Value.withType<Communication>().defineEntity(AllEnvironments),
-    },
-}).setup(
+    };
+}
+
+COM.setup(
     Universal,
     ({
         config: {
@@ -80,20 +82,17 @@ export default new Feature({
             process.title !== 'browser' &&
             // in electron process also have type 'renderer'
             process.type !== 'renderer';
-
         // iframe get `instanceId` with top level config
         // worker get `instanceId` set into `name` property when initialized as Environment.
         // it can be overridden using top level config.
         // main frame might not have that configured, so we use 'main' fallback for it.
         const comId =
             id || (host && host.name) || (typeof self !== 'undefined' && self.name) || engine.entryEnvironment.env;
-
         const comOptions: CommunicationOptions = {
             warnOnSlow: runOptions.has('warnOnSlow'),
             publicPath,
             connectedEnvironments,
         };
-
         const communication = new Communication(
             isNode ? host || new BaseHost() : self,
             comId,
@@ -102,17 +101,14 @@ export default new Feature({
             isNode,
             comOptions
         );
-
         // manually register window initialization api service to be used during
         // start of managed iframe in packages/core/src/com/initializers/iframe.ts
         communication.registerAPI({ id: WindowInitializerService.apiId }, new WindowInitializerService());
-
         const loggerService = new LoggerService(
             loggerTransports,
             { environment: communication.getEnvironmentId() },
             { severity: loggerSeverity, maxLogMessages, logToConsole }
         );
-
         onDispose(() => communication.dispose());
         return {
             loggerService,
@@ -120,6 +116,11 @@ export default new Feature({
         };
     }
 );
-
 // rather than including the entire node types we define it locally
-declare const process: { type?: string; title?: string; versions?: { node?: string } };
+declare const process: {
+    type?: string;
+    title?: string;
+    versions?: {
+        node?: string;
+    };
+};

@@ -1,12 +1,5 @@
 import type io from 'socket.io';
-import type {
-    Environment,
-    EnvironmentContext,
-    TopLevelConfig,
-    Feature,
-    AnyEnvironment,
-    FeatureDescriptor,
-} from '@wixc3/engine-core';
+import type { Environment, EnvironmentContext, TopLevelConfig, AnyEnvironment, FeatureClass } from '@wixc3/engine-core';
 import type {
     IEnvironmentDescriptor,
     IStaticFeatureDefinition,
@@ -44,7 +37,7 @@ export interface IFeatureModule {
     /**
      * Actual evaluated Feature instance exported from the file.
      */
-    exportedFeature: FeatureDescriptor;
+    exportedFeature: FeatureClass;
 
     /**
      * Exported environments from module.
@@ -114,7 +107,7 @@ export type SymbolList<T> = Array<{ name: string; value: T }>;
 export interface EvaluatedFeature {
     id: string;
     filePath: string;
-    features: SymbolList<Feature>;
+    features: SymbolList<FeatureClass>;
     environments: SymbolList<Environment>;
     contexts: SymbolList<EnvironmentContext>;
 }

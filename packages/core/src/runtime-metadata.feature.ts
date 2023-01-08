@@ -1,11 +1,9 @@
 import { Config } from './entities/config';
-import { Feature } from './entities/feature';
-
+import { EngineFeature } from './entities/feature-descriptor';
 export interface FoundFeatures {
     featureName: string;
     configurations: string[];
 }
-
 export interface EngineerMetadataConfig {
     devport?: number;
     applicationPath?: string;
@@ -13,13 +11,12 @@ export interface EngineerMetadataConfig {
     foundFeatures?: FoundFeatures[];
     isWorkspace?: boolean;
 }
-
-export default new Feature({
-    id: 'runtimeMetadata',
-    dependencies: [],
-    api: {
+export default class RuntimeMetadata extends EngineFeature<'runtimeMetadata'> {
+    id = 'runtimeMetadata' as const;
+    api = {
         engineerMetadataConfig: new Config<EngineerMetadataConfig>({
             applicationPath: '',
         }),
-    },
-});
+    };
+    dependencies = [];
+}

@@ -204,5 +204,9 @@ export async function dontRun() {
         };
     });
 
-    await new RuntimeEngine(env, []).run(AddPanel);
+    const engine = await new RuntimeEngine(env, []).run(AddPanel);
+    engine.get(AddPanel).api.service1;
+    engine.get(AddPanel).api.service3;
+    const _: 'addPanel' = engine.get(AddPanel).feature.id;
+    console.log(_);
 }

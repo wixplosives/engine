@@ -1,6 +1,5 @@
 export * from './config';
 export * from './env';
-export * from './feature';
 export * from './input';
 export * from './map-slot';
 export * from './ordered-slot';

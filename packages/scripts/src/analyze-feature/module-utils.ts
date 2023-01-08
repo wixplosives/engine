@@ -2,27 +2,24 @@ import { basename } from 'path';
 import {
     Environment,
     EnvironmentContext,
-    Feature,
-    getFeaturesDeep,
     SingleEndpointContextualEnvironment,
     flattenTree,
-    FeatureDescriptor,
+    FeatureClass,
 } from '@wixc3/engine-core';
 import { isFeatureFile, parseFeatureFileName } from '../build-constants';
 import { instanceOf } from '../utils/instance-of';
 import type { IFeatureDefinition, IFeatureModule } from '../types';
 import { parseContextualEnv, parseEnv } from './parse-env';
 
-function duckCheckFeature(maybeFeature: unknown): maybeFeature is FeatureDescriptor {
-    return (
-        typeof maybeFeature === 'object' &&
-        maybeFeature !== null &&
-        'id' in maybeFeature &&
-        'api' in maybeFeature &&
-        typeof (maybeFeature as any).id === 'string' &&
-        typeof (maybeFeature as any).api === 'object' &&
-        (maybeFeature as any).api !== null
-    );
+function isEngineFeature(Class: unknown) {
+    if (typeof Class !== 'function') {
+        return false;
+    }
+    return (Class as FeatureClass).isEngineFeature;
+}
+
+function getFeaturesDeep(feature: FeatureClass) {
+    return flattenTree(feature, (f) => f.dependencies);
 }
 
 export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {
@@ -30,9 +27,9 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
         throw new Error(`${filePath} does not export an object.`);
     }
 
-    const { default: exportedFeature } = exports as { default: FeatureDescriptor };
+    const { default: exportedFeature } = exports as { default: FeatureClass };
 
-    if (!instanceOf(exportedFeature, Feature) || !duckCheckFeature(exportedFeature)) {
+    if (!isEngineFeature(exportedFeature)) {
         throw new Error(`${filePath} does not "export default" a Feature.`);
     }
 
@@ -69,7 +66,7 @@ export const getFeatureModules = (module: NodeJS.Module) =>
     );
 
 export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
-    const featureToDef = new Map<FeatureDescriptor, IFeatureDefinition>();
+    const featureToDef = new Map<FeatureClass, IFeatureDefinition>();
     for (const featureDef of features.values()) {
         featureToDef.set(featureDef.exportedFeature, featureDef);
     }

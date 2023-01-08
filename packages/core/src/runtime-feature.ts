@@ -1,6 +1,6 @@
 import type { RuntimeEngine } from './runtime-engine';
 import type { AnyEnvironment } from './entities/env';
-import type { EngineFeatureConstructor, FeatureDescriptor, RunningFeatures } from './entities/feature-descriptor';
+import type { FeatureClass, RunningFeatures } from './entities/feature-descriptor';
 import { CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { DisposeFunction, Running } from './types';
@@ -9,16 +9,15 @@ import { deferred, IDeferredPromise } from 'promise-assist';
 /**
  * Represents a currently running feature instance.
  **/
-export class RuntimeFeature<T extends FeatureDescriptor, ENV extends AnyEnvironment> {
+export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> {
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
     private disposing: IDeferredPromise<void> | undefined;
-
     constructor(
-        public feature: T,
-        public api: Running<T, ENV>,
-        public dependencies: RunningFeatures<T['dependencies'], ENV>,
+        public feature: InstanceType<T>,
+        public api: Running<InstanceType<T>, ENV>,
+        public dependencies: RunningFeatures<InstanceType<T>['dependencies'], ENV>,
         public environment: ENV
     ) {}
     public addRunHandler = (fn: () => unknown) => {
@@ -60,12 +59,12 @@ export class RuntimeFeature<T extends FeatureDescriptor, ENV extends AnyEnvironm
     }
 }
 
-export function createFeatureRuntime<F extends EngineFeatureConstructor, E extends AnyEnvironment>(
-    FeatureConstructor: F,
+export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnvironment>(
+    FeatureClass: F,
     runningEngine: RuntimeEngine<E>
-): RuntimeFeature<InstanceType<F>, E> {
+): RuntimeFeature<F, E> {
     const { features, runOptions, referencedEnvs, entryEnvironment } = runningEngine;
-    const feature = new FeatureConstructor() as InstanceType<F>;
+    const feature = new FeatureClass();
     const deps: any = {};
     const depsApis: any = {};
     const runningApi: any = {};
@@ -74,8 +73,8 @@ export function createFeatureRuntime<F extends EngineFeatureConstructor, E exten
     const environmentContext: any = {};
     const apiEntries = Object.entries(feature.api);
 
-    const setupHandlers = FeatureConstructor.runtimeInfo!.setups || [];
-    const contextHandlers = FeatureConstructor.runtimeInfo!.contexts || [];
+    const contextHandlers = FeatureClass.runtimeInfo?.contexts;
+    const setupHandlers = FeatureClass.runtimeInfo?.setups;
 
     for (const [key, api] of Object.entries(feature.api)) {
         const entityFn = api[IDENTIFY_API];
@@ -85,7 +84,7 @@ export function createFeatureRuntime<F extends EngineFeatureConstructor, E exten
     }
 
     const featureRuntime = new RuntimeFeature(feature, runningApi, deps, entryEnvironment);
-    features.set(FeatureConstructor, featureRuntime);
+    features.set(FeatureClass, featureRuntime);
 
     for (const dep of feature.dependencies) {
         const instance = runningEngine.initFeature(dep);
@@ -109,27 +108,31 @@ export function createFeatureRuntime<F extends EngineFeatureConstructor, E exten
         runningEnvironmentName: entryEnvironment.env,
     };
 
-    for (const [key, contextHandler] of contextHandlers) {
-        environmentContext[key] = {
-            dispose: () => void 0,
-            ...contextHandler(depsApis),
-        };
+    if (contextHandlers) {
+        for (const [key, contextHandler] of contextHandlers) {
+            environmentContext[key] = {
+                dispose: () => void 0,
+                ...contextHandler(depsApis),
+            };
+        }
     }
 
-    for (const envName of referencedEnvs) {
-        const environmentSetupHandlers = setupHandlers.get(envName);
-        if (!environmentSetupHandlers) {
-            continue;
-        }
-        for (const setupHandler of environmentSetupHandlers) {
-            const featureOutput = setupHandler(settingUpFeature, depsApis, environmentContext);
-            if (!featureOutput) {
+    if (setupHandlers) {
+        for (const envName of referencedEnvs) {
+            const environmentSetupHandlers = setupHandlers.get(envName);
+            if (!environmentSetupHandlers) {
                 continue;
             }
-            for (const key of Object.keys(featureOutput)) {
-                settingUpFeature[key] = featureOutput[key];
+            for (const setupHandler of environmentSetupHandlers) {
+                const featureOutput = setupHandler(settingUpFeature, depsApis, environmentContext);
+                if (!featureOutput) {
+                    continue;
+                }
+                for (const key of Object.keys(featureOutput)) {
+                    settingUpFeature[key] = featureOutput[key];
+                }
+                Object.assign(providedAPI, featureOutput);
             }
-            Object.assign(providedAPI, featureOutput);
         }
     }
 

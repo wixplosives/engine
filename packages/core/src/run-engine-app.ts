@@ -1,12 +1,11 @@
 import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
-import type { AnyEnvironment, FeatureDescriptor } from './entities';
-import { flattenTree } from './helpers';
+import type { AnyEnvironment, FeatureClass } from './entities';
 import { deferred, IDeferredPromise } from 'promise-assist';
 
 export interface RunEngineOptions<ENV extends AnyEnvironment> {
-    entryFeature: FeatureDescriptor | FeatureDescriptor[];
+    entryFeature: FeatureClass | FeatureClass[];
     topLevelConfig?: TopLevelConfig;
     env: ENV;
     runOptions?: IRunOptions;
@@ -21,10 +20,8 @@ export function run<ENV extends AnyEnvironment>({
     return new RuntimeEngine(env, topLevelConfig, runOptions).run(entryFeature);
 }
 
-export const getFeaturesDeep = (feature: FeatureDescriptor) => flattenTree(feature, (f) => f.dependencies);
-
 export interface IFeatureLoader {
-    load: (resolvedContexts: Record<string, string>) => Promise<FeatureDescriptor> | FeatureDescriptor;
+    load: (resolvedContexts: Record<string, string>) => Promise<FeatureClass> | FeatureClass;
     preload: (
         resolveContexts: Record<string, string>
     ) => Promise<Array<(runtimeOptions: Record<string, string | boolean>) => void | Promise<void>>> | undefined;
@@ -41,7 +38,7 @@ export interface IRunEngineAppOptions<ENV extends AnyEnvironment> {
     options?: Map<string, string | boolean>;
     env: ENV;
     publicPath?: string;
-    features?: FeatureDescriptor[];
+    features?: FeatureClass[];
     resolvedContexts: Record<string, string>;
 }
 
@@ -97,7 +94,7 @@ export class FeatureLoadersRegistry {
     async getLoadedFeatures(
         rootFeatureName: string,
         runtimeOptions: Record<string, string | boolean> = {}
-    ): Promise<FeatureDescriptor[]> {
+    ): Promise<FeatureClass[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);
         for await (const depName of dependencies.reverse()) {

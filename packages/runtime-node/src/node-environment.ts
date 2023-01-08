@@ -1,6 +1,5 @@
 import {
     COM,
-    Feature,
     IFeatureLoader,
     runEngineApp,
     RuntimeEngine,
@@ -8,6 +7,7 @@ import {
     FeatureLoadersRegistry,
     IPreloadModule,
     AnyEnvironment,
+    FeatureClass,
 } from '@wixc3/engine-core';
 import { init, remapToUserLibrary, clear } from './external-request-mapper';
 
@@ -148,7 +148,7 @@ export function createFeatureLoaders(
                         await import(envFilePath);
                     }
                 }
-                return ((await import(filePath)) as { default: Feature }).default;
+                return ((await import(filePath)) as { default: FeatureClass }).default;
             },
             depFeatures: dependencies,
             resolvedContexts,

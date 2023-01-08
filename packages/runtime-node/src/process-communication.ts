@@ -40,7 +40,7 @@ export function createIPC(
             //TODO: check
             for (const [envName, config] of message.data.config ?? []) {
                 if (envName === COM.id) {
-                    const typedConfig = (config as PartialFeatureConfig<typeof COM['api']>).config ?? {};
+                    const typedConfig = (config as PartialFeatureConfig<COM['api']>).config ?? {};
                     const { connectedEnvironments: definedConnectedEnvironments } = typedConfig;
                     if (definedConnectedEnvironments) {
                         for (const [envToken, envRecord] of Object.entries(definedConnectedEnvironments)) {

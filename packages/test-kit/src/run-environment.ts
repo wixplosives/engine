@@ -9,14 +9,11 @@ import {
 import {
     TopLevelConfig,
     Environment,
-    Feature,
-    EntityRecord,
-    Context,
     RuntimeEngine,
     flattenTree,
     Running,
     AnyEnvironment,
-    FeatureDependencies,
+    FeatureClass,
 } from '@wixc3/engine-core';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
@@ -38,14 +35,9 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
     env: ENV;
 }
 
-export interface RunningFeatureOptions<
-    NAME extends string,
-    DEPS extends FeatureDependencies,
-    API extends EntityRecord,
-    CONTEXT extends Record<string, Context<unknown>>,
-    ENV extends AnyEnvironment
-> extends IRunNodeEnvironmentOptions<ENV> {
-    feature: Feature<NAME, DEPS, API, CONTEXT>;
+export interface RunningFeatureOptions<F extends FeatureClass, ENV extends AnyEnvironment>
+    extends IRunNodeEnvironmentOptions<ENV> {
+    feature: F;
 }
 
 export async function runEngineEnvironment<ENV extends AnyEnvironment>({
@@ -123,17 +115,11 @@ function locateEnvironment(
     return undefined;
 }
 
-export async function getRunningFeature<
-    NAME extends string,
-    DEPS extends FeatureDependencies,
-    API extends EntityRecord,
-    CONTEXT extends Record<string, Context<any>>,
-    ENV extends AnyEnvironment
->(
-    options: RunningFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
+export async function getRunningFeature<F extends FeatureClass, ENV extends AnyEnvironment>(
+    options: RunningFeatureOptions<F, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
-    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV>;
+    runningApi: Running<InstanceType<F>, ENV>;
     engine: RuntimeEngine;
 }> {
     const { feature } = options;
