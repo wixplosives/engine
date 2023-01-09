@@ -3,7 +3,7 @@ import type { CodeService } from './code-service';
 import type { ErrorService } from './error-service';
 
 export const MAIN = new Environment('main', 'window', 'single');
-export const PROCESSING = new Environment('processing', 'worker', 'single');
+export const PROCESSING = new Environment('processing', 'webworker', 'single');
 export interface SidebarItem {
     button: {
         text: string;

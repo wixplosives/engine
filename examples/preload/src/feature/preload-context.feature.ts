@@ -2,7 +2,7 @@ import { Feature, Environment, SingleEndpointContextualEnvironment, Service, COM
 import nonContextualFeature from './non-contextual.feature';
 
 const nodeEnv = new Environment('nodeCtx', 'node', 'single');
-const workerEnv = new Environment('workerCtx', 'worker', 'single');
+const workerEnv = new Environment('workerCtx', 'webworker', 'single');
 export const procEnv = new SingleEndpointContextualEnvironment('procEnv', [nodeEnv, workerEnv]);
 export const mainEnv = new Environment('main', 'window', 'single');
 

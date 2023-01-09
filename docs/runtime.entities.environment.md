@@ -26,7 +26,7 @@ The possible targets for an environment
 | window            | an environment which will be bundled, and html will be created for it and will append the bundle to the head of the html |
 | iframe            | very similar to the window environment, with the exception that it is ment to be a source of an ifame element            |
 | node              | node environment                                                                                                         |
-| worker            | environment which will be loaded in a browser worker                                                                     |
+| webworker         | environment which will be loaded in a browser webworker                                                                     |
 | electron-renderer | an environment which will be executed in an electron browser window                                                      |
 | electron-main     | the root electron process                                                                                                |
 | context           | [[runtime.entities.environment.targets.context]]                                                                         |

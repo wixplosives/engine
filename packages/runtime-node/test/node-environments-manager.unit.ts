@@ -161,7 +161,7 @@ describe('Node environments manager', function () {
         await expect(
             nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
         ).to.eventually.be.rejectedWith(
-            'cannot find feature test. available features: engine-node/x, engine-core/communication'
+            'cannot find feature test. available features: engine-core/communication, engine-node/x'
         );
     });
 

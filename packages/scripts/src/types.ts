@@ -1,13 +1,11 @@
 import type io from 'socket.io';
-import type { Environment, EnvironmentContext, TopLevelConfig, AnyEnvironment, FeatureClass } from '@wixc3/engine-core';
+import type { TopLevelConfig, AnyEnvironment, FeatureClass } from '@wixc3/engine-core';
 import type {
     IEnvironmentDescriptor,
     IStaticFeatureDefinition,
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
-
-export type JSRuntime = 'web' | 'webworker' | 'node';
 
 export interface IFeatureTarget {
     featureName?: string;
@@ -45,90 +43,10 @@ export interface IFeatureModule {
     exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[];
 
     /**
-     * If module exports any `processingEnv.use('worker')`,
-     * it will be set as `'processing': 'worker'`
+     * If module exports any `processingEnv.use('webworker')`,
+     * it will be set as `'processing': 'webworker'`
      */
     usedContexts?: Record<string, string>;
-}
-
-export interface VirtualEntry {
-    source: string;
-    filename: string;
-}
-
-export interface EngineEnvironmentDef {
-    name: string;
-    target: JSRuntime;
-    featureMapping: FeatureMapping;
-    envFiles: Set<string>;
-    contextFiles?: ReadonlySet<string>;
-    currentFeatureName: string;
-    currentConfigName: string;
-    publicPath?: string;
-    environmentContexts?: Record<string, string>;
-}
-
-export interface EngineContextDef {
-    name: string;
-    target: JSRuntime;
-    featureMapping: FeatureMapping;
-    contextFiles: Set<string>;
-    currentFeatureName: string;
-    currentConfigName: string;
-    publicPath?: string;
-}
-
-export interface EngineEnvironmentEntry {
-    name: string;
-    target: JSRuntime;
-    isRoot: boolean;
-    envFiles: Set<string>;
-    featureMapping: FeatureMapping;
-    entryFilename: string;
-    contextFiles?: Set<string>;
-}
-
-export interface WebpackEnvOptions {
-    port?: number;
-    environments: EngineEnvironmentEntry[];
-    contextFiles?: Set<string>;
-    basePath: string;
-    outputPath: string;
-}
-
-export interface SingleFeatureWithConfig {
-    featureFilePath: string;
-    configurations: { [configName: string]: string };
-    context: { [contextName: string]: string };
-}
-
-export type SymbolList<T> = Array<{ name: string; value: T }>;
-
-export interface EvaluatedFeature {
-    id: string;
-    filePath: string;
-    features: SymbolList<FeatureClass>;
-    environments: SymbolList<Environment>;
-    contexts: SymbolList<EnvironmentContext>;
-}
-
-export interface FeatureMapping {
-    mapping: { [featureName: string]: SingleFeatureWithConfig };
-    bootstrapFeatures: string[];
-    rootFeatureName: string;
-}
-
-export interface LinkInfo {
-    url: string;
-    feature: string;
-    config?: string;
-}
-
-export interface TestCommand {
-    flavor: string;
-    env: string;
-    watch: boolean;
-    debug: boolean;
 }
 
 export interface IFeatureMessagePayload {

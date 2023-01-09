@@ -13,7 +13,7 @@ export function resolveEnvironments(
     const featureDefinition = features.get(featureName);
     if (!featureDefinition) {
         const featureNames = Array.from(features.keys());
-        throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.join(', ')}`);
+        throw new Error(`cannot find feature ${featureName}. available features: ${featureNames.sort().join(', ')}`);
     }
     const { resolvedContexts } = featureDefinition;
     const deepDefsForFeature = flattenTree(featureDefinition, (f) =>

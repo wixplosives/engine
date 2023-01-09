@@ -2,7 +2,7 @@ import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment
 
 export const mainEnv = new Environment('main', 'window', 'single');
 
-const workerEnv = new Environment('worker', 'worker', 'single');
+const workerEnv = new Environment('webworker', 'webworker', 'single');
 const serverEnv = new Environment('server', 'node', 'single');
 export const contextualEnv = new SingleEndpointContextualEnvironment('contextual', [workerEnv, serverEnv]);
 
@@ -24,4 +24,4 @@ export default class MultiEnv extends Feature<'multiEnv'> {
     };
 }
 
-export const Context = contextualEnv.useContext('worker');
+export const Context = contextualEnv.useContext('webworker');

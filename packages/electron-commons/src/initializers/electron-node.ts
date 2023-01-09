@@ -9,7 +9,7 @@ const promisifiedTreeKill = promisify(treeKill);
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
     environmentStartupOptions?: Partial<NodeEnvironmentStartupOptions>;
-    processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env' | 'stdio'>;
+    processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env' | 'stdio' | 'windowsHide'>;
 }
 
 /**

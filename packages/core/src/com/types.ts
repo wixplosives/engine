@@ -6,7 +6,7 @@ export type SerializableMethod = (...args: SerializableArguments) => void;
 export type EnvironmentTypes =
     | 'window'
     | 'iframe'
-    | 'worker'
+    | 'webworker'
     | 'node'
     | 'context'
     | 'electron-renderer'

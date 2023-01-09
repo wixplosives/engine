@@ -6,4 +6,4 @@ export default class Use_worker_example extends Feature<'use-worker-example'> {
     api = {};
     dependencies = [MultiEnvFeature];
 }
-export const Context = processingEnv.useContext('worker1');
+export const Context = processingEnv.useContext('webworker1');
