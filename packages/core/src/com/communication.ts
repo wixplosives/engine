@@ -29,7 +29,7 @@ import {
     UnknownFunction,
     AnyServiceMethodOptions,
     ServiceComConfig,
-    REMOVED,
+    HOST_REMOVED,
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -699,7 +699,7 @@ export class Communication {
     private resolveMessageTarget(envId: string): Target {
         const env = this.environments[envId] || this.environments[this.rootEnvId];
         if (!env) {
-            return REMOVED;
+            return HOST_REMOVED;
         }
         const { host } = env;
         if (env.id !== this.rootEnvId) {

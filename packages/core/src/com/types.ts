@@ -28,8 +28,8 @@ export interface Target {
     postMessage(data: any, origin?: any): void;
 }
 
-export const REMOVED: Target = {
-    name: 'REMOVED',
+export const HOST_REMOVED: Target = {
+    name: 'HOST_REMOVED',
     addEventListener: () => void 0,
     removeEventListener: () => void 0,
     postMessage: () => void 0,
