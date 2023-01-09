@@ -27,6 +27,14 @@ export interface Target {
     removeEventListener(type: 'message', handler: (event: { data: any }) => void, capture?: boolean): void;
     postMessage(data: any, origin?: any): void;
 }
+
+export const REMOVED: Target = {
+    name: 'REMOVED',
+    addEventListener: () => void 0,
+    removeEventListener: () => void 0,
+    postMessage: () => void 0,
+} as const;
+
 export type WindowHost = HTMLIFrameElement | Window;
 
 export interface CallbackRecord<T> {

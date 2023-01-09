@@ -16,7 +16,7 @@ import type {
     Message,
     ReadyMessage,
 } from './message-types';
-import type {
+import {
     APIService,
     AsyncApi,
     CallbackRecord,
@@ -29,6 +29,7 @@ import type {
     UnknownFunction,
     AnyServiceMethodOptions,
     ServiceComConfig,
+    REMOVED,
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
@@ -696,19 +697,18 @@ export class Communication {
     }
 
     private resolveMessageTarget(envId: string): Target {
-        // TODO: make this more logical
-        let env = this.environments[envId]!;
-        if (env && env.id !== this.rootEnvId) {
-            return env.host;
+        const env = this.environments[envId] || this.environments[this.rootEnvId];
+        if (!env) {
+            return REMOVED;
+        }
+        const { host } = env;
+        if (env.id !== this.rootEnvId) {
+            return host;
         } else {
-            if (!env) {
-                env = this.environments[this.rootEnvId]!;
+            if (host instanceof BaseHost) {
+                return host.parent || host;
             }
-            const target = env.host;
-            if (target instanceof BaseHost) {
-                return target.parent || target;
-            }
-            return this.getPostEndpoint(target);
+            return this.getPostEndpoint(host);
         }
     }
 
