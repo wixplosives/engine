@@ -12,7 +12,7 @@
     "@wixc3/engine-core": "^32.0.0",
     "@wixc3/engine-core-node": "^32.0.0",
     "@wixc3/patterns": "^6.0.0",
-    "create-listening-server": "^1.0.0",
+    "create-listening-server": "^2.0.0",
     "minimist": "^1.2.7",
     "socket.io": "^4.5.4"
   },
