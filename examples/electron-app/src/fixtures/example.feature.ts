@@ -1,7 +1,7 @@
-import { EngineFeature } from '@wixc3/engine-core';
+import { Feature } from '@wixc3/engine-core';
 import ElectronApp from '../feature/electron-app.feature';
 
-export default class ElectronAppFixture extends EngineFeature<'electronAppFixture'> {
+export default class ElectronAppFixture extends Feature<'electronAppFixture'> {
     id = 'electronAppFixture' as const;
     api = {};
     dependencies = [ElectronApp];

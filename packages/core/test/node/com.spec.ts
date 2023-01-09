@@ -11,7 +11,7 @@ import {
     EventEmitterHost,
     Message,
     Environment,
-    EngineFeature,
+    Feature,
     Service,
     RuntimeEngine,
     COM,
@@ -507,7 +507,7 @@ describe('environment-dependencies communication', () => {
         const env1 = new Environment('env1', 'node', 'single', [base]);
 
         const env2 = new Environment('env2', 'node', 'single');
-        class f extends EngineFeature<'base'> {
+        class f extends Feature<'base'> {
             id = 'base' as const;
             api = {
                 service1: Service.withType<{

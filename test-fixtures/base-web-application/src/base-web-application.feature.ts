@@ -1,10 +1,10 @@
-import { COM, Environment, EngineFeature, Service, Slot } from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service, Slot } from '@wixc3/engine-core';
 
 export const client = new Environment('main', 'window', 'single');
 export const server = new Environment('server', 'node', 'single');
 export const iframe = new Environment('iframe', 'iframe', 'single');
 
-export default class BaseApp extends EngineFeature<'baseApp'> {
+export default class BaseApp extends Feature<'baseApp'> {
     id = 'baseApp' as const;
     api = {
         clientSlot: Slot.withType<string>().defineEntity(client),

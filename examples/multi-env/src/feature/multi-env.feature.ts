@@ -1,7 +1,7 @@
 import {
     COM,
     Environment,
-    EngineFeature,
+    Feature,
     Service,
     SingleEndpointContextualEnvironment,
     Config,
@@ -18,7 +18,7 @@ export interface IEchoService {
 export interface INameProvider {
     name: () => string;
 }
-export default class Contextual_environment_test extends EngineFeature<'contextual-environment-test'> {
+export default class Contextual_environment_test extends Feature<'contextual-environment-test'> {
     id = 'contextual-environment-test' as const;
     api = {
         config: new Config<{

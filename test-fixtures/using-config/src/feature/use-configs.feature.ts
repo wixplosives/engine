@@ -1,4 +1,4 @@
-import { Config, Environment, EngineFeature } from '@wixc3/engine-core';
+import { Config, Environment, Feature } from '@wixc3/engine-core';
 
 export const main = new Environment('main', 'window', 'single');
 
@@ -6,7 +6,7 @@ export interface IDefaultConfig {
     echoText: string;
 }
 
-export default class WithConfigs extends EngineFeature<'withConfigs'> {
+export default class WithConfigs extends Feature<'withConfigs'> {
     id = 'withConfigs' as const;
     api = {
         config: new Config<IDefaultConfig>({ echoText: 'hello' }),

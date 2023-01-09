@@ -5,7 +5,7 @@ import {
     AsyncApi,
     Environment,
     EnvironmentInstanceToken,
-    EngineFeature,
+    Feature,
     run as runEngine,
     Service,
 } from '@wixc3/engine-core';
@@ -19,7 +19,7 @@ describe('ENV dependencies', () => {
     it('simple env dependency', async () => {
         const baseEnv = new Environment('baseEnv', 'node', 'multi', []);
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
-        class entryFeature extends EngineFeature<'test'> {
+        class entryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 service: Service.withType<{
@@ -52,7 +52,7 @@ describe('ENV dependencies', () => {
     it('env and feature dependency dependency', async () => {
         const baseEnv = new Environment('baseEnv', 'node', 'multi');
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
-        class entryFeature extends EngineFeature<'entry'> {
+        class entryFeature extends Feature<'entry'> {
             id = 'entry' as const;
             api = {
                 service: Service.withType<{
@@ -63,7 +63,7 @@ describe('ENV dependencies', () => {
                 }>().defineEntity(extendingEnv),
             };
         }
-        class extendingFeature extends EngineFeature<'extending'> {
+        class extendingFeature extends Feature<'extending'> {
             id = 'extending' as const;
             api = {
                 service: Service.withType<{
@@ -115,7 +115,7 @@ describe('ENV dependencies', () => {
         type EchoService = {
             echo: (n: string) => string;
         };
-        class entryFeature extends EngineFeature<'entry'> {
+        class entryFeature extends Feature<'entry'> {
             id = 'entry' as const;
             api = {
                 service1: Service.withType<EchoService>().defineEntity(env1),
@@ -151,7 +151,7 @@ describe('ENV dependencies', () => {
         expect(runningFeature.api.service1.echo('Test')).to.equal('env1 Test');
         expect(runningFeature.api.service2.echo('Test')).to.equal('env2 Test');
         expect(runningFeature.api.service3.echo('Test')).to.equal('env3 Test');
-        (class TestFeatureDeps extends EngineFeature<'testFeatureDeps'> {
+        (class TestFeatureDeps extends Feature<'testFeatureDeps'> {
             id = 'testFeatureDeps' as const;
             api = {};
             dependencies = [entryFeature];
@@ -174,7 +174,7 @@ describe('ENV dependencies', () => {
     it('env dependency preserve multi when accessing from other env', () => {
         const baseEnv = new Environment('baseEnv', 'node', 'multi');
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
-        class entryFeature extends EngineFeature<'test'> {
+        class entryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 service: Service.withType<{

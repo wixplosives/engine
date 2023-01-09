@@ -1,6 +1,6 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { COM, Environment, EngineFeature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
+import { COM, Environment, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
@@ -189,7 +189,7 @@ describe('Node environments manager', function () {
     });
 
     describe('Node environment manager socket communication', () => {
-        const proxyFeature = class Test extends EngineFeature<'test'> {
+        const proxyFeature = class Test extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 echoService: Service.withType<{
@@ -287,7 +287,7 @@ describe('Node environments manager', function () {
         });
     });
     describe('Node environment manager ipc communication', () => {
-        const testFeature = class Test extends EngineFeature<'test'> {
+        const testFeature = class Test extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 echoService: Service.withType<{

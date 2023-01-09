@@ -1,23 +1,23 @@
 import { buildFeatureLinks } from '@wixc3/engineer/dist/feature-dependency-graph';
-import { EngineFeature } from '@wixc3/engine-core';
+import { Feature } from '@wixc3/engine-core';
 import { expect } from 'chai';
 
-class noDepsFeature extends EngineFeature<'noDepsFeature'> {
+class noDepsFeature extends Feature<'noDepsFeature'> {
     id = 'noDepsFeature' as const;
     api = {};
     dependencies = [];
 }
-class simpleDepFeature extends EngineFeature<'simpleDepFeature'> {
+class simpleDepFeature extends Feature<'simpleDepFeature'> {
     id = 'simpleDepFeature' as const;
     api = {};
     dependencies = [noDepsFeature];
 }
-class shareDepWithDepFeature extends EngineFeature<'shareDepWithDepFeature'> {
+class shareDepWithDepFeature extends Feature<'shareDepWithDepFeature'> {
     id = 'shareDepWithDepFeature' as const;
     api = {};
     dependencies = [noDepsFeature, simpleDepFeature];
 }
-class multiLevelFeature extends EngineFeature<'multLevel'> {
+class multiLevelFeature extends Feature<'multLevel'> {
     id = 'multLevel' as const;
     api = {};
     dependencies = [simpleDepFeature, shareDepWithDepFeature];

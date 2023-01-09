@@ -37,7 +37,7 @@ import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
         public context = {};
     }
  */
-export class EngineFeature<T extends string> {
+export class Feature<T extends string> {
     public id: T = '' as T;
     public api: EntityRecord = {};
     public dependencies: FeatureDependencies = [];

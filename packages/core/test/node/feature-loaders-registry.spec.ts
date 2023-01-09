@@ -1,4 +1,4 @@
-import { FeatureLoadersRegistry, EngineFeature, IFeatureLoader } from '@wixc3/engine-core';
+import { FeatureLoadersRegistry, Feature, IFeatureLoader } from '@wixc3/engine-core';
 import chai, { expect } from 'chai';
 import { spy } from 'sinon';
 import sinon from 'sinon-chai';
@@ -10,7 +10,7 @@ chai.use(chaiAsPromised);
 describe('Feature loader registry', () => {
     it('loads a feature', async () => {
         const loaded = spy();
-        class f extends EngineFeature<'test'> {
+        class f extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }
@@ -35,7 +35,7 @@ describe('Feature loader registry', () => {
     it('loads a feature with dependencies', async () => {
         const loaded = spy();
         const depLoaded = spy();
-        class f extends EngineFeature<'test'> {
+        class f extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }
@@ -69,7 +69,7 @@ describe('Feature loader registry', () => {
 
     it('does not load a feature without its dependencies', async () => {
         const loaded = spy();
-        class f extends EngineFeature<'test'> {
+        class f extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }
@@ -103,7 +103,7 @@ describe('Feature loader registry', () => {
     });
 
     it('retrieves all feature deep dependencies', async () => {
-        class f extends EngineFeature<'test'> {
+        class f extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }

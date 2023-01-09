@@ -4,7 +4,7 @@ import { LoggerService } from './com/logger-service';
 import type { Target } from './com/types';
 import { Config } from './entities/config';
 import { AllEnvironments, Universal } from './entities/env';
-import { EngineFeature } from './entities/feature-descriptor';
+import { Feature } from './entities/feature-descriptor';
 import { Value } from './entities/value';
 import { Slot } from './entities/slot';
 import { RUN_OPTIONS, ENGINE } from './symbols';
@@ -23,7 +23,7 @@ export interface IComConfig {
         [environmentId: string]: ConfigEnvironmentRecord;
     };
 }
-export default class COM extends EngineFeature<'COM'> {
+export default class COM extends Feature<'COM'> {
     id = 'COM' as const;
     api = {
         config: Config.withType<IComConfig>().defineEntity(

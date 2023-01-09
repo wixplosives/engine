@@ -1,8 +1,8 @@
-import { EngineFeature, Slot } from '@wixc3/engine-core';
+import { Feature, Slot } from '@wixc3/engine-core';
 import type React from 'react';
 import reactRendererFeature, { MainEnv } from './react-renderer.feature';
 
-export default class GuiFeature extends EngineFeature<'guiFeature'> {
+export default class GuiFeature extends Feature<'guiFeature'> {
     id = 'guiFeature' as const;
     api = {
         extentionSlot: Slot.withType<React.ReactElement>().defineEntity(MainEnv),

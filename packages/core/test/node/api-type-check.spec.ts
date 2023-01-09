@@ -14,7 +14,7 @@ import {
     Slot,
     ENGINE,
     RunningFeatures,
-    EngineFeature,
+    Feature,
 } from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 
@@ -25,7 +25,7 @@ const ZAG = new Environment('zag', 'window', 'single');
 const MAIN_1 = new Environment('main1', 'window', 'single');
 
 // show case both the old and new way of defining features working together
-class Logger extends EngineFeature<'logger'> {
+class Logger extends Feature<'logger'> {
     id = 'logger' as const;
     api = {
         config: Config.withType<{ time: number }>().defineEntity({ time: 1 }),
@@ -68,7 +68,7 @@ typeCheck(
 );
 /* ------------------------------------------------- */
 
-class GUI extends EngineFeature<'gui'> {
+class GUI extends Feature<'gui'> {
     id = 'gui' as const;
     api = {
         panelSlot: Slot.withType<{ panelID: string }>().defineEntity(MAIN),
@@ -109,7 +109,7 @@ interface ComponentDescription {
     description: string;
 }
 
-class AddPanel extends EngineFeature<'addPanel'> {
+class AddPanel extends Feature<'addPanel'> {
     id = 'addPanel' as const;
     api = {
         componentDescription: Slot.withType<ComponentDescription>().defineEntity(MAIN),

@@ -10,7 +10,7 @@ import {
     CREATE_RUNTIME,
     DisposeFunction,
     Environment,
-    EngineFeature,
+    Feature,
     FeatureInput,
     IDENTIFY_API,
     IRunOptions,
@@ -32,7 +32,7 @@ chai.use(chaiAsPromised);
 
 describe('Feature', () => {
     it('feature should be singleton', () => {
-        class EntryFeature extends EngineFeature<'test'> {
+        class EntryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 config: Config.withType<{
@@ -43,7 +43,7 @@ describe('Feature', () => {
         expect(new EntryFeature()).to.equal(new EntryFeature());
     });
     it('single feature entry', async () => {
-        class entryFeature extends EngineFeature<'test'> {
+        class entryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 config: Config.withType<{
@@ -56,7 +56,7 @@ describe('Feature', () => {
     });
 
     it('single feature entry with dependencies', async () => {
-        class f1 extends EngineFeature<'test1'> {
+        class f1 extends Feature<'test1'> {
             id = 'test1' as const;
             api = {
                 config: Config.withType<{
@@ -64,7 +64,7 @@ describe('Feature', () => {
                 }>().defineEntity({ name: 'test1' }),
             };
         }
-        class f2 extends EngineFeature<'test2'> {
+        class f2 extends Feature<'test2'> {
             id = 'test2' as const;
             api = {
                 config: Config.withType<{
@@ -83,11 +83,11 @@ describe('Feature', () => {
     });
 
     it('feature run stage', async () => {
-        class f0 extends EngineFeature<'test1'> {
+        class f0 extends Feature<'test1'> {
             id = 'test1' as const;
             api = {};
         }
-        class entryFeature extends EngineFeature<'test2'> {
+        class entryFeature extends Feature<'test2'> {
             id = 'test2' as const;
             api = {};
             dependencies = [f0];
@@ -112,11 +112,11 @@ describe('Feature', () => {
     });
 
     it('feature setup/run stage should not happen twice', async () => {
-        class f0 extends EngineFeature<'test1'> {
+        class f0 extends Feature<'test1'> {
             id = 'test1' as const;
             api = {};
         }
-        class f1 extends EngineFeature<'test2'> {
+        class f1 extends Feature<'test2'> {
             id = 'test2' as const;
             api = {};
             dependencies = [f0];
@@ -147,7 +147,7 @@ describe('Feature', () => {
         const spyEnvTwo = spy();
         const oneEnv = new Environment('one', 'node', 'single');
         const twoEnv = new Environment('two', 'node', 'single');
-        class entryFeature extends EngineFeature<'test'> {
+        class entryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }
@@ -160,7 +160,7 @@ describe('Feature', () => {
 
     it('feature should provide requirements (outputs) of each environment', async () => {
         const MAIN1 = new Environment('main1', 'window', 'single');
-        class f0 extends EngineFeature<'test'> {
+        class f0 extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 service1: Service.withType<{
@@ -198,7 +198,7 @@ describe('Feature', () => {
 
     it('feature should throw if setup is called with same environment twice', () => {
         const mainEnv = new Environment('main1', 'window', 'single');
-        class f0 extends EngineFeature<'test'> {
+        class f0 extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 service1: Service.withType<{
@@ -231,7 +231,7 @@ describe('Feature', () => {
 
     it('Universal input apis should be available universally', async () => {
         const env = new Environment('main', 'window', 'single');
-        class f0 extends EngineFeature<'test'> {
+        class f0 extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 slot1: Slot.withType<{
@@ -272,7 +272,7 @@ describe('Feature', () => {
 
     describe('Feature Config', () => {
         it('support multiple top level partial configs', async () => {
-            class entryFeature extends EngineFeature<'test'> {
+            class entryFeature extends Feature<'test'> {
                 id = 'test' as const;
                 api = {
                     config: Config.withType<{
@@ -308,7 +308,7 @@ describe('Feature', () => {
         });
 
         it('support config merger', async () => {
-            class entryFeature extends EngineFeature<'test'> {
+            class entryFeature extends Feature<'test'> {
                 id = 'test' as const;
                 api = {
                     config: Config.withType<{
@@ -349,7 +349,7 @@ describe('Feature', () => {
     describe('Support Map Slots', () => {
         it('single feature that supports map slots', async () => {
             const mainEnv = new Environment('main', 'node', 'single');
-            const maps = class TestSlotsFeature extends EngineFeature<'testSlotsFeature'> {
+            const maps = class TestSlotsFeature extends Feature<'testSlotsFeature'> {
                 id = 'testSlotsFeature' as const;
                 api = {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
@@ -366,7 +366,7 @@ describe('Feature', () => {
                     },
                 };
             });
-            const entryFeature = class TestSlotsSecondFeature extends EngineFeature<'testSlotsSecondFeature'> {
+            const entryFeature = class TestSlotsSecondFeature extends Feature<'testSlotsSecondFeature'> {
                 id = 'testSlotsSecondFeature' as const;
                 api = {};
                 dependencies = [maps];
@@ -381,7 +381,7 @@ describe('Feature', () => {
 
         it('two features that adds to slots', async () => {
             const mainEnv = new Environment('main', 'node', 'single');
-            const maps = class TestSlotsFeature extends EngineFeature<'testSlotsFeature'> {
+            const maps = class TestSlotsFeature extends Feature<'testSlotsFeature'> {
                 id = 'testSlotsFeature' as const;
                 api = {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
@@ -398,7 +398,7 @@ describe('Feature', () => {
                     },
                 };
             });
-            const f1 = class TestSlotsFirstFeature extends EngineFeature<'testSlotsFirstFeature'> {
+            const f1 = class TestSlotsFirstFeature extends Feature<'testSlotsFirstFeature'> {
                 id = 'testSlotsFirstFeature' as const;
                 api = {};
                 dependencies = [maps];
@@ -406,7 +406,7 @@ describe('Feature', () => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
             });
-            const f2 = class TestSlotsSecondFeature extends EngineFeature<'testSlotsSecondFeature'> {
+            const f2 = class TestSlotsSecondFeature extends Feature<'testSlotsSecondFeature'> {
                 id = 'testSlotsSecondFeature' as const;
                 api = {};
                 dependencies = [maps];
@@ -421,7 +421,7 @@ describe('Feature', () => {
 
         it('try to get value from the slot, when the key is not in the map', async () => {
             const mainEnv = new Environment('main', 'node', 'single');
-            const maps = class TestSlotsFeature extends EngineFeature<'testSlotsFeature'> {
+            const maps = class TestSlotsFeature extends Feature<'testSlotsFeature'> {
                 id = 'testSlotsFeature' as const;
                 api = {
                     mapSlot: MapSlot.withType<string, string>().defineEntity(mainEnv),
@@ -438,7 +438,7 @@ describe('Feature', () => {
                     },
                 };
             });
-            const entryFeature = class TestSlotsFirstFeature extends EngineFeature<'testSlotsFirstFeature'> {
+            const entryFeature = class TestSlotsFirstFeature extends Feature<'testSlotsFirstFeature'> {
                 id = 'testSlotsFirstFeature' as const;
                 api = {};
                 dependencies = [maps];
@@ -489,7 +489,7 @@ describe('Feature', () => {
             }
         }
         it('when creating a new feature the APIs should be identified ', async () => {
-            class Ids extends EngineFeature<'testIdentify'> {
+            class Ids extends Feature<'testIdentify'> {
                 id = 'testIdentify' as const;
                 api = {
                     identifiable: new Identifiable(),
@@ -511,7 +511,7 @@ describe('Feature', () => {
 describe('feature interaction', () => {
     it('should run engine with two features interacting', async () => {
         const mainEnv = new Environment('main', 'node', 'single');
-        const echoFeature = class EchoFeature extends EngineFeature<'echoFeature'> {
+        const echoFeature = class EchoFeature extends Feature<'echoFeature'> {
             id = 'echoFeature' as const;
             api = {
                 transformers: Slot.withType<(s: string) => string>().defineEntity(mainEnv),
@@ -532,7 +532,7 @@ describe('feature interaction', () => {
         });
 
         ////////////////////////////////////////////////////////
-        const entryFeature = class Feature2 extends EngineFeature<'feature2'> {
+        const entryFeature = class Feature2 extends Feature<'feature2'> {
             id = 'feature2' as const;
             api = {
                 config: Config.withType<{
@@ -572,7 +572,7 @@ describe('Contextual environments', () => {
         interface ProcessingContext {
             name: string;
         }
-        class entryFeature extends EngineFeature<'echoFeature'> {
+        class entryFeature extends Feature<'echoFeature'> {
             id = 'echoFeature' as const;
             api = {
                 echoService: Service.withType<{
@@ -619,7 +619,7 @@ describe('feature disposal', () => {
     it('disposes a feature on engine dispose call', async () => {
         const envName = 'main';
         const mainEnv = new Environment(envName, 'window', 'single');
-        class entryFeature extends EngineFeature<'test'> {
+        class entryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }
@@ -641,7 +641,7 @@ describe('feature disposal', () => {
     it('allows feature to register to onDispose several times', async () => {
         const envName = 'main';
         const mainEnv = new Environment(envName, 'window', 'single');
-        class entryFeature extends EngineFeature<'test'> {
+        class entryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }
@@ -667,7 +667,7 @@ describe('feature disposal', () => {
     it('throws an error if on of the onDispose functiones was rejected', async () => {
         const envName = 'main';
         const mainEnv = new Environment(envName, 'window', 'single');
-        class entryFeature extends EngineFeature<'test'> {
+        class entryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }
@@ -693,7 +693,7 @@ describe('feature disposal', () => {
     it('disposes a feature only once', async () => {
         const envName = 'main';
         const mainEnv = new Environment(envName, 'window', 'single');
-        class entryFeature extends EngineFeature<'test'> {
+        class entryFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {};
         }
@@ -719,7 +719,7 @@ describe('service with remove access environment visibility', () => {
     it('local services in the same env uses the provided implementation', async () => {
         const processing = new Environment('processing', 'worker', 'multi');
         const main = new Environment('main', 'worker', 'single');
-        class EchoFeature extends EngineFeature<'echoFeature'> {
+        class EchoFeature extends Feature<'echoFeature'> {
             id = 'echoFeature' as const;
             api = {
                 echoService: Service.withType<{
@@ -746,7 +746,7 @@ describe('service with remove access environment visibility', () => {
             // this is the proxy! because we are in different env.
             expect(typeof echoService.get === 'function');
         });
-        class testFeature extends EngineFeature<'test'> {
+        class testFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {};
             dependencies = [EchoFeature];
@@ -777,7 +777,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
         const main = new Environment('main', 'window', 'single');
         const processing = new Environment('processing', 'worker', 'single');
-        (class EchoFeature extends EngineFeature<'echoFeature'> {
+        (class EchoFeature extends Feature<'echoFeature'> {
             id = 'echoFeature' as const;
             api = {
                 slot: Slot.withType<{
@@ -812,7 +812,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('allow spawn of new environments and use remote services', () => {
         const main = new Environment('main', 'window', 'single');
         const processing = new Environment('processing', 'worker', 'single');
-        class echoFeature extends EngineFeature<'echoFeature'> {
+        class echoFeature extends Feature<'echoFeature'> {
             id = 'echoFeature' as const;
             api = {
                 echoService: Service.withType<{
@@ -834,7 +834,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
         });
 
         const checks = [];
-        class testFeature extends EngineFeature<'test'> {
+        class testFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {};
             dependencies = [echoFeature];
@@ -858,7 +858,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 describe.skip('Environments Type tests 1', () => {
     it('feature remote api should be available inside same feature setup', () => {
         const processing = new Environment('processing', 'worker', 'single');
-        class echoFeature extends EngineFeature<'echoFeature'> {
+        class echoFeature extends Feature<'echoFeature'> {
             id = 'echoFeature' as const;
             api = {
                 // processing,

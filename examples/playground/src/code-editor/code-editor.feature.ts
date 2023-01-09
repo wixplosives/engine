@@ -1,4 +1,4 @@
-import { COM, Environment, EngineFeature, Service, Slot } from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service, Slot } from '@wixc3/engine-core';
 import type { CodeService } from './code-service';
 import type { ErrorService } from './error-service';
 
@@ -12,7 +12,7 @@ export interface SidebarItem {
     panel: () => HTMLElement;
 }
 
-export default class PlaygroundCodeEditor extends EngineFeature<'playgroundCodeEditor'> {
+export default class PlaygroundCodeEditor extends Feature<'playgroundCodeEditor'> {
     id = 'playgroundCodeEditor' as const;
     api = {
         sidebarSlot: Slot.withType<SidebarItem>().defineEntity(MAIN),
