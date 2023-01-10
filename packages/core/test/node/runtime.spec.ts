@@ -517,7 +517,7 @@ describe('feature interaction', () => {
 
 describe('Contextual environments', () => {
     it('Feature should define contextual environment, set up the environment context and use it in the environment setup', async () => {
-        const workerEnv = new Environment('worker', 'worker', 'single');
+        const workerEnv = new Environment('webworker', 'webworker', 'single');
         const processing = new SingleEndpointContextualEnvironment('processing', [workerEnv]);
 
         interface IProcessingContext {
@@ -664,8 +664,8 @@ describe('feature disposal', () => {
 
 describe('service with remove access environment visibility', () => {
     it('local services in the same env uses the provided implementation', async () => {
-        const processing = new Environment('processing', 'worker', 'multi');
-        const main = new Environment('main', 'worker', 'single');
+        const processing = new Environment('processing', 'webworker', 'multi');
+        const main = new Environment('main', 'webworker', 'single');
 
         const echoFeature = new Feature({
             id: 'echoFeature',
@@ -727,7 +727,7 @@ describe('service with remove access environment visibility', () => {
 describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
         const main = new Environment('main', 'window', 'single');
-        const processing = new Environment('processing', 'worker', 'single');
+        const processing = new Environment('processing', 'webworker', 'single');
 
         new Feature({
             id: 'echoFeature',
@@ -761,7 +761,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
     it('allow spawn of new environments and use remote services', () => {
         const main = new Environment('main', 'window', 'single');
-        const processing = new Environment('processing', 'worker', 'single');
+        const processing = new Environment('processing', 'webworker', 'single');
 
         const echoFeature = new Feature({
             id: 'echoFeature',
@@ -807,7 +807,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
 describe.skip('Environments Type tests 1', () => {
     it('feature remote api should be available inside same feature setup', () => {
-        const processing = new Environment('processing', 'worker', 'single');
+        const processing = new Environment('processing', 'webworker', 'single');
 
         const echoFeature = new Feature({
             id: 'echoFeature',

@@ -1,4 +1,4 @@
-import { workerInitializer } from '@wixc3/engine-core';
+import { webWorkerInitializer } from '@wixc3/engine-core';
 import CodeEditor, { MAIN, PROCESSING } from './code-editor.feature';
 import { CodeService } from './code-service';
 import { ErrorService } from './error-service';
@@ -25,7 +25,7 @@ CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { communication } }) => {
     });
 
     run(async () => {
-        await workerInitializer({ communication, env: PROCESSING }); // returns processingID
+        await webWorkerInitializer({ communication, env: PROCESSING }); // returns processingID
         const { codeInput, sidebar } = render();
 
         codeInput.value = codeService.getContent();

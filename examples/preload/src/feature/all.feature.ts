@@ -4,7 +4,7 @@ globalThis.envMessages = [...(globalThis.envMessages ?? []), 'feature'];
 
 export const nodeEnv = new Environment('node1', 'node', 'single');
 export const mainEnv = new Environment('main', 'window', 'single');
-export const workerEnv = new Environment('worker1', 'worker', 'single');
+export const workerEnv = new Environment('webworker1', 'webworker', 'single');
 
 export default new Feature({
     id: 'allfeature',

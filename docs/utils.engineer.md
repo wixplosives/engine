@@ -32,7 +32,7 @@ Every node environment launched as a socket server environment, and it's address
 
 ^compile_webpack
 
-Will create a webpack compiler, and for every browser environment found (`window`|`iframe`|`worker`|`electron-renderer`) will generate an entry, which when evaluated will run a method which will parse from the URL params the feature name (`feature` param) and the config name (`config` param) and will start the engine application with the provided feature, on that environment.
+Will create a webpack compiler, and for every browser environment found (`window`|`iframe`|`webworker`|`electron-renderer`) will generate an entry, which when evaluated will run a method which will parse from the URL params the feature name (`feature` param) and the config name (`config` param) and will start the engine application with the provided feature, on that environment.
 
 - engineer will use the webpack.config located in the `baseDir` to bundle the entry it generates for each environments.
 

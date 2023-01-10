@@ -326,16 +326,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             async function getMetrics(): Promise<PerformanceMetrics> {
                 const measures = await executableApp.getMetrics();
-                for (const worker of featurePage.workers()) {
-                    const workerEntries = await worker.evaluate(() => {
+                for (const webWorker of featurePage.workers()) {
+                    const perfEntries = await webWorker.evaluate(() => {
                         return {
                             marks: JSON.stringify(globalThis.performance.getEntriesByType('mark')),
                             measures: JSON.stringify(globalThis.performance.getEntriesByType('measure')),
                         };
                     });
 
-                    measures.marks.push(...(JSON.parse(workerEntries.marks) as PerformanceEntry[]));
-                    measures.measures.push(...(JSON.parse(workerEntries.measures) as PerformanceEntry[]));
+                    measures.marks.push(...(JSON.parse(perfEntries.marks) as PerformanceEntry[]));
+                    measures.measures.push(...(JSON.parse(perfEntries.measures) as PerformanceEntry[]));
                 }
 
                 for (const frame of featurePage.frames()) {
