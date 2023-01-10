@@ -63,7 +63,10 @@ export class Service<
             const localEnv = communication.getEnvironmentName();
             if (providedFrom.has(localEnv) || providedFrom.has(Universal.env)) {
                 if (!providedValue) {
-                    throw new Error('service is not provide in runtime');
+                    throw new Error(
+                        `Service is not provided in runtime.
+                        Make sure environment setup file exist and correctly typed: [featureName].[envName].env.[ext]`
+                    );
                 }
                 communication.registerAPI({ id: serviceKey }, providedValue);
                 return providedValue;
