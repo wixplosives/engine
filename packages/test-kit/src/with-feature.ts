@@ -98,6 +98,8 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      * add tracing for the entire suite, the name of the test will be used as the zip name
      */
     tracing?: boolean | Omit<Tracing, 'name'>;
+
+    browserToRun?: 'firefox' | 'chromium';
 }
 
 export interface Tracing {
@@ -166,6 +168,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         headless = envDebugMode ? !debugMode : undefined,
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
+        browserToRun,
     } = withFeatureOptions;
 
     if (
@@ -190,7 +193,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            browser = await playwright.chromium.launch({
+            browser = await playwright[browserToRun || 'chromium'].launch({
                 ...withFeatureOptions,
                 headless,
                 devtools,
@@ -223,6 +226,13 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             const errorsText = capturedErrors.join('\n');
             capturedErrors.length = 0;
             throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
+        }
+    });
+
+    afterEach('In case multiple browsers were in use, close them', async () => {
+        if (browserToRun) {
+            await browser!.close();
+            browser = undefined;
         }
     });
 
