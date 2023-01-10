@@ -72,7 +72,7 @@ export class ForkedProcessApplication implements IExecutableApplication {
         const { engineStartProcess } = this;
         if (!engineStartProcess) {
             throw new Error(
-                'Engine is not started yet\nMake sure you call withFeature / getRunningFeature / withLocalFixture outside of the test function'
+                'Engine is not started yet, Make sure you call withFeature / getRunningFeature / withLocalFixture outside of the test function'
             );
         }
         return new Promise<T>((resolve, reject) => {
