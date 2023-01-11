@@ -18,7 +18,7 @@ import {
     Slot,
     ReadyMessage,
 } from '@wixc3/engine-core';
-import { EventEmitter } from '@wixc3/common';
+import { EventEmitter } from '@wixc3/patterns';
 import { createDisposables } from '@wixc3/create-disposables';
 import { waitFor } from 'promise-assist';
 

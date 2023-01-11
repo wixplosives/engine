@@ -18,7 +18,7 @@ import {
     AnyEnvironment,
     Dependency,
 } from '@wixc3/engine-core';
-import { IExternalFeatureNodeDescriptor, runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
 export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
@@ -28,7 +28,7 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
     config?: TopLevelConfig;
     /**
      * from where to locate features
-     * @default {process.cwd()}
+     * @defaultValue process.cwd()
      */
     basePath?: string;
     /**
@@ -36,10 +36,9 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
      */
     featureDiscoveryRoot?: string;
     env: ENV;
-    externalFeatures?: IExternalFeatureNodeDescriptor[];
 }
 
-export interface IGetRuinnnigFeatureOptions<
+export interface IGetRunnigFeatureOptions<
     NAME extends string,
     DEPS extends Dependency[],
     API extends EntityRecord,
@@ -57,7 +56,6 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
     config = [],
     env,
     basePath = process.cwd(),
-    externalFeatures = [],
     featureDiscoveryRoot,
 }: IRunNodeEnvironmentOptions<ENV>): Promise<{
     engine: RuntimeEngine<ENV>;
@@ -69,7 +67,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}
     ) as EngineConfig;
 
-    const { features, configurations } = findFeatures( basePath, fs, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
+    const { features, configurations } = findFeatures(basePath, fs, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
 
     if (configName) {
         config = [...evaluateConfig(configName, configurations, envName), ...config];
@@ -98,7 +96,6 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         type: envType,
         childEnvName,
         config,
-        externalFeatures,
         options: Object.entries(runtimeOptions),
         context: basePath,
         env,
@@ -133,7 +130,7 @@ export async function getRunningFeature<
     CONTEXT extends Record<string, DisposableContext<any>>,
     ENV extends AnyEnvironment
 >(
-    options: IGetRuinnnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
+    options: IGetRunnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
 ): Promise<{
     dispose: () => Promise<void>;
     runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV>;

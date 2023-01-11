@@ -326,7 +326,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps.asDependency],
-            }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(mainEnv, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
             });
@@ -360,7 +360,7 @@ describe('Feature', () => {
                 id: 'testSlotsFirstFeature',
                 api: {},
                 dependencies: [maps.asDependency],
-            }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(mainEnv, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('1', 'test');
                 mapSlot.register('2', 'test2');
             });
@@ -369,7 +369,7 @@ describe('Feature', () => {
                 id: 'testSlotsSecondFeature',
                 api: {},
                 dependencies: [maps.asDependency],
-            }).setup(mainEnv, ({ }, { testSlotsFeature: { mapSlot } }) => {
+            }).setup(mainEnv, ({}, { testSlotsFeature: { mapSlot } }) => {
                 mapSlot.register('2', 'test2');
             });
 
@@ -517,7 +517,7 @@ describe('feature interaction', () => {
 
 describe('Contextual environments', () => {
     it('Feature should define contextual environment, set up the environment context and use it in the environment setup', async () => {
-        const workerEnv = new Environment('worker', 'worker', 'single');
+        const workerEnv = new Environment('webworker', 'webworker', 'single');
         const processing = new SingleEndpointContextualEnvironment('processing', [workerEnv]);
 
         interface IProcessingContext {
@@ -548,7 +548,7 @@ describe('Contextual environments', () => {
             };
         });
 
-        entryFeature.setup(processing, ({ }, { }, { processingContext: { name }, processingContext2: { age } }) => {
+        entryFeature.setup(processing, ({}, {}, { processingContext: { name }, processingContext2: { age } }) => {
             return {
                 echoService: {
                     echo(s: string) {
@@ -573,7 +573,7 @@ describe('feature disposal', () => {
             api: {},
         });
         const dispose = spy(() => Promise.resolve());
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
         });
 
@@ -597,7 +597,7 @@ describe('feature disposal', () => {
         const dispose = spy(() => Promise.resolve());
         const dispose2 = spy(() => Promise.resolve());
 
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
             onDispose(dispose2);
         });
@@ -623,7 +623,7 @@ describe('feature disposal', () => {
         const disposeFirst = spy(() => Promise.resolve());
         const disposeSecond = spy(() => Promise.reject('err'));
 
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(disposeFirst);
             onDispose(disposeSecond);
         });
@@ -647,7 +647,7 @@ describe('feature disposal', () => {
             api: {},
         });
         const dispose = spy(() => new Promise((res) => setTimeout(res, 0)));
-        entryFeature.setup(mainEnv, ({ onDispose }, { }) => {
+        entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(dispose);
         });
 
@@ -664,8 +664,8 @@ describe('feature disposal', () => {
 
 describe('service with remove access environment visibility', () => {
     it('local services in the same env uses the provided implementation', async () => {
-        const processing = new Environment('processing', 'worker', 'multi');
-        const main = new Environment('main', 'worker', 'single');
+        const processing = new Environment('processing', 'webworker', 'multi');
+        const main = new Environment('main', 'webworker', 'single');
 
         const echoFeature = new Feature({
             id: 'echoFeature',
@@ -702,12 +702,12 @@ describe('service with remove access environment visibility', () => {
             api: {},
         });
 
-        testFeature.setup(processing, ({ }, { echoFeature: { echoService } }) => {
+        testFeature.setup(processing, ({}, { echoFeature: { echoService } }) => {
             // this is the real service since we are in the same env!.
             expect(typeof echoService.echo === 'function');
         });
 
-        testFeature.setup(main, ({ }, { echoFeature: { echoService } }) => {
+        testFeature.setup(main, ({}, { echoFeature: { echoService } }) => {
             // this is the proxy! because we are in different env.
             expect(typeof echoService.get === 'function');
         });
@@ -727,7 +727,7 @@ describe('service with remove access environment visibility', () => {
 describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
         const main = new Environment('main', 'window', 'single');
-        const processing = new Environment('processing', 'worker', 'single');
+        const processing = new Environment('processing', 'webworker', 'single');
 
         new Feature({
             id: 'echoFeature',
@@ -761,7 +761,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
     it('allow spawn of new environments and use remote services', () => {
         const main = new Environment('main', 'window', 'single');
-        const processing = new Environment('processing', 'worker', 'single');
+        const processing = new Environment('processing', 'webworker', 'single');
 
         const echoFeature = new Feature({
             id: 'echoFeature',
@@ -807,7 +807,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
 
 describe.skip('Environments Type tests 1', () => {
     it('feature remote api should be available inside same feature setup', () => {
-        const processing = new Environment('processing', 'worker', 'single');
+        const processing = new Environment('processing', 'webworker', 'single');
 
         const echoFeature = new Feature({
             id: 'echoFeature',
@@ -820,7 +820,7 @@ describe.skip('Environments Type tests 1', () => {
             },
         });
 
-        echoFeature.setup(processing, ({ }, { }) => {
+        echoFeature.setup(processing, ({}, {}) => {
             return {
                 echoService: {
                     echo(s: string) {

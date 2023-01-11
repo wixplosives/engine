@@ -1,5 +1,5 @@
 import MultiEnvFeature, { mainEnv, processingEnv } from './multi-env.feature';
-import { workerInitializer, socketClientInitializer, initializeContextualEnv } from '@wixc3/engine-core';
+import { webWorkerInitializer, socketClientInitializer, initializeContextualEnv } from '@wixc3/engine-core';
 
 MultiEnvFeature.setup(mainEnv, ({ echoService, run, config }, { COM: { communication } }) => {
     const initializer = initializeContextualEnv({
@@ -7,7 +7,7 @@ MultiEnvFeature.setup(mainEnv, ({ echoService, run, config }, { COM: { communica
         env: processingEnv,
         envInitializers: {
             node1: socketClientInitializer,
-            worker1: workerInitializer,
+            webworker1: webWorkerInitializer,
         },
     });
 

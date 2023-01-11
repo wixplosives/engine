@@ -3,7 +3,7 @@ import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
 import type { AnyEnvironment, Feature } from './entities';
 import { flattenTree } from './helpers';
-import { deferred, IDeferredPromise } from '@wixc3/common';
+import { deferred, IDeferredPromise } from 'promise-assist';
 
 export interface IRunEngineOptions<ENV extends AnyEnvironment> {
     entryFeature: Feature | Feature[];
@@ -73,7 +73,7 @@ export class FeatureLoadersRegistry {
     constructor(
         private featureMapping = new Map<string, IFeatureLoader>(),
         private resolvedContexts: Record<string, string> = {}
-    ) { }
+    ) {}
     public register(name: string, featureLoader: IFeatureLoader) {
         this.featureMapping.set(name, featureLoader);
         this.pendingLoaderRequests.get(name)?.resolve(featureLoader);

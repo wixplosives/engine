@@ -1,7 +1,7 @@
 import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import fs from '@file-services/node';
-import { SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import { createMainEntrypoint, createVirtualEntries } from '@wixc3/engine-scripts';
 import guiFeature, { mainDashboardEnv } from './gui.feature';
 import { devServerEnv } from './dev-server.feature';
@@ -14,7 +14,7 @@ guiFeature.setup(
         {
             buildFeature: {
                 engineerWebpackConfigs,
-                devServerConfig: { title, favicon, publicConfigsRoute, externalFeaturesRoute, log },
+                devServerConfig: { title, favicon, publicConfigsRoute, log },
                 serverListeningHandlerSlot,
                 application,
             },
@@ -40,7 +40,6 @@ guiFeature.setup(
             configurations,
             featureName: 'engineer/gui',
             target: 'web',
-            externalFeaturesRoute,
             featuresBundleName: 'dashboard-features',
         });
 

@@ -1,4 +1,4 @@
-import fs from '@file-services/node'
+import fs from '@file-services/node';
 import { spawn } from 'child_process';
 import { startDevServer } from '@wixc3/engineer';
 import { IRunOptionsMessage, provideApiForChildProcess } from '@wixc3/engine-electron-host';
@@ -70,7 +70,7 @@ export async function start({
     // registering to the dev server ready event
     serverListeningHandlerSlot.register(({ port, router }) => {
         const config: TopLevelConfig = [];
-        const { features, configurations } = findFeatures(basePath,fs, resolvedFeatureDiscoveryRoot);
+        const { features, configurations } = findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
 
         const environments = getExportedEnvironments(features);
 

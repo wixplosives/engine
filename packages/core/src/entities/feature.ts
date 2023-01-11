@@ -13,10 +13,11 @@ import type {
     RunningFeatures,
     SetupHandler,
     IFeature,
-    Dependency,
+    Dependency
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
-import { deferred, IDeferredPromise, SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
+import { deferred, IDeferredPromise } from 'promise-assist';
 
 const emptyDispose = { dispose: () => undefined };
 
@@ -33,7 +34,7 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
         public feature: T,
         public api: Running<T, ENV>,
         public dependencies: RunningFeatures<T['dependencies'], ENV>
-    ) { }
+    ) {}
 
     public addRunHandler(fn: () => unknown, envName: string) {
         this.runHandlers.add(envName, fn);
@@ -62,7 +63,7 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
 
     public async [DISPOSE](context: RuntimeEngine) {
         const {
-            entryEnvironment: { env: envName },
+            entryEnvironment: { env: envName }
         } = context;
         if (this.disposing) {
             return this.disposing.promise;
@@ -87,17 +88,17 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
  * When calling `runEngineApp` and providing it with a Feature[], it uses the definitions
  * to initialize a `RuntimeFeature` for each.
  *
- * @template ID Unique string identity
- * @template Deps Dependencies needed by this Feature (to consume their API)
- * @template API Entities (Slots, Services, etc.) this Feature exposes for other Features to consume.
- * @template EnvironmentContext Environment-specific APIs consumed by this feature
+ * @typeParam ID - Unique string identity
+ * @typeParam Deps - Dependencies needed by this Feature (to consume their API)
+ * @typeParam API - Entities (Slots, Services, etc.) this Feature exposes for other Features to consume.
+ * @typeParam EnvironmentContext - Environment-specific APIs consumed by this feature
  */
 export class Feature<
     ID extends string = string,
     Deps extends Dependency[] = any[],
     API extends EntityRecord = any,
     EnvironmentContext extends Record<string, DisposableContext<any>> = any
-    > {
+> {
     /**
      * References `this` without the exact types of `Deps` (making them a generic `Feature[]`).
      * We use `someFeature.asEntity` instead of `someFeature` when we want to avoid typescript
@@ -150,10 +151,12 @@ export class Feature<
      * by `<feature-name>.<environment-name>.env.ts` files to define the environment specific implementations.
      *
      * @example
+     * ```
      * export default new Feature({
      *   id: 'my-feature',
      *   api: { ... },
      * })
+     * ```
      */
     constructor(def: FeatureDef<ID, Deps, API, EnvironmentContext>) {
         this.id = def.id;
@@ -208,7 +211,7 @@ export class Feature<
             features,
             runOptions,
             referencedEnvs,
-            entryEnvironment: { env: envName },
+            entryEnvironment: { env: envName }
         } = runningEngine;
 
         const deps: any = {};
@@ -245,7 +248,7 @@ export class Feature<
             },
             [RUN_OPTIONS]: runOptions,
             [ENGINE]: runningEngine,
-            runningEnvironmentName: envName,
+            runningEnvironmentName: envName
         };
 
         for (const [key, contextHandler] of this.contextHandlers) {
@@ -262,8 +265,8 @@ export class Feature<
                 if (!featureOutput) {
                     continue;
                 }
-                for (const key of Object.keys(featureOutput)) {
-                    settingUpFeature[key] = (featureOutput as any)[key];
+                for (const [key, value] of Object.entries(featureOutput)) {
+                    settingUpFeature[key] = value;
                 }
                 Object.assign(providedAPI, featureOutput);
             }

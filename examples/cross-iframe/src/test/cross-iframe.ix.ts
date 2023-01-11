@@ -7,31 +7,30 @@ describe('Cross Iframes Example', function () {
     const { getLoadedFeature } = withFeature({
         featureName: 'cross-iframe/configured-iframe',
     });
-    this.timeout(15_000)
+    this.timeout(15_000);
 
     it('initial iframe rendered', async () => {
         const { page } = await getLoadedFeature();
         const crossFrameDriver = await CrossIframeDriver.getFromRoot(page);
 
-        expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0');
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0'));
     });
 
     it('initial iframe rendered and reinitialized', async () => {
         const { page } = await getLoadedFeature();
         const crossFrameDriver = await CrossIframeDriver.getFromRoot(page);
 
-        expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0');
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0'));
+
         await crossFrameDriver.clickNavigationButton(0);
-        await waitFor(async () => {
-            expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/1');
-        });
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/1'));
     });
 
     it('initial iframe rendered and reinitialized multiple times to same url', async () => {
         const { page } = await getLoadedFeature();
         const crossFrameDriver = await CrossIframeDriver.getFromRoot(page);
 
-        expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0');
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0'));
 
         await crossFrameDriver.clickNavigationButton(0);
         await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/1'));
@@ -47,7 +46,7 @@ describe('Cross Iframes Example', function () {
         const { page } = await getLoadedFeature();
         const crossFrameDriver = await CrossIframeDriver.getFromRoot(page);
 
-        expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0');
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0'));
         await crossFrameDriver.clickNavigationButton(0);
         await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/1'));
 

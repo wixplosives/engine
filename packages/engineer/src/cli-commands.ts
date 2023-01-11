@@ -17,7 +17,7 @@ import type { ServerListeningHandler } from './feature/dev-server.types';
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
-const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '/';
+const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '';
 
 export type CliCommand = (program: Command) => void;
 
@@ -142,8 +142,7 @@ export function buildCommand(program: Command) {
         .option('--outDir <outDir>', 'output directory for the built application', 'dist-app')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
-        .option('--external [true|false]', 'build feature as external', parseBoolean, false)
-        .option('--eagerEntrypoints [true|false]', 'build feature as external', parseBoolean, false)
+        .option('--eagerEntrypoints [true|false]', 'bundle environments into a single bundle', parseBoolean, false)
         .option(
             '--configLoaderModuleName [configLoaderModuleName]',
             'custom config loader module name. used for static builds only'
@@ -151,16 +150,6 @@ export function buildCommand(program: Command) {
         .option(
             '--sourcesRoot <sourcesRoot>',
             'the directory where the feature library will be published at (relative to the base path). default: "."'
-        )
-        .option(
-            '--staticExternalsDescriptor <staticExternalsDescriptor>',
-            'relative to the output directory - a path to a json file which retrieves all external feature descriptors'
-        )
-        .option(
-            '--includeExternalFeatures <includeExternalFeatures>',
-            'should include defined external features in the built output',
-            parseBoolean,
-            false
         )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -176,12 +165,9 @@ export function buildCommand(program: Command) {
                 faviconPath,
                 publicConfigsRoute,
                 webpackConfig,
-                external,
                 sourcesRoot,
                 eagerEntrypoints,
                 featureDiscoveryRoot,
-                staticExternalsDescriptor,
-                includeExternalFeatures,
                 configLoaderModuleName,
             } = cmd;
             try {
@@ -201,11 +187,8 @@ export function buildCommand(program: Command) {
                     favicon,
                     publicConfigsRoute,
                     webpackConfigPath: webpackConfig,
-                    external,
                     sourcesRoot,
-                    staticExternalFeaturesFileName: staticExternalsDescriptor,
                     eagerEntrypoint: eagerEntrypoints,
-                    includeExternalFeatures,
                     configLoaderModuleName,
                 });
                 console.log(stats.toString('errors-warnings'));

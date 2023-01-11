@@ -161,7 +161,7 @@ describe('Node environments manager', function () {
         await expect(
             nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
         ).to.eventually.be.rejectedWith(
-            'cannot find feature test. available features: engine-node/x, engine-core/communication'
+            'cannot find feature test. available features: engine-core/communication, engine-node/x'
         );
     });
 
@@ -195,7 +195,7 @@ describe('Node environments manager', function () {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
             dependencies: [SocketServerNodeFeature.asDependency, COM.asDependency],
-        }).setup(env, ({ }, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: socketServerEnv });
 
             return {
@@ -291,7 +291,7 @@ describe('Node environments manager', function () {
                 echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
             },
             dependencies: [ServerNodeFeature.asDependency, COM.asDependency],
-        }).setup(env, ({ }, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: serverEnv });
 
             return {

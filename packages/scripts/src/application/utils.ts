@@ -1,12 +1,12 @@
-import type { IEnvironmentDescriptor } from "@wixc3/engine-runtime-node";
+import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import fs from '@file-services/node';
 import type webpack from 'webpack';
-import type { AnyEnvironment } from "@wixc3/engine-core";
-import type { IBuildCommandOptions, ICompilerOptions } from "./types";
-import { getResolvedEnvironments as resolveEnvironments } from "../utils";
-import type { EngineConfig, IFeatureDefinition } from "../types";
-import type { BuildOptions } from "./defaults";
-import type { FoundFeatures } from "../analyze-feature";
+import type { AnyEnvironment } from '@wixc3/engine-core';
+import type { IBuildCommandOptions, ICompilerOptions } from './types';
+import { getResolvedEnvironments as resolveEnvironments } from '../utils';
+import type { EngineConfig, IFeatureDefinition } from '../types';
+import type { BuildOptions } from './defaults';
+import type { FoundFeatures } from '../analyze-feature';
 
 export const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
@@ -20,7 +20,7 @@ export function addEnvEntrypoints(
     for (const envName of envs) {
         entryPoints[envName] = {
             ...entryPoints[envName],
-            [target]: fs.posix.join(outDir, `${envName}.${target}.js`)
+            [target]: fs.posix.join(outDir, `${envName}.${target}.js`),
         };
     }
 }
@@ -56,11 +56,14 @@ export const getResolvedEnvironments = (options: IBuildCommandOptions, features:
         features,
         filterContexts: options.singleFeature,
         environments: [...getExportedEnvironments(features)],
-        findAllEnvironments: options.external,
     });
 
-
-export const toCompilerOptions = (opts: BuildOptions, analyzed: FoundFeatures, config: EngineConfig, environments: ICompilerOptions['environments']): ICompilerOptions => ({
+export const toCompilerOptions = (
+    opts: BuildOptions,
+    analyzed: FoundFeatures,
+    config: EngineConfig,
+    environments: ICompilerOptions['environments']
+): ICompilerOptions => ({
     ...analyzed,
     environments,
     mode: opts.mode,
@@ -73,23 +76,21 @@ export const toCompilerOptions = (opts: BuildOptions, analyzed: FoundFeatures, c
     publicConfigsRoute: opts.publicConfigsRoute,
     overrideConfig: opts.overrideConfig,
     singleFeature: opts.singleFeature,
-    // should build this feature in external mode
-    isExternal: opts.external,
     // whether should fetch at runtime for the external features metadata
-    externalFeaturesRoute: opts.staticExternalFeaturesFileName,
     webpackConfigPath: opts.webpackConfigPath,
     eagerEntrypoint: opts.eagerEntrypoint,
     configLoaderModuleName: opts.configLoaderModuleName,
-})
+});
 
-export const compile = (compiler: webpack.MultiCompiler) => new Promise<webpack.MultiStats>((resolve, reject) =>
-    compiler.run((e, s) => {
-        if (e) {
-            reject(e);
-        } else if (s!.hasErrors()) {
-            reject(new Error(s!.toString('errors-warnings')));
-        } else {
-            resolve(s!);
-        }
-    })
-);
+export const compile = (compiler: webpack.MultiCompiler) =>
+    new Promise<webpack.MultiStats>((resolve, reject) =>
+        compiler.run((e, s) => {
+            if (e) {
+                reject(e);
+            } else if (s!.hasErrors()) {
+                reject(new Error(s!.toString('errors-warnings')));
+            } else {
+                resolve(s!);
+            }
+        })
+    );

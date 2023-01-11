@@ -35,11 +35,11 @@ describe('Contextual preload', () => {
         });
     });
 
-    describe('worker context', () => {
+    describe('webworker context', () => {
         // Preload declares 2 messages, workerCtx declares 1, procEnv declares 1
-        const featureName = 'preload/preload-context-worker';
+        const featureName = 'preload/preload-context-webworker';
 
-        it('Runs only the worker context preload, and runs it first, in dev mode', async () => {
+        it('runs only the webworker context preload, and runs it first, in dev mode', async () => {
             const { dispose, featureUrl, browserProvider } = await startServerNewProcess({
                 projectPath,
                 featureName,

@@ -27,7 +27,6 @@ const setupRunningEnv = async ({
             nodeEntryPath: fs.join(testProjectPath, 'entry.js'),
             config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
             features: Array.from(features.entries()),
-            externalFeatures: [],
         },
         processOptions: { cwd: process.cwd(), stdio: ['ignore', 'ignore', 'ignore', 'ipc'] },
         environmentStartupOptions: {},

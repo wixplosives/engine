@@ -29,7 +29,6 @@
     { "path": "./packages/test-kit/src" },
     { "path": "./packages/test-kit/test" },
 
-    { "path": "./examples/dashboard-extention/src" },
     { "path": "./examples/electron-app/src" },
     { "path": "./examples/file-server/src" },
     { "path": "./examples/multi-env/src" },

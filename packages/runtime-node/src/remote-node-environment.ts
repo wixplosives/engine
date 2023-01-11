@@ -15,16 +15,9 @@ export async function startRemoteNodeEnvironment(
     entryFilePath: string,
     { inspect, port, socketServerOptions = {}, requiredPaths = [] }: IStartRemoteNodeEnvironmentOptions
 ) {
-    // Roman: add this lines after worker threads will be debuggable
-    // the current behavior should be a fallback
-
-    // try {
-    // const WorkerThreadsModule = await import('worker_threads');
-    // return new RemoteNodeEnvironment(new WorkerThreadsModule.Worker(entityFilePath, {}));
-    // } catch {
     const execArgv = inspect ? ['--inspect'] : [];
 
-    const childProc = fork(
+    const childProccess = fork(
         entryFilePath,
         [
             '--preferredPort',
@@ -38,9 +31,12 @@ export async function startRemoteNodeEnvironment(
             execArgv,
         }
     );
-    await once(childProc, 'message');
-    childProc.on('error', (e) => console.error(`error in forked process`, e));
-    return { remoteNodeEnvironment: new RemoteNodeEnvironment(new ForkedProcess(childProc)), process: childProc };
+    await once(childProccess, 'message');
+    childProccess.on('error', (e) => console.error(`error in forked process`, e));
+    return {
+        remoteNodeEnvironment: new RemoteNodeEnvironment(new ForkedProcess(childProccess)),
+        process: childProccess,
+    };
 }
 
 export class RemoteNodeEnvironment {

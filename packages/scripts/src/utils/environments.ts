@@ -1,4 +1,4 @@
-import { SetMultiMap } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '../types';
 
@@ -38,7 +38,7 @@ export function getResolvedEnvironments({
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
             if (type === 'window' || type === 'iframe') {
                 addEnv(webEnvs, env);
-            } else if (type === 'worker') {
+            } else if (type === 'webworker') {
                 addEnv(workerEnvs, env);
             } else if (type === 'electron-renderer') {
                 addEnv(electronRendererEnvs, env);
@@ -46,6 +46,8 @@ export function getResolvedEnvironments({
                 addEnv(nodeEnvs, env);
             } else if (type === 'electron-main') {
                 addEnv(electronMainEnvs, env);
+            } else {
+                throw new Error(`unknown environment type: ${type}`);
             }
     }
     return {

@@ -7,14 +7,10 @@ import {
     SingleEndpointContextualEnvironment,
     flattenTree,
 } from '@wixc3/engine-core';
-import {
-    isFeatureFile,
-    parseFeatureFileName,
-} from '../build-constants';
+import { isFeatureFile, parseFeatureFileName } from '../build-constants';
 import { instanceOf } from '../utils/instance-of';
 import type { IFeatureDefinition, IFeatureModule } from '../types';
 import { parseContextualEnv, parseEnv } from './parse-env';
-
 
 export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {
     if (typeof exports !== 'object' || exports === null) {

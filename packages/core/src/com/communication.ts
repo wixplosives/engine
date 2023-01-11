@@ -16,7 +16,7 @@ import type {
     Message,
     ReadyMessage,
 } from './message-types';
-import type {
+import {
     APIService,
     AsyncApi,
     CallbackRecord,
@@ -29,17 +29,19 @@ import type {
     UnknownFunction,
     AnyServiceMethodOptions,
     ServiceComConfig,
+    HOST_REMOVED,
 } from './types';
 
 import { SERVICE_CONFIG } from '../symbols';
 
 import { serializeError } from '../helpers';
-import { SetMultiMap, deferred } from '@wixc3/common';
+import { SetMultiMap } from '@wixc3/patterns';
 import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
 import { isMessage } from './message-types';
+import { deferred } from 'promise-assist';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;
@@ -695,19 +697,18 @@ export class Communication {
     }
 
     private resolveMessageTarget(envId: string): Target {
-        // TODO: make this more logical
-        let env = this.environments[envId]!;
-        if (env && env.id !== this.rootEnvId) {
-            return env.host;
+        const env = this.environments[envId] || this.environments[this.rootEnvId];
+        if (!env) {
+            return HOST_REMOVED;
+        }
+        const { host } = env;
+        if (env.id !== this.rootEnvId) {
+            return host;
         } else {
-            if (!env) {
-                env = this.environments[this.rootEnvId]!;
+            if (host instanceof BaseHost) {
+                return host.parent || host;
             }
-            const target = env.host;
-            if (target instanceof BaseHost) {
-                return target.parent || target;
-            }
-            return this.getPostEndpoint(target);
+            return this.getPostEndpoint(host);
         }
     }
 
