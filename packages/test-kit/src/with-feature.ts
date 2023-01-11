@@ -98,8 +98,6 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      * add tracing for the entire suite, the name of the test will be used as the zip name
      */
     tracing?: boolean | Omit<Tracing, 'name'>;
-
-    browserToRun?: 'firefox' | 'chromium';
 }
 
 export interface Tracing {
@@ -151,6 +149,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const disposeAfterEach = createDisposables();
     const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
+    const browserToRun = process.env.BROWSER as 'chromium' | 'firefox' | 'webkit' | undefined;
     const port = parseInt(process.env.DEBUG!);
     const {
         browserContextOptions: suiteBrowserContextOptions,
@@ -168,7 +167,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         headless = envDebugMode ? !debugMode : undefined,
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
-        browserToRun,
     } = withFeatureOptions;
 
     if (
