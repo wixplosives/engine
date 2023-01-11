@@ -64,8 +64,12 @@ export class Service<
             if (providedFrom.has(localEnv) || providedFrom.has(Universal.env)) {
                 if (!providedValue) {
                     throw new Error(
-                        `Service is not provided in runtime.
-                        Make sure environment setup file exist and correctly typed: [featureName].[envName].env.[ext]`
+                        `Service is not provided at runtime.
+Make sure the environment setup file exists and named correctly: [featureName].[envName].env.[ext]
+Service name: ${entityKey}
+Feature id: ${featureID}
+Environment: ${localEnv}
+                        `
                     );
                 }
                 communication.registerAPI({ id: serviceKey }, providedValue);
