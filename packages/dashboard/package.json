@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-dashboard",
-  "version": "32.0.1",
+  "version": "32.0.2",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@stylable/runtime": "^5.6.1",
-    "@wixc3/engine-core": "^32.0.1",
-    "@wixc3/engine-runtime-node": "^32.0.1",
-    "@wixc3/engine-scripts": "^32.0.1",
+    "@wixc3/engine-core": "^32.0.2",
+    "@wixc3/engine-runtime-node": "^32.0.2",
+    "@wixc3/engine-scripts": "^32.0.2",
     "d3-hierarchy": "^3.1.2",
     "d3-selection": "^3.0.0",
     "d3-shape": "^3.2.0"
