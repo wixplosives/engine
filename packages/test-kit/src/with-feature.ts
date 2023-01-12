@@ -227,13 +227,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    afterEach('In case multiple browsers were in use, close them', async () => {
-        if (browserToRun) {
-            await browser!.close();
-            browser = undefined;
-        }
-    });
-
     return {
         async getLoadedFeature({
             featureName = suiteFeatureName,
