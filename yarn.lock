@@ -2090,6 +2090,18 @@
     minimatch "^5.1.2"
     type-fest "^3.5.0"
 
+"@wixc3/testing@^6.4.0":
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-6.4.0.tgz#b56288958912f02a548f6068b470afdcef09a8c0"
+  integrity sha512-rJTHbWDz3ygBivkmggiujTufR87zNIJ/ieip7CxAUN9QJxuDWSOPsdlHg+fF3CAOAmgQkv1zLg3WIkEJ/Fm/FQ==
+  dependencies:
+    "@file-services/types" "^7.2.0"
+    "@wixc3/common" "^6.0.0"
+    "@wixc3/patterns" "^6.0.0"
+    chai "^4.3.7"
+    create-temp-directory "^2.0.0"
+    promise-assist "^1.3.0"
+
 "@wixc3/typescript@^6.0.0":
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-6.0.0.tgz#6640fc5eb5aafc3977062251fc5e370a2462a4c2"
