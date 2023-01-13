@@ -158,7 +158,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     const browserToRun = process.env.BROWSER ?? 'chromium';
     if (!isValidBrowserName(browserToRun)) {
-        throw new Error(`Invalid browser name was entered as env var: ${browserToRun}`);
+        throw new Error(`Invalid browser name was entered as env var: ${browserToRun} \n
+                        Possible options for browsers are: chromium, firefox and webkit.`);
     }
 
     const {
