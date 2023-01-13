@@ -149,8 +149,18 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const disposeAfterEach = createDisposables();
     const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
-    const browserToRun = process.env.BROWSER as 'chromium' | 'firefox' | 'webkit' | undefined;
     const port = parseInt(process.env.DEBUG!);
+
+    const browsersNames = ['chromium', 'firefox', 'webkit'] as const;
+    function isValidBrowserName(browserName: string): browserName is typeof browsersNames[number] {
+        return browsersNames.includes(browserName as typeof browsersNames[number]);
+    }
+
+    const browserToRun = process.env.BROWSER ?? 'chromium';
+    if (!isValidBrowserName(browserToRun)) {
+        throw new Error(`Invalid browser name was entered as env var: ${browserToRun}`);
+    }
+
     const {
         browserContextOptions: suiteBrowserContextOptions,
         featureName: suiteFeatureName,
@@ -191,7 +201,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            browser = await playwright[browserToRun || 'chromium'].launch({
+            browser = await playwright[browserToRun].launch({
                 ...withFeatureOptions,
                 headless,
                 devtools,
