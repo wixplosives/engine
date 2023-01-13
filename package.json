@@ -59,7 +59,7 @@
     "eslint-plugin-react": "^7.32.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "html-webpack-plugin": "^5.5.0",
-    "lerna": "^6.4.0",
+    "lerna": "^6.4.1",
     "mocha": "^10.2.0",
     "mocha-play": "^4.1.1",
     "playwright-chromium": "^1.29.2",
