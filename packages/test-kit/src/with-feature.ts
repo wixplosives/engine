@@ -8,7 +8,8 @@ import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
-import { createDisposalGroup, disposeAfter, mochaCtx, DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing';
+import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
+import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
 export interface IFeatureExecutionOptions {

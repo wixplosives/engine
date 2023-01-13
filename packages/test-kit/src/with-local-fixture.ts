@@ -1,6 +1,6 @@
 import { spawnSync, SpawnSyncOptions } from 'child_process';
 import fs from '@file-services/node';
-import { createTestDir } from '@wixc3/testing';
+import { createTestDir } from '@wixc3/testing-node';
 import { IFeatureExecutionOptions, IWithFeatureOptions, withFeature } from './with-feature';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
