@@ -9,6 +9,7 @@ import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import { validateBrowser } from './supported-browsers';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
@@ -150,17 +151,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
     const port = parseInt(process.env.DEBUG!);
-
-    const browsersNames = ['chromium', 'firefox', 'webkit'] as const;
-    function isValidBrowserName(browserName: string): browserName is typeof browsersNames[number] {
-        return browsersNames.includes(browserName as typeof browsersNames[number]);
-    }
-
-    const browserToRun = process.env.BROWSER ?? 'chromium';
-    if (!isValidBrowserName(browserToRun)) {
-        throw new Error(`Invalid browser name was entered as env var: ${browserToRun} \n
-                        Possible options for browsers are: chromium, firefox and webkit.`);
-    }
+    const browserToRun = validateBrowser(process.env.BROWSER ?? 'chromium');
 
     const {
         browserContextOptions: suiteBrowserContextOptions,
