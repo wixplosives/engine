@@ -2090,10 +2090,10 @@
     minimatch "^5.1.2"
     type-fest "^3.5.0"
 
-"@wixc3/testing@^6.4.0":
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-6.4.0.tgz#b56288958912f02a548f6068b470afdcef09a8c0"
-  integrity sha512-rJTHbWDz3ygBivkmggiujTufR87zNIJ/ieip7CxAUN9QJxuDWSOPsdlHg+fF3CAOAmgQkv1zLg3WIkEJ/Fm/FQ==
+"@wixc3/testing@^6.4.1":
+  version "6.4.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-6.4.1.tgz#e0bd07fc5b7ba5a744e5fc0745add0154e9eeb84"
+  integrity sha512-B5WQuXjhOphIvI86Nfflw5cy+NxRRaZi9zR+SmnumHxohEL4/R9W8NChcuVUfUbXEyBEADvVd425drGcus1LbA==
   dependencies:
     "@file-services/types" "^7.2.0"
     "@wixc3/common" "^6.0.0"

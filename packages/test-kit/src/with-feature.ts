@@ -8,7 +8,7 @@ import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
-import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
+import { createDisposalGroup, disposeAfter, mochaCtx, DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing';
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
 export interface IFeatureExecutionOptions {
@@ -125,7 +125,7 @@ export interface Tracing {
 export const WITH_FEATURE_DISPOSABLES = 'WITH_FEATURE_DISPOSABLES';
 export const PAGE_DISPOSABLES = 'PAGE_DISPOSABLES';
 export const TRACING_DISPOSABLES = 'TRACING_DISPOSABLES';
-createDisposalGroup(WITH_FEATURE_DISPOSABLES, { after: 'default' });
+createDisposalGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
 createDisposalGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
 createDisposalGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
 
