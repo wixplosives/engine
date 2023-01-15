@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron-commons",
-  "version": "32.1.1",
+  "version": "32.1.2",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha \"dist/test/**/*.spec.js?(x)\""
