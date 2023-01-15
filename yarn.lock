@@ -2090,10 +2090,10 @@
     minimatch "^5.1.2"
     type-fest "^3.5.0"
 
-"@wixc3/testing-node@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-7.0.1.tgz#367d69c34e1d2bcf02330cf2f843442672ff07fa"
-  integrity sha512-k0OyXZwE2lZD3dQPJtfIngh5Ou/5wPFwbVJpSRD8PPnd9ijhGyNVvHiQGxXhyCZuF7SG0XuCReM0s0MnwTMAcA==
+"@wixc3/testing-node@^7.0.2":
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-7.0.2.tgz#b6f5860abcde0c3811bee554e2aa82f26817a607"
+  integrity sha512-+jNHqpjRHbGUXed99wAUAeVQ2vwAw7xiA6WEw1RejoDhIr7omwBWT+siPZ+kNJI55w6Arp8NLSRvc3QpWGvfiQ==
   dependencies:
     "@file-services/node" "^7.2.0"
     "@file-services/types" "^7.2.0"
