@@ -3,17 +3,16 @@
   "version": "1.0.0",
   "main": "src/index",
   "scripts": {
-    "clean": "rimraf npm",
+    "clean": "rimraf dist",
     "prebuild": "yarn clean",
-    "build": "yarn build:npm",
-    "build:npm": "wcs-scripts build",
+    "build": "tsc --build src",
     "start": "engineer start",
     "test": "yarn test:unit",
-    "test:unit": "mocha-play \"test/**/*.spec.ts?(x)\"",
+    "test:unit": "mocha-play \"./dist/test/**/*.spec.js\"",
     "prepack": "yarn build"
   },
-  "dependencies": {
-    "@wixc3/engine-core": "^8.1.1"
+  "peerDependencies": {
+    "@wixc3/engine-core": ">=30"
   },
   "license": "UNLICENSED"
 }
