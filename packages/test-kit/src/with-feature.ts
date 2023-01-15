@@ -8,6 +8,7 @@ import type { IExecutableApplication } from './types';
 import { hookPageConsole } from './hook-page-console';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import { validateBrowser } from './supported-browsers';
 import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
@@ -156,6 +157,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
     const port = parseInt(process.env.DEBUG!);
+    const browserToRun = validateBrowser(process.env.BROWSER ?? 'chromium');
+
     const {
         browserContextOptions: suiteBrowserContextOptions,
         featureName: suiteFeatureName,
@@ -196,7 +199,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            browser = await playwright.chromium.launch({
+            browser = await playwright[browserToRun].launch({
                 ...withFeatureOptions,
                 headless,
                 devtools,
