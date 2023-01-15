@@ -1,7 +1,6 @@
 import isCI from 'is-ci';
 import fs from '@file-services/node';
 import playwright from 'playwright-core';
-import { createDisposables } from '@wixc3/create-disposables';
 import { RemoteHttpApplication } from './remote-http-application';
 import { ForkedProcessApplication } from './forked-process-application';
 import { ensureTracePath } from './utils';
@@ -10,7 +9,8 @@ import { hookPageConsole } from './hook-page-console';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
 import { validateBrowser } from './supported-browsers';
-
+import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
+import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
 export interface IFeatureExecutionOptions {
@@ -124,6 +124,13 @@ export interface Tracing {
     name?: string;
 }
 
+export const WITH_FEATURE_DISPOSABLES = 'WITH_FEATURE_DISPOSABLES';
+export const PAGE_DISPOSABLES = 'PAGE_DISPOSABLES';
+export const TRACING_DISPOSABLES = 'TRACING_DISPOSABLES';
+createDisposalGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
+createDisposalGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
+createDisposalGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
+
 let browser: playwright.Browser | undefined = undefined;
 let featureUrl = '';
 let executableApp: IExecutableApplication;
@@ -147,7 +154,6 @@ if (typeof after !== 'undefined') {
 }
 
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
-    const disposeAfterEach = createDisposables();
     const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
     const port = parseInt(process.env.DEBUG!);
@@ -212,15 +218,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
 
-    afterEach('stop tracing', async function () {
-        for (const tracingDisposable of tracingDisposables) {
-            await tracingDisposable(this.test?.title);
-        }
-        tracingDisposables.clear();
-    });
-
-    afterEach('post-test cleanup', disposeAfterEach.dispose);
-
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
             const errorsText = capturedErrors.join('\n');
@@ -255,11 +252,13 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 overrideConfig: config,
             });
 
-            disposeAfterEach.add(async () =>
-                executableApp.closeFeature({
-                    featureName,
-                    configName: newConfigName,
-                })
+            disposeAfter(
+                async () =>
+                    executableApp.closeFeature({
+                        featureName,
+                        configName: newConfigName,
+                    }),
+                WITH_FEATURE_DISPOSABLES
             );
 
             const search = toSearchQuery({
@@ -268,10 +267,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams,
             });
             const browserContext = await browser.newContext(browserContextOptions);
-            disposeAfterEach.add(() => browserContext.close());
+            disposeAfter(() => browserContext.close(), WITH_FEATURE_DISPOSABLES);
 
             browserContext.on('page', onPageCreation);
-            disposeAfterEach.add(() => browserContext.off('page', onPageCreation));
+            disposeAfter(() => browserContext.off('page', onPageCreation), PAGE_DISPOSABLES);
 
             const sanitizedSuiteTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
             const sanitizedTracing = typeof tracing === 'boolean' ? {} : tracing;
@@ -297,6 +296,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         }),
                     });
                 });
+                disposeAfter(async () => {
+                    for (const tracingDisposable of tracingDisposables) {
+                        await tracingDisposable(mochaCtx()?.test?.title);
+                    }
+                    tracingDisposables.clear();
+                });
             }
 
             function onPageError(e: Error) {
@@ -318,9 +323,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
                 const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
-                disposeAfterEach.add(disposeConsoleHook);
+                disposeAfter(disposeConsoleHook, PAGE_DISPOSABLES);
                 page.on('pageerror', onPageError);
-                disposeAfterEach.add(() => page.off('pageerror', onPageError));
+                disposeAfter(() => page.off('pageerror', onPageError), PAGE_DISPOSABLES);
             }
 
             const featurePage = await browserContext.newPage();
