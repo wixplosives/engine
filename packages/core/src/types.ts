@@ -1,6 +1,6 @@
 import type { LogMessage } from './common-types';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
-import type { FeatureDependencies } from './entities/feature-descriptor';
+import type { FeatureClass, FeatureDependencies } from './entities/feature-descriptor';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './symbols';
 
@@ -169,7 +169,15 @@ export interface FeatureDef<
     context?: EnvironmentContext;
 }
 
-export type Running<T extends { api: EntityRecord }, ENV extends AnyEnvironment> = MapAllTypesForEnv<T['api'], ENV>;
+export type Running<T extends FeatureClass, ENV extends AnyEnvironment> = MapAllTypesForEnv<
+    InstanceType<T>['api'],
+    ENV
+>;
+
+export type RunningInstance<T extends { api: EntityRecord }, ENV extends AnyEnvironment> = MapAllTypesForEnv<
+    T['api'],
+    ENV
+>;
 
 export interface IRunOptions {
     has(key: string): boolean;

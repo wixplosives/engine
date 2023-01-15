@@ -18,7 +18,7 @@ import type {
     OmitCompositeEnvironment,
     PartialFeatureConfig,
     RegisteringFeature,
-    Running,
+    RunningInstance,
 } from '../types';
 import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
 
@@ -194,7 +194,7 @@ export interface FeatureDescriptor {
 }
 
 export type RunningFeatures<T extends FeatureDependencies, E extends AnyEnvironment> = {
-    [K in InstanceType<T[number]>['id']]: Running<Extract<InstanceType<T[number]>, { id: K }>, E>;
+    [K in InstanceType<T[number]>['id']]: RunningInstance<Extract<InstanceType<T[number]>, { id: K }>, E>;
 };
 
 export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> = {

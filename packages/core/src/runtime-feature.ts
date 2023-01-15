@@ -16,7 +16,7 @@ export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> 
     private disposing: IDeferredPromise<void> | undefined;
     constructor(
         public feature: InstanceType<T>,
-        public api: Running<InstanceType<T>, ENV>,
+        public api: Running<T, ENV>,
         public dependencies: RunningFeatures<InstanceType<T>['dependencies'], ENV>,
         public environment: ENV
     ) {}

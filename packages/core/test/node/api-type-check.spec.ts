@@ -38,7 +38,7 @@ class Logger extends Feature<'logger'> {
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<Logger, typeof MAIN>,
+            Running<typeof Logger, typeof MAIN>,
             {
                 config: { time: number };
                 transport: Registry<{
@@ -55,7 +55,7 @@ typeCheck(
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<Logger, typeof ZAG>,
+            Running<typeof Logger, typeof ZAG>,
             {
                 config: { time: number };
 
@@ -89,10 +89,10 @@ typeCheck(
     (
         _runningDependencies: EQUAL<
             RunningFeatures<GUI['dependencies'], typeof MAIN>,
-            { logger: Running<Logger, typeof MAIN> }
+            { logger: Running<typeof Logger, typeof MAIN> }
         >,
         _runningFeature: EQUAL<
-            Running<GUI, typeof MAIN>,
+            Running<typeof GUI, typeof MAIN>,
             { panelSlot: Registry<{ panelID: string }>; guiService: { someMethod(): void } }
         >
     ) => true
@@ -123,7 +123,7 @@ class AddPanel extends Feature<'addPanel'> {
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<AddPanel, typeof MAIN>,
+            Running<typeof AddPanel, typeof MAIN>,
             {
                 componentDescription: Registry<ComponentDescription>;
                 service1: DataService;
@@ -133,8 +133,8 @@ typeCheck(
         _runningDependencies: EQUAL<
             RunningFeatures<AddPanel['dependencies'], typeof MAIN>,
             {
-                logger: Running<Logger, typeof MAIN>;
-                gui: Running<GUI, typeof MAIN>;
+                logger: Running<typeof Logger, typeof MAIN>;
+                gui: Running<typeof GUI, typeof MAIN>;
             }
         >,
         _: true
@@ -191,8 +191,8 @@ export async function dontRun() {
                 _engineTest: EQUAL<
                     typeof features,
                     {
-                        gui: Running<GUI, typeof MAIN>;
-                        logger: Running<Logger, typeof MAIN>;
+                        gui: Running<typeof GUI, typeof MAIN>;
+                        logger: Running<typeof Logger, typeof MAIN>;
                     }
                 >,
                 _: true
