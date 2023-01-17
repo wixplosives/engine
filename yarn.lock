@@ -2476,9 +2476,9 @@ available-typed-arrays@^1.0.5:
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
 axios@^1.0.0:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.2.2.tgz#72681724c6e6a43a9fea860fc558127dbe32f9f1"
-  integrity sha512-bz/J4gS2S3I7mpN/YZfGFTqhXTYzRho8Ay38w2otuuDR322KzFIWm/4W2K6gIwvWaws5n+mnb7D1lN9uD+QH6Q==
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.2.3.tgz#31a3d824c0ebf754a004b585e5f04a5f87e6c4ff"
+  integrity sha512-pdDkMYJeuXLZ6Xj/Q5J3Phpe+jbGdsSzlQaFVkMQzRUL05+6+tetX8TV3p4HrU4kzuO9bt+io/yGQxuyxA/xcw==
   dependencies:
     follow-redirects "^1.15.0"
     form-data "^4.0.0"
@@ -5931,16 +5931,16 @@ minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2:
     brace-expansion "^1.1.7"
 
 minimatch@^5.0.1:
-  version "5.1.4"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-5.1.4.tgz#4e2d39d872684e97b309a9104251c3f1aa4e9d1c"
-  integrity sha512-U0iNYXt9wALljzfnGkhFSy5sAC6/SCR3JrHrlsdJz4kF8MvhTRQNiC59iUi1iqsitV7abrNAJWElVL9pdnoUgw==
+  version "5.1.6"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-5.1.6.tgz#1cfcb8cf5522ea69952cd2af95ae09477f122a96"
+  integrity sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g==
   dependencies:
     brace-expansion "^2.0.1"
 
 minimatch@^6.0.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-6.1.0.tgz#e0eafd0a19977f5accebd4b3909a34f6611d4288"
-  integrity sha512-eqe4xaKs1/JmNylXNFY2f41n3jNZAZTZlmOitWd71YazZlvvXMtzL+gK67jRKhrTQmHfrCbErYWV8z9Nz4aNuQ==
+  version "6.1.4"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-6.1.4.tgz#f34f10bd5f67d7b1aa0032931f2dac64adb51c81"
+  integrity sha512-NsDTCCf9qKxjUUxSfhnF2AbYR9xSpWvJx/HL/4E+KbqhKqdHMXjn81So56Hga/lpyhXL98aLPZLdPmUUEyIrWA==
   dependencies:
     brace-expansion "^2.0.1"
 
@@ -6954,6 +6954,11 @@ promise-assist@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/promise-assist/-/promise-assist-1.3.0.tgz#a96dec4595b73f5a5a34adc3fedab64dc0bcff3e"
   integrity sha512-JdJWzcDyFLonrucIhnvM8V5sEPXcVpBVJg0WcjVuI14PCe6+lkbRewRpdsBnFIqVBwu9B4chMLOnFeSTpQCilA==
+
+promise-assist@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/promise-assist/-/promise-assist-2.0.1.tgz#46b0123ac90e28a74c34fcec64cee2f00fa45e51"
+  integrity sha512-hKLG+bqLZt7WjuGqgwa12pWyph23bEiqYR16WCnZQxpuveDBABKP4tRcSdMWlxIcEBN0MLsUs+VBH+TlaIHtgA==
 
 promise-call-limit@^1.0.1:
   version "1.0.1"
