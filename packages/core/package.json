@@ -11,7 +11,7 @@
     "prepack": "yarn build:umd"
   },
   "dependencies": {
-    "@wixc3/patterns": "^7.0.0",
+    "@wixc3/patterns": "^7.0.3",
     "promise-assist": "^2.0.1",
     "socket.io-client": "^4.5.4",
     "typescript-type-utils": "^0.1.0"
