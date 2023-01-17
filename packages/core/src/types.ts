@@ -219,7 +219,7 @@ export type OmitCompositeEnvironment<T extends AnyEnvironment> = Environment<
 
 export interface Configurable<T> {
     [CONFIGURABLE]: true;
-    defaultValue: Readonly<T>;
+    readonly defaultValue: T;
 }
 
 export type PartialFeatureConfig<API> = {

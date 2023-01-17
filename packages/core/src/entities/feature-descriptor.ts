@@ -42,7 +42,7 @@ export class Feature<T extends string> {
     public api: EntityRecord = {};
     public dependencies: FeatureDependencies = [];
     public context: Record<string, Context<unknown>> = {};
-    static runtimeInfo = undefined; // each class should have its own runtime info
+    static runtimeInfo: undefined | RuntimeInfo = undefined; // each class should have its own runtime info
     static isEngineFeature = true;
     constructor() {
         return ((this.constructor as any).instance ||= this);
