@@ -19,7 +19,7 @@ function isEngineFeature(Class: unknown) {
 }
 
 function getFeaturesDeep(feature: FeatureClass) {
-    return flattenTree(feature, (f) => f.dependencies);
+    return flattenTree(feature, (f) => f.dependencies());
 }
 
 export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {

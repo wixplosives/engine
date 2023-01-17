@@ -83,7 +83,7 @@ export function loadFeaturesFromPaths(
         // compute context
         Object.assign(resolvedContexts, computeUsedContext(featureName, foundFeatures));
         // compute dependencies
-        dependencies.push(...exportedFeature.dependencies.map((feature) => featureToScopedName.get(feature)!));
+        dependencies.push(...exportedFeature.dependencies().map((feature) => featureToScopedName.get(feature)!));
     }
 
     foundFeatures.forEach((def) => Object.assign(def, override));

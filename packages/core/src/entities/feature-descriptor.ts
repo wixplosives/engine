@@ -50,13 +50,13 @@ export class Feature<T extends string> {
     static get id(): string {
         return validateRegistration(new this());
     }
-    static get dependencies(): FeatureDependencies {
+    static dependencies<T extends FeatureClass>(): InstanceType<T>['dependencies'] {
         return new this().dependencies;
     }
-    static get api(): EntityRecord {
+    static api<T extends FeatureClass>(this: T): InstanceType<T>['api'] {
         return new this().api;
     }
-    static get context(): Record<string, Context<unknown>> {
+    static context<T extends FeatureClass>(this: T): InstanceType<T>['context'] {
         return new this().context;
     }
     static use<T extends FeatureClass>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
@@ -173,11 +173,11 @@ type RuntimeInfo = {
 
 export type FeatureClass = {
     id: string;
-    dependencies: FeatureDependencies;
-    context: Record<string, Context<unknown>>;
-    api: EntityRecord;
     runtimeInfo?: RuntimeInfo;
     isEngineFeature: boolean;
+    dependencies<T extends FeatureClass>(): InstanceType<T>['dependencies'];
+    context<T extends FeatureClass>(): InstanceType<T>['context'];
+    api<T extends FeatureClass>(this: T): InstanceType<T>['api'];
     new (): FeatureDescriptor;
 };
 
