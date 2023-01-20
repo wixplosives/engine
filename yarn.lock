@@ -2087,10 +2087,10 @@
     create-temp-directory "^2.2.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^7.0.3":
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-7.0.3.tgz#51e0d59407ee03d50a49e6d7456a593843e01627"
-  integrity sha512-PDWlPfPhJmkNVg5lOI/mWq5zHliJ6xjb/KvnqAVtLRCG5/5y1P6fXrLbFKYm5MjAkA2oV6oKXDbYpFYlfmNvzw==
+"@wixc3/testing@^7.0.4":
+  version "7.0.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-7.0.4.tgz#a0bff6214501583a5f0c17d09c0d77c02d3ee36d"
+  integrity sha512-oeB5OWCbKL2vyaVzXPTr4iaOs8Dk2byTz294+D3OvDdq1s59V0Ly9wE2j4coTN5qxyV879nwT3hYkBhkH9j6AQ==
   dependencies:
     "@file-services/types" "^7.2.3"
     "@wixc3/common" "^7.0.3"
