@@ -253,7 +253,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             });
 
             if (runningFeature === undefined) {
-                throw new Error(`Feature ${featureName} was not found`);
+                throw new Error(`Feature "${featureName}" was not found`);
             }
 
             const { configName: newConfigName } = runningFeature;
