@@ -30,7 +30,7 @@
     "import-fresh": "^3.3.0",
     "semver": "^7.3.8",
     "socket.io": "^4.5.4",
-    "type-fest": "^3.5.2"
+    "type-fest": "^3.5.3"
   },
   "files": [
     "dist",
