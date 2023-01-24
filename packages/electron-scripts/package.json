@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron-scripts",
-  "version": "32.1.3",
+  "version": "32.1.4",
   "main": "dist/index.js",
   "bin": {
     "engine-electron": "bin/engine-electron.js"
@@ -18,8 +18,8 @@
     "@wixc3/engine-electron-commons": "^32.1.3",
     "@wixc3/engine-electron-node": "^32.1.3",
     "@wixc3/engine-runtime-node": "^32.1.3",
-    "@wixc3/engine-scripts": "^32.1.3",
-    "@wixc3/engineer": "^32.1.3",
+    "@wixc3/engine-scripts": "^32.1.4",
+    "@wixc3/engineer": "^32.1.4",
     "@wixc3/patterns": "^7.0.3",
     "@wixc3/resolve-directory-context": "^3.0.3",
     "electron-builder": "^23.6.0",
