@@ -245,12 +245,18 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            const { configName: newConfigName } = await executableApp.runFeature({
+            const runningFeature = await executableApp.runFeature({
                 featureName,
                 configName,
                 runtimeOptions: runOptions,
                 overrideConfig: config,
             });
+
+            if (runningFeature === undefined) {
+                throw new Error(`Feature "${featureName}" was not found`);
+            }
+
+            const { configName: newConfigName } = runningFeature;
 
             disposeAfter(
                 async () =>
