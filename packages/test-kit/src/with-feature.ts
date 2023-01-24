@@ -298,7 +298,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                             name:
                                 process.env.TRACING && process.env.TRACING !== 'true'
                                     ? process.env.TRACING
-                                    : name ?? testName?.replace(/(\W+)/gi, '-').slice(31) + 'trace',
+                                    : name ?? `${testName?.replace(/(\W+)/gi, '-').slice(31)}trace`,
                         }),
                     });
                 });
