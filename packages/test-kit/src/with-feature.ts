@@ -299,7 +299,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                             name:
                                 process.env.TRACING && process.env.TRACING !== 'true'
                                     ? process.env.TRACING
-                                    : name ?? testName?.replace(/(\W+)/gi, '-').slice(1),
+                                    : name ?? testName?.replace(/(\W+)/gi, ' ').trim().replace(/(\W+)/gi, '-'),
                         }),
                     });
                 });
