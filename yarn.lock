@@ -1532,10 +1532,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/d3-hierarchy@^3.1.1":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@types/d3-hierarchy/-/d3-hierarchy-3.1.1.tgz#cd4656f5d17a98e26ed5d6f4be96dbda454af8b3"
-  integrity sha512-QwjxA3+YCKH3N1Rs3uSiSy1bdxlLB1uUiENXeJudBoAFvtDuswUxLcanoOaR2JYn1melDTuIXR8VhnVyI3yG/A==
+"@types/d3-hierarchy@^3.1.2":
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@types/d3-hierarchy/-/d3-hierarchy-3.1.2.tgz#b3a446b5437faededb30ac32b7cc0486559ab1e2"
+  integrity sha512-9hjRTVoZjRFR6xo8igAJyNXQyPX6Aq++Nhb5ebrUF414dv4jr2MitM2fWiOY475wa3Za7TOS2Gh9fmqEhLTt0A==
 
 "@types/d3-path@*":
   version "3.0.0"
