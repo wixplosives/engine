@@ -336,6 +336,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const featurePage = await browserContext.newPage();
 
+            navigationOptions = navigationOptions || {};
+            navigationOptions.waitUntil = navigationOptions.waitUntil || 'load';
+
             const response = await featurePage.goto(featureUrl + search, navigationOptions);
 
             async function getMetrics(): Promise<PerformanceMetrics> {
