@@ -278,17 +278,18 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             browserContext.on('page', onPageCreation);
             disposeAfter(() => browserContext.off('page', onPageCreation), PAGE_DISPOSABLES);
 
-            const sanitizedSuiteTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
-            const sanitizedTracing = typeof tracing === 'boolean' ? {} : tracing;
+            const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+            const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
 
-            if (sanitizedTracing) {
-                const { screenshots, snapshots, name, outPath } = {
-                    ...sanitizedTracing,
-                    ...sanitizedSuiteTracing,
+            if (testTracingOptions) {
+                const combinedTrancingOptions = {
                     screenshots: true,
                     snapshots: true,
                     outPath: process.cwd(),
+                    ...suiteTracingOptions,
+                    ...testTracingOptions,
                 };
+                const { screenshots, snapshots, name, outPath } = combinedTrancingOptions;
                 await browserContext.tracing.start({ screenshots, snapshots });
                 tracingDisposables.add((testName) => {
                     return browserContext.tracing.stop({
@@ -298,13 +299,13 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                             name:
                                 process.env.TRACING && process.env.TRACING !== 'true'
                                     ? process.env.TRACING
-                                    : name ?? testName?.replace(/(\W+)/gi, '-').slice(1),
+                                    : name ?? testName?.replace(/(\W+)/gi, ' ').trim().replace(/(\W+)/gi, '-'),
                         }),
                     });
                 });
                 disposeAfter(async () => {
                     for (const tracingDisposable of tracingDisposables) {
-                        await tracingDisposable(mochaCtx()?.test?.title);
+                        await tracingDisposable(mochaCtx()?.currentTest?.title);
                     }
                     tracingDisposables.clear();
                 });
