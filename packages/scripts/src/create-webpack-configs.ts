@@ -20,6 +20,7 @@ export interface ICreateWebpackConfigsOptions {
     outputPath: string;
     environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'webEnvs' | 'workerEnvs' | 'electronRendererEnvs'>;
     publicPath?: string;
+    publicPathVariableName?: string;
     title?: string;
     favicon?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
@@ -95,6 +96,7 @@ interface ICreateWebpackConfigOptions {
     outputPath: string;
     environments: Map<string, IResolvedEnvironment>;
     publicPath?: string;
+    publicPathVariableName?: string;
     target: 'web' | 'webworker' | 'electron-renderer';
     title?: string;
     favicon?: string;
@@ -118,6 +120,7 @@ export function createWebpackConfig({
     mode = 'development',
     outputPath,
     publicPath,
+    publicPathVariableName,
     title,
     configurations,
     staticBuild,
@@ -141,6 +144,7 @@ export function createWebpackConfig({
             featureName,
             configName,
             publicPath,
+            publicPathVariableName,
             configurations,
             mode,
             staticBuild,
