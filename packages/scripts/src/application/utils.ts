@@ -71,6 +71,7 @@ export const toCompilerOptions = (
     featureName: opts.featureName,
     configName: opts.configName,
     publicPath: opts.publicPath,
+    publicPathVariableName: opts.publicPathVariableName,
     title: opts.title,
     staticBuild: opts.staticBuild,
     publicConfigsRoute: opts.publicConfigsRoute,

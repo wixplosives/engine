@@ -143,6 +143,7 @@ export function buildCommand(program: Command) {
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the application with')
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .option('--eagerEntrypoints [true|false]', 'bundle environments into a single bundle', parseBoolean, false)
+        .option('--publicPathVariableName <publicPathVariableName>', 'global variable name which stores public path')
         .option(
             '--configLoaderModuleName [configLoaderModuleName]',
             'custom config loader module name. used for static builds only'
@@ -159,6 +160,7 @@ export function buildCommand(program: Command) {
                 outDir,
                 require: pathsToRequire,
                 publicPath,
+                publicPathVariableName,
                 mode,
                 singleFeature,
                 title,
@@ -181,6 +183,7 @@ export function buildCommand(program: Command) {
                     configName,
                     featureDiscoveryRoot,
                     publicPath,
+                    publicPathVariableName,
                     mode,
                     singleFeature,
                     title,
