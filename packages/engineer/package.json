@@ -26,8 +26,8 @@
     "@wixc3/engine-scripts": "^32.2.1",
     "@wixc3/patterns": "^7.0.3",
     "commander": "^10.0.0",
-    "open": "^8.4.0",
-    "socket.io": "^4.5.4",
+    "open": "^8.4.1",
+    "socket.io": "^4.6.0",
     "webpack-dev-middleware": "^6.0.1"
   },
   "files": [

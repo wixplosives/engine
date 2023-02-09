@@ -14,7 +14,7 @@
     "@wixc3/patterns": "^7.0.3",
     "create-listening-server": "^2.0.0",
     "minimist": "^1.2.7",
-    "socket.io": "^4.5.4"
+    "socket.io": "^4.6.0"
   },
   "files": [
     "dist",
