@@ -13,7 +13,7 @@
     "@wixc3/engine-core-node": "^32.2.1",
     "@wixc3/patterns": "^7.0.3",
     "create-listening-server": "^2.0.0",
-    "minimist": "^1.2.7",
+    "minimist": "^1.2.8",
     "socket.io": "^4.6.0"
   },
   "files": [
