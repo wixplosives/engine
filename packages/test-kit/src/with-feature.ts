@@ -5,7 +5,7 @@ import { ensureTracePath } from './utils';
 import { hookPageConsole } from './hook-page-console';
 import { validateBrowser } from './supported-browsers';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
-import { normilaizeTestName } from './normilaize-test-name';
+import { normalizeTestName } from './normalize-test-name';
 import { RemoteHttpApplication } from './remote-http-application';
 import { ForkedProcessApplication } from './forked-process-application';
 import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
@@ -301,7 +301,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                             name:
                                 process.env.TRACING && process.env.TRACING !== 'true'
                                     ? process.env.TRACING
-                                    : name ?? (testName ? normilaizeTestName(testName) : 'name-less-test'),
+                                    : name ?? (testName ? normalizeTestName(testName) : 'name-less-test'),
                         }),
                     });
                 });
