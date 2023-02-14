@@ -301,7 +301,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                             name:
                                 process.env.TRACING && process.env.TRACING !== 'true'
                                     ? process.env.TRACING
-                                    : name ?? (testName ? normalizeTestName(testName) : 'name-less-test'),
+                                    : name ?? (testName ? normalizeTestName(testName) : 'nameless-test'),
                         }),
                     });
                 });
