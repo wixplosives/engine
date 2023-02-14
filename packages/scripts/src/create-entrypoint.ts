@@ -16,6 +16,7 @@ export interface ICreateEntrypointsOptions {
     featureName?: string;
     configName?: string;
     publicPath?: string;
+    publicPathVariableName?: string;
     configurations: SetMultiMap<string, IConfigDefinition>;
     staticBuild: boolean;
     mode: 'production' | 'development';
@@ -99,6 +100,7 @@ export function createMainEntrypoint({
     featureName,
     configName,
     publicPath,
+    publicPathVariableName,
     configurations,
     mode,
     staticBuild,
@@ -135,12 +137,16 @@ async function main() {
     const env = ${JSON.stringify(
         new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
     )}
+    
+    let publicPath = ${typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'}
+    if (options.has('publicPath')) {
+        publicPath = options.get('publicPath');
+    } else if (${typeof publicPathVariableName === 'string'} && topWindow.${publicPathVariableName}) {
+        publicPath = topWindow.${publicPathVariableName};
+    }
 
-    const publicPath = options.has('publicPath') ? options.get('publicPath') : ${
-        typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'
-    };
     __webpack_public_path__= publicPath;
-
+    
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
     const config = [];

@@ -15,6 +15,7 @@ export interface IRunApplicationOptions extends IFeatureTarget {
     inspect?: boolean;
     port?: number;
     publicPath?: string;
+    publicPathVariableName?: string;
     mode?: 'development' | 'production';
     title?: string;
     publicConfigsRoute?: string;
@@ -64,6 +65,7 @@ export interface ICompilerOptions {
     featureName?: string;
     configName?: string;
     publicPath?: string;
+    publicPathVariableName?: string;
     mode?: 'production' | 'development';
     title?: string;
     favicon?: string;

@@ -31,7 +31,7 @@ export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) 
 
         // Translate raw graph data to hierarchy
         const tree = graphCluster(hierarchy<GraphNode>(translateNodeToHierarchy(selectedFeatureGraph.nodes)));
-        const leaves = tree.leaves() as Array<HierarchyPointNode<Node>>;
+        const leaves = tree.leaves() as unknown as Array<HierarchyPointNode<Node>>;
 
         // Translate links between nodes to paths
         const paths = selectedFeatureGraph.links.map(function (l) {

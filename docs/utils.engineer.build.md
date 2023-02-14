@@ -3,6 +3,7 @@
 ## Options
 
 - `--publicPath <path>` - public path prefix to use as base (default: "/")
+- `--publicPathVariableName <publicPathVariableName>` - global variable name where public path is stored
 - `--inspect`
 - `--singleFeature` - build only the feature set by --feature (default: false)
 - `--title <title>` - application title to display in browser
