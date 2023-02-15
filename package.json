@@ -23,7 +23,7 @@
     "@file-services/memory": "^7.2.3",
     "@file-services/types": "^7.2.3",
     "@stylable/cli": "^5.6.1",
-    "@stylable/webpack-plugin": "^5.6.1",
+    "@stylable/webpack-plugin": "^5.7.0",
     "@ts-tools/node": "^4.0.0",
     "@ts-tools/webpack-loader": "^4.0.0",
     "@types/chai": "^4.3.4",
