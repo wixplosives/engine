@@ -103,10 +103,10 @@
   dependencies:
     "@file-services/types" "^7.2.3"
 
-"@file-services/resolve@^7.2.3":
-  version "7.2.3"
-  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-7.2.3.tgz#6b9a348495521db53f05cc12d7509373fd728f38"
-  integrity sha512-gsHvs4JgmBy42kFugtAcC79UJoys3B/aoczfRfMlnNfimsitUzL/3egZZl9G9h8K6bHk5rYD/qXRcLw4i/TOww==
+"@file-services/resolve@^7.2.4":
+  version "7.2.4"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-7.2.4.tgz#9573c9a927aa9fdae807ce6bbdced7278fb0c634"
+  integrity sha512-MOisHVEPQf4V5Oc4899PFMT73uUy/J8Bfyt+xynUHbAnWLmY8PKrQnP1bScQLE9ObgaxGStf07aRXgwLuvXHZw==
 
 "@file-services/types@^7.2.3":
   version "7.2.3"
