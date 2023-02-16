@@ -11,9 +11,8 @@
     "webpack": "^4.0.0 || ^5.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^7.2.3",
-    "@file-services/resolve": "^7.2.3",
-    "@file-services/types": "^7.2.3",
+    "@file-services/node": "^7.2.4",
+    "@file-services/types": "^7.2.4",
     "@wixc3/common": "^7.0.3",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/cross-performance": "^32.2.2",
