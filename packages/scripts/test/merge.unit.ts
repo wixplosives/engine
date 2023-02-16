@@ -7,15 +7,15 @@ describe('mergeAll', () => {
         const actual: { a: Map<number, number>; b: Set<number> } = mergeAll([
             { a: new Map([[0, 0]]), b: new Set([0]) },
             { a: new Map([[1, 1]]), b: new Set([1]) },
-            { a: new Map([[2, 2]]), b: new Set([2]) }
+            { a: new Map([[2, 2]]), b: new Set([2]) },
         ]);
         expect(actual).to.eql({
             a: new Map([
                 [0, 0],
                 [1, 1],
-                [2, 2]
+                [2, 2],
             ]),
-            b: new Set([0, 1, 2])
+            b: new Set([0, 1, 2]),
         });
     });
 });
@@ -27,7 +27,7 @@ describe('mergeResults', () => {
             expect(actual).to.eql(
                 new Map([
                     [0, 0],
-                    [1, 1]
+                    [1, 1],
                 ])
             );
         });
@@ -45,7 +45,7 @@ describe('mergeResults', () => {
             expect(actual).to.eql(
                 new SetMultiMap([
                     [0, 0],
-                    [1, 1]
+                    [1, 1],
                 ])
             );
         });
@@ -56,7 +56,7 @@ describe('mergeResults', () => {
             expect(actual).to.eql(
                 new SetMultiMap([
                     [0, 0],
-                    [0, 1]
+                    [0, 1],
                 ])
             );
         });
@@ -80,24 +80,24 @@ describe('mergeResults', () => {
                 {
                     a: new SetMultiMap([[0, 0]]),
                     b: new Map([[0, 0]]),
-                    c: new Set([0])
+                    c: new Set([0]),
                 },
                 {
                     a: new SetMultiMap([[0, 1]]),
                     b: new Map([[1, 1]]),
-                    c: new Set([1])
+                    c: new Set([1]),
                 }
             );
             expect(actual).to.eql({
                 a: new SetMultiMap([
                     [0, 0],
-                    [0, 1]
+                    [0, 1],
                 ]),
                 b: new Map([
                     [0, 0],
-                    [1, 1]
+                    [1, 1],
                 ]),
-                c: new Set([0, 1])
+                c: new Set([0, 1]),
             });
         });
 
@@ -109,20 +109,20 @@ describe('mergeResults', () => {
             } = mergeResults(
                 {
                     a: new SetMultiMap([[0, 0]]),
-                    b: new Map([[0, 0]])
+                    b: new Map([[0, 0]]),
                 },
                 {
                     b: new Map([[1, 1]]),
-                    c: new Set([1])
+                    c: new Set([1]),
                 }
             );
             expect(actual).to.eql({
                 a: new SetMultiMap([[0, 0]]),
                 b: new Map([
                     [0, 0],
-                    [1, 1]
+                    [1, 1],
                 ]),
-                c: new Set([1])
+                c: new Set([1]),
             });
         });
     });

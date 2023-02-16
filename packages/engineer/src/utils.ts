@@ -19,7 +19,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
 }> {
     const serverOpts = defaults(options, defaultOptions);
     const app = new TargetApplication({
-        basePath: serverOpts.targetApplicationPath
+        basePath: serverOpts.targetApplicationPath,
     });
     const { config } = await app.getEngineConfig();
     const engineCnf = defaults(config || ({} as EngineConfig), defaultsEngineConfig);
@@ -28,7 +28,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
           fs.join(basePath, 'dev-server.feature.ts')
         : // include all features (gui, managed etc)
           fs.findFilesSync(basePath, {
-              filterFile: ({ name }) => isFeatureFile(name)
+              filterFile: ({ name }) => isFeatureFile(name),
           });
     preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
@@ -43,7 +43,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
         host: new BaseHost(),
         config: [
             devServerFeature.use({
-                devServerConfig: asDevConfig(serverOpts, engineCnf)
+                devServerConfig: asDevConfig(serverOpts, engineCnf),
             }),
             ...(options.devServerOnly
                 ? []
@@ -62,7 +62,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
         engine,
         outputPath: app.outputPath,
         dispose,
-        devServerFeature: engine.get(devServerFeature).api
+        devServerFeature: engine.get(devServerFeature).api,
     };
 }
 
@@ -72,7 +72,7 @@ function asDevConfig(options: DStartOptions, engineConfig: DEngineConfig): Parti
         favicon: options.favicon ?? engineConfig.favicon,
         basePath: options.targetApplicationPath,
         defaultRuntimeOptions: options.runtimeOptions,
-        featureDiscoveryRoot: options.featureDiscoveryRoot ?? engineConfig.featureDiscoveryRoot
+        featureDiscoveryRoot: options.featureDiscoveryRoot ?? engineConfig.featureDiscoveryRoot,
     };
 }
 

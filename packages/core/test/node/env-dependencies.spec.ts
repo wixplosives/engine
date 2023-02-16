@@ -191,7 +191,7 @@ describe('ENV dependencies', () => {
             typeCheck(
                 (
                     _runningFeature: EQUAL<
-                        typeof entry['service'],
+                        (typeof entry)['service'],
                         {
                             get(token: EnvironmentInstanceToken): AsyncApi<{ increment: (n: number) => number }>;
                         }
@@ -201,7 +201,7 @@ describe('ENV dependencies', () => {
             typeCheck(
                 (
                     _runningFeature: EQUAL<
-                        typeof entry['service2'],
+                        (typeof entry)['service2'],
                         {
                             get(
                                 token: EnvironmentInstanceToken

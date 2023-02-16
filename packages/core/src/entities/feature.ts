@@ -13,7 +13,7 @@ import type {
     RunningFeatures,
     SetupHandler,
     IFeature,
-    Dependency
+    Dependency,
 } from '../types';
 import { AnyEnvironment, Environment, testEnvironmentCollision } from './env';
 import { SetMultiMap } from '@wixc3/patterns';
@@ -63,7 +63,7 @@ export class RuntimeFeature<T extends IFeature, ENV extends AnyEnvironment> {
 
     public async [DISPOSE](context: RuntimeEngine) {
         const {
-            entryEnvironment: { env: envName }
+            entryEnvironment: { env: envName },
         } = context;
         if (this.disposing) {
             return this.disposing.promise;
@@ -211,7 +211,7 @@ export class Feature<
             features,
             runOptions,
             referencedEnvs,
-            entryEnvironment: { env: envName }
+            entryEnvironment: { env: envName },
         } = runningEngine;
 
         const deps: any = {};
@@ -248,7 +248,7 @@ export class Feature<
             },
             [RUN_OPTIONS]: runOptions,
             [ENGINE]: runningEngine,
-            runningEnvironmentName: envName
+            runningEnvironmentName: envName,
         };
 
         for (const [key, contextHandler] of this.contextHandlers) {
