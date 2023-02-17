@@ -23,7 +23,7 @@
     "@wixc3/patterns": "^7.0.3",
     "@wixc3/resolve-directory-context": "^3.0.3",
     "electron-builder": "^23.6.0",
-    "yargs": "^17.6.2"
+    "yargs": "^17.7.0"
   },
   "files": [
     "bin",
