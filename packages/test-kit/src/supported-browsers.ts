@@ -1,5 +1,5 @@
 const supportedBrowsers = ['chromium', 'firefox', 'webkit'] as const;
-export type SupportedBrowser = typeof supportedBrowsers[number];
+export type SupportedBrowser = (typeof supportedBrowsers)[number];
 
 export function isValidBrowserName(browserName: string): browserName is SupportedBrowser {
     return (supportedBrowsers as ReadonlyArray<string>).includes(browserName);

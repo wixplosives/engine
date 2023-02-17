@@ -85,7 +85,7 @@ typeCheck((_: EQUAL<SomeApiPromisified, { someMethod(): Promise<boolean> }>) => 
 typeCheck(
     (
         _runningDependencies: EQUAL<
-            RunningFeatures<typeof gui['dependencies'], typeof MAIN>,
+            RunningFeatures<(typeof gui)['dependencies'], typeof MAIN>,
             { logger: Running<typeof logger, typeof MAIN> }
         >,
         _runningFeature: EQUAL<
@@ -127,7 +127,7 @@ typeCheck(
             }
         >,
         _runningDependencies: EQUAL<
-            RunningFeatures<typeof addPanel['dependencies'], typeof MAIN>,
+            RunningFeatures<(typeof addPanel)['dependencies'], typeof MAIN>,
             {
                 logger: Running<typeof logger, typeof MAIN>;
                 gui: Running<typeof gui, typeof MAIN>;

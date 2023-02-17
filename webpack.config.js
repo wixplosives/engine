@@ -7,8 +7,8 @@ module.exports = {
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
         alias: {
-            sinon: 'sinon/pkg/sinon-esm.js'
-        }
+            sinon: 'sinon/pkg/sinon-esm.js',
+        },
     },
     module: {
         rules: [
