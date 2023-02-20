@@ -29,7 +29,7 @@ export interface ProcessExitDetails {
     /**
      * The last output process sent to stderr stream
      */
-    lastSeenError: string | undefined;
+    lastSeenError: string | null;
 }
 
 /**
@@ -114,7 +114,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         },
         onDisconnect: (cb: (details: ProcessExitDetails) => void) => {
             child.once('exit', (exitCode, signal) => {
-                cb({ exitCode, signal, lastSeenError: lastErrors.join('') });
+                cb({ exitCode, signal, lastSeenError: lastErrors.length > 0 ? lastErrors.join('') : null });
             });
         },
         environmentIsReady,

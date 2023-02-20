@@ -55,10 +55,10 @@ const setupRunningEnv = async ({
 };
 
 describe('onDisconnectHandler for node environment initializer', () => {
-    const expectedProcessExitDetails = {
+    const expectedProcessExitDetails: ProcessExitDetails = {
         exitCode: 1,
         signal: null,
-        lastSeenError: undefined,
+        lastSeenError: null,
     };
 
     describe('without own uncaughtException handling', () => {
