@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import fs from '@file-services/node';
 import { BaseHost, Communication } from '@wixc3/engine-core';
 import { findFeatures } from '@wixc3/engine-scripts';
-import { initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
+import { DisconnectDetails, initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
 import testFeature, { serverEnv } from '../test-project/test-feature.feature';
 
 const { expect } = chai;
@@ -14,7 +14,8 @@ const testProjectPath = fs.join(__dirname, '../test-project');
 const setupRunningEnv = async ({
     errorMode,
     handleUncaught,
-}: { errorMode?: 'exception' | 'exit' | 'promiseReject'; handleUncaught?: boolean } = {}) => {
+    pipeOutput,
+}: { errorMode?: 'exception' | 'exit' | 'promiseReject'; handleUncaught?: boolean; pipeOutput?: boolean } = {}) => {
     const communication = new Communication(new BaseHost(), 'someId');
     const { features } = findFeatures(testProjectPath, fs, 'dist');
     const { onDisconnect, dispose, environmentIsReady } = initializeNodeEnvironment({
@@ -28,16 +29,17 @@ const setupRunningEnv = async ({
             config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
             features: Array.from(features.entries()),
         },
-        processOptions: { cwd: process.cwd(), stdio: ['ignore', 'ignore', 'ignore', 'ipc'] },
+        processOptions: {
+            cwd: process.cwd(),
+            stdio: pipeOutput === true ? ['pipe', 'pipe', 'pipe', 'ipc'] : ['ignore', 'ignore', 'ignore', 'ipc'],
+        },
         environmentStartupOptions: {},
     });
 
     await environmentIsReady;
 
-    const disconnectPromise = new Promise<boolean>((res) => {
-        onDisconnect(() => {
-            res(true);
-        });
+    const disconnectPromise = new Promise<DisconnectDetails>((res) => {
+        onDisconnect(res);
     });
 
     return {
@@ -54,21 +56,37 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
             dispose();
 
-            await expect(disconnectPromise).to.eventually.eq(true);
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
         });
         it('should catch on env exit intentionally', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exit' });
-            await expect(disconnectPromise).to.eventually.eq(true);
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
         });
         it('should catch on env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
 
-            await expect(disconnectPromise).to.eventually.eq(true);
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
+        });
+        it('should expose disconnect reason when env throwing uncaught exception', async () => {
+            const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
+
+            await expect(disconnectPromise).to.eventually.be.deep.eq({
+                exitCode: 1,
+                signal: null,
+                lastSeenError: undefined,
+            });
         });
         it('should catch on env unhandled promise rejection', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'promiseReject' });
 
-            await expect(disconnectPromise).to.eventually.eq(true);
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
+        });
+        it('should expose error when env throwing uncaught exception', async () => {
+            const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception', pipeOutput: true });
+
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
+            const disconnectDetails = await disconnectPromise;
+            expect(disconnectDetails.lastSeenError).to.not.be.empty;
         });
     });
     describe('with own uncaughtException handling', () => {
@@ -78,21 +96,37 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
             dispose();
 
-            await expect(disconnectPromise).to.eventually.eq(true);
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
         });
         it('should catch on env exit intentionally', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exit', handleUncaught });
-            await expect(disconnectPromise).to.eventually.eq(true);
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
         });
         it('should catch on env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception', handleUncaught });
 
-            await expect(disconnectPromise).to.eventually.eq(true);
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
+        });
+        it('should expose disconnect reason when env throwing uncaught exception', async () => {
+            const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
+
+            await expect(disconnectPromise).to.eventually.be.deep.eq({
+                exitCode: 1,
+                signal: null,
+                lastSeenError: undefined,
+            });
         });
         it('should catch on env unhandled promise rejection', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'promiseReject', handleUncaught });
 
-            await expect(disconnectPromise).to.eventually.eq(true);
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
+        });
+        it('should expose disconnect reason when env throwing uncaught exception', async () => {
+            const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception', pipeOutput: true });
+
+            await expect(disconnectPromise).to.eventually.be.fulfilled;
+            const disconnectDetails = await disconnectPromise;
+            expect(disconnectDetails.lastSeenError).to.not.be.empty;
         });
     });
 });

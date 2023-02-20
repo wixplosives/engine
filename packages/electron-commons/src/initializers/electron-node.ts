@@ -12,6 +12,16 @@ export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env' | 'stdio' | 'windowsHide'>;
 }
 
+export interface DisconnectHandler {
+    (details: DisconnectDetails): void;
+}
+
+export interface DisconnectDetails {
+    exitCode: number | null;
+    signal: NodeJS.Signals | null;
+    lastSeenError: string | undefined;
+}
+
 /**
  * Spawn a node-based environment from the renderer process.
  * Should be invoked *only* from the renderer process.
@@ -19,7 +29,12 @@ export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
  */
 
 export const initializeNodeEnvironment: EnvironmentInitializer<
-    { id: string; dispose: () => void; onDisconnect: (cb: () => void) => void; environmentIsReady: Promise<void> },
+    {
+        id: string;
+        dispose: () => void;
+        onDisconnect: (cb: DisconnectHandler) => void;
+        environmentIsReady: Promise<void>;
+    },
     InitializeNodeEnvironmentOptions
 > = ({ communication, env, runtimeArguments, processOptions, environmentStartupOptions }) => {
     const environmentIsReady = communication.envReady(env.env);
@@ -60,7 +75,12 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     child.stdout?.setEncoding('utf8');
     child.stderr?.setEncoding('utf8');
     child.stdout?.on('data', console.log); // eslint-disable-line no-console
-    child.stderr?.on('data', console.error); // eslint-disable-line no-console
+
+    let lastSeenError: string | undefined = undefined;
+    child.stderr?.on('data', (chunk) => {
+        console.error(chunk); // eslint-disable-line no-console
+        lastSeenError = chunk;
+    });
 
     return {
         id: env.env,
@@ -70,8 +90,10 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
                 child.pid ? await promisifiedTreeKill(child.pid) : child.kill();
             }
         },
-        onDisconnect: (cb: () => void) => {
-            child.on('exit', cb);
+        onDisconnect: (cb: DisconnectHandler) => {
+            child.on('exit', (exitCode, signal) => {
+                cb({ exitCode, signal, lastSeenError });
+            });
         },
         environmentIsReady,
     };
