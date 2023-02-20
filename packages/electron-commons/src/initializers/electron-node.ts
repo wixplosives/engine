@@ -12,13 +12,23 @@ export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env' | 'stdio' | 'windowsHide'>;
 }
 
-export interface DisconnectHandler {
-    (details: DisconnectDetails): void;
-}
-
-export interface DisconnectDetails {
+/**
+ * Detailed info about process exit.
+ */
+export interface ProcessExitDetails {
+    /**
+     * The exit code if the child exited on its own
+     */
     exitCode: number | null;
+
+    /**
+     * The signal by which the child process was terminated
+     */
     signal: NodeJS.Signals | null;
+
+    /**
+     * The last output process sent to stderr stream
+     */
     lastSeenError: string | undefined;
 }
 
@@ -32,7 +42,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     {
         id: string;
         dispose: () => void;
-        onDisconnect: (cb: DisconnectHandler) => void;
+        onDisconnect: (cb: (details: ProcessExitDetails) => void) => void;
         environmentIsReady: Promise<void>;
     },
     InitializeNodeEnvironmentOptions
@@ -76,10 +86,22 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     child.stderr?.setEncoding('utf8');
     child.stdout?.on('data', console.log); // eslint-disable-line no-console
 
-    let lastSeenError: string | undefined = undefined;
+    let lastErrors: string[] = [];
+    let lastErrorDateStamp: number | undefined = undefined;
+
     child.stderr?.on('data', (chunk) => {
         console.error(chunk); // eslint-disable-line no-console
-        lastSeenError = chunk;
+
+        if (lastErrorDateStamp === undefined) {
+            lastErrorDateStamp = Date.now();
+        }
+
+        // collect all errors if difference between occurrences is less than some threshold
+        if (lastErrorDateStamp - Date.now() < 5 * 1000) {
+            lastErrors.push(chunk);
+        } else {
+            lastErrors = [chunk];
+        }
     });
 
     return {
@@ -90,9 +112,9 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
                 child.pid ? await promisifiedTreeKill(child.pid) : child.kill();
             }
         },
-        onDisconnect: (cb: DisconnectHandler) => {
-            child.on('exit', (exitCode, signal) => {
-                cb({ exitCode, signal, lastSeenError });
+        onDisconnect: (cb: (details: ProcessExitDetails) => void) => {
+            child.once('exit', (exitCode, signal) => {
+                cb({ exitCode, signal, lastSeenError: lastErrors.join('') });
             });
         },
         environmentIsReady,
