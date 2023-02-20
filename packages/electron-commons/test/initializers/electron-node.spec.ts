@@ -71,15 +71,9 @@ describe('onDisconnectHandler for node environment initializer', () => {
         });
         it('should catch on env exit intentionally', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exit' });
-            await disconnectPromise;
             await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
         });
         it('should catch on env throwing uncaught exception', async () => {
-            const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
-
-            await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
-        });
-        it('should expose process exit details when env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
 
             await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
@@ -91,7 +85,6 @@ describe('onDisconnectHandler for node environment initializer', () => {
         });
         it('should expose error when env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception', stdio: 'pipe' });
-
             const disconnectDetails = await disconnectPromise;
             expect(disconnectDetails.lastSeenError).to.not.be.empty;
         });
@@ -111,11 +104,6 @@ describe('onDisconnectHandler for node environment initializer', () => {
         });
         it('should catch on env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception', handleUncaught });
-
-            await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
-        });
-        it('should expose process exit details when env throwing uncaught exception', async () => {
-            const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
 
             await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
         });
