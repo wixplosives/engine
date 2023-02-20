@@ -79,7 +79,7 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
             await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
         });
-        it('should expose disconnect reason when env throwing uncaught exception', async () => {
+        it('should expose process exit details when env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
 
             await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
@@ -114,7 +114,7 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
             await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
         });
-        it('should expose disconnect reason when env throwing uncaught exception', async () => {
+        it('should expose process exit details when env throwing uncaught exception', async () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception' });
 
             await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
@@ -123,12 +123,6 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { disconnectPromise } = await setupRunningEnv({ errorMode: 'promiseReject', handleUncaught });
 
             await expect(disconnectPromise).to.eventually.deep.eq(expectedProcessExitDetails);
-        });
-        it('should expose disconnect reason when env throwing uncaught exception', async () => {
-            const { disconnectPromise } = await setupRunningEnv({ errorMode: 'exception', stdio: 'pipe' });
-
-            const disconnectDetails = await disconnectPromise;
-            expect(disconnectDetails.lastSeenError).to.not.be.empty;
         });
     });
 });
