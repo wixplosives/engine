@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/cross-performance",
-  "version": "32.2.2",
+  "version": "33.0.0",
   "main": "./index.js",
   "browser": "./browser.js",
   "types": "./index.d.ts",
