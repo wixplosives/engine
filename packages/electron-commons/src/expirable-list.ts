@@ -1,5 +1,5 @@
 /**
- * The collection of items that expires items on the specified expiration timeout.
+ * A list where items are automatically removed after a certain timeout.
  */
 export class ExpirableList<T> {
     private items: { item: T; timestamp: number }[] = [];
