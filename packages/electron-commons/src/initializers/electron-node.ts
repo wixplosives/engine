@@ -4,12 +4,30 @@ import type { EnvironmentInitializer, InitializerOptions } from '@wixc3/engine-c
 import type { IEngineRuntimeArguments, INodeEnvStartupMessage, NodeEnvironmentStartupOptions } from '../types';
 import treeKill from 'tree-kill';
 import { promisify } from 'util';
+import { ExpirableList } from '../expirable-list';
 const promisifiedTreeKill = promisify(treeKill);
 
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
     environmentStartupOptions?: Partial<NodeEnvironmentStartupOptions>;
     processOptions?: Pick<SpawnOptions, 'cwd' | 'shell' | 'env' | 'stdio' | 'windowsHide'>;
+}
+
+export interface ProcessExitDetails {
+    /**
+     * The exit code if the child exited on its own
+     */
+    exitCode: number | null;
+
+    /**
+     * The signal by which the child process was terminated
+     */
+    signal: NodeJS.Signals | null;
+
+    /**
+     * The last output process sent to stderr stream
+     */
+    errorMessage: string;
 }
 
 /**
@@ -19,7 +37,12 @@ export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
  */
 
 export const initializeNodeEnvironment: EnvironmentInitializer<
-    { id: string; dispose: () => void; onDisconnect: (cb: () => void) => void; environmentIsReady: Promise<void> },
+    {
+        id: string;
+        dispose: () => void;
+        onExit: (cb: (details: ProcessExitDetails) => void) => void;
+        environmentIsReady: Promise<void>;
+    },
     InitializeNodeEnvironmentOptions
 > = ({ communication, env, runtimeArguments, processOptions, environmentStartupOptions }) => {
     const environmentIsReady = communication.envReady(env.env);
@@ -60,7 +83,13 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     child.stdout?.setEncoding('utf8');
     child.stderr?.setEncoding('utf8');
     child.stdout?.on('data', console.log); // eslint-disable-line no-console
-    child.stderr?.on('data', console.error); // eslint-disable-line no-console
+
+    const errorChunks = new ExpirableList<string>(5_000);
+
+    child.stderr?.on('data', (chunk) => {
+        console.error(chunk); // eslint-disable-line no-console
+        errorChunks.push(chunk);
+    });
 
     return {
         id: env.env,
@@ -70,8 +99,10 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
                 child.pid ? await promisifiedTreeKill(child.pid) : child.kill();
             }
         },
-        onDisconnect: (cb: () => void) => {
-            child.on('exit', cb);
+        onExit: (cb: (details: ProcessExitDetails) => void) => {
+            child.once('exit', (exitCode, signal) => {
+                cb({ exitCode, signal, errorMessage: errorChunks.getItems().join('') });
+            });
         },
         environmentIsReady,
     };

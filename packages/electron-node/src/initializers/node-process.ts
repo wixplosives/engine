@@ -17,7 +17,7 @@ export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
     Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
 > = async (options) => {
     const runtimeArguments = await getApplicationMetaData(options.communication);
-    const { id, dispose, onDisconnect, environmentIsReady } = initializeNodeEnvironment({
+    const { id, dispose, onExit, environmentIsReady } = initializeNodeEnvironment({
         runtimeArguments,
         ...options,
     });
@@ -25,7 +25,7 @@ export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
 
     await environmentIsReady;
 
-    return { id, onDisconnect };
+    return { id, onExit };
 };
 
 async function getApplicationMetaData(com: Communication) {
