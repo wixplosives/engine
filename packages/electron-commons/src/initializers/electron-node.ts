@@ -84,7 +84,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     child.stderr?.setEncoding('utf8');
     child.stdout?.on('data', console.log); // eslint-disable-line no-console
 
-    const errorChunks = new ExpirableList<string>(5 * 1000);
+    const errorChunks = new ExpirableList<string>(5_000);
 
     child.stderr?.on('data', (chunk) => {
         console.error(chunk); // eslint-disable-line no-console
