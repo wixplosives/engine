@@ -2703,10 +2703,10 @@ create-listening-server@^2.0.0:
   resolved "https://registry.yarnpkg.com/create-listening-server/-/create-listening-server-2.0.0.tgz#71bc6de5018c43ebd6fe4ea43aa1958ab0b0519a"
   integrity sha512-PWpk8o6LXXUCz7/rmSBekd9BbBvgsgshccRDbZWTf8+DVFIM6eEDM3FJ2pHlEGkIqhJAnv2j0tV92FBcg9VBqA==
 
-create-temp-directory@^2.2.0, create-temp-directory@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/create-temp-directory/-/create-temp-directory-2.3.0.tgz#81d690a5ed66f7d80b5ae1f9bec12f4fee6d2fd2"
-  integrity sha512-YtQHTlpVoA/ypyiaPiCysRbxsEKdKpjSWmVPgTgsOxVpfZFbLSk4M2hnDhFDrR/POtXjY0Lb3326w7/Fibk+Dw==
+create-temp-directory@^2.2.0, create-temp-directory@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/create-temp-directory/-/create-temp-directory-2.4.0.tgz#7e1dd1c082c128fff0f4df8892e44a893c1351c9"
+  integrity sha512-5aaU5XNkRKZTBw9tfnMiFh84Fo20+YIT+BcKPFwUHKYgBWwu7eY6AwJR8NwAekzu1H/ABXLhy4zJITHWJgFiHA==
 
 cross-spawn@^7.0.1, cross-spawn@^7.0.2, cross-spawn@^7.0.3:
   version "7.0.3"
