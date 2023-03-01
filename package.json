@@ -48,7 +48,7 @@
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/docs": "^7.2.0",
     "@wixc3/testing": "^7.2.0",
-    "@wixc3/testing-node": "^7.0.3",
+    "@wixc3/testing-node": "^7.2.0",
     "@wixc3/wait-for-call": "^7.0.3",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",

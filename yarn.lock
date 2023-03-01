@@ -1501,17 +1501,17 @@
     minimatch "^7.0.0"
     type-fest "^3.6.0"
 
-"@wixc3/testing-node@^7.0.3":
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-7.0.3.tgz#087289c32e2cba78212f1ece254b4bdd9ff89c49"
-  integrity sha512-ZK+DMOmTFDwvVCnveP9gKyrZ5mFH1Rm2FAGJDFa/ugfG0fB6myKinm/y8qd3EvXzisIShfyHNyTukUkW81Pcow==
+"@wixc3/testing-node@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-7.2.0.tgz#4b257f18f19020bf38020f77d24b1b12fa1804fc"
+  integrity sha512-dQkU6mEm0vdh+L3v9sghHWrt0+U+Ge2zVQyxvqYG20P/JdPYSbSHjOfxK+ag/e4d8PCb3sOGj1i1iXsPUctSQQ==
   dependencies:
-    "@file-services/node" "^7.2.3"
-    "@file-services/types" "^7.2.3"
-    "@wixc3/common" "^7.0.3"
-    "@wixc3/patterns" "^7.0.3"
+    "@file-services/node" "^7.2.4"
+    "@file-services/types" "^7.2.4"
+    "@wixc3/common" "^7.2.0"
+    "@wixc3/patterns" "^7.2.0"
     chai "^4.3.7"
-    create-temp-directory "^2.2.0"
+    create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
 "@wixc3/testing@^7.2.0":
@@ -2708,7 +2708,7 @@ create-listening-server@^2.0.0, create-listening-server@^2.1.0:
   resolved "https://registry.yarnpkg.com/create-listening-server/-/create-listening-server-2.1.0.tgz#18a4b89942afabb6c2ae93f6747c20540835df63"
   integrity sha512-CQziEuvb9QvZBgrNebggAC7BxfGwfMdFnKkvPyaB0o5lKjCBIPQ2rbhEl5IlGPQIJ3MIqdgKW+NoRQHF40l3zg==
 
-create-temp-directory@^2.2.0, create-temp-directory@^2.4.0:
+create-temp-directory@^2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/create-temp-directory/-/create-temp-directory-2.4.0.tgz#7e1dd1c082c128fff0f4df8892e44a893c1351c9"
   integrity sha512-5aaU5XNkRKZTBw9tfnMiFh84Fo20+YIT+BcKPFwUHKYgBWwu7eY6AwJR8NwAekzu1H/ABXLhy4zJITHWJgFiHA==
