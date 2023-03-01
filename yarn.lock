@@ -84,7 +84,7 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.35.0.tgz#b7569632b0b788a0ca0e438235154e45d42813a7"
   integrity sha512-JXdzbRiWclLVoD8sNUjR443VVlYqiYmDVT6rGUEIEHU5YJW0gaVZwV2xgM7D4arkvASqD0IlLUVjHiFuxaftRw==
 
-"@file-services/memory@^7.2.3", "@file-services/memory@^7.2.4":
+"@file-services/memory@^7.2.4":
   version "7.2.4"
   resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-7.2.4.tgz#76f854351bd7442e9cc3fa9bfada5ac0ea288dc9"
   integrity sha512-GQX4M9iVwwOtT15DeZC5f1Ey4GiasZ2escL718vrvsC2tpgYm/gWyQSYdlKTpKniRULUQCTQL+1oRCsRuQ0blg==
@@ -1477,13 +1477,13 @@
     glob "^8.1.0"
     yargs "^17.6.2"
 
-"@wixc3/fs-utils@^7.0.3":
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-7.0.3.tgz#cc84be70de157bf85266b65f1a771b1972f767b1"
-  integrity sha512-3VdgzpoBBbWK69F5btm1oMO47DyoDQz/LbgDqiFlrpW+UuKTnLeWNTY5hikNtY1jw5o8b5LD1Xl6fdFWbttHzg==
+"@wixc3/fs-utils@^7.0.3", "@wixc3/fs-utils@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-7.2.0.tgz#af0199d92962d3ad24d4e21272f3d0f62787eb1e"
+  integrity sha512-V7cmFwc0I8pELcoa2eAowgp5/HTiDQ8XdGnCJrsxZLXAI3K6BiErTA1myen5LRDnnPxQFOg7UwoamZcunzB8Mw==
   dependencies:
-    "@file-services/memory" "^7.2.3"
-    "@wixc3/common" "^7.0.3"
+    "@file-services/memory" "^7.2.4"
+    "@wixc3/common" "^7.2.0"
 
 "@wixc3/patterns@^7.0.3", "@wixc3/patterns@^7.2.0":
   version "7.2.0"
