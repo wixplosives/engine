@@ -13,7 +13,7 @@
   "dependencies": {
     "@file-services/node": "^7.2.4",
     "@file-services/types": "^7.2.4",
-    "@wixc3/common": "^7.0.3",
+    "@wixc3/common": "^7.2.0",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/cross-performance": "^33.0.0",
     "@wixc3/engine-core": "^33.0.0",
