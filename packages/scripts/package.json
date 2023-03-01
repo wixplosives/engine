@@ -20,7 +20,7 @@
     "@wixc3/engine-core-node": "^33.0.0",
     "@wixc3/engine-runtime-node": "^33.0.0",
     "@wixc3/fs-utils": "^7.0.3",
-    "@wixc3/patterns": "^7.0.3",
+    "@wixc3/patterns": "^7.2.0",
     "@wixc3/resolve-directory-context": "^3.0.4",
     "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
