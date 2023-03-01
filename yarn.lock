@@ -239,7 +239,7 @@
     lodash "^4.17.15"
     tmp-promise "^3.0.2"
 
-"@microsoft/api-documenter@^7.21.0":
+"@microsoft/api-documenter@^7.21.5":
   version "7.21.5"
   resolved "https://registry.yarnpkg.com/@microsoft/api-documenter/-/api-documenter-7.21.5.tgz#cab82ad304096c55716a1a74242829f1d10bf6dc"
   integrity sha512-RTYtqbNqlPvDSqYV2ZCNWSajSieXG58mG1w4MFkHdHhxhWbC9FHqQk7MwIMUKBQBNagW3rE/11Jv5cV0TXuW2Q==
@@ -252,7 +252,7 @@
     js-yaml "~3.13.1"
     resolve "~1.22.1"
 
-"@microsoft/api-extractor-model@7.26.4", "@microsoft/api-extractor-model@^7.26.0":
+"@microsoft/api-extractor-model@7.26.4", "@microsoft/api-extractor-model@^7.26.4":
   version "7.26.4"
   resolved "https://registry.yarnpkg.com/@microsoft/api-extractor-model/-/api-extractor-model-7.26.4.tgz#77f2c17140249b846a61eea41e565289cc77181f"
   integrity sha512-PDCgCzXDo+SLY5bsfl4bS7hxaeEtnXj7XtuzEE+BtALp7B5mK/NrS2kHWU69pohgsRmEALycQdaQPXoyT2i5MQ==
@@ -261,7 +261,7 @@
     "@microsoft/tsdoc-config" "~0.16.1"
     "@rushstack/node-core-library" "3.55.2"
 
-"@microsoft/api-extractor@^7.34.0":
+"@microsoft/api-extractor@^7.34.4":
   version "7.34.4"
   resolved "https://registry.yarnpkg.com/@microsoft/api-extractor/-/api-extractor-7.34.4.tgz#80677b5059b437bc07e9e55832c0cbde671c16a1"
   integrity sha512-HOdcci2nT40ejhwPC3Xja9G+WSJmWhCUKKryRfQYsmE9cD+pxmBaKBKCbuS9jUcl6bLLb4Gz+h7xEN5r0QiXnQ==
@@ -1463,21 +1463,21 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^7.1.0":
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-7.1.0.tgz#6472a7d88bd85a5e8356431adcb8beccc7f969db"
-  integrity sha512-dDGyKFTk0IhFEasWf4s92AYGyF6Z09bObHI8cIbEq8opxug6CPwv+SzCu1H+t/Y4+6lyBFlqLYIRutp9b5tJsQ==
+"@wixc3/docs@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-7.2.0.tgz#48d15ef107e853b3672eee45b2c97b9c377ffd36"
+  integrity sha512-SMT/GdOMy3EpFg+NMH3l7k0VYMHPW4XFI13F0fHueb1C5y+MzhsgRU2Z7LPNFuLBRBkyLNGYNAkvVB96/teq0g==
   dependencies:
-    "@microsoft/api-documenter" "^7.21.0"
-    "@microsoft/api-extractor" "^7.34.0"
-    "@microsoft/api-extractor-model" "^7.26.0"
-    "@wixc3/common" "^7.0.3"
-    "@wixc3/fs-utils" "^7.0.3"
+    "@microsoft/api-documenter" "^7.21.5"
+    "@microsoft/api-extractor" "^7.34.4"
+    "@microsoft/api-extractor-model" "^7.26.4"
+    "@wixc3/common" "^7.2.0"
+    "@wixc3/fs-utils" "^7.2.0"
     "@wixc3/typescript" "^7.1.0"
     glob "^8.1.0"
-    yargs "^17.6.2"
+    yargs "^17.7.1"
 
-"@wixc3/fs-utils@^7.0.3", "@wixc3/fs-utils@^7.2.0":
+"@wixc3/fs-utils@^7.2.0":
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-7.2.0.tgz#af0199d92962d3ad24d4e21272f3d0f62787eb1e"
   integrity sha512-V7cmFwc0I8pELcoa2eAowgp5/HTiDQ8XdGnCJrsxZLXAI3K6BiErTA1myen5LRDnnPxQFOg7UwoamZcunzB8Mw==
