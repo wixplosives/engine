@@ -9,8 +9,9 @@
     "electron": ">=9"
   },
   "dependencies": {
+    "@wixc3/common": "^8.0.0",
+    "@wixc3/patterns": "^8.0.0",
     "@file-services/node": "^7.2.4",
-    "@wixc3/common": "^7.2.0",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/engine-core": "^33.0.0",
     "@wixc3/engine-core-node": "^33.0.0",
@@ -20,7 +21,6 @@
     "@wixc3/engine-runtime-node": "^33.0.0",
     "@wixc3/engine-scripts": "^33.0.0",
     "@wixc3/engineer": "^33.0.0",
-    "@wixc3/patterns": "^7.2.0",
     "@wixc3/resolve-directory-context": "^3.0.4",
     "electron-builder": "^23.6.0",
     "yargs": "^17.7.1"
