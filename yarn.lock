@@ -1469,15 +1469,6 @@
     "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-7.2.0.tgz#56148478e03754fe34d90becb5600248031320e3"
-  integrity sha512-HSQKUjnbvoZoJssPBw6tFnUc814gXctGMxUmfIFHNjpUyAK+tRNXGfAvaxC4Z2I/f+H8+ZSAAJe6bp/3lK6GVw==
-  dependencies:
-    "@file-services/path" "^7.2.4"
-    "@file-services/types" "^7.2.4"
-    promise-assist "^2.0.1"
-
 "@wixc3/common@^8.0.0":
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-8.0.0.tgz#d4d547c801a13f74633151fae55db369e1d47c1e"
@@ -1506,14 +1497,6 @@
     glob "^9.2.1"
     yargs "^17.7.1"
 
-"@wixc3/fs-utils@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-7.2.0.tgz#af0199d92962d3ad24d4e21272f3d0f62787eb1e"
-  integrity sha512-V7cmFwc0I8pELcoa2eAowgp5/HTiDQ8XdGnCJrsxZLXAI3K6BiErTA1myen5LRDnnPxQFOg7UwoamZcunzB8Mw==
-  dependencies:
-    "@file-services/memory" "^7.2.4"
-    "@wixc3/common" "^7.2.0"
-
 "@wixc3/fs-utils@^8.0.0":
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-8.0.0.tgz#e52499d9ca9f4ad9f6318e3a740857c0220dfa50"
@@ -1521,14 +1504,6 @@
   dependencies:
     "@file-services/memory" "^7.2.4"
     "@wixc3/common" "^8.0.0"
-
-"@wixc3/patterns@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-7.2.0.tgz#a751b1eac36d55c3b03d802dd182752439fb4e1f"
-  integrity sha512-FASLEBBnZcdfijMJQeye8970PcogAcHc9rnW7UlqjVn6ju+gqPfSJM+8L0PqkR4DbL2RlCKh43WYD3ziAXTCgQ==
-  dependencies:
-    "@wixc3/common" "^7.2.0"
-    promise-assist "^2.0.1"
 
 "@wixc3/patterns@^8.0.0":
   version "8.0.0"
@@ -1545,19 +1520,6 @@
   dependencies:
     minimatch "^7.0.0"
     type-fest "^3.6.0"
-
-"@wixc3/testing-node@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-7.2.0.tgz#4b257f18f19020bf38020f77d24b1b12fa1804fc"
-  integrity sha512-dQkU6mEm0vdh+L3v9sghHWrt0+U+Ge2zVQyxvqYG20P/JdPYSbSHjOfxK+ag/e4d8PCb3sOGj1i1iXsPUctSQQ==
-  dependencies:
-    "@file-services/node" "^7.2.4"
-    "@file-services/types" "^7.2.4"
-    "@wixc3/common" "^7.2.0"
-    "@wixc3/patterns" "^7.2.0"
-    chai "^4.3.7"
-    create-temp-directory "^2.4.0"
-    promise-assist "^2.0.1"
 
 "@wixc3/testing-node@^8.0.0":
   version "8.0.0"
