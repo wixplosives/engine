@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "33.0.0",
+  "version": "33.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
