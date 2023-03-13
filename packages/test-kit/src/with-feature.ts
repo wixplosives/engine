@@ -8,7 +8,7 @@ import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 import { normalizeTestName } from './normalize-test-name';
 import { RemoteHttpApplication } from './remote-http-application';
 import { ForkedProcessApplication } from './forked-process-application';
-import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
+import { createDisposalGroup, disposeAfter, mochaCtx, withTimeout } from '@wixc3/testing';
 import type { IExecutableApplication } from './types';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
@@ -187,6 +187,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`
         );
     }
+    if (mochaCtx()) {
+        throw new Error('withFeature should be called in a suite (describe) scope, not in a test');
+    }
 
     const capturedErrors: Error[] = [];
 
@@ -240,6 +243,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             allowedErrors = suiteAllowedErrors,
             navigationOptions = suiteNavigationOptions,
         }: IFeatureExecutionOptions = {}) {
+            if (!mochaCtx()) {
+                throw new Error('getLoadedFeature can only be used in mocha tests');
+            }
             if (!browser) {
                 throw new Error('Browser is not open!');
             }
@@ -247,12 +253,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            const runningFeature = await executableApp.runFeature({
-                featureName,
-                configName,
-                runtimeOptions: runOptions,
-                overrideConfig: config,
-            });
+            const runningFeature = await withTimeout(
+                executableApp.runFeature({
+                    featureName,
+                    configName,
+                    runtimeOptions: runOptions,
+                    overrideConfig: config,
+                })
+            )
+                .description('running feature')
+                .timeout(20_000);
 
             if (runningFeature === undefined) {
                 throw new Error(`Feature "${featureName}" was not found`);
@@ -274,7 +284,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 configName: newConfigName,
                 queryParams,
             });
-            const browserContext = await browser.newContext(browserContextOptions);
+            const browserContext = await withTimeout(browser.newContext(browserContextOptions))
+                .description('creating browser context')
+                .timeout(5_000);
             disposeAfter(() => browserContext.close(), WITH_FEATURE_DISPOSABLES);
 
             browserContext.on('page', onPageCreation);
@@ -337,9 +349,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 disposeAfter(() => page.off('pageerror', onPageError), PAGE_DISPOSABLES);
             }
 
-            const featurePage = await browserContext.newPage();
+            const featurePage = await withTimeout(browserContext.newPage()).description('opening page').timeout(5_000);
 
-            const response = await featurePage.goto(featureUrl + search, navigationOptions);
+            const response = await withTimeout(featurePage.goto(featureUrl + search, navigationOptions)).timeout(5_000);
 
             async function getMetrics(): Promise<PerformanceMetrics> {
                 const measures = await executableApp.getMetrics();
