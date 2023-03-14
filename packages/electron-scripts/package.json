@@ -6,7 +6,8 @@
     "engine-electron": "bin/engine-electron.js"
   },
   "peerDependencies": {
-    "electron": ">=9"
+    "electron": ">=9",
+    "electron-builder": ">=23"
   },
   "dependencies": {
     "@file-services/node": "^7.2.4",
@@ -22,7 +23,6 @@
     "@wixc3/engineer": "^33.1.0",
     "@wixc3/patterns": "^8.0.0",
     "@wixc3/resolve-directory-context": "^3.0.4",
-    "electron-builder": "^23.6.0",
     "yargs": "^17.7.1"
   },
   "files": [
