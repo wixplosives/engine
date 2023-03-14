@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "33.1.0",
+  "version": "33.2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -15,10 +15,10 @@
     "@file-services/types": "^7.2.4",
     "@wixc3/common": "^8.0.0",
     "@wixc3/create-disposables": "^2.2.0",
-    "@wixc3/cross-performance": "^33.1.0",
-    "@wixc3/engine-core": "^33.1.0",
-    "@wixc3/engine-core-node": "^33.1.0",
-    "@wixc3/engine-runtime-node": "^33.1.0",
+    "@wixc3/cross-performance": "^33.2.0",
+    "@wixc3/engine-core": "^33.2.0",
+    "@wixc3/engine-core-node": "^33.2.0",
+    "@wixc3/engine-runtime-node": "^33.2.0",
     "@wixc3/fs-utils": "^8.0.0",
     "@wixc3/patterns": "^8.0.0",
     "@wixc3/resolve-directory-context": "^3.0.4",
