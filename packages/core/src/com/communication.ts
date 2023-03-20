@@ -36,7 +36,7 @@ import { SERVICE_CONFIG } from '../symbols';
 
 import { serializeError } from '../helpers';
 import { SetMultiMap } from '@wixc3/patterns';
-import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
+import type { Environment, ContextualEnvironment, EnvironmentMode } from '../entities/env';
 import type { IDTag } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
@@ -133,7 +133,7 @@ export class Communication {
         }
     }
 
-    public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
+    public getEnvironmentContext(endPoint: ContextualEnvironment<string, EnvironmentMode, Environment[]>) {
         return this.resolvedContexts[endPoint.env];
     }
 
