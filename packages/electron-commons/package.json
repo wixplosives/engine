@@ -20,7 +20,8 @@
     "dist",
     "src",
     "!*/tsconfig.{json,tsbuildinfo}",
-    "node-entry.js"
+    "node-entry.js",
+    "worker-thread-entry.js"
   ],
   "license": "MIT",
   "publishConfig": {

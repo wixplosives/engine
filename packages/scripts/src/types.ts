@@ -1,6 +1,6 @@
 import type { AnyEnvironment, Feature, TopLevelConfig } from '@wixc3/engine-core';
+import type { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
 import type {
-    IEnvironmentDescriptor,
     IStaticFeatureDefinition,
     LaunchEnvironmentMode,
     TopLevelConfigProvider,

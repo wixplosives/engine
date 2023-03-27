@@ -1,8 +1,9 @@
 import { BaseHost, COM, Communication } from '@wixc3/engine-core';
-import { LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
+import { LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID, metadataApiToken, MetadataCollectionAPI } from '@wixc3/engine-core-node';
 import { runIPCEnvironment } from '@wixc3/engine-runtime-node';
+
 import { importModules } from './import-modules';
-import { isNodeEnvStartupMessage, metadataApiToken, MetadataCollectionAPI } from './types';
+import { isNodeEnvStartupMessage } from './types';
 
 const onMessageListener = async (message: unknown) => {
     if (isNodeEnvStartupMessage(message)) {

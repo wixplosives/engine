@@ -1,11 +1,5 @@
-import type {
-    EnvironmentTypes,
-    TopLevelConfig,
-    BaseHost,
-    Environment,
-    AnyEnvironment,
-    MultiEnvironment,
-} from '@wixc3/engine-core';
+import type { TopLevelConfig, Environment, AnyEnvironment } from '@wixc3/engine-core';
+import type { IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-core-node';
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
@@ -34,18 +28,6 @@ export interface IStaticFeatureDefinition {
 
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
-
-export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment>
-    extends IEnvironmentDescriptor<ENV> {
-    featureName: string;
-    bundlePath?: string;
-    config?: TopLevelConfig;
-    features: Array<[string, Required<IStaticFeatureDefinition>]>;
-    options?: Array<[string, string | boolean]>;
-    inspect?: boolean;
-    host?: BaseHost;
-    context?: string;
-}
 
 export type ProcessMessageId =
     | 'run-feature'
@@ -102,14 +84,6 @@ export interface RemoteProcess {
     postMessage: (message: ICommunicationMessage) => unknown;
     terminate?: () => void;
     off: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
-}
-
-export interface IEnvironmentDescriptor<ENV extends AnyEnvironment = AnyEnvironment> {
-    type: EnvironmentTypes;
-    name: string;
-    childEnvName?: string;
-    flatDependencies?: IEnvironmentDescriptor<MultiEnvironment<ENV['envType']>>[];
-    env: ENV;
 }
 
 export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>

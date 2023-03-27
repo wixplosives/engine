@@ -1,22 +1,9 @@
-import type { Environment, TopLevelConfig } from '@wixc3/engine-core';
-import type { IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-runtime-node';
+import type { Environment } from '@wixc3/engine-core';
+import type { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
 
 export interface IWindowLaunchOptions {
     devtools?: boolean;
     devport?: number;
-}
-
-export interface IEngineRuntimeArguments {
-    featureName: string;
-    basePath: string;
-    outputPath: string;
-    configName?: string;
-    devport?: number;
-    nodeEntryPath: string;
-    features: [featureName: string, featureDefinition: Required<IStaticFeatureDefinition>][];
-    config: TopLevelConfig;
-    requiredModules?: string[];
-    runtimeOptions?: StartEnvironmentOptions['options'];
 }
 
 export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
@@ -30,36 +17,32 @@ export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     env: Environment;
 }
 
+export interface WorkerThreadEnvironmentStartupOptions extends IEngineRuntimeArguments {
+    environmentContextName?: string;
+    environmentName: string;
+    featureDiscoveryRoot?: string;
+    env: Environment;
+}
+
 export type INodeEnvStartupMessage = {
     id: 'nodeStartupOptions';
     runOptions: NodeEnvironmentStartupOptions;
+};
+
+export type IWorkerThreadEnvStartupMessage = {
+    id: 'workerThreadStartupOptions';
+    runOptions: WorkerThreadEnvironmentStartupOptions;
 };
 
 export const isNodeEnvStartupMessage = (value: unknown): value is INodeEnvStartupMessage => {
     return (value as INodeEnvStartupMessage).id === 'nodeStartupOptions';
 };
 
-export interface IStaticFeatureDefinition {
-    contextFilePaths?: Record<string, string>;
-    envFilePaths?: Record<string, string>;
-    preloadFilePaths?: Record<string, string>;
-    dependencies?: string[];
-    scopedName: string;
-    resolvedContexts?: Record<string, string>;
-    packageName: string;
-    filePath: string;
-    exportedEnvs?: IEnvironmentDescriptor[];
-}
+export const isWorkerThreadEnvStartupMessage = (value: unknown): value is INodeEnvStartupMessage => {
+    return (value as INodeEnvStartupMessage).id === 'nodeStartupOptions';
+};
 
 export interface IExtenalFeatureDescriptor {
     envEntries: Record<string, Record<string, string>>;
     packageBasePath: string;
 }
-
-export interface MetadataCollectionAPI {
-    getRuntimeArguments: () => IEngineRuntimeArguments;
-}
-
-export const metadataApiToken = {
-    id: 'metadata-api-token',
-};

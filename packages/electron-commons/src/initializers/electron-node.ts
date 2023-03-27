@@ -1,7 +1,7 @@
 import { spawn, SpawnOptions } from 'child_process';
-import { IPCHost } from '@wixc3/engine-core-node';
+import { IEngineRuntimeArguments, IPCHost } from '@wixc3/engine-core-node';
 import type { EnvironmentInitializer, InitializerOptions } from '@wixc3/engine-core';
-import type { IEngineRuntimeArguments, INodeEnvStartupMessage, NodeEnvironmentStartupOptions } from '../types';
+import type { INodeEnvStartupMessage, NodeEnvironmentStartupOptions } from '../types';
 import treeKill from 'tree-kill';
 import { promisify } from 'util';
 import { ExpirableList } from '../expirable-list';

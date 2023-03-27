@@ -1,12 +1,14 @@
-import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
-import fs from '@file-services/node';
 import type webpack from 'webpack';
+
+import fs from '@file-services/node';
 import type { AnyEnvironment } from '@wixc3/engine-core';
-import type { IBuildCommandOptions, ICompilerOptions } from './types';
-import { getResolvedEnvironments as resolveEnvironments } from '../utils';
-import type { EngineConfig, IFeatureDefinition } from '../types';
-import type { BuildOptions } from './defaults';
+import type { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
+
 import type { FoundFeatures } from '../analyze-feature';
+import type { EngineConfig, IFeatureDefinition } from '../types';
+import { getResolvedEnvironments as resolveEnvironments } from '../utils';
+import type { BuildOptions } from './defaults';
+import type { IBuildCommandOptions, ICompilerOptions } from './types';
 
 export const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);

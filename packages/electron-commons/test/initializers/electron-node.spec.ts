@@ -33,6 +33,7 @@ const setupRunningEnv = async ({
             basePath: testProjectPath,
             outputPath: fs.join(testProjectPath, 'dist-app'),
             nodeEntryPath: fs.join(testProjectPath, 'entry.js'),
+            workerThreadEntryPath: '',
             config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
             features: Array.from(features.entries()),
         },

@@ -6,7 +6,7 @@ import {
     MultiEnvironment,
     EnvironmentMode,
 } from '@wixc3/engine-core';
-import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import type { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
 
 const convertEnvToIEnv = (env: AnyEnvironment): IEnvironmentDescriptor => {
     const { env: name, envType: type } = env;
