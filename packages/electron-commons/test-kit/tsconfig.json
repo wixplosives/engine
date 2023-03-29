@@ -1,0 +1,20 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../dist/test-kit"
+  },
+  "references": [
+    {
+      "path": "../src"
+    },
+    {
+      "path": "../../../test-fixtures/worker-thread/src"
+    },
+    {
+      "path": "../../core/src"
+    },
+    {
+      "path": "../../scripts/src"
+    }
+  ]
+}

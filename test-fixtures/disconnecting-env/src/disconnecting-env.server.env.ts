@@ -1,4 +1,4 @@
-import testFeature, { serverEnv } from './test-feature.feature';
+import testFeature, { serverEnv } from './disconnecting-env.feature';
 
 testFeature.setup(serverEnv, ({ run, errorType: { type } }) => {
     run(() => {

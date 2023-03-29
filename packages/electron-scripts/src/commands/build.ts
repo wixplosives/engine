@@ -1,6 +1,6 @@
 import fs from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { importModules } from '@wixc3/engine-electron-commons/dist/import-modules';
+import { importModules } from '@wixc3/engine-core-node';
 import type { IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import {
     Application,

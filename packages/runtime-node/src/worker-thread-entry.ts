@@ -1,9 +1,8 @@
+import { COM } from '@wixc3/engine-core';
+import { importModules, isWorkerThreadEnvStartupMessage, WorkerThreadHost } from '@wixc3/engine-core-node';
 import { parentPort } from 'node:worker_threads';
-import { COM, Communication } from '@wixc3/engine-core';
-import { WorkerThreadHost } from '@wixc3/engine-core-node';
-import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
-import { importModules } from './import-modules';
-import { isWorkerThreadEnvStartupMessage } from './types';
+
+import { runNodeEnvironment } from './node-environment';
 
 const messageHandler = async (message: unknown) => {
     if (isWorkerThreadEnvStartupMessage(message)) {
@@ -26,11 +25,7 @@ const messageHandler = async (message: unknown) => {
             await importModules(basePath, requiredModules);
         }
 
-        const parentHost = new WorkerThreadHost(parentPort);
-        const communication = new Communication(parentHost, parentEnvName);
-
-        const workerHost = parentHost.open();
-        communication.registerEnv(environmentName, workerHost);
+        const host = new WorkerThreadHost(parentPort);
 
         config.push(
             COM.use({
@@ -38,7 +33,7 @@ const messageHandler = async (message: unknown) => {
                     connectedEnvironments: {
                         [parentEnvName]: {
                             id: parentEnvName,
-                            host: parentHost,
+                            host,
                         },
                     },
                 },
@@ -49,6 +44,8 @@ const messageHandler = async (message: unknown) => {
             env,
             featureName,
             features,
+            config,
+            host,
             name: environmentName,
             type: 'workerthread',
             childEnvName: environmentContextName,

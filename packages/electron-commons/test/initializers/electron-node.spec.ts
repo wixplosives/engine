@@ -1,60 +1,27 @@
-import fs from '@file-services/node';
-import { BaseHost, Communication } from '@wixc3/engine-core';
-import { initializeNodeEnvironment, ProcessExitDetails } from '@wixc3/engine-electron-commons';
-import { findFeatures } from '@wixc3/engine-scripts';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import type { IOType } from 'child_process';
-import { deferred } from 'promise-assist';
 import { platform } from 'os';
-import testFeature, { serverEnv } from '../test-project/test-feature.feature';
+
+import fs from '@file-services/node';
+import testFeature, { ErrorTypeConfig, serverEnv } from '@fixture/disconnecting-env/dist/disconnecting-env.feature';
+
+import type { ProcessExitDetails } from '../../src';
+import { setupRunningNodeEnv } from '../../test-kit/setup-running-node-env';
 
 const { expect } = chai;
 chai.use(chaiAsPromised);
 
-const testProjectPath = fs.join(__dirname, '../test-project');
+const featurePath = fs.dirname(require.resolve('@fixture/disconnecting-env/package.json'));
 
-const setupRunningEnv = async ({
-    errorMode,
-    handleUncaught,
-    stdio = 'ignore',
-}: {
-    errorMode?: 'exception' | 'exit' | 'promiseReject' | 'out-of-memory' | 'no-error';
-    handleUncaught?: boolean;
-    stdio?: IOType;
-} = {}) => {
-    const communication = new Communication(new BaseHost(), 'someId');
-    const { features } = findFeatures(testProjectPath, fs, 'dist');
-    const { onExit, dispose, environmentIsReady } = initializeNodeEnvironment({
-        communication,
+const setupRunningEnv = ({ type, handleUncaught }: Partial<ErrorTypeConfig>, stdio?: IOType) =>
+    setupRunningNodeEnv({
+        featurePath,
+        featureId: testFeature.id,
         env: serverEnv,
-        runtimeArguments: {
-            featureName: testFeature.id,
-            basePath: testProjectPath,
-            outputPath: fs.join(testProjectPath, 'dist-app'),
-            nodeEntryPath: fs.join(testProjectPath, 'entry.js'),
-            workerThreadEntryPath: '',
-            config: [testFeature.use({ errorType: { type: errorMode, handleUncaught } })],
-            features: Array.from(features.entries()),
-        },
-        processOptions: {
-            cwd: process.cwd(),
-            stdio: [stdio, stdio, stdio, 'ipc'],
-        },
-        environmentStartupOptions: {},
+        config: [testFeature.use({ errorType: { type, handleUncaught } })],
+        stdio,
     });
-
-    await environmentIsReady;
-
-    const environmentExit = deferred<ProcessExitDetails>();
-    onExit(environmentExit.resolve);
-
-    return {
-        onExit,
-        dispose,
-        exitPromise: environmentExit.promise,
-    };
-};
 
 describe('onDisconnectHandler for node environment initializer', () => {
     const expectedErrorResult: ProcessExitDetails = {
@@ -73,7 +40,7 @@ describe('onDisconnectHandler for node environment initializer', () => {
 
     describe('without own uncaughtException handling', () => {
         it('should catch on dispose of env', async () => {
-            const { dispose, exitPromise } = await setupRunningEnv({ errorMode: 'no-error' });
+            const { dispose, exitPromise } = await setupRunningEnv({ type: 'no-error' });
 
             dispose();
 
@@ -81,21 +48,21 @@ describe('onDisconnectHandler for node environment initializer', () => {
         });
 
         it('should catch on env exit intentionally', async () => {
-            const { exitPromise } = await setupRunningEnv({ errorMode: 'exit' });
+            const { exitPromise } = await setupRunningEnv({ type: 'exit' });
             await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
         });
         it('should catch on env throwing uncaught exception', async () => {
-            const { exitPromise } = await setupRunningEnv({ errorMode: 'exception' });
+            const { exitPromise } = await setupRunningEnv({ type: 'exception' });
 
             await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
         });
         it('should catch on env unhandled promise rejection', async () => {
-            const { exitPromise } = await setupRunningEnv({ errorMode: 'promiseReject' });
+            const { exitPromise } = await setupRunningEnv({ type: 'promiseReject' });
 
             await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
         });
         it('should expose error when env throwing uncaught exception', async () => {
-            const { exitPromise } = await setupRunningEnv({ errorMode: 'exception', stdio: 'pipe' });
+            const { exitPromise } = await setupRunningEnv({ type: 'exception' }, 'pipe');
             const exitDetails = await exitPromise;
             expect(exitDetails.errorMessage).to.not.be.empty;
         });
@@ -103,23 +70,23 @@ describe('onDisconnectHandler for node environment initializer', () => {
     describe('with own uncaughtException handling', () => {
         const handleUncaught = true;
         it('should catch on dispose of env', async () => {
-            const { dispose, exitPromise } = await setupRunningEnv({ handleUncaught, errorMode: 'no-error' });
+            const { dispose, exitPromise } = await setupRunningEnv({ handleUncaught, type: 'no-error' });
 
             dispose();
 
             await expect(exitPromise).to.eventually.deep.eq(expectedTerminationResult);
         });
         it('should catch on env exit intentionally', async () => {
-            const { exitPromise } = await setupRunningEnv({ errorMode: 'exit', handleUncaught });
+            const { exitPromise } = await setupRunningEnv({ type: 'exit', handleUncaught });
             await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
         });
         it('should catch on env throwing uncaught exception', async () => {
-            const { exitPromise } = await setupRunningEnv({ errorMode: 'exception', handleUncaught });
+            const { exitPromise } = await setupRunningEnv({ type: 'exception', handleUncaught });
 
             await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
         });
         it('should catch on env unhandled promise rejection', async () => {
-            const { exitPromise } = await setupRunningEnv({ errorMode: 'promiseReject', handleUncaught });
+            const { exitPromise } = await setupRunningEnv({ type: 'promiseReject', handleUncaught });
 
             await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
         });

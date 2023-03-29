@@ -1,4 +1,11 @@
-import type { AnyEnvironment, BaseHost, EnvironmentTypes, MultiEnvironment, TopLevelConfig } from '@wixc3/engine-core';
+import type {
+    AnyEnvironment,
+    BaseHost,
+    Environment,
+    EnvironmentTypes,
+    MultiEnvironment,
+    TopLevelConfig,
+} from '@wixc3/engine-core';
 
 export interface MetadataCollectionAPI {
     getRuntimeArguments: () => IEngineRuntimeArguments;
@@ -53,3 +60,23 @@ export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnviron
 export const metadataApiToken = {
     id: 'metadata-api-token',
 };
+
+export const isWorkerThreadEnvStartupMessage = (value: unknown): value is IWorkerThreadEnvStartupMessage => {
+    return (value as IWorkerThreadEnvStartupMessage).id === 'workerThreadStartupOptions';
+};
+
+export type IWorkerThreadEnvStartupMessage = {
+    id: 'workerThreadStartupOptions';
+    runOptions: NodeEnvironmentStartupOptions;
+};
+
+export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
+    environmentContextName?: string;
+    devtools?: boolean;
+    environmentName: string;
+    bundlePath?: string;
+    featureDiscoveryRoot?: string;
+    parentEnvName: string;
+    execPath?: string;
+    env: Environment;
+}

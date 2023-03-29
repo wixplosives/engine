@@ -2,10 +2,15 @@ import { Config, Feature, Environment, COM } from '@wixc3/engine-core';
 
 export const serverEnv = new Environment('server', 'node', 'single');
 
+export type ErrorTypeConfig = {
+    type: 'exception' | 'exit' | 'promiseReject' | 'out-of-memory' | 'no-error';
+    handleUncaught: boolean;
+};
+
 export default new Feature({
-    id: 'run-errors-feature',
+    id: 'disconnecting-env',
     api: {
-        errorType: new Config({
+        errorType: Config.withType<ErrorTypeConfig>().defineEntity({
             type: 'exit',
             handleUncaught: false,
         }),
