@@ -86,6 +86,7 @@ devServerFeature.setup(
                 staticDirPath: application.outputPath,
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
+                hostname: '127.0.0.1',
             });
             disposables.add(close);
 

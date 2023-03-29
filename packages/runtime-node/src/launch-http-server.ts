@@ -21,6 +21,7 @@ export interface ILaunchHttpServerOptions {
     httpServerPort?: number;
     socketServerOptions?: Partial<io.ServerOptions>;
     routeMiddlewares?: Array<RouteMiddleware>;
+    hostname?: string;
 }
 
 export async function launchEngineHttpServer({
@@ -28,13 +29,14 @@ export async function launchEngineHttpServer({
     httpServerPort = DEFAULT_PORT,
     socketServerOptions,
     routeMiddlewares = [],
+    hostname,
 }: ILaunchHttpServerOptions = {}) {
     const app = express();
     for (const { path, handlers } of routeMiddlewares) {
         app.use(path, handlers);
     }
     app.use(cors());
-    const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
+    const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app, 100, hostname);
 
     if (staticDirPath) {
         app.use('/', express.static(staticDirPath));
