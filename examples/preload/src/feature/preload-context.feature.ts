@@ -1,9 +1,9 @@
-import { Feature, Environment, SingleEndpointContextualEnvironment, Service, COM } from '@wixc3/engine-core';
+import { Feature, Environment, ContextualEnvironment, Service, COM } from '@wixc3/engine-core';
 import nonContextualFeature from './non-contextual.feature';
 
 const nodeEnv = new Environment('nodeCtx', 'node', 'single');
 const workerEnv = new Environment('workerCtx', 'webworker', 'single');
-export const procEnv = new SingleEndpointContextualEnvironment('procEnv', [nodeEnv, workerEnv]);
+export const procEnv = new ContextualEnvironment('procEnv', 'single', [nodeEnv, workerEnv]);
 export const mainEnv = new Environment('main', 'window', 'single');
 
 export default new Feature({

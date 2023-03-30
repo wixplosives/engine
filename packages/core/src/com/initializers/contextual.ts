@@ -1,4 +1,4 @@
-import type { SingleEndpointContextualEnvironment, Environment } from '../../entities';
+import type { ContextualEnvironment, Environment, EnvironmentMode } from '../../entities';
 import type { MapBy } from '../../types';
 import type { InitializerOptions } from './types';
 
@@ -15,7 +15,7 @@ export interface ContextualEnvironmentInitializerOptions<
     EnvToken extends Promise<{ id: string }>
 > extends InitializerOptions {
     envInitializers: EnvironmentInitializers<ENVS, EnvToken>;
-    env: SingleEndpointContextualEnvironment<string, ENVS>;
+    env: ContextualEnvironment<string, EnvironmentMode, ENVS>;
 }
 /**
  * TODO: better inference of the return type of the initialzier function
