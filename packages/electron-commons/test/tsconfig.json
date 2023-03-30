@@ -13,6 +13,9 @@
     },
     {
       "path": "../../../test-fixtures/disconnecting-env/src"
+    },
+    {
+      "path": "../../../test-fixtures/worker-thread/src"
     }
   ]
 }

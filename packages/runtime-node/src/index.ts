@@ -10,3 +10,5 @@ export * from './launch-http-server';
 export * from './parse-cli-arguments';
 export * from './get-application-metadata';
 export * from './import-modules';
+export * from './worker-thread-initializer';
+export * from './worker-thread-host';

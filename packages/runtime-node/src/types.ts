@@ -146,6 +146,7 @@ export interface IEngineRuntimeArguments {
     configName?: string;
     devport?: number;
     nodeEntryPath: string;
+    workerThreadEntryPath: string;
     features: [featureName: string, featureDefinition: Required<IStaticFeatureDefinition>][];
     config: TopLevelConfig;
     requiredModules?: string[];

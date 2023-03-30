@@ -7,6 +7,7 @@ export type EnvironmentTypes =
     | 'window'
     | 'iframe'
     | 'webworker'
+    | 'workerthread'
     | 'node'
     | 'context'
     | 'electron-renderer'

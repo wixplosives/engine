@@ -15,6 +15,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import runtimeArgumentsProvider from './runtime-arguments-provider';
 
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
+const workerThreadEntryPath = require.resolve('@wixc3/engine-electron-commons/worker-thread-entry');
 
 export interface ElectronEnvParams {
     basePath: string;
@@ -73,6 +74,7 @@ export async function runElectronEnv({
             outputPath,
             configName,
             nodeEntryPath,
+            workerThreadEntryPath,
             devtools,
             devport,
             features: Array.from(features.entries()),
