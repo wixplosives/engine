@@ -1,7 +1,7 @@
 {
   "name": "@fixture/disconnecting-env",
-  "version": "1.0.0",
-  "scripts": {},
+  "version": "33.2.0",
+  "private": true,
   "dependencies": {
     "@wixc3/engine-core": "^33.2.0"
   },

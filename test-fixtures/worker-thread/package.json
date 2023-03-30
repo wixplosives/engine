@@ -1,8 +1,7 @@
 {
   "name": "@fixture/worker-thread",
-  "version": "1.0.0",
-  "main": "dist/entry.js",
-  "scripts": {},
+  "version": "33.2.0",
+  "private": true,
   "dependencies": {
     "@wixc3/engine-core": "^33.2.0",
     "@wixc3/engine-runtime-node": "^33.2.0"
@@ -11,6 +10,5 @@
   "publishConfig": {
     "access": "restricted"
   },
-  "private": true,
   "author": "Wix.com"
 }
