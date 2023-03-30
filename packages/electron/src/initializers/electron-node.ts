@@ -1,12 +1,13 @@
 import { ipcRenderer } from 'electron';
+
 import {
     communicationChannels,
-    IEngineRuntimeArguments,
     initializeNodeEnvironment,
     InitializeNodeEnvironmentOptions,
 } from '@wixc3/engine-electron-commons';
 
 import type { EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-core';
+import { IEngineRuntimeArguments } from '@wixc3/engine-runtime-node';
 
 /**
  * Spawn a node-based environment from the renderer process.

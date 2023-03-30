@@ -1,5 +1,5 @@
 import type { Environment } from '@wixc3/engine-core';
-import type { IEngineRuntimeArguments } from '@wixc3/engine-electron-commons';
+import type { IEngineRuntimeArguments } from '@wixc3/engine-runtime-node';
 
 export interface IRunOptions extends Omit<IEngineRuntimeArguments, 'nodeEntryPath'> {
     devport: number;

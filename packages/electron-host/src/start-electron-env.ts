@@ -3,11 +3,15 @@ import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/eng
 import {
     communicationChannels,
     electronRuntimeArguments,
-    IEngineRuntimeArguments,
 } from '@wixc3/engine-electron-commons';
-import { importModules } from '@wixc3/engine-electron-commons/dist/import-modules';
-import { IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import {
+    IEngineRuntimeArguments,
+    importModules,
+    IStaticFeatureDefinition,
+    runNodeEnvironment,
+} from '@wixc3/engine-runtime-node';
 import { app, BrowserWindow, ipcMain } from 'electron';
+
 import runtimeArgumentsProvider from './runtime-arguments-provider';
 
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
