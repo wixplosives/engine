@@ -8,3 +8,5 @@ export * from './environments';
 export * from './process-communication';
 export * from './launch-http-server';
 export * from './parse-cli-arguments';
+export * from './get-application-metadata';
+export * from './import-modules';
