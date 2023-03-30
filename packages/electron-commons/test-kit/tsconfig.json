@@ -1,18 +1,17 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../dist/test",
-    "types": ["mocha", "node"]
+    "outDir": "../dist/test-kit"
   },
   "references": [
     {
       "path": "../src"
     },
     {
-      "path": "../test-kit"
+      "path": "../../core/src"
     },
     {
-      "path": "../../../test-fixtures/disconnecting-env/src"
+      "path": "../../scripts/src"
     }
   ]
 }

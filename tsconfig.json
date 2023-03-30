@@ -59,6 +59,7 @@
     { "path": "./test-fixtures/using-config/src" },
     { "path": "./test-fixtures/with-iframe/src" },
     { "path": "./test-fixtures/workspace/packages/a/src" },
-    { "path": "./test-fixtures/workspace/packages/b/src" }
+    { "path": "./test-fixtures/workspace/packages/b/src" },
+    { "path": "./test-fixtures/disconnecting-env/src" }
   ]
 }
