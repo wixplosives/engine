@@ -61,6 +61,10 @@ export type AsyncApi<T extends object> = {
         : never;
 };
 
+export type MultiEnvAsyncApi<T extends object> = {
+    get(token: EnvironmentInstanceToken): AsyncApi<T>;
+};
+
 export interface EnvironmentInstanceToken {
     id: string;
 }

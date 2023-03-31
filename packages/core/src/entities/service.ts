@@ -1,5 +1,11 @@
 import COM from '../communication.feature';
-import type { AsyncApi, EnvironmentInstanceToken, EnvironmentTypes, ServiceComConfig } from '../com/types';
+import type {
+    AsyncApi,
+    EnvironmentInstanceToken,
+    EnvironmentTypes,
+    MultiEnvAsyncApi,
+    ServiceComConfig,
+} from '../com/types';
 import type { RuntimeEngine } from '../runtime-engine';
 import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
 import type { EnvVisibility } from '../types';
@@ -13,9 +19,7 @@ export type ServiceRuntime<T extends object, ProvidedFrom> = ProvidedFrom extend
 >
     ? AsyncApi<T>
     : ProvidedFrom extends Environment<string, EnvironmentTypes, 'multi', any>
-    ? {
-          get(token: EnvironmentInstanceToken): AsyncApi<T>;
-      }
+    ? MultiEnvAsyncApi<T>
     : AsyncApi<T>;
 
 export class Service<
