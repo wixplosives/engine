@@ -33,4 +33,11 @@ describe('workerthread environment type', () => {
 
         expect(exitResult.exitCode).to.eql(0);
     });
+    xit('initializes multi workerthread environment and exposes API if called from async method', async () => {
+        const { exitPromise } = await setupRunningEnv(`${workerThreadFeature.id}/multi-async-get`);
+
+        const exitResult = await exitPromise;
+
+        expect(exitResult.exitCode).to.eql(0);
+    });
 });
