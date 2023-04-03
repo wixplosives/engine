@@ -1,9 +1,6 @@
 import fs from '@file-services/node';
 import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
-import {
-    communicationChannels,
-    electronRuntimeArguments,
-} from '@wixc3/engine-electron-commons';
+import { communicationChannels, electronRuntimeArguments } from '@wixc3/engine-electron-commons';
 import {
     IEngineRuntimeArguments,
     importModules,
@@ -15,7 +12,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import runtimeArgumentsProvider from './runtime-arguments-provider';
 
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
-const workerThreadEntryPath = require.resolve('@wixc3/engine-electron-commons/worker-thread-entry');
+const workerThreadEntryPath = require.resolve('@wixc3/engine-runtime-node/worker-thread-entry');
 
 export interface ElectronEnvParams {
     basePath: string;
