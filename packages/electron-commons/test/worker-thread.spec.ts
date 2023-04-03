@@ -15,6 +15,7 @@ const setupRunningEnv = (featureId: string) =>
         featurePath,
         featureId,
         env: serverEnv,
+        stdio: 'pipe',
     });
 
 describe('workerthread environment type', () => {
