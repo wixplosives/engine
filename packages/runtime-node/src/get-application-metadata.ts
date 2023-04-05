@@ -1,8 +1,11 @@
+import memoizeOne from 'memoize-one';
+
 import { BaseHost, Communication } from '@wixc3/engine-core';
 import { LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
+
 import { metadataApiToken, MetadataCollectionAPI } from './types';
 
-export function getApplicationMetaData(com: Communication) {
+export const getApplicationMetaData = memoizeOne((com: Communication) => {
     const parentHost = com.getEnvironmentHost(LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID);
     if (!parentHost) {
         throw new Error(
@@ -26,5 +29,6 @@ export function getApplicationMetaData(com: Communication) {
         },
         metadataApiToken
     );
+
     return apiProxy.getRuntimeArguments();
-}
+});
