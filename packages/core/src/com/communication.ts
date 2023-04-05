@@ -167,6 +167,11 @@ export class Communication {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return new Proxy(Object.create(null), {
             get: (obj, method) => {
+                // let js runtime know that this is not thenable object
+                if (method === 'then') {
+                    return undefined;
+                }
+
                 if (typeof method === 'string') {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     let runtimeMethod = obj[method];
