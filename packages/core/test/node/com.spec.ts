@@ -610,6 +610,40 @@ describe('Event Emitter communication', () => {
 
         expect(res).to.be.equal('Yoo!');
     });
+
+    /**
+     * This test is verifying special case when apiProxy is returned form async function
+     * in case of async function, js runtime tries to understand
+     * if returned from async function value is thenable or not. To do this, it checks if value has `then` method.
+     * Because we are using `Proxy` object under the hood, we have to ignore calls to `then` function,
+     * so js runtime understand that our proxy is not thenable object.
+     */
+    it('allows generate apiProxy in async function call', async () => {
+        const host = new BaseHost();
+        const main = new Communication(host, 'main');
+
+        const host2 = host.open();
+        const main2 = new Communication(host2, 'main2');
+
+        main.registerEnv('main2', host2);
+        main2.registerAPI(
+            { id: 'echoService' },
+            {
+                echo(s: string) {
+                    return s;
+                },
+            }
+        );
+
+        const getProxy = async () => {
+            await Promise.resolve();
+            return main.apiProxy<EchoService>({ id: 'main2' }, { id: 'echoService' });
+        };
+        const proxy = await getProxy();
+
+        const res = await proxy.echo('Yoo!');
+        expect(res).to.be.equal('Yoo!');
+    });
 });
 
 function getMockApi() {
