@@ -14,7 +14,7 @@ export interface ContextualEnvironmentInitializerOptions<
     ENVS extends Environment[],
     EnvToken extends Promise<{ id: string }>
 > extends InitializerOptions {
-    envInitializers: EnvironmentInitializers<ENVS, EnvToken>;
+    envInitializers: Partial<EnvironmentInitializers<ENVS, EnvToken>>;
     env: ContextualEnvironment<string, EnvironmentMode, ENVS>;
 }
 /**
