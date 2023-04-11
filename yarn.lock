@@ -1744,14 +1744,14 @@
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^8.0.0":
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-8.0.0.tgz#a38aa4031ae9db58014db3efc5b276f6ea667980"
-  integrity sha512-+NmYZSE9A8VpHHK3bajAw7QmRVSNt08qD1tXb8xHIDU+xG3onLxli4PviUXZ0b+4BKgh3ATu6oL6gzGa0xifDw==
+"@wixc3/testing@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-8.1.0.tgz#bf9b01d572a4ee4986fb56ad5b85fc885d37fc11"
+  integrity sha512-ZIWlbeMvd3d1HZMf8OG7xmPTkkvnHJJ3YG1dk/KLO4/n+mNEdyPJlApNiBeX7QgY4tLXGbFgCvw6ga9GDJXR4Q==
   dependencies:
-    "@file-services/types" "^7.2.4"
-    "@wixc3/common" "^8.0.0"
-    "@wixc3/patterns" "^8.0.0"
+    "@file-services/types" "^7.2.5"
+    "@wixc3/common" "^8.1.0"
+    "@wixc3/patterns" "^8.1.0"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
