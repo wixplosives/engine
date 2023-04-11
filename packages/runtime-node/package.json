@@ -7,7 +7,7 @@
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
-    "@wixc3/common": "^8.0.0",
+    "@wixc3/common": "^8.1.0",
     "@wixc3/cross-performance": "^33.2.0",
     "@wixc3/engine-core": "^33.2.0",
     "@wixc3/engine-core-node": "^33.2.0",
