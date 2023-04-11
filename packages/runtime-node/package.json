@@ -11,7 +11,7 @@
     "@wixc3/cross-performance": "^33.2.0",
     "@wixc3/engine-core": "^33.2.0",
     "@wixc3/engine-core-node": "^33.2.0",
-    "@wixc3/patterns": "^8.0.0",
+    "@wixc3/patterns": "^8.1.0",
     "create-listening-server": "^2.1.0",
     "minimist": "^1.2.8",
     "socket.io": "^4.6.1"

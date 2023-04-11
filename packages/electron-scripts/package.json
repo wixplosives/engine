@@ -21,7 +21,7 @@
     "@wixc3/engine-runtime-node": "^33.2.0",
     "@wixc3/engine-scripts": "^33.2.0",
     "@wixc3/engineer": "^33.2.0",
-    "@wixc3/patterns": "^8.0.0",
+    "@wixc3/patterns": "^8.1.0",
     "@wixc3/resolve-directory-context": "^3.0.4",
     "yargs": "^17.7.1"
   },
