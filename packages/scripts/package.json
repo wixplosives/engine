@@ -19,7 +19,6 @@
     "@wixc3/engine-core": "^33.2.0",
     "@wixc3/engine-core-node": "^33.2.0",
     "@wixc3/engine-runtime-node": "^33.2.0",
-    "@wixc3/fs-utils": "^8.0.0",
     "@wixc3/patterns": "^8.1.0",
     "@wixc3/resolve-directory-context": "^3.0.4",
     "cors": "^2.8.5",
