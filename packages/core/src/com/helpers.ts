@@ -23,3 +23,11 @@ export class MultiCounter {
         return `${ns}${this.ids[ns]++}`;
     }
 }
+
+const undefinedArgPlaceholder = '__UNDEFINED__';
+
+export const serializeApiCallArguments = (args: unknown[]): unknown[] =>
+    args.map((arg) => (arg === undefined ? undefinedArgPlaceholder : arg));
+
+export const deserializeApiCallArguments = (args: unknown[]): unknown[] =>
+    args.map((arg) => (arg === undefinedArgPlaceholder ? undefined : arg));

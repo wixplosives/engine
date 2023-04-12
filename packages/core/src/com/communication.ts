@@ -6,7 +6,13 @@ import {
     reportError,
     UNKNOWN_CALLBACK_ID,
 } from './errors';
-import { isWindow, isWorkerContext, MultiCounter } from './helpers';
+import {
+    isWindow,
+    isWorkerContext,
+    MultiCounter,
+    serializeApiCallArguments,
+    deserializeApiCallArguments,
+} from './helpers';
 import type {
     CallbackMessage,
     CallMessage,
@@ -240,13 +246,14 @@ export class Communication {
         envId: string,
         api: string,
         method: string,
-        args: unknown[],
+        unserializedArgs: unknown[],
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
         forwardingChain: string[]
     ): Promise<unknown> {
         return new Promise<void>((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
+            const args = serializeApiCallArguments(unserializedArgs);
 
             if (this.isListenCall(args) || serviceComConfig[method]?.removeAllListeners) {
                 this.addOrRemoveListener(
@@ -839,7 +846,8 @@ export class Communication {
 
     private async handleCall(message: CallMessage): Promise<void> {
         try {
-            const data = await this.apiCall(message.origin, message.data.api, message.data.method, message.data.args);
+            const args = deserializeApiCallArguments(message.data.args);
+            const data = await this.apiCall(message.origin, message.data.api, message.data.method, args);
             if (message.callbackId) {
                 this.sendTo(message.from, {
                     to: message.origin,

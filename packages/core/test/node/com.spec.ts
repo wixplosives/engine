@@ -26,7 +26,7 @@ chai.use(sinonChai);
 chai.use(chaiAsPromised);
 
 class EchoService {
-    echo(s: string) {
+    echo(s = 'No!') {
         return s;
     }
 }
@@ -158,6 +158,26 @@ describe('Communication', () => {
 
         // we need to check that no message was received
         expect(handleMessageStub).to.have.not.been.called;
+    });
+
+    it('should work with undefined argument as expected', async () => {
+        const host = new BaseHost();
+        const main = new Communication(host, 'main');
+
+        main.registerAPI(
+            { id: 'echoService' },
+            {
+                echo(s = 'No!') {
+                    return s;
+                },
+            }
+        );
+
+        const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
+        console.log(proxy.echo);
+        const res = await proxy.echo();
+
+        expect(res).to.be.equal('No!');
     });
 
     it('forwards listen calls', async () => {
