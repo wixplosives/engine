@@ -148,7 +148,7 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.38.0.tgz#73a8a0d8aa8a8e6fe270431c5e72ae91b5337892"
   integrity sha512-IoD2MfUnOV58ghIHCiil01PcohxjbYR/qCxsoC+xNgUwh1EY8jOOrYmu3d3a71+tJJ23uscEV4X2HJWMsPJu4g==
 
-"@file-services/memory@^7.2.4", "@file-services/memory@^7.2.5":
+"@file-services/memory@^7.2.5":
   version "7.2.5"
   resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-7.2.5.tgz#4b963635fd13078ef6e229be4abd7f2aaab1ffd3"
   integrity sha512-SQ3QNcPZQ0w6jGCqcr4pgY2z80nCuGfNJkQ/ETEm3+iA0js6j/RZgOsXYL3W1VW9jIr7d+qFGLXHek3cqUuuBw==
@@ -390,7 +390,7 @@
     lodash "^4.17.15"
     tmp-promise "^3.0.2"
 
-"@microsoft/api-documenter@^7.21.5":
+"@microsoft/api-documenter@^7.21.7":
   version "7.21.7"
   resolved "https://registry.yarnpkg.com/@microsoft/api-documenter/-/api-documenter-7.21.7.tgz#167785eb4254ea35314eedee12f9a4aa9c72c0c2"
   integrity sha512-qlCJ9dSefL6Rmuv1FKtxg7i6N7Bv6LUPrA5Bb0dR/9Ffac2xQuXtuSXOJ09seM7G0WkpQOzta2Kc1CPixzDaIw==
@@ -1679,7 +1679,7 @@
     "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^8.0.0", "@wixc3/common@^8.1.0":
+"@wixc3/common@^8.1.0":
   version "8.1.0"
   resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-8.1.0.tgz#5121df75db75ce0cd2d677cc1c99976457af9f3c"
   integrity sha512-V4+S0QGa+KP7PSuYlt2Ub6X7gPgbCdAl7AQOaYdT9ixVtqS21mBnSVD8hLGJJCq3UAMZohfIVd2BNe9UY/dvpw==
@@ -1693,27 +1693,27 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^8.0.0":
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-8.0.0.tgz#3a639c0c8a0ab140741d44855e689a4c65ff456e"
-  integrity sha512-Ke7sKv5ntoxJPWCTDzTg4h/ntyK4bL7vbXeRCIrQtbP/JrWMKCN8rTbkdE5RVdSJRFKtKT5M3nHon08zDbipBg==
+"@wixc3/docs@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-8.1.0.tgz#510f82181197c5aa383f1493999baa451c0a2944"
+  integrity sha512-zKNSKV7GRnyfxCp9PLLDfA6DDRIWZ2ovl2LzgJKAfSSXEK+wW7ujg1khryLVFLZcb6TWksr9HpYIc7fMQQKW8w==
   dependencies:
-    "@microsoft/api-documenter" "^7.21.5"
+    "@microsoft/api-documenter" "^7.21.7"
     "@microsoft/api-extractor" "^7.34.4"
     "@microsoft/api-extractor-model" "^7.26.4"
-    "@wixc3/common" "^8.0.0"
-    "@wixc3/fs-utils" "^8.0.0"
+    "@wixc3/common" "^8.1.0"
+    "@wixc3/fs-utils" "^8.1.0"
     "@wixc3/typescript" "^8.0.0"
-    glob "^9.2.1"
+    glob "^9.3.4"
     yargs "^17.7.1"
 
-"@wixc3/fs-utils@^8.0.0":
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-8.0.0.tgz#e52499d9ca9f4ad9f6318e3a740857c0220dfa50"
-  integrity sha512-HMJNsnOmvU9dObAJ8nQLPeifm6fQWG1sY+VUu773P2EcC2C1Mo3oMR+YkVfJp1c+iCD/Rzpr7oNt0q9EFybRsQ==
+"@wixc3/fs-utils@^8.0.0", "@wixc3/fs-utils@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-8.1.0.tgz#a7df0d5857723ba7021a7591ce1cc769072049eb"
+  integrity sha512-7fVudSJyS8yuwozQbas+RcZSTvTRUBz7PvFPOD0cG9w3wYcPWpIfJQfdMuVnb+a9BB84Jn2ksCcsKDcpgP5iuQ==
   dependencies:
-    "@file-services/memory" "^7.2.4"
-    "@wixc3/common" "^8.0.0"
+    "@file-services/memory" "^7.2.5"
+    "@wixc3/common" "^8.1.0"
 
 "@wixc3/patterns@^8.1.0":
   version "8.1.0"
@@ -4367,10 +4367,10 @@ glob@^8.0.1, glob@^8.0.3:
     minimatch "^5.0.1"
     once "^1.3.0"
 
-glob@^9.1.2, glob@^9.2.0, glob@^9.2.1, glob@^9.3.0, glob@^9.3.1:
-  version "9.3.4"
-  resolved "https://registry.yarnpkg.com/glob/-/glob-9.3.4.tgz#e75dee24891a80c25cc7ee1dd327e126b98679af"
-  integrity sha512-qaSc49hojMOv1EPM4EuyITjDSgSKI0rthoHnvE81tcOi1SCVndHko7auqxdQ14eiQG2NDBJBE86+2xIrbIvrbA==
+glob@^9.1.2, glob@^9.2.0, glob@^9.3.0, glob@^9.3.1, glob@^9.3.4:
+  version "9.3.5"
+  resolved "https://registry.yarnpkg.com/glob/-/glob-9.3.5.tgz#ca2ed8ca452781a3009685607fdf025a899dfe21"
+  integrity sha512-e1LleDykUz2Iu+MTYdkSsuWX8lvAjAcs0Xef0lNIu0S2wOAzuTxCJtcd9S3cijlwYF18EsU3rzb8jPVobxDh9Q==
   dependencies:
     fs.realpath "^1.0.0"
     minimatch "^8.0.2"
