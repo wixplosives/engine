@@ -13,22 +13,21 @@
   "dependencies": {
     "@file-services/node": "^7.2.5",
     "@file-services/types": "^7.2.5",
-    "@wixc3/common": "^8.0.0",
+    "@wixc3/common": "^8.1.0",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/cross-performance": "^33.2.0",
     "@wixc3/engine-core": "^33.2.0",
     "@wixc3/engine-core-node": "^33.2.0",
     "@wixc3/engine-runtime-node": "^33.2.0",
-    "@wixc3/fs-utils": "^8.0.0",
-    "@wixc3/patterns": "^8.0.0",
+    "@wixc3/patterns": "^8.1.0",
     "@wixc3/resolve-directory-context": "^3.0.4",
     "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
     "express": "^4.18.2",
     "import-fresh": "^3.3.0",
-    "semver": "^7.3.8",
+    "semver": "^7.4.0",
     "socket.io": "^4.6.1",
-    "type-fest": "^3.7.2"
+    "type-fest": "^3.8.0"
   },
   "files": [
     "dist",

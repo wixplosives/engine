@@ -7,11 +7,11 @@
     "test": "mocha \"test/**/*.unit.ts?(x)\""
   },
   "dependencies": {
-    "@wixc3/common": "^8.0.0",
+    "@wixc3/common": "^8.1.0",
     "@wixc3/cross-performance": "^33.2.0",
     "@wixc3/engine-core": "^33.2.0",
     "@wixc3/engine-core-node": "^33.2.0",
-    "@wixc3/patterns": "^8.0.0",
+    "@wixc3/patterns": "^8.1.0",
     "create-listening-server": "^2.1.0",
     "memoize-one": "^6.0.0",
     "minimist": "^1.2.8",
