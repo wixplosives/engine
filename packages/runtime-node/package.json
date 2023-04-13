@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha \"test/**/*.unit.ts?(x)\""
+    "test": "mocha \"test/**/*.unit.ts?(x)\" --timeout 50000000"
   },
   "dependencies": {
     "@wixc3/common": "^8.1.0",

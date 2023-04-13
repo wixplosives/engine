@@ -8,7 +8,9 @@ sampleFeature.setup(serverEnv, ({ anotherEchoService, run }, { COM: { communicat
     });
     return {
         echoService: {
-            echo: () => anotherEchoService.echo(),
+            echo: () => {
+                return anotherEchoService.echo(undefined);
+            },
             getName: () => 'gaga',
         },
     };

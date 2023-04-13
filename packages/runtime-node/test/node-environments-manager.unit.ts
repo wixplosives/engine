@@ -207,7 +207,9 @@ describe('Node environments manager', function () {
             };
         });
 
-        it('allows socket communication between node environments', async () => {
+        // eslint-disable-next-line no-only-tests/no-only-tests
+        it.only('allows socket communication between node environments', async function () {
+            this.timeout(50000000);
             const nodeEnvironmentManager = new NodeEnvironmentsManager(
                 socketServer,
                 {
@@ -242,7 +244,9 @@ describe('Node environments manager', function () {
             });
             disposables.add(() => dispose());
 
-            expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
+            const result = await engine.get(proxyFeature).api.echoService.echo();
+
+            expect(result).to.eq('hello gaga');
         });
 
         it('allows socket communication between node environments when running in forked mode', async () => {

@@ -9,7 +9,7 @@ export default new Feature({
         echoService: Service.withType<{ echo: () => Promise<string>; getName: () => string }>()
             .defineEntity(serverEnv)
             .allowRemoteAccess(),
-        anotherEchoService: Service.withType<{ echo: () => Promise<string> }>()
+        anotherEchoService: Service.withType<{ echo: (input?: string | undefined) => Promise<string> }>()
             .defineEntity(anotherServerEnv)
             .allowRemoteAccess(),
         config: Config.withType<{ value: string }>().defineEntity({ value: 'Hello' }, undefined, serverEnv),

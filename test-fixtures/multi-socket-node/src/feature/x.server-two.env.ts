@@ -1,10 +1,13 @@
 import { anotherServerEnv } from './x.feature';
 import sampleFeature from './x.feature';
 
-sampleFeature.setup(anotherServerEnv, ({ echoService }) => {
+sampleFeature.setup(anotherServerEnv, () => {
     return {
         anotherEchoService: {
-            echo: async () => 'hello ' + (await echoService.getName()),
+            echo: (input: string | undefined = 'hiiiii') => {
+                console.log(input);
+                return Promise.resolve(String(input));
+            },
         },
     };
 });
