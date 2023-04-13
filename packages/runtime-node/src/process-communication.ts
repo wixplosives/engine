@@ -1,19 +1,21 @@
 import type io from 'socket.io';
-import { COM, ConfigEnvironmentRecord, PartialFeatureConfig } from '@wixc3/engine-core';
-import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
+
 import performance from '@wixc3/cross-performance';
+import { BaseHost, COM, ConfigEnvironmentRecord, PartialFeatureConfig } from '@wixc3/engine-core';
+import { IPCHost, ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from '@wixc3/engine-core-node';
 performance.clearMeasures;
-import { runWSEnvironment } from './ws-environment';
+
 import {
     ICommunicationMessage,
+    IEnvironmentMetricsResponse,
     IEnvironmentPortMessage,
+    RemoteProcess,
     isEnvironmentCloseMessage,
+    isEnvironmentMetricsRequestMessage,
     isEnvironmentPortMessage,
     isEnvironmentStartMessage,
-    RemoteProcess,
-    isEnvironmentMetricsRequestMessage,
-    IEnvironmentMetricsResponse,
 } from './types';
+import { runWSEnvironment } from './ws-environment';
 
 export interface ICreateCommunicationOptions {
     port: number;
@@ -40,7 +42,7 @@ export function createIPC(
             //TODO: check
             for (const [envName, config] of message.data.config ?? []) {
                 if (envName === COM.id) {
-                    const typedConfig = (config as PartialFeatureConfig<(typeof COM)['api']>).config ?? {};
+                    const typedConfig = (config as PartialFeatureConfig<typeof COM['api']>).config ?? {};
                     const { connectedEnvironments: definedConnectedEnvironments } = typedConfig;
                     if (definedConnectedEnvironments) {
                         for (const [envToken, envRecord] of Object.entries(definedConnectedEnvironments)) {
@@ -55,11 +57,21 @@ export function createIPC(
                     }
                 }
             }
-            connectedEnvironments[LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID] = {
+
+            const metadataProviderHost = new BaseHost();
+            metadataProviderHost.name = METADATA_PROVIDER_ENV_ID;
+
+            connectedEnvironments[METADATA_PROVIDER_ENV_ID] = {
+                id: METADATA_PROVIDER_ENV_ID,
+                host: metadataProviderHost,
+            };
+
+            connectedEnvironments[ENGINE_ROOT_ENVIRONMENT_ID] = {
                 host: ipcHost,
-                id: LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID,
+                id: ENGINE_ROOT_ENVIRONMENT_ID,
                 registerMessageHandler: true,
             };
+
             const { close } = await runWSEnvironment(socketServer, {
                 ...message.data,
                 config: [
