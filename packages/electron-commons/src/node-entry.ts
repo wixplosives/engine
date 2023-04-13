@@ -39,7 +39,7 @@ const onMessageListener = async (message: unknown) => {
 
         const metadataProviderHost = new BaseHost();
         metadataProviderHost.name = METADATA_PROVIDER_ENV_ID;
-        rootCom.registerEnv('metadataRetriever', metadataProviderHost);
+        rootCom.registerEnv(METADATA_PROVIDER_ENV_ID, metadataProviderHost);
 
         config.push(
             COM.use({
