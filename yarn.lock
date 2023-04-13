@@ -1714,13 +1714,13 @@
     "@wixc3/common" "^8.1.0"
     promise-assist "^2.0.1"
 
-"@wixc3/resolve-directory-context@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-3.0.4.tgz#a6b2804fb64afbe2ba24ed186ffb423e9ceeda6a"
-  integrity sha512-32aFX3P5ZqcAuGoUxtEx5CZS5ArdylBdZg1HFPXA0xfr3XWIfJCtZRWEIRWQQa9bTzYBI9AOfjmCWpjCorsIXA==
+"@wixc3/resolve-directory-context@^3.0.4", "@wixc3/resolve-directory-context@^3.0.5":
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-3.0.5.tgz#5a9f2bf1ae44e585612cdb4e7e78251c3317f01a"
+  integrity sha512-CTIYE9R81ww7yOLxHmW8Lw6hzgL2e0AuC90CdT1uejTQOLUGR237MQOVyLYt6yQ9gaAJPAUVQVIDQZUDLvBzxA==
   dependencies:
-    minimatch "^7.0.0"
-    type-fest "^3.6.0"
+    minimatch "^9.0.0"
+    type-fest "^3.8.0"
 
 "@wixc3/testing-node@^8.1.0":
   version "8.1.0"
@@ -5777,7 +5777,7 @@ minimatch@^6.1.6:
   dependencies:
     brace-expansion "^2.0.1"
 
-minimatch@^7.0.0, minimatch@^7.4.2:
+minimatch@^7.4.2:
   version "7.4.6"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-7.4.6.tgz#845d6f254d8f4a5e4fd6baf44d5f10c8448365fb"
   integrity sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==
@@ -8287,7 +8287,7 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-type-fest@^3.6.0, type-fest@^3.8.0:
+type-fest@^3.8.0:
   version "3.8.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.8.0.tgz#ce80d1ca7c7d11c5540560999cbd410cb5b3a385"
   integrity sha512-FVNSzGQz9Th+/9R6Lvv7WIAkstylfHN2/JYxkyhhmKFYh9At2DST8t6L6Lref9eYO8PXFTfG9Sg1Agg0K3vq3Q==
