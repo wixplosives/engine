@@ -9,6 +9,10 @@ sampleFeature.setup(serverEnv, ({ anotherEchoService, run }, { COM: { communicat
     return {
         echoService: {
             echo: () => {
+                // working:
+                // return anotherEchoService.echo();
+
+                // not working:
                 return anotherEchoService.echo(undefined);
             },
             getName: () => 'gaga',

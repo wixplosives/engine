@@ -246,7 +246,7 @@ describe('Node environments manager', function () {
 
             const result = await engine.get(proxyFeature).api.echoService.echo();
 
-            expect(result).to.eq('hello gaga');
+            expect(result).to.eq('hiiiii');
         });
 
         it('allows socket communication between node environments when running in forked mode', async () => {
