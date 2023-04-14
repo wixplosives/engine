@@ -246,14 +246,13 @@ export class Communication {
         envId: string,
         api: string,
         method: string,
-        unserializedArgs: unknown[],
+        args: unknown[],
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
         forwardingChain: string[]
     ): Promise<unknown> {
         return new Promise<void>((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
-            const args = serializeApiCallArguments(unserializedArgs);
 
             if (this.isListenCall(args) || serviceComConfig[method]?.removeAllListeners) {
                 this.addOrRemoveListener(
@@ -273,7 +272,7 @@ export class Communication {
                     to: envId,
                     from: this.rootEnvId,
                     type: 'call',
-                    data: { api, method, args },
+                    data: { api, method, args: serializeApiCallArguments(args) },
                     callbackId,
                     origin,
                     forwardingChain,

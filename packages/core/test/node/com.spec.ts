@@ -160,7 +160,7 @@ describe('Communication', () => {
         expect(handleMessageStub).to.have.not.been.called;
     });
 
-    it('serialization of arguments for remote API calls should work as expected ', async () => {
+    it('serialization of arguments for remote API calls should handle undefined values ', async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main');
 
