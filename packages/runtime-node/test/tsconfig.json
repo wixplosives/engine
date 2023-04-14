@@ -8,6 +8,6 @@
     { "path": "../../test-kit/src" },
     { "path": "../../../test-fixtures/multi-node/src" },
     { "path": "../../../test-fixtures/multi-socket-node/src" },
-    { "path": "../../../test-fixtures/simple-multi-socket/src" }
+    { "path": "../../../test-fixtures/simple-feature/src" }
   ]
 }

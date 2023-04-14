@@ -15,7 +15,7 @@
       "@fixture/3rd-party/dist/*": ["./test-fixtures/3rd-party/src/*"],
       "@fixture/engine-multi-node/dist/*": ["./test-fixtures/multi-node/src/*"],
       "@fixture/engine-multi-socket-node/dist/*": ["./test-fixtures/multi-socket-node/src/*"],
-      "@fixture/engine-simple-multi-socket": ["./test-fixtures/simple-multi-socket/src/*"]
+      "@fixture/engine-simple-feature": ["./test-fixtures/simple-feature/src/*"]
     }
   }
 }

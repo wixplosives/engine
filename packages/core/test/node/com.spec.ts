@@ -160,24 +160,23 @@ describe('Communication', () => {
         expect(handleMessageStub).to.have.not.been.called;
     });
 
-    it('should work with undefined argument as expected', async () => {
+    it('serialization of arguments for remote API calls should work as expected ', async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main');
 
         main.registerAPI(
             { id: 'echoService' },
             {
-                echo(s = 'No!') {
+                echo(s: unknown) {
                     return s;
                 },
             }
         );
 
         const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
-        console.log(proxy.echo);
-        const res = await proxy.echo();
+        const res = await proxy.echo(undefined);
 
-        expect(res).to.be.equal('No!');
+        expect(res).to.be.undefined;
     });
 
     it('forwards listen calls', async () => {
