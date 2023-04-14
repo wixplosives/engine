@@ -1,12 +1,12 @@
 import {
-    Environment,
-    ContextualEnvironment,
-    flattenTree,
     AnyEnvironment,
-    MultiEnvironment,
+    ContextualEnvironment,
+    Environment,
     EnvironmentMode,
+    MultiEnvironment,
+    flattenTree,
 } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
 
 const convertEnvToIEnv = (env: AnyEnvironment): IEnvironmentDescriptor => {
     const { env: name, envType: type } = env;
