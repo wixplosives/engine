@@ -24,7 +24,7 @@ export class MultiCounter {
     }
 }
 
-const undefinedArgPlaceholder = '__UNDEFINED__';
+const undefinedArgPlaceholder = '__|UND_ARG_PLA|__';
 
 export const serializeApiCallArguments = (args: unknown[]): unknown[] =>
     args.map((arg) => (arg === undefined ? undefinedArgPlaceholder : arg));

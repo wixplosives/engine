@@ -52,6 +52,7 @@
     { "path": "./test-fixtures/engine-runtime-metadata/src" },
     { "path": "./test-fixtures/multi-node/src" },
     { "path": "./test-fixtures/multi-socket-node/src" },
+    { "path": "./test-fixtures/simple-multi-socket/src" },
     { "path": "./test-fixtures/node-env/src" },
     { "path": "./test-fixtures/static-application-external/src" },
     { "path": "./test-fixtures/static-base-web-application/src" },

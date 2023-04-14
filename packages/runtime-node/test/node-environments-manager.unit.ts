@@ -10,6 +10,10 @@ import SocketServerNodeFeature, {
     serverEnv as socketServerEnv,
 } from '@fixture/engine-multi-socket-node/dist/feature/x.feature';
 
+import simpleSocketServerNodeFeature, {
+    serverEnv as simpleServerEnv,
+} from '@fixture/engine-simple-multi-socket/dist/feature/y.feature';
+
 import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
 
 chai.use(chaiAsPromised);
@@ -243,6 +247,75 @@ describe('Node environments manager', function () {
             disposables.add(() => dispose());
 
             expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
+        });
+
+        it('remote API calls should work with undefined arguments', async () => {
+            const engineSimpleMultiNodeSocketCommunication: IStaticFeatureDefinition = {
+                dependencies: [comEntry.scopedName],
+                filePath: require.resolve('@fixture/engine-simple-multi-socket/dist/feature/y.feature'),
+                scopedName: 'engine-simple-multi-socket/y',
+                packageName: '@fixture/engine-simple-multi-socket',
+                envFilePaths: {
+                    server: require.resolve('@fixture/engine-simple-multi-socket/dist/feature/y.server.env'),
+                },
+                exportedEnvs: [{ name: 'server', type: 'node', env: serverEnv }],
+            };
+
+            const nodeEnvironmentManager = new NodeEnvironmentsManager(
+                socketServer,
+                {
+                    features: new Map<string, IStaticFeatureDefinition>(
+                        Object.entries({
+                            [engineSimpleMultiNodeSocketCommunication.scopedName]:
+                            engineSimpleMultiNodeSocketCommunication,
+                            [comEntry.scopedName]: comEntry,
+                        })
+                    ),
+                    port,
+                },
+                process.cwd()
+            );
+
+            disposables.add(() => nodeEnvironmentManager.closeAll());
+
+            await nodeEnvironmentManager.runServerEnvironments({
+                featureName: engineSimpleMultiNodeSocketCommunication.scopedName,
+            });
+
+            const proxyFeatureTest = new Feature({
+                id: 'test',
+                api: {
+                    echoService: Service.withType<{ echo: (s?: string) => Promise<string> }>().defineEntity(env),
+                },
+                dependencies: [simpleSocketServerNodeFeature.asDependency, COM.asDependency],
+            }).setup(env, ({}, { YTestFeature: { echoService }, COM: { communication } }) => {
+                void socketClientInitializer({ communication, env: simpleServerEnv });
+
+                return {
+                    echoService: {
+                        echo: (s?: string) => {
+                            return echoService.echo(s);
+                        },
+                    },
+                };
+            });
+
+            const { dispose, engine } = runEngineApp({
+                env,
+                resolvedContexts: {},
+                features: [proxyFeatureTest],
+                config: [
+                    COM.use({
+                        config: {
+                            topology: nodeEnvironmentManager.getTopology('engine-simple-multi-socket/y'),
+                        },
+                    }),
+                ],
+            });
+
+            disposables.add(() => dispose());
+
+            expect(await engine.get(proxyFeatureTest).api.echoService.echo(undefined)).to.equal('dude, it works!');
         });
 
         it('allows socket communication between node environments when running in forked mode', async () => {

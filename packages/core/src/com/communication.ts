@@ -848,6 +848,7 @@ export class Communication {
         try {
             const args = deserializeApiCallArguments(message.data.args);
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, args);
+
             if (message.callbackId) {
                 this.sendTo(message.from, {
                     to: message.origin,
