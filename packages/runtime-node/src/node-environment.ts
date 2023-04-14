@@ -1,16 +1,17 @@
 import {
+    AnyEnvironment,
     COM,
     Feature,
+    FeatureLoadersRegistry,
     IFeatureLoader,
-    runEngineApp,
+    IPreloadModule,
     RuntimeEngine,
     RuntimeMetadata,
-    FeatureLoadersRegistry,
-    IPreloadModule,
-    AnyEnvironment,
+    runEngineApp,
 } from '@wixc3/engine-core';
+import { IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-core-node';
 
-import type { IEnvironmentDescriptor, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
+import type { IStaticFeatureDefinition } from './types';
 
 export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     featureName,

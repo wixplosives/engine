@@ -1,13 +1,10 @@
 import fs from '@file-services/node';
-import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
-import { communicationChannels, electronRuntimeArguments } from '@wixc3/engine-electron-commons';
-import {
-    IEngineRuntimeArguments,
-    importModules,
-    IStaticFeatureDefinition,
-    runNodeEnvironment,
-} from '@wixc3/engine-runtime-node';
 import { app, BrowserWindow, ipcMain } from 'electron';
+
+import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
+import { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
+import { communicationChannels, electronRuntimeArguments } from '@wixc3/engine-electron-commons';
+import { importModules, IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
 import runtimeArgumentsProvider from './runtime-arguments-provider';
 

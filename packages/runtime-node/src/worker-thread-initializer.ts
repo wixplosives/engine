@@ -4,7 +4,7 @@ import { COM, InitializerOptions } from '@wixc3/engine-core';
 
 import { WorkerThreadHost } from './worker-thread-host';
 import type { IWorkerThreadEnvStartupMessage } from './types';
-import { getApplicationMetaData } from './get-application-metadata';
+import { getApplicationMetaData } from '@wixc3/engine-core-node';
 
 export async function workerThreadInitializer({ communication, env }: InitializerOptions) {
     const isSingleton = env.endpointType === 'single';

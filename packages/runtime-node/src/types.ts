@@ -1,11 +1,5 @@
-import type {
-    EnvironmentTypes,
-    TopLevelConfig,
-    BaseHost,
-    Environment,
-    AnyEnvironment,
-    MultiEnvironment,
-} from '@wixc3/engine-core';
+import type { AnyEnvironment, Environment, TopLevelConfig } from '@wixc3/engine-core';
+import { IEngineRuntimeArguments, IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-core-node';
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
@@ -34,18 +28,6 @@ export interface IStaticFeatureDefinition {
 
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
     typeof value === 'object' && value !== null && typeof (value as IProcessMessage<unknown>).id === 'string';
-
-export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment>
-    extends IEnvironmentDescriptor<ENV> {
-    featureName: string;
-    bundlePath?: string;
-    config?: TopLevelConfig;
-    features: Array<[string, Required<IStaticFeatureDefinition>]>;
-    options?: Array<[string, string | boolean]>;
-    inspect?: boolean;
-    host?: BaseHost;
-    context?: string;
-}
 
 export type ProcessMessageId =
     | 'run-feature'
@@ -104,14 +86,6 @@ export interface RemoteProcess {
     off: (event: 'message', handler: (message: ICommunicationMessage) => unknown) => void;
 }
 
-export interface IEnvironmentDescriptor<ENV extends AnyEnvironment = AnyEnvironment> {
-    type: EnvironmentTypes;
-    name: string;
-    childEnvName?: string;
-    flatDependencies?: IEnvironmentDescriptor<MultiEnvironment<ENV['envType']>>[];
-    env: ENV;
-}
-
 export const isEnvironmentStartMessage = (message: ICommunicationMessage): message is IEnvironmentStartMessage =>
     message.id === 'start';
 
@@ -134,40 +108,6 @@ export interface IConfigDefinition {
     envName?: string;
     filePath: string;
 }
-
-export interface MetadataCollectionAPI {
-    getRuntimeArguments: () => IEngineRuntimeArguments;
-}
-
-export interface IEngineRuntimeArguments {
-    featureName: string;
-    basePath: string;
-    outputPath: string;
-    configName?: string;
-    devport?: number;
-    nodeEntryPath: string;
-    workerThreadEntryPath: string;
-    features: [featureName: string, featureDefinition: Required<IStaticFeatureDefinition>][];
-    config: TopLevelConfig;
-    requiredModules?: string[];
-    runtimeOptions?: StartEnvironmentOptions['options'];
-}
-
-export interface IStaticFeatureDefinition {
-    contextFilePaths?: Record<string, string>;
-    envFilePaths?: Record<string, string>;
-    preloadFilePaths?: Record<string, string>;
-    dependencies?: string[];
-    scopedName: string;
-    resolvedContexts?: Record<string, string>;
-    packageName: string;
-    filePath: string;
-    exportedEnvs?: IEnvironmentDescriptor[];
-}
-
-export const metadataApiToken = {
-    id: 'metadata-api-token',
-};
 
 export const isWorkerThreadEnvStartupMessage = (value: unknown): value is IWorkerThreadEnvStartupMessage => {
     return (value as IWorkerThreadEnvStartupMessage).id === 'workerThreadStartupOptions';

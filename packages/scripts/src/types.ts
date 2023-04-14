@@ -1,11 +1,12 @@
+import type io from 'socket.io';
+
 import type { AnyEnvironment, Feature, TopLevelConfig } from '@wixc3/engine-core';
+import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
 import type {
-    IEnvironmentDescriptor,
     IStaticFeatureDefinition,
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
-import type io from 'socket.io';
 
 export interface IFeatureTarget {
     featureName?: string;

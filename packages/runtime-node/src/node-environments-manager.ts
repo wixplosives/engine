@@ -1,33 +1,39 @@
+import { safeListeningHttpServer } from 'create-listening-server';
 import type { Socket } from 'net';
 import { delimiter } from 'path';
-
 import io from 'socket.io';
-import { safeListeningHttpServer } from 'create-listening-server';
+
 import {
-    TopLevelConfig,
-    Communication,
     BaseHost,
     COM,
-    Message,
+    Communication,
     ConfigEnvironmentRecord,
+    Message,
     ReadyMessage,
+    TopLevelConfig,
 } from '@wixc3/engine-core';
-import type { SetMultiMap } from '@wixc3/patterns';
-import { startRemoteNodeEnvironment } from './remote-node-environment';
-import { runWSEnvironment } from './ws-environment';
 import {
-    IConfigDefinition,
+    ENGINE_ROOT_ENVIRONMENT_ID,
     IEnvironmentDescriptor,
+    IPCHost,
+    MetadataCollectionAPI,
+    StartEnvironmentOptions,
+    metadataApiToken,
+} from '@wixc3/engine-core-node';
+import type { SetMultiMap } from '@wixc3/patterns';
+
+import { resolveEnvironments } from './environments';
+import { startRemoteNodeEnvironment } from './remote-node-environment';
+import {
+    ICommunicationMessage,
+    IConfigDefinition,
     IEnvironmentMessage,
     IEnvironmentStartMessage,
-    isEnvironmentStartMessage,
-    StartEnvironmentOptions,
-    TopLevelConfigProvider,
-    ICommunicationMessage,
     IStaticFeatureDefinition,
+    TopLevelConfigProvider,
+    isEnvironmentStartMessage,
 } from './types';
-import { resolveEnvironments } from './environments';
-import { IPCHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID } from '@wixc3/engine-core-node';
+import { runWSEnvironment } from './ws-environment';
 
 export interface OverrideConfig {
     configName?: string;
@@ -85,6 +91,7 @@ export interface RunEnvironmentOptions {
 }
 
 const cliEntry = require.resolve('./remote-node-entry');
+const workerThreadEntryPath = require.resolve('./worker-thread-entry');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IStaticFeatureDefinition>;
@@ -179,9 +186,22 @@ export class NodeEnvironmentsManager {
          *
          * if 'b' wants to call an api provided from 'a', it's implicity will do the same thing, but without the need to explicitly call a COM's initializer
          */
-
         const baseHost = new BaseHost();
-        const com = new Communication(baseHost, LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID, undefined, undefined, true);
+        const com = new Communication(baseHost, ENGINE_ROOT_ENVIRONMENT_ID, undefined, undefined, true);
+
+        com.registerAPI<MetadataCollectionAPI>(metadataApiToken, {
+            getRuntimeArguments: () => {
+                return {
+                    basePath: process.cwd(),
+                    config: [],
+                    featureName,
+                    features: [...featuresWithDefaults.entries()],
+                    outputPath: process.cwd(),
+                    nodeEntryPath: '',
+                    workerThreadEntryPath,
+                };
+            },
+        });
 
         const envHostMapping = new Map<IEnvironmentDescriptor, ChildBaseHost>();
         for (const nodeEnv of nodeEnvironments) {
@@ -202,8 +222,8 @@ export class NodeEnvironmentsManager {
                 if (env !== nodeEnv) {
                     connectedEnvironments[env.name] = { id: env.name, host };
                 } else {
-                    connectedEnvironments[LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID] = {
-                        id: LOCAL_ENVIRONMENT_INITIALIZER_ENV_ID,
+                    connectedEnvironments[ENGINE_ROOT_ENVIRONMENT_ID] = {
+                        id: ENGINE_ROOT_ENVIRONMENT_ID,
                         host,
                         registerMessageHandler: true,
                     };
