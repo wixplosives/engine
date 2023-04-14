@@ -40,7 +40,7 @@
     "@types/minimist": "^1.2.2",
     "@types/mocha": "^10.0.1",
     "@types/node": "18",
-    "@types/react": "^18.0.34",
+    "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
     "@types/semver": "^7.3.13",
     "@types/sinon": "^10.0.13",
@@ -55,7 +55,7 @@
     "@wixc3/wait-for-call": "^8.0.0",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
-    "electron": "^24.1.0",
+    "electron": "^24.1.1",
     "electron-builder": "^24.2.0",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
@@ -76,7 +76,7 @@
     "sinon-chai": "^3.7.0",
     "source-map-loader": "^4.0.1",
     "typescript": "~5.0.4",
-    "webpack": "^5.78.0"
+    "webpack": "^5.79.0"
   },
   "license": "MIT",
   "private": true
