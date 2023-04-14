@@ -1,12 +1,11 @@
 import { EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-core';
-import { initializeNodeEnvironment, InitializeNodeEnvironmentOptions } from '@wixc3/engine-electron-commons';
-import { getApplicationMetaData } from '@wixc3/engine-runtime-node';
+import { getApplicationMetaData } from '@wixc3/engine-core-node';
+import { InitializeNodeEnvironmentOptions, initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
 
 /**
  * Spawn a node-based environment from the renderer process.
  * Should be invoked *only* from the renderer process.
  */
-
 export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
     Promise<IActiveEnvironment>,
     Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
