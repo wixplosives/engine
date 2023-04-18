@@ -12,7 +12,7 @@ import SocketServerNodeFeature, {
 
 import defaultArgsEchoFeature, {
     serverEnv as echoServerEnv,
-} from '@fixture/engine-default-args-echo/dist/feature/feature';
+} from '@fixture/engine-default-args-echo/dist/feature/echo.feature';
 
 import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
 
@@ -252,11 +252,11 @@ describe('Node environments manager', function () {
         it('remote API calls should work with undefined arguments', async () => {
             const engineMultiEnvCommunication: IStaticFeatureDefinition = {
                 dependencies: [comEntry.scopedName],
-                filePath: require.resolve('@fixture/engine-default-args-echo/dist/feature/feature'),
-                scopedName: 'engine-default-args-echo/y',
+                filePath: require.resolve('@fixture/engine-default-args-echo/dist/feature/echo.feature'),
+                scopedName: 'engine-default-args-echo',
                 packageName: '@fixture/engine-default-args-echo',
                 envFilePaths: {
-                    server: require.resolve('@fixture/engine-default-args-echo/dist/feature/server.env'),
+                    server: require.resolve('@fixture/engine-default-args-echo/dist/feature/echo.server.env'),
                 },
                 exportedEnvs: [{ name: 'server', type: 'node', env: serverEnv }],
             };
@@ -287,7 +287,7 @@ describe('Node environments manager', function () {
                     echoService: Service.withType<{ echo: (s?: string) => Promise<string> }>().defineEntity(env),
                 },
                 dependencies: [defaultArgsEchoFeature.asDependency, COM.asDependency],
-            }).setup(env, ({}, { DefaultArgsEcho: { echoService }, COM: { communication } }) => {
+            }).setup(env, ({}, { defaultArgsEcho: { echoService }, COM: { communication } }) => {
                 void socketClientInitializer({ communication, env: echoServerEnv });
 
                 return {
@@ -306,7 +306,7 @@ describe('Node environments manager', function () {
                 config: [
                     COM.use({
                         config: {
-                            topology: nodeEnvironmentManager.getTopology('engine-default-args-echo/y'),
+                            topology: nodeEnvironmentManager.getTopology('engine-default-args-echo'),
                         },
                     }),
                 ],

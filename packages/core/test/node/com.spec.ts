@@ -26,7 +26,7 @@ chai.use(sinonChai);
 chai.use(chaiAsPromised);
 
 class EchoService {
-    echo(s = 'No!') {
+    echo(s?: string) {
         return s;
     }
 }
@@ -160,7 +160,7 @@ describe('Communication', () => {
         expect(handleMessageStub).to.have.not.been.called;
     });
 
-    it('serialization of arguments for remote API calls should handle undefined values ', async () => {
+    it('preserves undefined function parameters in cross-environment API calls', async () => {
         const host = new BaseHost();
         const main = new Communication(host, 'main');
 
