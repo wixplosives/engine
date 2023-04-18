@@ -10,8 +10,8 @@ import SocketServerNodeFeature, {
     serverEnv as socketServerEnv,
 } from '@fixture/engine-multi-socket-node/dist/feature/x.feature';
 
-import simpleNodeServerFeature, {
-    serverEnv as simpleServerEnv,
+import defaultArgsEchoFeature, {
+    serverEnv as echoServerEnv,
 } from '@fixture/engine-default-args-echo/dist/feature/feature';
 
 import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
@@ -286,9 +286,9 @@ describe('Node environments manager', function () {
                 api: {
                     echoService: Service.withType<{ echo: (s?: string) => Promise<string> }>().defineEntity(env),
                 },
-                dependencies: [simpleNodeServerFeature.asDependency, COM.asDependency],
-            }).setup(env, ({}, { YTestFeature: { echoService }, COM: { communication } }) => {
-                void socketClientInitializer({ communication, env: simpleServerEnv });
+                dependencies: [defaultArgsEchoFeature.asDependency, COM.asDependency],
+            }).setup(env, ({}, { DefaultArgsEcho: { echoService }, COM: { communication } }) => {
+                void socketClientInitializer({ communication, env: echoServerEnv });
 
                 return {
                     echoService: {
