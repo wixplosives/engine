@@ -12,7 +12,7 @@ import SocketServerNodeFeature, {
 
 import simpleNodeServerFeature, {
     serverEnv as simpleServerEnv,
-} from '@fixture/engine-simple-feature/dist/feature/y.feature';
+} from '@fixture/engine-default-args-echo/dist/feature/y.feature';
 
 import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
 
@@ -252,11 +252,11 @@ describe('Node environments manager', function () {
         it('remote API calls should work with undefined arguments', async () => {
             const engineMultiEnvCommunication: IStaticFeatureDefinition = {
                 dependencies: [comEntry.scopedName],
-                filePath: require.resolve('@fixture/engine-simple-feature/dist/feature/y.feature'),
-                scopedName: 'engine-simple-feature/y',
-                packageName: '@fixture/engine-simple-feature',
+                filePath: require.resolve('@fixture/engine-default-args-echo/dist/feature/y.feature'),
+                scopedName: 'engine-default-args-echo/y',
+                packageName: '@fixture/engine-default-args-echo',
                 envFilePaths: {
-                    server: require.resolve('@fixture/engine-simple-feature/dist/feature/y.server.env'),
+                    server: require.resolve('@fixture/engine-default-args-echo/dist/feature/y.server.env'),
                 },
                 exportedEnvs: [{ name: 'server', type: 'node', env: serverEnv }],
             };
@@ -266,8 +266,7 @@ describe('Node environments manager', function () {
                 {
                     features: new Map<string, IStaticFeatureDefinition>(
                         Object.entries({
-                            [engineMultiEnvCommunication.scopedName]:
-                                engineMultiEnvCommunication,
+                            [engineMultiEnvCommunication.scopedName]: engineMultiEnvCommunication,
                             [comEntry.scopedName]: comEntry,
                         })
                     ),
@@ -283,7 +282,7 @@ describe('Node environments manager', function () {
             });
 
             const proxyFeatureTest = new Feature({
-                id: 'test',
+                id: 'proxy',
                 api: {
                     echoService: Service.withType<{ echo: (s?: string) => Promise<string> }>().defineEntity(env),
                 },
@@ -307,7 +306,7 @@ describe('Node environments manager', function () {
                 config: [
                     COM.use({
                         config: {
-                            topology: nodeEnvironmentManager.getTopology('engine-simple-feature/y'),
+                            topology: nodeEnvironmentManager.getTopology('engine-default-args-echo/y'),
                         },
                     }),
                 ],
