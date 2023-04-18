@@ -12,7 +12,7 @@ import SocketServerNodeFeature, {
 
 import simpleNodeServerFeature, {
     serverEnv as simpleServerEnv,
-} from '@fixture/engine-default-args-echo/dist/feature/y.feature';
+} from '@fixture/engine-default-args-echo/dist/feature/feature';
 
 import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
 
@@ -252,11 +252,11 @@ describe('Node environments manager', function () {
         it('remote API calls should work with undefined arguments', async () => {
             const engineMultiEnvCommunication: IStaticFeatureDefinition = {
                 dependencies: [comEntry.scopedName],
-                filePath: require.resolve('@fixture/engine-default-args-echo/dist/feature/y.feature'),
+                filePath: require.resolve('@fixture/engine-default-args-echo/dist/feature/feature'),
                 scopedName: 'engine-default-args-echo/y',
                 packageName: '@fixture/engine-default-args-echo',
                 envFilePaths: {
-                    server: require.resolve('@fixture/engine-default-args-echo/dist/feature/y.server.env'),
+                    server: require.resolve('@fixture/engine-default-args-echo/dist/feature/server.env'),
                 },
                 exportedEnvs: [{ name: 'server', type: 'node', env: serverEnv }],
             };
