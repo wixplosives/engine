@@ -43,7 +43,7 @@
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
     "@types/semver": "^7.3.13",
-    "@types/sinon": "^10.0.13",
+    "@types/sinon": "^10.0.14",
     "@types/sinon-chai": "^3.2.9",
     "@types/yargs": "^17.0.24",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
