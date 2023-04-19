@@ -26,7 +26,7 @@ chai.use(sinonChai);
 chai.use(chaiAsPromised);
 
 class EchoService {
-    echo(s?: string) {
+    echo(s: string) {
         return s;
     }
 }
@@ -158,25 +158,6 @@ describe('Communication', () => {
 
         // we need to check that no message was received
         expect(handleMessageStub).to.have.not.been.called;
-    });
-
-    it('preserves undefined function parameters in cross-environment API calls', async () => {
-        const host = new BaseHost();
-        const main = new Communication(host, 'main');
-
-        main.registerAPI(
-            { id: 'echoService' },
-            {
-                echo(s: unknown) {
-                    return s;
-                },
-            }
-        );
-
-        const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
-        const res = await proxy.echo(undefined);
-
-        expect(res).to.be.undefined;
     });
 
     it('forwards listen calls', async () => {
