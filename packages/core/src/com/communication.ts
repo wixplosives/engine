@@ -6,7 +6,13 @@ import {
     reportError,
     UNKNOWN_CALLBACK_ID,
 } from './errors';
-import { isWindow, isWorkerContext, MultiCounter } from './helpers';
+import {
+    isWindow,
+    isWorkerContext,
+    MultiCounter,
+    serializeApiCallArguments,
+    deserializeApiCallArguments,
+} from './helpers';
 import type {
     CallbackMessage,
     CallMessage,
@@ -266,7 +272,7 @@ export class Communication {
                     to: envId,
                     from: this.rootEnvId,
                     type: 'call',
-                    data: { api, method, args },
+                    data: { api, method, args: serializeApiCallArguments(args) },
                     callbackId,
                     origin,
                     forwardingChain,
@@ -839,7 +845,9 @@ export class Communication {
 
     private async handleCall(message: CallMessage): Promise<void> {
         try {
-            const data = await this.apiCall(message.origin, message.data.api, message.data.method, message.data.args);
+            const args = deserializeApiCallArguments(message.data.args);
+            const data = await this.apiCall(message.origin, message.data.api, message.data.method, args);
+
             if (message.callbackId) {
                 this.sendTo(message.from, {
                     to: message.origin,
