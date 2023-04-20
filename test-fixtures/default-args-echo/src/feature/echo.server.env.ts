@@ -1,6 +1,6 @@
-import sampleFeature, { serverEnv } from './echo.feature';
+import echoFeature, { serverEnv } from './echo.feature';
 
-sampleFeature.setup(serverEnv, () => {
+echoFeature.setup(serverEnv, () => {
     return {
         echoService: {
             echo: (s = 'dude, it works!') => s,
