@@ -23,3 +23,15 @@ export class MultiCounter {
         return `${ns}${this.ids[ns]++}`;
     }
 }
+
+const undefinedPlaceholder = '__undefined_placeholder__';
+
+/**
+ * Serialization/deserialization is needed in order to fix the issue with undefined arguments in remote API calls:
+ * https://github.com/wixplosives/engine/issues/1434
+ */
+export const serializeApiCallArguments = (args: unknown[]): unknown[] =>
+    args.map((arg) => (arg === undefined ? undefinedPlaceholder : arg));
+
+export const deserializeApiCallArguments = (args: unknown[]): unknown[] =>
+    args.map((arg) => (arg === undefinedPlaceholder ? undefined : arg));
