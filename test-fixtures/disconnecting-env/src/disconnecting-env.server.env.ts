@@ -3,7 +3,6 @@ import testFeature, { serverEnv } from './disconnecting-env.feature';
 testFeature.setup(serverEnv, ({ run, errorsConfig: { throwError, handleUncaught } }) => {
     if (handleUncaught) {
         process.on('uncaughtException', () => {
-            // User can do any other cleanup here
             process.exit(1);
         });
     }
