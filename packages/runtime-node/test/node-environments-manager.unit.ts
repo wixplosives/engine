@@ -10,6 +10,10 @@ import SocketServerNodeFeature, {
     serverEnv as socketServerEnv,
 } from '@fixture/engine-multi-socket-node/dist/feature/x.feature';
 
+import defaultArgsEchoFeature, {
+    serverEnv as echoServerEnv,
+} from '@fixture/engine-default-args-echo/dist/feature/echo.feature';
+
 import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
 
 chai.use(chaiAsPromised);
@@ -243,6 +247,74 @@ describe('Node environments manager', function () {
             disposables.add(() => dispose());
 
             expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
+        });
+
+        it('remote API calls should work with undefined arguments', async () => {
+            const engineMultiEnvCommunication: IStaticFeatureDefinition = {
+                dependencies: [comEntry.scopedName],
+                filePath: require.resolve('@fixture/engine-default-args-echo/dist/feature/echo.feature'),
+                scopedName: 'engine-default-args-echo',
+                packageName: '@fixture/engine-default-args-echo',
+                envFilePaths: {
+                    server: require.resolve('@fixture/engine-default-args-echo/dist/feature/echo.server.env'),
+                },
+                exportedEnvs: [{ name: 'server', type: 'node', env: serverEnv }],
+            };
+
+            const nodeEnvironmentManager = new NodeEnvironmentsManager(
+                socketServer,
+                {
+                    features: new Map<string, IStaticFeatureDefinition>(
+                        Object.entries({
+                            [engineMultiEnvCommunication.scopedName]: engineMultiEnvCommunication,
+                            [comEntry.scopedName]: comEntry,
+                        })
+                    ),
+                    port,
+                },
+                process.cwd()
+            );
+
+            disposables.add(() => nodeEnvironmentManager.closeAll());
+
+            await nodeEnvironmentManager.runServerEnvironments({
+                featureName: engineMultiEnvCommunication.scopedName,
+            });
+
+            const proxyFeatureTest = new Feature({
+                id: 'proxy',
+                api: {
+                    echoService: Service.withType<{ echo: (s?: string) => Promise<string> }>().defineEntity(env),
+                },
+                dependencies: [defaultArgsEchoFeature.asDependency, COM.asDependency],
+            }).setup(env, ({}, { defaultArgsEcho: { echoService }, COM: { communication } }) => {
+                void socketClientInitializer({ communication, env: echoServerEnv });
+
+                return {
+                    echoService: {
+                        echo: (s?: string) => {
+                            return echoService.echo(s);
+                        },
+                    },
+                };
+            });
+
+            const { dispose, engine } = runEngineApp({
+                env,
+                resolvedContexts: {},
+                features: [proxyFeatureTest],
+                config: [
+                    COM.use({
+                        config: {
+                            topology: nodeEnvironmentManager.getTopology('engine-default-args-echo'),
+                        },
+                    }),
+                ],
+            });
+
+            disposables.add(() => dispose());
+
+            expect(await engine.get(proxyFeatureTest).api.echoService.echo(undefined)).to.equal('dude, it works!');
         });
 
         it('allows socket communication between node environments when running in forked mode', async () => {
