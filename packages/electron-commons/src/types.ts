@@ -9,6 +9,14 @@ export const isNodeEnvStartupMessage = (value: unknown): value is INodeEnvStartu
     return (value as INodeEnvStartupMessage).id === 'nodeStartupOptions';
 };
 
+export const isNodeEnvDisposeMessage = (value: unknown): value is INodeEnvDisposeMessage => {
+    return (value as INodeEnvDisposeMessage).id === 'nodeDispose';
+};
+
+export type INodeEnvDisposeMessage = {
+    id: 'nodeDispose';
+};
+
 export type INodeEnvStartupMessage = {
     id: 'nodeStartupOptions';
     runOptions: NodeEnvironmentStartupOptions;

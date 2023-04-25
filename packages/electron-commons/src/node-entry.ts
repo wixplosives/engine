@@ -7,10 +7,14 @@ import {
 } from '@wixc3/engine-core-node';
 import { importModules, runIPCEnvironment } from '@wixc3/engine-runtime-node';
 
-import { isNodeEnvStartupMessage } from './types';
+import { isNodeEnvDisposeMessage, isNodeEnvStartupMessage } from './types';
+
+let disposeEnv: (() => Promise<void>) | undefined;
 
 const onMessageListener = async (message: unknown) => {
-    if (isNodeEnvStartupMessage(message)) {
+    if (isNodeEnvDisposeMessage(message)) {
+        await Promise.all([disposeEnv?.()]);
+    } else if (isNodeEnvStartupMessage(message)) {
         const {
             requiredModules,
             basePath,
@@ -58,7 +62,7 @@ const onMessageListener = async (message: unknown) => {
             })
         );
 
-        await runIPCEnvironment({
+        const { close } = await runIPCEnvironment({
             type: 'node',
             name: environmentName,
             bundlePath,
@@ -71,8 +75,10 @@ const onMessageListener = async (message: unknown) => {
             parentEnvName,
             env,
         });
+
+        disposeEnv = close;
     }
 };
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
-process.once('message', onMessageListener);
+process.on('message', onMessageListener);

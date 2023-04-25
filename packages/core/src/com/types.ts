@@ -62,6 +62,11 @@ export type AsyncApi<T extends object> = {
 };
 
 export type MultiEnvAsyncApi<T extends object> = {
+    /**
+     * Gets an API of particular instance of multi-instanced environment.
+     *
+     * @param token environment instance token to get API of.
+     */
     get(token: EnvironmentInstanceToken): AsyncApi<T>;
 };
 

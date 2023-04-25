@@ -3,8 +3,9 @@ import { Worker } from 'node:worker_threads';
 import { COM, InitializerOptions } from '@wixc3/engine-core';
 
 import { WorkerThreadHost } from './worker-thread-host';
-import type { IWorkerThreadEnvStartupMessage } from './types';
+import type { WorkerThreadCommand, WorkerThreadEnvironmentStartupOptions, WorkerThreadEvent } from './types';
 import { getApplicationMetaData } from '@wixc3/engine-core-node';
+import { deferred } from 'promise-assist';
 
 export async function workerThreadInitializer({ communication, env }: InitializerOptions) {
     const isSingleton = env.endpointType === 'single';
@@ -24,7 +25,7 @@ export async function workerThreadInitializer({ communication, env }: Initialize
     communication.registerEnv(instanceId, host);
     communication.registerMessageHandler(host);
 
-    const runOptions = {
+    const runOptions: WorkerThreadEnvironmentStartupOptions = {
         requiredModules,
         basePath,
         environmentName: instanceId,
@@ -41,18 +42,55 @@ export async function workerThreadInitializer({ communication, env }: Initialize
         env,
     };
 
-    worker.postMessage({
-        id: 'workerThreadStartupOptions',
-        runOptions,
-    } as IWorkerThreadEnvStartupMessage);
+    const workerInitFailed = deferred<string>();
 
-    await envReady;
+    handleEvent(worker, (e) => {
+        if (e.id === 'workerThreadInitFailedEvent') {
+            workerInitFailed.reject(e.error);
+        }
+    });
+
+    sendCommand(worker, {
+        id: 'workerThreadStartupCommand',
+        runOptions,
+    });
+
+    const initResult = await Promise.race([envReady, workerInitFailed.promise]);
+    // envReady is Promise<void>, so if race result is string - it is initFailed promise
+    if (typeof initResult === 'string') {
+        throw new Error(initResult);
+    }
 
     return {
         id: instanceId,
         dispose: async () => {
+            const workerEnvDisposed = deferred();
+
+            handleEvent(worker, (e) => {
+                if (e.id === 'workerThreadDisposedEvent') {
+                    workerEnvDisposed.resolve();
+                }
+            });
+
+            sendCommand(worker, {
+                id: 'workerThreadDisposeCommand',
+            });
+
+            await workerEnvDisposed.promise;
             await worker.terminate();
-            communication.clearEnvironment(instanceId);
         },
     };
+}
+
+function sendCommand(worker: Worker, command: WorkerThreadCommand) {
+    worker.postMessage(command);
+}
+
+function handleEvent(worker: Worker, handler: (e: WorkerThreadEvent) => void) {
+    worker.on('message', (e) => {
+        const workerEvent = e as WorkerThreadEvent;
+        if (workerEvent.id) {
+            handler(workerEvent);
+        }
+    });
 }

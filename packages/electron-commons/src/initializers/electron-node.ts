@@ -8,7 +8,7 @@ import { IEngineRuntimeArguments, IPCHost } from '@wixc3/engine-core-node';
 import type { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
 
 import { ExpirableList } from '../expirable-list';
-import type { INodeEnvStartupMessage } from '../types';
+import type { INodeEnvDisposeMessage, INodeEnvStartupMessage } from '../types';
 
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
@@ -98,6 +98,9 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         id: env.env,
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         dispose: async () => {
+            child.send({ id: 'nodeDispose' } as INodeEnvDisposeMessage);
+            await new Promise((r) => setTimeout(r, 100));
+
             if (!child.killed) {
                 child.pid ? await promisifiedTreeKill(child.pid) : child.kill();
             }
