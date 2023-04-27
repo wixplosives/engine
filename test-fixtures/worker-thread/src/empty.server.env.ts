@@ -8,9 +8,7 @@ emptyFeature.setup(serverEnv, ({ onDispose }, { COM: { communication } }) => {
         env: workerEnv,
     })
         .then(({ dispose }) => {
-            onDispose(() => {
-                return dispose();
-            });
+            onDispose(dispose);
         })
         .catch(reportError);
 });

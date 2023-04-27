@@ -1,11 +1,14 @@
-import fs from '@file-services/node';
-import type { ProcessExitDetails } from '../../src';
-import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import chai from 'chai';
 import type { IOType } from 'child_process';
 import { platform } from 'os';
+
+import fs from '@file-services/node';
 import testFeature, { ErrorTypeConfig, serverEnv } from '@fixture/disconnecting-env/dist/disconnecting-env.feature';
+
+import type { ProcessExitDetails } from '../../src';
 import { setupRunningNodeEnv } from '../../test-kit/setup-running-node-env';
+import { oneOfDeepEqual } from '../../test-kit/assert-utils';
 
 const { expect } = chai;
 chai.use(chaiAsPromised);
@@ -41,15 +44,31 @@ describe('onDisconnectHandler for node environment initializer', () => {
         errorMessage: '',
     };
 
+    const expectedDisposeResult: ProcessExitDetails = {
+        exitCode: 0,
+        signal: null,
+        errorMessage: '',
+    };
+
     describe('without own uncaughtException handling', () => {
         it('should catch on dispose of env', async () => {
             const { dispose, exitPromise } = await setupRunningEnv({ config: { errorMode: 'no-error' } });
 
-            dispose();
+            await dispose();
+            const result = await exitPromise;
 
-            await expect(exitPromise).to.eventually.deep.eq(expectedTerminationResult);
+            // oneOf is done to avoid flakiness when env is disposing long time and terminated
+            oneOfDeepEqual(result, [expectedDisposeResult, expectedTerminationResult]);
         });
+        it('should terminate process on long dispose', async () => {
+            const { dispose, exitPromise } = await setupRunningEnv({
+                config: { errorMode: 'dispose-timeout' },
+            });
 
+            await dispose();
+
+            await expect(exitPromise).to.eventually.deep.equal(expectedTerminationResult);
+        });
         it('should catch on env exit intentionally', async () => {
             const { exitPromise } = await setupRunningEnv({ config: { errorMode: 'exit' } });
             await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
@@ -77,9 +96,20 @@ describe('onDisconnectHandler for node environment initializer', () => {
                 config: { errorMode: 'no-error', handleUncaught },
             });
 
-            dispose();
+            await dispose();
 
-            await expect(exitPromise).to.eventually.deep.eq(expectedTerminationResult);
+            const result = await exitPromise;
+            // oneOf is done to avoid flakiness when env is disposing long time and terminated
+            oneOfDeepEqual(result, [expectedDisposeResult, expectedTerminationResult]);
+        });
+        it('should terminate process on long dispose', async () => {
+            const { dispose, exitPromise } = await setupRunningEnv({
+                config: { errorMode: 'dispose-timeout', handleUncaught },
+            });
+
+            await dispose();
+
+            await expect(exitPromise).to.eventually.deep.equal(expectedTerminationResult);
         });
         it('should catch on env exit intentionally', async () => {
             const { exitPromise } = await setupRunningEnv({ config: { errorMode: 'exit', handleUncaught } });

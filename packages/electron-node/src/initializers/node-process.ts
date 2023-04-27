@@ -15,6 +15,8 @@ export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
         runtimeArguments,
         ...options,
     });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     process.on('exit', dispose);
 
     await environmentIsReady;

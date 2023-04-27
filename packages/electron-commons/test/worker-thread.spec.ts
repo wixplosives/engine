@@ -33,11 +33,12 @@ describe('workerthread environment type', () => {
     });
 
     // eslint-disable-next-line no-only-tests/no-only-tests
-    it.only('correctly disposes worker_thread env', async () => {
+    it('correctly disposes worker_thread env', async () => {
         const { dispose } = await setupRunningEnv(`${workerThreadFeature.id}/${emptyFeature.id}`);
 
+        // wait for worker thread being initialized inside feature
         await sleep(1000);
 
-        dispose();
+        await dispose();
     });
 });

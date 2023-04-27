@@ -1,16 +1,18 @@
-import { COM, reportError } from '@wixc3/engine-core';
 import { parentPort, type MessagePort } from 'node:worker_threads';
-import { importModules } from './import-modules';
 
+import { COM, reportError } from '@wixc3/engine-core';
+import { toError } from '@wixc3/common';
+
+import { importModules } from './import-modules';
 import { runNodeEnvironment } from './node-environment';
 import { WorkerThreadHost } from './worker-thread-host';
 import { WorkerThreadCommand, WorkerThreadEvent, WorkerThreadStartupCommand } from './types';
-import { toError } from '@wixc3/common';
+import { emitEvent } from './communication-helpers';
 
 let disposeNodeEnv: () => Promise<void> | undefined;
 
 const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
-    ensureParentPort(parentPort);
+    ensureWorkerThreadContext(parentPort);
 
     const {
         requiredModules,
@@ -62,7 +64,8 @@ const messageHandler = (message: unknown) => {
     switch (workerThreadCommand.id) {
         case 'workerThreadStartupCommand':
             handleStartupMessage(workerThreadCommand).catch((e) => {
-                emitEvent({
+                ensureWorkerThreadContext(parentPort);
+                emitEvent<WorkerThreadEvent>(parentPort, {
                     id: 'workerThreadInitFailedEvent',
                     error: toError(e).message,
                 });
@@ -72,23 +75,19 @@ const messageHandler = (message: unknown) => {
         case 'workerThreadDisposeCommand':
             Promise.all([disposeNodeEnv])
                 .then(() => {
-                    emitEvent({ id: 'workerThreadDisposedEvent' });
+                    ensureWorkerThreadContext(parentPort);
+                    emitEvent<WorkerThreadEvent>(parentPort, { id: 'workerThreadDisposedEvent' });
                 })
                 .catch(reportError);
             break;
     }
 };
 
-function ensureParentPort(port: MessagePort | null): asserts port is MessagePort {
+function ensureWorkerThreadContext(port: MessagePort | null): asserts port is MessagePort {
     if (port === null) {
         throw new Error('this file should be executed in `worker_thread` context');
     }
 }
 
-function emitEvent(event: WorkerThreadEvent) {
-    ensureParentPort(parentPort);
-    parentPort.postMessage(event);
-}
-
-ensureParentPort(parentPort);
+ensureWorkerThreadContext(parentPort);
 parentPort.on('message', messageHandler);

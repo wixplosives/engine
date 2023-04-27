@@ -3,7 +3,7 @@ import { Config, Feature, Environment, COM } from '@wixc3/engine-core';
 export const serverEnv = new Environment('server', 'node', 'single');
 
 export type ErrorTypeConfig = {
-    errorMode: 'exception' | 'exit' | 'promiseReject' | 'out-of-memory' | 'no-error';
+    errorMode: 'exception' | 'exit' | 'promiseReject' | 'out-of-memory' | 'no-error' | 'dispose-timeout';
     handleUncaught: boolean;
 };
 

@@ -1,11 +1,18 @@
 import { Worker } from 'node:worker_threads';
 
 import { COM, InitializerOptions } from '@wixc3/engine-core';
-
-import { WorkerThreadHost } from './worker-thread-host';
-import type { WorkerThreadCommand, WorkerThreadEnvironmentStartupOptions, WorkerThreadEvent } from './types';
 import { getApplicationMetaData } from '@wixc3/engine-core-node';
 import { deferred } from 'promise-assist';
+
+import { emitEvent, executeRemoteCall, onEvent } from './communication-helpers';
+import type {
+    WorkerThreadCommand,
+    WorkerThreadDisposeCommand,
+    WorkerThreadDisposedEvent,
+    WorkerThreadEnvironmentStartupOptions,
+    WorkerThreadEvent,
+} from './types';
+import { WorkerThreadHost } from './worker-thread-host';
 
 export async function workerThreadInitializer({ communication, env }: InitializerOptions) {
     const isSingleton = env.endpointType === 'single';
@@ -44,13 +51,13 @@ export async function workerThreadInitializer({ communication, env }: Initialize
 
     const workerInitFailed = deferred<string>();
 
-    handleEvent(worker, (e) => {
+    onEvent<WorkerThreadEvent>(worker, (e) => {
         if (e.id === 'workerThreadInitFailedEvent') {
             workerInitFailed.reject(e.error);
         }
     });
 
-    sendCommand(worker, {
+    emitEvent<WorkerThreadCommand>(worker, {
         id: 'workerThreadStartupCommand',
         runOptions,
     });
@@ -64,33 +71,14 @@ export async function workerThreadInitializer({ communication, env }: Initialize
     return {
         id: instanceId,
         dispose: async () => {
-            const workerEnvDisposed = deferred();
-
-            handleEvent(worker, (e) => {
-                if (e.id === 'workerThreadDisposedEvent') {
-                    workerEnvDisposed.resolve();
-                }
-            });
-
-            sendCommand(worker, {
-                id: 'workerThreadDisposeCommand',
-            });
-
-            await workerEnvDisposed.promise;
+            await executeRemoteCall<WorkerThreadDisposeCommand, WorkerThreadDisposedEvent>(
+                worker,
+                {
+                    id: 'workerThreadDisposeCommand',
+                },
+                'workerThreadDisposedEvent'
+            );
             await worker.terminate();
         },
     };
-}
-
-function sendCommand(worker: Worker, command: WorkerThreadCommand) {
-    worker.postMessage(command);
-}
-
-function handleEvent(worker: Worker, handler: (e: WorkerThreadEvent) => void) {
-    worker.on('message', (e) => {
-        const workerEvent = e as WorkerThreadEvent;
-        if (workerEvent.id) {
-            handler(workerEvent);
-        }
-    });
 }

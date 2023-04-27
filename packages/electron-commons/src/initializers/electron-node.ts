@@ -1,14 +1,20 @@
 import { spawn, SpawnOptions } from 'child_process';
+import { deferred, timeout } from 'promise-assist';
 import treeKill from 'tree-kill';
 import { promisify } from 'util';
 const promisifiedTreeKill = promisify(treeKill);
 
 import type { EnvironmentInitializer, InitializerOptions } from '@wixc3/engine-core';
 import { IEngineRuntimeArguments, IPCHost } from '@wixc3/engine-core-node';
-import type { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
+import { emitEvent, executeRemoteCall, NodeEnvironmentStartupOptions, onEvent } from '@wixc3/engine-runtime-node';
 
 import { ExpirableList } from '../expirable-list';
-import type { INodeEnvDisposeMessage, INodeEnvStartupMessage } from '../types';
+import {
+    NodeEnvironmentCommand,
+    NodeEnvironmentDisposeCommand,
+    NodeEnvironmentDisposedEvent,
+    NodeEnvironmentEvent,
+} from '../types';
 
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
@@ -42,13 +48,13 @@ export interface ProcessExitDetails {
 export const initializeNodeEnvironment: EnvironmentInitializer<
     {
         id: string;
-        dispose: () => void;
+        dispose: () => Promise<void>;
         onExit: (cb: (details: ProcessExitDetails) => void) => void;
         environmentIsReady: Promise<void>;
     },
     InitializeNodeEnvironmentOptions
 > = ({ communication, env, runtimeArguments, processOptions, environmentStartupOptions }) => {
-    const environmentIsReady = communication.envReady(env.env);
+    const envReady = communication.envReady(env.env);
 
     const nodeEnvStartupArguments: NodeEnvironmentStartupOptions = {
         ...runtimeArguments,
@@ -76,7 +82,17 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         }
     );
 
-    child.send({ id: 'nodeStartupOptions', runOptions: nodeEnvStartupArguments } as INodeEnvStartupMessage);
+    const envInitFailed = deferred();
+    onEvent<NodeEnvironmentEvent>(child, (e) => {
+        if (e.id === 'nodeEnvironmentInitFailedEvent') {
+            envInitFailed.reject(e.error);
+        }
+    });
+
+    emitEvent<NodeEnvironmentCommand>(child, {
+        id: 'nodeEnvironmentStartupCommand',
+        runOptions: nodeEnvStartupArguments,
+    });
 
     const host = new IPCHost(child);
     communication.registerEnv(env.env, host);
@@ -96,10 +112,15 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
 
     return {
         id: env.env,
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         dispose: async () => {
-            child.send({ id: 'nodeDispose' } as INodeEnvDisposeMessage);
-            await new Promise((r) => setTimeout(r, 100));
+            const envDisposed = executeRemoteCall<NodeEnvironmentDisposeCommand, NodeEnvironmentDisposedEvent>(
+                child,
+                { id: 'nodeEnvironmentDisposeCommand' },
+                'nodeEnvironmentDisposedEvent'
+            );
+
+            // wait for dispose finished or timeout
+            await Promise.allSettled([timeout(envDisposed, 1_000)]);
 
             if (!child.killed) {
                 child.pid ? await promisifiedTreeKill(child.pid) : child.kill();
@@ -110,6 +131,6 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
                 cb({ exitCode, signal, errorMessage: errorChunks.getItems().join('') });
             });
         },
-        environmentIsReady,
+        environmentIsReady: Promise.race([envReady, envInitFailed.promise]),
     };
 };
