@@ -1,6 +1,6 @@
 import testFeature, { serverEnv } from './disconnecting-env.feature';
 
-testFeature.setup(serverEnv, ({ run, onDispose, errorsConfig: { throwError, disposeTimeout, handleUncaught } }) => {
+testFeature.setup(serverEnv, ({ run, errorsConfig: { throwError, handleUncaught } }) => {
     if (handleUncaught) {
         process.on('uncaughtException', () => {
             process.exit(1);
@@ -16,15 +16,6 @@ testFeature.setup(serverEnv, ({ run, onDispose, errorsConfig: { throwError, disp
         }
         if (throwError === 'promise-reject') {
             void Promise.reject('promise reject');
-        }
-        if (disposeTimeout) {
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onDispose(
-                () =>
-                    new Promise((r) => {
-                        setTimeout(r, 20_000);
-                    })
-            );
         }
     });
 });

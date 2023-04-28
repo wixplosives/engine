@@ -4,7 +4,6 @@ export const serverEnv = new Environment('server', 'node', 'single');
 
 export type ErrorTypeConfig = {
     throwError: 'exception' | 'exit' | 'promise-reject' | false;
-    disposeTimeout: boolean;
     handleUncaught: boolean;
 };
 
@@ -14,7 +13,6 @@ export default new Feature({
         errorsConfig: Config.withType<ErrorTypeConfig>().defineEntity({
             throwError: 'exit',
             handleUncaught: false,
-            disposeTimeout: false,
         }),
     },
     dependencies: [COM.asDependency],
