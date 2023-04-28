@@ -5,12 +5,11 @@ import {
     MetadataCollectionAPI,
     metadataApiToken,
 } from '@wixc3/engine-core-node';
-import { emitEvent, importModules, runIPCEnvironment } from '@wixc3/engine-runtime-node';
+import { importModules, runIPCEnvironment } from '@wixc3/engine-runtime-node';
 
-import { toError } from '@wixc3/common';
 import { NodeEnvironmentCommand, NodeEnvironmentEvent, NodeEnvironmentStartupCommand } from './types';
 
-let disposeEnv: (() => Promise<void>) | undefined;
+const openEnvsDisposeHandlers = new Set<() => Promise<void>>();
 
 async function handleStartupCommand(command: NodeEnvironmentStartupCommand) {
     const {
@@ -75,11 +74,24 @@ async function handleStartupCommand(command: NodeEnvironmentStartupCommand) {
         env,
     });
 
-    disposeEnv = close;
+    openEnvsDisposeHandlers.add(close);
 }
 
 async function handleDisposeCommand() {
-    await Promise.all([disposeEnv?.()]);
+    for (const dispose of openEnvsDisposeHandlers) {
+        await dispose();
+    }
+    openEnvsDisposeHandlers.clear();
+
+    process.off('message', messageHandler);
+
+    if (!process.send) {
+        throw new Error('this function should be executed from process that is spawned with IPC channel');
+    }
+
+    process.send({
+        id: 'nodeEnvironmentDisposedEvent',
+    } as NodeEnvironmentEvent);
 }
 
 const messageHandler = (message: unknown) => {
@@ -87,23 +99,11 @@ const messageHandler = (message: unknown) => {
 
     switch (command.id) {
         case 'nodeEnvironmentStartupCommand':
-            handleStartupCommand(command).catch((e) => {
-                emitEvent<NodeEnvironmentEvent>(process, {
-                    id: 'nodeEnvironmentInitFailedEvent',
-                    error: toError(e).message,
-                });
-            });
+            handleStartupCommand(command).catch(reportError);
             break;
 
         case 'nodeEnvironmentDisposeCommand':
-            handleDisposeCommand()
-                .then(() => process.off('message', messageHandler))
-                .then(() =>
-                    emitEvent<NodeEnvironmentEvent>(process, {
-                        id: 'nodeEnvironmentDisposedEvent',
-                    })
-                )
-                .catch(reportError);
+            handleDisposeCommand().catch(reportError);
             break;
     }
 };

@@ -142,14 +142,6 @@ export type WorkerThreadDisposeCommand = {
 export type WorkerThreadCommand = WorkerThreadStartupCommand | WorkerThreadDisposeCommand;
 
 /**
- * The event that is emitted from 'worker_thead' in case when env initialization is failed.
- */
-export type WorkerThreadInitFailedEvent = {
-    id: 'workerThreadInitFailedEvent';
-    error: string;
-};
-
-/**
  * The event that is emitted from 'worker_thead' when dispose is finished.
  */
 export type WorkerThreadDisposedEvent = {
@@ -159,7 +151,7 @@ export type WorkerThreadDisposedEvent = {
 /**
  * The event that is emitted from 'worker_thead'.
  */
-export type WorkerThreadEvent = WorkerThreadInitFailedEvent | WorkerThreadDisposedEvent;
+export type WorkerThreadEvent = WorkerThreadDisposedEvent;
 
 export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     environmentContextName?: string;

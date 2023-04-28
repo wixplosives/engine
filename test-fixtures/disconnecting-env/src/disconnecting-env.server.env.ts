@@ -1,17 +1,23 @@
 import testFeature, { serverEnv } from './disconnecting-env.feature';
 
-testFeature.setup(serverEnv, ({ run, onDispose, errorType: { errorMode } }) => {
+testFeature.setup(serverEnv, ({ run, onDispose, errorsConfig: { throwError, disposeTimeout, handleUncaught } }) => {
+    if (handleUncaught) {
+        process.on('uncaughtException', () => {
+            process.exit(1);
+        });
+    }
+
     run(() => {
-        if (errorMode === 'exception') {
+        if (throwError === 'exception') {
             throw new Error('Throwing a regular exception');
         }
-        if (errorMode === 'exit') {
+        if (throwError === 'exit') {
             process.exit(1);
         }
-        if (errorMode === 'promiseReject') {
+        if (throwError === 'promise-reject') {
             void Promise.reject('promise reject');
         }
-        if (errorMode === 'dispose-timeout') {
+        if (disposeTimeout) {
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onDispose(
                 () =>

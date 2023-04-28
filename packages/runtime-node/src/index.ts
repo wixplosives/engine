@@ -1,4 +1,3 @@
-export * from './communication-helpers';
 export * from './environments';
 export * from './forked-process';
 export * from './import-modules';

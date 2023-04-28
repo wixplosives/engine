@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
 
 import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
 import { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
@@ -107,23 +107,6 @@ export async function runElectronEnv({
         config,
         options: [...runOptions.entries()],
         env,
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    app.on('window-all-closed', async () => {
-        // Don't quit between closing one window and immediately opening another.
-        await new Promise((res) => setTimeout(res, 0));
-
-        if (BrowserWindow.getAllWindows().length === 0) {
-            try {
-                await runningEnvironment.dispose();
-            } catch (e) {
-                process.exitCode = 1;
-                // eslint-disable-next-line no-console
-                console.error(e);
-            }
-            app.quit();
-        }
     });
 
     return runningEnvironment;

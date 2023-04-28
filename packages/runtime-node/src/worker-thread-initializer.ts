@@ -2,22 +2,14 @@ import { Worker } from 'node:worker_threads';
 
 import { COM, InitializerOptions } from '@wixc3/engine-core';
 import { getApplicationMetaData } from '@wixc3/engine-core-node';
-import { deferred } from 'promise-assist';
 
-import { emitEvent, executeRemoteCall, onEvent } from './communication-helpers';
-import type {
-    WorkerThreadCommand,
-    WorkerThreadDisposeCommand,
-    WorkerThreadDisposedEvent,
-    WorkerThreadEnvironmentStartupOptions,
-    WorkerThreadEvent,
-} from './types';
+import type { WorkerThreadCommand, WorkerThreadDisposedEvent, WorkerThreadEnvironmentStartupOptions } from './types';
 import { WorkerThreadHost } from './worker-thread-host';
 
 export async function workerThreadInitializer({ communication, env }: InitializerOptions) {
     const isSingleton = env.endpointType === 'single';
     const instanceId = isSingleton ? env.env : communication.generateEnvInstanceID(env.env);
-    const envReady = communication.envReady(instanceId);
+    const envIsReady = communication.envReady(instanceId);
 
     const { workerThreadEntryPath, requiredModules, basePath, config, featureName, features } =
         await getApplicationMetaData(communication);
@@ -49,36 +41,30 @@ export async function workerThreadInitializer({ communication, env }: Initialize
         env,
     };
 
-    const workerInitFailed = deferred<string>();
-
-    onEvent<WorkerThreadEvent>(worker, (e) => {
-        if (e.id === 'workerThreadInitFailedEvent') {
-            workerInitFailed.reject(e.error);
-        }
-    });
-
-    emitEvent<WorkerThreadCommand>(worker, {
+    worker.postMessage({
         id: 'workerThreadStartupCommand',
         runOptions,
-    });
+    } as WorkerThreadCommand);
 
-    const initResult = await Promise.race([envReady, workerInitFailed.promise]);
-    // envReady is Promise<void>, so if race result is string - it is initFailed promise
-    if (typeof initResult === 'string') {
-        throw new Error(initResult);
-    }
+    await envIsReady;
 
     return {
         id: instanceId,
         dispose: async () => {
-            await executeRemoteCall<WorkerThreadDisposeCommand, WorkerThreadDisposedEvent>(
-                worker,
-                {
+            return new Promise((resolve, reject) => {
+                const handleWorkerDisposed = (e: unknown) => {
+                    if ((e as WorkerThreadDisposedEvent).id === 'workerThreadDisposedEvent') {
+                        worker.off('message', handleWorkerDisposed);
+                    }
+                    worker.terminate().then(resolve).catch(reject);
+                };
+
+                worker.on('message', handleWorkerDisposed);
+
+                worker.postMessage({
                     id: 'workerThreadDisposeCommand',
-                },
-                'workerThreadDisposedEvent'
-            );
-            await worker.terminate();
+                } as WorkerThreadCommand);
+            });
         },
     };
 }

@@ -1,13 +1,11 @@
 import { parentPort, type MessagePort } from 'node:worker_threads';
 
 import { COM, reportError } from '@wixc3/engine-core';
-import { toError } from '@wixc3/common';
 
 import { importModules } from './import-modules';
 import { runNodeEnvironment } from './node-environment';
 import { WorkerThreadHost } from './worker-thread-host';
 import { WorkerThreadCommand, WorkerThreadEvent, WorkerThreadStartupCommand } from './types';
-import { emitEvent } from './communication-helpers';
 
 let disposeNodeEnv: () => Promise<void> | undefined;
 
@@ -63,20 +61,14 @@ const messageHandler = (message: unknown) => {
 
     switch (workerThreadCommand.id) {
         case 'workerThreadStartupCommand':
-            handleStartupMessage(workerThreadCommand).catch((e) => {
-                ensureWorkerThreadContext(parentPort);
-                emitEvent<WorkerThreadEvent>(parentPort, {
-                    id: 'workerThreadInitFailedEvent',
-                    error: toError(e).message,
-                });
-            });
+            handleStartupMessage(workerThreadCommand).catch(reportError);
             break;
 
         case 'workerThreadDisposeCommand':
             Promise.all([disposeNodeEnv])
                 .then(() => {
                     ensureWorkerThreadContext(parentPort);
-                    emitEvent<WorkerThreadEvent>(parentPort, { id: 'workerThreadDisposedEvent' });
+                    parentPort.postMessage({ id: 'workerThreadDisposedEvent' } as WorkerThreadEvent);
                 })
                 .catch(reportError);
             break;

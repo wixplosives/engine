@@ -1,20 +1,14 @@
 import { spawn, SpawnOptions } from 'child_process';
-import { deferred, timeout } from 'promise-assist';
 import treeKill from 'tree-kill';
 import { promisify } from 'util';
 const promisifiedTreeKill = promisify(treeKill);
 
 import type { EnvironmentInitializer, InitializerOptions } from '@wixc3/engine-core';
 import { IEngineRuntimeArguments, IPCHost } from '@wixc3/engine-core-node';
-import { emitEvent, executeRemoteCall, NodeEnvironmentStartupOptions, onEvent } from '@wixc3/engine-runtime-node';
+import { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
 
 import { ExpirableList } from '../expirable-list';
-import {
-    NodeEnvironmentCommand,
-    NodeEnvironmentDisposeCommand,
-    NodeEnvironmentDisposedEvent,
-    NodeEnvironmentEvent,
-} from '../types';
+import { NodeEnvironmentCommand, NodeEnvironmentDisposeCommand, NodeEnvironmentEvent } from '../types';
 
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
@@ -26,17 +20,17 @@ export interface ProcessExitDetails {
     /**
      * The exit code if the child exited on its own
      */
-    exitCode: number | null;
+    exitCode?: number;
 
     /**
      * The signal by which the child process was terminated
      */
-    signal: NodeJS.Signals | null;
+    signal?: NodeJS.Signals;
 
     /**
      * The last output process sent to stderr stream
      */
-    errorMessage: string;
+    errorMessage?: string;
 }
 
 /**
@@ -54,7 +48,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     },
     InitializeNodeEnvironmentOptions
 > = ({ communication, env, runtimeArguments, processOptions, environmentStartupOptions }) => {
-    const envReady = communication.envReady(env.env);
+    const environmentIsReady = communication.envReady(env.env);
 
     const nodeEnvStartupArguments: NodeEnvironmentStartupOptions = {
         ...runtimeArguments,
@@ -82,17 +76,10 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         }
     );
 
-    const envInitFailed = deferred();
-    onEvent<NodeEnvironmentEvent>(child, (e) => {
-        if (e.id === 'nodeEnvironmentInitFailedEvent') {
-            envInitFailed.reject(e.error);
-        }
-    });
-
-    emitEvent<NodeEnvironmentCommand>(child, {
+    child.send({
         id: 'nodeEnvironmentStartupCommand',
         runOptions: nodeEnvStartupArguments,
-    });
+    } as NodeEnvironmentCommand);
 
     const host = new IPCHost(child);
     communication.registerEnv(env.env, host);
@@ -113,24 +100,43 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     return {
         id: env.env,
         dispose: async () => {
-            const envDisposed = executeRemoteCall<NodeEnvironmentDisposeCommand, NodeEnvironmentDisposedEvent>(
-                child,
-                { id: 'nodeEnvironmentDisposeCommand' },
-                'nodeEnvironmentDisposedEvent'
-            );
+            return new Promise((resolve, reject) => {
+                const handleChildDisposed = (e: unknown) => {
+                    if ((e as NodeEnvironmentEvent).id === 'nodeEnvironmentDisposedEvent') {
+                        child.off('message', handleChildDisposed);
+                    }
 
-            // wait for dispose finished or timeout
-            await Promise.allSettled([timeout(envDisposed, 1_000)]);
+                    if (!child.killed) {
+                        if (child.pid) {
+                            promisifiedTreeKill(child.pid).then(resolve).catch(reject);
+                        } else {
+                            child.kill() ? resolve() : reject();
+                        }
+                    }
+                };
 
-            if (!child.killed) {
-                child.pid ? await promisifiedTreeKill(child.pid) : child.kill();
-            }
+                child.on('message', handleChildDisposed);
+
+                child.send({ id: 'nodeEnvironmentDisposeCommand' } as NodeEnvironmentDisposeCommand);
+            });
         },
         onExit: (cb: (details: ProcessExitDetails) => void) => {
             child.once('exit', (exitCode, signal) => {
-                cb({ exitCode, signal, errorMessage: errorChunks.getItems().join('') });
+                const exitResult = {} as ProcessExitDetails;
+                if (exitCode !== null) {
+                    exitResult.exitCode = exitCode;
+                }
+                if (signal !== null) {
+                    exitResult.signal = signal;
+                }
+                const errors = errorChunks.getItems();
+                if (errors.length > 0) {
+                    exitResult.errorMessage = errors.join('');
+                }
+
+                cb(exitResult);
             });
         },
-        environmentIsReady: Promise.race([envReady, envInitFailed.promise]),
+        environmentIsReady,
     };
 };

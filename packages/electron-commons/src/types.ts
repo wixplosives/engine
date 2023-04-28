@@ -26,14 +26,6 @@ export type NodeEnvironmentDisposeCommand = {
 export type NodeEnvironmentCommand = NodeEnvironmentStartupCommand | NodeEnvironmentDisposeCommand;
 
 /**
- * The event that is emitted from node env when initialization is failed.
- */
-export type NodeEnvironmentInitFailedEvent = {
-    id: 'nodeEnvironmentInitFailedEvent';
-    error: string;
-};
-
-/**
  * The event that is emitted from node env when dispose is finished.
  */
 export type NodeEnvironmentDisposedEvent = {
@@ -43,7 +35,7 @@ export type NodeEnvironmentDisposedEvent = {
 /**
  * The event that is emitted from node env.
  */
-export type NodeEnvironmentEvent = NodeEnvironmentDisposedEvent | NodeEnvironmentInitFailedEvent;
+export type NodeEnvironmentEvent = NodeEnvironmentDisposedEvent;
 
 export interface IExtenalFeatureDescriptor {
     envEntries: Record<string, Record<string, string>>;
