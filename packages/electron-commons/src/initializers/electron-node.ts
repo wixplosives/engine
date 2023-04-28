@@ -10,6 +10,8 @@ import { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
 import { ExpirableList } from '../expirable-list';
 import { NodeEnvironmentCommand, NodeEnvironmentDisposeCommand, NodeEnvironmentEvent } from '../types';
 
+const TreeKillProcessNotFoundErrorCode = 128;
+
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
     environmentStartupOptions?: Partial<NodeEnvironmentStartupOptions>;
@@ -108,7 +110,17 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
 
                     if (!child.killed) {
                         if (child.pid) {
-                            promisifiedTreeKill(child.pid).then(resolve).catch(reject);
+                            promisifiedTreeKill(child.pid)
+                                .then(resolve)
+                                .catch((e: any) => {
+                                    if (e.code === TreeKillProcessNotFoundErrorCode) {
+                                        // if tree kill failed with process not found error, ignore this erro
+                                        // cause in this case process has exited before we try to kill it
+                                        resolve();
+                                    } else {
+                                        reject(e);
+                                    }
+                                });
                         } else {
                             child.kill() ? resolve() : reject();
                         }

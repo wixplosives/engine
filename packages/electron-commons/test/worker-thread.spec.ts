@@ -32,7 +32,6 @@ describe('workerthread environment type', () => {
         await expect(exitPromise).to.eventually.have.property('exitCode').eql(0);
     });
 
-    // eslint-disable-next-line no-only-tests/no-only-tests
     it('correctly disposes worker_thread env', async () => {
         const { dispose } = await setupRunningEnv(`${workerThreadFeature.id}/${emptyFeature.id}`);
 
