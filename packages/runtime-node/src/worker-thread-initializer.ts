@@ -51,12 +51,12 @@ export async function workerThreadInitializer({ communication, env }: Initialize
     return {
         id: instanceId,
         dispose: async () => {
-            return new Promise((resolve, reject) => {
+            return new Promise<void>((resolve) => {
                 const handleWorkerDisposed = (e: unknown) => {
                     if ((e as WorkerThreadDisposedEvent).id === 'workerThreadDisposedEvent') {
                         worker.off('message', handleWorkerDisposed);
                     }
-                    worker.terminate().then(resolve).catch(reject);
+                    resolve();
                 };
 
                 worker.on('message', handleWorkerDisposed);

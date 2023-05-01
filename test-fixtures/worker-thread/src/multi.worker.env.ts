@@ -1,14 +1,14 @@
 import multiFeature, { workerEnv } from './multi.feature';
 
 export interface MultiWorkerEcho {
-    ping: () => string;
+    echo: (value: string) => string;
 }
 
-multiFeature.setup(workerEnv, ({ workerResponseConfig: { response } }) => {
+multiFeature.setup(workerEnv, () => {
     return {
         multiWorkerEcho: {
-            ping: () => {
-                return response;
+            echo: (value) => {
+                return `${value} from worker`;
             },
         },
     };

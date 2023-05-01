@@ -1,11 +1,9 @@
 import fs from '@file-services/node';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { sleep } from 'promise-assist';
 
-import workerThreadFeature, { serverEnv } from '@fixture/worker-thread/dist/worker-thread.feature';
-import multiFeature from '@fixture/worker-thread/dist/multi.feature';
-import emptyFeature from '@fixture/worker-thread/dist/empty.feature';
+import workerThreadFeature, { serverEnv, WorkerService } from '@fixture/worker-thread/dist/worker-thread.feature';
+import multiFeature, { multiServerEnv, MultiWorkerService } from '@fixture/worker-thread/dist/multi.feature';
 
 import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env';
 
@@ -22,21 +20,30 @@ const setupRunningEnv = (featureId: string) =>
     });
 
 describe('workerthread environment type', () => {
-    it('initializes and exposes API', async () => {
-        const { exitPromise } = await setupRunningEnv(workerThreadFeature.id);
-        await expect(exitPromise).to.eventually.have.property('exitCode').eql(0);
+    it('initializes worker, calls API and disposes', async () => {
+        const { dispose, communication } = await setupRunningEnv(workerThreadFeature.id);
+
+        const workerService = communication.apiProxy<WorkerService>(
+            { id: serverEnv.env },
+            { id: `${workerThreadFeature.id}.workerService` }
+        );
+
+        const response = await workerService.initAndCallWorkerEcho('hello');
+        expect(response).to.eql('hello from worker');
+
+        await dispose();
     });
 
-    it('initializes multi workerthread environment and exposes API', async () => {
-        const { exitPromise } = await setupRunningEnv(`${workerThreadFeature.id}/${multiFeature.id}`);
-        await expect(exitPromise).to.eventually.have.property('exitCode').eql(0);
-    });
+    it('initializes multiple workers, calls API and disposes', async () => {
+        const { dispose, communication } = await setupRunningEnv(`${workerThreadFeature.id}/${multiFeature.id}`);
 
-    it('correctly disposes worker_thread env', async () => {
-        const { dispose } = await setupRunningEnv(`${workerThreadFeature.id}/${emptyFeature.id}`);
+        const multiWorkerService = communication.apiProxy<MultiWorkerService>(
+            { id: multiServerEnv.env },
+            { id: `${multiFeature.id}.multiWorkersService` }
+        );
 
-        // wait for worker thread being initialized inside feature
-        await sleep(1000);
+        const response = await multiWorkerService.initAndCallWorkersEcho(['hello1', 'hello2', 'hello3']);
+        expect(response).to.eql(['hello1 from worker', 'hello2 from worker', 'hello3 from worker']);
 
         await dispose();
     });

@@ -51,6 +51,7 @@ export const setupRunningNodeEnv = async ({
     onExit(environmentExit.resolve);
 
     return {
+        communication,
         onExit,
         dispose,
         exitPromise: environmentExit.promise,

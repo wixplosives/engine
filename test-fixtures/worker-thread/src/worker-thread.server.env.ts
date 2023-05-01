@@ -1,21 +1,20 @@
 import { workerThreadInitializer } from '@wixc3/engine-runtime-node';
 import workerThreadFeature, { serverEnv, workerEnv } from './worker-thread.feature';
 
-workerThreadFeature.setup(serverEnv, ({ run, workerEcho, workerResponseConfig }, { COM: { communication } }) => {
-    run(async () => {
-        const { dispose: disposeWorker } = await workerThreadInitializer({
-            communication,
-            env: workerEnv,
-        });
+workerThreadFeature.setup(serverEnv, ({ onDispose, workerEcho }, { COM: { communication } }) => {
+    return {
+        workerService: {
+            initAndCallWorkerEcho: async (value) => {
+                const { dispose: disposeWorker } = await workerThreadInitializer({
+                    communication,
+                    env: workerEnv,
+                });
 
-        const response = await workerEcho.ping();
+                onDispose(disposeWorker);
 
-        await disposeWorker();
-
-        if (response === workerResponseConfig.response) {
-            process.exit(0);
-        } else {
-            process.exit(1);
-        }
-    });
+                const result = await workerEcho.echo(value);
+                return result;
+            },
+        },
+    };
 });

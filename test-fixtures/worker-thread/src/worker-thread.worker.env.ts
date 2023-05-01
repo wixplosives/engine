@@ -1,14 +1,14 @@
 import workerThreadFeature, { workerEnv } from './worker-thread.feature';
 
 export interface WorkerEcho {
-    ping: () => string;
+    echo: (value: string) => string;
 }
 
-workerThreadFeature.setup(workerEnv, ({ workerResponseConfig: { response } }) => {
+workerThreadFeature.setup(workerEnv, () => {
     return {
         workerEcho: {
-            ping: () => {
-                return response;
+            echo: (value) => {
+                return `${value} from worker`;
             },
         },
     };
