@@ -16,9 +16,6 @@
     "@wixc3/resolve-directory-context": "^3.0.5",
     "tree-kill": "^1.2.2"
   },
-  "devDependencies": {
-    "@fixture/disconnecting-env": "^34.0.0"
-  },
   "files": [
     "dist",
     "src",

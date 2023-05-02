@@ -2,7 +2,7 @@ import { Config, Feature, Environment, COM } from '@wixc3/engine-core';
 
 export const serverEnv = new Environment('server', 'node', 'single');
 
-export type ErrorsConfig = {
+export type ErrorTypeConfig = {
     throwError: 'exception' | 'exit' | 'promise-reject' | false;
     handleUncaught: boolean;
 };
@@ -10,7 +10,7 @@ export type ErrorsConfig = {
 export default new Feature({
     id: 'disconnecting-env',
     api: {
-        errorsConfig: Config.withType<ErrorsConfig>().defineEntity({
+        errorsConfig: Config.withType<ErrorTypeConfig>().defineEntity({
             throwError: 'exit',
             handleUncaught: false,
         }),

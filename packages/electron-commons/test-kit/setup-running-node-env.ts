@@ -7,6 +7,7 @@ import { initializeNodeEnvironment, ProcessExitDetails } from '@wixc3/engine-ele
 import { findFeatures } from '@wixc3/engine-scripts';
 
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
+const workerThreadEntryPath = require.resolve('@wixc3/engine-runtime-node/worker-thread-entry');
 
 export interface SetupRunningEnvOptions {
     featurePath: string;
@@ -33,6 +34,7 @@ export const setupRunningNodeEnv = async ({
             basePath: featurePath,
             outputPath: fs.join(featurePath, 'dist-app'),
             nodeEntryPath,
+            workerThreadEntryPath,
             config: config ?? [],
             features: Array.from(features.entries()),
         },
@@ -49,6 +51,7 @@ export const setupRunningNodeEnv = async ({
     onExit(environmentExit.resolve);
 
     return {
+        communication,
         onExit,
         dispose,
         exitPromise: environmentExit.promise,

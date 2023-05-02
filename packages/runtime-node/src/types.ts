@@ -109,14 +109,49 @@ export interface IConfigDefinition {
     filePath: string;
 }
 
-export const isWorkerThreadEnvStartupMessage = (value: unknown): value is IWorkerThreadEnvStartupMessage => {
-    return (value as IWorkerThreadEnvStartupMessage).id === 'workerThreadStartupOptions';
+export type WorkerThreadEnvironmentStartupOptions = {
+    requiredModules?: string[];
+    basePath: string;
+    environmentName: string;
+    config: TopLevelConfig;
+    environmentContextName?: string;
+    featureName: string;
+    features: [featureName: string, featureDefinition: Required<IStaticFeatureDefinition>][];
+    parentEnvName: string;
+    env: Environment;
 };
 
-export type IWorkerThreadEnvStartupMessage = {
-    id: 'workerThreadStartupOptions';
-    runOptions: NodeEnvironmentStartupOptions;
+/**
+ * The command that is sent to 'worker_thead' to start environment initialization process.
+ */
+export type WorkerThreadStartupCommand = {
+    id: 'workerThreadStartupCommand';
+    runOptions: WorkerThreadEnvironmentStartupOptions;
 };
+
+/**
+ * The command that is sent to 'worker_thead' to start dispose process.
+ */
+export type WorkerThreadDisposeCommand = {
+    id: 'workerThreadDisposeCommand';
+};
+
+/**
+ * The command that is sent to 'worker_thead'.
+ */
+export type WorkerThreadCommand = WorkerThreadStartupCommand | WorkerThreadDisposeCommand;
+
+/**
+ * The event that is emitted from 'worker_thead' when dispose is finished.
+ */
+export type WorkerThreadDisposedEvent = {
+    id: 'workerThreadDisposedEvent';
+};
+
+/**
+ * The event that is emitted from 'worker_thead'.
+ */
+export type WorkerThreadEvent = WorkerThreadDisposedEvent;
 
 export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     environmentContextName?: string;

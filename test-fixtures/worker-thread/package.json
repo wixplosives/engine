@@ -1,0 +1,14 @@
+{
+  "name": "@fixture/worker-thread",
+  "version": "34.0.0",
+  "private": true,
+  "dependencies": {
+    "@wixc3/engine-core": "^34.0.0",
+    "@wixc3/engine-runtime-node": "^34.0.0"
+  },
+  "license": "unlicensed",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "author": "Wix.com"
+}

@@ -1,12 +1,12 @@
-import fs from '@file-services/node';
-import type { ProcessExitDetails } from '../../src';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import type { IOType } from 'child_process';
-import { platform } from 'os';
+
+import fs from '@file-services/node';
+import { TopLevelConfig } from '@wixc3/engine-core';
+
 import testFeature, { serverEnv } from '@fixture/disconnecting-env/dist/disconnecting-env.feature';
 import { setupRunningNodeEnv } from '../../test-kit/setup-running-node-env';
-import { TopLevelConfig } from '@wixc3/engine-core';
 
 const { expect } = chai;
 chai.use(chaiAsPromised);
@@ -28,50 +28,35 @@ const setupRunningEnv = ({ featuresConfig, stdio }: SetupRunningFeatureOptions) 
     });
 
 describe('onDisconnectHandler for node environment initializer', () => {
-    const expectedErrorResult: ProcessExitDetails = {
-        exitCode: 1,
-        signal: null,
-        errorMessage: '',
-    };
-
-    // windows does not support signals, so process termination
-    // results in `exitCode: 1` instead of `signal: 'SIGTERM'` for win32 platform
-    const expectedTerminationResult: ProcessExitDetails = {
-        exitCode: platform() === 'win32' ? 1 : null,
-        signal: platform() === 'win32' ? null : 'SIGTERM',
-        errorMessage: '',
-    };
-
     describe('without own uncaughtException handling', () => {
         it('should catch on dispose of env', async () => {
             const { dispose, exitPromise } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: false } })],
             });
 
-            dispose();
+            await dispose();
 
-            await expect(exitPromise).to.eventually.deep.eq(expectedTerminationResult);
+            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 0 });
         });
-
         it('should catch on env exit intentionally', async () => {
             const { exitPromise } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit' } })],
             });
-            await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
+            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
         it('should catch on env throwing uncaught exception', async () => {
             const { exitPromise } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception' } })],
             });
 
-            await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
+            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
         it('should catch on env unhandled promise rejection', async () => {
             const { exitPromise } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'promise-reject' } })],
             });
 
-            await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
+            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
         it('should expose error when env throwing uncaught exception', async () => {
             const { exitPromise } = await setupRunningEnv({
@@ -90,29 +75,29 @@ describe('onDisconnectHandler for node environment initializer', () => {
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: false, handleUncaught } })],
             });
 
-            dispose();
+            await dispose();
 
-            await expect(exitPromise).to.eventually.deep.eq(expectedTerminationResult);
+            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 0 });
         });
         it('should catch on env exit intentionally', async () => {
             const { exitPromise } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit', handleUncaught } })],
             });
-            await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
+            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
         it('should catch on env throwing uncaught exception', async () => {
             const { exitPromise } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception', handleUncaught } })],
             });
 
-            await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
+            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
         it('should catch on env unhandled promise rejection', async () => {
             const { exitPromise } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'promise-reject', handleUncaught } })],
             });
 
-            await expect(exitPromise).to.eventually.deep.eq(expectedErrorResult);
+            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
     });
 });

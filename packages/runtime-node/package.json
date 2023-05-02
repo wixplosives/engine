@@ -21,7 +21,8 @@
     "!dist/test",
     "src",
     "!*/tsconfig.{json,tsbuildinfo}",
-    "templates"
+    "templates",
+    "worker-thread-entry.js"
   ],
   "license": "MIT",
   "publishConfig": {

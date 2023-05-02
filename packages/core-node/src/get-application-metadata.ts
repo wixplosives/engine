@@ -1,12 +1,12 @@
 import { AsyncApi, Communication } from '@wixc3/engine-core';
-import { MetadataCollectionAPI, metadataApiToken } from './types';
+import { IEngineRuntimeArguments, MetadataCollectionAPI, metadataApiToken } from './types';
 import { METADATA_PROVIDER_ENV_ID, ENGINE_ROOT_ENVIRONMENT_ID } from './constants';
 
 /**
  * gets application metadata using `MetadataCollectionAPI` that should be registered for `ROOT_ENGINE_ENV_ID` environment
  * @param com The communication instance that have registered hosts for `ROOT_ENGINE_ENV_ID` and `METADATA_PROVIDER_ENV_ID`
  */
-export const getApplicationMetaData = async (com: Communication) => {
+export const getApplicationMetaData = async (com: Communication): Promise<IEngineRuntimeArguments> => {
     const api = getMetadataApi(com);
     const result = await api.getRuntimeArguments();
 

@@ -12,6 +12,9 @@
     },
     {
       "path": "../../scripts/src"
+    },
+    {
+      "path": "../../../test-fixtures/worker-thread/src"
     }
   ]
 }

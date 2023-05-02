@@ -5,14 +5,37 @@ export interface IWindowLaunchOptions {
     devport?: number;
 }
 
-export const isNodeEnvStartupMessage = (value: unknown): value is INodeEnvStartupMessage => {
-    return (value as INodeEnvStartupMessage).id === 'nodeStartupOptions';
-};
-
-export type INodeEnvStartupMessage = {
-    id: 'nodeStartupOptions';
+/**
+ * The command that is sent to node env to start environment initialization process.
+ */
+export type NodeEnvironmentStartupCommand = {
+    id: 'nodeEnvironmentStartupCommand';
     runOptions: NodeEnvironmentStartupOptions;
 };
+
+/**
+ * The command that is sent to node env to start environment disposal process.
+ */
+export type NodeEnvironmentDisposeCommand = {
+    id: 'nodeEnvironmentDisposeCommand';
+};
+
+/**
+ * The command that is sent to node env.
+ */
+export type NodeEnvironmentCommand = NodeEnvironmentStartupCommand | NodeEnvironmentDisposeCommand;
+
+/**
+ * The event that is emitted from node env when dispose is finished.
+ */
+export type NodeEnvironmentDisposedEvent = {
+    id: 'nodeEnvironmentDisposedEvent';
+};
+
+/**
+ * The event that is emitted from node env.
+ */
+export type NodeEnvironmentEvent = NodeEnvironmentDisposedEvent;
 
 export interface IExtenalFeatureDescriptor {
     envEntries: Record<string, Record<string, string>>;

@@ -25,6 +25,8 @@ export const initializeNodeEnvironmentInBrowser: EnvironmentInitializer<
         runtimeArguments,
         processOptions,
     });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     window.addEventListener('beforeunload', dispose);
 
     await environmentIsReady;

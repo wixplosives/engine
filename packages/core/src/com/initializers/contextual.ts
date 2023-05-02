@@ -17,14 +17,12 @@ export interface ContextualEnvironmentInitializerOptions<
     envInitializers: EnvironmentInitializers<ENVS, EnvToken>;
     env: ContextualEnvironment<string, EnvironmentMode, ENVS>;
 }
-/**
- * TODO: better inference of the return type of the initialzier function
- */
+
 export function initializeContextualEnv<ENVS extends Environment[], EnvToken extends Promise<{ id: string }>>({
     communication,
     env: { env, environments },
     envInitializers,
-}: ContextualEnvironmentInitializerOptions<ENVS, EnvToken>) {
+}: ContextualEnvironmentInitializerOptions<ENVS, EnvToken>): EnvToken {
     const runtimeEnvironmentName = communication.resolvedContexts[env]!;
 
     const activeEnvironment = environments.find((contextualEnv) => contextualEnv.env === runtimeEnvironmentName);
