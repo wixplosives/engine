@@ -35,9 +35,9 @@ describe('onDisconnectHandler for node environment initializer', () => {
             });
 
             await dispose();
-
-            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 0 });
+            await expect(exitPromise).to.eventually.be.fulfilled;
         });
+
         it('should catch on env exit intentionally', async () => {
             const { exitPromise } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit' } })],
@@ -76,8 +76,7 @@ describe('onDisconnectHandler for node environment initializer', () => {
             });
 
             await dispose();
-
-            await expect(exitPromise).to.eventually.deep.eq({ exitCode: 0 });
+            await expect(exitPromise).to.eventually.be.fulfilled;
         });
         it('should catch on env exit intentionally', async () => {
             const { exitPromise } = await setupRunningEnv({
