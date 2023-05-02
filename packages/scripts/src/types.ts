@@ -18,7 +18,7 @@ export interface IFeatureTarget {
 export interface IFeatureDefinition extends Required<IStaticFeatureDefinition>, IFeatureModule {
     isRoot: boolean;
     directoryPath: string;
-    toJSON(): unknown;
+    toJSON(): IStaticFeatureDefinition;
 }
 
 export interface IFeatureModule {

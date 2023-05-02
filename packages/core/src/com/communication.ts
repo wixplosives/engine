@@ -43,7 +43,7 @@ import { SERVICE_CONFIG } from '../symbols';
 import { serializeError } from '../helpers';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { Environment, ContextualEnvironment, EnvironmentMode } from '../entities/env';
-import type { IDTag } from '../types';
+import { type IDTag, isDisposable } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
 import { isMessage } from './message-types';
@@ -335,6 +335,8 @@ export class Communication {
         for (const { host, id } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
+            }
+            if (isDisposable(host)) {
                 host.dispose();
             }
             this.removeMessageHandler(host);

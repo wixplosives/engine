@@ -4,7 +4,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha \"test/**/*.unit.ts?(x)\""
+    "test": "yarn test:unit && yarn test:spec",
+    "test:unit": "mocha \"test/**/*.unit.ts?(x)\"",
+    "test:spec": "mocha \"test/**/*.spec.ts?(x)\""
   },
   "peerDependencies": {
     "playwright-core": ">=1.0.0"

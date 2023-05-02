@@ -1,8 +1,10 @@
 import { MessagePort, Worker } from 'node:worker_threads';
 
-import { BaseHost, Message } from '@wixc3/engine-core';
+import { BaseHost, IDisposable, Message } from '@wixc3/engine-core';
 
-export class WorkerThreadHost extends BaseHost {
+export class WorkerThreadHost extends BaseHost implements IDisposable {
+    private disposed = false;
+
     constructor(private host: Worker | MessagePort) {
         super();
         host.on('message', this.onMessage);
@@ -25,6 +27,14 @@ export class WorkerThreadHost extends BaseHost {
 
     public postMessage(data: Message): void {
         this.host.postMessage(data);
+    }
+
+    public dispose() {
+        this.host.off('message', this.onMessage);
+    }
+
+    public isDisposed(): boolean {
+        return this.disposed;
     }
 
     private onMessage: (...args: any[]) => void = (message) => {

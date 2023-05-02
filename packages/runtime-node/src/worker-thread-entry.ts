@@ -53,7 +53,11 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         childEnvName: environmentContextName,
     });
 
-    disposeNodeEnv = runningNodeEnv.dispose;
+    disposeNodeEnv = () => {
+        ensureWorkerThreadContext(parentPort);
+        parentPort.off('message', messageHandler);
+        return runningNodeEnv.dispose();
+    };
 };
 
 const messageHandler = (message: unknown) => {
@@ -65,7 +69,7 @@ const messageHandler = (message: unknown) => {
             break;
 
         case 'workerThreadDisposeCommand':
-            Promise.all([disposeNodeEnv])
+            Promise.all([disposeNodeEnv()])
                 .then(() => {
                     ensureWorkerThreadContext(parentPort);
                     parentPort.postMessage({ id: 'workerThreadDisposedEvent' } as WorkerThreadEvent);
