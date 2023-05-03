@@ -1695,10 +1695,10 @@
     "@webassemblyjs/ast" "1.11.5"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^8.1.0":
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-8.1.0.tgz#5121df75db75ce0cd2d677cc1c99976457af9f3c"
-  integrity sha512-V4+S0QGa+KP7PSuYlt2Ub6X7gPgbCdAl7AQOaYdT9ixVtqS21mBnSVD8hLGJJCq3UAMZohfIVd2BNe9UY/dvpw==
+"@wixc3/common@^8.1.0", "@wixc3/common@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-8.2.0.tgz#3fdeda56d75229b512f09313a30ea10c430bc10c"
+  integrity sha512-xk3GWw1XiQPVs7SM362h+2VjIJQgnZdmE4zxYrz4x4kcwdmBYWGYWVdMALJtf823IvTTeCtXei6p4aowbtFBmA==
   dependencies:
     "@file-services/path" "^7.2.5"
     "@file-services/types" "^7.2.5"
