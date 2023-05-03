@@ -55,8 +55,8 @@ export async function workerThreadInitializer({ communication, env }: Initialize
                 const handleWorkerDisposed = (e: unknown) => {
                     if ((e as WorkerThreadDisposedEvent).id === 'workerThreadDisposedEvent') {
                         worker.off('message', handleWorkerDisposed);
+                        resolve();
                     }
-                    resolve();
                 };
 
                 worker.on('message', handleWorkerDisposed);

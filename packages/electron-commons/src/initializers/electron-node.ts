@@ -114,7 +114,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
                                 .then(resolve)
                                 .catch((e: any) => {
                                     if (e.code === TreeKillProcessNotFoundErrorCode) {
-                                        // if tree kill failed with process not found error, ignore this erro
+                                        // if tree kill failed with process not found error, ignore this error
                                         // cause in this case process has exited before we try to kill it
                                         resolve();
                                     } else {
