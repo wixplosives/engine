@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-runtime-node",
-  "version": "35.0.0",
+  "version": "35.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,8 +9,8 @@
   "dependencies": {
     "@wixc3/common": "^8.1.0",
     "@wixc3/cross-performance": "^35.0.0",
-    "@wixc3/engine-core": "^35.0.0",
-    "@wixc3/engine-core-node": "^35.0.0",
+    "@wixc3/engine-core": "^35.0.1",
+    "@wixc3/engine-core-node": "^35.0.1",
     "@wixc3/patterns": "^8.1.0",
     "create-listening-server": "^2.1.0",
     "minimist": "^1.2.8",
