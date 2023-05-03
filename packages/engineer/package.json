@@ -24,7 +24,7 @@
     "@wixc3/engine-dashboard": "^35.0.1",
     "@wixc3/engine-runtime-node": "^35.0.1",
     "@wixc3/engine-scripts": "^35.0.1",
-    "@wixc3/patterns": "^8.1.0",
+    "@wixc3/patterns": "^8.2.0",
     "commander": "^10.0.1",
     "open": "^8.4.2",
     "socket.io": "^4.6.1",

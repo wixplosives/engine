@@ -1695,10 +1695,10 @@
     "@webassemblyjs/ast" "1.11.5"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^8.1.0":
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-8.1.0.tgz#5121df75db75ce0cd2d677cc1c99976457af9f3c"
-  integrity sha512-V4+S0QGa+KP7PSuYlt2Ub6X7gPgbCdAl7AQOaYdT9ixVtqS21mBnSVD8hLGJJCq3UAMZohfIVd2BNe9UY/dvpw==
+"@wixc3/common@^8.1.0", "@wixc3/common@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-8.2.0.tgz#3fdeda56d75229b512f09313a30ea10c430bc10c"
+  integrity sha512-xk3GWw1XiQPVs7SM362h+2VjIJQgnZdmE4zxYrz4x4kcwdmBYWGYWVdMALJtf823IvTTeCtXei6p4aowbtFBmA==
   dependencies:
     "@file-services/path" "^7.2.5"
     "@file-services/types" "^7.2.5"
@@ -1731,12 +1731,12 @@
     "@file-services/memory" "^7.2.5"
     "@wixc3/common" "^8.1.0"
 
-"@wixc3/patterns@^8.1.0":
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-8.1.0.tgz#241a539a55837ae4c147e93219864ed347a3705d"
-  integrity sha512-lD9xrRbT0bvJk+9SHxKX8YG9sodQCiVwxyH+UwdH0zu6KbTj2U0TZfe29mXiW4gk4DsBrRj7dVxoJi9quRhxjg==
+"@wixc3/patterns@^8.1.0", "@wixc3/patterns@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-8.2.0.tgz#995e5396ae59669e55d31ff1d8182925580e8ee2"
+  integrity sha512-LPzpVnZn8GTE+I7hplhJZeG3th+YZw/ZHSJvtxXYNKf7goO0/hUouWkM4zQ34NoRCNnoqtwqgDZ9zgKxh3BioA==
   dependencies:
-    "@wixc3/common" "^8.1.0"
+    "@wixc3/common" "^8.2.0"
     promise-assist "^2.0.1"
 
 "@wixc3/resolve-directory-context@^3.0.5":
