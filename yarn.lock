@@ -399,7 +399,7 @@
     lodash "^4.17.15"
     tmp-promise "^3.0.2"
 
-"@microsoft/api-documenter@^7.21.7":
+"@microsoft/api-documenter@^7.22.3":
   version "7.22.3"
   resolved "https://registry.yarnpkg.com/@microsoft/api-documenter/-/api-documenter-7.22.3.tgz#5aaeca4f4bd600d1832588efef7afa7c725c34e8"
   integrity sha512-K94pvKlePz5ow8KR8+DnjL+PXJX+Iw+C4vRS7tDM0fg17k0LvJn/lzZKQf4S5RaOwDiVjLpXUpngFO+/yURFTg==
@@ -412,7 +412,7 @@
     js-yaml "~3.13.1"
     resolve "~1.22.1"
 
-"@microsoft/api-extractor-model@7.26.7", "@microsoft/api-extractor-model@^7.26.4":
+"@microsoft/api-extractor-model@7.26.7", "@microsoft/api-extractor-model@^7.26.7":
   version "7.26.7"
   resolved "https://registry.yarnpkg.com/@microsoft/api-extractor-model/-/api-extractor-model-7.26.7.tgz#79a15375d2a161fd0efea640f774a8562582ed57"
   integrity sha512-rx3Tq632VG3ddR74kPuPbv1qmUgO2IuCvn1z16hbNWNS5RhnTQqNPWIm7NVoi6lCh2E7uxzfmdnWXIXiJhM5IQ==
@@ -421,7 +421,7 @@
     "@microsoft/tsdoc-config" "~0.16.1"
     "@rushstack/node-core-library" "3.58.0"
 
-"@microsoft/api-extractor@^7.34.4":
+"@microsoft/api-extractor@^7.34.7":
   version "7.34.7"
   resolved "https://registry.yarnpkg.com/@microsoft/api-extractor/-/api-extractor-7.34.7.tgz#2ed4318cf88766c8ed378f803d04af44599ee8c4"
   integrity sha512-8CrrYyOBWqc4XFviR1KSuHSlmJjlnC5CVpPkcFB8HXiLABUVaVWFTsOzJIwUU6z8mc4BZPZ8tSGAg/mwFDU31Q==
@@ -1695,10 +1695,10 @@
     "@webassemblyjs/ast" "1.11.5"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^8.1.0":
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-8.1.0.tgz#5121df75db75ce0cd2d677cc1c99976457af9f3c"
-  integrity sha512-V4+S0QGa+KP7PSuYlt2Ub6X7gPgbCdAl7AQOaYdT9ixVtqS21mBnSVD8hLGJJCq3UAMZohfIVd2BNe9UY/dvpw==
+"@wixc3/common@^8.1.0", "@wixc3/common@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-8.2.0.tgz#3fdeda56d75229b512f09313a30ea10c430bc10c"
+  integrity sha512-xk3GWw1XiQPVs7SM362h+2VjIJQgnZdmE4zxYrz4x4kcwdmBYWGYWVdMALJtf823IvTTeCtXei6p4aowbtFBmA==
   dependencies:
     "@file-services/path" "^7.2.5"
     "@file-services/types" "^7.2.5"
@@ -1709,27 +1709,27 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^8.1.0":
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-8.1.0.tgz#510f82181197c5aa383f1493999baa451c0a2944"
-  integrity sha512-zKNSKV7GRnyfxCp9PLLDfA6DDRIWZ2ovl2LzgJKAfSSXEK+wW7ujg1khryLVFLZcb6TWksr9HpYIc7fMQQKW8w==
+"@wixc3/docs@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-8.2.0.tgz#247ed672f74a626225eed1377f7cbae5a000e5a6"
+  integrity sha512-F/+rlgWKDk/fBPWQ2up0RE1fVLPbwkOvzuoNIKxKu125JT3NYvsfYG+s5RRBiaXbyDrw8bhB2rsTm/3SdQBXhg==
   dependencies:
-    "@microsoft/api-documenter" "^7.21.7"
-    "@microsoft/api-extractor" "^7.34.4"
-    "@microsoft/api-extractor-model" "^7.26.4"
-    "@wixc3/common" "^8.1.0"
-    "@wixc3/fs-utils" "^8.1.0"
+    "@microsoft/api-documenter" "^7.22.3"
+    "@microsoft/api-extractor" "^7.34.7"
+    "@microsoft/api-extractor-model" "^7.26.7"
+    "@wixc3/common" "^8.2.0"
+    "@wixc3/fs-utils" "^8.2.0"
     "@wixc3/typescript" "^8.0.0"
-    glob "^9.3.4"
-    yargs "^17.7.1"
+    glob "^10.2.2"
+    yargs "^17.7.2"
 
-"@wixc3/fs-utils@^8.1.0":
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-8.1.0.tgz#a7df0d5857723ba7021a7591ce1cc769072049eb"
-  integrity sha512-7fVudSJyS8yuwozQbas+RcZSTvTRUBz7PvFPOD0cG9w3wYcPWpIfJQfdMuVnb+a9BB84Jn2ksCcsKDcpgP5iuQ==
+"@wixc3/fs-utils@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-8.2.0.tgz#1f43dfdf8224c7e494a10635f96d838cc08a07c1"
+  integrity sha512-yruwW/4rpPIgMz74JS/N6cL2Tb+gLioYRmCKyvT0HU4ABylVQOhGS9UfEr/ZXUmMXFmFwLafluB7bmGDFVPuDg==
   dependencies:
     "@file-services/memory" "^7.2.5"
-    "@wixc3/common" "^8.1.0"
+    "@wixc3/common" "^8.2.0"
 
 "@wixc3/patterns@^8.1.0":
   version "8.1.0"
@@ -4406,7 +4406,7 @@ glob@^8.0.1, glob@^8.0.3:
     minimatch "^5.0.1"
     once "^1.3.0"
 
-glob@^9.2.0, glob@^9.3.4:
+glob@^9.2.0:
   version "9.3.5"
   resolved "https://registry.yarnpkg.com/glob/-/glob-9.3.5.tgz#ca2ed8ca452781a3009685607fdf025a899dfe21"
   integrity sha512-e1LleDykUz2Iu+MTYdkSsuWX8lvAjAcs0Xef0lNIu0S2wOAzuTxCJtcd9S3cijlwYF18EsU3rzb8jPVobxDh9Q==
