@@ -1,4 +1,4 @@
-import { parentPort, type MessagePort } from 'node:worker_threads';
+import { parentPort } from 'node:worker_threads';
 
 import { COM, reportError } from '@wixc3/engine-core';
 
@@ -6,12 +6,11 @@ import { importModules } from './import-modules';
 import { runNodeEnvironment } from './node-environment';
 import { WorkerThreadHost } from './worker-thread-host';
 import { WorkerThreadCommand, WorkerThreadEvent, WorkerThreadStartupCommand } from './types';
+import { createDisposables } from '@wixc3/patterns';
 
-let disposeNodeEnv: () => Promise<void> | undefined;
+const disposables = createDisposables();
 
 const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
-    ensureWorkerThreadContext(parentPort);
-
     const {
         requiredModules,
         basePath,
@@ -27,7 +26,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         await importModules(basePath, requiredModules);
     }
 
-    const host = new WorkerThreadHost(parentPort);
+    const host = new WorkerThreadHost(parentPort!);
 
     config.push(
         COM.use({
@@ -53,11 +52,10 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         childEnvName: environmentContextName,
     });
 
-    disposeNodeEnv = () => {
-        ensureWorkerThreadContext(parentPort);
-        parentPort.off('message', messageHandler);
+    disposables.add(() => {
+        parentPort!.off('message', messageHandler);
         return runningNodeEnv.dispose();
-    };
+    });
 };
 
 const messageHandler = (message: unknown) => {
@@ -69,21 +67,18 @@ const messageHandler = (message: unknown) => {
             break;
 
         case 'workerThreadDisposeCommand':
-            Promise.all([disposeNodeEnv()])
+            disposables
+                .dispose()
                 .then(() => {
-                    ensureWorkerThreadContext(parentPort);
-                    parentPort.postMessage({ id: 'workerThreadDisposedEvent' } as WorkerThreadEvent);
+                    parentPort!.postMessage({ id: 'workerThreadDisposedEvent' } as WorkerThreadEvent);
                 })
                 .catch(reportError);
             break;
     }
 };
 
-function ensureWorkerThreadContext(port: MessagePort | null): asserts port is MessagePort {
-    if (port === null) {
-        throw new Error('this file should be executed in `worker_thread` context');
-    }
+if (parentPort === null) {
+    throw new Error('this file should be executed in `worker_thread` context');
 }
 
-ensureWorkerThreadContext(parentPort);
 parentPort.on('message', messageHandler);
