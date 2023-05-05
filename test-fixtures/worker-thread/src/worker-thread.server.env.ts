@@ -5,12 +5,13 @@ workerThreadFeature.setup(serverEnv, ({ onDispose, workerEcho }, { COM: { commun
     return {
         workerService: {
             initAndCallWorkerEcho: async (value) => {
-                const { dispose: disposeWorker } = await workerThreadInitializer({
+                const worker = workerThreadInitializer({
                     communication,
                     env: workerEnv,
                 });
+                onDispose(worker.dispose);
 
-                onDispose(disposeWorker);
+                await worker.initialize();
 
                 const result = await workerEcho.echo(value);
                 return result;
