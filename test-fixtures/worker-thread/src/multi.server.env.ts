@@ -6,19 +6,20 @@ multiFeature.setup(multiServerEnv, ({ onDispose, multiWorkerEcho }, { COM: { com
         multiWorkersService: {
             initAndCallWorkersEcho: async (values: string[]) => {
                 const responses = Promise.all(
-                    values.map((value) =>
-                        workerThreadInitializer({
+                    values.map((value) => {
+                        const worker = workerThreadInitializer({
                             communication,
                             env: workerEnv,
-                        }).then(({ dispose, id }) => {
-                            onDispose(dispose);
+                        });
+                        onDispose(worker.dispose);
 
+                        return worker.initialize().then(() => {
                             const workerEcho = multiWorkerEcho.get({
-                                id,
+                                id: worker.id,
                             });
                             return workerEcho.echo(value);
-                        })
-                    )
+                        });
+                    })
                 );
 
                 return responses;
