@@ -191,8 +191,11 @@ export class NodeEnvironmentsManager {
         const rootCom = new Communication(baseHost, ENGINE_ROOT_ENVIRONMENT_ID, undefined, undefined, true);
 
         const metadataProviderHost = new BaseHost();
-        metadataProviderHost.name = METADATA_PROVIDER_ENV_ID;
-        rootCom.registerEnv(METADATA_PROVIDER_ENV_ID, metadataProviderHost);
+        // in forked mode we are launching a new process, so metadata is handled from inside forked process
+        if (mode !== 'forked') {
+            metadataProviderHost.name = METADATA_PROVIDER_ENV_ID;
+            rootCom.registerEnv(METADATA_PROVIDER_ENV_ID, metadataProviderHost);
+        }
 
         rootCom.registerAPI<MetadataCollectionAPI>(metadataApiToken, {
             getRuntimeArguments: () => {
@@ -232,10 +235,14 @@ export class NodeEnvironmentsManager {
                         host,
                         registerMessageHandler: true,
                     };
-                    connectedEnvironments[METADATA_PROVIDER_ENV_ID] = {
-                        id: METADATA_PROVIDER_ENV_ID,
-                        host: metadataProviderHost,
-                    };
+
+                    // in forked mode we are launching a new process, so metadata is handled from inside forked process
+                    if (mode !== 'forked') {
+                        connectedEnvironments[METADATA_PROVIDER_ENV_ID] = {
+                            id: METADATA_PROVIDER_ENV_ID,
+                            host: metadataProviderHost,
+                        };
+                    }
                 }
             }
 
