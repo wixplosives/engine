@@ -1,4 +1,4 @@
-import { Communication, reportError } from '@wixc3/engine-core';
+import { Communication } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/patterns';
 import { MetadataCollectionAPI, metadataApiToken } from './types';
 import { METADATA_PROVIDER_ENV_ID, ENGINE_ROOT_ENVIRONMENT_ID } from './constants';
@@ -48,12 +48,6 @@ const loadMetadata = memoizeOne((communication: Communication) => {
     // use disposables to ignore multiple dispose calls
     const disposables = createDisposables();
     disposables.add(() => metadataProviderCom.dispose());
-
-    // dispose metadataProviderCom once metadata is obtained
-    // it is done cause we don't need communication anymore once result memoized
-    // this might help with issue when client did not call dispose when exiting
-    // and this communication instance hangs process by being subscribed for events
-    metadataPromise.then(() => disposables.dispose()).catch(reportError);
 
     return {
         metadataPromise,
