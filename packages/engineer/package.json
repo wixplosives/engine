@@ -16,7 +16,7 @@
     "webpack": "^4.0.0 || ^5.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^7.2.5",
+    "@file-services/node": "^7.3.0",
     "@wixc3/common": "^8.2.0",
     "@wixc3/cross-performance": "^36.0.0",
     "@wixc3/engine-core": "^36.0.0",
