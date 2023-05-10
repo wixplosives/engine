@@ -1,4 +1,4 @@
-import { spawn, SpawnOptions } from 'child_process';
+import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import treeKill from 'tree-kill';
 import { promisify } from 'util';
 const promisifiedTreeKill = promisify(treeKill);
@@ -101,37 +101,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
 
     return {
         id: env.env,
-        dispose: async () => {
-            return new Promise((resolve, reject) => {
-                const handleChildDisposed = (e: unknown) => {
-                    if ((e as NodeEnvironmentEvent).id === 'nodeEnvironmentDisposedEvent') {
-                        child.off('message', handleChildDisposed);
-                    }
-
-                    if (!child.killed) {
-                        if (child.pid) {
-                            promisifiedTreeKill(child.pid)
-                                .then(resolve)
-                                .catch((e: any) => {
-                                    if (e.code === TreeKillProcessNotFoundErrorCode) {
-                                        // if tree kill failed with process not found error, ignore this error
-                                        // cause in this case process has exited before we try to kill it
-                                        resolve();
-                                    } else {
-                                        reject(e);
-                                    }
-                                });
-                        } else {
-                            child.kill() ? resolve() : reject();
-                        }
-                    }
-                };
-
-                child.on('message', handleChildDisposed);
-
-                child.send({ id: 'nodeEnvironmentDisposeCommand' } as NodeEnvironmentDisposeCommand);
-            });
-        },
+        dispose: () => disposeChildProcess(child),
         onExit: (cb: (details: ProcessExitDetails) => void) => {
             child.once('exit', (exitCode, signal) => {
                 const exitResult = {} as ProcessExitDetails;
@@ -152,3 +122,57 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         environmentIsReady,
     };
 };
+
+function disposeChildProcess(target: ChildProcess): Promise<void> {
+    return new Promise((resolve, reject) => {
+        function killTree() {
+            ensureChildProcessTreeKilled(target).then(resolve).catch(reject);
+        }
+
+        const handleChildDisposed = (e: unknown) => {
+            if ((e as NodeEnvironmentEvent).id === 'nodeEnvironmentDisposedEvent') {
+                target.off('message', handleChildDisposed);
+                killTree();
+            }
+        };
+
+        if (target.connected) {
+            try {
+                target.on('message', handleChildDisposed);
+                target.send({ id: 'nodeEnvironmentDisposeCommand' } as NodeEnvironmentDisposeCommand);
+            } catch (e: any) {
+                // process may disconnect in between our calls to 'connected' property and 'send' function
+                // so still checking if error is related to process disconnect
+                if (e.code === 'ERR_IPC_CHANNEL_CLOSED') {
+                    killTree();
+                } else {
+                    reject(e);
+                }
+            }
+        } else {
+            killTree();
+        }
+    });
+}
+
+function ensureChildProcessTreeKilled(target: ChildProcess): Promise<void> {
+    return new Promise((resolve, reject) => {
+        if (!target.killed) {
+            if (target.pid) {
+                promisifiedTreeKill(target.pid)
+                    .then(resolve)
+                    .catch((e: any) => {
+                        if (e.code === TreeKillProcessNotFoundErrorCode) {
+                            // if tree kill failed with process not found error, ignore this error
+                            // cause in this case process has exited before we try to kill it
+                            resolve();
+                        } else {
+                            reject(e);
+                        }
+                    });
+            } else {
+                target.kill() ? resolve() : reject();
+            }
+        }
+    });
+}
