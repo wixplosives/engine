@@ -21,6 +21,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         features,
         parentEnvName,
         env,
+        runtimeOptions,
     } = command.runOptions;
     if (requiredModules) {
         await importModules(basePath, requiredModules);
@@ -50,6 +51,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         name: environmentName,
         type: 'workerthread',
         childEnvName: environmentContextName,
+        options: runtimeOptions,
     });
 
     disposables.add(() => {

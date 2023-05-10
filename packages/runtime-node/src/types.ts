@@ -119,6 +119,7 @@ export type WorkerThreadEnvironmentStartupOptions = {
     features: [featureName: string, featureDefinition: Required<IStaticFeatureDefinition>][];
     parentEnvName: string;
     env: Environment;
+    runtimeOptions?: StartEnvironmentOptions['options'];
 };
 
 /**
