@@ -1,5 +1,6 @@
 import fs from '@file-services/node';
 import { expect } from 'chai';
+import { disposeAfter } from '@wixc3/testing';
 import contextualMultiPreloadFeature, {
     ContextualMultiPreloadWorkerService,
     contextualMultiServerEnv,
@@ -22,6 +23,7 @@ const setupRunningEnv = (featureId: string) =>
 describe('workerthread environment type', () => {
     it('initializes worker, calls API and disposes', async () => {
         const { dispose, communication } = await setupRunningEnv(workerThreadFeature.id);
+        disposeAfter(dispose);
 
         const workerService = communication.apiProxy<WorkerService>(
             { id: serverEnv.env },
@@ -30,12 +32,11 @@ describe('workerthread environment type', () => {
 
         const response = await workerService.initAndCallWorkerEcho('hello');
         expect(response).to.eql('hello from worker');
-
-        await dispose();
     });
 
     it('initializes multiple workers, calls API and disposes', async () => {
         const { dispose, communication } = await setupRunningEnv(`${workerThreadFeature.id}/${multiFeature.id}`);
+        disposeAfter(dispose);
 
         const multiWorkerService = communication.apiProxy<MultiWorkerService>(
             { id: multiServerEnv.env },
@@ -44,14 +45,13 @@ describe('workerthread environment type', () => {
 
         const response = await multiWorkerService.initAndCallWorkersEcho(['hello1', 'hello2', 'hello3']);
         expect(response).to.eql(['hello1 from worker', 'hello2 from worker', 'hello3 from worker']);
-
-        await dispose();
     });
 
     it('executes preload for contextual multi env', async function () {
         const { dispose, communication } = await setupRunningEnv(
             `${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`
         );
+        disposeAfter(dispose);
 
         const contextualMultiPreloadWorkerService = communication.apiProxy<ContextualMultiPreloadWorkerService>(
             { id: contextualMultiServerEnv.env },
@@ -64,7 +64,5 @@ describe('workerthread environment type', () => {
             'hello2 from preloaded worker',
             'hello3 from preloaded worker',
         ]);
-
-        await dispose();
     });
 });
