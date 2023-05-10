@@ -1,4 +1,3 @@
-import COM from './communication.feature';
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
 import type { AnyEnvironment, FeatureClass } from './entities';
@@ -40,25 +39,6 @@ export interface IRunEngineAppOptions<ENV extends AnyEnvironment> {
     publicPath?: string;
     features?: FeatureClass[];
     resolvedContexts: Record<string, string>;
-}
-
-export function runEngineApp<ENV extends AnyEnvironment>({
-    config = [],
-    options,
-    env,
-    publicPath,
-    features = [],
-    resolvedContexts = {},
-}: IRunEngineAppOptions<ENV>) {
-    const engine = new RuntimeEngine(env, [COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    void engine.run(features);
-
-    return {
-        engine,
-        async dispose() {
-            await engine.shutdown();
-        },
-    };
 }
 
 export class FeatureLoadersRegistry {

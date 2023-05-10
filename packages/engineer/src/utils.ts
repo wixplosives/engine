@@ -34,7 +34,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
 
     const { features } = loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
 
-    const { engine, dispose } = await runNodeEnvironment({
+    const engine = await runNodeEnvironment({
         featureName: serverOpts.engineerEntry,
         features: [...features],
         bundlePath: app.outputPath,
@@ -61,7 +61,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
     return {
         engine,
         outputPath: app.outputPath,
-        dispose,
+        dispose: engine.shutdown,
         devServerFeature: engine.get(devServerFeature).api
     };
 }

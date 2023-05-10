@@ -181,9 +181,6 @@ export type FeatureClass = {
     new (): FeatureDescriptor;
 };
 
-// type SSS = RunningFeatures<[FeatureClass], AnyEnvironment>;
-// export type FeatureClass = typeof EngineFeature<string>;
-
 export type FeatureDependencies = ReadonlyArray<FeatureClass>;
 
 export interface FeatureDescriptor {

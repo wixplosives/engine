@@ -14,7 +14,7 @@ export class WsClientHost extends BaseHost {
 
         const { path, ...query } = Object.fromEntries(new URL(url).searchParams);
 
-        const { promise, resolve } = deferred();
+        const { promise, resolve, reject } = deferred();
         this.connected = promise;
 
         this.socketClient = io(url, {
@@ -25,6 +25,12 @@ export class WsClientHost extends BaseHost {
             query,
             ...options,
         });
+
+        
+
+        this.socketClient.on('connect_error', ()=>{
+            reject(new Error('Failed to connect to socket server'));
+        })
 
         this.socketClient.on('connect', () => {
             this.socketClient.on('message', (data: unknown) => {

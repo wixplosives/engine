@@ -37,10 +37,7 @@ export async function runElectronEnv({
     config,
     requiredModules,
     env,
-}: ElectronEnvParams): Promise<{
-    dispose: () => void;
-    engine: RuntimeEngine;
-}> {
+}: ElectronEnvParams): Promise<RuntimeEngine<typeof env>> {
     if (requiredModules) {
         await importModules(basePath, requiredModules);
     }
@@ -116,7 +113,7 @@ export async function runElectronEnv({
 
         if (BrowserWindow.getAllWindows().length === 0) {
             try {
-                await runningEnvironment.dispose();
+                await runningEnvironment.shutdown();
             } catch (e) {
                 process.exitCode = 1;
                 // eslint-disable-next-line no-console

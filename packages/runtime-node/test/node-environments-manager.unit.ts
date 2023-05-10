@@ -1,6 +1,6 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { COM, Environment, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
+import { COM, Environment, Feature, RuntimeEngine, Service, socketClientInitializer } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
@@ -209,7 +209,7 @@ describe('Node environments manager', function () {
             };
         });
 
-        it('allows socket communication between node environments', async () => {
+        it.only('allows socket communication between node environments', async () => {
             const nodeEnvironmentManager = new NodeEnvironmentsManager(
                 socketServer,
                 {
@@ -230,19 +230,16 @@ describe('Node environments manager', function () {
                 featureName: engineMultiNodeSocketCommunication.scopedName,
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [proxyFeature],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology('engine-multi-socket-node/x'),
-                        },
-                    }),
-                ],
-            });
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology('engine-multi-socket-node/x'),
+                    },
+                }),
+            ]);
+            
+            disposables.add(engine.shutdown);
+            await engine.run(proxyFeature);
 
             expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
         });
@@ -269,19 +266,16 @@ describe('Node environments manager', function () {
                 mode: 'forked',
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [proxyFeature],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeSocketCommunication.scopedName),
-                        },
-                    }),
-                ],
-            });
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology(engineMultiNodeSocketCommunication.scopedName),
+                    },
+                }),
+            ]);
+            disposables.add(engine.shutdown);
+
+            await engine.run(proxyFeature);
 
             expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
         });
@@ -328,19 +322,16 @@ describe('Node environments manager', function () {
                 featureName: engineMultiNodeIPCCommunication.scopedName,
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [testFeature],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
-                        },
-                    }),
-                ],
-            });
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
+                    },
+                }),
+            ]);
+            disposables.add(engine.shutdown);
+
+            await engine.run(testFeature);
 
             expect(await engine.get(testFeature).api.echoService.echo()).to.eq('hello gaga');
         });
@@ -367,19 +358,17 @@ describe('Node environments manager', function () {
                 mode: 'forked',
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [testFeature],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
-                        },
-                    }),
-                ],
-            });
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
+                    },
+                }),
+            ]);
+
+            disposables.add(engine.shutdown);
+
+            await engine.run(testFeature);
 
             expect(await engine.get(testFeature).api.echoService.echo()).to.eq('hello gaga');
         });

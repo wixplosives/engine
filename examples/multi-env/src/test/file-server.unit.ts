@@ -4,7 +4,7 @@ import { expect } from 'chai';
 
 describe('Processing env test', () => {
     it('echos from node env', async () => {
-        const { dispose, runningApi } = await getRunningFeature({
+        const { engine, runningApi } = await getRunningFeature({
             featureName: 'multi-env/test-node',
             env: processingEnv,
             runtimeOptions: {
@@ -16,6 +16,6 @@ describe('Processing env test', () => {
         const message = runningApi.echoService.echo('text');
         expect(message).to.eq('node env says text');
 
-        await dispose();
+        await engine.shutdown();
     });
 });

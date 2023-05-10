@@ -6,7 +6,7 @@ import fs from '@file-services/node';
 describe('Processing env test', () => {
     it('reads directory', async () => {
         const {
-            dispose,
+            engine,
             runningApi: { remoteFiles },
         } = await getRunningFeature({
             featureName: 'file-server',
@@ -20,6 +20,6 @@ describe('Processing env test', () => {
         const remoteFile = remoteFiles.readFile(fs.basename(__filename));
         expect(remoteFile).to.eq(fs.readFileSync(__filename, 'utf8'));
 
-        await dispose();
+        await engine.shutdown();
     });
 });

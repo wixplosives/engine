@@ -67,7 +67,8 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         await featureInstance[RUN](this);
     }
 
-    public async shutdown() {
+    public shutdown = async () => {
+        await Promise.resolve();
         if (!this.running) {
             return;
         }
@@ -76,7 +77,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
             await feature.dispose();
         }
         this.running = undefined;
-    }
+    };
 
     public getTopLevelConfig(featureId: string, configId: string) {
         return this.topLevelConfigMap[this.entityID(featureId, configId)] || [];

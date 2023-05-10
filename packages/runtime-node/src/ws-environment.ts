@@ -10,16 +10,16 @@ export function runWSEnvironment(socketServer: io.Server, startEnvironmentOption
 
     return {
         start: async () => {
-            const runtimeEngine = await runNodeEnvironment({
+            const engine = await runNodeEnvironment({
                 ...startEnvironmentOptions,
                 host: wsHost,
             });
 
             return {
-                runtimeEngine: runtimeEngine.engine,
+                runtimeEngine: engine,
                 close: async () => {
                     wsHost.dispose();
-                    await runtimeEngine.dispose();
+                    await engine.shutdown();
                 },
                 host: wsHost,
             };

@@ -1,7 +1,6 @@
 import {
     COM,
     IFeatureLoader,
-    runEngineApp,
     RuntimeEngine,
     RuntimeMetadata,
     FeatureLoadersRegistry,
@@ -25,10 +24,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     host,
     context,
     env,
-}: StartEnvironmentOptions<ENV>): Promise<{
-    dispose: () => Promise<void>;
-    engine: RuntimeEngine<ENV>;
-}> {
+}: StartEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
     if (host) {
         config.push(
             COM.use({
@@ -88,15 +84,18 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
         clear();
     }
 
-    const runtimeEngine = runEngineApp({
-        config,
-        options: new Map(options),
-        features: runningFeatures,
-        resolvedContexts,
+    return new RuntimeEngine(
         env,
-    });
-
-    return runtimeEngine;
+        [
+            COM.use({
+                config: {
+                    resolvedContexts,
+                },
+            }),
+            ...config,
+        ],
+        new Map(options)
+    ).run(runningFeatures);
 }
 
 export function createFeatureLoaders(
