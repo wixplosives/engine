@@ -1,0 +1,1 @@
+globalThis.workerName = 'preloaded worker';

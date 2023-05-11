@@ -3,9 +3,13 @@ import { Worker } from 'node:worker_threads';
 import { COM, InitializerOptions } from '@wixc3/engine-core';
 import { createMetadataProvider } from '@wixc3/engine-core-node';
 
-import type { WorkerThreadCommand, WorkerThreadEnvironmentStartupOptions } from './types';
-import { WorkerThreadHost } from './worker-thread-host';
 import { createDisposables } from '@wixc3/patterns';
+import type {
+    NodeEnvironmentStartupOptions,
+    WorkerThreadCommand,
+    WorkerThreadEnvironmentStartupOptions,
+} from './types';
+import { WorkerThreadHost } from './worker-thread-host';
 
 export interface WorkerThreadInitializer {
     id: string;
@@ -13,7 +17,15 @@ export interface WorkerThreadInitializer {
     initialize: () => Promise<void>;
 }
 
-export function workerThreadInitializer({ communication, env }: InitializerOptions): WorkerThreadInitializer {
+export type WorkerThreadInitializerOptions = InitializerOptions & {
+    environmentStartupOptions?: Partial<NodeEnvironmentStartupOptions>;
+};
+
+export function workerThreadInitializer({
+    communication,
+    env,
+    environmentStartupOptions,
+}: WorkerThreadInitializerOptions): WorkerThreadInitializer {
     const disposables = createDisposables();
 
     const isSingleton = env.endpointType === 'single';
@@ -24,7 +36,7 @@ export function workerThreadInitializer({ communication, env }: InitializerOptio
     disposables.add(() => metadataProvider.dispose());
 
     const initialize = async (): Promise<void> => {
-        const { workerThreadEntryPath, requiredModules, basePath, config, featureName, features } =
+        const { workerThreadEntryPath, requiredModules, basePath, config, featureName, features, runtimeOptions } =
             await metadataProvider.getMetadata();
         const worker = new Worker(workerThreadEntryPath, {
             workerData: {
@@ -39,6 +51,8 @@ export function workerThreadInitializer({ communication, env }: InitializerOptio
         communication.registerMessageHandler(host);
 
         const runOptions: WorkerThreadEnvironmentStartupOptions = {
+            ...environmentStartupOptions,
+            runtimeOptions,
             requiredModules,
             basePath,
             environmentName: instanceId,
