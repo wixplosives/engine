@@ -241,7 +241,7 @@ describe('Node environments manager', function () {
                     },
                 }),
             ]);
-            
+
             disposables.add(engine.shutdown);
             await engine.run(proxyFeature);
 
@@ -280,13 +280,15 @@ describe('Node environments manager', function () {
                 featureName: engineMultiEnvCommunication.scopedName,
             });
 
-            const proxyFeatureTest = new Feature({
-                id: 'proxy',
-                api: {
+            class ProxyFeatureTest extends Feature<'proxy'> {
+                id = 'proxy' as const;
+                api = {
                     echoService: Service.withType<{ echo: (s?: string) => Promise<string> }>().defineEntity(env),
-                },
-                dependencies: [defaultArgsEchoFeature.asDependency, COM.asDependency],
-            }).setup(env, ({}, { defaultArgsEcho: { echoService }, COM: { communication } }) => {
+                };
+                dependencies = [defaultArgsEchoFeature, COM];
+            }
+
+            ProxyFeatureTest.setup(env, ({}, { defaultArgsEcho: { echoService }, COM: { communication } }) => {
                 void socketClientInitializer({ communication, env: echoServerEnv });
 
                 return {
@@ -298,22 +300,18 @@ describe('Node environments manager', function () {
                 };
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [proxyFeatureTest],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology('engine-default-args-echo'),
-                        },
-                    }),
-                ],
-            });
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology('engine-default-args-echo'),
+                    },
+                }),
+            ]);
+            disposables.add(engine.shutdown);
 
-            disposables.add(() => dispose());
+            await engine.run(proxyFeature);
 
-            expect(await engine.get(proxyFeatureTest).api.echoService.echo(undefined)).to.equal('dude, it works!');
+            expect(await engine.get(ProxyFeatureTest).api.echoService.echo(undefined)).to.equal('dude, it works!');
         });
 
         it('allows socket communication between node environments when running in forked mode', async () => {

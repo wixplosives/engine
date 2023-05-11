@@ -7,7 +7,7 @@ export type ErrorTypeConfig = {
     handleUncaught: boolean;
 };
 
-export class DisconnectingEnv extends Feature<'disconnecting-env'> {
+export default class DisconnectingEnv extends Feature<'disconnecting-env'> {
     id = 'disconnecting-env' as const;
     api = {
         errorsConfig: Config.withType<ErrorTypeConfig>().defineEntity({

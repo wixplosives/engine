@@ -8,11 +8,11 @@ export interface MultiWorkerService {
     initAndCallWorkersEcho: (values: string[]) => Promise<string[]>;
 }
 
-export default new Feature({
-    id: 'multi',
-    api: {
+export default class Multi extends Feature<'multi'> {
+    id = 'multi' as const;
+    api = {
         multiWorkersService: Service.withType<MultiWorkerService>().defineEntity(multiServerEnv).allowRemoteAccess(),
         multiWorkerEcho: Service.withType<MultiWorkerEcho>().defineEntity(workerEnv).allowRemoteAccess(),
-    },
-    dependencies: [COM.asDependency],
-});
+    };
+    dependencies = [COM];
+}

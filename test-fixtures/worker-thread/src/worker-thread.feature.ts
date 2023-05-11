@@ -9,11 +9,12 @@ export interface WorkerService {
     initAndCallWorkerEcho: (value: string) => Promise<string>;
 }
 
-export default new Feature({
-    id: 'worker-thread',
-    api: {
+
+export default class WorkerThread extends Feature<'worker-thread'> {
+    id = 'worker-thread' as const;
+    api = {
         workerService: Service.withType<WorkerService>().defineEntity(serverEnv).allowRemoteAccess(),
         workerEcho: Service.withType<WorkerEcho>().defineEntity(workerEnv).allowRemoteAccess(),
-    },
-    dependencies: [COM.asDependency],
-});
+    };
+    dependencies = [COM];
+}
