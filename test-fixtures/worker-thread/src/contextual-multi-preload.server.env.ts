@@ -8,7 +8,7 @@ contextualMultiPreloadFeature.setup(
             contextualMultiPreloadWorkersService: {
                 echo: async (values: string[]) => {
                     const responses = Promise.all(
-                        values.map((value) => {
+                        values.map(async (value) => {
                             const context = communication.getEnvironmentContext(workerEnv);
                             const activeEnv = workerEnv.environments.find((e) => e.env == context);
 
@@ -21,12 +21,11 @@ contextualMultiPreloadFeature.setup(
                             });
                             onDispose(worker.dispose);
 
-                            return worker.initialize().then(() => {
-                                const workerEcho = contextualMultiPreloadWorkerEcho.get({
-                                    id: worker.id,
-                                });
-                                return workerEcho.echo(value);
+                            await worker.initialize();
+                            const workerEcho = contextualMultiPreloadWorkerEcho.get({
+                                id: worker.id,
                             });
+                            return await workerEcho.echo(value);
                         })
                     );
 

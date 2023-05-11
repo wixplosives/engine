@@ -7,10 +7,6 @@ export const workerEnv = new ContextualEnvironment('worker', 'multi', [
     new Environment('context2', 'workerthread', 'multi'),
 ]);
 
-export interface PreloadedGlobalThis {
-    workerName: string;
-}
-
 export interface ContextualMultiPreloadWorkerService {
     echo: (values: string[]) => Promise<string[]>;
 }
