@@ -1,4 +1,3 @@
-import fs from '@file-services/node';
 import type webpack from 'webpack';
 
 import type { AnyEnvironment } from '@wixc3/engine-core';
@@ -13,19 +12,6 @@ import type { IBuildCommandOptions, ICompilerOptions } from './types';
 export const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
 
-export function addEnvEntrypoints(
-    envs: Iterable<string>,
-    target: 'node' | 'web' | 'webworker' | 'electron-renderer',
-    entryPoints: Record<string, Record<string, string>>,
-    outDir: string
-) {
-    for (const envName of envs) {
-        entryPoints[envName] = {
-            ...entryPoints[envName],
-            [target]: fs.posix.join(outDir, `${envName}.${target}.js`),
-        };
-    }
-}
 
 export function getExportedEnvironments(
     features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
