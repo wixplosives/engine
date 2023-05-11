@@ -8,7 +8,7 @@ import { IEngineRuntimeArguments, IPCHost } from '@wixc3/engine-core-node';
 import { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
 
 import { ExpirableList } from '../expirable-list';
-import { NodeEnvironmentCommand, NodeEnvironmentDisposeCommand, NodeEnvironmentEvent } from '../types';
+import { NodeEnvironmentCommand } from '../types';
 
 const TreeKillProcessNotFoundErrorCode = 128;
 
@@ -102,35 +102,20 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     return {
         id: env.env,
         dispose: async () => {
-            return new Promise((resolve, reject) => {
-                const handleChildDisposed = (e: unknown) => {
-                    if ((e as NodeEnvironmentEvent).id === 'nodeEnvironmentDisposedEvent') {
-                        child.off('message', handleChildDisposed);
+            if (child.pid) {
+                try {
+                    await promisifiedTreeKill(child.pid);
+                } catch (e: any) {
+                    if (e.code === TreeKillProcessNotFoundErrorCode) {
+                        // if tree kill failed with process not found error, ignore this error
+                        // cause in this case process has exited before we try to kill it
+                    } else {
+                        throw e;
                     }
-
-                    if (!child.killed) {
-                        if (child.pid) {
-                            promisifiedTreeKill(child.pid)
-                                .then(resolve)
-                                .catch((e: any) => {
-                                    if (e.code === TreeKillProcessNotFoundErrorCode) {
-                                        // if tree kill failed with process not found error, ignore this error
-                                        // cause in this case process has exited before we try to kill it
-                                        resolve();
-                                    } else {
-                                        reject(e);
-                                    }
-                                });
-                        } else {
-                            child.kill() ? resolve() : reject();
-                        }
-                    }
-                };
-
-                child.on('message', handleChildDisposed);
-
-                child.send({ id: 'nodeEnvironmentDisposeCommand' } as NodeEnvironmentDisposeCommand);
-            });
+                }
+            } else {
+                child.kill();
+            }
         },
         onExit: (cb: (details: ProcessExitDetails) => void) => {
             child.once('exit', (exitCode, signal) => {
