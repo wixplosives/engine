@@ -3,14 +3,13 @@ import { Worker } from 'node:worker_threads';
 import { COM, InitializerOptions } from '@wixc3/engine-core';
 import { createMetadataProvider } from '@wixc3/engine-core-node';
 
+import { createDisposables } from '@wixc3/patterns';
 import type {
     NodeEnvironmentStartupOptions,
     WorkerThreadCommand,
-    WorkerThreadDisposedEvent,
     WorkerThreadEnvironmentStartupOptions,
 } from './types';
 import { WorkerThreadHost } from './worker-thread-host';
-import { createDisposables } from '@wixc3/patterns';
 
 export interface WorkerThreadInitializer {
     id: string;
@@ -45,23 +44,7 @@ export function workerThreadInitializer({
             },
         });
 
-        disposables.add(
-            () =>
-                new Promise<void>((resolve) => {
-                    const handleWorkerDisposed = (e: unknown) => {
-                        if ((e as WorkerThreadDisposedEvent).id === 'workerThreadDisposedEvent') {
-                            worker.off('message', handleWorkerDisposed);
-                            resolve();
-                        }
-                    };
-
-                    worker.on('message', handleWorkerDisposed);
-
-                    worker.postMessage({
-                        id: 'workerThreadDisposeCommand',
-                    } as WorkerThreadCommand);
-                })
-        );
+        disposables.add(() => worker.terminate());
 
         const host = new WorkerThreadHost(worker);
         communication.registerEnv(instanceId, host);
