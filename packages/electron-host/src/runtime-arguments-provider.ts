@@ -1,5 +1,5 @@
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { IEngineRuntimeArguments } from '@wixc3/engine-electron-commons';
+import { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
 
 class RuntimeArgumentsHandler {
     private provider?: () => Promise<IEngineRuntimeArguments>;

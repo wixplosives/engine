@@ -11,7 +11,7 @@ export function generateFeature({
     featureName,
     targetPath,
     templatesDirPath,
-    featureDirNameTemplate = DEFAULT_FEATURE_DIR_NAME_TEMPLATE
+    featureDirNameTemplate = DEFAULT_FEATURE_DIR_NAME_TEMPLATE,
 }: IGeneratorOptions) {
     const templatesDir = readDirectoryContentsSync(fs, templatesDirPath);
     const templateContext = enrichContext({ featureName });
@@ -37,7 +37,7 @@ export const templateParser = (
 
     return {
         name: mappedFileName,
-        content: content ? templateCompiler(content) : undefined
+        content: content ? templateCompiler(content) : undefined,
     };
 };
 

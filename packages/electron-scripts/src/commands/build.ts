@@ -1,12 +1,11 @@
 import fs from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { importModules } from '@wixc3/engine-electron-commons/dist/import-modules';
-import type { IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
+import { importModules, type IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import {
     Application,
     getExportedEnvironments,
     IApplicationOptions,
-    IBuildCommandOptions as IEngineBuildCommandOptions
+    IBuildCommandOptions as IEngineBuildCommandOptions,
 } from '@wixc3/engine-scripts';
 import { build as electronBuild, Configuration, FileSet, PublishOptions } from 'electron-builder';
 import { dirname, posix, relative } from 'path';
@@ -82,7 +81,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         mac,
         windows,
         featureDiscoveryRoot = configFeatureDiscoveryRoot,
-        publish
+        publish,
     } = options;
     const outputPath = fs.join(basePath, outDir);
     if (!isPublishValid(publish)) {
@@ -113,7 +112,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         configName,
         config,
         features,
-        outDir
+        outDir,
     });
 
     const configFullPath = fs.resolve(fs.join(basePath, electronBuilderConfigFileName));
@@ -125,8 +124,8 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
             to: 'node_modules/@wixc3/engine-electron-host',
             // Avoid copying binary links of a package;
             // They contain relative links that will not work in built app, and also break Mac signing
-            filter: ['!**/node_modules/.bin/**']
-        }
+            filter: ['!**/node_modules/.bin/**'],
+        },
     ];
 
     const configFiles = builderConfig.extraFiles;
@@ -143,14 +142,14 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
             electronVersion,
             extraMetadata: {
                 ...(builderConfig.extraMetadata as Record<string, string>),
-                main: fs.join(outDir, ELECTRON_ENTRY_FILE_NAME)
+                main: fs.join(outDir, ELECTRON_ENTRY_FILE_NAME),
             },
-            extraFiles
+            extraFiles,
         },
         linux: linux ? [] : undefined,
         mac: mac ? [] : undefined,
         win: windows ? [] : undefined,
-        publish
+        publish,
     });
 }
 function isPublishValid(publish?: string | null): publish is PublishOptions['publish'] {
@@ -178,14 +177,14 @@ export function createElectronEntryFile({
     configName,
     config,
     features,
-    outDir
+    outDir,
 }: CreateElectronEntryOptions): Promise<void> {
     const currentFeature = features.get(featureName);
 
     const env = [...getExportedEnvironments(features)].find(({ name }) => name === envName)?.env;
 
     if (!env) {
-        throw new Error(`cannot create electron entry for ${envName}. No feature found exporing this environment`);
+        throw new Error(`cannot create electron entry for ${envName}. No feature found exporting this environment`);
     }
 
     if (!currentFeature) {
@@ -216,23 +215,23 @@ export function createElectronEntryFile({
                     contextFilePaths: Object.fromEntries(
                         Object.entries(contextFilePaths).map(([key, value]) => [
                             key,
-                            mapAbsolutePathsToRequests(value, packageName)
+                            mapAbsolutePathsToRequests(value, packageName),
                         ])
                     ),
                     envFilePaths: Object.fromEntries(
                         Object.entries(envFilePaths).map(([key, value]) => [
                             key,
-                            mapAbsolutePathsToRequests(value, packageName)
+                            mapAbsolutePathsToRequests(value, packageName),
                         ])
                     ),
                     filePath: mapAbsolutePathsToRequests(filePath, packageName),
                     preloadFilePaths: Object.fromEntries(
                         Object.entries(preloadFilePaths).map(([key, value]) => [
                             key,
-                            mapAbsolutePathsToRequests(value, packageName)
+                            mapAbsolutePathsToRequests(value, packageName),
                         ])
-                    )
-                }
+                    ),
+                },
             ];
         }
     );
@@ -292,6 +291,6 @@ export async function bundleEngineApp(options: IBundleEngineArguments): ReturnTy
 
     return app.build({
         ...options,
-        singleFeature: true
+        singleFeature: true,
     });
 }

@@ -1,16 +1,16 @@
 import {
+    AnyEnvironment,
     COM,
+    FeatureClass,
+    FeatureLoadersRegistry,
     IFeatureLoader,
+    IPreloadModule,
     RuntimeEngine,
     RuntimeMetadata,
-    FeatureLoadersRegistry,
-    IPreloadModule,
-    AnyEnvironment,
-    FeatureClass,
 } from '@wixc3/engine-core';
-import { init, remapToUserLibrary, clear } from './external-request-mapper';
+import { IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-core-node';
 
-import type { IEnvironmentDescriptor, StartEnvironmentOptions, IStaticFeatureDefinition } from './types';
+import type { IStaticFeatureDefinition } from './types';
 
 export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     featureName,
@@ -22,7 +22,6 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     type,
     options,
     host,
-    context,
     env,
 }: StartEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
     if (host) {
@@ -66,23 +65,6 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     }
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
-
-    // TODO! Investigate if this is for external features only
-    if (context) {
-        // mapping all found feature file requests to the current running context, so that external features, when importing feature files, will evaluate the files under the current context
-        [...features.values()].map(([, { packageName }]) =>
-            remapToUserLibrary({
-                test: (request) => request.includes(packageName),
-                context,
-            })
-        );
-        // initializing our module system tricks to be able to load all features from their proper context, so that features will not be loaded twice
-        init();
-    }
-
-    if (context) {
-        clear();
-    }
 
     return new RuntimeEngine(
         env,

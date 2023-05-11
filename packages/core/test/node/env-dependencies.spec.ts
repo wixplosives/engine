@@ -6,6 +6,7 @@ import {
     Environment,
     EnvironmentInstanceToken,
     Feature,
+    MultiEnvAsyncApi,
     run as runEngine,
     Service,
 } from '@wixc3/engine-core';
@@ -196,11 +197,7 @@ describe('ENV dependencies', () => {
                 (
                     _runningFeature: EQUAL<
                         typeof entry['service'],
-                        {
-                            get(token: EnvironmentInstanceToken): AsyncApi<{
-                                increment: (n: number) => number;
-                            }>;
-                        }
+                        MultiEnvAsyncApi<{ increment: (n: number) => number }>
                     >
                 ) => true
             );

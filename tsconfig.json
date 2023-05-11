@@ -52,6 +52,7 @@
     { "path": "./test-fixtures/engine-runtime-metadata/src" },
     { "path": "./test-fixtures/multi-node/src" },
     { "path": "./test-fixtures/multi-socket-node/src" },
+    { "path": "./test-fixtures/default-args-echo/src" },
     { "path": "./test-fixtures/node-env/src" },
     { "path": "./test-fixtures/static-application-external/src" },
     { "path": "./test-fixtures/static-base-web-application/src" },
@@ -59,6 +60,8 @@
     { "path": "./test-fixtures/using-config/src" },
     { "path": "./test-fixtures/with-iframe/src" },
     { "path": "./test-fixtures/workspace/packages/a/src" },
-    { "path": "./test-fixtures/workspace/packages/b/src" }
+    { "path": "./test-fixtures/workspace/packages/b/src" },
+    { "path": "./test-fixtures/disconnecting-env/src" },
+    { "path": "./test-fixtures/worker-thread/src" }
   ]
 }

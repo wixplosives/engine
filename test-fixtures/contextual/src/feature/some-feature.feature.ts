@@ -1,10 +1,10 @@
-import { COM, Environment, Feature, Service, SingleEndpointContextualEnvironment } from '@wixc3/engine-core';
+import { COM, Environment, Feature, Service, ContextualEnvironment } from '@wixc3/engine-core';
 
 export const mainEnv = new Environment('main', 'window', 'single');
 
 const workerEnv = new Environment('webworker', 'webworker', 'single');
 const serverEnv = new Environment('server', 'node', 'single');
-export const contextualEnv = new SingleEndpointContextualEnvironment('contextual', [workerEnv, serverEnv]);
+export const contextualEnv = new ContextualEnvironment('contextual', 'single', [workerEnv, serverEnv]);
 
 export interface IEchoContext {
     echoWord: () => string;

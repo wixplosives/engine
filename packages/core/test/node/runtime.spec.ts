@@ -20,7 +20,7 @@ import {
     RUN_OPTIONS,
     RuntimeEngine,
     Service,
-    SingleEndpointContextualEnvironment,
+    ContextualEnvironment,
     Slot,
     Universal,
     ENGINE,
@@ -567,7 +567,7 @@ describe('feature interaction', () => {
 describe('Contextual environments', () => {
     it('Feature should define contextual environment, set up the environment context and use it in the environment setup', async () => {
         const workerEnv = new Environment('webworker', 'webworker', 'single');
-        const processing = new SingleEndpointContextualEnvironment('processing', [workerEnv]);
+        const processing = new ContextualEnvironment('processing', 'single', [workerEnv]);
 
         interface ProcessingContext {
             name: string;

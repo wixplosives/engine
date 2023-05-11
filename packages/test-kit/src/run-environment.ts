@@ -14,8 +14,20 @@ import {
     Running,
     AnyEnvironment,
     FeatureClass,
+    BaseHost,
+    Communication,
+    COM,
 } from '@wixc3/engine-core';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import {
+    ENGINE_ROOT_ENVIRONMENT_ID,
+    IStaticFeatureDefinition,
+    METADATA_PROVIDER_ENV_ID,
+    MetadataCollectionAPI,
+    metadataApiToken,
+} from '@wixc3/engine-core-node';
+
+const workerThreadEntryPath = require.resolve('@wixc3/engine-runtime-node/worker-thread-entry');
 
 export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
@@ -77,6 +89,50 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
             );
         }
     }
+
+    const rootEngineEnvHost = new BaseHost();
+    const com = new Communication(rootEngineEnvHost, ENGINE_ROOT_ENVIRONMENT_ID);
+
+    const staticFeatures = [...features].map(([featureName, feature]) => [featureName, feature.toJSON()]) as [
+        featureName: string,
+        featureDefinition: Required<IStaticFeatureDefinition>
+    ][];
+
+    com.registerAPI<MetadataCollectionAPI>(metadataApiToken, {
+        getRuntimeArguments: () => {
+            return {
+                basePath: process.cwd(),
+                config: [],
+                featureName,
+                features: staticFeatures,
+                outputPath: process.cwd(),
+                nodeEntryPath: '',
+                workerThreadEntryPath,
+            };
+        },
+    });
+
+    const metadataProviderHost = new BaseHost();
+    metadataProviderHost.name = METADATA_PROVIDER_ENV_ID;
+    com.registerEnv(METADATA_PROVIDER_ENV_ID, metadataProviderHost);
+
+    config.push(
+        COM.use({
+            config: {
+                connectedEnvironments: {
+                    [ENGINE_ROOT_ENVIRONMENT_ID]: {
+                        id: ENGINE_ROOT_ENVIRONMENT_ID,
+                        host: rootEngineEnvHost,
+                    },
+                    [METADATA_PROVIDER_ENV_ID]: {
+                        id: METADATA_PROVIDER_ENV_ID,
+                        host: metadataProviderHost,
+                    },
+                },
+            },
+        })
+    );
+
     return runNodeEnvironment({
         featureName,
         features: [...features.entries()],

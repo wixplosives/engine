@@ -1,11 +1,12 @@
 import {
-    Environment,
-    SingleEndpointContextualEnvironment,
-    flattenTree,
     AnyEnvironment,
+    ContextualEnvironment,
+    Environment,
+    EnvironmentMode,
     MultiEnvironment,
+    flattenTree,
 } from '@wixc3/engine-core';
-import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
 
 const convertEnvToIEnv = (env: AnyEnvironment): IEnvironmentDescriptor => {
     const { env: name, envType: type } = env;
@@ -29,7 +30,7 @@ export function parseEnv<ENV extends AnyEnvironment>(env: ENV): IEnvironmentDesc
 }
 
 export function parseContextualEnv(
-    env: SingleEndpointContextualEnvironment<string, Environment[]>
+    env: ContextualEnvironment<string, EnvironmentMode, Environment[]>
 ): IEnvironmentDescriptor[] {
     const { env: name, environments } = env;
     const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e: Environment) =>

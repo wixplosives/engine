@@ -1,16 +1,15 @@
 import fs from '@file-services/node';
+import { app, ipcMain } from 'electron';
+
 import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
-import {
-    communicationChannels,
-    electronRuntimeArguments,
-    IEngineRuntimeArguments,
-} from '@wixc3/engine-electron-commons';
-import { importModules } from '@wixc3/engine-electron-commons/dist/import-modules';
-import { IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
+import { communicationChannels, electronRuntimeArguments } from '@wixc3/engine-electron-commons';
+import { importModules, IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
+
 import runtimeArgumentsProvider from './runtime-arguments-provider';
 
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
+const workerThreadEntryPath = require.resolve('@wixc3/engine-runtime-node/worker-thread-entry');
 
 export interface ElectronEnvParams {
     basePath: string;
@@ -66,6 +65,7 @@ export async function runElectronEnv({
             outputPath,
             configName,
             nodeEntryPath,
+            workerThreadEntryPath,
             devtools,
             devport,
             features: Array.from(features.entries()),
@@ -104,23 +104,6 @@ export async function runElectronEnv({
         config,
         options: [...runOptions.entries()],
         env,
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    app.on('window-all-closed', async () => {
-        // Don't quit between closing one window and immediately opening another.
-        await new Promise((res) => setTimeout(res, 0));
-
-        if (BrowserWindow.getAllWindows().length === 0) {
-            try {
-                await runningEnvironment.shutdown();
-            } catch (e) {
-                process.exitCode = 1;
-                // eslint-disable-next-line no-console
-                console.error(e);
-            }
-            app.quit();
-        }
     });
 
     return runningEnvironment;

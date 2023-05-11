@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
+import { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
 import {
     communicationChannels,
-    IEngineRuntimeArguments,
     initializeNodeEnvironment,
     InitializeNodeEnvironmentOptions,
 } from '@wixc3/engine-electron-commons';
@@ -18,18 +18,20 @@ export const initializeNodeEnvironmentInBrowser: EnvironmentInitializer<
     Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
 > = async ({ communication, env, environmentStartupOptions, processOptions }) => {
     const runtimeArguments = await getApplicationMetaData();
-    const { id, dispose, onDisconnect, environmentIsReady } = initializeNodeEnvironment({
+    const { id, dispose, onExit, environmentIsReady } = initializeNodeEnvironment({
         environmentStartupOptions,
         env,
         communication,
         runtimeArguments,
         processOptions,
     });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     window.addEventListener('beforeunload', dispose);
 
     await environmentIsReady;
 
-    return { id, onDisconnect };
+    return { id, onExit };
 };
 
 async function getApplicationMetaData() {

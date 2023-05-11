@@ -6,7 +6,13 @@ import {
     reportError,
     UNKNOWN_CALLBACK_ID,
 } from './errors';
-import { isWindow, isWorkerContext, MultiCounter } from './helpers';
+import {
+    isWindow,
+    isWorkerContext,
+    MultiCounter,
+    serializeApiCallArguments,
+    deserializeApiCallArguments,
+} from './helpers';
 import type {
     CallbackMessage,
     CallMessage,
@@ -36,8 +42,8 @@ import { SERVICE_CONFIG } from '../symbols';
 
 import { serializeError } from '../helpers';
 import { SetMultiMap } from '@wixc3/patterns';
-import type { Environment, SingleEndpointContextualEnvironment, EnvironmentMode } from '../entities/env';
-import type { IDTag } from '../types';
+import type { Environment, ContextualEnvironment, EnvironmentMode } from '../entities/env';
+import { type IDTag, isDisposable } from '../types';
 import { BaseHost } from './hosts/base-host';
 import { WsClientHost } from './hosts/ws-client-host';
 import { isMessage } from './message-types';
@@ -133,7 +139,7 @@ export class Communication {
         }
     }
 
-    public getEnvironmentContext(endPoint: SingleEndpointContextualEnvironment<string, Environment[]>) {
+    public getEnvironmentContext(endPoint: ContextualEnvironment<string, EnvironmentMode, Environment[]>) {
         return this.resolvedContexts[endPoint.env];
     }
 
@@ -167,6 +173,11 @@ export class Communication {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return new Proxy(Object.create(null), {
             get: (obj, method) => {
+                // let js runtime know that this is not thenable object
+                if (method === 'then') {
+                    return undefined;
+                }
+
                 if (typeof method === 'string') {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     let runtimeMethod = obj[method];
@@ -261,7 +272,7 @@ export class Communication {
                     to: envId,
                     from: this.rootEnvId,
                     type: 'call',
-                    data: { api, method, args },
+                    data: { api, method, args: serializeApiCallArguments(args) },
                     callbackId,
                     origin,
                     forwardingChain,
@@ -324,6 +335,8 @@ export class Communication {
         for (const { host, id } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
+            }
+            if (isDisposable(host)) {
                 host.dispose();
             }
             this.removeMessageHandler(host);
@@ -834,7 +847,9 @@ export class Communication {
 
     private async handleCall(message: CallMessage): Promise<void> {
         try {
-            const data = await this.apiCall(message.origin, message.data.api, message.data.method, message.data.args);
+            const args = deserializeApiCallArguments(message.data.args);
+            const data = await this.apiCall(message.origin, message.data.api, message.data.method, args);
+
             if (message.callbackId) {
                 this.sendTo(message.from, {
                     to: message.origin,

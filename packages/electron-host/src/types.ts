@@ -1,7 +1,7 @@
 import type { Environment } from '@wixc3/engine-core';
-import type { IEngineRuntimeArguments } from '@wixc3/engine-electron-commons';
+import { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
 
-export interface IRunOptions extends Omit<IEngineRuntimeArguments, 'nodeEntryPath'> {
+export interface IRunOptions extends Omit<IEngineRuntimeArguments, 'nodeEntryPath' | 'workerThreadEntryPath'> {
     devport: number;
     devtools?: boolean;
     env: Environment;

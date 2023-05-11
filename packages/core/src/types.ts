@@ -209,6 +209,14 @@ export interface IDisposable {
      */
     isDisposed(): boolean;
 }
+export function isDisposable(value: any): value is IDisposable {
+    return (
+        'dispose' in value &&
+        typeof value.dispose === 'function' &&
+        'isDisposed' in value &&
+        typeof value.isDisposed === 'function'
+    );
+}
 
 export type OmitCompositeEnvironment<T extends AnyEnvironment> = Environment<
     T['env'],

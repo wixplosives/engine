@@ -14,7 +14,8 @@
       "@fixture/static-base-web-application-feature/dist/*": ["./test-fixtures/static-base-web-application/src/*"],
       "@fixture/3rd-party/dist/*": ["./test-fixtures/3rd-party/src/*"],
       "@fixture/engine-multi-node/dist/*": ["./test-fixtures/multi-node/src/*"],
-      "@fixture/engine-multi-socket-node/dist/*": ["./test-fixtures/multi-socket-node/src/*"]
+      "@fixture/engine-multi-socket-node/dist/*": ["./test-fixtures/multi-socket-node/src/*"],
+      "@fixture/engine-default-args-echo": ["./test-fixtures/default-args-echo/src/*"]
     }
   }
 }

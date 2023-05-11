@@ -1,7 +1,7 @@
 import type io from 'socket.io';
-import { WsServerHost } from '@wixc3/engine-core-node';
 
-import type { StartEnvironmentOptions } from './types';
+import { StartEnvironmentOptions, WsServerHost } from '@wixc3/engine-core-node';
+
 import { runNodeEnvironment } from './node-environment';
 
 export function runWSEnvironment(socketServer: io.Server, startEnvironmentOptions: StartEnvironmentOptions) {

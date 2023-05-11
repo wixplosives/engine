@@ -1,6 +1,6 @@
 {
   "name": "@example/file-server",
-  "version": "32.0.1",
+  "version": "36.0.0",
   "scripts": {
     "start": "engineer start",
     "test": "yarn test:ix && yarn test:unit",
@@ -8,7 +8,7 @@
     "test:unit": "mocha \"dist/test/**/*.unit.js\""
   },
   "dependencies": {
-    "@file-services/node": "^7.2.0"
+    "@file-services/node": "^7.3.0"
   },
   "license": "UNLICENSED",
   "private": true

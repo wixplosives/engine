@@ -1,11 +1,5 @@
 import { basename } from 'path';
-import {
-    Environment,
-    EnvironmentContext,
-    SingleEndpointContextualEnvironment,
-    flattenTree,
-    FeatureClass,
-} from '@wixc3/engine-core';
+import { Environment, EnvironmentContext, ContextualEnvironment, flattenTree, FeatureClass } from '@wixc3/engine-core';
 import { isFeatureFile, parseFeatureFileName } from '../build-constants';
 import { instanceOf } from '../utils/instance-of';
 import type { IFeatureDefinition, IFeatureModule } from '../types';
@@ -45,7 +39,7 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
         const { exportedEnvs: envs = [], usedContexts = {} } = featureFile;
         for (const exportValue of Object.values(exports)) {
             if (instanceOf(exportValue, Environment)) {
-                if (instanceOf(exportValue, SingleEndpointContextualEnvironment)) {
+                if (instanceOf(exportValue, ContextualEnvironment)) {
                     envs.push(...parseContextualEnv(exportValue));
                 } else {
                     envs.push(parseEnv(exportValue));

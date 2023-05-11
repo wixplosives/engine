@@ -1,5 +1,6 @@
+import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
 import { SetMultiMap } from '@wixc3/patterns';
-import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+
 import type { IFeatureDefinition } from '../types';
 
 export interface GetResolveEnvironmentsParams {
@@ -27,6 +28,7 @@ export function getResolvedEnvironments({
     const electronRendererEnvs = new Map<string, IResolvedEnvironment>();
     const nodeEnvs = new Map<string, IResolvedEnvironment>();
     const electronMainEnvs = new Map<string, IResolvedEnvironment>();
+    const workerThreadEnvs = new Map<string, IResolvedEnvironment>();
 
     const resolvedContexts = findAllEnvironments
         ? getPossibleContexts(features)
@@ -46,6 +48,8 @@ export function getResolvedEnvironments({
                 addEnv(nodeEnvs, env);
             } else if (type === 'electron-main') {
                 addEnv(electronMainEnvs, env);
+            } else if (type === 'workerthread') {
+                addEnv(workerThreadEnvs, env);
             } else {
                 throw new Error(`unknown environment type: ${type}`);
             }

@@ -1,0 +1,13 @@
+{
+  "name": "@fixture/disconnecting-env",
+  "version": "36.0.0",
+  "private": true,
+  "dependencies": {
+    "@wixc3/engine-core": "^36.0.0"
+  },
+  "license": "unlicensed",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "author": "Wix.com"
+}

@@ -7,6 +7,7 @@ export type EnvironmentTypes =
     | 'window'
     | 'iframe'
     | 'webworker'
+    | 'workerthread'
     | 'node'
     | 'context'
     | 'electron-renderer'
@@ -58,6 +59,15 @@ export type AsyncApi<T extends object> = {
         : T[P] extends (...args: infer Args) => infer R
         ? (...args: Args) => Promise<R>
         : never;
+};
+
+export type MultiEnvAsyncApi<T extends object> = {
+    /**
+     * Gets an API of particular instance of multi-instanced environment.
+     *
+     * @param token environment instance token to get API of.
+     */
+    get(token: EnvironmentInstanceToken): AsyncApi<T>;
 };
 
 export interface EnvironmentInstanceToken {

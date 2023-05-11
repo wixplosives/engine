@@ -46,14 +46,13 @@ export function orderedEnvDependencies(env: AnyEnvironment): string[] {
     return env.dependencies?.flatMap(orderedEnvDependencies).concat(env.env) ?? [];
 }
 
-export class SingleEndpointContextualEnvironment<NAME extends string, ENVS extends Environment[]> extends Environment<
-    NAME,
-    EnvironmentTypes,
-    'single',
-    []
-> {
-    constructor(env: NAME, public environments: ENVS) {
-        super(env, 'context', 'single');
+export class ContextualEnvironment<
+    NAME extends string,
+    MODE extends EnvironmentMode,
+    ENVS extends Environment<string, EnvironmentTypes, MODE>[]
+> extends Environment<NAME, EnvironmentTypes, MODE, []> {
+    constructor(env: NAME, mode: MODE, public environments: ENVS) {
+        super(env, 'context', mode);
 
         if (environments.length === 0) {
             throw new Error(`Contextual Environment ${env} initiated without child environments`);

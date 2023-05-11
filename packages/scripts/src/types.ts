@@ -1,7 +1,8 @@
 import type io from 'socket.io';
-import type { TopLevelConfig, AnyEnvironment, FeatureClass } from '@wixc3/engine-core';
+
+import type { AnyEnvironment, FeatureClass, TopLevelConfig } from '@wixc3/engine-core';
+import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
 import type {
-    IEnvironmentDescriptor,
     IStaticFeatureDefinition,
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
@@ -17,7 +18,7 @@ export interface IFeatureTarget {
 export interface IFeatureDefinition extends Required<IStaticFeatureDefinition>, IFeatureModule {
     isRoot: boolean;
     directoryPath: string;
-    toJSON(): unknown;
+    toJSON(): IStaticFeatureDefinition;
 }
 
 export interface IFeatureModule {

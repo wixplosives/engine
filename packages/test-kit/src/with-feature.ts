@@ -1,12 +1,15 @@
 import isCI from 'is-ci';
 import fs from '@file-services/node';
 import playwright from 'playwright-core';
-import { createDisposables } from '@wixc3/create-disposables';
+import { ensureTracePath } from './utils';
+import { hookPageConsole } from './hook-page-console';
+import { validateBrowser } from './supported-browsers';
+import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
+import { normalizeTestName } from './normalize-test-name';
 import { RemoteHttpApplication } from './remote-http-application';
 import { ForkedProcessApplication } from './forked-process-application';
-import { ensureTracePath } from './utils';
+import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
 import type { IExecutableApplication } from './types';
-import { hookPageConsole } from './hook-page-console';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
 
@@ -123,6 +126,13 @@ export interface Tracing {
     name?: string;
 }
 
+export const WITH_FEATURE_DISPOSABLES = 'WITH_FEATURE_DISPOSABLES';
+export const PAGE_DISPOSABLES = 'PAGE_DISPOSABLES';
+export const TRACING_DISPOSABLES = 'TRACING_DISPOSABLES';
+createDisposalGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
+createDisposalGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
+createDisposalGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
+
 let browser: playwright.Browser | undefined = undefined;
 let featureUrl = '';
 let executableApp: IExecutableApplication;
@@ -146,10 +156,11 @@ if (typeof after !== 'undefined') {
 }
 
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
-    const disposeAfterEach = createDisposables();
     const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
     const port = parseInt(process.env.DEBUG!);
+    const browserToRun = validateBrowser(process.env.BROWSER ?? 'chromium');
+
     const {
         browserContextOptions: suiteBrowserContextOptions,
         featureName: suiteFeatureName,
@@ -190,7 +201,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            browser = await playwright.chromium.launch({
+            browser = await playwright[browserToRun].launch({
                 ...withFeatureOptions,
                 headless,
                 devtools,
@@ -208,15 +219,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     });
 
     const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
-
-    afterEach('stop tracing', async function () {
-        for (const tracingDisposable of tracingDisposables) {
-            await tracingDisposable(this.test?.title);
-        }
-        tracingDisposables.clear();
-    });
-
-    afterEach('post-test cleanup', disposeAfterEach.dispose);
 
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
@@ -245,18 +247,26 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            const { configName: newConfigName } = await executableApp.runFeature({
+            const runningFeature = await executableApp.runFeature({
                 featureName,
                 configName,
                 runtimeOptions: runOptions,
                 overrideConfig: config,
             });
 
-            disposeAfterEach.add(async () =>
-                executableApp.closeFeature({
-                    featureName,
-                    configName: newConfigName,
-                })
+            if (runningFeature === undefined) {
+                throw new Error(`Feature "${featureName}" was not found`);
+            }
+
+            const { configName: newConfigName } = runningFeature;
+
+            disposeAfter(
+                async () =>
+                    executableApp.closeFeature({
+                        featureName,
+                        configName: newConfigName,
+                    }),
+                WITH_FEATURE_DISPOSABLES
             );
 
             const search = toSearchQuery({
@@ -265,22 +275,23 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams,
             });
             const browserContext = await browser.newContext(browserContextOptions);
-            disposeAfterEach.add(() => browserContext.close());
+            disposeAfter(() => browserContext.close(), WITH_FEATURE_DISPOSABLES);
 
             browserContext.on('page', onPageCreation);
-            disposeAfterEach.add(() => browserContext.off('page', onPageCreation));
+            disposeAfter(() => browserContext.off('page', onPageCreation), PAGE_DISPOSABLES);
 
-            const sanitizedSuiteTracing = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
-            const sanitizedTracing = typeof tracing === 'boolean' ? {} : tracing;
+            const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+            const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
 
-            if (sanitizedTracing) {
-                const { screenshots, snapshots, name, outPath } = {
-                    ...sanitizedTracing,
-                    ...sanitizedSuiteTracing,
+            if (testTracingOptions) {
+                const combinedTrancingOptions = {
                     screenshots: true,
                     snapshots: true,
                     outPath: process.cwd(),
+                    ...suiteTracingOptions,
+                    ...testTracingOptions,
                 };
+                const { screenshots, snapshots, name, outPath } = combinedTrancingOptions;
                 await browserContext.tracing.start({ screenshots, snapshots });
                 tracingDisposables.add((testName) => {
                     return browserContext.tracing.stop({
@@ -290,9 +301,15 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                             name:
                                 process.env.TRACING && process.env.TRACING !== 'true'
                                     ? process.env.TRACING
-                                    : name ?? testName?.replace(/(\W+)/gi, '-').slice(1),
+                                    : name ?? (testName ? normalizeTestName(testName) : 'nameless-test'),
                         }),
                     });
+                });
+                disposeAfter(async () => {
+                    for (const tracingDisposable of tracingDisposables) {
+                        await tracingDisposable(mochaCtx()?.currentTest?.title);
+                    }
+                    tracingDisposables.clear();
                 });
             }
 
@@ -315,9 +332,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
                 const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
-                disposeAfterEach.add(disposeConsoleHook);
+                disposeAfter(disposeConsoleHook, PAGE_DISPOSABLES);
                 page.on('pageerror', onPageError);
-                disposeAfterEach.add(() => page.off('pageerror', onPageError));
+                disposeAfter(() => page.off('pageerror', onPageError), PAGE_DISPOSABLES);
             }
 
             const featurePage = await browserContext.newPage();

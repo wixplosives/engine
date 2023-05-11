@@ -1,7 +1,6 @@
 import { COM } from '@wixc3/engine-core';
-import { IPCHost } from '@wixc3/engine-core-node';
+import { IPCHost, StartEnvironmentOptions } from '@wixc3/engine-core-node';
 
-import type { StartEnvironmentOptions } from './types';
 import { runNodeEnvironment } from './node-environment';
 
 export interface StartIPCEnvironmntOptions extends StartEnvironmentOptions {
