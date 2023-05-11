@@ -8,9 +8,7 @@ import { IEngineRuntimeArguments, IPCHost } from '@wixc3/engine-core-node';
 import { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
 
 import { ExpirableList } from '../expirable-list';
-import { NodeEnvironmentCommand, NodeEnvironmentDisposeCommand, NodeEnvironmentEvent } from '../types';
-
-const TreeKillProcessNotFoundErrorCode = 128;
+import { NodeEnvironmentCommand } from '../types';
 
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
@@ -123,56 +121,10 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
     };
 };
 
-function disposeChildProcess(target: ChildProcess): Promise<void> {
-    return new Promise((resolve, reject) => {
-        function killTree() {
-            ensureChildProcessTreeKilled(target).then(resolve).catch(reject);
-        }
-
-        const handleChildDisposed = (e: unknown) => {
-            if ((e as NodeEnvironmentEvent).id === 'nodeEnvironmentDisposedEvent') {
-                target.off('message', handleChildDisposed);
-                killTree();
-            }
-        };
-
-        if (target.connected) {
-            try {
-                target.on('message', handleChildDisposed);
-                target.send({ id: 'nodeEnvironmentDisposeCommand' } as NodeEnvironmentDisposeCommand);
-            } catch (e: any) {
-                // process may disconnect in between our calls to 'connected' property and 'send' function
-                // so still checking if error is related to process disconnect
-                if (e.code === 'ERR_IPC_CHANNEL_CLOSED') {
-                    killTree();
-                } else {
-                    reject(e);
-                }
-            }
-        } else {
-            killTree();
-        }
-    });
-}
-
-function ensureChildProcessTreeKilled(target: ChildProcess): Promise<void> {
-    return new Promise((resolve, reject) => {
-        if (!target.killed) {
-            if (target.pid) {
-                promisifiedTreeKill(target.pid)
-                    .then(resolve)
-                    .catch((e: any) => {
-                        if (e.code === TreeKillProcessNotFoundErrorCode) {
-                            // if tree kill failed with process not found error, ignore this error
-                            // cause in this case process has exited before we try to kill it
-                            resolve();
-                        } else {
-                            reject(e);
-                        }
-                    });
-            } else {
-                target.kill() ? resolve() : reject();
-            }
-        }
-    });
+async function disposeChildProcess(target: ChildProcess): Promise<void> {
+    if (target.pid) {
+        await promisifiedTreeKill(target.pid);
+    } else {
+        target.kill();
+    }
 }
