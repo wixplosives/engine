@@ -63,16 +63,18 @@ export class Service<
         if (this.remoteAccess) {
             const { communication } = runtimeEngine.get(COM).api;
             const serviceKey = runtimeEngine.entityID(featureID, entityKey);
-            const providedFrom = normEnvVisibility(this.providedFrom);
-            const localEnv = communication.getEnvironmentName();
-            if (providedFrom.has(localEnv) || providedFrom.has(Universal.env)) {
+
+            const providedFrom = normEnvVisibility(this.providedFrom, false);
+            const shouldIncludeService =
+                providedFrom.has(Universal.env) || hasIntersection(providedFrom, runtimeEngine.runningEnvNames);
+            if (shouldIncludeService) {
                 if (!providedValue) {
                     throw new Error(
                         `Service is not provided at runtime.
 Make sure the environment setup file exists and named correctly: [featureName].[envName].env.[ext]
 Service name: ${entityKey}
 Feature id: ${featureID}
-Environment: ${localEnv}
+Environment: ${runtimeEngine.entryEnvironment}
                         `
                     );
                 }
@@ -121,3 +123,12 @@ function isSingleInstance(providedFrom: unknown): providedFrom is Environment<st
         (providedFrom as Environment).endpointType === 'single'
     );
 }
+
+const hasIntersection = (set1: Set<string>, set2: Set<string>) => {
+    for (const item of set1) {
+        if (set2.has(item)) {
+            return true;
+        }
+    }
+    return false;
+};
