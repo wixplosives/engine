@@ -3,6 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import {
     AsyncApi,
+    BaseHost,
     COM,
     Environment,
     EnvironmentInstanceToken,
@@ -10,11 +11,9 @@ import {
     MultiEnvAsyncApi,
     run as runEngine,
     Service,
-    Target,
 } from '@wixc3/engine-core';
 import { typeCheck } from '../type-check';
 import type { EQUAL } from 'typescript-type-utils';
-import { deferred } from 'promise-assist';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -174,15 +173,11 @@ describe('ENV dependencies', () => {
             );
         });
     });
-    it('env dependency preserve multi when accessing from other env',async () => {
+    it('env dependency preserve multi when accessing from other env', async () => {
         const baseEnv = new Environment('baseEnv', 'node', 'multi');
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
         const otherEnv = new Environment('otherEnv', 'node', 'single');
 
-        const {
-            promise,
-            resolve
-        } = deferred<number>()
         const entryFeature = new Feature({
             id: 'test',
             api: {
@@ -192,31 +187,22 @@ describe('ENV dependencies', () => {
                 service2: Service.withType<{ multiplyThenIncrement: (n: number) => number }>()
                     .defineEntity(extendingEnv)
                     .allowRemoteAccess(),
-                caller: Service.withType<{ multiplyThenIncrement: (n: number) => Promise<number> }>()
-                    .defineEntity(otherEnv)
+                caller: Service.withType<{ multiplyThenIncrement: (n: number) => Promise<number> }>().defineEntity(
+                    otherEnv
+                ),
             },
-            dependencies: [COM.asDependency]
+            dependencies: [COM.asDependency],
         });
 
-        let host: Target | undefined
-        let name: string | undefined
-        let envId: string | undefined
-        entryFeature.setup(baseEnv, (entry, {COM}) => {
-            name = COM.communication.getEnvironmentName();
-            host = COM.communication.getEnvironmentHost(name)
-            envId  = COM.communication.getEnvironmentId()
+        entryFeature.setup(baseEnv, (entry) => {
             typeCheck(
-                (
-                    _service: EQUAL<
-                        typeof entry['service'],
-                        MultiEnvAsyncApi<{ increment: (n: number) => number }>
-                    >
-                ) => true
+                (_service: EQUAL<(typeof entry)['service'], MultiEnvAsyncApi<{ increment: (n: number) => number }>>) =>
+                    true
             );
             typeCheck(
                 (
                     _service2: EQUAL<
-                        typeof entry['service2'],
+                        (typeof entry)['service2'],
                         {
                             get(
                                 token: EnvironmentInstanceToken
@@ -225,28 +211,21 @@ describe('ENV dependencies', () => {
                     >
                 ) => true
             );
-            
+
             return {
-                service:{
+                service: {
                     increment(n) {
-                        return n+1
+                        return n + 1;
                     },
-                }
-            }
-        })
+                },
+            };
+        });
         entryFeature.setup(extendingEnv, (entry) => {
-            typeCheck(
-                (
-                    _service: EQUAL<
-                        typeof entry['service'],
-                        { increment: (n: number) => number }
-                    >
-                ) => true
-            );
+            typeCheck((_service: EQUAL<(typeof entry)['service'], { increment: (n: number) => number }>) => true);
             typeCheck(
                 (
                     _service2: EQUAL<
-                        typeof entry['service2'],
+                        (typeof entry)['service2'],
                         {
                             get(
                                 token: EnvironmentInstanceToken
@@ -255,35 +234,39 @@ describe('ENV dependencies', () => {
                     >
                 ) => true
             );
-            
+
             return {
-                service2:{
+                service2: {
                     multiplyThenIncrement(n) {
-                        return entry.service.increment(n * 2)
+                        return entry.service.increment(n * 2);
                     },
-                }
-            }
-        })
+                },
+            };
+        });
+        const otherEnvHost = new BaseHost();
+        const extEnvHost = otherEnvHost.open();
+
         await runEngine({
             entryFeature,
-            env: extendingEnv
-        })
-        expect(host).to.not.equal(undefined)
+            env: extendingEnv,
+            topLevelConfig: [
+                COM.use({
+                    config: {
+                        host: extEnvHost,
+                    },
+                }),
+            ],
+        });
 
-        entryFeature.setup(otherEnv, (entry, { COM }) => {
-            COM.communication.registerEnv(envId!, host!)
+        entryFeature.setup(otherEnv, (entry) => {
             typeCheck(
-                (
-                    _service: EQUAL<
-                        typeof entry['service'],
-                        MultiEnvAsyncApi<{ increment: (n: number) => number }>
-                    >
-                ) => true
+                (_service: EQUAL<(typeof entry)['service'], MultiEnvAsyncApi<{ increment: (n: number) => number }>>) =>
+                    true
             );
             typeCheck(
                 (
                     _service2: EQUAL<
-                        typeof entry['service2'],
+                        (typeof entry)['service2'],
                         {
                             get(
                                 token: EnvironmentInstanceToken
@@ -295,17 +278,25 @@ describe('ENV dependencies', () => {
             return {
                 caller: {
                     multiplyThenIncrement(n) {
-                        return entry.service2.get({id: envId!}).multiplyThenIncrement(n)
+                        return entry.service2.get({ id: extEnvHost.name }).multiplyThenIncrement(n);
                     },
-                }
-            }
-        
+                },
+            };
         });
         const runnningOtherEnv = await runEngine({
             entryFeature,
-            env: otherEnv
-        })
+            env: otherEnv,
+            topLevelConfig: [
+                COM.use({
+                    config: {
+                        host: otherEnvHost,
+                    },
+                }),
+            ],
+        });
+
+        runnningOtherEnv.get(COM).api.communication.registerEnv(extendingEnv.env, extEnvHost);
         const res = await runnningOtherEnv.get(entryFeature).api.caller.multiplyThenIncrement(3);
-        expect(res).to.equal(7)
+        expect(res).to.equal(7);
     });
 });

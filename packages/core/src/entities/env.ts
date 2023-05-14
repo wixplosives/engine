@@ -74,7 +74,7 @@ export class ContextualEnvironment<
     }
 }
 
-export function normEnvVisibility(envVisibility: EnvVisibility): Set<string> {
+export function normEnvVisibility(envVisibility: EnvVisibility, includeDependencies = true): Set<string> {
     const envSet = new Set<string>();
     const extractDependencies = (env: AnyEnvironment) => {
         for (const { env: depEnv, dependencies } of env.dependencies) {
@@ -85,7 +85,9 @@ export function normEnvVisibility(envVisibility: EnvVisibility): Set<string> {
     const envs = Array.isArray(envVisibility) ? envVisibility : [envVisibility];
     for (const e of envs) {
         envSet.add(e.env);
-        extractDependencies(e);
+        if (includeDependencies) {
+            extractDependencies(e);
+        }
     }
     return envSet;
 }
