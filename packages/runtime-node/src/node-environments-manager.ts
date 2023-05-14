@@ -125,20 +125,71 @@ export interface ILaunchEnvironmentOptions {
 
 export class NodeEnvironmentsManager {
     private runningFeatures = new Map<string, { com: Communication; runningEnvironments: RunningEnvironmentRecord }>();
-
+    public overrideConfigsMap = new Map<string, OverrideConfig>();
     constructor(
         private socketServer: io.Server,
         private options: INodeEnvironmentsManagerOptions,
         private context: string,
-        private socketServerOptions?: Partial<io.ServerOptions>
+        private socketServerOptions?: Partial<io.ServerOptions>,
+        private mode: LaunchEnvironmentMode = 'new-server'
     ) {}
 
+    public runFeature = async ({
+        featureName,
+        configName,
+        runtimeOptions = {},
+        overrideConfig,
+    }: Pick<RunEnvironmentOptions, 'configName' | 'featureName' | 'runtimeOptions'> & {
+        overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
+    }) => {
+        if (overrideConfig) {
+            configName = this.applyConfigOverride(configName, overrideConfig);
+        }
+        // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
+        performance.clearMeasures();
+        performance.clearMarks();
+        return this.runServerEnvironments({
+            featureName,
+            configName,
+            overrideConfigsMap: this.overrideConfigsMap,
+            runtimeOptions,
+        });
+    };
+
+    public closeFeature = ({ featureName, configName }: Pick<RunEnvironmentOptions, 'featureName' | 'configName'>) => {
+        if (configName) {
+            this.overrideConfigsMap.delete(configName);
+        }
+        performance.clearMeasures();
+        performance.clearMarks();
+        return this.closeEnvironment({
+            featureName,
+            configName,
+        });
+    };
+    public getMetrics = () => {
+        return {
+            marks: performance.getEntriesByType('mark'),
+            measures: performance.getEntriesByType('measure'),
+        };
+    };
+    public applyConfigOverride(
+        configName: string | undefined,
+        overrideConfig: TopLevelConfig | TopLevelConfigProvider
+    ) {
+        const generatedConfigName = generateConfigName(configName);
+        this.overrideConfigsMap.set(generatedConfigName, {
+            overrideConfig: Array.isArray(overrideConfig) ? overrideConfig : [],
+            configName,
+        });
+        return generatedConfigName;
+    }
     public async runServerEnvironments({
         featureName,
         configName,
         runtimeOptions = {},
-        overrideConfigsMap = new Map<string, OverrideConfig>(),
-        mode = 'new-server',
+        overrideConfigsMap = this.overrideConfigsMap,
+        mode = this.mode,
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
@@ -533,4 +584,11 @@ export class NodeEnvironmentsManager {
             childProcess: childProc,
         };
     }
+}
+
+export function generateConfigName(configName?: string) {
+    return `${configName ?? ''}__${uniqueHash()}`;
+}
+export function uniqueHash() {
+    return Math.random().toString(16).slice(2);
 }

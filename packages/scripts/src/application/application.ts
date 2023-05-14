@@ -45,11 +45,30 @@ const builtinTemplatesPath = fs.join(__dirname, '../templates');
 export class Application {
     public outputPath: string;
     protected basePath: string;
-
+    nodeEnvironmentsManager?: NodeEnvironmentsManager;
     constructor({ basePath = process.cwd(), outputPath = fs.join(basePath, 'dist-app') }: IApplicationOptions) {
         this.basePath = basePath;
         this.outputPath = outputPath;
     }
+    /* TODO: remove after merge with engineer */
+    public runFeature: NodeEnvironmentsManager['runFeature'] = (...args) => {
+        if (!this.nodeEnvironmentsManager) {
+            throw new Error('runFeature is not available before calling build or run');
+        }
+        return this.nodeEnvironmentsManager.runFeature(...args);
+    };
+    public getMetrics: NodeEnvironmentsManager['getMetrics'] = (...args) => {
+        if (!this.nodeEnvironmentsManager) {
+            throw new Error('getMetrics is not available before calling build or run');
+        }
+        return this.nodeEnvironmentsManager.getMetrics(...args);
+    };
+    public closeFeature: NodeEnvironmentsManager['closeFeature'] = (...args) => {
+        if (!this.nodeEnvironmentsManager) {
+            throw new Error('closeFeature is not available before calling build or run');
+        }
+        return this.nodeEnvironmentsManager.closeFeature(...args);
+    };
 
     public async clean() {
         await fs.promises.rm(this.outputPath, { force: true, recursive: true });
@@ -62,7 +81,7 @@ export class Application {
         resolvedEnvironments: ReturnType<typeof getResolvedEnvironments>;
     }> {
         const buildOptions = defaults(options, buildDefaults);
-        const { config: _config } = await this.getEngineConfig();
+        const { config: _config } = await this.loadEngineConfig();
         const config = defaults(_config || {}, buildDefaults);
 
         if (config.require) await this.importModules(config.require);
@@ -104,7 +123,7 @@ export class Application {
             autoLaunch = true,
             socketServerOptions: runtimeSocketServerOptions,
         } = runOptions;
-        const { config: engineConfig } = await this.getEngineConfig();
+        const { config: engineConfig } = await this.loadEngineConfig();
 
         const disposables = createDisposables();
         const configurations = await this.readConfigs();
@@ -204,7 +223,7 @@ export class Application {
         if (!process.send) {
             throw new Error('"remote" command can only be used in a forked process');
         }
-        const { config } = await this.getEngineConfig();
+        const { config } = await this.loadEngineConfig();
         if (config && config.require) {
             await this.importModules(config.require);
         }
@@ -225,7 +244,7 @@ export class Application {
             throw new Error('Feature name is mandatory');
         }
 
-        const { config } = await this.getEngineConfig();
+        const { config } = await this.loadEngineConfig();
 
         const targetPath = pathToFeaturesDirectory(fs, this.basePath, config?.featuresDirectory || featuresDir);
         const featureDirNameTemplate = config?.featureFolderNameTemplate;
@@ -243,7 +262,7 @@ export class Application {
         });
     }
 
-    protected async getEngineConfig(): Promise<{ config?: EngineConfig; path?: string }> {
+    public async loadEngineConfig(): Promise<{ config?: EngineConfig; path?: string }> {
         const engineConfigFilePath = await this.getClosestEngineConfigPath();
         if (engineConfigFilePath) {
             try {
@@ -262,12 +281,20 @@ export class Application {
         return fs.promises.findClosestFile(this.basePath, ENGINE_CONFIG_FILE_NAME);
     }
 
-    protected async importModules(requiredModules: string[]) {
+    public getFeatures(singleFeature?: boolean, featureName?: string, featureDiscoveryRoot?: string) {
+        const { features, configurations, packages } = this.analyzeFeatures(featureDiscoveryRoot);
+        if (singleFeature && featureName) {
+            this.filterByFeatureName(features, featureName);
+        }
+        return { features, configurations, packages };
+    }
+
+    public async importModules(requiredModules: string[]) {
         for (const requiredModule of requiredModules) {
             try {
                 await import(require.resolve(requiredModule, { paths: [this.basePath] }));
             } catch (ex) {
-                throw new Error(`failed requiring: ${requiredModule} ${(ex as Error)?.stack || String(ex)}`);
+                throw new Error(`failed importing: ${requiredModule} ${(ex as Error)?.stack || String(ex)}`);
             }
         }
     }
@@ -410,7 +437,7 @@ export class Application {
         return fs.join(sourcesRoot, relativeRequestToFile);
     }
 
-    protected createCompiler({
+    public createCompiler({
         features,
         featureName,
         configName,
@@ -489,7 +516,7 @@ export class Application {
         }
     }
 
-    protected getFeatureEnvDefinitions(
+    public getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
         configurations: SetMultiMap<string, IConfigDefinition>
     ) {

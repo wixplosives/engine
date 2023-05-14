@@ -2,14 +2,11 @@ import { Router } from 'express';
 import bodyParser from 'body-parser';
 import performance from '@wixc3/cross-performance';
 
-import type { OverrideConfig } from './config-middleware';
 import type { IFeatureMessagePayload, IFeatureTarget } from './types';
 import type { IProcessMessage, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 
-export function createFeaturesEngineRouter(
-    overrideConfigsMap: Map<string, OverrideConfig>,
-    nodeEnvironmentManager: NodeEnvironmentsManager
-) {
+export function createFeaturesEngineRouter(nodeEnvironmentManager: NodeEnvironmentsManager) {
+    const { overrideConfigsMap } = nodeEnvironmentManager;
     const router = Router();
     router.use(bodyParser.json());
 

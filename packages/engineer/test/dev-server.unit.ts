@@ -390,10 +390,10 @@ describe('engineer:dev-server', function () {
         expect(firstFeatureConfigName).to.not.equal(undefined);
         expect(secondFeatureConfigName).to.not.equal(undefined);
         disposables.add(() =>
-            application.closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName! })
+            application.closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName as string })
         );
         disposables.add(() =>
-            application.closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName! })
+            application.closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName as string })
         );
 
         const pageOne = await loadPage(

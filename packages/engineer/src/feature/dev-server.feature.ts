@@ -1,7 +1,7 @@
 import type webpack from 'webpack';
 import { Feature, Service, Environment, COM, Config, Slot } from '@wixc3/engine-core';
-import type { TargetApplication } from '../application-proxy-service';
 import type { DevServerActions, DevServerConfig, ServerListeningHandler } from './dev-server.types';
+import { Application } from '@wixc3/engine-scripts';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
 
@@ -12,7 +12,7 @@ export default new Feature({
         /**
          * service providing application level behavior and info, such as node env management, feature detection etc
          */
-        application: Service.withType<TargetApplication>().defineEntity(devServerEnv).allowRemoteAccess(),
+        application: Service.withType<Application>().defineEntity(devServerEnv).allowRemoteAccess(),
         /**
          * Dev server configuration, will usually be passed in from the cli params
          */

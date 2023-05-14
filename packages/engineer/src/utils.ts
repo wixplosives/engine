@@ -1,12 +1,11 @@
 import fs from '@file-services/node';
-import { EngineConfig, isFeatureFile, loadFeaturesFromPaths } from '@wixc3/engine-scripts';
+import { Application, EngineConfig, isFeatureFile, loadFeaturesFromPaths } from '@wixc3/engine-scripts';
 import { RuntimeEngine, BaseHost, RuntimeFeature } from '@wixc3/engine-core';
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
 import type { DevServerConfig } from './feature/dev-server.types';
 import guiFeature from './feature/gui.feature';
 import { defaultOptions, defaultsEngineConfig, DEngineConfig, DStartOptions, IStartOptions } from './utils.types';
 import { defaults } from '@wixc3/common';
-import { TargetApplication } from './application-proxy-service';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
 const basePath = fs.join(__dirname, './feature');
@@ -18,10 +17,10 @@ export async function startDevServer(options: IStartOptions): Promise<{
     outputPath: string | undefined;
 }> {
     const serverOpts = defaults(options, defaultOptions);
-    const app = new TargetApplication({
+    const app = new Application({
         basePath: serverOpts.targetApplicationPath,
     });
-    const { config } = await app.getEngineConfig();
+    const { config } = await app.loadEngineConfig();
     const engineCnf = defaults(config || ({} as EngineConfig), defaultsEngineConfig);
     const featurePaths = options.devServerOnly
         ? // include only dev-server.feature
