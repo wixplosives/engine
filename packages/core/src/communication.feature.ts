@@ -95,7 +95,7 @@ export default new Feature({
         };
 
         const communication = new Communication(
-            isNode ? host || new BaseHost() : self,
+            isNode ? host || new BaseHost() : host || self,
             comId,
             topology,
             resolvedContexts,

@@ -178,6 +178,9 @@ describe('ENV dependencies', () => {
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
         const otherEnv = new Environment('otherEnv', 'node', 'single');
 
+        const otherEnvHost = new BaseHost(otherEnv.env);
+        const extEnvHost = otherEnvHost.open(extendingEnv.env);
+
         const entryFeature = new Feature({
             id: 'test',
             api: {
@@ -220,6 +223,7 @@ describe('ENV dependencies', () => {
                 },
             };
         });
+
         entryFeature.setup(extendingEnv, (entry) => {
             typeCheck((_service: EQUAL<(typeof entry)['service'], { increment: (n: number) => number }>) => true);
             typeCheck(
@@ -242,20 +246,6 @@ describe('ENV dependencies', () => {
                     },
                 },
             };
-        });
-        const otherEnvHost = new BaseHost(otherEnv.env);
-        const extEnvHost = otherEnvHost.open(extendingEnv.env);
-
-        await runEngine({
-            entryFeature,
-            env: extendingEnv,
-            topLevelConfig: [
-                COM.use({
-                    config: {
-                        host: extEnvHost,
-                    },
-                }),
-            ],
         });
 
         entryFeature.setup(otherEnv, (entry) => {
@@ -283,6 +273,19 @@ describe('ENV dependencies', () => {
                 },
             };
         });
+
+        await runEngine({
+            entryFeature,
+            env: extendingEnv,
+            topLevelConfig: [
+                COM.use({
+                    config: {
+                        host: extEnvHost,
+                    },
+                }),
+            ],
+        });
+
         const runnningOtherEnv = await runEngine({
             entryFeature,
             env: otherEnv,
