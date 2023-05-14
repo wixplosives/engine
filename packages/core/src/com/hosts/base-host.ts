@@ -2,7 +2,7 @@ import type { Message } from '../message-types';
 import type { Target } from '../types';
 
 export class BaseHost implements Target {
-    public name = 'base-host';
+    constructor(public name = 'base-host') {}
     public parent: BaseHost | undefined = undefined;
     protected handlers = new Map<'message', Set<(e: { data: Message }) => void>>();
 
@@ -26,8 +26,8 @@ export class BaseHost implements Target {
         this.emitMessageHandlers(message);
     }
 
-    public open() {
-        const host = new BaseHost();
+    public open(name = 'child-host') {
+        const host = new BaseHost(name);
         host.parent = this;
         return host;
     }

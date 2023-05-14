@@ -243,8 +243,8 @@ describe('ENV dependencies', () => {
                 },
             };
         });
-        const otherEnvHost = new BaseHost();
-        const extEnvHost = otherEnvHost.open();
+        const otherEnvHost = new BaseHost(otherEnv.env);
+        const extEnvHost = otherEnvHost.open(extendingEnv.env);
 
         await runEngine({
             entryFeature,
