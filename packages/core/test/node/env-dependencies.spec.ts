@@ -3,6 +3,8 @@ import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import {
     AsyncApi,
+    BaseHost,
+    COM,
     Environment,
     EnvironmentInstanceToken,
     Feature,
@@ -156,7 +158,7 @@ describe('ENV dependencies', () => {
             id = 'testFeatureDeps' as const;
             api = {};
             dependencies = [entryFeature];
-        }.setup(env3, ({}, { entry }) => {
+        }).setup(env3, ({}, { entry }) => {
             // We only asset that the types are correct feature runtime does not care.
             typeCheck(
                 (
@@ -170,41 +172,41 @@ describe('ENV dependencies', () => {
                     >
                 ) => true
             );
-        }));
+        });
     });
-    it('env dependency preserve multi when accessing from other env', () => {
+    it('env dependency preserve multi when accessing from other env', async () => {
         const baseEnv = new Environment('baseEnv', 'node', 'multi');
         const extendingEnv = new Environment('extendingEnv', 'node', 'multi', [baseEnv]);
-        class entryFeature extends Feature<'test'> {
+        const otherEnv = new Environment('otherEnv', 'node', 'single');
+
+        const otherEnvHost = new BaseHost(otherEnv.env);
+        const extEnvHost = otherEnvHost.open(extendingEnv.env);
+
+        class TestFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 service: Service.withType<{
                     increment: (n: number) => number;
-                }>()
-                    .defineEntity(baseEnv)
-                    .allowRemoteAccess(),
+                }>().defineEntity(baseEnv),
                 service2: Service.withType<{
                     multiplyThenIncrement: (n: number) => number;
-                }>()
-                    .defineEntity(extendingEnv)
-                    .allowRemoteAccess(),
+                }>().defineEntity(extendingEnv),
+                caller: Service.withType<{
+                    multiplyThenIncrement: (n: number) => Promise<number>;
+                }>().defineEntity(otherEnv),
             };
+            dependencies = [COM];
         }
 
-        const otherEnv = new Environment('otherEnv', 'node', 'single');
-        entryFeature.setup(otherEnv, (entry) => {
+        TestFeature.setup(baseEnv, (entry) => {
             typeCheck(
-                (
-                    _runningFeature: EQUAL<
-                        typeof entry['service'],
-                        MultiEnvAsyncApi<{ increment: (n: number) => number }>
-                    >
-                ) => true
+                (_service: EQUAL<(typeof entry)['service'], MultiEnvAsyncApi<{ increment: (n: number) => number }>>) =>
+                    true
             );
             typeCheck(
                 (
-                    _runningFeature: EQUAL<
-                        typeof entry['service2'],
+                    _service2: EQUAL<
+                        (typeof entry)['service2'],
                         {
                             get(token: EnvironmentInstanceToken): AsyncApi<{
                                 multiplyThenIncrement: (n: number) => number;
@@ -213,6 +215,92 @@ describe('ENV dependencies', () => {
                     >
                 ) => true
             );
+
+            return {
+                service: {
+                    increment(n) {
+                        return n + 1;
+                    },
+                },
+            };
         });
+
+        TestFeature.setup(extendingEnv, (entry) => {
+            typeCheck((_service: EQUAL<(typeof entry)['service'], { increment: (n: number) => number }>) => true);
+            typeCheck(
+                (
+                    _service2: EQUAL<
+                        (typeof entry)['service2'],
+                        {
+                            get(
+                                token: EnvironmentInstanceToken
+                            ): AsyncApi<{ multiplyThenIncrement: (n: number) => number }>;
+                        }
+                    >
+                ) => true
+            );
+
+            return {
+                service2: {
+                    multiplyThenIncrement(n) {
+                        return entry.service.increment(n * 2);
+                    },
+                },
+            };
+        });
+
+        TestFeature.setup(otherEnv, (entry) => {
+            typeCheck(
+                (_service: EQUAL<(typeof entry)['service'], MultiEnvAsyncApi<{ increment: (n: number) => number }>>) =>
+                    true
+            );
+            typeCheck(
+                (
+                    _service2: EQUAL<
+                        (typeof entry)['service2'],
+                        {
+                            get(
+                                token: EnvironmentInstanceToken
+                            ): AsyncApi<{ multiplyThenIncrement: (n: number) => number }>;
+                        }
+                    >
+                ) => true
+            );
+            return {
+                caller: {
+                    multiplyThenIncrement(n) {
+                        return entry.service2.get({ id: extEnvHost.name }).multiplyThenIncrement(n);
+                    },
+                },
+            };
+        });
+
+        await runEngine({
+            entryFeature: TestFeature,
+            env: extendingEnv,
+            topLevelConfig: [
+                COM.use({
+                    config: {
+                        host: extEnvHost,
+                    },
+                }),
+            ],
+        });
+
+        const runnningOtherEnv = await runEngine({
+            entryFeature: TestFeature,
+            env: otherEnv,
+            topLevelConfig: [
+                COM.use({
+                    config: {
+                        host: otherEnvHost,
+                    },
+                }),
+            ],
+        });
+
+        runnningOtherEnv.get(COM).api.communication.registerEnv(extendingEnv.env, extEnvHost);
+        const res = await runnningOtherEnv.get(TestFeature).api.caller.multiplyThenIncrement(3);
+        expect(res).to.equal(7);
     });
 });

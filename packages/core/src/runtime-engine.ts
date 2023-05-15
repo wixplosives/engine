@@ -1,4 +1,10 @@
-import { globallyProvidingEnvironments, orderedEnvDependencies, AnyEnvironment, FeatureClass } from './entities';
+import {
+    globallyProvidingEnvironments,
+    orderedEnvDependencies,
+    AnyEnvironment,
+    FeatureClass,
+    normEnvVisibility,
+} from './entities';
 import { createFeatureRuntime, RuntimeFeature } from './runtime-feature';
 import { RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
@@ -9,6 +15,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public referencedEnvs: Set<string>;
     private running: IDeferredPromise<void> | undefined;
     private topLevelConfigMap: Record<string, object[]>;
+    public runningEnvNames: Set<string>;
     constructor(
         public entryEnvironment: ENV,
         topLevelConfig: TopLevelConfig = [],
@@ -16,6 +23,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     ) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
         this.referencedEnvs = new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(entryEnvironment)]);
+        this.runningEnvNames = normEnvVisibility(entryEnvironment);
     }
 
     public get<T extends FeatureClass>(feature: T): RuntimeFeature<T, ENV> {
