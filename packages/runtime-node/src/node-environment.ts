@@ -66,7 +66,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
 
-    return new RuntimeEngine(
+    const engine = new RuntimeEngine(
         env,
         [
             COM.use({
@@ -77,7 +77,10 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
             ...config,
         ],
         new Map(options)
-    ).run(runningFeatures);
+    )
+    // we don't wait here because the process of node environment manager prepare environment is two step process
+    void engine.run(runningFeatures);
+    return engine;
 }
 
 export function createFeatureLoaders(

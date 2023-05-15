@@ -10,19 +10,24 @@ export function runWSEnvironment(socketServer: io.Server, startEnvironmentOption
 
     return {
         start: async () => {
-            const engine = await runNodeEnvironment({
-                ...startEnvironmentOptions,
-                host: wsHost,
-            });
+            try {
+                const engine = await runNodeEnvironment({
+                    ...startEnvironmentOptions,
+                    host: wsHost,
+                });
 
-            return {
-                runtimeEngine: engine,
-                close: async () => {
-                    wsHost.dispose();
-                    await engine.shutdown();
-                },
-                host: wsHost,
-            };
+                return {
+                    runtimeEngine: engine,
+                    close: async () => {
+                        wsHost.dispose();
+                        await engine.shutdown();
+                    },
+                    host: wsHost,
+                };
+            } catch (e) {
+                wsHost.dispose();
+                throw e;
+            }
         },
     };
 }

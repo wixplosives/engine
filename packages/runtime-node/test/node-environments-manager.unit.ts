@@ -5,7 +5,7 @@ import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type io from 'socket.io';
-
+(globalThis as any)['xxx'] = require('wtfnode');
 import SocketServerNodeFeature, {
     serverEnv as socketServerEnv,
 } from '@fixture/engine-multi-socket-node/dist/feature/x.feature';
@@ -203,13 +203,14 @@ describe('Node environments manager', function () {
             dependencies = [SocketServerNodeFeature, COM];
         }
 
-        ProxyFeature.setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
-            const ready = socketClientInitializer({ communication, env: socketServerEnv });
-
+        ProxyFeature.setup(env, ({ run, onDispose }, { XTestFeature: { echoService }, COM: { communication } }) => {
+            run(async () => {
+                const { dispose } = await socketClientInitializer({ communication, env: socketServerEnv });
+                onDispose(dispose);
+            });
             return {
                 echoService: {
-                    echo: async () => {
-                        await ready;
+                    echo: () => {
                         return echoService.echo();
                     },
                 },
@@ -291,17 +292,23 @@ describe('Node environments manager', function () {
                 dependencies = [defaultArgsEchoFeature, COM];
             }
 
-            ProxyFeatureTest.setup(env, ({}, { defaultArgsEcho: { echoService }, COM: { communication } }) => {
-                void socketClientInitializer({ communication, env: echoServerEnv });
+            ProxyFeatureTest.setup(
+                env,
+                ({ run, onDispose }, { defaultArgsEcho: { echoService }, COM: { communication } }) => {
+                    run(async () => {
+                        const { dispose } = await socketClientInitializer({ communication, env: echoServerEnv });
+                        onDispose(dispose);
+                    });
 
-                return {
-                    echoService: {
-                        echo: (s?: string) => {
-                            return echoService.echo(s);
+                    return {
+                        echoService: {
+                            echo: (s?: string) => {
+                                return echoService.echo(s);
+                            },
                         },
-                    },
-                };
-            });
+                    };
+                }
+            );
 
             const engine = new RuntimeEngine(env, [
                 COM.use({
@@ -312,7 +319,7 @@ describe('Node environments manager', function () {
             ]);
             disposables.add(engine.shutdown);
 
-            await engine.run(ProxyFeature);
+            await engine.run(ProxyFeatureTest);
 
             expect(await engine.get(ProxyFeatureTest).api.echoService.echo(undefined)).to.equal('dude, it works!');
         });
@@ -364,8 +371,11 @@ describe('Node environments manager', function () {
             dependencies = [ServerNodeFeature, COM];
         }
 
-        TestFeature.setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
-            void socketClientInitializer({ communication, env: serverEnv });
+        TestFeature.setup(env, ({ run, onDispose }, { XTestFeature: { echoService }, COM: { communication } }) => {
+            run(async () => {
+                const { dispose } = await socketClientInitializer({ communication, env: serverEnv });
+                onDispose(dispose);
+            });
 
             return {
                 echoService: {

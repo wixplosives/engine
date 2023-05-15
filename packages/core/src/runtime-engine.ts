@@ -8,12 +8,11 @@ import {
 import { createFeatureRuntime, RuntimeFeature } from './runtime-feature';
 import { RUN } from './symbols';
 import type { IRunOptions, TopLevelConfig } from './types';
-import { deferred, IDeferredPromise } from 'promise-assist';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public features = new Map<FeatureClass, RuntimeFeature<any, ENV>>();
     public referencedEnvs: Set<string>;
-    private running: IDeferredPromise<void> | undefined;
+    private running: Promise<void[]> | undefined;
     private topLevelConfigMap: Record<string, object[]>;
     public runningEnvNames: Set<string>;
     constructor(
@@ -42,7 +41,6 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         if (!Array.isArray(features)) {
             features = [features];
         }
-        this.running = deferred();
         try {
             for (const feature of features) {
                 this.initFeature(feature);
@@ -51,10 +49,12 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
             for (const feature of features) {
                 runPromises.push(this.runFeature(feature));
             }
-            await Promise.all(runPromises);
-            this.running.resolve();
+            // set before await since its a flag for dispose
+            this.running = Promise.all(runPromises);
+            await this.running;
         } catch (e) {
-            this.running.reject(e);
+            await this.shutdown();
+            throw e;
         }
         return this;
     }
@@ -79,7 +79,8 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         if (!this.running) {
             return;
         }
-        await this.running.promise;
+        // don't report error on running
+        await Promise.allSettled([this.running]);
         this.running = undefined;
         for (const feature of this.features.values()) {
             await feature.dispose();
