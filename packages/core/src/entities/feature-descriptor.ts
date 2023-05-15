@@ -206,13 +206,7 @@ export type SettingUpFeatureBase<F extends FeatureClass, E extends AnyEnvironmen
     [ENGINE]: RuntimeEngine<E>;
 };
 
-export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> = {
-    id: InstanceType<F>['id'];
-    run: (fn: () => unknown) => void;
-    onDispose: (fn: () => unknown) => void;
-    [RUN_OPTIONS]: IRunOptions;
-    [ENGINE]: RuntimeEngine<E>;
-} &
+export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> = SettingUpFeatureBase<F, E> &
     MapVisibleInputs<InstanceType<F>['api'], GloballyProvidingEnvironments> &
     MapVisibleInputs<InstanceType<F>['api'], E> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<InstanceType<F>['api']>> &
