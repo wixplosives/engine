@@ -6,8 +6,8 @@
   "scripts": {
     "build:umd": "node ./scripts/bundle",
     "test": "yarn test:node && yarn test:browser",
-    "test:node": "mocha \"test/node/**/*.spec.ts?(x)\"",
-    "test:browser": "mocha-play \"test/**/*.spec.ts?(x)\" -c ./test/webpack.config.js",
+    "test:node": "mocha \"dist/test/node/**/*.spec.js\"",
+    "test:browser": "mocha-play \"dist/test/**/*.spec.js\" -c ./webpack.config.test.js",
     "prepack": "yarn build:umd"
   },
   "dependencies": {
