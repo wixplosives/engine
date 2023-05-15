@@ -258,6 +258,8 @@ export class NodeEnvironmentsManager {
                     outputPath: process.cwd(),
                     nodeEntryPath: '',
                     workerThreadEntryPath,
+                    runtimeOptions: Object.entries(runtimeOptions),
+                    configName,
                 };
             },
         });

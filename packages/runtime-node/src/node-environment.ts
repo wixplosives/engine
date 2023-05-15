@@ -83,7 +83,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
 
 export function createFeatureLoaders(
     features: Map<string, Required<IStaticFeatureDefinition>>,
-    { childEnvName, name: envName, env }: IEnvironmentDescriptor
+    { childEnvName, env }: IEnvironmentDescriptor
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {
@@ -98,8 +98,8 @@ export function createFeatureLoaders(
         featureLoaders[scopedName] = {
             preload: async (currentContext) => {
                 const initFunctions = [];
-                if (childEnvName && currentContext[envName] === childEnvName) {
-                    const contextPreloadFilePath = preloadFilePaths[`${envName}/${childEnvName}`];
+                if (childEnvName && currentContext[env.env] === childEnvName) {
+                    const contextPreloadFilePath = preloadFilePaths[`${env.env}/${childEnvName}`];
 
                     if (contextPreloadFilePath) {
                         const preloadedContextModule = (await import(contextPreloadFilePath)) as IPreloadModule;
@@ -108,7 +108,7 @@ export function createFeatureLoaders(
                         }
                     }
                 }
-                const preloadFilePath = preloadFilePaths[envName];
+                const preloadFilePath = preloadFilePaths[env.env];
                 if (preloadFilePath) {
                     const preloadedModule = (await import(preloadFilePath)) as IPreloadModule;
                     if (preloadedModule.init) {
@@ -118,8 +118,8 @@ export function createFeatureLoaders(
                 return initFunctions;
             },
             load: async (currentContext) => {
-                if (childEnvName && currentContext[envName] === childEnvName) {
-                    const contextFilePath = contextFilePaths[`${envName}/${childEnvName}`];
+                if (childEnvName && currentContext[env.env] === childEnvName) {
+                    const contextFilePath = contextFilePaths[`${env.env}/${childEnvName}`];
                     if (contextFilePath) {
                         await import(contextFilePath);
                     }
