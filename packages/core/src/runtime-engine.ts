@@ -23,7 +23,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         if (runningFeature) {
             return runningFeature as RuntimeFeature<T, ENV>;
         } else {
-            throw new Error('Feature not found: ' + feature.id);
+            throw new Error(`Feature not found: ${feature.id}`);
         }
     }
 
@@ -56,27 +56,26 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         if (!instance) {
             instance = createFeatureRuntime(feature, this);
         }
-        return instance as RuntimeFeature<T, ENV>;
+        return instance;
     }
 
     public async runFeature(feature: FeatureClass): Promise<void> {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
-            throw new Error('Feature not found during run phase: ' + feature.id);
+            throw new Error(`Feature not found during run phase: ${feature.id}`);
         }
         await featureInstance[RUN](this);
     }
 
     public shutdown = async () => {
-        await Promise.resolve();
         if (!this.running) {
             return;
         }
         await this.running.promise;
+        this.running = undefined;
         for (const feature of this.features.values()) {
             await feature.dispose();
         }
-        this.running = undefined;
     };
 
     public getTopLevelConfig(featureId: string, configId: string) {

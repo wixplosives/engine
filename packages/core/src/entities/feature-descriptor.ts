@@ -33,7 +33,7 @@ import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
         public api = {
             config: Config.withType<{ id: string }>().defineEntity({ id: '' }),
         };
-        public dependencies = [new FeatureA(), new FeatureB()];
+        public dependencies = [FeatureA, FeatureB];
         public context = {};
     }
  */
@@ -62,15 +62,19 @@ export class Feature<T extends string> {
     static use<T extends FeatureClass>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
         return provideConfig(this, c);
     }
-    static setup<T extends FeatureClass, E extends AnyEnvironment>(this: T, e: E, s: SetupHandler<T, E>): T {
-        return setup(this, e, s);
+    static setup<T extends FeatureClass, E extends AnyEnvironment>(
+        this: T,
+        environment: E,
+        setupHandler: SetupHandler<T, E>
+    ): T {
+        return setup(this, environment, setupHandler);
     }
     static setupContext<
         T extends FeatureClass,
         E extends AnyEnvironment,
-        K extends keyof InstanceType<T>['context'] & string
-    >(this: T, e: E, k: K, s: ContextHandler<T, E, K>): T {
-        return setupContext(this, e, k, s);
+        C extends keyof InstanceType<T>['context'] & string
+    >(this: T, environment: E, context: C, setupHandler: ContextHandler<T, E, C>): T {
+        return setupContext(this, environment, context, setupHandler);
     }
 }
 
@@ -160,7 +164,7 @@ export function validateNoDuplicateContextRegistration(
 
 function validateRegistration(feature: { id: string }) {
     if (!feature.id) {
-        throw new Error('Feature must have an id');
+        throw new Error('Feature must have a const id provided');
     }
     return feature.id;
 }
@@ -171,15 +175,15 @@ type RuntimeInfo = {
     envs: Set<string>;
 };
 
-export type FeatureClass = {
+export interface FeatureClass {
+    new (): FeatureDescriptor;
     id: string;
     runtimeInfo?: RuntimeInfo;
     isEngineFeature: boolean;
     dependencies<T extends FeatureClass>(): InstanceType<T>['dependencies'];
     context<T extends FeatureClass>(): InstanceType<T>['context'];
     api<T extends FeatureClass>(this: T): InstanceType<T>['api'];
-    new (): FeatureDescriptor;
-};
+}
 
 export type FeatureDependencies = ReadonlyArray<FeatureClass>;
 
@@ -194,13 +198,16 @@ export type RunningFeatures<T extends FeatureDependencies, E extends AnyEnvironm
     [K in InstanceType<T[number]>['id']]: RunningInstance<Extract<InstanceType<T[number]>, { id: K }>, E>;
 };
 
-export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> = {
+export type SettingUpFeatureBase<F extends FeatureClass, E extends AnyEnvironment> = {
     id: InstanceType<F>['id'];
     run: (fn: () => unknown) => void;
     onDispose: (fn: () => unknown) => void;
     [RUN_OPTIONS]: IRunOptions;
     [ENGINE]: RuntimeEngine<E>;
-} & MapVisibleInputs<InstanceType<F>['api'], GloballyProvidingEnvironments> &
+};
+
+export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> = SettingUpFeatureBase<F, E> &
+    MapVisibleInputs<InstanceType<F>['api'], GloballyProvidingEnvironments> &
     MapVisibleInputs<InstanceType<F>['api'], E> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<InstanceType<F>['api']>> &
     MapType<GetDependenciesOutput<InstanceType<F>['api'], DeepEnvironmentDeps<E>>> &
@@ -219,15 +226,3 @@ export type ContextHandler<
 > = (
     runningFeatures: RunningFeatures<InstanceType<F>['dependencies'], E>
 ) => InstanceType<F>['context'][K] extends Context<infer U> ? U & {} : {};
-
-export type SettingUpFeature2<API extends EntityRecord, E extends AnyEnvironment> = {
-    id: string;
-    run: (fn: () => unknown) => void;
-    onDispose: (fn: () => unknown) => void;
-    [RUN_OPTIONS]: IRunOptions;
-    [ENGINE]: RuntimeEngine<E>;
-} & MapVisibleInputs<API, GloballyProvidingEnvironments> &
-    MapVisibleInputs<API, E> &
-    MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
-    MapType<GetDependenciesOutput<API, DeepEnvironmentDeps<E>>> &
-    MapToProxyType<FilterNotEnv<GetRemoteOutputs<API>, DeepEnvironmentDeps<E>, 'providedFrom'>>;

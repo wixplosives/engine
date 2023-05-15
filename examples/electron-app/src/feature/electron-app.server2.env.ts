@@ -11,7 +11,7 @@ ElectronApp.setup(server2, ({ echoService: { getText } }) => {
     return {
         anotherEchoService: {
             echo: () => Promise.resolve('from server2'),
-            subscribe: (callback: (times: number) => void) => {
+            subscribe: (callback) => {
                 listeners.add(callback);
             },
             invokeListeners() {
@@ -19,8 +19,8 @@ ElectronApp.setup(server2, ({ echoService: { getText } }) => {
                     listener(2);
                 }
             },
-            async getText(): Promise<string> {
-                return (await getText()) + (await this.echo());
+            async getText() {
+                return `${await getText()}${await this.echo()}`;
             },
         },
     };

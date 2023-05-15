@@ -26,11 +26,9 @@ export class WsClientHost extends BaseHost {
             ...options,
         });
 
-        
-
-        this.socketClient.on('connect_error', ()=>{
-            reject(new Error('Failed to connect to socket server'));
-        })
+        this.socketClient.once('connect_error', (error) => {
+            reject(new Error(`Failed to connect to socket server ${error}`));
+        });
 
         this.socketClient.on('connect', () => {
             this.socketClient.on('message', (data: unknown) => {

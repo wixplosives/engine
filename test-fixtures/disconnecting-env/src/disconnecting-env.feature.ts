@@ -11,7 +11,7 @@ export default class DisconnectingEnv extends Feature<'disconnecting-env'> {
     id = 'disconnecting-env' as const;
     api = {
         errorsConfig: Config.withType<ErrorTypeConfig>().defineEntity({
-            throwError: 'exception',
+            throwError: 'exit',
             handleUncaught: false,
         }),
     };

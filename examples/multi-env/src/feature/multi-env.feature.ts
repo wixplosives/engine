@@ -12,7 +12,7 @@ export interface IEchoService {
 export interface INameProvider {
     name: () => string;
 }
-export default class Contextual_environment_test extends Feature<'contextual-environment-test'> {
+export default class ContextualEnvironmentTest extends Feature<'contextual-environment-test'> {
     id = 'contextual-environment-test' as const;
     api = {
         config: new Config<{

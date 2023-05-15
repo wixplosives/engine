@@ -1,6 +1,6 @@
 import type { LogMessage } from './common-types';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
-import type { FeatureClass, FeatureDependencies } from './entities/feature-descriptor';
+import type { FeatureClass } from './entities/feature-descriptor';
 import type { RuntimeEngine } from './runtime-engine';
 import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './symbols';
 
@@ -8,7 +8,7 @@ import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './sy
 type TupleToUnion<T> = T extends ReadonlyArray<infer ITEMS> ? ITEMS : never;
 
 export type MapBy<T extends readonly any[] | undefined, FIELD extends keyof TupleToUnion<T>> = {
-    [key in TupleToUnion<T>[FIELD]]: Extract<TupleToUnion<T>, { [exc in FIELD]: key }>;
+    [K in TupleToUnion<T>[FIELD]]: Extract<TupleToUnion<T>, { [exc in FIELD]: K }>;
 };
 
 export type FilterRecord<T, Filter> = { [P in keyof T as T[P] extends Filter ? P : never]: T[P] };
@@ -157,18 +157,6 @@ export type MapVisibleInputs<T extends EntityRecord, EnvFilter extends AnyEnviro
     FilterEnv<GetInputs<T>, EnvFilter, 'visibleAt'>
 >;
 
-export interface FeatureDef<
-    ID extends string,
-    Deps extends FeatureDependencies,
-    API extends EntityRecord,
-    EnvironmentContext extends Record<string, Context<any>>
-> {
-    id: ID;
-    dependencies?: Deps;
-    api: API;
-    context?: EnvironmentContext;
-}
-
 export type Running<T extends FeatureClass, ENV extends AnyEnvironment> = MapAllTypesForEnv<
     InstanceType<T>['api'],
     ENV
@@ -231,7 +219,7 @@ export interface Configurable<T> {
 }
 
 export type PartialFeatureConfig<API> = {
-    [key in keyof API as API[key] extends Configurable<any> ? key : never]?: API[key] extends Configurable<infer T>
+    [K in keyof API as API[K] extends Configurable<any> ? K : never]?: API[K] extends Configurable<infer T>
         ? Partial<T>
         : never;
 };

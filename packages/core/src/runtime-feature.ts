@@ -1,9 +1,9 @@
 import type { RuntimeEngine } from './runtime-engine';
 import type { AnyEnvironment } from './entities/env';
-import type { FeatureClass, RunningFeatures } from './entities/feature-descriptor';
+import type { FeatureClass, RunningFeatures, SettingUpFeatureBase } from './entities/feature-descriptor';
 import { CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
 import { SetMultiMap } from '@wixc3/patterns';
-import type { DisposeFunction, Running } from './types';
+import type { Context, DisposeFunction, Running } from './types';
 import { deferred, IDeferredPromise } from 'promise-assist';
 
 /**
@@ -65,12 +65,12 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
 ): RuntimeFeature<F, E> {
     const { features, runOptions, referencedEnvs, entryEnvironment } = runningEngine;
     const feature = new FeatureClass();
-    const deps: any = {};
-    const depsApis: any = {};
-    const runningApi: any = {};
-    const inputApi: any = {};
-    const providedAPI: any = {};
-    const environmentContext: any = {};
+    const deps: RunningFeatures<InstanceType<any>['dependencies'], any> = {};
+    const depsApis: Record<string, Running<FeatureClass, E>> = {};
+    const runningApi: Record<string, unknown> = {};
+    const inputApi: Record<string, unknown> = {};
+    const providedApi: Record<string, unknown> = {};
+    const environmentContext: Record<string, Context<any>['type']> = {};
     const apiEntries = Object.entries(feature.api);
 
     const contextHandlers = FeatureClass.runtimeInfo?.contexts;
@@ -98,14 +98,13 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
             inputApi[key] = provided;
         }
     }
-    const settingUpFeature = {
+    const settingUpFeature: SettingUpFeatureBase<F, E> & Record<string, unknown> = {
         ...inputApi,
         id: feature.id,
         run: featureRuntime.addRunHandler,
         onDispose: featureRuntime.addOnDisposeHandler,
         [RUN_OPTIONS]: runOptions,
         [ENGINE]: runningEngine,
-        runningEnvironmentName: entryEnvironment.env,
     };
 
     if (contextHandlers) {
@@ -131,13 +130,13 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
                 for (const key of Object.keys(featureOutput)) {
                     settingUpFeature[key] = featureOutput[key];
                 }
-                Object.assign(providedAPI, featureOutput);
+                Object.assign(providedApi, featureOutput);
             }
         }
     }
 
     for (const [key, entity] of apiEntries) {
-        const registered = entity[REGISTER_VALUE](runningEngine, providedAPI[key], inputApi[key], feature.id, key);
+        const registered = entity[REGISTER_VALUE](runningEngine, providedApi[key], inputApi[key], feature.id, key);
         if (registered !== undefined) {
             runningApi[key] = registered;
         }

@@ -76,7 +76,7 @@ const engineMultiNodeIPCCommunication: IStaticFeatureDefinition = {
     ],
 };
 describe('Node environments manager', function () {
-    this.timeout(10000);
+    this.timeout(10_000);
     const disposables = createDisposables();
     const browserProvider = createBrowserProvider();
     let socketServer: io.Server;
@@ -193,7 +193,7 @@ describe('Node environments manager', function () {
     });
 
     describe('Node environment manager socket communication', () => {
-        const proxyFeature = class Test extends Feature<'test'> {
+        class ProxyFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 echoService: Service.withType<{
@@ -201,12 +201,15 @@ describe('Node environments manager', function () {
                 }>().defineEntity(env),
             };
             dependencies = [SocketServerNodeFeature, COM];
-        }.setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
-            void socketClientInitializer({ communication, env: socketServerEnv });
+        }
+
+        ProxyFeature.setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+            const ready = socketClientInitializer({ communication, env: socketServerEnv });
 
             return {
                 echoService: {
-                    echo: () => {
+                    echo: async () => {
+                        await ready;
                         return echoService.echo();
                     },
                 },
@@ -243,9 +246,9 @@ describe('Node environments manager', function () {
             ]);
 
             disposables.add(engine.shutdown);
-            await engine.run(proxyFeature);
-
-            expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
+            await engine.run(ProxyFeature);
+            const res = await engine.get(ProxyFeature).api.echoService.echo();
+            expect(res).to.eq('hello gaga');
         });
 
         it('remote API calls should work with undefined arguments', async () => {
@@ -309,7 +312,7 @@ describe('Node environments manager', function () {
             ]);
             disposables.add(engine.shutdown);
 
-            await engine.run(proxyFeature);
+            await engine.run(ProxyFeature);
 
             expect(await engine.get(ProxyFeatureTest).api.echoService.echo(undefined)).to.equal('dude, it works!');
         });
@@ -345,13 +348,13 @@ describe('Node environments manager', function () {
             ]);
             disposables.add(engine.shutdown);
 
-            await engine.run(proxyFeature);
+            await engine.run(ProxyFeature);
 
-            expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
+            expect(await engine.get(ProxyFeature).api.echoService.echo()).to.eq('hello gaga');
         });
     });
     describe('Node environment manager ipc communication', () => {
-        const testFeature = class Test extends Feature<'test'> {
+        class TestFeature extends Feature<'test'> {
             id = 'test' as const;
             api = {
                 echoService: Service.withType<{
@@ -359,7 +362,9 @@ describe('Node environments manager', function () {
                 }>().defineEntity(env),
             };
             dependencies = [ServerNodeFeature, COM];
-        }.setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
+        }
+
+        TestFeature.setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
             void socketClientInitializer({ communication, env: serverEnv });
 
             return {
@@ -401,9 +406,9 @@ describe('Node environments manager', function () {
             ]);
             disposables.add(engine.shutdown);
 
-            await engine.run(testFeature);
+            await engine.run(TestFeature);
 
-            expect(await engine.get(testFeature).api.echoService.echo()).to.eq('hello gaga');
+            expect(await engine.get(TestFeature).api.echoService.echo()).to.eq('hello gaga');
         });
 
         it('allows local communication between node environments when running in forked mode', async () => {
@@ -438,9 +443,9 @@ describe('Node environments manager', function () {
 
             disposables.add(engine.shutdown);
 
-            await engine.run(testFeature);
+            await engine.run(TestFeature);
 
-            expect(await engine.get(testFeature).api.echoService.echo()).to.eq('hello gaga');
+            expect(await engine.get(TestFeature).api.echoService.echo()).to.eq('hello gaga');
         });
     });
 });
