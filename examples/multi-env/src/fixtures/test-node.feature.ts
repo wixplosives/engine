@@ -1,7 +1,7 @@
 import { Feature } from '@wixc3/engine-core';
 import MultiEnvFeature, { processingEnv } from '../feature/multi-env.feature';
 
-export default class Use_local_server_example extends Feature<'use-local-server-example'> {
+export default class UseLocalServerExample extends Feature<'use-local-server-example'> {
     id = 'use-local-server-example' as const;
     api = {};
     dependencies = [MultiEnvFeature];

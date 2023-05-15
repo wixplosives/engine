@@ -3,7 +3,7 @@ import Feature, { server } from '../feature/file-server.feature';
 import { expect } from 'chai';
 import fs from '@file-services/node';
 
-describe('Processing env test', () => {
+describe('file-server Processing env test', () => {
     it('reads directory', async () => {
         const {
             engine,
