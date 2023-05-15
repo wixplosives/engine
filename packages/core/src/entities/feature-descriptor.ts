@@ -24,11 +24,11 @@ import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
 
 /**
  @example
-    import { EngineFeature, Config } from '@wixc3/engine-core';
+    import { Feature, Config } from '@wixc3/engine-core';
     import { FeatureA } from './a.feature';
     import { FeatureB } from './b.feature';
 
-    export class MyFeature extends EngineFeature<'my-feature'> {
+    export class MyFeature extends Feature<'my-feature'> {
         public id = 'my-feature' as const;
         public api = {
             config: Config.withType<{ id: string }>().defineEntity({ id: '' }),
@@ -206,7 +206,13 @@ export type SettingUpFeatureBase<F extends FeatureClass, E extends AnyEnvironmen
     [ENGINE]: RuntimeEngine<E>;
 };
 
-export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> = SettingUpFeatureBase<F, E> &
+export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> = {
+    id: InstanceType<F>['id'];
+    run: (fn: () => unknown) => void;
+    onDispose: (fn: () => unknown) => void;
+    [RUN_OPTIONS]: IRunOptions;
+    [ENGINE]: RuntimeEngine<E>;
+} &
     MapVisibleInputs<InstanceType<F>['api'], GloballyProvidingEnvironments> &
     MapVisibleInputs<InstanceType<F>['api'], E> &
     MapToProxyType<GetOnlyLocalUniversalOutputs<InstanceType<F>['api']>> &
