@@ -187,10 +187,14 @@ describe('ENV dependencies', () => {
             api = {
                 service: Service.withType<{
                     increment: (n: number) => number;
-                }>().defineEntity(baseEnv),
+                }>()
+                    .defineEntity(baseEnv)
+                    .allowRemoteAccess(),
                 service2: Service.withType<{
                     multiplyThenIncrement: (n: number) => number;
-                }>().defineEntity(extendingEnv),
+                }>()
+                    .defineEntity(extendingEnv)
+                    .allowRemoteAccess(),
                 caller: Service.withType<{
                     multiplyThenIncrement: (n: number) => Promise<number>;
                 }>().defineEntity(otherEnv),
