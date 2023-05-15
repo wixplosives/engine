@@ -5,22 +5,17 @@ module.exports = {
     mode: 'development',
     context: __dirname,
     entry: {
-        iframe: './iframe.ts',
-        'delayed-iframe': './delayed-iframe.ts',
+        iframe: './dist/test/iframe.js',
+        'delayed-iframe': './dist/test/delayed-iframe.js',
     },
     output: {
         filename: '[name].web.js',
     },
     resolve: {
-        extensions: ['.ts', '.tsx', '.js'],
-    },
-    module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                loader: '@ts-tools/webpack-loader',
-            },
-        ],
+        extensions: ['.ts', '.tsx', '.js', '.json'],
+        alias: {
+            sinon: 'sinon/pkg/sinon-esm.js',
+        },
     },
     plugins: [
         new HtmlWebpackPlugin({
