@@ -130,7 +130,7 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
     }
 }
 
-export function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: Set<string>): string[] {
+function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: Set<string>): string[] {
     const containsEnv = new Set<string>();
     const test = (env: string) => {
         envSet.has(env) ? containsEnv.add(env) : envSet.add(env);

@@ -570,9 +570,7 @@ describe('environment-dependencies communication', () => {
 
 describe('Event Emitter communication', () => {
     it('single communication', async () => {
-        const eventEmitter = new EventEmitter<{
-            message: Message;
-        }>();
+        const eventEmitter = new EventEmitter<{ message: Message }>();
         const host = new EventEmitterHost(eventEmitter);
 
         const main = new Communication(host, 'main');

@@ -12,7 +12,6 @@ import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
 const basePath = fs.join(__dirname, './feature');
 
 export async function startDevServer(options: IStartOptions): Promise<{
-    dispose: () => Promise<void>;
     engine: RuntimeEngine;
     devServerFeature: RuntimeFeature<typeof devServerFeature, typeof devServerEnv>['api'];
     outputPath: string | undefined;
@@ -61,8 +60,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
     return {
         engine,
         outputPath: app.outputPath,
-        dispose: engine.shutdown,
-        devServerFeature: engine.get(devServerFeature).api
+        devServerFeature: engine.get(devServerFeature).api,
     };
 }
 

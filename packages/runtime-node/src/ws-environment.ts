@@ -17,7 +17,7 @@ export function runWSEnvironment(socketServer: io.Server, startEnvironmentOption
                 });
 
                 return {
-                    runtimeEngine: engine,
+                    engine,
                     close: async () => {
                         wsHost.dispose();
                         await engine.shutdown();

@@ -6,10 +6,7 @@ import type { IFeatureDefinition, IFeatureModule } from '../types';
 import { parseContextualEnv, parseEnv } from './parse-env';
 
 function isEngineFeature(Class: unknown) {
-    if (typeof Class !== 'function') {
-        return false;
-    }
-    return (Class as FeatureClass).isEngineFeature;
+    return typeof Class === 'function' && (Class as FeatureClass).isEngineFeature;
 }
 
 function getFeaturesDeep(feature: FeatureClass) {

@@ -2,7 +2,7 @@ import fs from '@file-services/node';
 import { spawn } from 'child_process';
 import { startDevServer } from '@wixc3/engineer';
 import { IRunOptionsMessage, provideApiForChildProcess } from '@wixc3/engine-electron-host';
-import type { TopLevelConfig, DisposeFunction } from '@wixc3/engine-core';
+import type { TopLevelConfig } from '@wixc3/engine-core';
 import { getEngineConfig } from '../find-features';
 import { getConfig } from '../engine-helpers';
 import { join } from 'path';
@@ -49,14 +49,14 @@ export async function start({
     envName,
     devtools,
     featureDiscoveryRoot,
-}: IStartCommandOptions): Promise<{ dispose: DisposeFunction }> {
+}: IStartCommandOptions) {
     const { require: requiredModules, featureDiscoveryRoot: configFeatureDiscoveryRoot } =
         (await getEngineConfig(basePath)) || {};
 
     const resolvedFeatureDiscoveryRoot = featureDiscoveryRoot ?? configFeatureDiscoveryRoot;
 
     const {
-        dispose,
+        engine,
         devServerFeature: { serverListeningHandlerSlot },
     } = await startDevServer({
         autoLaunch: false,
@@ -116,11 +116,7 @@ export async function start({
 
         electronApp.once('close', () => {
             // eslint-disable-next-line no-console
-            dispose().catch(console.error);
+            engine.shutdown().catch(console.error);
         });
     });
-
-    return {
-        dispose,
-    };
 }

@@ -777,7 +777,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
     it('should verify visibility of slots', () => {
         const main = new Environment('main', 'window', 'single');
         const processing = new Environment('processing', 'webworker', 'single');
-        (class EchoFeature extends Feature<'echoFeature'> {
+        class EchoFeature extends Feature<'echoFeature'> {
             id = 'echoFeature' as const;
             api = {
                 slot: Slot.withType<{
@@ -786,27 +786,27 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
             };
             dependencies = [COM];
         }
-            .setup(main, ({ slot }) => {
-                slot.register({ name: 'test' });
-            })
-            .setup(processing, (feature) => {
-                const engine = feature[ENGINE];
+        EchoFeature.setup(main, ({ slot }) => {
+            slot.register({ name: 'test' });
+        });
+        EchoFeature.setup(processing, (feature) => {
+            const engine = feature[ENGINE];
 
-                typeCheck(
-                    (
-                        _noSlot: EQUAL<
-                            typeof feature,
-                            {
-                                id: 'echoFeature';
-                                [RUN_OPTIONS]: IRunOptions;
-                                [ENGINE]: typeof engine;
-                                run(fn: () => unknown): unknown;
-                                onDispose(fn: DisposeFunction): unknown;
-                            }
-                        >
-                    ) => true
-                );
-            }));
+            typeCheck(
+                (
+                    _noSlot: EQUAL<
+                        typeof feature,
+                        {
+                            id: 'echoFeature';
+                            [RUN_OPTIONS]: IRunOptions;
+                            [ENGINE]: typeof engine;
+                            run(fn: () => unknown): unknown;
+                            onDispose(fn: DisposeFunction): unknown;
+                        }
+                    >
+                ) => true
+            );
+        });
     });
 
     it('allow spawn of new environments and use remote services', () => {
