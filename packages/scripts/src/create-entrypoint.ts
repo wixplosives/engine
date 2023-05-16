@@ -136,7 +136,7 @@ async function main() {
     const topWindow = currentWindow.parent ?? currentWindow;
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
     const options = new URLSearchParams(currentWindow.location.search);
-    const optionsObj = typeof $CODUX_TOPOLOGY !== undefined ? $CODUX_TOPOLOGY : {
+    const optionsObj = typeof $CODUX_TOPOLOGY !== 'undefined' ? $CODUX_TOPOLOGY : {
         publicPath: options.get('publicPath'),
         ${FEATURE_QUERY_PARAM}: options.get('${FEATURE_QUERY_PARAM}'),
         ${CONFIG_QUERY_PARAM}: options.get('${CONFIG_QUERY_PARAM}')
