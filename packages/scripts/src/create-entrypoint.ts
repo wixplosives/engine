@@ -136,21 +136,26 @@ async function main() {
     const topWindow = currentWindow.parent ?? currentWindow;
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
     const options = new URLSearchParams(currentWindow.location.search);
+    const optionsObj = typeof $CODUX_TOPOLOGY !== undefined ? $CODUX_TOPOLOGY : {
+        publicPath: options.get('publicPath'),
+        ${FEATURE_QUERY_PARAM}: options.get('${FEATURE_QUERY_PARAM}'),
+        ${CONFIG_QUERY_PARAM}: options.get('${CONFIG_QUERY_PARAM}')
+    }
     const env = ${JSON.stringify(
         new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
     )}
     
     let publicPath = ${typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'}
-    if (options.has('publicPath')) {
-        publicPath = options.get('publicPath');
+    if (optionsObj.publicPath) {
+        publicPath = optionsObj.publicPath;
     } else if (${typeof publicPathVariableName === 'string'} && topWindow.${publicPathVariableName}) {
         publicPath = topWindow.${publicPathVariableName};
     }
 
     __webpack_public_path__= publicPath;
     
-    const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
-    const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
+    const featureName = optionsObj.${FEATURE_QUERY_PARAM} || ${stringify(featureName)};
+    const configName = optionsObj.${CONFIG_QUERY_PARAM} || ${stringify(configName)};
     const config = [];
     const instanceId = options.get(EngineCore.INSTANCE_ID_PARAM_NAME);
     
