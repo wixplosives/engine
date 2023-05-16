@@ -1,6 +1,6 @@
 import type { RuntimeEngine } from './runtime-engine';
 import type { AnyEnvironment } from './entities/env';
-import type { FeatureClass, RunningFeatures, SettingUpFeatureBase } from './entities/feature-descriptor';
+import type { FeatureClass, RunningFeatures, SettingUpFeatureBase } from './entities/feature';
 import { CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { Context, DisposeFunction, Running } from './types';

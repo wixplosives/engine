@@ -4,7 +4,7 @@ import { LoggerService } from './com/logger-service';
 import type { Target } from './com/types';
 import { Config } from './entities/config';
 import { AllEnvironments, Universal } from './entities/env';
-import { Feature } from './entities/feature-descriptor';
+import { Feature } from './entities/feature';
 import { Value } from './entities/value';
 import { Slot } from './entities/slot';
 import { RUN_OPTIONS, ENGINE } from './symbols';

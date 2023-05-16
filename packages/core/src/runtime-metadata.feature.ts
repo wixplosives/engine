@@ -1,5 +1,5 @@
 import { Config } from './entities/config';
-import { Feature } from './entities/feature-descriptor';
+import { Feature } from './entities/feature';
 export interface FoundFeatures {
     featureName: string;
     configurations: string[];
