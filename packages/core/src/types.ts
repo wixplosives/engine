@@ -124,7 +124,7 @@ export type FilterNotEnv<
 > = Pick<T, FilterNotENVKeys<T, EnvFilter, Key>>;
 
 export type MapType<X extends EntityRecord> = { [k in keyof X]: X[k]['type'] };
-export type MapRecordType<X> = X extends Record<string, { type: any }> ? { [k in keyof X]: X[k]['type'] } : {};
+export type MapRecordType<X extends Record<string, { type: any }>> = { [k in keyof X]: X[k]['type'] };
 
 export type MapToProxyType<T extends EntityRecord> = {
     [K in keyof T]: T[K]['proxyType'];

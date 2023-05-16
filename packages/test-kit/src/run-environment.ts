@@ -173,6 +173,7 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
 ): Promise<{
     runningApi: Running<F, ENV>;
     engine: RuntimeEngine;
+    /**@deprecated use engine.shutdown */
     dispose: () => Promise<void>;
 }> {
     const { feature } = options;

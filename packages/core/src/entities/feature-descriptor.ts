@@ -216,7 +216,7 @@ export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> =
 export type SetupHandler<F extends FeatureClass, E extends AnyEnvironment> = (
     feature: SettingUpFeature<F, E>,
     runningFeatures: RunningFeatures<InstanceType<F>['dependencies'], E>,
-    context: MapRecordType<InstanceType<F>['context']>
+    context: MapRecordType<NonNullable<InstanceType<F>['context']>>
 ) => RegisteringFeature<InstanceType<F>['api'], OmitCompositeEnvironment<E>>;
 
 export type ContextHandler<
