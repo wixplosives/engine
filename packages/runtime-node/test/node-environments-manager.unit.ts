@@ -5,7 +5,7 @@ import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type io from 'socket.io';
-(globalThis as any)['xxx'] = require('wtfnode');
+
 import SocketServerNodeFeature, {
     serverEnv as socketServerEnv,
 } from '@fixture/engine-multi-socket-node/dist/feature/x.feature';
