@@ -274,7 +274,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 configName: newConfigName,
                 queryParams,
             });
-            const browserContext = await browser.newContext(browserContextOptions);
+            const permissions = browserContextOptions?.permissions ?? [];
+            const browserContext = await browser.newContext({
+                ...browserContextOptions,
+                permissions: [...permissions, 'clipboard-read'],
+            });
             disposeAfter(() => browserContext.close(), WITH_FEATURE_DISPOSABLES);
 
             browserContext.on('page', onPageCreation);
