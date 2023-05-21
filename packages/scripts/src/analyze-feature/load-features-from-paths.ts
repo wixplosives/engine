@@ -92,7 +92,6 @@ export function loadFeaturesFromPaths(
 
 type AnalyzedFeatureModule = {
     scopedName: string;
-    evaluated: NodeJS.Module | undefined;
     module: IFeatureModule;
     filePath: string;
 };
@@ -120,7 +119,6 @@ function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): A
     const scopedName = scopeToPackage(featurePackage.simplifiedName, module.name)!;
     return {
         scopedName,
-        evaluated,
         module,
         filePath,
     };
