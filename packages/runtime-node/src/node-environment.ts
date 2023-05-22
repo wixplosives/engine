@@ -1,13 +1,12 @@
 import {
     AnyEnvironment,
     COM,
-    Feature,
+    FeatureClass,
     FeatureLoadersRegistry,
     IFeatureLoader,
     IPreloadModule,
     RuntimeEngine,
     RuntimeMetadata,
-    runEngineApp,
 } from '@wixc3/engine-core';
 import { IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-core-node';
 
@@ -24,10 +23,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     options,
     host,
     env,
-}: StartEnvironmentOptions<ENV>): Promise<{
-    dispose: () => Promise<void>;
-    engine: RuntimeEngine<ENV>;
-}> {
+}: StartEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
     if (host) {
         config.push(
             COM.use({
@@ -70,15 +66,21 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
     const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
 
-    const runtimeEngine = runEngineApp({
-        config,
-        options: new Map(options),
-        features: runningFeatures,
-        resolvedContexts,
+    const engine = new RuntimeEngine(
         env,
-    });
-
-    return runtimeEngine;
+        [
+            COM.use({
+                config: {
+                    resolvedContexts,
+                },
+            }),
+            ...config,
+        ],
+        new Map(options)
+    )
+    // we don't wait here because the process of node environment manager prepare environment is two step process
+    void engine.run(runningFeatures);
+    return engine;
 }
 
 export function createFeatureLoaders(
@@ -130,7 +132,7 @@ export function createFeatureLoaders(
                         await import(envFilePath);
                     }
                 }
-                return ((await import(filePath)) as { default: Feature }).default;
+                return ((await import(filePath)) as { default: FeatureClass }).default;
             },
             depFeatures: dependencies,
             resolvedContexts,

@@ -24,12 +24,12 @@ export async function runIPCEnvironment(options: StartIPCEnvironmntOptions) {
             },
         }),
     ];
-    const { dispose } = await runNodeEnvironment({
+    const engine = await runNodeEnvironment({
         ...options,
         host,
         config,
     });
-    disposeHandlers.add(() => dispose());
+    disposeHandlers.add(engine.shutdown);
     return {
         close: async () => {
             for (const disposeHandler of disposeHandlers) {

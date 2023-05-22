@@ -36,8 +36,3 @@ export type NodeEnvironmentDisposedEvent = {
  * The event that is emitted from node env.
  */
 export type NodeEnvironmentEvent = NodeEnvironmentDisposedEvent;
-
-export interface IExtenalFeatureDescriptor {
-    envEntries: Record<string, Record<string, string>>;
-    packageBasePath: string;
-}

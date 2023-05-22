@@ -8,15 +8,15 @@ export interface EngineerConfig {
     features: Map<string, IFeatureDefinition>;
 }
 
-export default new Feature({
-    id: 'dashboard-gui',
-    dependencies: [buildFeature.asDependency, COM.asDependency],
-    api: {
+export default class Dashboard_gui extends Feature<'dashboard-gui'> {
+    id = 'dashboard-gui' as const;
+    api = {
         /**
          * configuration for building and running the dashboard
          */
         engineerConfig: new Config<EngineerConfig>({
             features: new Map<string, IFeatureDefinition>(),
         }),
-    },
-});
+    };
+    dependencies = [buildFeature, COM];
+}

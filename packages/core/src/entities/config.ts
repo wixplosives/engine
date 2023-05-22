@@ -7,7 +7,7 @@ import { FeatureInput } from './input';
 export type MergeConfigHook<T extends object> = (a: Readonly<T>, b: Readonly<Partial<T>>) => T;
 
 export class Config<T extends object, VisibleAt extends EnvVisibility = Environment> extends FeatureInput<
-    Readonly<T>,
+    T,
     Environment,
     VisibleAt
 > {
@@ -25,7 +25,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
 
     public [CONFIGURABLE] = true as const;
     constructor(
-        public defaultValue: Readonly<T>,
+        public defaultValue: T,
         public mergeConfig: MergeConfigHook<T> = (a: T, b: Partial<T>) => ({ ...a, ...b }),
         visibleAt = AllEnvironments as VisibleAt
     ) {

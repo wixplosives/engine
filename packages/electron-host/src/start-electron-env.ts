@@ -36,10 +36,7 @@ export async function runElectronEnv({
     config,
     requiredModules,
     env,
-}: ElectronEnvParams): Promise<{
-    dispose: () => void;
-    engine: RuntimeEngine;
-}> {
+}: ElectronEnvParams): Promise<RuntimeEngine<typeof env>> {
     if (requiredModules) {
         await importModules(basePath, requiredModules);
     }

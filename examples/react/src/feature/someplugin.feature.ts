@@ -1,8 +1,8 @@
 import { Feature } from '@wixc3/engine-core';
 import guiFeature from './gui.feature';
 
-export default new Feature({
-    id: 'plugin',
-    api: {},
-    dependencies: [guiFeature.asDependency],
-});
+export default class Plugin extends Feature<'plugin'> {
+    id = 'plugin' as const;
+    api = {};
+    dependencies = [guiFeature];
+}

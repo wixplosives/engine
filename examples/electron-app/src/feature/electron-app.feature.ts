@@ -1,5 +1,4 @@
 import { COM, Environment, Feature, Service } from '@wixc3/engine-core';
-
 export const host = new Environment('host', 'electron-main', 'single');
 export const renderer = new Environment('renderer', 'electron-renderer', 'single');
 export const server = new Environment('server', 'node', 'single');
@@ -12,10 +11,9 @@ export interface IServerApi {
     getText(): Promise<string>;
 }
 
-export default new Feature({
-    id: 'electronExample',
-    dependencies: [COM.asDependency],
-    api: {
+export default class ElectronExample extends Feature<'electronExample'> {
+    id = 'electronExample' as const;
+    api = {
         echoService: Service.withType<IServerApi>()
             .defineEntity(server)
             .allowRemoteAccess({
@@ -33,5 +31,6 @@ export default new Feature({
                     listener: true,
                 },
             }),
-    },
-});
+    };
+    dependencies = [COM];
+}

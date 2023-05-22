@@ -1,4 +1,4 @@
-import type { Dependency, Feature, IFeature } from '@wixc3/engine-core';
+import type { FeatureClass } from '@wixc3/engine-core';
 
 // { featureName, depth of dep from root feature }
 export type Nodes = Record<string, { name: string; group: number }>;
@@ -9,18 +9,19 @@ export type Nodes = Record<string, { name: string; group: number }>;
  *
  * recursive function to build a tree of features, their distance from the root and the links between all features
  */
-export const buildFeatureLinks = (entry: Feature) => {
+export const buildFeatureLinks = (entry: FeatureClass) => {
     const nodes: Nodes = {};
     const links = buildFeatureLinksHelper(entry, nodes, 0);
     return { nodes: Object.values(nodes), links };
 };
 
-const buildFeatureLinksHelper = (entry: IFeature<string, Dependency[]>, visitedFeatures: Nodes, level: number) => {
+const buildFeatureLinksHelper = (entry: FeatureClass, visitedFeatures: Nodes, level: number) => {
     const featureLinks: Array<{
         source: string;
         target: string;
     }> = [];
-    const { dependencies, id } = entry;
+    const { id } = entry;
+    const dependencies = entry.dependencies();
     if (!visitedFeatures[id]) {
         visitedFeatures[id] = { name: id, group: level };
     }

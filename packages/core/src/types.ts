@@ -1,13 +1,14 @@
-import type { TupleToUnion } from 'typescript-type-utils';
 import type { LogMessage } from './common-types';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
-import type { RuntimeFeature } from './entities/feature';
+import type { FeatureClass } from './entities/feature';
 import type { RuntimeEngine } from './runtime-engine';
-import { CONFIGURABLE, CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN_OPTIONS } from './symbols';
+import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './symbols';
 
 /*************** HELPER TYPES  ***************/
-export type MapBy<T extends any[] | undefined, FIELD extends keyof TupleToUnion<T>> = {
-    [key in TupleToUnion<T>[FIELD]]: Extract<TupleToUnion<T>, { [exc in FIELD]: key }>;
+type TupleToUnion<T> = T extends ReadonlyArray<infer ITEMS> ? ITEMS : never;
+
+export type MapBy<T extends readonly any[] | undefined, FIELD extends keyof TupleToUnion<T>> = {
+    [K in TupleToUnion<T>[FIELD]]: Extract<TupleToUnion<T>, { [exc in FIELD]: K }>;
 };
 
 export type FilterRecord<T, Filter> = { [P in keyof T as T[P] extends Filter ? P : never]: T[P] };
@@ -123,7 +124,7 @@ export type FilterNotEnv<
 > = Pick<T, FilterNotENVKeys<T, EnvFilter, Key>>;
 
 export type MapType<X extends EntityRecord> = { [k in keyof X]: X[k]['type'] };
-type MapRecordType<X extends Record<string, { type: any }>> = { [k in keyof X]: X[k]['type'] };
+export type MapRecordType<X extends Record<string, { type: any }>> = { [k in keyof X]: X[k]['type'] };
 
 export type MapToProxyType<T extends EntityRecord> = {
     [K in keyof T]: T[K]['proxyType'];
@@ -155,71 +156,21 @@ type MapTypesForEnv<
 export type MapVisibleInputs<T extends EntityRecord, EnvFilter extends AnyEnvironment> = MapType<
     FilterEnv<GetInputs<T>, EnvFilter, 'visibleAt'>
 >;
-export type IFeature<
-    ID extends string = string,
-    Deps extends Dependency[] = any[],
-    API extends EntityRecord = any,
-    EnvironmentContext extends Record<string, DisposableContext<any>> = any
-> = {
-    id: ID;
-    api: API;
-    context: EnvironmentContext;
-    dependencies: Deps;
-    [CREATE_RUNTIME]: <ENV extends AnyEnvironment>(runningEngine: RuntimeEngine<ENV>) => RuntimeFeature<IFeature, ENV>;
-};
 
-const dep = Symbol('');
-export type Dependency<
-    ID extends string = string,
-    API extends EntityRecord = any,
-    EnvironmentContext extends Record<string, DisposableContext<any>> = any
-> = IFeature<ID, any[], API, EnvironmentContext> & { __try_using_Feature_asDependency: typeof dep };
+export type Running<T extends FeatureClass, ENV extends AnyEnvironment> = MapAllTypesForEnv<
+    InstanceType<T>['api'],
+    ENV
+>;
 
-export interface FeatureDef<
-    ID extends string,
-    Deps extends Dependency[],
-    API extends EntityRecord,
-    EnvironmentContext extends Record<string, Context<any>>
-> {
-    id: ID;
-    dependencies?: Deps;
-    api: API;
-    context?: EnvironmentContext;
-}
-
-export type UnknownFeatureDef = FeatureDef<string, Dependency[], EntityRecord, Record<string, Context<any>>>;
-export type Running<T extends { api: EntityRecord }, ENV extends AnyEnvironment> = MapAllTypesForEnv<T['api'], ENV>;
-
-export type RunningFeatures<
-    T extends Dependency[],
-    ENV extends AnyEnvironment,
-    FeatureMap extends MapBy<T, 'id'> = MapBy<T, 'id'>
-> = { [I in keyof FeatureMap]: Running<FeatureMap[I], ENV> };
-
-export type ExtendedEnvs<
-    API extends EntityRecord,
-    ENVS extends AnyEnvironment[],
-    EnvMap extends MapBy<ENVS, 'env'> = MapBy<ENVS, 'env'>
-> = {
-    [E in keyof EnvMap]: MapTypesForEnv<GetOutputs<API>, EnvMap[E], 'providedFrom'>;
-};
+export type RunningInstance<T extends { api: EntityRecord }, ENV extends AnyEnvironment> = MapAllTypesForEnv<
+    T['api'],
+    ENV
+>;
 
 export interface IRunOptions {
     has(key: string): boolean;
     get(key: string): string | boolean | null | undefined;
 }
-
-export type SettingUpFeature<ID extends string, API extends EntityRecord, ENV extends AnyEnvironment> = {
-    id: ID;
-    run: (fn: () => unknown) => void;
-    onDispose: (fn: DisposeFunction) => void;
-    [RUN_OPTIONS]: IRunOptions;
-    [ENGINE]: RuntimeEngine<ENV>;
-} & MapVisibleInputs<API, GloballyProvidingEnvironments> &
-    MapVisibleInputs<API, ENV> &
-    MapToProxyType<GetOnlyLocalUniversalOutputs<API>> &
-    MapType<GetDependenciesOutput<API, DeepEnvironmentDeps<ENV>>> &
-    MapToProxyType<FilterNotEnv<GetRemoteOutputs<API>, DeepEnvironmentDeps<ENV>, 'providedFrom'>>;
 
 export type RegisteringFeature<
     API extends EntityRecord,
@@ -231,16 +182,8 @@ export type RegisteringFeature<
     >
 > = keyof ProvidedOutputs extends never ? undefined | void : ProvidedOutputs;
 
-export interface SetupHandlerEnvironmentContext<EnvironmentContext extends Record<string, Context<any>>> {
-    context: EnvironmentContext;
-}
-
 export interface Context<T> {
-    type: T;
-}
-
-export interface IContextDispose {
-    dispose?: DisposeFunction;
+    type: T & { dispose?: DisposeFunction };
 }
 
 export interface IDisposable {
@@ -254,7 +197,6 @@ export interface IDisposable {
      */
     isDisposed(): boolean;
 }
-
 export function isDisposable(value: any): value is IDisposable {
     return (
         'dispose' in value &&
@@ -264,31 +206,22 @@ export function isDisposable(value: any): value is IDisposable {
     );
 }
 
-export type DisposableContext<T> = Context<T & IContextDispose>;
-
-export type SetupHandler<
-    ENV extends AnyEnvironment,
-    ID extends string,
-    FeatureDeps extends Dependency[],
-    API extends EntityRecord,
-    EnvironmentContext extends Record<string, Context<any>>
-> = (
-    feature: SettingUpFeature<ID, API, ENV>,
-    runningFeatures: RunningFeatures<FeatureDeps, ENV>,
-    context: MapRecordType<EnvironmentContext>
-) => RegisteringFeature<API, Environment<ENV['env'], ENV['envType'], ENV['endpointType'], []>>;
-
-export type ContextHandler<C, EnvFilter extends AnyEnvironment, Deps extends Dependency[]> = (
-    runningFeatures: RunningFeatures<Deps, EnvFilter>
-) => C;
+export type OmitCompositeEnvironment<T extends AnyEnvironment> = Environment<
+    T['env'],
+    T['envType'],
+    T['endpointType'],
+    []
+>;
 
 export interface Configurable<T> {
     [CONFIGURABLE]: true;
-    defaultValue: Readonly<T>;
+    defaultValue: T;
 }
 
 export type PartialFeatureConfig<API> = {
-    [key in keyof API]?: API[key] extends Configurable<infer T> ? Partial<T> : never;
+    [K in keyof API as API[K] extends Configurable<any> ? K : never]?: API[K] extends Configurable<infer T>
+        ? Partial<T>
+        : never;
 };
 
 export type TopLevelConfig = Array<[string, object]>;

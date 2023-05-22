@@ -9,14 +9,11 @@ import {
 import {
     TopLevelConfig,
     Environment,
-    Feature,
-    EntityRecord,
-    DisposableContext,
     RuntimeEngine,
     flattenTree,
     Running,
     AnyEnvironment,
-    Dependency,
+    FeatureClass,
     BaseHost,
     Communication,
     COM,
@@ -50,14 +47,9 @@ export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environ
     env: ENV;
 }
 
-export interface IGetRunnigFeatureOptions<
-    NAME extends string,
-    DEPS extends Dependency[],
-    API extends EntityRecord,
-    CONTEXT extends Record<string, DisposableContext<any>>,
-    ENV extends AnyEnvironment
-> extends IRunNodeEnvironmentOptions<ENV> {
-    feature: Feature<NAME, DEPS, API, CONTEXT>;
+export interface RunningFeatureOptions<F extends FeatureClass, ENV extends AnyEnvironment>
+    extends IRunNodeEnvironmentOptions<ENV> {
+    feature: F;
 }
 
 export async function runEngineEnvironment<ENV extends AnyEnvironment>({
@@ -69,10 +61,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
     env,
     basePath = process.cwd(),
     featureDiscoveryRoot,
-}: IRunNodeEnvironmentOptions<ENV>): Promise<{
-    engine: RuntimeEngine<ENV>;
-    dispose: () => Promise<void>;
-}> {
+}: IRunNodeEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
     const { env: envName, envType } = env;
     const engineConfigFilePath = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
     const { featureDiscoveryRoot: configFeatureDiscoveryRoot } = (
@@ -179,26 +168,21 @@ function locateEnvironment(
     return undefined;
 }
 
-export async function getRunningFeature<
-    NAME extends string,
-    DEPS extends Dependency[],
-    API extends EntityRecord,
-    CONTEXT extends Record<string, DisposableContext<any>>,
-    ENV extends AnyEnvironment
->(
-    options: IGetRunnigFeatureOptions<NAME, DEPS, API, CONTEXT, ENV>
+export async function getRunningFeature<F extends FeatureClass, ENV extends AnyEnvironment>(
+    options: RunningFeatureOptions<F, ENV>
 ): Promise<{
-    dispose: () => Promise<void>;
-    runningApi: Running<Feature<NAME, DEPS, API, CONTEXT>, ENV>;
+    runningApi: Running<F, ENV>;
     engine: RuntimeEngine;
+    /**@deprecated use engine.shutdown */
+    dispose: () => Promise<void>;
 }> {
     const { feature } = options;
-    const { engine, dispose } = await runEngineEnvironment(options);
+    const engine = await runEngineEnvironment(options);
     const { api } = engine.get(feature);
     return {
         runningApi: api,
         engine,
-        dispose,
+        dispose: engine.shutdown,
     };
 }
 

@@ -1,13 +1,13 @@
 import { SERVICE_CONFIG, multiTenantMethod } from '@wixc3/engine-core';
 
-export interface ITestServiceData {
+export interface TestServiceData {
     echo: number[];
 }
 
 export class TestService {
-    private listeners: Array<(x: ITestServiceData) => void> = [];
-    public testApi(a: number, b: number, c: number): ITestServiceData {
-        const data: ITestServiceData = { echo: [a, b, c] };
+    private listeners: Array<(x: TestServiceData) => void> = [];
+    public testApi(a: number, b: number, c: number): TestServiceData {
+        const data: TestServiceData = { echo: [a, b, c] };
         for (const listener of this.listeners) {
             listener(data);
         }
@@ -18,7 +18,7 @@ export class TestService {
         Object.assign(error, testServiceError);
         throw error;
     }
-    public listen(fn: (x: ITestServiceData) => void) {
+    public listen(fn: (x: TestServiceData) => void) {
         this.listeners.push(fn);
     }
 }

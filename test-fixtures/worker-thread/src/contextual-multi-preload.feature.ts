@@ -11,17 +11,17 @@ export interface ContextualMultiPreloadWorkerService {
     echo: (values: string[]) => Promise<string[]>;
 }
 
-export default new Feature({
-    id: 'contextual-multi-preload',
-    api: {
+export default class ContextualMultiPreloadFeature extends Feature<'contextual-multi-preload'> {
+    id = 'contextual-multi-preload' as const;
+    api = {
         contextualMultiPreloadWorkersService: Service.withType<ContextualMultiPreloadWorkerService>()
             .defineEntity(contextualMultiServerEnv)
             .allowRemoteAccess(),
         contextualMultiPreloadWorkerEcho: Service.withType<ContextualMultiPreloadWorkerEcho>()
             .defineEntity(workerEnv)
             .allowRemoteAccess(),
-    },
-    dependencies: [COM.asDependency],
-});
+    };
+    dependencies = [COM];
+}
 
 export const WorkerContext = workerEnv.useContext('context1');

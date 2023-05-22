@@ -1,18 +1,18 @@
 import {
-    RuntimeFeature,
-    Feature,
     globallyProvidingEnvironments,
     orderedEnvDependencies,
     AnyEnvironment,
+    FeatureClass,
     normEnvVisibility,
 } from './entities';
-import { CREATE_RUNTIME, DISPOSE, RUN } from './symbols';
-import type { IFeature, IRunOptions, TopLevelConfig } from './types';
+import { createFeatureRuntime, RuntimeFeature } from './runtime-feature';
+import { RUN } from './symbols';
+import type { IRunOptions, TopLevelConfig } from './types';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
-    public features = new Map<IFeature, RuntimeFeature<IFeature, ENV>>();
+    public features = new Map<FeatureClass, RuntimeFeature<any, ENV>>();
     public referencedEnvs: Set<string>;
-    private running = false;
+    private running: Promise<void[]> | undefined;
     private topLevelConfigMap: Record<string, object[]>;
     public runningEnvNames: Set<string>;
     constructor(
@@ -25,57 +25,67 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         this.runningEnvNames = normEnvVisibility(entryEnvironment);
     }
 
-    public get<T extends Feature>(feature: T): RuntimeFeature<T, ENV> {
+    public get<T extends FeatureClass>(feature: T): RuntimeFeature<T, ENV> {
         const runningFeature = this.features.get(feature);
         if (runningFeature) {
             return runningFeature as RuntimeFeature<T, ENV>;
         } else {
-            throw new Error(`missing feature ${feature.id}`);
+            throw new Error(`Feature not found: ${feature.id}`);
         }
     }
 
-    public async run(features: Feature | Feature[]): Promise<this> {
+    public async run(features: FeatureClass | FeatureClass[]) {
         if (this.running) {
             throw new Error('Engine already running!');
         }
-        this.running = true;
         if (!Array.isArray(features)) {
             features = [features];
         }
-        for (const feature of features) {
-            this.initFeature(feature);
+        try {
+            for (const feature of features) {
+                this.initFeature(feature);
+            }
+            const runPromises: Array<Promise<void>> = [];
+            for (const feature of features) {
+                runPromises.push(this.runFeature(feature));
+            }
+            // set before await since its a flag for dispose
+            this.running = Promise.all(runPromises);
+            await this.running;
+        } catch (e) {
+            await this.shutdown();
+            throw e;
         }
-        const runPromises: Array<Promise<void>> = [];
-        for (const feature of features) {
-            runPromises.push(this.runFeature(feature));
-        }
-        await Promise.all(runPromises);
         return this;
     }
 
-    public initFeature<T extends IFeature>(feature: T): RuntimeFeature<IFeature, ENV> {
+    public initFeature<T extends FeatureClass>(feature: T): RuntimeFeature<T, ENV> {
         let instance = this.features.get(feature);
         if (!instance) {
-            instance = feature[CREATE_RUNTIME](this);
+            instance = createFeatureRuntime(feature, this);
         }
         return instance;
     }
 
-    public async runFeature(feature: Feature): Promise<void> {
+    public async runFeature(feature: FeatureClass): Promise<void> {
         const featureInstance = this.features.get(feature);
         if (!featureInstance) {
-            throw new Error('Could not find running feature: ' + feature.id);
+            throw new Error(`Feature not found during run phase: ${feature.id}`);
         }
         await featureInstance[RUN](this);
     }
 
-    public async dispose(feature: Feature) {
-        const runningFeature = this.features.get(feature);
-        if (runningFeature) {
-            await runningFeature[DISPOSE](this);
-            this.features.delete(feature);
+    public shutdown = async () => {
+        if (!this.running) {
+            return;
         }
-    }
+        // don't report error on running
+        await Promise.allSettled([this.running]);
+        this.running = undefined;
+        for (const feature of this.features.values()) {
+            await feature.dispose();
+        }
+    };
 
     public getTopLevelConfig(featureId: string, configId: string) {
         return this.topLevelConfigMap[this.entityID(featureId, configId)] || [];

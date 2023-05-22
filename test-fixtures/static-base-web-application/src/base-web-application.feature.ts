@@ -7,12 +7,12 @@ export interface AppConfig {
     message: string;
 }
 
-export default new Feature({
-    id: 'baseApp',
-    api: {
+export default class BaseApp extends Feature<'baseApp'> {
+    id = 'baseApp' as const;
+    api = {
         baseAppConfig: Config.withType<AppConfig>().defineEntity({ message: 'this is configurable' }),
         clientSlot: Slot.withType<string>().defineEntity(client),
         iframeSlot: Slot.withType<string>().defineEntity(iframe),
-    },
-    dependencies: [COM.asDependency],
-});
+    };
+    dependencies = [COM];
+}

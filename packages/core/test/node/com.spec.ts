@@ -336,7 +336,9 @@ describe('Communication', () => {
 
     it('communication handshake', async () => {
         const testText = 'Yoo!';
-        const echoService: { echo(s: string): string } = {
+        const echoService: {
+            echo(s: string): string;
+        } = {
             echo(s: string) {
                 return s;
             },
@@ -410,7 +412,6 @@ describe('Communication', () => {
          *
          * and then initiate a message from 2 to 4, which will be forwarded twice - when it will arrive to 1 and then to 3, and will be forwarded back twice using same mechanism
          */
-
         const host1 = new BaseHost();
         const host2 = new BaseHost();
         const host3 = new BaseHost();
@@ -474,7 +475,6 @@ describe('Communication', () => {
          *
          * call some API from 1 to 2 and check if env 1 is not stuck in endless message forwarding
          */
-
         const host1 = new BaseHost();
         const host2 = new BaseHost();
 
@@ -507,17 +507,23 @@ describe('environment-dependencies communication', () => {
         const env1 = new Environment('env1', 'node', 'single', [base]);
 
         const env2 = new Environment('env2', 'node', 'single');
-
-        const f = new Feature({
-            id: 'base',
-            api: {
-                service1: Service.withType<{ echo: () => string[] }>().defineEntity(base).allowRemoteAccess(),
+        class f extends Feature<'base'> {
+            id = 'base' as const;
+            api = {
+                service1: Service.withType<{
+                    echo: () => string[];
+                }>()
+                    .defineEntity(base)
+                    .allowRemoteAccess(),
                 slot1: Slot.withType<string>().defineEntity(base),
-                service2: Service.withType<{ echo: () => string[] }>().defineEntity(env1).allowRemoteAccess(),
-            },
-            dependencies: [COM.asDependency],
-        });
-
+                service2: Service.withType<{
+                    echo: () => string[];
+                }>()
+                    .defineEntity(env1)
+                    .allowRemoteAccess(),
+            };
+            dependencies = [COM];
+        }
         f.setup(base, ({ slot1 }) => {
             slot1.register(base.env);
             return {
@@ -587,7 +593,9 @@ describe('Event Emitter communication', () => {
 
     it('multi communication', async () => {
         const host = new BaseHost();
-        const eventEmitter = new EventEmitter<{ message: Message }>();
+        const eventEmitter = new EventEmitter<{
+            message: Message;
+        }>();
         const host2 = new EventEmitterHost(eventEmitter);
 
         const main = new Communication(host, 'main');

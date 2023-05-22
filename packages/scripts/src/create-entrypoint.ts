@@ -122,7 +122,7 @@ import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core
 if(!self.EngineCore) {
     self.EngineCore = EngineCore;
 }
-const { getTopWindow, FeatureLoadersRegistry, runEngineApp } = EngineCore;
+const { getTopWindow, FeatureLoadersRegistry, RuntimeEngine, COM } = EngineCore;
 const featureLoaders = new Map(Object.entries({
     ${createFeatureLoaders(features.values(), childEnvs, target, env, eagerEntrypoint, featuresBundleName)}
 }));
@@ -151,29 +151,32 @@ async function main() {
     
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
-    const config = [];
-    const instanceId = options.get(EngineCore.INSTANCE_ID_PARAM_NAME);
     
-    if (instanceId) {
-        currentWindow.name = instanceId;
-    }
-    ${populateConfig(envName, staticBuild, publicConfigsRoute, config)}
-
+    /*********************************************************************/
     const rootFeatureLoader = featureLoaders.get(featureName);
     if(!rootFeatureLoader) {
         throw new Error("cannot find feature '" + featureName + "'. available features:\\n" + Array.from(featureLoaders.keys()).join('\\n'));
     }
     const { resolvedContexts = {} } = rootFeatureLoader;
     const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
+    /*********************************************************************/
+    
+    /*********************************************************************/
+    const instanceId = options.get(EngineCore.INSTANCE_ID_PARAM_NAME);
+    if (instanceId) {
+        currentWindow.name = instanceId;
+    }
+    /*********************************************************************/
+    
+    /*********************************************************************/
+    const config = [
+        COM.use({ config: { resolvedContexts, publicPath } })
+    ];
+    ${populateConfig(envName, staticBuild, publicConfigsRoute, config)}
+    /*********************************************************************/
 
     const loadedFeatures = await featureLoader.getLoadedFeatures(featureName);
-    const features = [loadedFeatures[loadedFeatures.length - 1]];
-
-    const runtimeEngine = runEngineApp(
-        { config, options, env, publicPath, features, resolvedContexts }
-    );
-
-    return runtimeEngine;
+    return new RuntimeEngine(env, config, options).run([loadedFeatures[loadedFeatures.length - 1]]);
 }
 
 main().catch(console.error);

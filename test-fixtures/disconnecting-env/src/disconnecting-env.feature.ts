@@ -7,13 +7,13 @@ export type ErrorTypeConfig = {
     handleUncaught: boolean;
 };
 
-export default new Feature({
-    id: 'disconnecting-env',
-    api: {
+export default class DisconnectingEnv extends Feature<'disconnecting-env'> {
+    id = 'disconnecting-env' as const;
+    api = {
         errorsConfig: Config.withType<ErrorTypeConfig>().defineEntity({
             throwError: 'exit',
             handleUncaught: false,
         }),
-    },
-    dependencies: [COM.asDependency],
-});
+    };
+    dependencies = [COM];
+}
