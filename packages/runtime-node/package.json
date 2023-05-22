@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-runtime-node",
-  "version": "36.1.2",
+  "version": "37.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -8,9 +8,9 @@
   },
   "dependencies": {
     "@wixc3/common": "^8.2.0",
-    "@wixc3/cross-performance": "^36.1.2",
-    "@wixc3/engine-core": "^36.1.2",
-    "@wixc3/engine-core-node": "^36.1.2",
+    "@wixc3/cross-performance": "^37.0.0",
+    "@wixc3/engine-core": "^37.0.0",
+    "@wixc3/engine-core-node": "^37.0.0",
     "@wixc3/patterns": "^8.2.0",
     "create-listening-server": "^2.1.0",
     "minimist": "^1.2.8",
