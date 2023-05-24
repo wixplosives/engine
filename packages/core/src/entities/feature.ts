@@ -49,16 +49,16 @@ export class Feature<T extends string> {
         return ((this.constructor as any).instance ||= this);
     }
     static get id(): string {
-        return validateRegistration(new this());
+        return validateRegistration(instantiateFeature(this));
     }
     static dependencies<T extends FeatureClass>(): InstanceType<T>['dependencies'] {
-        return new this().dependencies;
+        return instantiateFeature(this).dependencies;
     }
     static api<T extends FeatureClass>(this: T): InstanceType<T>['api'] {
-        return identifyApis(this);
+        return instantiateFeature(this).api;
     }
     static context<T extends FeatureClass>(this: T): InstanceType<T>['context'] {
-        return new this().context;
+        return instantiateFeature(this).context;
     }
     static use<T extends FeatureClass>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
         return provideConfig(this, c);
@@ -131,11 +131,11 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
     }
 }
 
-function identifyApis<T extends FeatureClass>(FeatureClass: T) {
+export function instantiateFeature<T extends FeatureClass>(FeatureClass: T) {
     const feature = new FeatureClass();
     const PreventDoubleCheck = FeatureClass as { [IDENTIFY_API]?: boolean };
     if (PreventDoubleCheck[IDENTIFY_API]) {
-        return feature.api;
+        return feature;
     }
     PreventDoubleCheck[IDENTIFY_API] = true;
     for (const [key, api] of Object.entries(feature.api)) {
@@ -144,7 +144,7 @@ function identifyApis<T extends FeatureClass>(FeatureClass: T) {
             entityFn.call(api, feature.id, key);
         }
     }
-    return feature.api;
+    return feature;
 }
 
 function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: Set<string>): string[] {

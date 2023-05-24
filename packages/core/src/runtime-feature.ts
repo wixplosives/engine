@@ -1,6 +1,6 @@
 import type { RuntimeEngine } from './runtime-engine';
 import type { AnyEnvironment } from './entities/env';
-import type { FeatureClass, RunningFeatures, SettingUpFeatureBase } from './entities/feature';
+import { FeatureClass, RunningFeatures, SettingUpFeatureBase, instantiateFeature } from './entities/feature';
 import { CREATE_RUNTIME, ENGINE, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { Context, DisposeFunction, Running } from './types';
@@ -64,7 +64,7 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
     runningEngine: RuntimeEngine<E>
 ): RuntimeFeature<F, E> {
     const { features, runOptions, referencedEnvs, entryEnvironment } = runningEngine;
-    const feature = new FeatureClass();
+    const feature = instantiateFeature(FeatureClass);
     const deps: RunningFeatures<InstanceType<any>['dependencies'], any> = {};
     const depsApis: Record<string, Running<FeatureClass, E>> = {};
     const runningApi: Record<string, unknown> = {};
