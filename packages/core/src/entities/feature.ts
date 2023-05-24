@@ -49,7 +49,7 @@ export class Feature<T extends string> {
     static isEngineFeature = true;
     constructor(secret?: typeof instantiateFeatureSymbol) {
         if (secret !== instantiateFeatureSymbol) {
-            throw new Error('Feature is a singleton, use Feature.instance to access it');
+            throw new Error("Feature can't be instantiated directly");
         }
     }
     static get id(): string {
