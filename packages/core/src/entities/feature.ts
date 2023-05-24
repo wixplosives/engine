@@ -44,8 +44,8 @@ export class Feature<T extends string> {
     public context: Record<string, Context<unknown>> = {};
     static runtimeInfo: undefined | RuntimeInfo = undefined; // each class should have its own runtime info
     static isEngineFeature = true;
+    static [IDENTIFY_API] = false;
     constructor() {
-        identifyApis(this);
         return ((this.constructor as any).instance ||= this);
     }
     static get id(): string {
@@ -55,7 +55,7 @@ export class Feature<T extends string> {
         return new this().dependencies;
     }
     static api<T extends FeatureClass>(this: T): InstanceType<T>['api'] {
-        return new this().api;
+        return identifyApis(new this(), this as { [IDENTIFY_API]?: boolean });
     }
     static context<T extends FeatureClass>(this: T): InstanceType<T>['context'] {
         return new this().context;
@@ -131,13 +131,18 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
     }
 }
 
-function identifyApis(feature: Feature<string>) {
+function identifyApis<T extends FeatureDescriptor>(feature: T, FeatureClass: { [IDENTIFY_API]?: boolean }) {
+    if (FeatureClass[IDENTIFY_API]) {
+        return feature.api;
+    }
+    FeatureClass[IDENTIFY_API] = true;
     for (const [key, api] of Object.entries(feature.api)) {
         const entityFn = api[IDENTIFY_API];
         if (entityFn) {
             entityFn.call(api, feature.id, key);
         }
     }
+    return feature.api;
 }
 
 function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: Set<string>): string[] {
