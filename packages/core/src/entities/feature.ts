@@ -22,6 +22,9 @@ import type {
 } from '../types';
 import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
 
+// this makes the constructor kind of private
+const instantiateFeatureSymbol = Symbol('instantiateFeature');
+
 /**
  @example
     import { Feature, Config } from '@wixc3/engine-core';
@@ -45,8 +48,10 @@ export class Feature<T extends string> {
     static runtimeInfo: undefined | RuntimeInfo = undefined; // each class should have its own runtime info
     static isEngineFeature = true;
     static [IDENTIFY_API] = false; // prevents double identification of apis
-    constructor() {
-        return ((this.constructor as any).instance ||= this);
+    constructor(secret?: typeof instantiateFeatureSymbol) {
+        if (secret !== instantiateFeatureSymbol) {
+            throw new Error('Feature is a singleton, use Feature.instance to access it');
+        }
     }
     static get id(): string {
         return validateRegistration(instantiateFeature(this));
@@ -135,11 +140,12 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
  * assume that feature is singleton we can run identity check on the api once
  */
 export function instantiateFeature<T extends FeatureClass>(FeatureClass: T) {
-    const feature = new FeatureClass();
-    const PreventDoubleCheck = FeatureClass as { [IDENTIFY_API]?: boolean };
+    const PreventDoubleCheck = FeatureClass as { [IDENTIFY_API]?: boolean; instance?: FeatureDescriptor };
+    const feature = PreventDoubleCheck.instance || new FeatureClass(instantiateFeatureSymbol);
     if (PreventDoubleCheck[IDENTIFY_API]) {
         return feature;
     }
+    PreventDoubleCheck.instance = feature;
     PreventDoubleCheck[IDENTIFY_API] = true;
     for (const [key, api] of Object.entries(feature.api)) {
         const entityFn = api[IDENTIFY_API];
@@ -196,7 +202,7 @@ type RuntimeInfo = {
 };
 
 export interface FeatureClass {
-    new (): FeatureDescriptor;
+    new (secret?: typeof instantiateFeatureSymbol): FeatureDescriptor;
     id: string;
     runtimeInfo?: RuntimeInfo;
     isEngineFeature: boolean;
