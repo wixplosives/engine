@@ -131,6 +131,9 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
     }
 }
 
+/**
+ * assume that feature is singleton we can run identity check on the api once
+ */
 export function instantiateFeature<T extends FeatureClass>(FeatureClass: T) {
     const feature = new FeatureClass();
     const PreventDoubleCheck = FeatureClass as { [IDENTIFY_API]?: boolean };
