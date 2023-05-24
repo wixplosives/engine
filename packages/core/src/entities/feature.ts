@@ -47,14 +47,13 @@ export class Feature<T extends string> {
     public context: Record<string, Context<unknown>> = {};
     static runtimeInfo: undefined | RuntimeInfo = undefined; // each class should have its own runtime info
     static isEngineFeature = true;
-    static [IDENTIFY_API] = false; // prevents double identification of apis
     constructor(secret?: typeof instantiateFeatureSymbol) {
         if (secret !== instantiateFeatureSymbol) {
             throw new Error('Feature is a singleton, use Feature.instance to access it');
         }
     }
     static get id(): string {
-        return validateRegistration(instantiateFeature(this));
+        return instantiateFeature(this).id;
     }
     static dependencies<T extends FeatureClass>(): InstanceType<T>['dependencies'] {
         return instantiateFeature(this).dependencies;
@@ -140,13 +139,15 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
  * assume that feature is singleton we can run identity check on the api once
  */
 export function instantiateFeature<T extends FeatureClass>(FeatureClass: T) {
-    const PreventDoubleCheck = FeatureClass as { [IDENTIFY_API]?: boolean; instance?: FeatureDescriptor };
-    const feature = PreventDoubleCheck.instance || new FeatureClass(instantiateFeatureSymbol);
-    if (PreventDoubleCheck[IDENTIFY_API]) {
-        return feature;
+    const Class = FeatureClass as T & { instance?: FeatureDescriptor };
+    if (Class.instance) {
+        return Class.instance;
     }
-    PreventDoubleCheck.instance = feature;
-    PreventDoubleCheck[IDENTIFY_API] = true;
+    const feature = new Class(instantiateFeatureSymbol);
+    Class.instance = feature;
+    if (!feature.id) {
+        throw new Error('Feature must have a const id provided');
+    }
     for (const [key, api] of Object.entries(feature.api)) {
         const entityFn = api[IDENTIFY_API];
         if (entityFn) {
@@ -186,13 +187,6 @@ export function validateNoDuplicateContextRegistration(
             )}`
         );
     }
-}
-
-function validateRegistration(feature: { id: string }) {
-    if (!feature.id) {
-        throw new Error('Feature must have a const id provided');
-    }
-    return feature.id;
 }
 
 type RuntimeInfo = {
