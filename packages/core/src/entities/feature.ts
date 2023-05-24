@@ -44,7 +44,7 @@ export class Feature<T extends string> {
     public context: Record<string, Context<unknown>> = {};
     static runtimeInfo: undefined | RuntimeInfo = undefined; // each class should have its own runtime info
     static isEngineFeature = true;
-    static [IDENTIFY_API] = false;
+    static [IDENTIFY_API] = false; // prevents double identification of apis
     constructor() {
         return ((this.constructor as any).instance ||= this);
     }
@@ -55,7 +55,7 @@ export class Feature<T extends string> {
         return new this().dependencies;
     }
     static api<T extends FeatureClass>(this: T): InstanceType<T>['api'] {
-        return identifyApis(new this(), this as { [IDENTIFY_API]?: boolean });
+        return identifyApis(this);
     }
     static context<T extends FeatureClass>(this: T): InstanceType<T>['context'] {
         return new this().context;
@@ -131,11 +131,13 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
     }
 }
 
-function identifyApis<T extends FeatureDescriptor>(feature: T, FeatureClass: { [IDENTIFY_API]?: boolean }) {
-    if (FeatureClass[IDENTIFY_API]) {
+function identifyApis<T extends FeatureClass>(FeatureClass: T) {
+    const feature = new FeatureClass();
+    const PreventDoubleCheck = FeatureClass as { [IDENTIFY_API]?: boolean };
+    if (PreventDoubleCheck[IDENTIFY_API]) {
         return feature.api;
     }
-    FeatureClass[IDENTIFY_API] = true;
+    PreventDoubleCheck[IDENTIFY_API] = true;
     for (const [key, api] of Object.entries(feature.api)) {
         const entityFn = api[IDENTIFY_API];
         if (entityFn) {
