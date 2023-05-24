@@ -1,6 +1,6 @@
 import { SetMultiMap } from '@wixc3/patterns';
 import type { RuntimeEngine } from '../runtime-engine';
-import { ENGINE, RUN_OPTIONS } from '../symbols';
+import { ENGINE, IDENTIFY_API, RUN_OPTIONS } from '../symbols';
 import type {
     Context,
     DeepEnvironmentDeps,
@@ -45,6 +45,7 @@ export class Feature<T extends string> {
     static runtimeInfo: undefined | RuntimeInfo = undefined; // each class should have its own runtime info
     static isEngineFeature = true;
     constructor() {
+        identifyApis(this);
         return ((this.constructor as any).instance ||= this);
     }
     static get id(): string {
@@ -127,6 +128,15 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
         throw new Error(
             `Feature can only have single setup for each environment. ${featureId} Feature already implements: ${collisions}`
         );
+    }
+}
+
+function identifyApis(feature: Feature<string>) {
+    for (const [key, api] of Object.entries(feature.api)) {
+        const entityFn = api[IDENTIFY_API];
+        if (entityFn) {
+            entityFn.call(api, feature.id, key);
+        }
     }
 }
 
