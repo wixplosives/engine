@@ -31,17 +31,6 @@ chai.use(sinonChai);
 chai.use(chaiAsPromised);
 
 describe('Feature', () => {
-    it('feature should be singleton', () => {
-        class EntryFeature extends Feature<'test'> {
-            id = 'test' as const;
-            api = {
-                config: Config.withType<{
-                    name: string;
-                }>().defineEntity({ name: 'test' }),
-            };
-        }
-        expect(new EntryFeature()).to.equal(new EntryFeature());
-    });
     it('single feature entry', async () => {
         class entryFeature extends Feature<'test'> {
             id = 'test' as const;
@@ -495,6 +484,12 @@ describe('Feature', () => {
                     identifiable: new Identifiable(),
                 };
             }
+
+            expect(Ids.api().identifiable.getIdentity()).to.be.eql({
+                featureID: 'testIdentify',
+                entityKey: 'identifiable',
+            });
+
             const engine = await runEngine({
                 entryFeature: Ids,
                 env: new Environment('main', 'node', 'single'),

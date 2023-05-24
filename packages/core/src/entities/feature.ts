@@ -1,6 +1,6 @@
 import { SetMultiMap } from '@wixc3/patterns';
 import type { RuntimeEngine } from '../runtime-engine';
-import { ENGINE, RUN_OPTIONS } from '../symbols';
+import { ENGINE, IDENTIFY_API, RUN_OPTIONS } from '../symbols';
 import type {
     Context,
     DeepEnvironmentDeps,
@@ -21,6 +21,9 @@ import type {
     RunningInstance,
 } from '../types';
 import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
+
+// this makes the constructor kind of private
+const instantiateFeatureSymbol = Symbol('instantiateFeature');
 
 /**
  @example
@@ -44,20 +47,22 @@ export class Feature<T extends string> {
     public context: Record<string, Context<unknown>> = {};
     static runtimeInfo: undefined | RuntimeInfo = undefined; // each class should have its own runtime info
     static isEngineFeature = true;
-    constructor() {
-        return ((this.constructor as any).instance ||= this);
+    constructor(secret?: typeof instantiateFeatureSymbol) {
+        if (secret !== instantiateFeatureSymbol) {
+            throw new Error('Feature is a singleton, use Feature.instance to access it');
+        }
     }
     static get id(): string {
-        return validateRegistration(new this());
+        return instantiateFeature(this).id;
     }
     static dependencies<T extends FeatureClass>(): InstanceType<T>['dependencies'] {
-        return new this().dependencies;
+        return instantiateFeature(this).dependencies;
     }
     static api<T extends FeatureClass>(this: T): InstanceType<T>['api'] {
-        return new this().api;
+        return instantiateFeature(this).api;
     }
     static context<T extends FeatureClass>(this: T): InstanceType<T>['context'] {
-        return new this().context;
+        return instantiateFeature(this).context;
     }
     static use<T extends FeatureClass>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
         return provideConfig(this, c);
@@ -130,6 +135,28 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
     }
 }
 
+/**
+ * assume that feature is singleton we can run identity check on the api once
+ */
+export function instantiateFeature<T extends FeatureClass>(FeatureClass: T) {
+    const Class = FeatureClass as T & { instance?: FeatureDescriptor };
+    if (Class.instance) {
+        return Class.instance;
+    }
+    const feature = new Class(instantiateFeatureSymbol);
+    Class.instance = feature;
+    if (!feature.id) {
+        throw new Error('Feature must have a const id provided');
+    }
+    for (const [key, api] of Object.entries(feature.api)) {
+        const entityFn = api[IDENTIFY_API];
+        if (entityFn) {
+            entityFn.call(api, feature.id, key);
+        }
+    }
+    return feature;
+}
+
 function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: Set<string>): string[] {
     const containsEnv = new Set<string>();
     const test = (env: string) => {
@@ -162,13 +189,6 @@ export function validateNoDuplicateContextRegistration(
     }
 }
 
-function validateRegistration(feature: { id: string }) {
-    if (!feature.id) {
-        throw new Error('Feature must have a const id provided');
-    }
-    return feature.id;
-}
-
 type RuntimeInfo = {
     setups: SetMultiMap<string, SetupHandler<any, any>>;
     contexts: Map<string, ContextHandler<any, any, any>>;
@@ -176,7 +196,7 @@ type RuntimeInfo = {
 };
 
 export interface FeatureClass {
-    new (): FeatureDescriptor;
+    new (secret?: typeof instantiateFeatureSymbol): FeatureDescriptor;
     id: string;
     runtimeInfo?: RuntimeInfo;
     isEngineFeature: boolean;

@@ -1,7 +1,7 @@
 import type { RuntimeEngine } from './runtime-engine';
 import type { AnyEnvironment } from './entities/env';
-import type { FeatureClass, RunningFeatures, SettingUpFeatureBase } from './entities/feature';
-import { CREATE_RUNTIME, ENGINE, IDENTIFY_API, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
+import { FeatureClass, RunningFeatures, SettingUpFeatureBase, instantiateFeature } from './entities/feature';
+import { CREATE_RUNTIME, ENGINE, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { Context, DisposeFunction, Running } from './types';
 import { deferred, IDeferredPromise } from 'promise-assist';
@@ -64,7 +64,7 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
     runningEngine: RuntimeEngine<E>
 ): RuntimeFeature<F, E> {
     const { features, runOptions, referencedEnvs, entryEnvironment } = runningEngine;
-    const feature = new FeatureClass();
+    const feature = instantiateFeature(FeatureClass);
     const deps: RunningFeatures<InstanceType<any>['dependencies'], any> = {};
     const depsApis: Record<string, Running<FeatureClass, E>> = {};
     const runningApi: Record<string, unknown> = {};
@@ -75,13 +75,6 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
 
     const contextHandlers = FeatureClass.runtimeInfo?.contexts;
     const setupHandlers = FeatureClass.runtimeInfo?.setups;
-
-    for (const [key, api] of Object.entries(feature.api)) {
-        const entityFn = api[IDENTIFY_API];
-        if (entityFn) {
-            entityFn.call(api, feature.id, key);
-        }
-    }
 
     const featureRuntime = new RuntimeFeature(feature, runningApi, deps, entryEnvironment);
     features.set(FeatureClass, featureRuntime);
