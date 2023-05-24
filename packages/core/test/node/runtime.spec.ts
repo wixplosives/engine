@@ -495,6 +495,12 @@ describe('Feature', () => {
                     identifiable: new Identifiable(),
                 };
             }
+
+            expect(Ids.api().identifiable.getIdentity()).to.be.equal({
+                featureID: 'testIdentify',
+                entityKey: 'identifiable',
+            });
+
             const engine = await runEngine({
                 entryFeature: Ids,
                 env: new Environment('main', 'node', 'single'),
