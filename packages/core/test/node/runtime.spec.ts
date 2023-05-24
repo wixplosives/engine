@@ -496,7 +496,7 @@ describe('Feature', () => {
                 };
             }
 
-            expect(Ids.api().identifiable.getIdentity()).to.be.equal({
+            expect(Ids.api().identifiable.getIdentity()).to.be.eql({
                 featureID: 'testIdentify',
                 entityKey: 'identifiable',
             });
