@@ -82,7 +82,8 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         // don't report error on running
         await Promise.allSettled([this.running]);
         this.running = undefined;
-        for (const feature of this.features.values()) {
+        const toDispose = Array.from(this.features.values()).reverse();
+        for (const feature of toDispose) {
             await feature.dispose();
         }
     };
