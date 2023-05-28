@@ -135,7 +135,8 @@ async function main() {
     const currentWindow = typeof self !== 'undefined' ? self : window;
     const topWindow = currentWindow.parent ?? currentWindow;
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
-    const options = new URLSearchParams(currentWindow.location.search);
+    const urlParams = new URLSearchParams(currentWindow.location.search);
+    const options = currentWindow.engineEntryOptions ? currentWindow.engineEntryOptions({urlParams, envName}) : urlParams;
     const env = ${JSON.stringify(
         new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
     )}
