@@ -1,5 +1,5 @@
 import fs from '@file-services/node';
-import crossPerf from '@wixc3/cross-performance';
+import performance from '@wixc3/cross-performance';
 import { FileSystemAPI, SERVER_MARK } from './feature/file-server.feature';
 import type { FileData, IDirectoryContents } from './types';
 
@@ -7,7 +7,7 @@ export class RemoteFilesAPI implements FileSystemAPI {
     constructor(private basePath: string) {}
 
     public readDir(directoryPath: string): IDirectoryContents {
-        crossPerf.mark(SERVER_MARK);
+        performance.mark(SERVER_MARK);
         return this.getDirectoryTree(fs.join(this.basePath, directoryPath));
     }
 

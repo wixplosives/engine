@@ -2,7 +2,7 @@ import { safeListeningHttpServer } from 'create-listening-server';
 import type { Socket } from 'net';
 import { delimiter } from 'path';
 import io from 'socket.io';
-import crossPerf from '@wixc3/cross-performance';
+import performance from '@wixc3/cross-performance';
 
 import {
     BaseHost,
@@ -146,8 +146,8 @@ export class NodeEnvironmentsManager {
             configName = this.applyConfigOverride(configName, overrideConfig);
         }
         // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
-        crossPerf.clearMeasures();
-        crossPerf.clearMarks();
+        performance.clearMeasures();
+        performance.clearMarks();
         return this.runServerEnvironments({
             featureName,
             configName,
@@ -159,8 +159,8 @@ export class NodeEnvironmentsManager {
         if (configName) {
             this.overrideConfigsMap.delete(configName);
         }
-        crossPerf.clearMeasures();
-        crossPerf.clearMarks();
+        performance.clearMeasures();
+        performance.clearMarks();
         return this.closeEnvironment({
             featureName,
             configName,
@@ -168,8 +168,8 @@ export class NodeEnvironmentsManager {
     };
     public getMetrics = () => {
         return {
-            marks: crossPerf.getEntriesByType('mark'),
-            measures: crossPerf.getEntriesByType('measure'),
+            marks: performance.getEntriesByType('mark'),
+            measures: performance.getEntriesByType('measure'),
         };
     };
     public applyConfigOverride(

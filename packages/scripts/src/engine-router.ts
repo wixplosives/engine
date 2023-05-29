@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import bodyParser from 'body-parser';
-import crossPerf from '@wixc3/cross-performance';
+import performance from '@wixc3/cross-performance';
 
 import type { IFeatureMessagePayload, IFeatureTarget } from './types';
 import type { IProcessMessage, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
@@ -26,8 +26,8 @@ export function createFeaturesEngineRouter(nodeEnvironmentManager: NodeEnvironme
                 providedConfigName = generatedConfigName;
             }
             // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
-            crossPerf.clearMarks();
-            crossPerf.clearMeasures();
+            performance.clearMarks();
+            performance.clearMeasures();
             await nodeEnvironmentManager.runServerEnvironments({
                 configName: providedConfigName,
                 featureName,
@@ -54,8 +54,8 @@ export function createFeaturesEngineRouter(nodeEnvironmentManager: NodeEnvironme
         overrideConfigsMap.delete(configName);
         try {
             await nodeEnvironmentManager.closeEnvironment({ featureName, configName });
-            crossPerf.clearMarks();
-            crossPerf.clearMeasures();
+            performance.clearMarks();
+            performance.clearMeasures();
             res.json({
                 id: 'feature-closed',
                 payload: {
@@ -91,8 +91,8 @@ export function createFeaturesEngineRouter(nodeEnvironmentManager: NodeEnvironme
             res.json({
                 result: 'success',
                 payload: {
-                    marks: crossPerf.getEntriesByType('mark'),
-                    measures: crossPerf.getEntriesByType('measure'),
+                    marks: performance.getEntriesByType('mark'),
+                    measures: performance.getEntriesByType('measure'),
                 },
             });
         } catch (error: unknown) {
