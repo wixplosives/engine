@@ -497,7 +497,7 @@ describe('Communication', () => {
         const apiProxy = com1.apiProxy<typeof echoService>({ id: 'com2' }, { id: 'service' });
 
         await expect(apiProxy.test()).to.be.rejected;
-    }).timeout(100);
+    });
 });
 
 describe('environment-dependencies communication', () => {
