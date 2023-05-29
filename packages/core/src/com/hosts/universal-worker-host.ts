@@ -2,7 +2,7 @@ import type {
     UniversalMessageHandler,
     UniversalWorker,
     UniversalWorkerUserMethods,
-} from '@wixc3/isomorphic-worker/dist/types';
+} from '@wixc3/isomorphic-worker/types';
 
 import { Target } from '../types';
 
