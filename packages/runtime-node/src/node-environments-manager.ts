@@ -142,7 +142,7 @@ export class NodeEnvironmentsManager {
     }: Pick<RunEnvironmentOptions, 'configName' | 'featureName' | 'runtimeOptions'> & {
         overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     }) => {
-        if (overrideConfig) {
+        if (overrideConfig?.length) {
             configName = this.applyConfigOverride(configName, overrideConfig);
         }
         // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
