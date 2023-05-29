@@ -2,7 +2,6 @@ import { safeListeningHttpServer } from 'create-listening-server';
 import type { Socket } from 'net';
 import { delimiter } from 'path';
 import io from 'socket.io';
-import performance from '@wixc3/cross-performance';
 
 import {
     BaseHost,
