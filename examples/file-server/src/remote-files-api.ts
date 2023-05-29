@@ -1,5 +1,4 @@
 import fs from '@file-services/node';
-import performance from '@wixc3/cross-performance';
 import { FileSystemAPI, SERVER_MARK } from './feature/file-server.feature';
 import type { FileData, IDirectoryContents } from './types';
 

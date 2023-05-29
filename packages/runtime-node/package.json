@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "@wixc3/common": "^8.2.0",
-    "@wixc3/cross-performance": "^37.0.3",
     "@wixc3/engine-core": "^37.0.3",
     "@wixc3/engine-core-node": "^37.0.3",
     "@wixc3/patterns": "^8.2.0",

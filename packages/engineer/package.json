@@ -18,7 +18,6 @@
   "dependencies": {
     "@file-services/node": "^7.3.0",
     "@wixc3/common": "^8.2.0",
-    "@wixc3/cross-performance": "^37.0.3",
     "@wixc3/engine-core": "^37.0.3",
     "@wixc3/engine-core-node": "^37.0.3",
     "@wixc3/engine-dashboard": "^37.0.3",
