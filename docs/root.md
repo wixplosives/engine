@@ -89,6 +89,5 @@ feat2.setup(env1, ({}, {feat1: {echoService}})=> {
     - [utils.scripts.build](./utils.scripts.build.md)
   - [utils.electron](./utils.electron.md)
   - [utils.testkit](./utils.testkit.md)
-  - [utils.performance](./utils.performance.md)
   - [utils.runtime-node](./utils.runtime-node.md)
     - [utils.runtime-node.node-environment-manager](./utils.runtime-node.node-environment-manager.md)

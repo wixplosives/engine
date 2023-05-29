@@ -1,6 +1,5 @@
 import type io from 'socket.io';
 
-import performance from '@wixc3/cross-performance';
 import { BaseHost, COM, ConfigEnvironmentRecord, PartialFeatureConfig } from '@wixc3/engine-core';
 import { IPCHost, ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from '@wixc3/engine-core-node';
 

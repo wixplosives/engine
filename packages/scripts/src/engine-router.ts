@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import bodyParser from 'body-parser';
-import performance from '@wixc3/cross-performance';
 
 import type { IFeatureMessagePayload, IFeatureTarget } from './types';
 import type { IProcessMessage, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';

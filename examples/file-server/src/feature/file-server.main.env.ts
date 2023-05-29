@@ -1,6 +1,5 @@
 import FileServer, { server, MAIN_MARK, main } from './file-server.feature';
 import { socketClientInitializer } from '@wixc3/engine-core';
-import performance from '@wixc3/cross-performance';
 
 /**
  * Setting up the FileServer feature main environment
