@@ -42,7 +42,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         })
     );
 
-    const runningNodeEnv = await runNodeEnvironment({
+    const engine = await runNodeEnvironment({
         env,
         featureName,
         features,
@@ -56,7 +56,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
 
     disposables.add(() => {
         parentPort!.off('message', messageHandler);
-        return runningNodeEnv.dispose();
+        return engine.shutdown();
     });
 };
 

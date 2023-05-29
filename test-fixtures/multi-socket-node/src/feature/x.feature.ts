@@ -3,16 +3,23 @@ export const mainEnv = new Environment('main', 'window', 'single');
 export const serverEnv = new Environment('server', 'node', 'single');
 export const anotherServerEnv = new Environment('server-two', 'node', 'single');
 
-export default new Feature({
-    id: 'XTestFeature',
-    api: {
-        echoService: Service.withType<{ echo: () => Promise<string>; getName: () => string }>()
+export default class XTestFeature extends Feature<'XTestFeature'> {
+    id = 'XTestFeature' as const;
+    api = {
+        echoService: Service.withType<{
+            echo: () => Promise<string>;
+            getName: () => string;
+        }>()
             .defineEntity(serverEnv)
             .allowRemoteAccess(),
-        anotherEchoService: Service.withType<{ echo: () => Promise<string> }>()
+        anotherEchoService: Service.withType<{
+            echo: () => Promise<string>;
+        }>()
             .defineEntity(anotherServerEnv)
             .allowRemoteAccess(),
-        config: Config.withType<{ value: string }>().defineEntity({ value: 'Hello' }, undefined, serverEnv),
-    },
-    dependencies: [COM.asDependency],
-});
+        config: Config.withType<{
+            value: string;
+        }>().defineEntity({ value: 'Hello' }, undefined, serverEnv),
+    };
+    dependencies = [COM];
+}

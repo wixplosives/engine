@@ -460,7 +460,7 @@ export class NodeEnvironmentsManager {
         }
 
         if (mode === 'new-server') {
-            return await this.runEnvironmentInNewServer(port, nodeEnvironmentOptions);
+            return this.runEnvironmentInNewServer(port, nodeEnvironmentOptions);
         }
 
         const { start } = runWSEnvironment(this.socketServer, nodeEnvironmentOptions);
@@ -477,7 +477,17 @@ export class NodeEnvironmentsManager {
 
         return {
             start: async () => {
-                const { close } = await runWSEnvironment(socketServer, serverEnvironmentOptions).start();
+                let close: () => Promise<void>;
+                try {
+                    const { close: wsEnvClose } = await runWSEnvironment(
+                        socketServer,
+                        serverEnvironmentOptions
+                    ).start();
+                    close = wsEnvClose;
+                } catch (e) {
+                    await new Promise<void>((res, rej) => socketServer.close((e) => (e ? rej(e) : res())));
+                    throw e;
+                }
                 const openSockets = new Set<Socket>();
                 const captureConnections = (socket: Socket): void => {
                     openSockets.add(socket);
@@ -494,15 +504,7 @@ export class NodeEnvironmentsManager {
                         for (const socket of openSockets) {
                             socket.destroy();
                         }
-                        await new Promise<void>((res, rej) =>
-                            socketServer.close((e) => {
-                                if (e) {
-                                    rej(e);
-                                } else {
-                                    res();
-                                }
-                            })
-                        );
+                        await new Promise<void>((res, rej) => socketServer.close((e) => (e ? rej(e) : res())));
                         await close();
                     },
                 };

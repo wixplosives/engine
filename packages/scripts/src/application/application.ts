@@ -195,30 +195,6 @@ export class Application {
         };
     }
 
-    private remapManifestFeaturePaths(manifestFeatures: [string, IFeatureDefinition][]) {
-        const features = new Map<string, IFeatureDefinition>();
-        for (const [featureName, featureDef] of manifestFeatures) {
-            const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
-            features.set(featureName, {
-                ...featureDef,
-                filePath: require.resolve(filePath, { paths: [this.outputPath] }),
-                envFilePaths: this.resolveManifestPaths(envFilePaths),
-                contextFilePaths: this.resolveManifestPaths(contextFilePaths),
-                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths),
-            });
-        }
-        return features;
-    }
-
-    private resolveManifestPaths(envFilePaths: Record<string, string> = {}): Record<string, string> {
-        return Object.fromEntries(
-            Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
-                envName,
-                require.resolve(filePath, { paths: [this.outputPath] }),
-            ])
-        );
-    }
-
     public async remote({ port: preferredPort, socketServerOptions }: IRunApplicationOptions = {}) {
         if (!process.send) {
             throw new Error('"remote" command can only be used in a forked process');
@@ -260,6 +236,30 @@ export class Application {
             templatesDirPath,
             featureDirNameTemplate,
         });
+    }
+
+    private remapManifestFeaturePaths(manifestFeatures: [string, IFeatureDefinition][]) {
+        const features = new Map<string, IFeatureDefinition>();
+        for (const [featureName, featureDef] of manifestFeatures) {
+            const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
+            features.set(featureName, {
+                ...featureDef,
+                filePath: require.resolve(filePath, { paths: [this.outputPath] }),
+                envFilePaths: this.resolveManifestPaths(envFilePaths),
+                contextFilePaths: this.resolveManifestPaths(contextFilePaths),
+                preloadFilePaths: this.resolveManifestPaths(preloadFilePaths),
+            });
+        }
+        return features;
+    }
+
+    private resolveManifestPaths(envFilePaths: Record<string, string> = {}): Record<string, string> {
+        return Object.fromEntries(
+            Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
+                envName,
+                require.resolve(filePath, { paths: [this.outputPath] }),
+            ])
+        );
     }
 
     public async loadEngineConfig(): Promise<{ config?: EngineConfig; path?: string }> {

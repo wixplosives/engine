@@ -1,4 +1,4 @@
-import { EnvironmentInitializer, IActiveEnvironment } from '@wixc3/engine-core';
+import { EnvironmentInitializer, ActiveEnvironment } from '@wixc3/engine-core';
 import { createMetadataProvider } from '@wixc3/engine-core-node';
 import { createDisposables } from '@wixc3/patterns';
 import { InitializeNodeEnvironmentOptions, initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
@@ -8,7 +8,7 @@ import { InitializeNodeEnvironmentOptions, initializeNodeEnvironment } from '@wi
  * Should be invoked *only* from the renderer process.
  */
 export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
-    Promise<IActiveEnvironment>,
+    Promise<ActiveEnvironment>,
     Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
 > = async (options) => {
     const disposables = createDisposables();

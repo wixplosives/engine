@@ -6,9 +6,9 @@ export interface IDefaultConfig {
     echoText: string;
 }
 
-export default new Feature({
-    id: 'withConfigs',
-    api: {
+export default class WithConfigs extends Feature<'withConfigs'> {
+    id = 'withConfigs' as const;
+    api = {
         config: new Config<IDefaultConfig>({ echoText: 'hello' }),
-    },
-});
+    };
+}

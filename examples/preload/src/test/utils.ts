@@ -17,7 +17,7 @@ export const startServerNewProcess = async ({
     launchOptions,
     minimal,
 }: StartServerNewProcessOptions) => {
-    const { dispose, devServerFeature } = await startDevServer({
+    const { engine, devServerFeature } = await startDevServer({
         targetApplicationPath: projectPath,
         featureName,
         autoLaunch: true,
@@ -37,5 +37,5 @@ export const startServerNewProcess = async ({
 
     const featureUrl = `http://localhost:${runningPort}/main.html?feature=${featureName}`;
 
-    return { dispose, runningPort, browserProvider: createBrowserProvider(launchOptions), featureUrl };
+    return { dispose: engine.shutdown, runningPort, browserProvider: createBrowserProvider(launchOptions), featureUrl };
 };

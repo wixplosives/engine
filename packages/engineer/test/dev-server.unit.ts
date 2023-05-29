@@ -57,12 +57,11 @@ describe('engineer:dev-server', function () {
         featureDiscoveryRoot?: string;
         nodeEnvironmentsMode?: LaunchEnvironmentMode;
     }): Promise<{
-        dispose: () => Promise<void>;
         engine: RuntimeEngine;
         runtimeFeature: typeof devServerFeature;
         config: { featureName: string | undefined; port: number };
     }> => {
-        const { dispose, engine, devServerFeature } = await startDevServer({
+        const { engine, devServerFeature } = await startDevServer({
             engineerEntry: 'engineer/dev-server',
             targetApplicationPath: basePath,
             httpServerPort: port,
@@ -81,10 +80,9 @@ describe('engineer:dev-server', function () {
             devServerFeature.serverListeningHandlerSlot.register(({ port }) => resolve(port));
         });
 
-        disposables.add(dispose);
+        disposables.add(engine.shutdown);
 
         return {
-            dispose,
             engine,
             runtimeFeature: devServerFeature,
             config: { featureName, port: runningPort },
@@ -514,12 +512,10 @@ describe('engineer:dev-server', function () {
     it('supports simple environment extension', async () => {
         const {
             config: { port },
-            dispose,
         } = await setup({
             basePath: environmentExtensionFeaturePath,
             featureName: 'engine-env-dependency/app',
         });
-        disposables.add(() => dispose);
 
         const page = await loadPage(`http://localhost:${port}/page1.html`);
 
@@ -529,12 +525,10 @@ describe('engineer:dev-server', function () {
     it('supports base environment extension in dependent features', async () => {
         const {
             config: { port },
-            dispose,
         } = await setup({
             basePath: environmentExtensionFeaturePath,
             featureName: 'engine-env-dependency/variant',
         });
-        disposables.add(() => dispose);
 
         const page = await loadPage(`http://localhost:${port}/page2.html`);
 
@@ -544,12 +538,10 @@ describe('engineer:dev-server', function () {
     it('in extending environment invokes parent environment setup prior to own', async () => {
         const {
             config: { port },
-            dispose,
         } = await setup({
             basePath: environmentExtensionFeaturePath,
             featureName: 'engine-env-dependency/variant',
         });
-        disposables.add(() => dispose);
 
         const page = await loadPage(`http://localhost:${port}/page1.html`);
 

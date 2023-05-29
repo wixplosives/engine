@@ -4,11 +4,11 @@ import type { BaseCompiler, CompilerExtension } from './BaseCompiler';
 
 export const PREVIEW = new Environment('preview', 'iframe', 'single');
 
-export default new Feature({
-    id: 'preview',
-    dependencies: [COM.asDependency, CodeEditor.asDependency],
-    api: {
+export default class Preview extends Feature<'preview'> {
+    id = 'preview' as const;
+    api = {
         complierExtension: Slot.withType<CompilerExtension>().defineEntity(PROCESSING),
         compileService: Service.withType<BaseCompiler>().defineEntity(PROCESSING).allowRemoteAccess(),
-    },
-});
+    };
+    dependencies = [COM, CodeEditor];
+}

@@ -1,6 +1,6 @@
 import type { EnvironmentTypes } from '../com/types';
 import { runtimeType } from '../entity-helpers';
-import type { DisposableContext, EnvVisibility, MapBy } from '../types';
+import type { Context, EnvVisibility, MapBy } from '../types';
 
 export type EnvironmentMode = 'single' | 'multi';
 export type AnyEnvironment = Environment<
@@ -63,7 +63,7 @@ export class ContextualEnvironment<
         return new EnvironmentContext(this.env, contextEnv);
     }
 
-    public withContext<I extends object>(): DisposableContext<I> {
+    public withContext<I extends object>(): Context<I> {
         return {
             type: runtimeType<I & { dispose(): unknown }>(this.env + ' context'),
         };
@@ -90,21 +90,4 @@ export function normEnvVisibility(envVisibility: EnvVisibility, includeDependenc
         }
     }
     return envSet;
-}
-
-export function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: Set<string>): string[] {
-    const containsEnv = new Set<string>();
-    const test = (env: string) => {
-        envSet.has(env) ? containsEnv.add(env) : envSet.add(env);
-    };
-    if (Array.isArray(envVisibility)) {
-        for (const e of envVisibility) {
-            test(e.env);
-        }
-    } else if (typeof envVisibility === 'string') {
-        test(envVisibility);
-    } else {
-        test(envVisibility.env);
-    }
-    return [...containsEnv];
 }

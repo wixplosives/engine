@@ -1,10 +1,9 @@
 import { Feature } from '@wixc3/engine-core';
 import contextualFeature, { procEnv } from '../feature/preload-context.feature';
 
-export default new Feature({
-    id: 'preloadContextWorker',
-    dependencies: [contextualFeature.asDependency],
-    api: {},
-});
-
+export default class PreloadContextWorker extends Feature<'preloadContextWorker'> {
+    id = 'preloadContextWorker' as const;
+    api = {};
+    dependencies = [contextualFeature];
+}
 export const Context = procEnv.useContext('workerCtx');

@@ -21,7 +21,14 @@ export const socketClientInitializer = async ({
     }
     communication.registerMessageHandler(host);
     communication.registerEnv(instanceId, host);
-    await host.connected;
+    try {
+        await host.connected;
+    } catch (e) {
+        communication.clearEnvironment(instanceId, undefined, false);
+        host.dispose();
+        throw e;
+    }
+
     communication.handleReady({ from: instanceId } as ReadyMessage);
 
     return {
@@ -31,6 +38,10 @@ export const socketClientInitializer = async ({
         },
         onReconnect: (cb: () => void) => {
             host.subscribers.on('reconnect', cb);
+        },
+        dispose: () => {
+            communication.clearEnvironment(instanceId, undefined, false);
+            host.dispose();
         },
     };
 };

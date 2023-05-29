@@ -1,7 +1,7 @@
 {
   "name": "electron-app",
   "description": "sample engine application running in electron",
-  "version": "36.1.1",
+  "version": "37.0.3",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@file-services/node": "^7.3.0",
-    "@wixc3/engine-core": "^36.1.1",
-    "@wixc3/engine-electron": "^36.1.1",
-    "@wixc3/engine-electron-host": "^36.1.1",
-    "@wixc3/engine-electron-node": "^36.1.1"
+    "@wixc3/engine-core": "^37.0.3",
+    "@wixc3/engine-electron": "^37.0.3",
+    "@wixc3/engine-electron-host": "^37.0.3",
+    "@wixc3/engine-electron-node": "^37.0.3"
   },
   "author": {
     "name": "Wix.com",

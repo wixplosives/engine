@@ -4,11 +4,9 @@ import type { DevServerActions, DevServerConfig, ServerListeningHandler } from '
 import { Application } from '@wixc3/engine-scripts';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
-
-export default new Feature({
-    id: 'buildFeature',
-    dependencies: [COM.asDependency],
-    api: {
+export default class BuildFeature extends Feature<'buildFeature'> {
+    id = 'buildFeature' as const;
+    api = {
         /**
          * service providing application level behavior and info, such as node env management, feature detection etc
          */
@@ -38,5 +36,6 @@ export default new Feature({
          * Actions that can be performed on the dev server, currently only close
          */
         devServerActions: Service.withType<DevServerActions>().defineEntity(devServerEnv),
-    },
-});
+    };
+    dependencies = [COM];
+}

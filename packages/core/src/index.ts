@@ -5,6 +5,7 @@ export * from './common-types';
 export * from './entity-helpers';
 export * from './run-engine-app';
 export * from './runtime-engine';
+export * from './runtime-feature';
 export * from './symbols';
 export * from './types';
 export * from './communication.feature';

@@ -1,5 +1,5 @@
 import type { IFileSystemSync } from '@file-services/types';
-import type { Feature } from '@wixc3/engine-core';
+import type { FeatureClass } from '@wixc3/engine-core';
 import { concat, getValue, isPlainObject, map } from '@wixc3/common';
 import { SetMultiMap } from '@wixc3/patterns';
 import {
@@ -46,7 +46,7 @@ export function loadFeaturesFromPaths(
 
     const foundFeatures = new Map<string, IFeatureDefinition>();
     const foundConfigs = new SetMultiMap<string, IConfigDefinition>();
-    const featureToScopedName = new Map<Feature, string>();
+    const featureToScopedName = new Map<FeatureClass, string>();
 
     // TODO change this loop into individual loops per task
     for (const { directoryPath, features, configurations, envs, contexts, preloads } of featureDirectories) {
@@ -83,7 +83,7 @@ export function loadFeaturesFromPaths(
         // compute context
         Object.assign(resolvedContexts, computeUsedContext(featureName, foundFeatures));
         // compute dependencies
-        dependencies.push(...exportedFeature.dependencies.map((feature) => featureToScopedName.get(feature)!));
+        dependencies.push(...exportedFeature.dependencies().map((feature) => featureToScopedName.get(feature)!));
     }
 
     foundFeatures.forEach((def) => Object.assign(def, override));
@@ -92,7 +92,6 @@ export function loadFeaturesFromPaths(
 
 type AnalyzedFeatureModule = {
     scopedName: string;
-    evaluated: NodeJS.Module | undefined;
     module: IFeatureModule;
     filePath: string;
 };
@@ -120,7 +119,6 @@ function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): A
     const scopedName = scopeToPackage(featurePackage.simplifiedName, module.name)!;
     return {
         scopedName,
-        evaluated,
         module,
         filePath,
     };

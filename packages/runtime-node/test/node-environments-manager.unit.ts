@@ -1,6 +1,6 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { COM, Environment, Feature, runEngineApp, Service, socketClientInitializer } from '@wixc3/engine-core';
+import { COM, Environment, Feature, RuntimeEngine, Service, socketClientInitializer } from '@wixc3/engine-core';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { launchEngineHttpServer, NodeEnvironmentsManager, IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
@@ -193,15 +193,21 @@ describe('Node environments manager', function () {
     });
 
     describe('Node environment manager socket communication', () => {
-        const proxyFeature = new Feature({
-            id: 'test',
-            api: {
-                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
-            },
-            dependencies: [SocketServerNodeFeature.asDependency, COM.asDependency],
-        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
-            void socketClientInitializer({ communication, env: socketServerEnv });
+        class ProxyFeature extends Feature<'test'> {
+            id = 'test' as const;
+            api = {
+                echoService: Service.withType<{
+                    echo: () => Promise<string>;
+                }>().defineEntity(env),
+            };
+            dependencies = [SocketServerNodeFeature, COM];
+        }
 
+        ProxyFeature.setup(env, ({ run, onDispose }, { XTestFeature: { echoService }, COM: { communication } }) => {
+            run(async () => {
+                const { dispose } = await socketClientInitializer({ communication, env: socketServerEnv });
+                onDispose(dispose);
+            });
             return {
                 echoService: {
                     echo: () => {
@@ -232,21 +238,18 @@ describe('Node environments manager', function () {
                 featureName: engineMultiNodeSocketCommunication.scopedName,
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [proxyFeature],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology('engine-multi-socket-node/x'),
-                        },
-                    }),
-                ],
-            });
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology('engine-multi-socket-node/x'),
+                    },
+                }),
+            ]);
 
-            expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
+            disposables.add(engine.shutdown);
+            await engine.run(ProxyFeature);
+            const res = await engine.get(ProxyFeature).api.echoService.echo();
+            expect(res).to.eq('hello gaga');
         });
 
         it('remote API calls should work with undefined arguments', async () => {
@@ -281,40 +284,44 @@ describe('Node environments manager', function () {
                 featureName: engineMultiEnvCommunication.scopedName,
             });
 
-            const proxyFeatureTest = new Feature({
-                id: 'proxy',
-                api: {
+            class ProxyFeatureTest extends Feature<'proxy'> {
+                id = 'proxy' as const;
+                api = {
                     echoService: Service.withType<{ echo: (s?: string) => Promise<string> }>().defineEntity(env),
-                },
-                dependencies: [defaultArgsEchoFeature.asDependency, COM.asDependency],
-            }).setup(env, ({}, { defaultArgsEcho: { echoService }, COM: { communication } }) => {
-                void socketClientInitializer({ communication, env: echoServerEnv });
-
-                return {
-                    echoService: {
-                        echo: (s?: string) => {
-                            return echoService.echo(s);
-                        },
-                    },
                 };
-            });
+                dependencies = [defaultArgsEchoFeature, COM];
+            }
 
-            const { dispose, engine } = runEngineApp({
+            ProxyFeatureTest.setup(
                 env,
-                resolvedContexts: {},
-                features: [proxyFeatureTest],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology('engine-default-args-echo'),
+                ({ run, onDispose }, { defaultArgsEcho: { echoService }, COM: { communication } }) => {
+                    run(async () => {
+                        const { dispose } = await socketClientInitializer({ communication, env: echoServerEnv });
+                        onDispose(dispose);
+                    });
+
+                    return {
+                        echoService: {
+                            echo: (s?: string) => {
+                                return echoService.echo(s);
+                            },
                         },
-                    }),
-                ],
-            });
+                    };
+                }
+            );
 
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology('engine-default-args-echo'),
+                    },
+                }),
+            ]);
+            disposables.add(engine.shutdown);
 
-            expect(await engine.get(proxyFeatureTest).api.echoService.echo(undefined)).to.equal('dude, it works!');
+            await engine.run(ProxyFeatureTest);
+
+            expect(await engine.get(ProxyFeatureTest).api.echoService.echo(undefined)).to.equal('dude, it works!');
         });
 
         it('allows socket communication between node environments when running in forked mode', async () => {
@@ -339,32 +346,36 @@ describe('Node environments manager', function () {
                 mode: 'forked',
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [proxyFeature],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeSocketCommunication.scopedName),
-                        },
-                    }),
-                ],
-            });
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology(engineMultiNodeSocketCommunication.scopedName),
+                    },
+                }),
+            ]);
+            disposables.add(engine.shutdown);
 
-            expect(await engine.get(proxyFeature).api.echoService.echo()).to.eq('hello gaga');
+            await engine.run(ProxyFeature);
+
+            expect(await engine.get(ProxyFeature).api.echoService.echo()).to.eq('hello gaga');
         });
     });
     describe('Node environment manager ipc communication', () => {
-        const testFeature = new Feature({
-            id: 'test',
-            api: {
-                echoService: Service.withType<{ echo: () => Promise<string> }>().defineEntity(env),
-            },
-            dependencies: [ServerNodeFeature.asDependency, COM.asDependency],
-        }).setup(env, ({}, { XTestFeature: { echoService }, COM: { communication } }) => {
-            void socketClientInitializer({ communication, env: serverEnv });
+        class TestFeature extends Feature<'test'> {
+            id = 'test' as const;
+            api = {
+                echoService: Service.withType<{
+                    echo: () => Promise<string>;
+                }>().defineEntity(env),
+            };
+            dependencies = [ServerNodeFeature, COM];
+        }
+
+        TestFeature.setup(env, ({ run, onDispose }, { XTestFeature: { echoService }, COM: { communication } }) => {
+            run(async () => {
+                const { dispose } = await socketClientInitializer({ communication, env: serverEnv });
+                onDispose(dispose);
+            });
 
             return {
                 echoService: {
@@ -396,21 +407,18 @@ describe('Node environments manager', function () {
                 featureName: engineMultiNodeIPCCommunication.scopedName,
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [testFeature],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
-                        },
-                    }),
-                ],
-            });
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
+                    },
+                }),
+            ]);
+            disposables.add(engine.shutdown);
 
-            expect(await engine.get(testFeature).api.echoService.echo()).to.eq('hello gaga');
+            await engine.run(TestFeature);
+
+            expect(await engine.get(TestFeature).api.echoService.echo()).to.eq('hello gaga');
         });
 
         it('allows local communication between node environments when running in forked mode', async () => {
@@ -435,21 +443,19 @@ describe('Node environments manager', function () {
                 mode: 'forked',
             });
 
-            const { dispose, engine } = runEngineApp({
-                env,
-                resolvedContexts: {},
-                features: [testFeature],
-                config: [
-                    COM.use({
-                        config: {
-                            topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
-                        },
-                    }),
-                ],
-            });
-            disposables.add(() => dispose());
+            const engine = new RuntimeEngine(env, [
+                COM.use({
+                    config: {
+                        topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
+                    },
+                }),
+            ]);
 
-            expect(await engine.get(testFeature).api.echoService.echo()).to.eq('hello gaga');
+            disposables.add(engine.shutdown);
+
+            await engine.run(TestFeature);
+
+            expect(await engine.get(TestFeature).api.echoService.echo()).to.eq('hello gaga');
         });
     });
 });

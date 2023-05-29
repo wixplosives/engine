@@ -20,7 +20,7 @@ ElectronApp.setup(server2, ({ echoService: { getText } }) => {
                 }
             },
             async getText() {
-                return (await getText()) + (await this.echo());
+                return `${await getText()}${await this.echo()}`;
             },
         },
     };

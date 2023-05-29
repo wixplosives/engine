@@ -1,25 +1,26 @@
 import { basename } from 'path';
-import {
-    Environment,
-    EnvironmentContext,
-    Feature,
-    getFeaturesDeep,
-    ContextualEnvironment,
-    flattenTree,
-} from '@wixc3/engine-core';
+import { Environment, EnvironmentContext, ContextualEnvironment, flattenTree, FeatureClass } from '@wixc3/engine-core';
 import { isFeatureFile, parseFeatureFileName } from '../build-constants';
 import { instanceOf } from '../utils/instance-of';
 import type { IFeatureDefinition, IFeatureModule } from '../types';
 import { parseContextualEnv, parseEnv } from './parse-env';
+
+function isEngineFeature(Class: unknown) {
+    return typeof Class === 'function' && (Class as FeatureClass).isEngineFeature;
+}
+
+function getFeaturesDeep(feature: FeatureClass) {
+    return flattenTree(feature, (f) => f.dependencies());
+}
 
 export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {
     if (typeof exports !== 'object' || exports === null) {
         throw new Error(`${filePath} does not export an object.`);
     }
 
-    const { default: exportedFeature } = exports as { default: Feature };
+    const { default: exportedFeature } = exports as { default: FeatureClass };
 
-    if (!instanceOf(exportedFeature, Feature)) {
+    if (!isEngineFeature(exportedFeature)) {
         throw new Error(`${filePath} does not "export default" a Feature.`);
     }
 
@@ -56,7 +57,7 @@ export const getFeatureModules = (module: NodeJS.Module) =>
     );
 
 export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
-    const featureToDef = new Map<Feature, IFeatureDefinition>();
+    const featureToDef = new Map<FeatureClass, IFeatureDefinition>();
     for (const featureDef of features.values()) {
         featureToDef.set(featureDef.exportedFeature, featureDef);
     }

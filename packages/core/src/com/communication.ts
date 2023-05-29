@@ -53,7 +53,7 @@ export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;
 }
 
-export interface ICommunicationOptions {
+export interface CommunicationOptions {
     warnOnSlow?: boolean;
     publicPath?: string;
     connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
@@ -77,7 +77,7 @@ export class Communication {
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
-    private options: Required<ICommunicationOptions>;
+    private options: Required<CommunicationOptions>;
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
@@ -90,7 +90,7 @@ export class Communication {
         public topology: Record<string, string> = {},
         public resolvedContexts: Record<string, string> = {},
         public isServer = false,
-        options?: ICommunicationOptions
+        options?: CommunicationOptions
     ) {
         this.options = { warnOnSlow: false, publicPath: '', connectedEnvironments: {}, ...options };
         this.rootEnvId = id;
