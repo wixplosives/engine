@@ -1,10 +1,9 @@
-import { parentPort } from 'node:worker_threads';
+import { worker } from '@wixc3/isomorphic-worker/worker-scope';
 
-import { COM, reportError } from '@wixc3/engine-core';
+import { COM, reportError, UniversalWorkerHost } from '@wixc3/engine-core';
 
 import { importModules } from './import-modules';
 import { runNodeEnvironment } from './node-environment';
-import { WorkerThreadHost } from './worker-thread-host';
 import { WorkerThreadCommand, WorkerThreadEvent, WorkerThreadStartupCommand } from './types';
 import { createDisposables } from '@wixc3/patterns';
 
@@ -27,7 +26,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         await importModules(basePath, requiredModules);
     }
 
-    const host = new WorkerThreadHost(parentPort!);
+    const host = new UniversalWorkerHost(worker, worker.workerData.name);
 
     config.push(
         COM.use({
@@ -55,13 +54,13 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
     });
 
     disposables.add(() => {
-        parentPort!.off('message', messageHandler);
+        worker.removeEventListener('message', messageHandler);
         return engine.shutdown();
     });
 };
 
-const messageHandler = (message: unknown) => {
-    const workerThreadCommand = message as WorkerThreadCommand;
+const messageHandler = (message: any) => {
+    const workerThreadCommand = message?.data as WorkerThreadCommand;
 
     switch (workerThreadCommand.id) {
         case 'workerThreadStartupCommand':
@@ -72,15 +71,11 @@ const messageHandler = (message: unknown) => {
             disposables
                 .dispose()
                 .then(() => {
-                    parentPort!.postMessage({ id: 'workerThreadDisposedEvent' } as WorkerThreadEvent);
+                    worker.postMessage({ id: 'workerThreadDisposedEvent' } as WorkerThreadEvent);
                 })
                 .catch(reportError);
             break;
     }
 };
 
-if (parentPort === null) {
-    throw new Error('this file should be executed in `worker_thread` context');
-}
-
-parentPort.on('message', messageHandler);
+worker.addEventListener('message', messageHandler);
