@@ -59,7 +59,11 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
     });
 };
 
-const messageHandler = (message: any) => {
+const messageHandler = (message: unknown) => {
+    if (!message || typeof message !== 'object' || !('data' in message)) {
+        return;
+    }
+
     const workerThreadCommand = message?.data as WorkerThreadCommand;
 
     switch (workerThreadCommand.id) {
