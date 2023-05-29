@@ -17,8 +17,8 @@ describe('All Environment', () => {
             featureName,
             runtimeOptions,
         });
-        disposables.add(browserProvider);
         disposables.add(dispose);
+        disposables.add(browserProvider);
 
         page = await browserProvider.loadPage(featureUrl);
         disposables.add(async () => {

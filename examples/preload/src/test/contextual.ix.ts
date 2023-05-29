@@ -3,7 +3,7 @@ import { dirname } from 'path';
 import { createDisposables } from '@wixc3/create-disposables';
 import { startServerNewProcess } from './utils';
 
-describe('Contextual preload', () => {
+describe('Contextual preload', function () {
     const projectPath = dirname(require.resolve('@example/preload/package.json'));
     const disposables = createDisposables();
     afterEach(disposables.dispose);
@@ -17,8 +17,8 @@ describe('Contextual preload', () => {
                 projectPath,
                 featureName,
             });
-            disposables.add(browserProvider.dispose);
             disposables.add(dispose);
+            disposables.add(browserProvider.dispose);
             const page = await browserProvider.loadPage(featureUrl);
 
             await page.waitForSelector('#envMessages');

@@ -14,8 +14,8 @@ describe('Parent feature', function () {
             projectPath,
             featureName,
         });
-        disposables.add(browserProvider.dispose);
         disposables.add(dispose);
+        disposables.add(browserProvider.dispose);
 
         const page = await browserProvider.loadPage(featureUrl);
 
