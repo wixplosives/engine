@@ -1,9 +1,8 @@
 import type io from 'socket.io';
 
-import performance from '@wixc3/cross-performance';
+import crossPerf from '@wixc3/cross-performance';
 import { BaseHost, COM, ConfigEnvironmentRecord, PartialFeatureConfig } from '@wixc3/engine-core';
 import { IPCHost, ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from '@wixc3/engine-core-node';
-performance.clearMeasures;
 
 import {
     ICommunicationMessage,
@@ -34,8 +33,8 @@ export function createIPC(
             remoteProcess.postMessage({ id: 'port-request', payload: { port } } as IEnvironmentPortMessage);
         } else if (isEnvironmentStartMessage(message)) {
             // clearing because if running features one after the other on same engine, it is possible that some measuring were done on disposal of stuff, and the measures object will not be re-evaluated, so cleaning it
-            performance.clearMarks();
-            performance.clearMeasures();
+            crossPerf.clearMarks();
+            crossPerf.clearMeasures();
             const ipcHost = new IPCHost(process);
             // re-mapping all provided connected environments to use the IPC host, to allow, through the parent process, access other node environments
             const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
@@ -89,8 +88,8 @@ export function createIPC(
         } else if (isEnvironmentCloseMessage(message) && environments[message.envName]) {
             await environments[message.envName]!();
             remoteProcess.off('message', messageHandler);
-            performance.clearMarks();
-            performance.clearMeasures();
+            crossPerf.clearMarks();
+            crossPerf.clearMeasures();
             if (onClose) {
                 await onClose();
             }
@@ -103,8 +102,8 @@ export function createIPC(
             const metricsMessage: IEnvironmentMetricsResponse = {
                 id: 'metrics-response',
                 payload: {
-                    marks: performance.getEntriesByType('mark'),
-                    measures: performance.getEntriesByType('measure'),
+                    marks: crossPerf.getEntriesByType('mark'),
+                    measures: crossPerf.getEntriesByType('measure'),
                 },
             };
             remoteProcess.postMessage(metricsMessage);

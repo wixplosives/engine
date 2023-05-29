@@ -39,7 +39,7 @@ export function createLiveConfigsMiddleware(
                 if (configDefinitions) {
                     for (const configDefinition of configDefinitions) {
                         if (Array.isArray(configDefinition)) {
-                            // dont evaluate configs on bundled version
+                            // don't evaluate configs on bundled version
                             config.push(...configDefinition);
                         } else {
                             const { filePath, envName } = configDefinition;
