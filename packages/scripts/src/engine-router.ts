@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import bodyParser from 'body-parser';
-import performance from '@wixc3/cross-performance';
 
 import type { OverrideConfig } from './config-middleware';
 import type { IFeatureMessagePayload, IFeatureTarget } from './types';
