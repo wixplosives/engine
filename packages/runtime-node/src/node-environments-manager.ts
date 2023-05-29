@@ -87,7 +87,6 @@ export interface RunEnvironmentOptions {
     featureName: string;
     configName?: string;
     runtimeOptions?: Record<string, string | boolean>;
-    overrideConfigsMap?: Map<string, OverrideConfig>;
     mode?: LaunchEnvironmentMode;
 }
 
@@ -151,7 +150,6 @@ export class NodeEnvironmentsManager {
         return this.runServerEnvironments({
             featureName,
             configName,
-            overrideConfigsMap: this.overrideConfigsMap,
             runtimeOptions,
         });
     };
@@ -188,7 +186,6 @@ export class NodeEnvironmentsManager {
         featureName,
         configName,
         runtimeOptions = {},
-        overrideConfigsMap = this.overrideConfigsMap,
         mode = this.mode,
     }: RunEnvironmentOptions) {
         const runtimeConfigName = configName;
@@ -273,7 +270,7 @@ export class NodeEnvironmentsManager {
 
         for (const nodeEnv of nodeEnvironments) {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
-                overrideConfigsMap,
+                this.overrideConfigsMap,
                 configName,
                 nodeEnv.name
             );

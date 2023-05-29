@@ -32,7 +32,6 @@ export function createFeaturesEngineRouter(nodeEnvironmentManager: NodeEnvironme
                 configName: providedConfigName,
                 featureName,
                 runtimeOptions: options,
-                overrideConfigsMap,
             });
             res.json({
                 id: 'feature-initialized',
