@@ -1712,10 +1712,10 @@
     "@file-services/memory" "^7.2.5"
     "@wixc3/common" "^8.2.0"
 
-"@wixc3/isomorphic-worker@^1.2.3":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.3.tgz#7776d4d6c8fdef6b70c70452f43c238b992d25e3"
-  integrity sha512-cXv9h3KfIatZ+gP/W4iVAcSzkHKoJG9OrJ1fV+C3lCABIazEEaZJfh3v9p5P5OwSwRwQwL5336AeB+MT3D0Dqg==
+"@wixc3/isomorphic-worker@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
+  integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
 
 "@wixc3/patterns@^8.2.0":
   version "8.2.0"
