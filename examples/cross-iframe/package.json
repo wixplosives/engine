@@ -1,6 +1,6 @@
 {
   "name": "@fixture/cross-iframe",
-  "version": "37.1.0",
+  "version": "37.1.1",
   "private": true,
   "scripts": {
     "start": "engineer start",
