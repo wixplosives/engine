@@ -8,6 +8,5 @@ export * from './node-environments-manager';
 export * from './parse-cli-arguments';
 export * from './process-communication';
 export * from './types';
-export * from './worker-thread-host';
 export * from './worker-thread-initializer';
 export * from './ws-environment';

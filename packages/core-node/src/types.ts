@@ -1,4 +1,10 @@
-import { AnyEnvironment, BaseHost, EnvironmentTypes, MultiEnvironment, TopLevelConfig } from '@wixc3/engine-core';
+import {
+    AnyEnvironment,
+    EnvironmentTypes,
+    MultiEnvironment,
+    Target,
+    TopLevelConfig,
+} from '@wixc3/engine-core';
 
 export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment>
     extends IEnvironmentDescriptor<ENV> {
@@ -8,7 +14,7 @@ export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnviron
     features: Array<[string, Required<IStaticFeatureDefinition>]>;
     options?: Array<[string, string | boolean]>;
     inspect?: boolean;
-    host?: BaseHost;
+    host?: Target;
     context?: string;
 }
 

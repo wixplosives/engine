@@ -1,3 +1,6 @@
+import { Worker } from '@wixc3/isomorphic-worker/worker';
+
+import { UniversalWorkerHost } from '../hosts/universal-worker-host';
 import type { InitializerOptions } from './types';
 
 export async function webWorkerInitializer({ communication, env: { env, endpointType } }: InitializerOptions) {
@@ -8,8 +11,10 @@ export async function webWorkerInitializer({ communication, env: { env, endpoint
         name: instanceId,
     });
 
-    communication.registerMessageHandler(webWorker);
-    communication.registerEnv(instanceId, webWorker);
+    const host = new UniversalWorkerHost(webWorker, instanceId);
+
+    communication.registerMessageHandler(host);
+    communication.registerEnv(instanceId, host);
     await communication.envReady(instanceId);
     return {
         id: instanceId,

@@ -1,6 +1,6 @@
-import { Worker } from 'node:worker_threads';
+import { Worker } from '@wixc3/isomorphic-worker/worker';
 
-import { COM, InitializerOptions } from '@wixc3/engine-core';
+import { COM, InitializerOptions, UniversalWorkerHost } from '@wixc3/engine-core';
 import { createMetadataProvider } from '@wixc3/engine-core-node';
 
 import { createDisposables } from '@wixc3/patterns';
@@ -9,7 +9,6 @@ import type {
     WorkerThreadCommand,
     WorkerThreadEnvironmentStartupOptions,
 } from './types';
-import { WorkerThreadHost } from './worker-thread-host';
 
 export interface WorkerThreadInitializer {
     id: string;
@@ -46,7 +45,7 @@ export function workerThreadInitializer({
 
         disposables.add(() => worker.terminate());
 
-        const host = new WorkerThreadHost(worker);
+        const host = new UniversalWorkerHost(worker, instanceId);
         communication.registerEnv(instanceId, host);
         communication.registerMessageHandler(host);
 
