@@ -1,16 +1,17 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "36.0.0",
+  "version": "37.1.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build:umd": "node ./scripts/bundle",
     "test": "yarn test:node && yarn test:browser",
-    "test:node": "mocha \"test/node/**/*.spec.ts?(x)\"",
-    "test:browser": "mocha-play \"test/**/*.spec.ts?(x)\" -c ./test/webpack.config.js",
+    "test:node": "mocha \"dist/test/node/**/*.spec.js\"",
+    "test:browser": "mocha-play \"dist/test/**/*.spec.js\" -c ./webpack.config.test.js",
     "prepack": "yarn build:umd"
   },
   "dependencies": {
+    "@wixc3/isomorphic-worker": "^1.2.4",
     "@wixc3/patterns": "^8.2.0",
     "promise-assist": "^2.0.1",
     "socket.io-client": "^4.6.1",

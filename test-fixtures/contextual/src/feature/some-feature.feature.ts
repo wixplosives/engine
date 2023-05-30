@@ -9,16 +9,19 @@ export const contextualEnv = new ContextualEnvironment('contextual', 'single', [
 export interface IEchoContext {
     echoWord: () => string;
 }
-
-export default new Feature({
-    id: 'multiEnv',
-    api: {
-        serverService: Service.withType<{ echo: () => string }>().defineEntity(contextualEnv).allowRemoteAccess(),
-    },
-    dependencies: [COM.asDependency],
-    context: {
+export default class MultiEnv extends Feature<'multiEnv'> {
+    id = 'multiEnv' as const;
+    api = {
+        serverService: Service.withType<{
+            echo: () => string;
+        }>()
+            .defineEntity(contextualEnv)
+            .allowRemoteAccess(),
+    };
+    dependencies = [COM];
+    context = {
         echoContext: contextualEnv.withContext<IEchoContext>(),
-    },
-});
+    };
+}
 
 export const Context = contextualEnv.useContext('webworker');

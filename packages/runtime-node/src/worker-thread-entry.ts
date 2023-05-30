@@ -1,10 +1,9 @@
-import { parentPort } from 'node:worker_threads';
+import { worker } from '@wixc3/isomorphic-worker/worker-scope';
 
-import { COM, reportError } from '@wixc3/engine-core';
+import { COM, reportError, UniversalWorkerHost } from '@wixc3/engine-core';
 
 import { importModules } from './import-modules';
 import { runNodeEnvironment } from './node-environment';
-import { WorkerThreadHost } from './worker-thread-host';
 import { WorkerThreadCommand, WorkerThreadEvent, WorkerThreadStartupCommand } from './types';
 import { createDisposables } from '@wixc3/patterns';
 
@@ -21,12 +20,13 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         features,
         parentEnvName,
         env,
+        runtimeOptions,
     } = command.runOptions;
     if (requiredModules) {
         await importModules(basePath, requiredModules);
     }
 
-    const host = new WorkerThreadHost(parentPort!);
+    const host = new UniversalWorkerHost(worker, worker.workerData.name);
 
     config.push(
         COM.use({
@@ -41,7 +41,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         })
     );
 
-    const runningNodeEnv = await runNodeEnvironment({
+    const engine = await runNodeEnvironment({
         env,
         featureName,
         features,
@@ -50,16 +50,21 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         name: environmentName,
         type: 'workerthread',
         childEnvName: environmentContextName,
+        options: runtimeOptions,
     });
 
     disposables.add(() => {
-        parentPort!.off('message', messageHandler);
-        return runningNodeEnv.dispose();
+        worker.removeEventListener('message', messageHandler);
+        return engine.shutdown();
     });
 };
 
 const messageHandler = (message: unknown) => {
-    const workerThreadCommand = message as WorkerThreadCommand;
+    if (!message || typeof message !== 'object' || !('data' in message)) {
+        return;
+    }
+
+    const workerThreadCommand = message?.data as WorkerThreadCommand;
 
     switch (workerThreadCommand.id) {
         case 'workerThreadStartupCommand':
@@ -70,15 +75,11 @@ const messageHandler = (message: unknown) => {
             disposables
                 .dispose()
                 .then(() => {
-                    parentPort!.postMessage({ id: 'workerThreadDisposedEvent' } as WorkerThreadEvent);
+                    worker.postMessage({ id: 'workerThreadDisposedEvent' } as WorkerThreadEvent);
                 })
                 .catch(reportError);
             break;
     }
 };
 
-if (parentPort === null) {
-    throw new Error('this file should be executed in `worker_thread` context');
-}
-
-parentPort.on('message', messageHandler);
+worker.addEventListener('message', messageHandler);

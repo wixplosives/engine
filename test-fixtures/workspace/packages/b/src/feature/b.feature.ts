@@ -1,6 +1,6 @@
 import { Feature } from '@wixc3/engine-core';
 
-export default new Feature({
-    id: 'b',
-    api: {},
-});
+export default class B extends Feature<'b'> {
+    id = 'b' as const;
+    api = {};
+}

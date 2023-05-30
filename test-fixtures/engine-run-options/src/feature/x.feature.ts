@@ -11,10 +11,10 @@ export interface RuntimeOptionsService {
     getOptions: () => Options;
 }
 
-export default new Feature({
-    id: 'XTestFeature',
-    api: {
+export default class XTestFeature extends Feature<'XTestFeature'> {
+    id = 'XTestFeature' as const;
+    api = {
         passedOptions: Service.withType<MyInterfaceClass>().defineEntity(PROC).allowRemoteAccess(),
-    },
-    dependencies: [COM.asDependency],
-});
+    };
+    dependencies = [COM];
+}

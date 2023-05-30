@@ -1,6 +1,6 @@
 import type io from 'socket.io';
 
-import type { AnyEnvironment, Feature, TopLevelConfig } from '@wixc3/engine-core';
+import type { AnyEnvironment, FeatureClass, TopLevelConfig } from '@wixc3/engine-core';
 import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
 import type {
     IStaticFeatureDefinition,
@@ -36,7 +36,7 @@ export interface IFeatureModule {
     /**
      * Actual evaluated Feature instance exported from the file.
      */
-    exportedFeature: Feature;
+    exportedFeature: FeatureClass;
 
     /**
      * Exported environments from module.

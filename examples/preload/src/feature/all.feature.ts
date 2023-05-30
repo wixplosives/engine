@@ -6,10 +6,9 @@ export const nodeEnv = new Environment('node1', 'node', 'single');
 export const mainEnv = new Environment('main', 'window', 'single');
 export const workerEnv = new Environment('webworker1', 'webworker', 'single');
 
-export default new Feature({
-    id: 'allfeature',
-    dependencies: [COM.asDependency],
-    api: {
+export default class Allfeature extends Feature<'allfeature'> {
+    id = 'allfeature' as const;
+    api = {
         nodeEnvMessages: Service.withType<{
             getNodeEnvMessages: () => Array<string>;
             getNodeRuntimeOptions: () => Record<string, string | boolean>;
@@ -21,5 +20,6 @@ export default new Feature({
         }>()
             .defineEntity(workerEnv)
             .allowRemoteAccess(),
-    },
-});
+    };
+    dependencies = [COM];
+}

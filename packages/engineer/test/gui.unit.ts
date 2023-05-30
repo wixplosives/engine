@@ -13,7 +13,7 @@ describe('engineer:gui', function () {
     const browserProvider = createBrowserProvider();
 
     const setup = async ({ featureName, basePath }: { featureName?: string; basePath: string }) => {
-        const { dispose, engine, devServerFeature } = await startDevServer({
+        const { engine, devServerFeature } = await startDevServer({
             engineerEntry: 'engineer/gui',
             targetApplicationPath: basePath,
             devServerOnly: false,
@@ -27,10 +27,9 @@ describe('engineer:gui', function () {
             });
         });
 
-        disposables.add(dispose);
+        disposables.add(engine.shutdown);
 
         return {
-            dispose,
             engine,
             runtimeFeature,
             config: { featureName, port: runningPort },

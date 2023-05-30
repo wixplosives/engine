@@ -98,15 +98,19 @@ devServerFeature.setup(
                 featureName,
                 providedFeatureDiscoveryRoot ?? featureDiscoveryRoot
             );
+
+            const staticFeatures = new Map(
+                [...features].map(([featureName, feature]) => [featureName, feature.toJSON()])
+            );
+
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
             // So potential dependencies can rely on them in the topology
-
             application.setNodeEnvManager(
                 new NodeEnvironmentsManager(
                     socketServer,
                     {
                         configurations,
-                        features,
+                        features: staticFeatures,
                         defaultRuntimeOptions,
                         bundlePath: application.outputPath,
                         port: actualPort,

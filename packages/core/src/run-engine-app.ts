@@ -1,12 +1,15 @@
-import COM from './communication.feature';
+/**
+ * Extends globalThis.Worker with a polyfill for web workers in safari.
+ */
+import '@wixc3/isomorphic-worker/worker';
+
 import { RuntimeEngine } from './runtime-engine';
 import type { IRunOptions, TopLevelConfig } from './types';
-import type { AnyEnvironment, Feature } from './entities';
-import { flattenTree } from './helpers';
+import type { AnyEnvironment, FeatureClass } from './entities';
 import { deferred, IDeferredPromise } from 'promise-assist';
 
-export interface IRunEngineOptions<ENV extends AnyEnvironment> {
-    entryFeature: Feature | Feature[];
+export interface RunEngineOptions<ENV extends AnyEnvironment> {
+    entryFeature: FeatureClass | FeatureClass[];
     topLevelConfig?: TopLevelConfig;
     env: ENV;
     runOptions?: IRunOptions;
@@ -17,14 +20,12 @@ export function run<ENV extends AnyEnvironment>({
     topLevelConfig = [],
     env,
     runOptions,
-}: IRunEngineOptions<ENV>) {
+}: RunEngineOptions<ENV>) {
     return new RuntimeEngine(env, topLevelConfig, runOptions).run(entryFeature);
 }
 
-export const getFeaturesDeep = (feature: Feature) => flattenTree(feature, (f) => f.dependencies as Feature[]);
-
 export interface IFeatureLoader {
-    load: (resolvedContexts: Record<string, string>) => Promise<Feature> | Feature;
+    load: (resolvedContexts: Record<string, string>) => Promise<FeatureClass> | FeatureClass;
     preload: (
         resolveContexts: Record<string, string>
     ) => Promise<Array<(runtimeOptions: Record<string, string | boolean>) => void | Promise<void>>> | undefined;
@@ -41,30 +42,8 @@ export interface IRunEngineAppOptions<ENV extends AnyEnvironment> {
     options?: Map<string, string | boolean>;
     env: ENV;
     publicPath?: string;
-    features?: Feature[];
+    features?: FeatureClass[];
     resolvedContexts: Record<string, string>;
-}
-
-export function runEngineApp<ENV extends AnyEnvironment>({
-    config = [],
-    options,
-    env,
-    publicPath,
-    features = [],
-    resolvedContexts = {},
-}: IRunEngineAppOptions<ENV>) {
-    const engine = new RuntimeEngine(env, [COM.use({ config: { resolvedContexts, publicPath } }), ...config], options);
-    const runningPromise = engine.run(features);
-
-    return {
-        engine,
-        async dispose() {
-            await runningPromise;
-            for (const feature of features) {
-                await engine.dispose(feature);
-            }
-        },
-    };
 }
 
 export class FeatureLoadersRegistry {
@@ -100,7 +79,7 @@ export class FeatureLoadersRegistry {
     async getLoadedFeatures(
         rootFeatureName: string,
         runtimeOptions: Record<string, string | boolean> = {}
-    ): Promise<Feature[]> {
+    ): Promise<FeatureClass[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);
         for await (const depName of dependencies.reverse()) {

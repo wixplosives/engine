@@ -1,4 +1,4 @@
-import { ChildProcess, spawn, SpawnOptions } from 'child_process';
+import { spawn, SpawnOptions } from 'child_process';
 import treeKill from 'tree-kill';
 import { promisify } from 'util';
 const promisifiedTreeKill = promisify(treeKill);
@@ -9,6 +9,8 @@ import { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
 
 import { ExpirableList } from '../expirable-list';
 import { NodeEnvironmentCommand } from '../types';
+
+const TreeKillProcessNotFoundErrorCode = 128;
 
 export interface InitializeNodeEnvironmentOptions extends InitializerOptions {
     runtimeArguments: IEngineRuntimeArguments;
@@ -99,7 +101,22 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
 
     return {
         id: env.env,
-        dispose: () => disposeChildProcess(child),
+        dispose: async () => {
+            if (child.pid) {
+                try {
+                    await promisifiedTreeKill(child.pid);
+                } catch (e: any) {
+                    if (e.code === TreeKillProcessNotFoundErrorCode) {
+                        // if tree kill failed with process not found error, ignore this error
+                        // cause in this case process has exited before we try to kill it
+                    } else {
+                        throw e;
+                    }
+                }
+            } else {
+                child.kill();
+            }
+        },
         onExit: (cb: (details: ProcessExitDetails) => void) => {
             child.once('exit', (exitCode, signal) => {
                 const exitResult = {} as ProcessExitDetails;
@@ -120,11 +137,3 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
         environmentIsReady,
     };
 };
-
-async function disposeChildProcess(target: ChildProcess): Promise<void> {
-    if (target.pid) {
-        await promisifiedTreeKill(target.pid);
-    } else {
-        target.kill();
-    }
-}

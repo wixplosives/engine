@@ -1,9 +1,7 @@
 import type io from 'socket.io';
 
-import performance from '@wixc3/cross-performance';
 import { BaseHost, COM, ConfigEnvironmentRecord, PartialFeatureConfig } from '@wixc3/engine-core';
 import { IPCHost, ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from '@wixc3/engine-core-node';
-performance.clearMeasures;
 
 import {
     ICommunicationMessage,
@@ -42,7 +40,7 @@ export function createIPC(
             //TODO: check
             for (const [envName, config] of message.data.config ?? []) {
                 if (envName === COM.id) {
-                    const typedConfig = (config as PartialFeatureConfig<typeof COM['api']>).config ?? {};
+                    const typedConfig = (config as PartialFeatureConfig<COM['api']>).config ?? {};
                     const { connectedEnvironments: definedConnectedEnvironments } = typedConfig;
                     if (definedConnectedEnvironments) {
                         for (const [envToken, envRecord] of Object.entries(definedConnectedEnvironments)) {

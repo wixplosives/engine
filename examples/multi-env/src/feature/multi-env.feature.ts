@@ -12,17 +12,18 @@ export interface IEchoService {
 export interface INameProvider {
     name: () => string;
 }
-
-export default new Feature({
-    id: 'contextual-environment-test',
-    dependencies: [COM.asDependency],
-    api: {
-        config: new Config<{ name: string }>({
+export default class ContextualEnvironmentTest extends Feature<'contextual-environment-test'> {
+    id = 'contextual-environment-test' as const;
+    api = {
+        config: new Config<{
+            name: string;
+        }>({
             name: 'test',
         }),
         echoService: Service.withType<IEchoService>().defineEntity(processingEnv).allowRemoteAccess(),
-    },
-    context: {
+    };
+    dependencies = [COM];
+    context = {
         processingContext: processingEnv.withContext<INameProvider>(),
-    },
-});
+    };
+}

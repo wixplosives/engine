@@ -1,7 +1,7 @@
 import { Feature } from '@wixc3/engine-core';
 
-export default new Feature({
-    id: 'nonContextual',
-    dependencies: [],
-    api: {},
-});
+export default class NonContextual extends Feature<'nonContextual'> {
+    id = 'nonContextual' as const;
+    api = {};
+    dependencies = [];
+}

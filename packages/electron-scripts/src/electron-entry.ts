@@ -6,11 +6,11 @@ const runElectronEnvListener = async (message: unknown) => {
         const { runOptions } = message;
         const disposables = createDisposables();
         try {
-            const { dispose } = await runElectronEnv({
+            const engine = await runElectronEnv({
                 ...runOptions,
                 features: new Map(runOptions.features),
             });
-            disposables.add(dispose);
+            disposables.add(engine.shutdown);
         } catch (ex) {
             await disposables.dispose();
             process.exitCode = 1;
