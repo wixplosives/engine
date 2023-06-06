@@ -18,7 +18,7 @@ export interface ICreateWebpackConfigsOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'webEnvs' | 'workerEnvs' | 'electronRendererEnvs'>;
+    environments: ReturnType<typeof getResolvedEnvironments>;
     publicPath?: string;
     publicPathVariableName?: string;
     title?: string;
@@ -150,7 +150,6 @@ export function createWebpackConfig({
             staticBuild,
             publicConfigsRoute,
             config,
-            target,
             eagerEntrypoint,
             configLoaderModuleName,
         });

@@ -8,6 +8,13 @@ import { mergeAll, mergeResults } from './merge';
 import type { IFeatureDefinition } from '../types';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 
+export function analyzeFeatures(fs: IFileSystemSync, basePath: string, featureDiscoveryRoot = '.') {
+    console.time(`Analyzing Features`);
+    const featuresAndConfigs = findFeatures(basePath, fs, featureDiscoveryRoot);
+    console.timeEnd('Analyzing Features');
+    return featuresAndConfigs;
+}
+
 export function findFeatures(path: string, fs: IFileSystemSync, featureDiscoveryRoot = '.'): FoundFeatures {
     const packages = childPackagesFromContext(resolveDirectoryContext(path, fs));
     const paths = packages.map(({ directoryPath }) => fs.join(directoryPath, featureDiscoveryRoot));

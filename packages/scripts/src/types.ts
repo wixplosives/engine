@@ -7,6 +7,8 @@ import type {
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
+// we might want our own abstraction for plugin. for now we use esbuild's
+import { Plugin } from 'esbuild';
 
 export interface IFeatureTarget {
     featureName?: string;
@@ -75,4 +77,5 @@ export interface EngineConfig {
     sourcesRoot?: string;
     favicon?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
+    buildPlugins?: Plugin[];
 }

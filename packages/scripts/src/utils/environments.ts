@@ -37,7 +37,7 @@ export function getResolvedEnvironments({
         : getAllResolvedContexts(features);
     for (const env of environments) {
         const { name, childEnvName, type } = env;
-        if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
+        if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName))) {
             if (type === 'window' || type === 'iframe') {
                 addEnv(webEnvs, env);
             } else if (type === 'webworker') {
@@ -53,12 +53,14 @@ export function getResolvedEnvironments({
             } else {
                 throw new Error(`unknown environment type: ${type}`);
             }
+        }
     }
     return {
         webEnvs,
         workerEnvs,
         electronRendererEnvs,
         nodeEnvs,
+        workerThreadEnvs,
     };
 }
 

@@ -24,7 +24,6 @@ export interface ICreateEntrypointsOptions {
     mode: 'production' | 'development';
     publicConfigsRoute?: string;
     config?: TopLevelConfig;
-    target: 'webworker' | 'web' | 'electron-renderer';
     eagerEntrypoint?: boolean;
     env: IEnvironmentDescriptor;
     featuresBundleName?: string;
@@ -47,7 +46,6 @@ export interface ExternalBrowserEntrypoint extends ExternalEntrypoint {
 }
 
 export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint {
-    target: 'web' | 'webworker' | 'node' | 'electron-renderer';
     eagerEntrypoint?: boolean;
     featuresBundleName?: string;
 }
@@ -75,26 +73,17 @@ export interface LoadStatementArguments
 
 //#region entry points
 
-export function createExternalBrowserEntrypoint(args: WebpackFeatureLoaderArguments) {
-    return `
-    import { getTopWindow } from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
-    const topWindow = getTopWindow(typeof self !== 'undefined' ? self : window);
-    __webpack_public_path__= publicPath;
-    self.runtimeFeatureLoader.register('${args.scopedName}', ${createLoaderInterface(args)});
-    ;
-    `;
-}
-
 export function createExternalNodeEntrypoint(args: ExternalEntrypoint) {
     return `module.exports = {
         '${args.scopedName}': ${createLoaderInterface({
         ...args,
-        target: 'node',
         loadStatement: nodeImportStatement,
     })} 
 }
     `;
 }
+
+const engineCodeFullPath = stringify(require.resolve('@wixc3/engine-core'));
 
 export function createMainEntrypoint({
     features,
@@ -108,7 +97,6 @@ export function createMainEntrypoint({
     staticBuild,
     publicConfigsRoute,
     config,
-    target,
     eagerEntrypoint,
     env,
     featuresBundleName,
@@ -117,14 +105,14 @@ export function createMainEntrypoint({
     const envName = env.name;
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), envName);
 
+    const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
+
     return `
-import * as EngineCore from ${JSON.stringify(require.resolve('@wixc3/engine-core'))};
-if(!self.EngineCore) {
-    self.EngineCore = EngineCore;
-}
+import * as EngineCore from ${engineCodeFullPath};
+globalThis.EngineCore ||= EngineCore;
 const { getTopWindow, FeatureLoadersRegistry, RuntimeEngine, COM } = EngineCore;
 const featureLoaders = new Map(Object.entries({
-    ${createFeatureLoaders(features.values(), childEnvs, target, env, eagerEntrypoint, featuresBundleName)}
+    ${featureLoaders}
 }));
 
 self.${LOADED_FEATURE_MODULES_NAMESPACE} = {};
@@ -137,18 +125,18 @@ async function main() {
     const isMainEntrypoint = topWindow && currentWindow === topWindow;
     const urlParams = new URLSearchParams(currentWindow.location.search);
     const options = currentWindow.engineEntryOptions ? currentWindow.engineEntryOptions({urlParams, envName}) : urlParams;
-    const env = ${JSON.stringify(
+    const env = ${stringify(
         new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
     )}
     
-    let publicPath = ${typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'}
+    let publicPath = ${typeof publicPath === 'string' ? stringify(publicPath) : 'globalThis.__webpack_public_path__'}
     if (options.has('publicPath')) {
         publicPath = options.get('publicPath');
     } else if (${typeof publicPathVariableName === 'string'} && topWindow.${publicPathVariableName}) {
         publicPath = topWindow.${publicPathVariableName};
     }
 
-    __webpack_public_path__= publicPath;
+    globalThis.__webpack_public_path__ = publicPath;
     
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};
@@ -203,7 +191,6 @@ export function nodeImportStatement({ filePath }: LoadStatementArguments) {
 function createFeatureLoaders(
     features: Iterable<IFeatureDefinition>,
     childEnvs: string[],
-    target: 'web' | 'webworker' | 'node' | 'electron-renderer',
     env: IEnvironmentDescriptor,
     eagerEntrypoint?: boolean,
     featuresBundleName?: string
@@ -215,7 +202,6 @@ function createFeatureLoaders(
                     ...args,
                     childEnvs,
                     loadStatement: webpackImportStatement,
-                    target,
                     eagerEntrypoint,
                     env,
                     featuresBundleName,
@@ -243,9 +229,7 @@ function loadEnvAndContextFiles({
         const contextFilePath = contextFilePaths[`${env.name}/${childEnvName}`];
         if (contextFilePath) {
             usesResolvedContexts = true;
-            loadStatements.push(`if (resolvedContexts[${JSON.stringify(env.name)}] === ${JSON.stringify(
-                childEnvName
-            )}) {
+            loadStatements.push(`if (resolvedContexts[${stringify(env.name)}] === ${stringify(childEnvName)}) {
                 ${loadStatement({
                     moduleIdentifier: scopedName,
                     filePath: contextFilePath,
@@ -384,7 +368,7 @@ function loadConfigFile(
 ): string {
     return `import(/* webpackChunkName: "[config]${scopedName}${
         configEnvName ?? ''
-    }" */ /* webpackMode: 'eager' */ ${JSON.stringify(
+    }" */ /* webpackMode: 'eager' */ ${stringify(
         topLevelConfigLoaderPath +
             `?configLoaderModuleName=${configLoaderModuleName}&scopedName=${scopedName}&envName=${configEnvName!}!` +
             filePath
@@ -415,11 +399,11 @@ function getRemoteConfigs(publicConfigsRoute: string, envName: string) {
 function fetchConfigs(publicConfigsRoute: string, envName: string) {
     return `return (await fetch('${normalizeRoute(
         publicConfigsRoute
-    )!}' + configName + '?env=${envName}&feature=' + featureName)).json();`;
+    )}' + configName + '?env=${envName}&feature=' + featureName)).json();`;
 }
 
 function addOverrideConfig(config: TopLevelConfig) {
-    return `config.push(...${JSON.stringify(config)})`;
+    return `config.push(...${stringify(config)})`;
 }
 
 function importStaticConfigs() {

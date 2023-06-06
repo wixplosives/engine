@@ -39,7 +39,6 @@ guiFeature.setup(
             staticBuild: false,
             configurations,
             featureName: 'engineer/gui',
-            target: 'web',
             featuresBundleName: 'dashboard-features',
         });
 

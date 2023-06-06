@@ -43,22 +43,26 @@ export async function launchEngineHttpServer({
     app.use('/favicon.ico', noContentHandler);
 
     const openSockets = new Set<Socket>();
+
     httpServer.on('connection', (socket) => {
         openSockets.add(socket);
         socket.once('close', () => openSockets.delete(socket));
     });
+
     const socketServer = new io.Server(httpServer, { cors: {}, ...socketServerOptions, transports: ['websocket'] });
 
+    const close = () =>
+        new Promise<void>((res, rej) => {
+            httpServer.closeAllConnections();
+            for (const connection of openSockets) {
+                connection.destroy();
+            }
+            openSockets.clear();
+            socketServer.close((e) => (e ? rej(e) : res()));
+        });
+
     return {
-        close: async () => {
-            await new Promise<void>((res, rej) => {
-                for (const connection of openSockets) {
-                    connection.destroy();
-                }
-                openSockets.clear();
-                socketServer.close((e) => (e ? rej(e) : res()));
-            });
-        },
+        close,
         port,
         app,
         socketServer,
