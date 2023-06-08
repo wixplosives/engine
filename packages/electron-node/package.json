@@ -3,12 +3,12 @@
   "version": "37.1.1",
   "main": "dist/index.js",
   "dependencies": {
-    "@wixc3/common": "^8.2.0",
+    "@wixc3/common": "^8.2.1",
     "@wixc3/engine-core": "^37.1.1",
     "@wixc3/engine-core-node": "^37.1.1",
     "@wixc3/engine-electron-commons": "^37.1.1",
     "@wixc3/engine-runtime-node": "^37.1.1",
-    "@wixc3/patterns": "^8.2.0"
+    "@wixc3/patterns": "^8.2.1"
   },
   "peerDependencies": {
     "electron": ">=9"
