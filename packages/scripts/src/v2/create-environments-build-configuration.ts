@@ -20,7 +20,8 @@ interface Options {
 export function createEnvironmentsBuildConfiguration(options: Options) {
     const { environments, publicPath, configLoaderRequest, features, configurations, config, buildPlugins } = options;
     const entryPoints = new Map<string, string>();
-    for (const { env, childEnvs } of environments.webEnvs.values()) {
+    const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
+    for (const { env, childEnvs } of browserTargets) {
         const entrypointContent = createMainEntrypoint({
             features,
             childEnvs,
@@ -45,6 +46,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         format: 'esm',
         publicPath,
         metafile: true,
+        sourcemap: true,
         loader: {
             '.json': 'json',
             '.png': 'file',
@@ -76,6 +78,12 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         webConfig,
         nodeConfig,
     };
+}
+
+function* concatIterables<T>(...iterables: Iterable<T>[]) {
+    for (const iterable of iterables) {
+        yield* iterable;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
