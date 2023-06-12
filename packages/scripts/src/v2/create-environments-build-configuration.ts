@@ -6,6 +6,7 @@ import { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
 import { TopLevelConfig } from '@wixc3/engine-core';
 import nodeFs from '@file-services/node';
+import { createRequestResolver } from '@file-services/resolve';
 
 interface Options {
     buildPlugins: Plugin[];
@@ -94,17 +95,11 @@ function rawLoaderPlugin() {
     const plugin: Plugin = {
         name: 'raw-loader',
         setup(build) {
-            build.onResolve({ filter: /^raw-loader!/ }, async (args) => {
+            const resolve = createRequestResolver({ fs: nodeFs });
+
+            build.onResolve({ filter: /^raw-loader!/ }, (args) => {
                 return {
-                    path: (
-                        await build.resolve(args.path.replace(/^raw-loader!/, ''), {
-                            importer: args.importer,
-                            kind: args.kind,
-                            namespace: args.namespace,
-                            pluginData: args.pluginData,
-                            resolveDir: args.resolveDir,
-                        })
-                    ).path,
+                    path: resolve(args.path.replace(/^raw-loader!/, ''), args.importer).resolvedFile || args.path,
                     namespace: 'raw-loader-ns',
                 };
             });

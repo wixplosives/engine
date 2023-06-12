@@ -279,6 +279,11 @@
   dependencies:
     "@file-services/types" "^7.3.0"
 
+"@file-services/resolve@^7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-7.3.0.tgz#c0f6a6fac6377dbef2517e1312a0ea09bc8e7ba0"
+  integrity sha512-sqkfRir4ejwoCOqMhDNUT5wI3JMAdGG3jmZRSLIW7Ht65P+x6p4BcXFMcn8Hs84Jva+9oEpPIqZyjTAdst2cmw==
+
 "@file-services/types@^7.2.5", "@file-services/types@^7.3.0":
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/@file-services/types/-/types-7.3.0.tgz#ccfe1b2877bc6d13a3bfe1c26d37eecb693c12e9"
