@@ -3,13 +3,14 @@ import esbuild from 'esbuild';
 import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
 import { EngineConfig } from '../types';
 import { loadConfigFile } from './load-config-file';
-import { launchServer } from './start-dev-server';
+import { RouteMiddleware, launchServer } from './start-dev-server';
 import { importModules } from './import-modules';
 import { analyzeFeatures } from '../analyze-feature';
 import { getResolvedEnvironments } from '../utils/environments';
 import { getExportedEnvironments } from '../application/utils';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
 import { nodeFs } from '@file-services/node';
+import { join } from 'node:path';
 
 async function engineStart(rootDir: string = process.cwd()) {
     const outputPath = 'dist-web';
@@ -54,14 +55,24 @@ async function engineStart(rootDir: string = process.cwd()) {
         route: '/',
         directoryPath: outputPath,
     });
+    const staticMiddlewares = serveStatic?.map(({ route, directoryPath }) => ({
+        path: route,
+        handlers: express.static(directoryPath),
+    }));
+
+    const devMiddlewares: RouteMiddleware[] = [
+        {
+            path: '/engine-portal',
+            handlers: (req, res) => {
+                res.sendFile(join(__dirname, '..', 'engine-portal', 'index.html'));
+            },
+        },
+    ];
 
     const { port } = await launchServer({
         httpServerPort,
         socketServerOptions,
-        middlewares: serveStatic?.map(({ route, directoryPath }) => ({
-            path: route,
-            handlers: express.static(directoryPath),
-        })),
+        middlewares: [...devMiddlewares, ...staticMiddlewares],
     });
 
     console.log(`Engine server listening on port ${port}`);
