@@ -1,4 +1,4 @@
-import { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
+import type { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
 
 export interface IWindowLaunchOptions {
     devtools?: boolean;
