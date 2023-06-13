@@ -13,12 +13,12 @@ import {
 } from '@wixc3/engine-core';
 import {
     ENGINE_ROOT_ENVIRONMENT_ID,
-    IStaticFeatureDefinition,
     METADATA_PROVIDER_ENV_ID,
     MetadataCollectionAPI,
     metadataApiToken,
-} from '@wixc3/engine-core-node';
-import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
+    runNodeEnvironment,
+    IStaticFeatureDefinition,
+} from '@wixc3/engine-runtime-node';
 
 import { findFeatures } from './analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
@@ -93,7 +93,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
 
     const staticFeatures = [...features].map(([featureName, feature]) => [featureName, feature.toJSON()]) as [
         featureName: string,
-        featureDefinition: Required<IStaticFeatureDefinition>
+        featureDefinition: IStaticFeatureDefinition
     ][];
 
     com.registerAPI<MetadataCollectionAPI>(metadataApiToken, {

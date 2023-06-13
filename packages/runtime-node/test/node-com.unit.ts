@@ -17,7 +17,7 @@ import {
     Message,
     Environment,
 } from '@wixc3/engine-core';
-import { IPCHost, WsServerHost } from '@wixc3/engine-core-node';
+import { IPCHost, WsServerHost } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
 import { createWaitForCall } from '@wixc3/wait-for-call';
 

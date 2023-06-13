@@ -1,13 +1,34 @@
-import type { AnyEnvironment, Environment, TopLevelConfig } from '@wixc3/engine-core';
-import { IEngineRuntimeArguments, IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-core-node';
+import type {
+    AnyEnvironment,
+    EnvironmentTypes,
+    MultiEnvironment,
+    Target,
+    Environment,
+    TopLevelConfig,
+} from '@wixc3/engine-core';
 
 export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
+export function createStaticFeatureDefinition(
+    partial: Partial<IStaticFeatureDefinition> &
+        Pick<IStaticFeatureDefinition, 'filePath' | 'packageName' | 'scopedName'>
+): IStaticFeatureDefinition {
+    return {
+        contextFilePaths: {},
+        envFilePaths: {},
+        preloadFilePaths: {},
+        dependencies: [],
+        resolvedContexts: {},
+        exportedEnvs: [],
+        ...partial,
+    };
+}
+
 export interface IStaticFeatureDefinition {
-    contextFilePaths?: Record<string, string>;
-    envFilePaths?: Record<string, string>;
-    preloadFilePaths?: Record<string, string>;
-    dependencies?: string[];
+    contextFilePaths: Record<string, string>;
+    envFilePaths: Record<string, string>;
+    preloadFilePaths: Record<string, string>;
+    dependencies: string[];
     /**
      * the feature's name scoped to the package.json package name.
      * @example
@@ -20,10 +41,10 @@ export interface IStaticFeatureDefinition {
      * if package name ends with - feature, we remove it from the scope
      */
     scopedName: string;
-    resolvedContexts?: Record<string, string>;
+    resolvedContexts: Record<string, string>;
     packageName: string;
     filePath: string;
-    exportedEnvs?: IEnvironmentDescriptor<AnyEnvironment>[];
+    exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[];
 }
 
 export const isProcessMessage = (value: unknown): value is IProcessMessage<unknown> =>
@@ -116,7 +137,7 @@ export type WorkerThreadEnvironmentStartupOptions = {
     config: TopLevelConfig;
     environmentContextName?: string;
     featureName: string;
-    features: [featureName: string, featureDefinition: Required<IStaticFeatureDefinition>][];
+    features: [featureName: string, featureDefinition: IStaticFeatureDefinition][];
     parentEnvName: string;
     env: Environment;
     runtimeOptions?: StartEnvironmentOptions['options'];
@@ -164,3 +185,45 @@ export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     execPath?: string;
     env: Environment;
 }
+
+export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment>
+    extends IEnvironmentDescriptor<ENV> {
+    featureName: string;
+    bundlePath?: string;
+    config?: TopLevelConfig;
+    features: Array<[string, IStaticFeatureDefinition]>;
+    options?: Array<[string, string | boolean]>;
+    inspect?: boolean;
+    host?: Target;
+    context?: string;
+}
+
+export interface IEnvironmentDescriptor<ENV extends AnyEnvironment = AnyEnvironment> {
+    type: EnvironmentTypes;
+    name: string;
+    childEnvName?: string;
+    flatDependencies?: IEnvironmentDescriptor<MultiEnvironment<ENV['envType']>>[];
+    env: ENV;
+}
+
+export interface MetadataCollectionAPI {
+    getRuntimeArguments: () => IEngineRuntimeArguments;
+}
+
+export interface IEngineRuntimeArguments {
+    featureName: string;
+    basePath: string;
+    outputPath: string;
+    configName?: string;
+    devport?: number;
+    nodeEntryPath: string;
+    workerThreadEntryPath: string;
+    features: [featureName: string, featureDefinition: IStaticFeatureDefinition][];
+    config: TopLevelConfig;
+    requiredModules?: string[];
+    runtimeOptions?: StartEnvironmentOptions['options'];
+}
+
+export const metadataApiToken = {
+    id: 'metadata-api-token',
+};

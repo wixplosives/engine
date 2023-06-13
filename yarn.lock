@@ -1516,6 +1516,18 @@
     glob "^10.2.7"
     yargs "^17.7.2"
 
+"@wixc3/engine-core-node@^37.1.1":
+  version "37.1.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/engine-core-node/-/engine-core-node-37.1.1.tgz#281a0a14fb054cdd4f9eb6fed684bd11acb74a50"
+  integrity sha512-496e32Go7UkN2EA2u+lfp/ZY0OU1JzukuYPXJVJkTNRLXHFIJQoysKm6t2MCcaT4aJcZDvng1H91YXUkJp3RBA==
+  dependencies:
+    "@wixc3/engine-core" "^37.1.1"
+    "@wixc3/patterns" "^8.2.0"
+    create-listening-server "^2.1.0"
+    express "^4.18.2"
+    memoize-one "^6.0.0"
+    socket.io "^4.6.1"
+
 "@wixc3/fs-utils@^8.2.1":
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-8.2.1.tgz#004ecd1cfdfaad7bb86e6bd7ae534d60813b70ed"
@@ -1529,7 +1541,7 @@
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
   integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
 
-"@wixc3/patterns@^8.2.1":
+"@wixc3/patterns@^8.2.0", "@wixc3/patterns@^8.2.1":
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-8.2.1.tgz#5e032f115c24b6f1c44ce1c2f4d4878f23397df8"
   integrity sha512-un6p4CIXbQd2ZEWE+s5dvjrGUHOp0NTrDiIpn1/I5yT7MRx2gLu8mVKMMOYI6xAG3KxYilqGp7BfckHdgMuaZA==
@@ -7227,7 +7239,7 @@ socket.io-parser@~4.2.4:
     "@socket.io/component-emitter" "~3.1.0"
     debug "~4.3.1"
 
-socket.io@^4.6.2:
+socket.io@^4.6.1, socket.io@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/socket.io/-/socket.io-4.6.2.tgz#d597db077d4df9cbbdfaa7a9ed8ccc3d49439786"
   integrity sha512-Vp+lSks5k0dewYTfwgPT9UeGGd+ht7sCpB7p0e83VgO4X/AHYWhXITMrNk/pg8syY2bpx23ptClCQuHhqi2BgQ==

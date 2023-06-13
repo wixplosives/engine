@@ -1,7 +1,7 @@
 import { Worker } from '@wixc3/isomorphic-worker/worker';
 
 import { COM, InitializerOptions, UniversalWorkerHost } from '@wixc3/engine-core';
-import { createMetadataProvider } from '@wixc3/engine-core-node';
+import { createMetadataProvider } from './core-node/create-application-metadata-provider';
 
 import { createDisposables } from '@wixc3/patterns';
 import type {

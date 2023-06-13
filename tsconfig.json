@@ -5,9 +5,6 @@
     { "path": "./packages/core/src" },
     { "path": "./packages/core/test" },
 
-    { "path": "./packages/core-node/src" },
-    { "path": "./packages/core-node/test" },
-
     { "path": "./packages/runtime-node/src" },
     { "path": "./packages/runtime-node/test" },
 

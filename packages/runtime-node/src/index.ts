@@ -10,3 +10,8 @@ export * from './process-communication';
 export * from './types';
 export * from './worker-thread-initializer';
 export * from './ws-environment';
+export * from './core-node/constants';
+export * from './core-node/ipc-host';
+export * from './core-node/create-application-metadata-provider';
+export * from './core-node/local-env-inititializer';
+export * from './core-node/ws-node-host';
