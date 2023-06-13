@@ -6,8 +6,6 @@
 
 - **[@wixc3/engine-core](https://github.com/wixplosives/engine/tree/master/packages/core)** - core runtime entities.
 
-- **[@wixc3/engine-core-node](https://github.com/wixplosives/engine/tree/master/packages/core-node)** - node-specific entities.
-
 - **[@wixc3/engine-scripts](https://github.com/wixplosives/engine/tree/master/packages/scripts)** - `engine` CLI.
 
 - **[@wixc3/engineer](https://github.com/wixplosives/engine/tree/master/packages/engineer)** - `engine` dev server.

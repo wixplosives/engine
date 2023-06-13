@@ -2,7 +2,7 @@ import fs from '@file-services/node';
 import { app, ipcMain } from 'electron';
 
 import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
-import { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
+import { IEngineRuntimeArguments } from '@wixc3/engine-runtime-node';
 import { communicationChannels, electronRuntimeArguments } from '@wixc3/engine-electron-commons';
 import { importModules, IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 
@@ -19,7 +19,7 @@ export interface ElectronEnvParams {
     devport?: number;
     devtools?: boolean;
     outDir?: string;
-    features: Map<string, Required<IStaticFeatureDefinition>>;
+    features: Map<string, IStaticFeatureDefinition>;
     config: TopLevelConfig;
     requiredModules?: string[];
     env: Environment;

@@ -1,11 +1,11 @@
 import { EnvironmentTypes, flattenTree } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
+import { IEnvironmentDescriptor } from './types';
 
 import type { IStaticFeatureDefinition } from './types';
 
 export function resolveEnvironments(
     featureName: string,
-    features: Map<string, Required<IStaticFeatureDefinition>>,
+    features: Map<string, IStaticFeatureDefinition>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes,
     filterByContext = true
 ) {

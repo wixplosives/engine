@@ -6,7 +6,7 @@ import {
     MultiEnvironment,
     flattenTree,
 } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
+import { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 
 const convertEnvToIEnv = (env: AnyEnvironment): IEnvironmentDescriptor => {
     const { env: name, envType: type } = env;

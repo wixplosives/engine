@@ -12,15 +12,8 @@ import {
     ReadyMessage,
     TopLevelConfig,
 } from '@wixc3/engine-core';
-import {
-    ENGINE_ROOT_ENVIRONMENT_ID,
-    IEnvironmentDescriptor,
-    IPCHost,
-    METADATA_PROVIDER_ENV_ID,
-    MetadataCollectionAPI,
-    StartEnvironmentOptions,
-    metadataApiToken,
-} from '@wixc3/engine-core-node';
+import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './core-node/constants';
+import { IPCHost } from './core-node/ipc-host';
 import type { SetMultiMap } from '@wixc3/patterns';
 
 import { resolveEnvironments } from './environments';
@@ -33,6 +26,10 @@ import {
     IStaticFeatureDefinition,
     TopLevelConfigProvider,
     isEnvironmentStartMessage,
+    IEnvironmentDescriptor,
+    MetadataCollectionAPI,
+    StartEnvironmentOptions,
+    metadataApiToken,
 } from './types';
 import { runWSEnvironment } from './ws-environment';
 
@@ -120,7 +117,7 @@ export interface ILaunchEnvironmentOptions {
     mode?: LaunchEnvironmentMode;
     com: Communication;
     baseHost: BaseHost;
-    features: Map<string, Required<IStaticFeatureDefinition>>;
+    features: Map<string, IStaticFeatureDefinition>;
 }
 
 export class NodeEnvironmentsManager {
@@ -144,19 +141,7 @@ export class NodeEnvironmentsManager {
         const featureId = `${featureName}${configName ? delimiter + configName : ''}`;
         const topology: Record<string, string> = {};
         const { defaultRuntimeOptions, features } = this.options;
-        const featuresWithDefaults = new Map<string, Required<IStaticFeatureDefinition>>();
-        for (const [featureName, featureDef] of features.entries()) {
-            featuresWithDefaults.set(featureName, {
-                contextFilePaths: {},
-                dependencies: [],
-                envFilePaths: {},
-                exportedEnvs: [],
-                preloadFilePaths: {},
-                resolvedContexts: {},
-                ...featureDef,
-            });
-        }
-        const nodeEnvironments = resolveEnvironments(featureName, featuresWithDefaults, 'node');
+        const nodeEnvironments = resolveEnvironments(featureName, features, 'node');
         // checking if already has running environments for this feature
         const runningEnv = this.runningFeatures.get(featureId);
         if (runningEnv) {
@@ -203,7 +188,7 @@ export class NodeEnvironmentsManager {
                     basePath: process.cwd(),
                     config: [],
                     featureName,
-                    features: [...featuresWithDefaults.entries()],
+                    features: [...features.entries()],
                     outputPath: process.cwd(),
                     nodeEntryPath: '',
                     workerThreadEntryPath,
@@ -262,7 +247,7 @@ export class NodeEnvironmentsManager {
                 mode,
                 com: rootCom,
                 baseHost,
-                features: featuresWithDefaults,
+                features: features,
             });
             topology[nodeEnv.name] = `http://localhost:${preparedEnvironment.port}/${nodeEnv.name}`;
             preparedEnvironments[nodeEnv.name] = preparedEnvironment;

@@ -162,7 +162,7 @@ export interface CreateElectronEntryOptions {
     envName: string;
     configName?: string;
     config: TopLevelConfig;
-    features: Map<string, Required<IStaticFeatureDefinition>>;
+    features: Map<string, IStaticFeatureDefinition>;
     outDir: string;
 }
 
@@ -205,7 +205,7 @@ export function createElectronEntryFile({
             : `./${relativeToPackageFileRequest}`;
     };
 
-    const scopedFeatures = [...features.entries()].map<[string, Required<IStaticFeatureDefinition>]>(
+    const scopedFeatures = [...features.entries()].map<[string, IStaticFeatureDefinition]>(
         ([featureName, featureDef]) => {
             const { packageName, contextFilePaths, preloadFilePaths, envFilePaths, filePath } = featureDef;
             return [

@@ -4,7 +4,7 @@ import {
     METADATA_PROVIDER_ENV_ID,
     MetadataCollectionAPI,
     metadataApiToken,
-} from '@wixc3/engine-core-node';
+} from '@wixc3/engine-runtime-node';
 import { importModules, runIPCEnvironment } from '@wixc3/engine-runtime-node';
 
 import { NodeEnvironmentCommand, NodeEnvironmentEvent, NodeEnvironmentStartupCommand } from './types';
