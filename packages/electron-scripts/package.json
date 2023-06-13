@@ -14,7 +14,6 @@
     "@wixc3/common": "^8.2.1",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/engine-core": "^37.1.1",
-    "@wixc3/engine-core-node": "^37.1.1",
     "@wixc3/engine-electron": "^37.1.1",
     "@wixc3/engine-electron-commons": "^37.1.1",
     "@wixc3/engine-electron-node": "^37.1.1",

@@ -19,7 +19,6 @@
     "@file-services/node": "^7.3.0",
     "@wixc3/common": "^8.2.1",
     "@wixc3/engine-core": "^37.1.1",
-    "@wixc3/engine-core-node": "^37.1.1",
     "@wixc3/engine-dashboard": "^37.1.1",
     "@wixc3/engine-runtime-node": "^37.1.1",
     "@wixc3/engine-scripts": "^37.1.1",
