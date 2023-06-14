@@ -8,8 +8,7 @@
   },
   "peerDependencies": {
     "html-webpack-plugin": "^4.0.0 || ^5.0.0",
-    "webpack": "^4.0.0 || ^5.0.0",
-    "esbuild": "^0.17.19"
+    "webpack": "^4.0.0 || ^5.0.0"
   },
   "dependencies": {
     "@file-services/node": "^7.3.0",

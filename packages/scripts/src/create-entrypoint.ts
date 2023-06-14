@@ -129,14 +129,14 @@ async function main() {
         new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
     )}
     
-    let publicPath = ${typeof publicPath === 'string' ? stringify(publicPath) : 'globalThis.__webpack_public_path__'}
+    let publicPath = ${typeof publicPath === 'string' ? stringify(publicPath) : '__webpack_public_path__'}
     if (options.has('publicPath')) {
         publicPath = options.get('publicPath');
     } else if (${typeof publicPathVariableName === 'string'} && topWindow.${publicPathVariableName}) {
         publicPath = topWindow.${publicPathVariableName};
     }
 
-    globalThis.__webpack_public_path__ = publicPath;
+    __webpack_public_path__ = publicPath;
     
     const featureName = options.get('${FEATURE_QUERY_PARAM}') || ${stringify(featureName)};
     const configName = options.get('${CONFIG_QUERY_PARAM}') || ${stringify(configName)};

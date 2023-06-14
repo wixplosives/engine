@@ -14,7 +14,7 @@ import {
 import { SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
 import webpack from 'webpack';
-import { findFeatures } from '../analyze-feature';
+import { analyzeFeatures } from '../analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
 import {
     createCommunicationMiddleware,
@@ -68,11 +68,12 @@ export class Application {
         if (config.require) await this.importModules(config.require);
 
         const entryPoints: Record<string, Record<string, string>> = {};
-        const analyzed = this.analyzeFeatures(buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot);
-
-        if (buildOptions.singleFeature && buildOptions.featureName) {
-            this.filterByFeatureName(analyzed.features, buildOptions.featureName);
-        }
+        const analyzed = analyzeFeatures(
+            fs,
+            this.basePath,
+            buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot,
+            buildOptions.singleFeature ? buildOptions.featureName : undefined
+        );
 
         const envs = getResolvedEnvironments(buildOptions, analyzed.features);
         const { compiler } = this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
@@ -460,16 +461,6 @@ export class Application {
         const compiler = webpack(webpackConfigs);
         hookCompilerToConsole(compiler);
         return { compiler };
-    }
-
-    protected analyzeFeatures(featureDiscoveryRoot = '.') {
-        const { basePath } = this;
-
-        console.time(`Analyzing Features`);
-        // const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
-        const featuresAndConfigs = findFeatures(basePath, fs, featureDiscoveryRoot);
-        console.timeEnd('Analyzing Features');
-        return featuresAndConfigs;
     }
 
     protected createNodeEntrypoint(

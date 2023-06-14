@@ -238,7 +238,8 @@ export function createElectronEntryFile({
 
     return fs.promises.writeFile(
         outputPath,
-        `process.env.NODE_ENV='production';
+        `
+process.env.NODE_ENV='production';
 
 const { app } = require('electron');
 const { join } = require('path')
@@ -250,7 +251,7 @@ const configName = ${configName ? JSON.stringify(configName) : 'undefined'};
 const config = ${JSON.stringify(config, null, 4)};
 const features = new Map(${JSON.stringify(scopedFeatures, null, 4)});
 const basePath = join(app.getAppPath(), ${JSON.stringify(outDir)});
-const env = ${JSON.stringify(env)}
+const env = ${JSON.stringify(env)};
 
 const resolvePath = (path) => require.resolve(path, { paths: [basePath] })
 

@@ -9,7 +9,7 @@ import { analyzeFeatures } from '../analyze-feature';
 import { getResolvedEnvironments } from '../utils/environments';
 import { getExportedEnvironments } from '../application/utils';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
-import { nodeFs } from '@file-services/node';
+import fs from '@file-services/node';
 import { join } from 'node:path';
 
 async function engineStart(rootDir: string = process.cwd()) {
@@ -30,7 +30,12 @@ async function engineStart(rootDir: string = process.cwd()) {
 
     await importModules(rootDir, require);
 
-    const { features, configurations } = analyzeFeatures(nodeFs, rootDir, featureDiscoveryRoot);
+    const { features, configurations } = analyzeFeatures(
+        fs,
+        rootDir,
+        featureDiscoveryRoot,
+        singleFeature ? featureName : undefined
+    );
 
     const environments = getResolvedEnvironments({
         featureName,
@@ -55,6 +60,7 @@ async function engineStart(rootDir: string = process.cwd()) {
         route: '/',
         directoryPath: outputPath,
     });
+
     const staticMiddlewares = serveStatic?.map(({ route, directoryPath }) => ({
         path: route,
         handlers: express.static(directoryPath),

@@ -1,7 +1,8 @@
 import { createDisposables } from '@wixc3/create-disposables';
 import { isRunOptionsMessage, runElectronEnv } from '@wixc3/engine-electron-host';
 
-const runElectronEnvListener = async (message: unknown) => {
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+process.once('message', async (message) => {
     if (isRunOptionsMessage(message)) {
         const { runOptions } = message;
         const disposables = createDisposables();
@@ -18,7 +19,4 @@ const runElectronEnvListener = async (message: unknown) => {
             console.error(ex);
         }
     }
-};
-
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
-process.once('message', runElectronEnvListener);
+});

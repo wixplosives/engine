@@ -1,6 +1,8 @@
+import { nodeFs } from '@file-services/node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type { IConfigDefinition, LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
+    analyzeFeatures,
     Application,
     generateConfigName,
     IApplicationOptions,
@@ -29,11 +31,7 @@ export class TargetApplication extends Application {
     }
 
     public getFeatures(singleFeature?: boolean, featureName?: string, featureDiscoveryRoot?: string) {
-        const { features, configurations, packages } = super.analyzeFeatures(featureDiscoveryRoot);
-        if (singleFeature && featureName) {
-            this.filterByFeatureName(features, featureName);
-        }
-        return { features, configurations, packages };
+        return analyzeFeatures(nodeFs, this.basePath, featureDiscoveryRoot, singleFeature ? featureName : undefined);
     }
 
     public filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {

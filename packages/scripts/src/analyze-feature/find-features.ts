@@ -7,12 +7,51 @@ import type { SetMultiMap } from '@wixc3/patterns';
 import { mergeAll, mergeResults } from './merge';
 import type { IFeatureDefinition } from '../types';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import { flattenTree } from '@wixc3/engine-core';
 
-export function analyzeFeatures(fs: IFileSystemSync, basePath: string, featureDiscoveryRoot = '.') {
+export function analyzeFeatures(
+    fs: IFileSystemSync,
+    basePath: string,
+    featureDiscoveryRoot = '.',
+    featureName?: string
+) {
     console.time(`Analyzing Features`);
     const featuresAndConfigs = findFeatures(basePath, fs, featureDiscoveryRoot);
+    if (featureName) {
+        filterByFeatureName(featuresAndConfigs.features, featureName);
+    }
     console.timeEnd('Analyzing Features');
     return featuresAndConfigs;
+}
+
+function filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+    const foundFeature = features.get(featureName);
+    if (!foundFeature) {
+        throw new Error(`cannot find feature: ${featureName}`);
+    }
+    const nonFoundDependencies: string[] = [];
+    const filteredFeatures = [
+        ...flattenTree(foundFeature, ({ dependencies }) =>
+            dependencies.map((dependencyName) => {
+                const feature = features.get(dependencyName);
+                if (!feature) {
+                    nonFoundDependencies.push(dependencyName);
+                    return {} as IFeatureDefinition;
+                }
+                return feature;
+            })
+        ),
+    ].map(({ scopedName }) => scopedName);
+    if (nonFoundDependencies.length) {
+        throw new Error(
+            `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`
+        );
+    }
+    for (const [foundFeatureName] of features) {
+        if (!filteredFeatures.includes(foundFeatureName)) {
+            features.delete(foundFeatureName);
+        }
+    }
 }
 
 export function findFeatures(path: string, fs: IFileSystemSync, featureDiscoveryRoot = '.'): FoundFeatures {

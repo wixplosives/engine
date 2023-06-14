@@ -39,10 +39,11 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
             configLoaderModuleName: configLoaderRequest,
         });
 
-        entryPoints.set(`${env.name}.${env.type}.mjs`, entrypointContent);
+        entryPoints.set(`${env.name}.${env.type === 'webworker' ? 'worker' : 'web'}.js`, entrypointContent);
     }
 
     const commonConfig = {
+        target: 'es2020',
         bundle: true,
         format: 'esm',
         publicPath,
@@ -65,7 +66,20 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         ...commonConfig,
         platform: 'browser',
         outdir: 'dist-web',
-        plugins: [...commonConfig.plugins, dynamicEntryPlugin({ entryPoints, loader: 'js' }), htmlPlugin()],
+        plugins: [
+            ...commonConfig.plugins,
+            dynamicEntryPlugin({ entryPoints, loader: 'js' }),
+            htmlPlugin({
+                toHtmlPath(key) {
+                    const entry = entryPoints.get(key);
+                    if (!entry) {
+                        throw new Error(`Could not find entrypoint for ${key} in ${[...entryPoints.keys()]}}`);
+                    }
+                    const [envName] = key.split('.');
+                    return `${envName}.html`;
+                },
+            }),
+        ],
     } satisfies BuildOptions;
 
     const nodeConfig = {
@@ -118,7 +132,7 @@ function rawLoaderPlugin() {
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-function htmlPlugin() {
+function htmlPlugin({ toHtmlPath = (key: string) => key.replace(/\.m?js$/, '.html') } = {}) {
     const plugin: Plugin = {
         name: 'html-plugin',
         setup(build) {
@@ -140,8 +154,9 @@ function htmlPlugin() {
                     if (!key.match(/\.m?js$/)) {
                         continue;
                     }
-                    const htmlFile = key.replace(/\.m?js$/, '.html');
                     const jsPath = nodeFs.basename(key);
+                    const jsDir = nodeFs.dirname(key);
+                    const htmlFile = nodeFs.join(jsDir, toHtmlPath(jsPath));
                     const cssPath = meta.cssBundle ? nodeFs.basename(meta.cssBundle) : undefined;
                     const htmlContent = deindento(`
                         |<!DOCTYPE html>
