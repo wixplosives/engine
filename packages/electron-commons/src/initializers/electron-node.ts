@@ -4,8 +4,8 @@ import { promisify } from 'util';
 const promisifiedTreeKill = promisify(treeKill);
 
 import type { EnvironmentInitializer, InitializerOptions } from '@wixc3/engine-core';
-import { IEngineRuntimeArguments, IPCHost } from '@wixc3/engine-core-node';
-import { NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
+import type { IEngineRuntimeArguments, NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
+import { IPCHost } from '@wixc3/engine-runtime-node/dist/core-node/ipc-host';
 
 import { ExpirableList } from '../expirable-list';
 import { NodeEnvironmentCommand } from '../types';

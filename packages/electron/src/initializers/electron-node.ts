@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { IEngineRuntimeArguments } from '@wixc3/engine-core-node';
+import type { IEngineRuntimeArguments } from '@wixc3/engine-runtime-node';
 import {
     communicationChannels,
     initializeNodeEnvironment,

@@ -1,5 +1,5 @@
 import { EnvironmentInitializer, ActiveEnvironment } from '@wixc3/engine-core';
-import { createMetadataProvider } from '@wixc3/engine-core-node';
+import { createMetadataProvider } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/patterns';
 import { InitializeNodeEnvironmentOptions, initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
 

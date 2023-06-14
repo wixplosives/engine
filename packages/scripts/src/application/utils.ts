@@ -1,7 +1,7 @@
 import type webpack from 'webpack';
 
 import type { AnyEnvironment } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from '@wixc3/engine-core-node';
+import { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 
 import type { FoundFeatures } from '../analyze-feature';
 import type { EngineConfig, IFeatureDefinition } from '../types';

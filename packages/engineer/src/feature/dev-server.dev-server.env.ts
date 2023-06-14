@@ -1,6 +1,6 @@
 import { createDisposables } from '@wixc3/create-disposables';
 import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
-import { WsServerHost } from '@wixc3/engine-core-node';
+import { WsServerHost } from '@wixc3/engine-runtime-node';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
     createCommunicationMiddleware,

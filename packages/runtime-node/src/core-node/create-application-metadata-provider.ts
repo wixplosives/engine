@@ -1,6 +1,6 @@
 import { Communication } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/patterns';
-import { MetadataCollectionAPI, metadataApiToken } from './types';
+import { MetadataCollectionAPI, metadataApiToken } from '../types';
 import { METADATA_PROVIDER_ENV_ID, ENGINE_ROOT_ENVIRONMENT_ID } from './constants';
 import memoizeOne from 'memoize-one';
 

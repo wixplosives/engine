@@ -8,9 +8,7 @@ import {
     RuntimeEngine,
     RuntimeMetadata,
 } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor, StartEnvironmentOptions } from '@wixc3/engine-core-node';
-
-import type { IStaticFeatureDefinition } from './types';
+import type { IStaticFeatureDefinition, IEnvironmentDescriptor, StartEnvironmentOptions } from './types';
 
 export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     featureName,
@@ -77,14 +75,14 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
             ...config,
         ],
         new Map(options)
-    )
+    );
     // we don't wait here because the process of node environment manager prepare environment is two step process
     void engine.run(runningFeatures);
     return engine;
 }
 
 export function createFeatureLoaders(
-    features: Map<string, Required<IStaticFeatureDefinition>>,
+    features: Map<string, IStaticFeatureDefinition>,
     { childEnvName, env }: IEnvironmentDescriptor
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};

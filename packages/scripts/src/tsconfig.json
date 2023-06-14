@@ -9,9 +9,6 @@
       "path": "../../core/src"
     },
     {
-      "path": "../../core-node/src"
-    },
-    {
       "path": "../../runtime-node/src"
     }
   ]

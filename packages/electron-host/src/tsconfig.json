@@ -5,7 +5,6 @@
   },
   "references": [
     { "path": "../../core/src" },
-    { "path": "../../core-node/src" },
     { "path": "../../runtime-node/src" },
     { "path": "../../electron/src" },
     { "path": "../../electron-commons/src" },
