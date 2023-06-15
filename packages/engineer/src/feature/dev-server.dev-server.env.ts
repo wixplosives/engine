@@ -3,6 +3,7 @@ import { Communication, Registry, RuntimeMetadata } from '@wixc3/engine-core';
 import { IConfigDefinition, WsServerHost } from '@wixc3/engine-runtime-node';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
+    IFeatureDefinition,
     createCommunicationMiddleware,
     createConfigMiddleware,
     createFeaturesEngineRouter,
@@ -76,7 +77,7 @@ devServerFeature.setup(
             } = engineConfig ?? {};
 
             await application.importModules(requiredPaths);
-            
+
             const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
                 ...socketServerOptions,
                 ...configServerOptions,
@@ -98,7 +99,7 @@ devServerFeature.setup(
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost
             attachWSHost(socketServer, devServerEnv.env, communication);
-            
+
             const { features, configurations, packages } = application.getFeatures(
                 singleFeature,
                 featureName,
@@ -297,7 +298,7 @@ function addEngineerCompilations(
 function runCompilerInWatch(
     application: TargetApplication,
     devServerConfig: DevServerConfig,
-    features: Map<string, import('c:/projects/engine/packages/scripts/src/types').IFeatureDefinition>,
+    features: Map<string, IFeatureDefinition>,
     mode: 'development' | 'production',
     configurations: SetMultiMap<string, IConfigDefinition>,
     webpackConfigPath: string | undefined,
