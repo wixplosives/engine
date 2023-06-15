@@ -7,7 +7,7 @@ import { CONFIG_QUERY_PARAM, FEATURE_QUERY_PARAM } from './build-constants';
 import type { IFeatureDefinition } from './types';
 
 const { stringify } = JSON;
-const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
+export const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
 export const LOADED_FEATURE_MODULES_NAMESPACE = '_engine_';
 
 //#region types

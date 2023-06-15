@@ -23,7 +23,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
     const entryPoints = new Map<string, string>();
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
     for (const { env, childEnvs } of browserTargets) {
-        const entrypointContent = createMainEntrypoint({
+        let entrypointContent = createMainEntrypoint({
             features,
             childEnvs,
             env,
@@ -39,7 +39,9 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
             configLoaderModuleName: configLoaderRequest,
         });
 
-        entryPoints.set(`${env.name}.${env.type === 'webworker' ? 'worker' : 'web'}.js`, entrypointContent);
+        entrypointContent = 'import process from "process";\nglobalThis.process = process;\n' + entrypointContent;
+
+        entryPoints.set(`${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.js`, entrypointContent);
     }
 
     const commonConfig = {
@@ -59,7 +61,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
             '.woff2': 'file',
             '.ttf': 'file',
         },
-        plugins: [tsconfigPathsPlugin({}), rawLoaderPlugin(), ...buildPlugins],
+        plugins: [tsconfigPathsPlugin({}), rawLoaderPlugin(), topLevelConfigPlugin(), ...buildPlugins],
     } satisfies BuildOptions;
 
     const webConfig = {
@@ -67,6 +69,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         platform: 'browser',
         outdir: 'dist-web',
         plugins: [
+            nodeAliasPlugin(),
             ...commonConfig.plugins,
             dynamicEntryPlugin({ entryPoints, loader: 'js' }),
             htmlPlugin({
@@ -105,6 +108,47 @@ function* concatIterables<T>(...iterables: Iterable<T>[]) {
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+function nodeAliasPlugin() {
+    const plugin: Plugin = {
+        name: 'node-alias',
+        setup(build) {
+            build.onResolve({ filter: /(^path$)/ }, (args) => {
+                return {
+                    path: args.path,
+                    namespace: 'node-alias',
+                };
+            });
+            build.onLoad({ filter: /.*/, namespace: 'node-alias' }, () => {
+                // if (args.path === 'path') {
+                    return {
+                        contents: deindento(`
+                            |import path from '@file-services/path';
+                            |export * from '@file-services/path';
+                            |export default path;
+                        `),
+                        loader: 'js',
+                        resolveDir: '.',
+                    };
+                // } 
+                // else if (args.path === 'process') {
+                //     return {
+                //         contents: `export default {env:{}};`,
+                //         loader: 'js',
+                //         resolveDir: '.',
+                //     };
+                // } else {
+                //     throw new Error(`Unknown path ${args.path}`);
+                // }
+            });
+        },
+    };
+    return plugin;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
 function rawLoaderPlugin() {
     const plugin: Plugin = {
         name: 'raw-loader',
@@ -118,9 +162,10 @@ function rawLoaderPlugin() {
                 };
             });
             build.onLoad({ filter: /.*/, namespace: 'raw-loader-ns' }, (args) => {
+                const content = nodeFs.readFileSync(args.path, 'utf8');
                 return {
-                    contents: nodeFs.readFileSync(args.path, 'utf8'),
-                    loader: 'text',
+                    contents: `export default ${JSON.stringify(content)};`,
+                    loader: 'js',
                 };
             });
         },
@@ -168,6 +213,7 @@ function htmlPlugin({ toHtmlPath = (key: string) => key.replace(/\.m?js$/, '.htm
                         |        ${cssPath ? `<link rel="stylesheet" href="${cssPath}" />` : ''}
                         |    </head>
                         |    <body>
+                        |        <script>window.__webpack_public_path__ = ''</script>
                         |        <script type="module" src="${jsPath}" crossorigin="anonymous"></script>
                         |    </body>
                         |</html>
@@ -241,6 +287,7 @@ import {
     readJsonConfigFile,
     parseJsonSourceFileConfigFileContent,
 } from 'typescript';
+import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 
 interface TsConfigPluginOptions {
     absolute?: boolean;

@@ -73,6 +73,16 @@ async function engineStart(rootDir: string = process.cwd()) {
                 res.sendFile(join(__dirname, '..', 'engine-portal', 'index.html'));
             },
         },
+        {
+            path: '/configs/:featureName/:environmentName',
+            handlers: (req, res) => {
+                const { featureName, environmentName } = req.params;
+                const path = `${outputPath}/configs/${featureName}/${
+                    environmentName?.endsWith('.json') ? environmentName : `${environmentName}.json`
+                }`;
+                res.sendFile(join(rootDir, path));
+            },
+        },
     ];
 
     const { port } = await launchServer({
