@@ -425,7 +425,7 @@ function addConfigsEventListenerForParentEnvironments(publicConfigsRoute: string
                 if(!fetchedConfigs[envName]) {
                     const config = await (await fetch('${normalizeRoute(
                         publicConfigsRoute
-                    )}/' + configName + '?env=' + envName + '&feature=' + featureName)).json();
+                    )}' + configName + '?env=' + envName + '&feature=' + featureName)).json();
                     fetchedConfigs[envName] = config;
                 }
                 source.postMessage({

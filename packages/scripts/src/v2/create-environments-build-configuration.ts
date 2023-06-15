@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { BuildOptions, Loader, Plugin } from 'esbuild';
 import { getResolvedEnvironments } from '../utils/environments';
 import { createMainEntrypoint } from '../create-entrypoint';
@@ -22,6 +23,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
     const { environments, publicPath, configLoaderRequest, features, configurations, config, buildPlugins } = options;
     const entryPoints = new Map<string, string>();
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
+    
     for (const { env, childEnvs } of browserTargets) {
         let entrypointContent = createMainEntrypoint({
             features,
@@ -47,7 +49,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
     const commonConfig = {
         target: 'es2020',
         bundle: true,
-        format: 'esm',
+        format: 'iife',
         publicPath,
         metafile: true,
         sourcemap: true,
@@ -68,6 +70,13 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         ...commonConfig,
         platform: 'browser',
         outdir: 'dist-web',
+        alias: {
+            // TODO: open config for this
+            'react-refresh': join(
+                process.cwd(),
+                'node_modules/react-refresh/cjs/react-refresh-runtime.development.js'
+            ),
+        },
         plugins: [
             nodeAliasPlugin(),
             ...commonConfig.plugins,
@@ -153,11 +162,11 @@ function rawLoaderPlugin() {
     const plugin: Plugin = {
         name: 'raw-loader',
         setup(build) {
-            const resolve = createRequestResolver({ fs: nodeFs });
+            const resolve = createRequestResolver({ fs: nodeFs, alias: build.initialOptions.alias });
 
             build.onResolve({ filter: /^raw-loader!/ }, (args) => {
                 return {
-                    path: resolve(args.path.replace(/^raw-loader!/, ''), args.importer).resolvedFile || args.path,
+                    path: resolve(args.importer, args.path.replace(/^raw-loader!/, '')).resolvedFile || args.path,
                     namespace: 'raw-loader-ns',
                 };
             });
