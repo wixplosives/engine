@@ -9,7 +9,6 @@ import {
     createFeaturesEngineRouter,
     createLiveConfigsMiddleware,
     ensureTopLevelConfigMiddleware,
-    getExportedEnvironments,
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import express from 'express';
@@ -318,7 +317,6 @@ function runCompilerInWatch(
             featureName,
             features,
             filterContexts: singleFeature,
-            environments: [...getExportedEnvironments(features)],
         }),
     });
 

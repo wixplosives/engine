@@ -1,6 +1,5 @@
 import { nodeFs } from '@file-services/node';
-import type { SetMultiMap } from '@wixc3/patterns';
-import type { IConfigDefinition, LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import type { LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
     analyzeFeatures,
     Application,
@@ -44,13 +43,6 @@ export class TargetApplication extends Application {
 
     public createCompiler(compilerArgs: ICompilerOptions) {
         return super.createCompiler(compilerArgs);
-    }
-
-    public getFeatureEnvDefinitions(
-        features: Map<string, IFeatureDefinition>,
-        configurations: SetMultiMap<string, IConfigDefinition>
-    ) {
-        return super.getFeatureEnvDefinitions(features, configurations);
     }
 
     public setNodeEnvManager(nem: NodeEnvironmentsManager, nodeEnvironmentsMode?: LaunchEnvironmentMode) {

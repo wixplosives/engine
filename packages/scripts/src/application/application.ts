@@ -3,8 +3,6 @@ import { defaults } from '@wixc3/common';
 import { createDisposables } from '@wixc3/create-disposables';
 import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 import {
-    createIPC,
-    ForkedProcess,
     IConfigDefinition,
     launchEngineHttpServer,
     NodeEnvironmentsManager,
@@ -25,7 +23,7 @@ import { createExternalNodeEntrypoint } from '../create-entrypoint';
 import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs';
 import { generateFeature, pathToFeaturesDirectory } from '../feature-generator';
 import type { EngineConfig, IFeatureDefinition } from '../types';
-import { getFilePathInPackage, IResolvedEnvironment, scopeFilePathsToPackage } from '../utils';
+import { getFilePathInPackage, getResolvedEnvironments, IResolvedEnvironment, scopeFilePathsToPackage } from '../utils';
 import { buildDefaults } from './defaults';
 import type {
     IApplicationOptions,
@@ -36,7 +34,7 @@ import type {
     IRunApplicationOptions,
     WebpackMultiStats,
 } from './types';
-import { compile, getResolvedEnvironments, hookCompilerToConsole, toCompilerOptions } from './utils';
+import { compile, hookCompilerToConsole, toCompilerOptions } from './utils';
 
 const { basename, extname, join } = fs;
 
@@ -75,7 +73,12 @@ export class Application {
             buildOptions.singleFeature ? buildOptions.featureName : undefined
         );
 
-        const envs = getResolvedEnvironments(buildOptions, analyzed.features);
+        const envs = getResolvedEnvironments({
+            featureName: buildOptions.featureName,
+            features: analyzed.features,
+            filterContexts: buildOptions.singleFeature,
+        });
+
         const { compiler } = this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
         const stats = await compile(compiler);
         const sourceRoot = buildOptions.sourcesRoot ?? buildOptions.featureDiscoveryRoot ?? '.';
@@ -175,26 +178,6 @@ export class Application {
             nodeEnvironmentManager,
             close: disposables.dispose,
         };
-    }
-
-    public async remote({ port: preferredPort, socketServerOptions }: IRunApplicationOptions = {}) {
-        if (!process.send) {
-            throw new Error('"remote" command can only be used in a forked process');
-        }
-        const { config } = await this.getEngineConfig();
-        if (config && config.require) {
-            await this.importModules(config.require);
-        }
-        const { socketServer, close, port } = await launchEngineHttpServer({
-            staticDirPath: this.outputPath,
-            httpServerPort: preferredPort,
-            socketServerOptions,
-        });
-
-        const parentProcess = new ForkedProcess(process);
-        createIPC(parentProcess, socketServer, { port, onClose: close });
-
-        parentProcess.postMessage({ id: 'initiated' });
     }
 
     public async create({ featureName, templatesDir, featuresDir }: ICreateOptions = {}) {
@@ -480,7 +463,7 @@ export class Application {
         }
     }
 
-    protected getFeatureEnvDefinitions(
+    public getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
         configurations: SetMultiMap<string, IConfigDefinition>
     ) {

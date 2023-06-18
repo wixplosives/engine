@@ -1,29 +1,13 @@
 import type webpack from 'webpack';
-
-import type { AnyEnvironment } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
-
 import type { FoundFeatures } from '../analyze-feature';
-import type { EngineConfig, IFeatureDefinition } from '../types';
-import { getResolvedEnvironments as resolveEnvironments } from '../utils';
+import type { EngineConfig } from '../types';
 import type { BuildOptions } from './defaults';
-import type { IBuildCommandOptions, ICompilerOptions } from './types';
+import type { ICompilerOptions } from './types';
 
 export const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
 
 
-export function getExportedEnvironments(
-    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
-): Set<IEnvironmentDescriptor> {
-    const environments = new Set<IEnvironmentDescriptor>();
-    for (const { exportedEnvs } of features.values()) {
-        for (const exportedEnv of exportedEnvs) {
-            environments.add(exportedEnv);
-        }
-    }
-    return environments;
-}
 
 export function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
@@ -37,14 +21,6 @@ export function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
         }
     });
 }
-
-export const getResolvedEnvironments = (options: IBuildCommandOptions, features: Map<string, IFeatureDefinition>) =>
-    resolveEnvironments({
-        featureName: options.featureName,
-        features,
-        filterContexts: options.singleFeature,
-        environments: [...getExportedEnvironments(features)],
-    });
 
 export const toCompilerOptions = (
     opts: BuildOptions,

@@ -72,12 +72,9 @@ export async function start({
         const config: TopLevelConfig = [];
         const { features, configurations } = findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
 
-        const environments = getExportedEnvironments(features);
-
-        // doing this in 2 steps as a future step for not needing to provide the environment name in the cli
-        const electronHostEnvironments = [...environments].filter(({ type }) => type === 'electron-main');
-
-        const env = electronHostEnvironments.find(({ name }) => name === envName)?.env;
+        const env = [...getExportedEnvironments(features)].find(
+            ({ type, name }) => type === 'electron-main' && name === envName
+        )?.env;
 
         if (!env) {
             throw new Error(`Environment ${envName} not found`);
