@@ -1,5 +1,5 @@
 import { Environment, TopLevelConfig } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 
