@@ -1,13 +1,13 @@
-import { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
-
+import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from '../types';
+import { AnyEnvironment } from '@wixc3/engine-core';
 
 export interface GetResolveEnvironmentsParams {
     featureName?: string;
     filterContexts?: boolean;
     features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs' | 'resolvedContexts'>>;
-    environments: IEnvironmentDescriptor[];
+    environments?: Iterable<IEnvironmentDescriptor>;
     findAllEnvironments?: boolean;
 }
 
@@ -16,11 +16,21 @@ export interface IResolvedEnvironment {
     env: IEnvironmentDescriptor;
 }
 
+export function* getExportedEnvironments(
+    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
+) {
+    for (const { exportedEnvs } of features.values()) {
+        for (const exportedEnv of exportedEnvs) {
+            yield exportedEnv;
+        }
+    }
+}
+
 export function getResolvedEnvironments({
     featureName,
     filterContexts,
     features,
-    environments,
+    environments = getExportedEnvironments(features),
     findAllEnvironments,
 }: GetResolveEnvironmentsParams) {
     const webEnvs = new Map<string, IResolvedEnvironment>();
