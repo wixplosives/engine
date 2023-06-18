@@ -180,16 +180,16 @@ export function createElectronEntryFile({
     outDir,
 }: CreateElectronEntryOptions): Promise<void> {
     const currentFeature = features.get(featureName);
+    if (!currentFeature) {
+        throw new Error(`feature ${featureName} was not found. available features:
+        ${[...features.keys()].join(', ')}`);
+    }
 
+    
     const env = [...getExportedEnvironments(features)].find(({ name }) => name === envName)?.env;
 
     if (!env) {
         throw new Error(`cannot create electron entry for ${envName}. No feature found exporting this environment`);
-    }
-
-    if (!currentFeature) {
-        throw new Error(`feature ${featureName} was not found. available features:
-        ${[...features.keys()].join(', ')}`);
     }
 
     const mapAbsolutePathsToRequests = (path: string, packageName: string) => {
