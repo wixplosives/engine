@@ -7,7 +7,6 @@ import { RouteMiddleware, launchServer } from './start-dev-server';
 import { importModules } from './import-modules';
 import { analyzeFeatures } from '../analyze-feature';
 import { getResolvedEnvironments } from '../utils/environments';
-import { getExportedEnvironments } from '../application/utils';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
 import fs from '@file-services/node';
 import { join } from 'node:path';
@@ -25,10 +24,10 @@ async function engineStart(rootDir: string = process.cwd()) {
         serveStatic = [],
         featureDiscoveryRoot = '.',
         socketServerOptions,
-        require = [],
+        require: requiredPaths = [],
     } = (await loadConfigFile<EngineConfig>(rootDir, ENGINE_CONFIG_FILE_NAME)).config;
 
-    await importModules(rootDir, require);
+    await importModules(rootDir, requiredPaths);
 
     const { features, configurations } = analyzeFeatures(
         fs,
@@ -41,7 +40,6 @@ async function engineStart(rootDir: string = process.cwd()) {
         featureName,
         features,
         filterContexts: singleFeature,
-        environments: [...getExportedEnvironments(features)],
     });
 
     const buildConfigurations = createEnvironmentsBuildConfiguration({
@@ -98,14 +96,14 @@ async function engineStart(rootDir: string = process.cwd()) {
     //     {
     //         features: this.remapManifestFeaturePaths(manifestFeatures),
     //         port,
-    //         bundlePath: this.outputPath,
+    //         bundlePath: outputPath,
     //         defaultRuntimeOptions,
-    //         inspect,
-    //         overrideConfig: config,
+    //         // inspect,
+    //         // overrideConfig: config,
     //         configurations,
     //         requiredPaths,
     //     },
-    //     this.basePath,
+    //     basePath,
     //     { ...socketServerOptions, ...configSocketServerOptions }
     // );
 }

@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { BuildOptions, Loader, Plugin } from 'esbuild';
 import { getResolvedEnvironments } from '../utils/environments';
 import { createMainEntrypoint } from '../create-entrypoint';
@@ -8,6 +7,7 @@ import { SetMultiMap } from '@wixc3/patterns';
 import { TopLevelConfig } from '@wixc3/engine-core';
 import nodeFs from '@file-services/node';
 import { createRequestResolver } from '@file-services/resolve';
+import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 
 interface Options {
     buildPlugins: Plugin[];
@@ -21,9 +21,10 @@ interface Options {
 
 export function createEnvironmentsBuildConfiguration(options: Options) {
     const { environments, publicPath, configLoaderRequest, features, configurations, config, buildPlugins } = options;
+
     const entryPoints = new Map<string, string>();
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
-    
+
     for (const { env, childEnvs } of browserTargets) {
         let entrypointContent = createMainEntrypoint({
             features,
@@ -53,6 +54,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         publicPath,
         metafile: true,
         sourcemap: true,
+        keepNames: true,
         loader: {
             '.json': 'json',
             '.png': 'file',
@@ -63,20 +65,13 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
             '.woff2': 'file',
             '.ttf': 'file',
         },
-        plugins: [tsconfigPathsPlugin({}), rawLoaderPlugin(), topLevelConfigPlugin(), ...buildPlugins],
+        plugins: [rawLoaderPlugin(), topLevelConfigPlugin(), ...buildPlugins],
     } satisfies BuildOptions;
 
     const webConfig = {
         ...commonConfig,
         platform: 'browser',
         outdir: 'dist-web',
-        alias: {
-            // TODO: open config for this
-            'react-refresh': join(
-                process.cwd(),
-                'node_modules/react-refresh/cjs/react-refresh-runtime.development.js'
-            ),
-        },
         plugins: [
             nodeAliasPlugin(),
             ...commonConfig.plugins,
@@ -121,33 +116,24 @@ function nodeAliasPlugin() {
     const plugin: Plugin = {
         name: 'node-alias',
         setup(build) {
+            const moduleCode = deindento(`
+                |import path from '@file-services/path';
+                |export * from '@file-services/path';
+                |export default path;
+            `);
             build.onResolve({ filter: /(^path$)/ }, (args) => {
                 return {
                     path: args.path,
                     namespace: 'node-alias',
+                    pluginData: { resolveDir: args.resolveDir },
                 };
             });
-            build.onLoad({ filter: /.*/, namespace: 'node-alias' }, () => {
-                // if (args.path === 'path') {
-                    return {
-                        contents: deindento(`
-                            |import path from '@file-services/path';
-                            |export * from '@file-services/path';
-                            |export default path;
-                        `),
-                        loader: 'js',
-                        resolveDir: '.',
-                    };
-                // } 
-                // else if (args.path === 'process') {
-                //     return {
-                //         contents: `export default {env:{}};`,
-                //         loader: 'js',
-                //         resolveDir: '.',
-                //     };
-                // } else {
-                //     throw new Error(`Unknown path ${args.path}`);
-                // }
+            build.onLoad({ filter: /.*/, namespace: 'node-alias' }, ({ pluginData: { resolveDir } }) => {
+                return {
+                    contents: moduleCode,
+                    loader: 'js',
+                    resolveDir,
+                };
             });
         },
     };
@@ -288,75 +274,3 @@ function dynamicEntryPlugin({
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
-
-import {
-    nodeModuleNameResolver,
-    sys,
-    findConfigFile,
-    readJsonConfigFile,
-    parseJsonSourceFileConfigFileContent,
-} from 'typescript';
-import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
-
-interface TsConfigPluginOptions {
-    absolute?: boolean;
-    tsconfig?: Tsconfig | string;
-}
-
-interface Tsconfig {
-    baseUrl?: string;
-    compilerOptions?: {
-        paths?: Record<string, string[]>;
-    };
-}
-
-function tsconfigPathsPlugin({ absolute = true, tsconfig }: TsConfigPluginOptions): Plugin {
-    return {
-        name: 'tsconfig-paths',
-        setup: function setup({ onResolve }) {
-            const compilerOptions = loadCompilerOptions(tsconfig);
-            onResolve({ filter: /.*/ }, (args) => {
-                const hasMatchingPath = Object.keys(compilerOptions?.paths || {}).some((path) =>
-                    new RegExp(path.replace('*', '\\w*')).test(args.path)
-                );
-
-                if (!hasMatchingPath) {
-                    return null;
-                }
-
-                const { resolvedModule } = nodeModuleNameResolver(args.path, args.importer, compilerOptions || {}, sys);
-
-                if (!resolvedModule) {
-                    return null;
-                }
-
-                const { resolvedFileName } = resolvedModule;
-
-                if (!resolvedFileName || resolvedFileName.endsWith('.d.ts')) {
-                    return null;
-                }
-
-                const resolved = absolute ? sys.resolvePath(resolvedFileName) : resolvedFileName;
-
-                return {
-                    path: resolved,
-                };
-            });
-        },
-    };
-}
-
-function loadCompilerOptions(tsconfig?: Tsconfig | string) {
-    if (!tsconfig || typeof tsconfig === 'string') {
-        const tsconfigPath = findConfigFile(process.cwd(), sys.fileExists, tsconfig);
-        if (!tsconfigPath) {
-            throw new Error(`Cannot find tsconfig at '${tsconfig}'`);
-        }
-        const jsonSourceFile = readJsonConfigFile(tsconfigPath, sys.readFile);
-        return parseJsonSourceFileConfigFileContent(jsonSourceFile, sys, nodeFs.dirname(tsconfigPath)).options;
-    } else if (tsconfig) {
-        return tsconfig.compilerOptions;
-    } else {
-        throw new Error(`Cannot load tsconfig`);
-    }
-}
