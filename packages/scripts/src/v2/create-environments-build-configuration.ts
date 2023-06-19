@@ -65,7 +65,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
             '.woff2': 'file',
             '.ttf': 'file',
         },
-        plugins: [rawLoaderPlugin(), topLevelConfigPlugin(), ...buildPlugins],
+        plugins: [...buildPlugins, rawLoaderPlugin(), topLevelConfigPlugin()],
     } satisfies BuildOptions;
 
     const webConfig = {
@@ -73,9 +73,10 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         platform: 'browser',
         outdir: 'dist-web',
         plugins: [
-            nodeAliasPlugin(),
             ...commonConfig.plugins,
+            nodeAliasPlugin(),
             dynamicEntryPlugin({ entryPoints, loader: 'js' }),
+            commonsPlugin(),
             htmlPlugin({
                 toHtmlPath(key) {
                     const entry = entryPoints.get(key);
@@ -106,6 +107,77 @@ function* concatIterables<T>(...iterables: Iterable<T>[]) {
     for (const iterable of iterables) {
         yield* iterable;
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+function commonsPlugin() {
+    const plugin: Plugin = {
+        name: 'commons-bundle',
+        setup(build) {
+            const externals = new Map<string, Set<string>>();
+            build.onResolve({ filter: /^[a-z@]/ }, async (args) => {
+                const request = args.path;
+                if (request.includes('@wixc3')) {
+                    return null;
+                }
+                const res = await build.resolve(request, {
+                    kind: args.kind,
+                    namespace: args.namespace,
+                    pluginData: args.pluginData,
+                    resolveDir: args.resolveDir,
+                    importer: args.importer,
+                });
+
+                let paths = externals.get(request);
+                if (!paths) {
+                    paths = new Set<string>();
+                    externals.set(res.path, paths);
+                }
+                paths.add(res.path);
+
+                return {
+                    ...res,
+                    pluginData: {
+                        args,
+                    },
+                    external: true,
+                };
+            });
+
+            build.onLoad({ filter: /.*/, namespace: 'commons-bundle' }, (args) => {
+                const pkgExports = '';
+                return {
+                    pluginData: args,
+                    contents: `
+                        import { ${pkgExports}, ${pkgExports}Default } from "commons-bundle";
+                        export default ${pkgExports}Default;
+                        export { ${pkgExports} };
+                    `,
+                };
+            });
+
+            build.onEnd(async () => {
+                // const entryCode
+
+                // entryPoints.set('commons', deindento(``));
+
+                const res = await build.esbuild.build({
+                    bundle: true,
+                    format: 'esm',
+                    splitting: false,
+                    outdir: 'dist-web/commons',
+                    metafile: true,
+                    plugins: [nodeAliasPlugin(), dynamicEntryPlugin({ entryPoints: new Map(), loader: 'js' })],
+                });
+
+                console.log(res);
+            });
+        },
+    };
+    return plugin;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
