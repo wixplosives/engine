@@ -98,7 +98,7 @@ export class Communication {
         this.registerMessageHandler(host);
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
-        this.messageIdPrefix = `c_${this.getEnvironmentId()}_${Math.random().toString(36)}`;
+        this.messageIdPrefix = `c_${this.getEnvironmentId()}_${Math.random().toString(36).slice(2)}`;
         this.post(this.getPostEndpoint(host), {
             type: 'ready',
             from: id,
