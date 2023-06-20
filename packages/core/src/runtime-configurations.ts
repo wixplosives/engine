@@ -46,22 +46,26 @@ export class RuntimeConfigurations {
         if (!publicConfigsRoute || !this.isMainWebEntrypoint()) {
             return;
         }
-        globalThis.addEventListener('message', ({ data: { id, envName }, source }: MessageEvent) => {
+        globalThis.addEventListener('message', ({ data: { id, envName, from }, source }: MessageEvent) => {
             if (!source || id !== publicConfigsRoute) {
                 return;
             }
             this.fetchConfig(publicConfigsRoute, envName, featureName, configName)
                 .then((config) => {
-                    source?.postMessage({
+                    // with our flow it can only be a window (currently)
+                    (source as Window).postMessage({
                         id,
                         config,
-                    });
+                        to: from,
+                    }, '*');
                 })
                 .catch((e) => {
-                    source?.postMessage({
+                    // with our flow it can only be a window (currently)
+                    (source as Window).postMessage({
                         id,
                         error: String(e),
-                    });
+                        to: from,
+                    }, '*');
                 });
         });
     }
@@ -97,6 +101,7 @@ export class RuntimeConfigurations {
                     {
                         id: publicConfigsRoute,
                         envName: envName,
+                        from: this.envName
                     },
                     '*'
                 );
