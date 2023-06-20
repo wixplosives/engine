@@ -1,3 +1,4 @@
+import { timeout } from 'promise-assist';
 import {
     globallyProvidingEnvironments,
     orderedEnvDependencies,
@@ -18,7 +19,8 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     constructor(
         public entryEnvironment: ENV,
         topLevelConfig: TopLevelConfig = [],
-        public runOptions: IRunOptions = new Map()
+        public runOptions: IRunOptions = new Map(),
+        readonly featureShutdownTimeout = 10_000
     ) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
         this.referencedEnvs = new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(entryEnvironment)]);
@@ -84,7 +86,11 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         this.running = undefined;
         const toDispose = Array.from(this.features.values()).reverse();
         for (const feature of toDispose) {
-            await feature.dispose();
+            await timeout(
+                feature.dispose(),
+                this.featureShutdownTimeout,
+                `Failed to dispose feature: ${feature.feature.id}`
+            );
         }
     };
 
