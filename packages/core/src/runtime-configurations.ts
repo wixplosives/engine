@@ -1,15 +1,16 @@
 import type { IRunOptions, TopLevelConfig } from './index';
+
 declare global {
     interface Window {
-        engineEntryOptions?: (options: { urlParams: IRunOptions; envName: string }) => IRunOptions;
+        engineEntryOptions?: (options: { urlParams: URLSearchParams; envName: string }) => URLSearchParams;
     }
 }
 
-export type ConfigLoader = () => Promise<
-    {
-        default: TopLevelConfig;
-    }[]
->;
+type ConfigModule = {
+    default: TopLevelConfig;
+};
+
+export type ConfigLoader = () => Promise<ConfigModule[]>;
 
 export type ConfigLoaders = Record<string, ConfigLoader>;
 
@@ -22,17 +23,13 @@ export class RuntimeConfigurations {
         }
     }
     private isMainWebEntrypoint() {
-        if (!(globalThis instanceof Window)) {
-            return false;
-        }
-        const win = globalThis as unknown as Window;
-        return win.parent === win;
+        return this.getScope() === this.getOpenerMessageTarget();
     }
 
     async importConfig(configName = '') {
         const loader = this.loaders[configName];
         if (!loader || !configName) {
-            return Promise.resolve([]);
+            return [];
         }
         const res = await loader();
         const allLoadedConfigs = await Promise.all(res.map((module) => module.default));
@@ -40,12 +37,9 @@ export class RuntimeConfigurations {
     }
 
     getEntryOptions(): IRunOptions {
-        const win = this.getWindow();
-        if (!win) {
-            throw new Error('Cannot get entry options, window is not defined');
-        }
-        const urlParams = new URLSearchParams(win.location.search);
-        return win.engineEntryOptions?.({ urlParams, envName: this.envName }) ?? urlParams;
+        const scope = self || this.getScope();
+        const urlParams = new URLSearchParams(scope.location.search);
+        return scope.engineEntryOptions?.({ urlParams, envName: this.envName }) ?? urlParams;
     }
 
     installChildEnvConfigFetcher(publicConfigsRoute: string, featureName: string, configName: string) {
@@ -82,10 +76,7 @@ export class RuntimeConfigurations {
     }
 
     private loadFromParent(publicConfigsRoute: string, envName: string) {
-        const win = this.getWindow();
-        if (!win) {
-            throw new Error('Cannot load configuration from parent, window is not defined');
-        }
+        const scope = this.getScope();
         let promise = this.fetchedConfigs[envName];
         if (!promise) {
             promise = new Promise((res, rej) => {
@@ -97,12 +88,12 @@ export class RuntimeConfigurations {
                         | { id: string; config: never; error: string };
                 }) => {
                     if (id === publicConfigsRoute) {
-                        win.removeEventListener('message', configsHandler);
+                        scope.removeEventListener('message', configsHandler);
                         error ? rej(error) : res(config);
                     }
                 };
-                win.addEventListener('message', configsHandler);
-                win.parent.postMessage(
+                scope.addEventListener('message', configsHandler);
+                this.getOpenerMessageTarget().postMessage(
                     {
                         id: publicConfigsRoute,
                         envName: envName,
@@ -115,8 +106,13 @@ export class RuntimeConfigurations {
         return promise;
     }
 
-    private getWindow() {
-        return globalThis instanceof Window ? (globalThis as unknown as Window) : null;
+    private getScope() {
+        return typeof self !== 'undefined' ? self : window;
+    }
+
+    private getOpenerMessageTarget() {
+        const current = typeof self !== 'undefined' ? self : window;
+        return current.parent ?? current;
     }
 
     private fetchConfig(publicConfigsRoute: string, envName: string, featureName: string, configName: string) {
