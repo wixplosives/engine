@@ -132,7 +132,7 @@ if (options.has('publicPath')) {
 }
 __webpack_public_path__= publicPath;
 return publicPath;
-}())`;
+})()`;
 }
 
 //#endregion
