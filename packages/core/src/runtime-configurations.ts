@@ -1,4 +1,4 @@
-import type { IRunOptions, TopLevelConfig } from '@wixc3/engine-core';
+import type { IRunOptions, TopLevelConfig } from './index';
 declare global {
     interface Window {
         engineEntryOptions?: (options: { urlParams: IRunOptions; envName: string }) => IRunOptions;
