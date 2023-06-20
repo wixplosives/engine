@@ -13,11 +13,11 @@
   "dependencies": {
     "@file-services/node": "^7.3.0",
     "@file-services/types": "^7.3.0",
-    "@wixc3/common": "^8.2.1",
+    "@wixc3/common": "^9.0.0",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/engine-core": "^38.0.2",
     "@wixc3/engine-runtime-node": "^38.0.2",
-    "@wixc3/patterns": "^8.2.1",
+    "@wixc3/patterns": "^9.0.0",
     "@wixc3/resolve-directory-context": "^3.0.5",
     "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
