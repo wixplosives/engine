@@ -83,7 +83,7 @@ export function createMainEntrypoint({
     mode,
     // staticBuild, //TODO: check all places that replaced this flow
     publicConfigsRoute,
-    config,
+    config = [],
     target,
     eagerEntrypoint,
     env,
