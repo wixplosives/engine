@@ -92,28 +92,32 @@ export function createMainEntrypoint({
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), env.name);
     const engineCoreSpecifier = JSON.stringify(require.resolve('@wixc3/engine-core'));
-
-    return `
-import { main } from ${engineCoreSpecifier};
-
-const publicPath = ${handlePublicPathTemplate(publicPath, publicPathVariableName)};
-
-main({
-    featureName: ${stringify(featureName)}, 
-    configName: ${stringify(configName)},
-    env: ${stringify(
-        new Environment(env.name, env.type, env.env.endpointType, env.flatDependencies?.map((d) => d.env) ?? [])
-    )},
-    featureLoaders: new Map(Object.entries(${createFeatureLoaders(
+    const runningEnv = new Environment(
+        env.name,
+        env.type,
+        env.env.endpointType,
+        env.flatDependencies?.map((d) => d.env) ?? []
+    );
+    const featureLoaders = createFeatureLoaders(
         features.values(),
         childEnvs,
         target,
         env,
         eagerEntrypoint,
         featuresBundleName
-    )})),
-    configLoaders: ${createConfigLoadersObject(configLoaderModuleName, configs)},
-    publicPath,
+    );
+    const configLoaders = createConfigLoadersObject(configLoaderModuleName, configs);
+    const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
+    return `
+import { main } from ${engineCoreSpecifier};
+
+main({
+    featureName: ${stringify(featureName)}, 
+    configName: ${stringify(configName)},
+    env: ${stringify(runningEnv)},
+    featureLoaders: ${featureLoaders},
+    configLoaders: ${configLoaders},
+    publicPath: ${runtimePublicPath},
     publicConfigsRoute: ${stringify(publicConfigsRoute)},
     topLevelConfig: ${stringify(config)},
 }).catch(console.error);
@@ -157,7 +161,7 @@ function createFeatureLoaders(
     eagerEntrypoint?: boolean,
     featuresBundleName?: string
 ) {
-    return `{\n${Array.from(features)
+    return `new Map(Object.entries({\n${Array.from(features)
         .map(
             (args) =>
                 `    '${args.scopedName}': ${createLoaderInterface({
@@ -170,7 +174,7 @@ function createFeatureLoaders(
                     featuresBundleName,
                 })}`
         )
-        .join(',\n')}\n}`;
+        .join(',\n')}\n}))`;
 }
 
 function loadEnvAndContextFiles({
