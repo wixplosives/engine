@@ -105,6 +105,23 @@ export class FeatureLoadersRegistry {
         return Promise.all(featureLoaders.map(({ load }) => load(this.resolvedContexts)));
     }
     /**
+     * returns the last loaded feature
+     */
+    async loadEntryFeature(rootFeatureName: string, runtimeOptions: Record<string, string | boolean> = {}) {
+        const features = await this.getLoadedFeatures(rootFeatureName, runtimeOptions);
+        const entryFeature = features[features.length - 1];
+        if (!entryFeature) {
+            throw new Error(
+                `no features were loaded for ${rootFeatureName} with runtime options ${JSON.stringify(
+                    runtimeOptions,
+                    null,
+                    2
+                )}`
+            );
+        }
+        return entryFeature;
+    }
+    /**
      * returns all the dependencies of a feature. doesn't handle duplications
      */
     public async getFeatureDependencies(featureName: string): Promise<string[]> {

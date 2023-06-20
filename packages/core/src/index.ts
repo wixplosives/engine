@@ -11,6 +11,8 @@ export * from './types';
 export * from './communication.feature';
 export * from './runtime-metadata.feature';
 
+export * from './runtime-configurations';
+
 import COM from './communication.feature';
 export { COM };
 
