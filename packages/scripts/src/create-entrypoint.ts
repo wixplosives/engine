@@ -316,7 +316,7 @@ function createConfigLoadersObject(configLoaderModuleName: string, configs: Reco
                 loadConfigFileTemplate(configLoaderModuleName, filePath, scopedName, configEnvName)
             )
             .join(',');
-        loaders += `    '${scopedName}': async () => (await Promise.all([${loadStatements}]))`;
+        loaders += `    '${scopedName}': async () => (await Promise.all([${loadStatements}])),\n`;
     }
     return `{\n${loaders}\n}`;
 }
