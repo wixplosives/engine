@@ -28,8 +28,8 @@ export async function main({
 
     const options = runtimeConfiguration.getEntryOptions();
 
-    featureName = String(options.get('feature')) || featureName;
-    configName = String(options.get('config')) || configName;
+    featureName = String(options.get('feature') || featureName);
+    configName = String(options.get('config') || configName);
 
     const rootFeatureLoader = featureLoaders.get(featureName);
     if (!rootFeatureLoader) {
