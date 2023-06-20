@@ -7,7 +7,6 @@ export * from './engine-router';
 export * from './feature-generator';
 export * from './load-feature-directory';
 export * from './load-node-environment';
-export * from './run-environment';
 export * from './types';
 export * from './utils';
 export { VirtualModulesLoaderOptions, createVirtualEntries } from './virtual-modules-loader';
