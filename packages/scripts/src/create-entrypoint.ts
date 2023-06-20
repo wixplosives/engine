@@ -125,9 +125,7 @@ function handlePublicPathTemplate(publicPath: string | undefined, publicPathVari
 // TODO: getTopWindow here???
 const topWindow = globalThis.parent ?? globalThis;
 let publicPath = ${typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'}
-if (options.has('publicPath')) {
-    publicPath = options.get('publicPath');
-} else if (${typeof publicPathVariableName === 'string'} && topWindow[${stringify(publicPathVariableName)}]) {
+if (${typeof publicPathVariableName === 'string'} && topWindow[${stringify(publicPathVariableName)}]) {
     publicPath = topWindow[${stringify(publicPathVariableName)}];
 }
 __webpack_public_path__= publicPath;
