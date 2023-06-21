@@ -46,7 +46,7 @@ export class RuntimeConfigurations {
         if (!publicConfigsRoute || !this.isMainWebEntrypoint()) {
             return;
         }
-        globalThis.addEventListener('message', ({ data: { id, envName, from }, source }: MessageEvent) => {
+        globalThis.addEventListener('message', ({ data: { id, envName, from }, source }) => {
             if (!source || id !== publicConfigsRoute) {
                 return;
             }
