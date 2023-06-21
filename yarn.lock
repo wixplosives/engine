@@ -1483,6 +1483,15 @@
     "@file-services/types" "^7.3.0"
     promise-assist "^2.0.1"
 
+"@wixc3/common@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-9.0.0.tgz#157febeb2def46d6734d34c7557ddd7cea102d9d"
+  integrity sha512-eM0QT4ghiPCwU8INbuQ9nErDoDR2TAULDYiGoJZA71+VF7yOspMx42SRHtQs5V76snkYATzBQ/q+TNFuJv+omA==
+  dependencies:
+    "@file-services/path" "^7.3.0"
+    "@file-services/types" "^7.3.0"
+    promise-assist "^2.0.1"
+
 "@wixc3/create-disposables@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
@@ -1523,6 +1532,14 @@
     "@wixc3/common" "^8.2.1"
     promise-assist "^2.0.1"
 
+"@wixc3/patterns@^9.1.0":
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-9.1.0.tgz#6f28a481b237f93ef6ab99ca7bf42c35ab19c4ab"
+  integrity sha512-ptK0DlKSatxqG/NucHjKnmHrsZW28p9aWazjGroplUws0xL3YUdR0D5RnN17yx9Bo79DTzwonVsnj7Hu4P9PqA==
+  dependencies:
+    "@wixc3/common" "^9.0.0"
+    promise-assist "^2.0.1"
+
 "@wixc3/resolve-directory-context@^3.0.5":
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-3.0.5.tgz#5a9f2bf1ae44e585612cdb4e7e78251c3317f01a"
@@ -1544,14 +1561,14 @@
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^8.2.1":
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-8.2.1.tgz#b4744e8c0b97fd82cae86d356d12a55d00dd8820"
-  integrity sha512-8kipyIPQnlBp7hja1A86IaWl9G9DUi4pH5uepZDGntQAAbpr0buN+WuFTiqqQgKq8dh0Ny3o2L/Gy+qptMVZhQ==
+"@wixc3/testing@^9.1.0":
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-9.1.0.tgz#89dd82fabff2b1c10c67d2ecc8d032a50edca787"
+  integrity sha512-xv5OwepQ6ujIQLY5Y1XNScj7Fk4CBHCsCR1sfNQEKhg4vth4b0uSfnwQARfF2YWCq4JmDbnyMBHiNIpZmpKrLg==
   dependencies:
     "@file-services/types" "^7.3.0"
-    "@wixc3/common" "^8.2.1"
-    "@wixc3/patterns" "^8.2.1"
+    "@wixc3/common" "^9.0.0"
+    "@wixc3/patterns" "^9.1.0"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
