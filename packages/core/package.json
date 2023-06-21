@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@wixc3/isomorphic-worker": "^1.2.4",
-    "@wixc3/patterns": "^8.2.1",
+    "@wixc3/patterns": "^9.1.0",
     "promise-assist": "^2.0.1",
     "socket.io-client": "^4.6.2",
     "typescript-type-utils": "^0.1.0"

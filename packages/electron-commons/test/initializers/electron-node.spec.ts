@@ -13,6 +13,7 @@ const { expect } = chai;
 chai.use(chaiAsPromised);
 
 const featurePath = fs.dirname(require.resolve('@fixture/disconnecting-env/package.json'));
+const timeout = 3000;
 
 interface SetupRunningFeatureOptions {
     featuresConfig: TopLevelConfig;
@@ -43,7 +44,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit' } })],
             });
-            disposeAfter(dispose);
+            disposeAfter(dispose, {
+                timeout,
+                name: `env ${testFeature.id}`,
+            });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
@@ -51,7 +55,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception' } })],
             });
-            disposeAfter(dispose);
+            disposeAfter(dispose, {
+                timeout,
+                name: `env ${testFeature.id}`,
+            });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
@@ -59,7 +66,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'promise-reject' } })],
             });
-            disposeAfter(dispose);
+            disposeAfter(dispose, {
+                timeout,
+                name: `env ${testFeature.id}`,
+            });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
@@ -68,7 +78,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception' } })],
                 stdio: 'pipe',
             });
-            disposeAfter(dispose);
+            disposeAfter(dispose, {
+                timeout,
+                name: `env ${testFeature.id}`,
+            });
 
             const exitDetails = await exitPromise;
             expect(exitDetails.errorMessage).to.not.be.empty;
@@ -89,14 +102,20 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit', handleUncaught } })],
             });
-            disposeAfter(dispose);
+            disposeAfter(dispose, {
+                timeout,
+                name: `env ${testFeature.id}`,
+            });
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
         it('should catch on env throwing uncaught exception', async () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception', handleUncaught } })],
             });
-            disposeAfter(dispose);
+            disposeAfter(dispose, {
+                timeout,
+                name: `env ${testFeature.id}`,
+            });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
@@ -104,7 +123,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'promise-reject', handleUncaught } })],
             });
-            disposeAfter(dispose);
+            disposeAfter(dispose, {
+                timeout,
+                name: `env ${testFeature.id}`,
+            });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });

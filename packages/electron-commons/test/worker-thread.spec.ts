@@ -19,11 +19,15 @@ const setupRunningEnv = (featureId: string) =>
         env: serverEnv,
         stdio: 'pipe',
     });
+const timeout = 3000;
 
 describe('workerthread environment type', () => {
     it('initializes worker, calls API and disposes', async () => {
         const { dispose, communication } = await setupRunningEnv(workerThreadFeature.id);
-        disposeAfter(dispose);
+        disposeAfter(dispose, {
+            timeout,
+            name: `worker thread ${workerThreadFeature.id}`,
+        });
 
         const workerService = communication.apiProxy<WorkerService>(
             { id: serverEnv.env },
@@ -36,7 +40,10 @@ describe('workerthread environment type', () => {
 
     it('initializes multiple workers, calls API and disposes', async () => {
         const { dispose, communication } = await setupRunningEnv(`${workerThreadFeature.id}/${multiFeature.id}`);
-        disposeAfter(dispose);
+        disposeAfter(dispose, {
+            timeout,
+            name: `worker thread ${workerThreadFeature.id}/${multiFeature.id}`,
+        });
 
         const multiWorkerService = communication.apiProxy<MultiWorkerService>(
             { id: multiServerEnv.env },
@@ -51,7 +58,10 @@ describe('workerthread environment type', () => {
         const { dispose, communication } = await setupRunningEnv(
             `${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`
         );
-        disposeAfter(dispose);
+        disposeAfter(dispose, {
+            timeout,
+            name: `worker thread ${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`,
+        });
 
         const contextualMultiPreloadWorkerService = communication.apiProxy<ContextualMultiPreloadWorkerService>(
             { id: contextualMultiServerEnv.env },

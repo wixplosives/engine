@@ -266,7 +266,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         featureName,
                         configName: newConfigName,
                     }),
-                WITH_FEATURE_DISPOSABLES
+                {
+                    group: WITH_FEATURE_DISPOSABLES,
+                    name: `close feature "${featureName}"`,
+                    timeout: 20_000,
+                }
             );
 
             const search = toSearchQuery({
@@ -275,10 +279,18 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams,
             });
             const browserContext = await browser.newContext(browserContextOptions);
-            disposeAfter(() => browserContext.close(), WITH_FEATURE_DISPOSABLES);
+            disposeAfter(() => browserContext.close(), {
+                group: WITH_FEATURE_DISPOSABLES,
+                name: `close browser context for feature "${featureName}"`,
+                timeout: 2_000,
+            });
 
             browserContext.on('page', onPageCreation);
-            disposeAfter(() => browserContext.off('page', onPageCreation), PAGE_DISPOSABLES);
+            disposeAfter(() => browserContext.off('page', onPageCreation), {
+                name: 'stop listening for page creation',
+                group: PAGE_DISPOSABLES,
+                timeout: 1_000,
+            });
 
             const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
             const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
@@ -305,12 +317,18 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         }),
                     });
                 });
-                disposeAfter(async () => {
-                    for (const tracingDisposable of tracingDisposables) {
-                        await tracingDisposable(mochaCtx()?.currentTest?.title);
+                disposeAfter(
+                    async () => {
+                        for (const tracingDisposable of tracingDisposables) {
+                            await tracingDisposable(mochaCtx()?.currentTest?.title);
+                        }
+                        tracingDisposables.clear();
+                    },
+                    {
+                        name: 'stop tracing',
+                        timeout: 10_000,
                     }
-                    tracingDisposables.clear();
-                });
+                );
             }
 
             function onPageError(e: Error) {
@@ -332,9 +350,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
                 const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
-                disposeAfter(disposeConsoleHook, PAGE_DISPOSABLES);
+                disposeAfter(disposeConsoleHook, {
+                    name: 'stop listening for console messages',
+                    group: PAGE_DISPOSABLES,
+                });
                 page.on('pageerror', onPageError);
-                disposeAfter(() => page.off('pageerror', onPageError), PAGE_DISPOSABLES);
+                disposeAfter(() => page.off('pageerror', onPageError), {
+                    name: 'stop listening for page errors',
+                    group: PAGE_DISPOSABLES,
+                    timeout: 1_000,
+                });
             }
 
             const featurePage = await browserContext.newPage();
