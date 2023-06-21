@@ -52,7 +52,7 @@
     "@wixc3/docs": "^8.2.1",
     "@wixc3/testing": "^8.2.1",
     "@wixc3/testing-node": "^8.2.1",
-    "@wixc3/wait-for-call": "^8.2.1",
+    "@wixc3/wait-for-call": "^9.0.0",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
     "electron": "^25.1.1",
