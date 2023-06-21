@@ -1483,6 +1483,15 @@
     "@file-services/types" "^7.3.0"
     promise-assist "^2.0.1"
 
+"@wixc3/common@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-9.0.0.tgz#157febeb2def46d6734d34c7557ddd7cea102d9d"
+  integrity sha512-eM0QT4ghiPCwU8INbuQ9nErDoDR2TAULDYiGoJZA71+VF7yOspMx42SRHtQs5V76snkYATzBQ/q+TNFuJv+omA==
+  dependencies:
+    "@file-services/path" "^7.3.0"
+    "@file-services/types" "^7.3.0"
+    promise-assist "^2.0.1"
+
 "@wixc3/create-disposables@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
