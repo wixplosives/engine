@@ -13,9 +13,6 @@ module.exports = {
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
-        alias: {
-            sinon: 'sinon/pkg/sinon-esm.js',
-        },
     },
     plugins: [
         new HtmlWebpackPlugin({

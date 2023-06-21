@@ -83,7 +83,7 @@ export class Communication {
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposeListeners = new Set<(envId: string) => void>();
     private callbackToEnvMapping = new Map<string, string>();
-
+    private messageIdPrefix: string;
     constructor(
         host: Target,
         id: string,
@@ -98,7 +98,7 @@ export class Communication {
         this.registerMessageHandler(host);
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
-
+        this.messageIdPrefix = `c_${this.getEnvironmentId()}_${Math.random().toString(36).slice(2)}`;
         this.post(this.getPostEndpoint(host), {
             type: 'ready',
             from: id,
@@ -252,7 +252,9 @@ export class Communication {
         forwardingChain: string[]
     ): Promise<unknown> {
         return new Promise<void>((res, rej) => {
-            const callbackId = !serviceComConfig[method]?.emitOnly ? this.idsCounter.next('c') : undefined;
+            const callbackId = !serviceComConfig[method]?.emitOnly
+                ? this.idsCounter.next(this.messageIdPrefix)
+                : undefined;
 
             if (this.isListenCall(args) || serviceComConfig[method]?.removeAllListeners) {
                 this.addOrRemoveListener(
@@ -390,7 +392,7 @@ export class Communication {
                     handlerId,
                     this.createHandlerIdPrefix({ from: this.rootEnvId, to: instanceId })
                 ),
-                callbackId: this.idsCounter.next('c'),
+                callbackId: this.idsCounter.next(this.messageIdPrefix),
                 origin: this.rootEnvId,
                 handlerId,
                 forwardingChain: [],
@@ -538,7 +540,7 @@ export class Communication {
     }
 
     private async forwardListenMessage(message: ListenMessage): Promise<void> {
-        const callbackId = this.idsCounter.next('c');
+        const callbackId = this.idsCounter.next(this.messageIdPrefix);
 
         const data = await new Promise<void>((res, rej) => {
             const handlerId = message.handlerId;
@@ -777,7 +779,7 @@ export class Communication {
     }
 
     private async forwardUnlisten(message: UnListenMessage) {
-        const callbackId = this.idsCounter.next('c');
+        const callbackId = this.idsCounter.next(this.messageIdPrefix);
         const { method, api } = this.parseHandlerId(message.handlerId, this.createHandlerIdPrefix(message));
 
         const data = await new Promise<void>((res, rej) =>
