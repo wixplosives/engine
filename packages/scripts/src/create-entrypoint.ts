@@ -81,7 +81,7 @@ export function createMainEntrypoint({
     publicPathVariableName,
     configurations,
     mode,
-    // staticBuild, //TODO: check all places that replaced this flow
+    staticBuild,
     publicConfigsRoute,
     config = [],
     target,
@@ -105,7 +105,7 @@ export function createMainEntrypoint({
         eagerEntrypoint,
         featuresBundleName
     );
-    const configLoaders = createConfigLoadersObject(configLoaderModuleName, configs);
+    const configLoaders = createConfigLoadersObject(configLoaderModuleName, configs, staticBuild);
     const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
 
     return `
@@ -312,13 +312,19 @@ const getConfigLoaders = (
     return [...configurations.entries()];
 };
 
-function createConfigLoadersObject(configLoaderModuleName: string, configs: Record<string, IConfigFileMapping[]>) {
+function createConfigLoadersObject(
+    configLoaderModuleName: string,
+    configs: Record<string, IConfigFileMapping[]>,
+    staticBuild: boolean
+) {
     const loaders: string[] = [];
-    for (const [scopedName, availableConfigs] of Object.entries(configs)) {
-        const loadStatements = availableConfigs.map(({ filePath, configEnvName }) =>
-            loadConfigFileTemplate(configLoaderModuleName, filePath, scopedName, configEnvName)
-        );
-        loaders.push(`    '${scopedName}': async () => (await Promise.all([${loadStatements.join(',')}]))`);
+    if (staticBuild) {
+        for (const [scopedName, availableConfigs] of Object.entries(configs)) {
+            const loadStatements = availableConfigs.map(({ filePath, configEnvName }) =>
+                loadConfigFileTemplate(configLoaderModuleName, filePath, scopedName, configEnvName)
+            );
+            loaders.push(`    '${scopedName}': async () => (await Promise.all([${loadStatements.join(',')}]))`);
+        }
     }
     return `{\n${loaders.join(',\n')}\n}`;
 }
