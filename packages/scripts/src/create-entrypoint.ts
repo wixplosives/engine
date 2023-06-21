@@ -91,7 +91,6 @@ export function createMainEntrypoint({
     configLoaderModuleName = '@wixc3/engine-scripts/dist/default-config-loader',
 }: ICreateEntrypointsOptions) {
     const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), env.name);
-    const engineCoreSpecifier = JSON.stringify(require.resolve('@wixc3/engine-core'));
     const runningEnv = new Environment(
         env.name,
         env.type,
@@ -108,18 +107,23 @@ export function createMainEntrypoint({
     );
     const configLoaders = createConfigLoadersObject(configLoaderModuleName, configs);
     const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
+
     return `
-import { main } from ${engineCoreSpecifier};
+import { main } from '@wixc3/engine-core';
+
+const urlParams = new URLSearchParams(globalThis.location.search);
+const options = globalThis.engineEntryOptions?.({ urlParams, envName: ${stringify(env.name)} }) ?? urlParams;
 
 main({
     featureName: ${stringify(featureName)}, 
     configName: ${stringify(configName)},
-    env: ${stringify(runningEnv)},
+    env: ${stringify(runningEnv, null, 2)},
     featureLoaders: ${featureLoaders},
     configLoaders: ${configLoaders},
     publicPath: ${runtimePublicPath},
     publicConfigsRoute: ${stringify(publicConfigsRoute)},
-    topLevelConfig: ${stringify(config)},
+    overrideConfig: ${stringify(config, null, 2)},
+    options,
 }).catch(console.error);
 `;
 }
@@ -128,8 +132,10 @@ function handlePublicPathTemplate(publicPath: string | undefined, publicPathVari
     return `(() => {
 // TODO: getTopWindow here???
 const topWindow = globalThis.parent ?? globalThis;
-let publicPath = ${typeof publicPath === 'string' ? JSON.stringify(publicPath) : '__webpack_public_path__'}
-if (${typeof publicPathVariableName === 'string'} && topWindow[${stringify(publicPathVariableName)}]) {
+let publicPath = ${typeof publicPath === 'string' ? stringify(publicPath) : '__webpack_public_path__'}
+if (options.has('publicPath')) {
+    publicPath = options.get('publicPath');
+} else if (${typeof publicPathVariableName === 'string'} && topWindow[${stringify(publicPathVariableName)}]) {
     publicPath = topWindow[${stringify(publicPathVariableName)}];
 }
 __webpack_public_path__= publicPath;
@@ -140,7 +146,7 @@ return publicPath;
 //#endregion
 
 //#region import statements templates
-export function webpackDynamicImportStatement({ moduleIdentifier, filePath, eagerEntrypoint }: LoadStatementArguments) {
+export function dynamicImportStatement({ moduleIdentifier, filePath, eagerEntrypoint }: LoadStatementArguments) {
     return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
         eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
     } ${stringify(filePath)});`;
@@ -167,7 +173,7 @@ function createFeatureLoaders(
                 `    '${args.scopedName}': ${createLoaderInterface({
                     ...args,
                     childEnvs,
-                    loadStatement: webpackDynamicImportStatement,
+                    loadStatement: dynamicImportStatement,
                     target,
                     eagerEntrypoint,
                     env,
@@ -196,9 +202,7 @@ function loadEnvAndContextFiles({
         const contextFilePath = contextFilePaths[`${env.name}/${childEnvName}`];
         if (contextFilePath) {
             usesResolvedContexts = true;
-            loadStatements.push(`if (resolvedContexts[${JSON.stringify(env.name)}] === ${JSON.stringify(
-                childEnvName
-            )}) {
+            loadStatements.push(`if (resolvedContexts[${stringify(env.name)}] === ${stringify(childEnvName)}) {
                 ${loadStatement({
                     moduleIdentifier: scopedName,
                     filePath: contextFilePath,
@@ -213,7 +217,7 @@ function loadEnvAndContextFiles({
             // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
             preloadStatements.push(`if (resolvedContexts[${stringify(env.name)}] === ${stringify(childEnvName)}) {
-                ${webpackDynamicImportStatement({
+                ${dynamicImportStatement({
                     directoryPath,
                     filePath: preloadFilePath,
                     moduleIdentifier: scopedName,
@@ -240,7 +244,7 @@ function loadEnvAndContextFiles({
     const preloadFilePath = preloadFilePaths?.[env.name];
     if (preloadFilePath) {
         preloadStatements.push(
-            webpackDynamicImportStatement({
+            dynamicImportStatement({
                 moduleIdentifier: `[${env.name}]${scopedName}`,
                 filePath: preloadFilePath,
                 directoryPath,
@@ -289,7 +293,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
     const configNameToFiles: Record<string, IConfigFileMapping[]> = {};
     for (const [configName, { filePath, envName: configEnvName }] of configurations) {
-        configNameToFiles[configName] ||= [];
+        configNameToFiles[configName] ??= [];
         if (!configEnvName || configEnvName === envName) {
             configNameToFiles[configName]!.push({ filePath, configEnvName });
         }
@@ -309,23 +313,21 @@ const getConfigLoaders = (
 };
 
 function createConfigLoadersObject(configLoaderModuleName: string, configs: Record<string, IConfigFileMapping[]>) {
-    let loaders = '';
+    const loaders: string[] = [];
     for (const [scopedName, availableConfigs] of Object.entries(configs)) {
-        const loadStatements = availableConfigs
-            .map(({ filePath, configEnvName }) =>
-                loadConfigFileTemplate(configLoaderModuleName, filePath, scopedName, configEnvName)
-            )
-            .join(',');
-        loaders += `    '${scopedName}': async () => (await Promise.all([${loadStatements}])),\n`;
+        const loadStatements = availableConfigs.map(({ filePath, configEnvName }) =>
+            loadConfigFileTemplate(configLoaderModuleName, filePath, scopedName, configEnvName)
+        );
+        loaders.push(`    '${scopedName}': async () => (await Promise.all([${loadStatements.join(',')}]))`);
     }
-    return `{\n${loaders}\n}`;
+    return `{\n${loaders.join(',\n')}\n}`;
 }
 
 function loadConfigFileTemplate(
     configLoaderModuleName: string,
     filePath: string,
     scopedName: string,
-    configEnvName: string | undefined = ''
+    configEnvName = ''
 ): string {
     const request = stringify(
         topLevelConfigLoaderPath +

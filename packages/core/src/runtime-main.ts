@@ -1,64 +1,58 @@
-import * as EngineCore from './index';
+import type { IRunOptions, TopLevelConfig } from './types';
+import type { AnyEnvironment } from './entities';
+import { FeatureLoadersRegistry, IFeatureLoader } from './run-engine-app';
+import { ConfigLoaders, RuntimeConfigurations } from './runtime-configurations';
+import { RuntimeEngine } from './runtime-engine';
+import { INSTANCE_ID_PARAM_NAME } from './com';
+import COM from './communication.feature';
 
-interface Options {
-    env: EngineCore.AnyEnvironment;
-    topLevelConfig: EngineCore.TopLevelConfig;
-    featureLoaders: Map<string, EngineCore.IFeatureLoader>;
-    configLoaders: EngineCore.ConfigLoaders;
+export interface MainEntryParams {
+    env: AnyEnvironment;
+    overrideConfig: TopLevelConfig;
+    featureLoaders: Map<string, IFeatureLoader>;
+    configLoaders: ConfigLoaders;
     publicPath: string;
     publicConfigsRoute: string;
     featureName: string;
     configName: string;
+    options: IRunOptions;
 }
 
 export async function main({
     env,
     publicPath,
     publicConfigsRoute,
-    topLevelConfig,
+    overrideConfig,
     featureLoaders,
     configLoaders,
     featureName,
     configName,
-}: Options) {
-    (globalThis as any).EngineCore ||= EngineCore;
-    // TODO: check if we can remove EngineCore
-    const { FeatureLoadersRegistry, RuntimeConfigurations, RuntimeEngine, COM } = EngineCore;
-    const runtimeConfiguration = new RuntimeConfigurations(env.env, configLoaders);
-
-    const options = runtimeConfiguration.getEntryOptions();
+    options,
+}: MainEntryParams) {
+    const runtimeConfiguration = new RuntimeConfigurations(env.env, publicConfigsRoute, configLoaders);
+    const featureLoader = new FeatureLoadersRegistry(featureLoaders);
 
     featureName = String(options.get('feature') || featureName);
     configName = String(options.get('config') || configName);
 
-    const rootFeatureLoader = featureLoaders.get(featureName);
-    if (!rootFeatureLoader) {
-        throw new Error(
-            "cannot find feature '" +
-                featureName +
-                "'. available features:\\n" +
-                Array.from(featureLoaders.keys()).join('\\n')
-        );
-    }
-    const { resolvedContexts = {} } = rootFeatureLoader;
-    const featureLoader = new FeatureLoadersRegistry(featureLoaders, resolvedContexts);
-
-    const instanceId = options.get(EngineCore.INSTANCE_ID_PARAM_NAME);
+    const instanceId = options.get(INSTANCE_ID_PARAM_NAME);
     if (instanceId) {
         (globalThis as any).name = instanceId;
     }
 
-    const config = [
+    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName);
+
+    const topLevelConfig: TopLevelConfig = [
         COM.use({ config: { resolvedContexts, publicPath } }),
         // import static config
         ...(await runtimeConfiguration.importConfig(configName)),
         // override
-        ...topLevelConfig,
+        ...overrideConfig,
         // import public config
-        ...(await runtimeConfiguration.load(publicConfigsRoute, env.env, featureName, configName)),
+        ...(await runtimeConfiguration.load(env.env, featureName, configName)),
     ];
 
-    runtimeConfiguration.installChildEnvConfigFetcher(publicConfigsRoute, featureName, configName);
+    runtimeConfiguration.installChildEnvConfigFetcher(featureName, configName);
 
-    return new RuntimeEngine(env, config, options).run(await featureLoader.loadEntryFeature(featureName));
+    return new RuntimeEngine(env, topLevelConfig, options).run(entryFeature);
 }

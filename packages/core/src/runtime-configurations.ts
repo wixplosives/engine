@@ -1,4 +1,4 @@
-import type { IRunOptions, TopLevelConfig } from './index';
+import type { TopLevelConfig } from './index';
 
 declare global {
     interface Window {
@@ -6,7 +6,7 @@ declare global {
     }
 }
 
-type ConfigModule = {
+export type ConfigModule = {
     default: TopLevelConfig;
 };
 
@@ -16,7 +16,7 @@ export type ConfigLoaders = Record<string, ConfigLoader>;
 
 export class RuntimeConfigurations {
     fetchedConfigs: Record<string, Promise<TopLevelConfig>> = {};
-    constructor(private envName: string, private loaders: ConfigLoaders) {
+    constructor(private envName: string, private publicConfigsRoute: string, private loaders: ConfigLoaders) {
         // validate args since we use this class in the entry point template code
         if (!envName) {
             throw new Error('envName must be provided');
@@ -26,7 +26,7 @@ export class RuntimeConfigurations {
         return this.getScope() === this.getOpenerMessageTarget();
     }
 
-    async importConfig(configName = '') {
+    async importConfig(configName: string) {
         const loader = this.loaders[configName];
         if (!loader || !configName) {
             return [];
@@ -36,50 +36,50 @@ export class RuntimeConfigurations {
         return allLoadedConfigs.flat();
     }
 
-    getEntryOptions(): IRunOptions {
-        const scope = self || this.getScope();
-        const urlParams = new URLSearchParams(scope.location.search);
-        return scope.engineEntryOptions?.({ urlParams, envName: this.envName }) ?? urlParams;
-    }
-
-    installChildEnvConfigFetcher(publicConfigsRoute: string, featureName: string, configName: string) {
-        if (!publicConfigsRoute || !this.isMainWebEntrypoint()) {
+    installChildEnvConfigFetcher(featureName: string, configName: string) {
+        if (!this.publicConfigsRoute || !this.isMainWebEntrypoint()) {
             return;
         }
         globalThis.addEventListener('message', ({ data: { id, envName, from }, source }) => {
-            if (!source || id !== publicConfigsRoute) {
+            if (!source || id !== this.publicConfigsRoute) {
                 return;
             }
-            this.fetchConfig(publicConfigsRoute, envName, featureName, configName)
+            this.fetchConfig(envName, featureName, configName)
                 .then((config) => {
                     // with our flow it can only be a window (currently)
-                    (source as Window).postMessage({
-                        id,
-                        config,
-                        to: from,
-                    }, '*');
+                    (source as Window).postMessage(
+                        {
+                            id,
+                            config,
+                            to: from,
+                        },
+                        '*'
+                    );
                 })
                 .catch((e) => {
                     // with our flow it can only be a window (currently)
-                    (source as Window).postMessage({
-                        id,
-                        error: String(e),
-                        to: from,
-                    }, '*');
+                    (source as Window).postMessage(
+                        {
+                            id,
+                            error: String(e),
+                            to: from,
+                        },
+                        '*'
+                    );
                 });
         });
     }
 
-    load(publicConfigsRoute: string, envName: string, featureName: string, configName: string) {
-        if (!publicConfigsRoute) {
+    load(envName: string, featureName: string, configName: string) {
+        if (!this.publicConfigsRoute) {
             return Promise.resolve([]);
         }
         return this.isMainWebEntrypoint()
-            ? this.fetchConfig(publicConfigsRoute, envName, featureName, configName)
-            : this.loadFromParent(publicConfigsRoute, envName);
+            ? this.fetchConfig(envName, featureName, configName)
+            : this.loadFromParent(envName);
     }
 
-    private loadFromParent(publicConfigsRoute: string, envName: string) {
+    private loadFromParent(envName: string) {
         const scope = this.getScope();
         let promise = this.fetchedConfigs[envName];
         if (!promise) {
@@ -91,7 +91,7 @@ export class RuntimeConfigurations {
                         | { id: string; config: TopLevelConfig; error: never }
                         | { id: string; config: never; error: string };
                 }) => {
-                    if (id === publicConfigsRoute) {
+                    if (id === this.publicConfigsRoute) {
                         scope.removeEventListener('message', configsHandler);
                         error ? rej(error) : res(config);
                     }
@@ -99,9 +99,9 @@ export class RuntimeConfigurations {
                 scope.addEventListener('message', configsHandler);
                 this.getOpenerMessageTarget().postMessage(
                     {
-                        id: publicConfigsRoute,
+                        id: this.publicConfigsRoute,
                         envName: envName,
-                        from: this.envName
+                        from: this.envName,
                     },
                     '*'
                 );
@@ -120,10 +120,10 @@ export class RuntimeConfigurations {
         return current.parent ?? current;
     }
 
-    private fetchConfig(publicConfigsRoute: string, envName: string, featureName: string, configName: string) {
+    private fetchConfig(envName: string, featureName: string, configName: string) {
         let promise = this.fetchedConfigs[envName];
         if (!promise) {
-            let url = addTrailingSlashIfNotEmpty(publicConfigsRoute) + configName;
+            let url = addTrailingSlashIfNotEmpty(this.publicConfigsRoute) + configName;
             url += '?env=' + envName;
             url += '&feature=' + featureName;
             promise = fetch(url).then((res) => res.json());
