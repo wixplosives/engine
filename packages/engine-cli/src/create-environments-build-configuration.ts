@@ -1,13 +1,12 @@
 import { BuildOptions, Loader, Plugin } from 'esbuild';
-import { getResolvedEnvironments } from '../utils/environments';
-import { createMainEntrypoint } from '../create-entrypoint';
-import { IFeatureDefinition } from '../types';
+import { IFeatureDefinition, getResolvedEnvironments, createMainEntrypoint } from '@wixc3/engine-scripts';
+
 import { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
 import { TopLevelConfig } from '@wixc3/engine-core';
-import nodeFs from '@file-services/node';
 import { createRequestResolver } from '@file-services/resolve';
 import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
+import nodeFs from '@file-services/node';
 
 interface Options {
     buildPlugins: Plugin[];
@@ -22,8 +21,10 @@ interface Options {
 export function createEnvironmentsBuildConfiguration(options: Options) {
     const { environments, publicPath, configLoaderRequest, features, configurations, config, buildPlugins } = options;
 
-    const entryPoints = new Map<string, string>();
+    const webEntryPoints = new Map<string, string>();
+    const nodeEntryPoints = new Map<string, string>();
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
+    const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
 
     for (const { env, childEnvs } of browserTargets) {
         let entrypointContent = createMainEntrypoint({
@@ -44,7 +45,13 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
 
         entrypointContent = 'import process from "process";\nglobalThis.process = process;\n' + entrypointContent;
 
-        entryPoints.set(`${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.js`, entrypointContent);
+        webEntryPoints.set(`${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.js`, entrypointContent);
+    }
+
+    for (const { env, childEnvs } of nodeTargets) {
+        const entrypointContent = `${childEnvs}`;
+
+        nodeEntryPoints.set(`${env.name}.${env.type}.js`, entrypointContent);
     }
 
     const commonConfig = {
@@ -75,13 +82,13 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         plugins: [
             ...commonConfig.plugins,
             nodeAliasPlugin(),
-            dynamicEntryPlugin({ entryPoints, loader: 'js' }),
-            commonsPlugin(),
+            dynamicEntryPlugin({ entryPoints: webEntryPoints, loader: 'js' }),
+            // commonsPlugin(),
             htmlPlugin({
                 toHtmlPath(key) {
-                    const entry = entryPoints.get(key);
+                    const entry = webEntryPoints.get(key);
                     if (!entry) {
-                        throw new Error(`Could not find entrypoint for ${key} in ${[...entryPoints.keys()]}}`);
+                        throw new Error(`Could not find entrypoint for ${key} in ${[...webEntryPoints.keys()]}}`);
                     }
                     const [envName] = key.split('.');
                     return `${envName}.html`;
@@ -94,7 +101,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         ...commonConfig,
         platform: 'node',
         outdir: 'dist-node',
-        plugins: [...commonConfig.plugins],
+        plugins: [...commonConfig.plugins, dynamicEntryPlugin({ entryPoints: webEntryPoints, loader: 'js' })],
     } satisfies BuildOptions;
 
     return {
@@ -113,7 +120,7 @@ function* concatIterables<T>(...iterables: Iterable<T>[]) {
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-function commonsPlugin() {
+function _commonsPlugin() {
     const plugin: Plugin = {
         name: 'commons-bundle',
         setup(build) {

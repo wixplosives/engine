@@ -1,5 +1,3 @@
-//prefer for of
-
 interface NodeEnvironment {
     id: string;
 }

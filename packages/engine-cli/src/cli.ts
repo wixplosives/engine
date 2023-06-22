@@ -1,24 +1,35 @@
 import express from 'express';
 import esbuild from 'esbuild';
-import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
-import { EngineConfig } from '../types';
+import { ENGINE_CONFIG_FILE_NAME, EngineConfig, analyzeFeatures, getResolvedEnvironments } from '@wixc3/engine-scripts';
+
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
 import { importModules } from './import-modules';
-import { analyzeFeatures } from '../analyze-feature';
-import { getResolvedEnvironments } from '../utils/environments';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
 import fs from '@file-services/node';
 import { join } from 'node:path';
 
-async function engineStart(rootDir: string = process.cwd()) {
-    const outputPath = 'dist-web';
-    const publicPath = '';
-    const singleFeature = false;
-    const featureName = '';
-    const httpServerPort = 3000;
-    const configLoaderRequest = '@wixc3/engine-scripts/dist/default-config-loader';
+export type Options = {
+    dev?: boolean;
+    rootDir?: string;
+    outputPath?: string;
+    publicPath?: string;
+    featureName?: string;
+    singleFeature?: boolean;
+    httpServerPort?: number;
+    configLoaderRequest?: string;
+};
 
+async function engineStart({
+    dev = false,
+    rootDir = process.cwd(),
+    outputPath = 'dist-web',
+    publicPath = '',
+    featureName = '',
+    singleFeature = false,
+    httpServerPort = 3000,
+    configLoaderRequest = '@wixc3/engine-scripts/dist/default-config-loader',
+}: Options = {}) {
     const {
         buildPlugins = [],
         serveStatic = [],
@@ -51,6 +62,43 @@ async function engineStart(rootDir: string = process.cwd()) {
         publicPath,
         configLoaderRequest,
     });
+
+    if (dev) {
+        await runDevServices({
+            buildConfigurations,
+            serveStatic,
+            outputPath,
+            rootDir,
+            httpServerPort,
+            socketServerOptions,
+        });
+    } else {
+        await esbuild.build(buildConfigurations.webConfig);
+    }
+}
+
+engineStart({ dev: true }).catch((e) => {
+    console.error(e);
+    process.exitCode = 1;
+});
+
+type DevServicesOptions = {
+    buildConfigurations: ReturnType<typeof createEnvironmentsBuildConfiguration>;
+    serveStatic: Required<EngineConfig>['serveStatic'];
+    outputPath: string;
+    rootDir: string;
+    httpServerPort: number;
+    socketServerOptions: EngineConfig['socketServerOptions'];
+};
+
+async function runDevServices({
+    buildConfigurations,
+    serveStatic,
+    outputPath,
+    rootDir,
+    httpServerPort,
+    socketServerOptions,
+}: DevServicesOptions) {
     const esbuildContext = await esbuild.context(buildConfigurations.webConfig);
     await esbuildContext.watch();
 
@@ -107,8 +155,3 @@ async function engineStart(rootDir: string = process.cwd()) {
     //     { ...socketServerOptions, ...configSocketServerOptions }
     // );
 }
-
-engineStart().catch((e) => {
-    console.error(e);
-    process.exitCode = 1;
-});
