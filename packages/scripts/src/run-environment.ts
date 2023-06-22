@@ -20,14 +20,7 @@ import {
     IStaticFeatureDefinition,
 } from '@wixc3/engine-runtime-node';
 
-import {
-    ENGINE_CONFIG_FILE_NAME,
-    findFeatures,
-    evaluateConfig,
-    EngineConfig,
-    IFeatureDefinition,
-} from '@wixc3/engine-scripts';
-import { disposeAfter } from '@wixc3/testing';
+import { ENGINE_CONFIG_FILE_NAME, findFeatures, evaluateConfig, EngineConfig, IFeatureDefinition } from '.';
 
 const workerThreadEntryPath = require.resolve('@wixc3/engine-runtime-node/worker-thread-entry');
 
@@ -171,8 +164,7 @@ function locateEnvironment(
 }
 
 export async function getRunningFeature<F extends FeatureClass, ENV extends AnyEnvironment>(
-    options: RunningFeatureOptions<F, ENV>,
-    disposeAfterTest = true
+    options: RunningFeatureOptions<F, ENV>
 ): Promise<{
     runningApi: Running<F, ENV>;
     engine: RuntimeEngine;
@@ -183,11 +175,6 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
     const engine = await runEngineEnvironment(options);
     const { api } = engine.get(feature);
 
-    if (disposeAfterTest) {
-        disposeAfter(engine.shutdown, {
-            name: `engine shutdown for ${options.featureName}`,
-        });
-    }
     return {
         runningApi: api,
         engine,
