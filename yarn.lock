@@ -1516,10 +1516,10 @@
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
   integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
 
-"@wixc3/patterns@^9.1.0":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-9.1.0.tgz#6f28a481b237f93ef6ab99ca7bf42c35ab19c4ab"
-  integrity sha512-ptK0DlKSatxqG/NucHjKnmHrsZW28p9aWazjGroplUws0xL3YUdR0D5RnN17yx9Bo79DTzwonVsnj7Hu4P9PqA==
+"@wixc3/patterns@^9.2.1":
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-9.2.1.tgz#b17237ab23914217088fef04dd84974e8d02afea"
+  integrity sha512-wI7tgNyrd236n+f3MUJrQ5MMvX+3siunYXlrVoSPaVa9fftc0sAxyWkbM0gpkXxBq/t8RqC3GQc/o/ch2HH2mg==
   dependencies:
     "@wixc3/common" "^9.0.0"
     promise-assist "^2.0.1"
@@ -1532,27 +1532,27 @@
     minimatch "^9.0.0"
     type-fest "^3.8.0"
 
-"@wixc3/testing-node@^9.1.0":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-9.1.0.tgz#451bba451e884513accb30737cae386d66acb20e"
-  integrity sha512-+zjk8tWE3Y5H/Q3uLm3uM4dJ0/q2eDANTL2/2ADhfvuJ8XwrEISzNKpoOA+YAWCU7t/Vr5xvSS0JU2jOE/kADQ==
+"@wixc3/testing-node@^9.2.1":
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-9.2.1.tgz#e1c65dad260f7388e0c0294313c34fb7ee5f845b"
+  integrity sha512-E3dLCqX4TcQz5ansWol32V+VQCGB+uge2lJY7IXmncbWXSPtrduERrvQQT0Y44gTJYNUS80V8e2pBElInaxRpQ==
   dependencies:
     "@file-services/node" "^7.3.0"
     "@file-services/types" "^7.3.0"
     "@wixc3/common" "^9.0.0"
-    "@wixc3/patterns" "^9.1.0"
+    "@wixc3/patterns" "^9.2.1"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^9.1.0":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-9.1.0.tgz#89dd82fabff2b1c10c67d2ecc8d032a50edca787"
-  integrity sha512-xv5OwepQ6ujIQLY5Y1XNScj7Fk4CBHCsCR1sfNQEKhg4vth4b0uSfnwQARfF2YWCq4JmDbnyMBHiNIpZmpKrLg==
+"@wixc3/testing@^9.2.1":
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-9.2.1.tgz#c0f854f956aba37f3c1aa881be724964e1f3f2ee"
+  integrity sha512-Fs0T6rSeA9OmEX8QrNbh8wudX+ty04FghjlXCj0PzpDMqSTL2oNkzOVmgpf+yYo7WTzXry+ms4OyXYCSCbSgJw==
   dependencies:
     "@file-services/types" "^7.3.0"
     "@wixc3/common" "^9.0.0"
-    "@wixc3/patterns" "^9.1.0"
+    "@wixc3/patterns" "^9.2.1"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
@@ -3106,10 +3106,10 @@ electron-to-chromium@^1.4.431:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.435.tgz#761c34300603b9f1234f0b6155870d3002435db6"
   integrity sha512-B0CBWVFhvoQCW/XtjRzgrmqcgVWg6RXOEM/dK59+wFV93BFGR6AeNKc4OyhM+T3IhJaOOG8o/V+33Y2mwJWtzw==
 
-electron@^25.1.1:
-  version "25.1.1"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-25.1.1.tgz#b7aaf0d66a56fbbbad987c13cee108642f63bd50"
-  integrity sha512-WvFUfVsJn6YiP35UxdibYVjU2LceastyMm4SVp2bmb4XvKEvItAIiwxgm7tPC5Syl1243aRCvQLqr84sZ71pyQ==
+electron@^25.2.0:
+  version "25.2.0"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-25.2.0.tgz#ff832d88f78481a82cf9feb72e605ec43553d4ba"
+  integrity sha512-I/rhcW2sV2fyiveVSBr2N7v5ZiCtdGY0UiNCDZgk2fpSC+irQjbeh7JT2b4vWmJ2ogOXBjqesrN9XszTIG6DHg==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^18.11.18"
@@ -7935,10 +7935,10 @@ webpack-sources@^3.2.3:
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-3.2.3.tgz#2d4daab8451fd4b240cc27055ff6a0c2ccea0cde"
   integrity sha512-/DyMEOrDgLKKIG0fmvtz+4dUX/3Ghozwgm6iPp8KRhvn+eQf9+Q7GWxVNMk3+uCPWfdXYC4ExGBckIXdFEfH1w==
 
-webpack@^5.87.0:
-  version "5.87.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.87.0.tgz#df8a9c094c6037f45e0d77598f9e59d33ca3a98c"
-  integrity sha512-GOu1tNbQ7p1bDEoFRs2YPcfyGs8xq52yyPBZ3m2VGnXGtV9MxjrkABHm4V9Ia280OefsSLzvbVoXcfLxjKY/Iw==
+webpack@^5.88.0:
+  version "5.88.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.88.0.tgz#a07aa2f8e7a64a8f1cec0c6c2e180e3cb34440c8"
+  integrity sha512-O3jDhG5e44qIBSi/P6KpcCcH7HD+nYIHVBhdWFxcLOcIGN8zGo5nqF3BjyNCxIh4p1vFdNnreZv2h2KkoAw3lw==
   dependencies:
     "@types/eslint-scope" "^3.7.3"
     "@types/estree" "^1.0.0"
