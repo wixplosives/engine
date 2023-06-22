@@ -1,5 +1,10 @@
 import { BuildOptions, Loader, Plugin } from 'esbuild';
-import { IFeatureDefinition, getResolvedEnvironments, createMainEntrypoint } from '@wixc3/engine-scripts';
+import {
+    IFeatureDefinition,
+    getResolvedEnvironments,
+    createMainEntrypoint,
+    createNodeEntrypoint,
+} from '@wixc3/engine-scripts';
 
 import { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
@@ -14,12 +19,11 @@ interface Options {
     features: Map<string, IFeatureDefinition>;
     publicPath: string;
     environments: ReturnType<typeof getResolvedEnvironments>;
-    configLoaderRequest: string;
     config: TopLevelConfig;
 }
 
 export function createEnvironmentsBuildConfiguration(options: Options) {
-    const { environments, publicPath, configLoaderRequest, features, configurations, config, buildPlugins } = options;
+    const { environments, publicPath, features, configurations, config, buildPlugins } = options;
 
     const webEntryPoints = new Map<string, string>();
     const nodeEntryPoints = new Map<string, string>();
@@ -27,7 +31,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
     const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
 
     for (const { env, childEnvs } of browserTargets) {
-        let entrypointContent = createMainEntrypoint({
+        const entrypointContent = createMainEntrypoint({
             features,
             childEnvs,
             env,
@@ -40,17 +44,26 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
             staticBuild: true,
             publicConfigsRoute: '/configs',
             config,
-            configLoaderModuleName: configLoaderRequest,
         });
-
-        entrypointContent = 'import process from "process";\nglobalThis.process = process;\n' + entrypointContent;
 
         webEntryPoints.set(`${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.js`, entrypointContent);
     }
 
     for (const { env, childEnvs } of nodeTargets) {
-        const entrypointContent = `${childEnvs}`;
-
+        const entrypointContent = createNodeEntrypoint({
+            features,
+            childEnvs,
+            env,
+            // featureName,
+            // configName,
+            // publicPath,
+            // publicPathVariableName: 'PUBLIC_PATH',
+            configurations,
+            mode: 'development',
+            staticBuild: true,
+            publicConfigsRoute: '/configs',
+            config,
+        });
         nodeEntryPoints.set(`${env.name}.${env.type}.js`, entrypointContent);
     }
 

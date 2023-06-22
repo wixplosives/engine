@@ -17,7 +17,6 @@ export type Options = {
     featureName?: string;
     singleFeature?: boolean;
     httpServerPort?: number;
-    configLoaderRequest?: string;
 };
 
 async function engineStart({
@@ -28,7 +27,6 @@ async function engineStart({
     featureName = '',
     singleFeature = false,
     httpServerPort = 3000,
-    configLoaderRequest = '@wixc3/engine-scripts/dist/default-config-loader',
 }: Options = {}) {
     const {
         buildPlugins = [],
@@ -60,7 +58,6 @@ async function engineStart({
         features,
         environments,
         publicPath,
-        configLoaderRequest,
     });
 
     if (dev) {
@@ -76,11 +73,6 @@ async function engineStart({
         await esbuild.build(buildConfigurations.webConfig);
     }
 }
-
-engineStart({ dev: true }).catch((e) => {
-    console.error(e);
-    process.exitCode = 1;
-});
 
 type DevServicesOptions = {
     buildConfigurations: ReturnType<typeof createEnvironmentsBuildConfiguration>;
@@ -155,3 +147,8 @@ async function runDevServices({
     //     { ...socketServerOptions, ...configSocketServerOptions }
     // );
 }
+
+engineStart({ dev: false }).catch((e) => {
+    console.error(e);
+    process.exitCode = 1;
+});

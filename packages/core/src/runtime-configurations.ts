@@ -22,7 +22,7 @@ export class RuntimeConfigurations {
             throw new Error('envName must be provided');
         }
     }
-    private isMainWebEntrypoint() {
+    public isMainWebEntrypoint() {
         return this.getScope() === this.getOpenerMessageTarget();
     }
 

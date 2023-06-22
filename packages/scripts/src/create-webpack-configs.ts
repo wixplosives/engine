@@ -1,7 +1,7 @@
 import type webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { createMainEntrypoint } from './create-entrypoint';
+import { createMainEntrypoint } from './create-web-entrypoint';
 import type { IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { IFeatureDefinition } from './types';
 import type { getResolvedEnvironments, IResolvedEnvironment } from './utils/environments';

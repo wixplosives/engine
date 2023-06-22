@@ -1,11 +1,10 @@
-import { Environment, TopLevelConfig } from '@wixc3/engine-core';
+import { TopLevelConfig } from '@wixc3/engine-core';
 import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type { IFeatureDefinition } from './types';
 
 const { stringify } = JSON;
-const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
 
 //#region types
 
@@ -68,74 +67,6 @@ export interface LoadStatementArguments
 }
 //#endregion
 
-//#region entry points
-
-export function createMainEntrypoint({
-    features,
-    childEnvs,
-    featureName,
-    configName,
-    publicPath,
-    publicPathVariableName,
-    configurations,
-    mode,
-    staticBuild,
-    publicConfigsRoute,
-    config = [],
-    eagerEntrypoint,
-    env,
-    featuresBundleName,
-    configLoaderModuleName = '@wixc3/engine-scripts/dist/default-config-loader',
-}: ICreateEntrypointsOptions) {
-    const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), env.name);
-    const runningEnv = new Environment(
-        env.name,
-        env.type,
-        env.env.endpointType,
-        env.flatDependencies?.map((d) => d.env) ?? []
-    );
-    const configLoaders = createConfigLoadersObject(configLoaderModuleName, configs, staticBuild);
-    const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
-
-    const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
-
-    return `
-import { main } from '@wixc3/engine-core';
-
-const urlParams = new URLSearchParams(globalThis.location.search);
-const options = globalThis.engineEntryOptions?.({ urlParams, envName: ${stringify(env.name)} }) ?? urlParams;
-
-main({
-    featureName: ${stringify(featureName)}, 
-    configName: ${stringify(configName)},
-    env: ${stringify(runningEnv, null, 2)},
-    featureLoaders: ${featureLoaders},
-    configLoaders: ${configLoaders},
-    publicPath: ${runtimePublicPath},
-    publicConfigsRoute: ${stringify(publicConfigsRoute)},
-    overrideConfig: ${stringify(config, null, 2)},
-    options,
-}).catch(console.error);
-`;
-}
-
-function handlePublicPathTemplate(publicPath: string | undefined, publicPathVariableName: string | undefined) {
-    return `(() => {
-// TODO: getTopWindow here???
-const topWindow = globalThis.parent ?? globalThis;
-let publicPath = ${typeof publicPath === 'string' ? stringify(publicPath) : '__webpack_public_path__'}
-if (options.has('publicPath')) {
-    publicPath = options.get('publicPath');
-} else if (${typeof publicPathVariableName === 'string'} && topWindow[${stringify(publicPathVariableName)}]) {
-    publicPath = topWindow[${stringify(publicPathVariableName)}];
-}
-__webpack_public_path__= publicPath;
-return publicPath;
-})()`;
-}
-
-//#endregion
-
 //#region import statements templates
 export function dynamicImportStatement({ moduleIdentifier, filePath, eagerEntrypoint }: LoadStatementArguments) {
     return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
@@ -150,7 +81,7 @@ export function nodeImportStatement({ filePath }: LoadStatementArguments) {
 //#endregion
 
 //#region feature loaders generation
-function createFeatureLoaders(
+export function createFeatureLoaders(
     features: Iterable<IFeatureDefinition>,
     childEnvs: string[],
     env: IEnvironmentDescriptor,
@@ -301,16 +232,20 @@ const getConfigLoaders = (
     return [...configurations.entries()];
 };
 
-function createConfigLoadersObject(
-    configLoaderModuleName: string,
-    configs: Record<string, IConfigFileMapping[]>,
-    staticBuild: boolean
+export function createConfigLoaders(
+    configurations: SetMultiMap<string, IConfigDefinition>,
+    mode: 'development' | 'production',
+    configName: string | undefined,
+    env: IEnvironmentDescriptor,
+    staticBuild: boolean,
+    loadConfigFileTemplate: (filePath: string, scopedName: string, configEnvName?: string) => string
 ) {
+    const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), env.name);
     const loaders: string[] = [];
     if (staticBuild) {
         for (const [scopedName, availableConfigs] of Object.entries(configs)) {
             const loadStatements = availableConfigs.map(({ filePath, configEnvName }) =>
-                loadConfigFileTemplate(configLoaderModuleName, filePath, scopedName, configEnvName)
+                loadConfigFileTemplate(filePath, scopedName, configEnvName)
             );
             loaders.push(`    '${scopedName}': async () => (await Promise.all([${loadStatements.join(',')}]))`);
         }
@@ -318,17 +253,4 @@ function createConfigLoadersObject(
     return `{\n${loaders.join(',\n')}\n}`;
 }
 
-function loadConfigFileTemplate(
-    configLoaderModuleName: string,
-    filePath: string,
-    scopedName: string,
-    configEnvName = ''
-): string {
-    const request = stringify(
-        topLevelConfigLoaderPath +
-            `?configLoaderModuleName=${configLoaderModuleName}&scopedName=${scopedName}&envName=${configEnvName}!` +
-            filePath
-    );
-    return `import(/* webpackChunkName: "[config]${scopedName}${configEnvName}" */ /* webpackMode: 'eager' */ ${request})`;
-}
 //#endregion

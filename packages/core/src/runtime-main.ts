@@ -32,27 +32,38 @@ export async function main({
     const runtimeConfiguration = new RuntimeConfigurations(env.env, publicConfigsRoute, configLoaders);
     const featureLoader = new FeatureLoadersRegistry(featureLoaders);
 
+    runtimeConfiguration.installChildEnvConfigFetcher(featureName, configName);
+
     featureName = String(options.get('feature') || featureName);
     configName = String(options.get('config') || configName);
 
     const instanceId = options.get(INSTANCE_ID_PARAM_NAME);
-    if (instanceId) {
+    if (instanceId && typeof self !== 'undefined') {
         (globalThis as any).name = instanceId;
     }
 
-    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName);
+    const entryPromise = featureLoader.loadEntryFeature(featureName);
+    const buildConfigPromise = runtimeConfiguration.importConfig(configName);
+    const runtimeConfigPromise = runtimeConfiguration.load(env.env, featureName, configName);
+
+    const [{ entryFeature, resolvedContexts }, buildConfig, runtimeConfig] = await Promise.all([
+        entryPromise,
+        buildConfigPromise,
+        runtimeConfigPromise,
+    ]);
 
     const topLevelConfig: TopLevelConfig = [
         COM.use({ config: { resolvedContexts, publicPath } }),
-        // import static config
-        ...(await runtimeConfiguration.importConfig(configName)),
-        // override
+        ...buildConfig,
         ...overrideConfig,
-        // import public config
-        ...(await runtimeConfiguration.load(env.env, featureName, configName)),
+        ...runtimeConfig,
     ];
 
-    runtimeConfiguration.installChildEnvConfigFetcher(featureName, configName);
+    if (!runtimeConfiguration.isMainWebEntrypoint()) {
+        
+        // const host = {};
+        // topLevelConfig.push(COM.use({ config: { host } }));
+    }
 
     return new RuntimeEngine(env, topLevelConfig, options).run(entryFeature);
 }
