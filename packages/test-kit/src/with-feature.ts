@@ -326,7 +326,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     },
                     {
                         name: 'stop tracing',
-                        timeout: 10_000,
+                        timeout: 30_000,
                     }
                 );
             }
