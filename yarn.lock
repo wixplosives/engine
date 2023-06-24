@@ -1481,10 +1481,10 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^9.0.0":
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-9.0.0.tgz#157febeb2def46d6734d34c7557ddd7cea102d9d"
-  integrity sha512-eM0QT4ghiPCwU8INbuQ9nErDoDR2TAULDYiGoJZA71+VF7yOspMx42SRHtQs5V76snkYATzBQ/q+TNFuJv+omA==
+"@wixc3/common@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-10.0.0.tgz#ae97953ce13f290d426a225c7b1a59a60da574c2"
+  integrity sha512-CPOdaHWPaDvBr10fgBA/QmWmPiO2lzSU+zaFQ6wP7fDdBpC18s1dVpLb8DxyAbVv1Vm2vVaypskSw9p6Puk41g==
   dependencies:
     "@file-services/path" "^7.3.0"
     "@file-services/types" "^7.3.0"
@@ -1495,39 +1495,39 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^9.0.0":
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-9.0.0.tgz#235e55f3b7ad81a94c35a8a20f799301744ec9f9"
-  integrity sha512-nE8CxvX1vtGzp1fm79sj+7JoO4HpzWjU05uIswTVeXgeZf2lRK5vKI/EM4TefurWuifVnz8wlo89VUlcHr59WA==
+"@wixc3/docs@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-10.0.0.tgz#831440db0b00375c1e0f157b42427d9a8fa164bb"
+  integrity sha512-4nYJAH0wQee5XOFTU0L0CxXZHMSJf3oII5HTw6kzKAaUR73A7FNJzMH/FX0o70uaL39d7vJLd+slgNx/aMVQXg==
   dependencies:
     "@microsoft/api-documenter" "^7.22.21"
     "@microsoft/api-extractor" "^7.36.0"
     "@microsoft/api-extractor-model" "^7.27.3"
-    "@wixc3/common" "^9.0.0"
-    "@wixc3/fs-utils" "^9.0.0"
-    "@wixc3/typescript" "^9.0.0"
+    "@wixc3/common" "^10.0.0"
+    "@wixc3/fs-utils" "^10.0.0"
+    "@wixc3/typescript" "^10.0.0"
     glob "^10.2.7"
     yargs "^17.7.2"
 
-"@wixc3/fs-utils@^9.0.0":
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-9.0.0.tgz#90ed40d9b5acdc24cb1fd4966f06239c18df2582"
-  integrity sha512-1ARY4ClN309TUDFUNG+R3Xd7RX9ZiupxFvMpmKgq97GHSoJyu8fE6PzEMvb5izg0QfSMI6+R33lSL98WKwoWuA==
+"@wixc3/fs-utils@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-10.0.0.tgz#539c2a34b949159753160b1e82f9f66e65daafa7"
+  integrity sha512-gFvgn4fdmRDFnCpDLCemZX+saSYzsrjvy/GONTBcmufqwRf6EnBXIm8R+/VjJ4w/SKyZFBi8SAAfCK/7KlzhqA==
   dependencies:
     "@file-services/memory" "^7.3.0"
-    "@wixc3/common" "^9.0.0"
+    "@wixc3/common" "^10.0.0"
 
 "@wixc3/isomorphic-worker@^1.2.4":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
   integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
 
-"@wixc3/patterns@^9.2.1":
-  version "9.2.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-9.2.1.tgz#b17237ab23914217088fef04dd84974e8d02afea"
-  integrity sha512-wI7tgNyrd236n+f3MUJrQ5MMvX+3siunYXlrVoSPaVa9fftc0sAxyWkbM0gpkXxBq/t8RqC3GQc/o/ch2HH2mg==
+"@wixc3/patterns@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-10.0.0.tgz#397a47ac430f5f71255b2e08ebee2f6468af13b1"
+  integrity sha512-OfnxiqqWEPW8mMhMbTd3YIcFf7HMoKq2FGiPbvFSRpVwxXtSs+3o3K/4bmsDsrECVdl4OJxegY3zKsvF4FrFEQ==
   dependencies:
-    "@wixc3/common" "^9.0.0"
+    "@wixc3/common" "^10.0.0"
     promise-assist "^2.0.1"
 
 "@wixc3/resolve-directory-context@^3.0.5":
@@ -1538,40 +1538,40 @@
     minimatch "^9.0.0"
     type-fest "^3.8.0"
 
-"@wixc3/testing-node@^9.2.1":
-  version "9.2.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-9.2.1.tgz#e1c65dad260f7388e0c0294313c34fb7ee5f845b"
-  integrity sha512-E3dLCqX4TcQz5ansWol32V+VQCGB+uge2lJY7IXmncbWXSPtrduERrvQQT0Y44gTJYNUS80V8e2pBElInaxRpQ==
+"@wixc3/testing-node@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-10.0.0.tgz#973aaffd3ea9c875ecdd01f90034fe3d234e92a5"
+  integrity sha512-ER65epQcKprBxsMua5djvdk4vTWPOe01Di/rmNst5SaOwGm9XjmVH87yY2zqnLFw0R0M0YgLjDZ87pMZbjp8rw==
   dependencies:
     "@file-services/node" "^7.3.0"
     "@file-services/types" "^7.3.0"
-    "@wixc3/common" "^9.0.0"
-    "@wixc3/patterns" "^9.2.1"
+    "@wixc3/common" "^10.0.0"
+    "@wixc3/patterns" "^10.0.0"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^9.2.1":
-  version "9.2.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-9.2.1.tgz#c0f854f956aba37f3c1aa881be724964e1f3f2ee"
-  integrity sha512-Fs0T6rSeA9OmEX8QrNbh8wudX+ty04FghjlXCj0PzpDMqSTL2oNkzOVmgpf+yYo7WTzXry+ms4OyXYCSCbSgJw==
+"@wixc3/testing@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-10.0.0.tgz#7f454d43806298715ef78091a17c922c6d6944fe"
+  integrity sha512-XVsQqIIp4wreUC8Z9TPP1XAcpP5XU5Xf6jsKiGpeTWhfQpDR3UI+UYOgrxCOPZKsXrFXc8LEE0aHcbmC6it3dA==
   dependencies:
     "@file-services/types" "^7.3.0"
-    "@wixc3/common" "^9.0.0"
-    "@wixc3/patterns" "^9.2.1"
+    "@wixc3/common" "^10.0.0"
+    "@wixc3/patterns" "^10.0.0"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/typescript@^9.0.0":
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-9.0.0.tgz#e76c3a4ae1968c42f79aedc512b80c665828ce27"
-  integrity sha512-pwkVI+P2Sa/C/cVOOMFc/n20Cbk8j4tUpf6GuC30uj/Md9zi4VPf+GO8feAXwSYj0XD6yY61vRDoBeJx9KJivA==
+"@wixc3/typescript@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-10.0.0.tgz#3e94fa1c0a1d8f6106e433a96d7f61d18d70cc5a"
+  integrity sha512-7TPoUuSqI7gRIVzT80xCUUfNQ4WN/GoEHgVLjF4pQo6vhTkwGT8lKGqC3GN6lVAnHtGHBuwfPrxgvV30E5M5lA==
 
-"@wixc3/wait-for-call@^9.0.0":
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-9.0.0.tgz#06a32b3cd9c770469849df9f65d3517a3334efd2"
-  integrity sha512-9QxvR7bv0ERARDTaFWRJh00GU1RsjQzLZ5ArrfatE/9JQGngF8Uf9fTuRqBzjoCTknY9kUSO6JxpkYu1SiTwNQ==
+"@wixc3/wait-for-call@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-10.0.0.tgz#f54019b6c6c23881389d86ac3f11beaaf4986236"
+  integrity sha512-QzOsXtaE6IhVWrGGZtPurl5jHxk7BBXzvzqFuB2xpOACRib5ZOsSWK89xK8ESxZSW+GJ5A1O3X1T3jAnPCLrJg==
   dependencies:
     promise-assist "^2.0.1"
 

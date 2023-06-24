@@ -1,3 +1,3 @@
 export default {
-  pinnedPackages: [{ name: 'open', reason: 'v9 is pure esm' }],
+  pinnedPackages: ['@types/react', { name: 'open', reason: 'v9 is pure esm' }],
 };
