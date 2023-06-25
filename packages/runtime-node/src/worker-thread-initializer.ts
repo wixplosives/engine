@@ -14,7 +14,7 @@ export interface WorkerThreadInitializer {
 
 export type WorkerThreadInitializerOptions = InitializerOptions & {
     environmentStartupOptions?: {
-        environmentContextName: string;
+        environmentContextName: string | undefined;
     };
 };
 
