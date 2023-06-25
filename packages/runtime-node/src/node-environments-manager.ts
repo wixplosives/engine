@@ -89,7 +89,6 @@ export interface RunEnvironmentOptions {
 }
 
 const cliEntry = require.resolve('./remote-node-entry');
-const workerThreadEntryPath = require.resolve('./worker-thread-entry');
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IStaticFeatureDefinition>;
@@ -191,7 +190,6 @@ export class NodeEnvironmentsManager {
                     features: [...features.entries()],
                     outputPath: process.cwd(),
                     nodeEntryPath: '',
-                    workerThreadEntryPath,
                     runtimeOptions: Object.entries(runtimeOptions),
                     configName,
                 };
