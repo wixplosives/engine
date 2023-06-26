@@ -45,7 +45,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             config,
         });
 
-        webEntryPoints.set(`${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.js`, entrypointContent);
+        webEntryPoints.set(`${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.mjs`, entrypointContent);
     }
 
     for (const { env, childEnvs } of nodeTargets) {
@@ -63,17 +63,18 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             publicConfigsRoute: '/configs',
             config,
         });
-        nodeEntryPoints.set(`${env.name}.${env.type}.js`, entrypointContent);
+        nodeEntryPoints.set(`${env.name}.${env.type}.mjs`, entrypointContent);
     }
 
     const commonConfig = {
         target: 'es2020',
         bundle: true,
-        format: 'iife',
+        format: 'esm',
         publicPath,
         metafile: true,
         sourcemap: true,
         keepNames: true,
+        outExtension: { '.js': '.mjs' },
         loader: {
             '.json': 'json',
             '.png': 'file',

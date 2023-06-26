@@ -1,9 +1,6 @@
-import { Worker } from '@wixc3/isomorphic-worker/worker';
-
 import { InitializerOptions, UniversalWorkerHost } from '@wixc3/engine-core';
-
+import { Worker } from '@wixc3/isomorphic-worker/worker';
 import { createDisposables } from '@wixc3/patterns';
-import type { NodeEnvironmentStartupOptions } from './types';
 
 export interface WorkerThreadInitializer2 {
     id: string;
@@ -11,27 +8,27 @@ export interface WorkerThreadInitializer2 {
     initialize: () => Promise<void>;
 }
 
-export type WorkerThreadInitializerOptions2 = InitializerOptions & {
-    environmentStartupOptions?: Partial<NodeEnvironmentStartupOptions>;
-};
+export interface WorkerThreadInitializerOptions2 extends InitializerOptions {
+    workerURL: URL;
+}
 
 export function workerThreadInitializer2({
     communication,
     env,
+    workerURL,
 }: WorkerThreadInitializerOptions2): WorkerThreadInitializer2 {
     const disposables = createDisposables();
     const envName = env.env;
     const isSingleton = env.endpointType === 'single';
     const instanceId = isSingleton ? envName : communication.generateEnvInstanceID(envName);
     const envIsReady = communication.envReady(instanceId);
-    const builtWorkerThreadEntryPath = `./${env.env}.workerthread.js`;
 
     const nodeOnlyParams: object = {
         argv: process.argv.slice(2),
     };
 
     const initialize = async (): Promise<void> => {
-        const worker = new Worker(builtWorkerThreadEntryPath, {
+        const worker = new Worker(workerURL, {
             ...nodeOnlyParams,
             workerData: {
                 name: instanceId,

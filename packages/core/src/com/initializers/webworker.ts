@@ -7,8 +7,9 @@ export async function webWorkerInitializer({ communication, env: { env, endpoint
     const isSingleton = endpointType === 'single';
     const instanceId = isSingleton ? env : communication.generateEnvInstanceID(env);
 
-    const webWorker = new Worker(`${communication.getPublicPath()}${env}.webworker.js${location.search}`, {
+    const webWorker = new Worker(`${communication.getPublicPath()}${env}.webworker.mjs${location.search}`, {
         name: instanceId,
+        type: 'module',
     });
 
     const host = new UniversalWorkerHost(webWorker, instanceId);
