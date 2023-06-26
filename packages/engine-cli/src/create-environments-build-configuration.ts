@@ -94,7 +94,6 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         outdir: 'dist-web',
         plugins: [
             ...commonConfig.plugins,
-            nodeAliasPlugin(),
             dynamicEntryPlugin({ entryPoints: webEntryPoints, loader: 'js' }),
             // commonsPlugin(),
             htmlPlugin({
@@ -190,42 +189,10 @@ function _commonsPlugin() {
                     splitting: false,
                     outdir: 'dist-web/commons',
                     metafile: true,
-                    plugins: [nodeAliasPlugin(), dynamicEntryPlugin({ entryPoints: new Map(), loader: 'js' })],
+                    plugins: [dynamicEntryPlugin({ entryPoints: new Map(), loader: 'js' })],
                 });
 
                 console.log(res);
-            });
-        },
-    };
-    return plugin;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-
-function nodeAliasPlugin() {
-    const plugin: Plugin = {
-        name: 'node-alias',
-        setup(build) {
-            const moduleCode = deindento(`
-                |import path from '@file-services/path';
-                |export * from '@file-services/path';
-                |export default path;
-            `);
-            build.onResolve({ filter: /(^path$)/ }, (args) => {
-                return {
-                    path: args.path,
-                    namespace: 'node-alias',
-                    pluginData: { resolveDir: args.resolveDir },
-                };
-            });
-            build.onLoad({ filter: /.*/, namespace: 'node-alias' }, ({ pluginData: { resolveDir } }) => {
-                return {
-                    contents: moduleCode,
-                    loader: 'js',
-                    resolveDir,
-                };
             });
         },
     };
