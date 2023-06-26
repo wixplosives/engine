@@ -109,9 +109,9 @@ export class FeatureLoadersRegistry {
         const rootFeatureLoader = this.featureMapping.get(rootFeatureName);
         if (!rootFeatureLoader) {
             throw new Error(
-                `cannot find feature '${rootFeatureName}'. available features:\n${Array.from(
-                    this.featureMapping.keys()
-                ).join('\n')}`
+                `cannot find feature '${rootFeatureName}'. available features:\n${Array.from(this.featureMapping.keys())
+                    .sort()
+                    .join('\n')}`
             );
         }
         const resolvedContexts = { ...rootFeatureLoader.resolvedContexts };
