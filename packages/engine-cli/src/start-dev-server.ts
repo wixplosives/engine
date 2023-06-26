@@ -1,6 +1,6 @@
+import cors from 'cors';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
-import cors from 'cors';
 import io from 'socket.io';
 
 const noContentHandler: express.RequestHandler = (_req, res) => {

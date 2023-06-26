@@ -1,19 +1,18 @@
-import { BuildOptions, Loader, Plugin } from 'esbuild';
+import fs from '@file-services/node';
+import { createRequestResolver } from '@file-services/resolve';
+import { TopLevelConfig } from '@wixc3/engine-core';
+import { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import {
     IFeatureDefinition,
-    getResolvedEnvironments,
     createMainEntrypoint,
     createNodeEntrypoint,
+    getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
-
-import { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
-import { TopLevelConfig } from '@wixc3/engine-core';
-import { createRequestResolver } from '@file-services/resolve';
+import { BuildOptions, Loader, Plugin } from 'esbuild';
 import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
-import nodeFs from '@file-services/node';
 
-interface Options {
+export interface CreateEnvBuildConfigOptions {
     buildPlugins: Plugin[];
     configurations: SetMultiMap<string, IConfigDefinition>;
     features: Map<string, IFeatureDefinition>;
@@ -22,7 +21,7 @@ interface Options {
     config: TopLevelConfig;
 }
 
-export function createEnvironmentsBuildConfiguration(options: Options) {
+export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConfigOptions) {
     const { environments, publicPath, features, configurations, config, buildPlugins } = options;
 
     const webEntryPoints = new Map<string, string>();
@@ -240,7 +239,7 @@ function rawLoaderPlugin() {
     const plugin: Plugin = {
         name: 'raw-loader',
         setup(build) {
-            const resolve = createRequestResolver({ fs: nodeFs, alias: build.initialOptions.alias });
+            const resolve = createRequestResolver({ fs: fs, alias: build.initialOptions.alias });
 
             build.onResolve({ filter: /^raw-loader!/ }, (args) => {
                 return {
@@ -249,7 +248,7 @@ function rawLoaderPlugin() {
                 };
             });
             build.onLoad({ filter: /.*/, namespace: 'raw-loader-ns' }, (args) => {
-                const content = nodeFs.readFileSync(args.path, 'utf8');
+                const content = fs.readFileSync(args.path, 'utf8');
                 return {
                     contents: `export default ${JSON.stringify(content)};`,
                     loader: 'js',
@@ -286,10 +285,10 @@ function htmlPlugin({ toHtmlPath = (key: string) => key.replace(/\.m?js$/, '.htm
                     if (!key.match(/\.m?js$/)) {
                         continue;
                     }
-                    const jsPath = nodeFs.basename(key);
-                    const jsDir = nodeFs.dirname(key);
-                    const htmlFile = nodeFs.join(jsDir, toHtmlPath(jsPath));
-                    const cssPath = meta.cssBundle ? nodeFs.basename(meta.cssBundle) : undefined;
+                    const jsPath = fs.basename(key);
+                    const jsDir = fs.dirname(key);
+                    const htmlFile = fs.join(jsDir, toHtmlPath(jsPath));
+                    const cssPath = meta.cssBundle ? fs.basename(meta.cssBundle) : undefined;
                     const htmlContent = deindento(`
                         |<!DOCTYPE html>
                         |<html>
@@ -305,7 +304,7 @@ function htmlPlugin({ toHtmlPath = (key: string) => key.replace(/\.m?js$/, '.htm
                         |    </body>
                         |</html>
                     `);
-                    nodeFs.writeFileSync(nodeFs.join(cwd, htmlFile), htmlContent);
+                    fs.writeFileSync(fs.join(cwd, htmlFile), htmlContent);
                 }
                 return null;
             });

@@ -1,6 +1,6 @@
 import fs from '@file-services/node';
-// eslint-disable-next-line @typescript-eslint/no-implied-eval
-const importModule = new Function('modulePath', 'return import(modulePath);') as (modulePath: string) => Promise<any>;
+import { pathToFileURL } from 'node:url';
+import { dynamicImport } from './import-modules';
 
 export async function loadConfigFile<T extends {}>(
     basePath: string,
@@ -11,7 +11,7 @@ export async function loadConfigFile<T extends {}>(
         return { config: {} as T, path: undefined };
     }
     try {
-        let config = (await importModule('file://' + filepath)) as T;
+        let config = (await dynamicImport(pathToFileURL(filepath))) as T;
         config = (config as any).default || config;
         if (!config || typeof config !== 'object') {
             throw new Error(`config file: ${filepath} must export an object`);

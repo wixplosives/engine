@@ -1,13 +1,12 @@
-import express from 'express';
-import esbuild from 'esbuild';
+import fs from '@file-services/node';
 import { ENGINE_CONFIG_FILE_NAME, EngineConfig, analyzeFeatures, getResolvedEnvironments } from '@wixc3/engine-scripts';
-
+import esbuild from 'esbuild';
+import express from 'express';
+import { join } from 'node:path';
+import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
+import { importModules } from './import-modules';
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
-import { importModules } from './import-modules';
-import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
-import fs from '@file-services/node';
-import { join } from 'node:path';
 
 export type Options = {
     dev?: {

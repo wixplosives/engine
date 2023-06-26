@@ -1,6 +1,6 @@
 import { Plugin } from 'esbuild';
-import fs from 'fs';
-import { join, dirname } from 'path';
+import fs from 'node:fs';
+import { dirname, join } from 'node:path';
 
 export interface PartialWebpackLoaderContext {
     query: string;
@@ -72,17 +72,4 @@ export function topLevelConfigPlugin() {
         },
     };
     return plugin;
-}
-
-function walkChildModules(nodeJsModule: NodeModule, visitor: (module: NodeModule) => void, registryCache = new Set()) {
-    if (!nodeJsModule || registryCache.has(nodeJsModule)) {
-        return;
-    }
-    registryCache.add(nodeJsModule);
-    visitor(nodeJsModule);
-    if (nodeJsModule && nodeJsModule.children) {
-        nodeJsModule.children.forEach((cm) => {
-            walkChildModules(cm, visitor, registryCache);
-        });
-    }
 }
