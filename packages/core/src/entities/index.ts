@@ -7,3 +7,4 @@ export * from './output';
 export * from './service';
 export * from './slot';
 export * from './feature';
+export * from './value';
