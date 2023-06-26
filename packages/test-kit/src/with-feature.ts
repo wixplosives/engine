@@ -86,6 +86,15 @@ export interface IFeatureExecutionOptions {
      * console.error allowed errors (defaults to false)
      */
     consoleLogAllowedErrors?: boolean;
+    /**
+     * @defaultValue 10_000
+     */
+    featureDisposeTimeout?: number;
+    /**
+     * tracing disposal timeout
+     * @defaultValue 10_000
+     */
+    saveTraceTimeout?: number;
 }
 
 export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
@@ -96,7 +105,6 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     runningApplicationPort?: number;
     /** Specify directory where features will be looked up within the package */
     featureDiscoveryRoot?: string;
-
     /**
      * add tracing for the entire suite, the name of the test will be used as the zip name
      */
@@ -269,7 +277,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 {
                     group: WITH_FEATURE_DISPOSABLES,
                     name: `close feature "${featureName}"`,
-                    timeout: 20_000,
+                    timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
                 }
             );
 
@@ -326,7 +334,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     },
                     {
                         name: 'stop tracing',
-                        timeout: 10_000,
+                        timeout: withFeatureOptions?.saveTraceTimeout ?? 10_000,
                     }
                 );
             }
