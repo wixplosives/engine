@@ -7,6 +7,7 @@ import { createEnvironmentsBuildConfiguration } from './create-environments-buil
 import { importModules } from './import-modules';
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
+import { rm } from 'node:fs/promises';
 
 export type Options = {
     dev?: {
@@ -61,6 +62,8 @@ async function engineStart({
         environments,
         publicPath,
     });
+    await rm('dist-web', { recursive: true, force: true });
+    await rm('dist-node', { recursive: true, force: true });
 
     if (dev.enabled) {
         await runDevServices({
