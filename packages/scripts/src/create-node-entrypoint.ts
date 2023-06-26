@@ -24,12 +24,15 @@ export function createNodeEntrypoint({
     const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
     const configLoaders = createConfigLoaders(configurations, mode, configName, env, true, nodeLoadConfigFileTemplate);
     return `
+import { parseArgs } from 'node:util';
 import { main, COM } from '@wixc3/engine-core';
-import { parseCliArguments } from '@wixc3/engine-runtime-node';
 
-console.log('${env.name}', parseCliArguments(process.argv.slice(1)));
+const { values: args } = parseArgs({
+    strict: false,
+    allowPositionals: false
+});
 
-const args = parseCliArguments(process.argv.slice(1));
+console.log('${env.name}', {...args});
 
 const options = new Map(Object.entries(args));
 
