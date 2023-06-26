@@ -114,7 +114,7 @@ export function createEnvironmentsBuildConfiguration(options: Options) {
         ...commonConfig,
         platform: 'node',
         outdir: 'dist-node',
-        plugins: [...commonConfig.plugins, dynamicEntryPlugin({ entryPoints: webEntryPoints, loader: 'js' })],
+        plugins: [...commonConfig.plugins, dynamicEntryPlugin({ entryPoints: nodeEntryPoints, loader: 'js' })],
     } satisfies BuildOptions;
 
     return {

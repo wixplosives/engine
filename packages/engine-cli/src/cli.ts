@@ -10,7 +10,10 @@ import fs from '@file-services/node';
 import { join } from 'node:path';
 
 export type Options = {
-    dev?: boolean;
+    dev?: {
+        enabled?: boolean;
+        buildTargets: 'node' | 'web' | 'both';
+    };
     rootDir?: string;
     outputPath?: string;
     publicPath?: string;
@@ -20,7 +23,7 @@ export type Options = {
 };
 
 async function engineStart({
-    dev = false,
+    dev = { enabled: false, buildTargets: 'both' },
     rootDir = process.cwd(),
     outputPath = 'dist-web',
     publicPath = '',
@@ -60,7 +63,7 @@ async function engineStart({
         publicPath,
     });
 
-    if (dev) {
+    if (dev.enabled) {
         await runDevServices({
             buildConfigurations,
             serveStatic,
@@ -70,7 +73,17 @@ async function engineStart({
             socketServerOptions,
         });
     } else {
-        await esbuild.build(buildConfigurations.webConfig);
+        const start = performance.now();
+        await Promise.all([
+            dev.buildTargets === 'node' || dev.buildTargets === 'both'
+                ? esbuild.build(buildConfigurations.nodeConfig)
+                : Promise.resolve(),
+            dev.buildTargets === 'web' || dev.buildTargets === 'both'
+                ? esbuild.build(buildConfigurations.webConfig)
+                : Promise.resolve(),
+        ]);
+        const end = performance.now();
+        console.log(`Build total ${Math.round(end - start)}ms`);
     }
 }
 
@@ -148,7 +161,7 @@ async function runDevServices({
     // );
 }
 
-engineStart({ dev: false }).catch((e) => {
+engineStart({ dev: { enabled: false, buildTargets: 'node' } }).catch((e) => {
     console.error(e);
     process.exitCode = 1;
 });

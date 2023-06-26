@@ -9,6 +9,7 @@ export * from './parse-cli-arguments';
 export * from './process-communication';
 export * from './types';
 export * from './worker-thread-initializer';
+export * from './worker-thread-initializer2';
 export * from './ws-environment';
 export * from './core-node/constants';
 export * from './core-node/ipc-host';

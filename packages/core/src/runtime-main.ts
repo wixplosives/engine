@@ -4,14 +4,12 @@ import { FeatureLoadersRegistry, IFeatureLoader } from './run-engine-app';
 import { ConfigLoaders, RuntimeConfigurations } from './runtime-configurations';
 import { RuntimeEngine } from './runtime-engine';
 import { INSTANCE_ID_PARAM_NAME } from './com';
-import COM from './communication.feature';
 
 export interface MainEntryParams {
     env: AnyEnvironment;
-    overrideConfig: TopLevelConfig;
     featureLoaders: Map<string, IFeatureLoader>;
     configLoaders: ConfigLoaders;
-    publicPath: string;
+    contextualConfig: (options: { resolvedContexts: Record<string, string> }) => TopLevelConfig;
     publicConfigsRoute: string;
     featureName: string;
     configName: string;
@@ -20,9 +18,8 @@ export interface MainEntryParams {
 
 export async function main({
     env,
-    publicPath,
+    contextualConfig,
     publicConfigsRoute,
-    overrideConfig,
     featureLoaders,
     configLoaders,
     featureName,
@@ -53,17 +50,10 @@ export async function main({
     ]);
 
     const topLevelConfig: TopLevelConfig = [
-        COM.use({ config: { resolvedContexts, publicPath } }),
         ...buildConfig,
-        ...overrideConfig,
+        ...contextualConfig({ resolvedContexts }),
         ...runtimeConfig,
     ];
-
-    if (!runtimeConfiguration.isMainWebEntrypoint()) {
-        
-        // const host = {};
-        // topLevelConfig.push(COM.use({ config: { host } }));
-    }
 
     return new RuntimeEngine(env, topLevelConfig, options).run(entryFeature);
 }

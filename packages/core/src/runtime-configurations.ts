@@ -1,9 +1,9 @@
 import type { TopLevelConfig } from './index';
 
-declare global {
-    interface Window {
-        engineEntryOptions?: (options: { urlParams: URLSearchParams; envName: string }) => URLSearchParams;
-    }
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare namespace globalThis {
+    const parent: typeof globalThis | undefined;
+    const engineEntryOptions: (options: { urlParams: URLSearchParams; envName: string }) => URLSearchParams;
 }
 
 export type ConfigModule = {
@@ -22,7 +22,7 @@ export class RuntimeConfigurations {
             throw new Error('envName must be provided');
         }
     }
-    public isMainWebEntrypoint() {
+    public isMainEntrypoint() {
         return this.getScope() === this.getOpenerMessageTarget();
     }
 
@@ -37,53 +37,60 @@ export class RuntimeConfigurations {
     }
 
     installChildEnvConfigFetcher(featureName: string, configName: string) {
-        if (!this.publicConfigsRoute || !this.isMainWebEntrypoint()) {
+        if (!this.publicConfigsRoute || !this.isMainEntrypoint()) {
             return;
         }
-        globalThis.addEventListener('message', ({ data: { id, envName, from }, source }) => {
-            if (!source || id !== this.publicConfigsRoute) {
-                return;
-            }
-            this.fetchConfig(envName, featureName, configName)
-                .then((config) => {
-                    // with our flow it can only be a window (currently)
-                    (source as Window).postMessage(
-                        {
-                            id,
-                            config,
-                            to: from,
-                        },
-                        '*'
-                    );
-                })
-                .catch((e) => {
-                    // with our flow it can only be a window (currently)
-                    (source as Window).postMessage(
-                        {
-                            id,
-                            error: String(e),
-                            to: from,
-                        },
-                        '*'
-                    );
-                });
-        });
+        if (typeof window !== 'undefined') {
+            window.addEventListener('message', ({ data: { id, envName, from }, source }) => {
+                if (!source || id !== this.publicConfigsRoute) {
+                    return;
+                }
+                this.fetchConfig(envName, featureName, configName)
+                    .then((config) => {
+                        // with our flow it can only be a window (currently)
+                        window.postMessage(
+                            {
+                                id,
+                                config,
+                                to: from,
+                            },
+                            '*'
+                        );
+                    })
+                    .catch((e) => {
+                        // with our flow it can only be a window (currently)
+                        window.postMessage(
+                            {
+                                id,
+                                error: String(e),
+                                to: from,
+                            },
+                            '*'
+                        );
+                    });
+            });
+        } else {
+            console.log('installChildEnvConfigFetcher is not supported in this environment');
+        }
     }
 
     load(envName: string, featureName: string, configName: string) {
         if (!this.publicConfigsRoute) {
             return Promise.resolve([]);
         }
-        return this.isMainWebEntrypoint()
+        return this.isMainEntrypoint()
             ? this.fetchConfig(envName, featureName, configName)
             : this.loadFromParent(envName);
     }
 
     private loadFromParent(envName: string) {
-        const scope = this.getScope();
         let promise = this.fetchedConfigs[envName];
         if (!promise) {
             promise = new Promise((res, rej) => {
+                if (typeof window === 'undefined') {
+                    return rej('loadFromParent is not supported in this environment ATM');
+                }
+
                 const configsHandler = ({
                     data: { id, config, error },
                 }: {
@@ -92,12 +99,12 @@ export class RuntimeConfigurations {
                         | { id: string; config: never; error: string };
                 }) => {
                     if (id === this.publicConfigsRoute) {
-                        scope.removeEventListener('message', configsHandler);
+                        window.removeEventListener('message', configsHandler);
                         error ? rej(error) : res(config);
                     }
                 };
-                scope.addEventListener('message', configsHandler);
-                this.getOpenerMessageTarget().postMessage(
+                window.addEventListener('message', configsHandler);
+                window.parent.postMessage(
                     {
                         id: this.publicConfigsRoute,
                         envName: envName,
@@ -112,12 +119,11 @@ export class RuntimeConfigurations {
     }
 
     private getScope() {
-        return typeof self !== 'undefined' ? self : window;
+        return globalThis;
     }
 
     private getOpenerMessageTarget() {
-        const current = typeof self !== 'undefined' ? self : window;
-        return current.parent ?? current;
+        return globalThis.parent ?? globalThis;
     }
 
     private fetchConfig(envName: string, featureName: string, configName: string) {
@@ -136,3 +142,7 @@ export class RuntimeConfigurations {
 function addTrailingSlashIfNotEmpty(route: string) {
     return route ? (route.endsWith('/') ? route : route + '/') : '';
 }
+
+// function isNode() {
+//     return typeof process !== 'undefined' && process.release && process.release.name === 'node';
+// }

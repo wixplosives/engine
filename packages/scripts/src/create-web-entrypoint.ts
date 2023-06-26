@@ -37,8 +37,8 @@ export function createMainEntrypoint({
     const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
 
     return `
+import { main, COM } from '@wixc3/engine-core';
 import process from "process";
-import { main } from '@wixc3/engine-core';
 
 globalThis.process = process;
 const urlParams = new URLSearchParams(globalThis.location.search);
@@ -49,11 +49,20 @@ main({
     configName: ${stringify(configName)},
     env: ${stringify(runningEnv, null, 2)},
     featureLoaders: ${featureLoaders},
-    configLoaders: ${configLoaders},
-    publicPath: ${runtimePublicPath},
+    configLoaders: ${configLoaders},    
     publicConfigsRoute: ${stringify(publicConfigsRoute)},
-    overrideConfig: ${stringify(config, null, 2)},
     options,
+    contextualConfig: ({ resolvedContexts }) => {
+        return [
+            COM.use({
+                config: {
+                    publicPath: ${runtimePublicPath},
+                    resolvedContexts,
+                },
+            }),
+            ...${stringify(config, null, 2)}
+        ];
+    },
 }).catch(console.error);
 `;
 }

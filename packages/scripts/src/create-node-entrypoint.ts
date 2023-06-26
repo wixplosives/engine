@@ -24,9 +24,14 @@ export function createNodeEntrypoint({
     const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
     const configLoaders = createConfigLoaders(configurations, mode, configName, env, true, nodeLoadConfigFileTemplate);
     return `
-import { main } from '@wixc3/engine-core';
+import { main, COM } from '@wixc3/engine-core';
+import { parseCliArguments } from '@wixc3/engine-runtime-node';
 
-const options = new Map();
+console.log('${env.name}', parseCliArguments(process.argv.slice(1)));
+
+const args = parseCliArguments(process.argv.slice(1));
+
+const options = new Map(Object.entries(args));
 
 main({
     featureName: ${stringify(featureName)}, 
@@ -34,10 +39,20 @@ main({
     env: ${stringify(runningEnv, null, 2)},
     featureLoaders: ${featureLoaders},
     configLoaders: ${configLoaders},
-    publicPath: "", // no public path for node
     publicConfigsRoute: "", // disables fetching configs from server
-    overrideConfig: ${stringify(config, null, 2)},
     options,
+    contextualConfig: ({ resolvedContexts }) => {
+        return [
+            COM.use({
+                config: {
+                    resolvedContexts,
+                    // host: new BaseHost(),
+                    // id: 'TODO',
+                },
+            }),
+            ...${stringify(config, null, 2)}
+        ];
+    },
 }).catch(console.error);
 `;
 }
