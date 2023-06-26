@@ -80,7 +80,7 @@ export class FeatureLoadersRegistry {
     ): Promise<FeatureClass[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);
-        for await (const depName of dependencies.reverse()) {
+        for (const depName of dependencies.reverse()) {
             if (!this.loadedFeatures.has(depName)) {
                 this.loadedFeatures.add(depName);
                 const loader = this.get(depName);

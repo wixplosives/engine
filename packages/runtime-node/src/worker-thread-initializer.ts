@@ -4,11 +4,7 @@ import { COM, InitializerOptions, UniversalWorkerHost } from '@wixc3/engine-core
 import { createMetadataProvider } from './core-node/create-application-metadata-provider';
 
 import { createDisposables } from '@wixc3/patterns';
-import type {
-    NodeEnvironmentStartupOptions,
-    WorkerThreadCommand,
-    WorkerThreadEnvironmentStartupOptions,
-} from './types';
+import type { WorkerThreadCommand, WorkerThreadEnvironmentStartupOptions } from './types';
 
 export interface WorkerThreadInitializer {
     id: string;
@@ -17,8 +13,12 @@ export interface WorkerThreadInitializer {
 }
 
 export type WorkerThreadInitializerOptions = InitializerOptions & {
-    environmentStartupOptions?: Partial<NodeEnvironmentStartupOptions>;
+    environmentStartupOptions?: {
+        environmentContextName: string | undefined;
+    };
 };
+
+const workerThreadEntryPath = require.resolve('./worker-thread-entry');
 
 export function workerThreadInitializer({
     communication,
@@ -35,8 +35,9 @@ export function workerThreadInitializer({
     disposables.add(() => metadataProvider.dispose());
 
     const initialize = async (): Promise<void> => {
-        const { workerThreadEntryPath, requiredModules, basePath, config, featureName, features, runtimeOptions } =
+        const { requiredModules, basePath, config, featureName, features, runtimeOptions } =
             await metadataProvider.getMetadata();
+
         const worker = new Worker(workerThreadEntryPath, {
             workerData: {
                 name: instanceId,
@@ -50,7 +51,7 @@ export function workerThreadInitializer({
         communication.registerMessageHandler(host);
 
         const runOptions: WorkerThreadEnvironmentStartupOptions = {
-            ...environmentStartupOptions,
+            environmentContextName: environmentStartupOptions?.environmentContextName,
             runtimeOptions,
             requiredModules,
             basePath,

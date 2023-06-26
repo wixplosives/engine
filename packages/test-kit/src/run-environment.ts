@@ -29,8 +29,6 @@ import {
 } from '@wixc3/engine-scripts';
 import { disposeAfter } from '@wixc3/testing';
 
-const workerThreadEntryPath = require.resolve('@wixc3/engine-runtime-node/worker-thread-entry');
-
 export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
     bundlePath?: string;
@@ -109,7 +107,6 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
                 features: staticFeatures,
                 outputPath: process.cwd(),
                 nodeEntryPath: '',
-                workerThreadEntryPath,
             };
         },
     });
