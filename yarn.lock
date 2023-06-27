@@ -896,14 +896,6 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@ts-tools/node@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@ts-tools/node/-/node-4.0.0.tgz#0dc58bee311c9f9392f45ae97ea863d9069302c7"
-  integrity sha512-Xk4iBoahkxSi47/z10yhtJ6E8VjDVsGXMuB33tQB4+KRymdrEFCk4LNdllwbhQ61HAH3PWOknF6PeVf2YOsLZA==
-  dependencies:
-    "@ts-tools/transpile" "^4.0.0"
-    source-map-support "^0.5.21"
-
 "@ts-tools/transpile@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@ts-tools/transpile/-/transpile-4.0.0.tgz#62d27e8ece39e53fd9e4c8597aa2718475537394"
@@ -7213,7 +7205,7 @@ source-map-loader@^4.0.1:
     iconv-lite "^0.6.3"
     source-map-js "^1.0.2"
 
-source-map-support@^0.5.19, source-map-support@^0.5.21, source-map-support@~0.5.20:
+source-map-support@^0.5.19, source-map-support@~0.5.20:
   version "0.5.21"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.21.tgz#04fe7c7f9e1ed2d662233c28cb2b35b9f63f6e4f"
   integrity sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==

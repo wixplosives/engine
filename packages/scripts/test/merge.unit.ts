@@ -1,5 +1,5 @@
 import { SetMultiMap } from '@wixc3/patterns';
-import { mergeAll, mergeResults } from '../src/analyze-feature/merge';
+import { mergeAll, mergeResults } from '@wixc3/engine-scripts/dist/analyze-feature/merge';
 import { expect } from 'chai';
 
 describe('mergeAll', () => {
