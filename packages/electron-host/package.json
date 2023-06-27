@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron-host",
-  "version": "39.2.1",
+  "version": "39.2.2",
   "main": "dist/index.js",
   "bin": {
     "engine-electron": "bin/engine-electron.js"
@@ -11,8 +11,8 @@
   "dependencies": {
     "@file-services/node": "^7.4.0",
     "@wixc3/engine-core": "^39.2.1",
-    "@wixc3/engine-electron-commons": "^39.2.1",
-    "@wixc3/engine-runtime-node": "^39.2.1"
+    "@wixc3/engine-electron-commons": "^39.2.2",
+    "@wixc3/engine-runtime-node": "^39.2.2"
   },
   "files": [
     "bin",
