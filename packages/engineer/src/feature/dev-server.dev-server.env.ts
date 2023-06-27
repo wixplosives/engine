@@ -1,4 +1,4 @@
-import { createDisposables } from '@wixc3/create-disposables';
+import { createDisposables } from '@wixc3/patterns';
 import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
 import { WsServerHost } from '@wixc3/engine-runtime-node';
 import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
@@ -18,6 +18,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 import { TargetApplication } from '../application-proxy-service';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 import devServerFeature, { devServerEnv } from './dev-server.feature';
+import { timeout } from 'promise-assist';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
@@ -87,7 +88,7 @@ devServerFeature.setup(
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
             });
-            disposables.add(close);
+            disposables.add(close, { name: 'close dev server', timeout: 10_000 });
 
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost
@@ -140,7 +141,10 @@ devServerFeature.setup(
                 nodeEnvironmentsMode || engineConfig?.nodeEnvironmentsMode
             );
 
-            disposables.add(() => application.getNodeEnvManager()?.closeAll());
+            disposables.add(() => application.getNodeEnvManager()?.closeAll(), {
+                name: 'close node environments',
+                timeout: 10_000,
+            });
 
             if (serveStatic.length) {
                 for (const { route, directoryPath } of serveStatic) {
@@ -202,7 +206,8 @@ devServerFeature.setup(
                     () =>
                         new Promise<void>((res, rej) => {
                             devMiddleware.close((e) => (e ? rej(e) : res()));
-                        })
+                        }),
+                    { name: 'close dev middleware', timeout: 10_000 }
                 );
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 app.use(devMiddleware);
@@ -254,7 +259,8 @@ devServerFeature.setup(
                     () =>
                         new Promise<void>((res, rej) => {
                             engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
-                        })
+                        }),
+                    { name: 'close engineer dev middleware', timeout: 10_000 }
                 );
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 app.use(engineerDevMiddleware);
