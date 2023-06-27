@@ -1,6 +1,6 @@
 import fs from '@file-services/node';
 import { defaults } from '@wixc3/common';
-import { createDisposables } from '@wixc3/create-disposables';
+import { createDisposables } from '@wixc3/patterns';
 import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
 import {
     createIPC,
@@ -132,7 +132,10 @@ export class Application {
             socketServerOptions,
             routeMiddlewares,
         });
-        disposables.add(close);
+        disposables.add(close, {
+            name: 'EngineHttpServer',
+            timeout: 10_000,
+        });
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
             socketServer,
@@ -149,7 +152,10 @@ export class Application {
             this.basePath,
             { ...socketServerOptions, ...configSocketServerOptions }
         );
-        disposables.add(() => nodeEnvironmentManager.closeAll());
+        disposables.add(() => nodeEnvironmentManager.closeAll(), {
+            name: 'NodeEnvironmentManager',
+            timeout: 10_000,
+        });
 
         if (publicConfigsRoute) {
             app.use(`/${publicConfigsRoute}`, [
