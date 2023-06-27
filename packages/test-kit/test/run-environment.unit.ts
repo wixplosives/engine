@@ -1,8 +1,6 @@
 import { expect } from 'chai';
-
 import fs from '@file-services/node';
-
-import { getRunningFeature } from '../src/run-environment';
+import { getRunningFeature } from '@wixc3/engine-test-kit';
 import workerThreadFeature, { serverEnv } from '@fixture/worker-thread/dist/worker-thread.feature';
 
 const featurePath = fs.dirname(require.resolve('@fixture/worker-thread/package.json'));

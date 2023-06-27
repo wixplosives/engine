@@ -8,7 +8,7 @@
     "engineer": "./bin/engineer.js"
   },
   "scripts": {
-    "test": "mocha \"test/**/*.unit.ts?(x)\""
+    "test": "mocha \"dist/test/**/*.unit.js\""
   },
   "peerDependencies": {
     "react": ">=16",

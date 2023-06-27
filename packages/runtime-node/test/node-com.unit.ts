@@ -1,5 +1,4 @@
 import { fork } from 'child_process';
-import { join } from 'path';
 import type { Socket } from 'net';
 import { safeListeningHttpServer } from 'create-listening-server';
 import io from 'socket.io';
@@ -301,10 +300,7 @@ describe('IPC communication', () => {
     it('communication with forked process', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
-        const forked = fork(join(__dirname, 'process-entry.ts'), [], {
-            execArgv: '-r @ts-tools/node/r'.split(' '),
-            cwd: process.cwd(),
-        });
+        const forked = fork(require.resolve('./process-entry'));
         disposables.add(() => forked.kill());
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
@@ -322,10 +318,7 @@ describe('IPC communication', () => {
     it('handles forked process closing', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
-        const forked = fork(join(__dirname, 'process-entry.ts'), [], {
-            execArgv: '-r @ts-tools/node/r'.split(' '),
-            cwd: process.cwd(),
-        });
+        const forked = fork(require.resolve('./process-entry'));
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
         communication.registerMessageHandler(host);

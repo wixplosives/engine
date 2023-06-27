@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build:stylable": "stc --srcDir src --outDir dist --stcss --no-cjs --unsr",
-    "test": "mocha \"test/**/*.unit.ts?(x)\""
+    "test": "mocha \"dist/test/**/*.unit.js\""
   },
   "peerDependencies": {
     "react": ">=16"
