@@ -7,8 +7,8 @@
     "prebuild": "yarn clean",
     "build": "tsc --build src",
     "start": "engineer start",
-    "test": "yarn test:unit",
-    "test:unit": "mocha-play \"./dist/test/**/*.spec.js\"",
+    "test": "yarn test:browser",
+    "test:browser": "mocha-play \"./dist/test/**/*.spec.js\"",
     "prepack": "yarn build"
   },
   "peerDependencies": {
