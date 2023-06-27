@@ -3,6 +3,7 @@ import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type { IFeatureDefinition } from './types';
+import { relative } from 'path';
 
 const { stringify } = JSON;
 
@@ -68,14 +69,17 @@ export interface LoadStatementArguments
 //#endregion
 
 //#region import statements templates
-export function dynamicImportStatement({ moduleIdentifier, filePath, eagerEntrypoint }: LoadStatementArguments) {
+export function dynamicImportStatement({
+    moduleIdentifier,
+    filePath,
+    eagerEntrypoint,
+    directoryPath,
+    packageName,
+}: LoadStatementArguments) {
+    const targetSpecifier = packageName + '/' + relative(directoryPath, filePath).replace(/\\/g, '/');
     return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
         eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
-    } ${stringify(filePath)});`;
-}
-
-export function nodeImportStatement({ filePath }: LoadStatementArguments) {
-    return `require(${stringify(filePath)})`;
+    } ${stringify(targetSpecifier)});`;
 }
 
 //#endregion
