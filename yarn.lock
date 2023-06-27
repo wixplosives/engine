@@ -145,7 +145,7 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.43.0.tgz#559ca3d9ddbd6bf907ad524320a0d14b85586af0"
   integrity sha512-s2UHCoiXfxMvmfzqoN+vrQ84ahUSYde9qNO1MdxmoEhyHWsfmwOpFlwYV+ePJEVc7gFnATGUi376WowX1N7tFg==
 
-"@file-services/memory@^7.3.0", "@file-services/memory@^7.4.0":
+"@file-services/memory@^7.4.0":
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-7.4.0.tgz#7d58783ac72b5afab88b02ef23b89a5ffc31b66c"
   integrity sha512-j+e0WTodbNZdGH7+9CG+iYdxMZhUoFhXi52ucpxUDH1CetTlS4kte9K1/MaBZWFaNCXpy57Mk91mZkfMrWk+HQ==
@@ -162,7 +162,7 @@
     "@file-services/types" "^7.4.0"
     "@file-services/utils" "^7.4.0"
 
-"@file-services/path@^7.3.0", "@file-services/path@^7.4.0":
+"@file-services/path@^7.4.0":
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/@file-services/path/-/path-7.4.0.tgz#c60e8605072414110617743832e05ae0b49880f4"
   integrity sha512-p4GMRlaTMLS3QXGCkIvCnR/Mq1K8k7PV1KbXzDN/c0SksRiHbuC3AYUNKx/y6AayJfsJ2zsFqbRYgQ6gU1BRIg==
@@ -1481,13 +1481,13 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-10.0.0.tgz#ae97953ce13f290d426a225c7b1a59a60da574c2"
-  integrity sha512-CPOdaHWPaDvBr10fgBA/QmWmPiO2lzSU+zaFQ6wP7fDdBpC18s1dVpLb8DxyAbVv1Vm2vVaypskSw9p6Puk41g==
+"@wixc3/common@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-11.0.0.tgz#327cbb3696ec49998354495dbd431023d7d57b8d"
+  integrity sha512-B14aHJvnBA0hH+rftK9I51oQv1kU1MKBv1DhLwZRC5UUx2cmyw0Kb/d8gEK3xYn+JP0SzzTxvG7soHmQTiBbhw==
   dependencies:
-    "@file-services/path" "^7.3.0"
-    "@file-services/types" "^7.3.0"
+    "@file-services/path" "^7.4.0"
+    "@file-services/types" "^7.4.0"
     promise-assist "^2.0.1"
 
 "@wixc3/create-disposables@^2.2.0":
@@ -1495,39 +1495,39 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-10.0.0.tgz#831440db0b00375c1e0f157b42427d9a8fa164bb"
-  integrity sha512-4nYJAH0wQee5XOFTU0L0CxXZHMSJf3oII5HTw6kzKAaUR73A7FNJzMH/FX0o70uaL39d7vJLd+slgNx/aMVQXg==
+"@wixc3/docs@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-11.0.0.tgz#0cc890606300d25719b34ecb4f3fc9d13a7b48c7"
+  integrity sha512-nT7uzk9lpYEp4862P4NLInsi0FmqhLCXRSbpKFpXNioEpAlLfeYtcnqXb7bhV8vh6Uu8FuwlX4V61N6UAzRKqA==
   dependencies:
     "@microsoft/api-documenter" "^7.22.21"
     "@microsoft/api-extractor" "^7.36.0"
     "@microsoft/api-extractor-model" "^7.27.3"
-    "@wixc3/common" "^10.0.0"
-    "@wixc3/fs-utils" "^10.0.0"
-    "@wixc3/typescript" "^10.0.0"
-    glob "^10.2.7"
+    "@wixc3/common" "^11.0.0"
+    "@wixc3/fs-utils" "^11.0.0"
+    "@wixc3/typescript" "^11.0.0"
+    glob "^10.3.0"
     yargs "^17.7.2"
 
-"@wixc3/fs-utils@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-10.0.0.tgz#539c2a34b949159753160b1e82f9f66e65daafa7"
-  integrity sha512-gFvgn4fdmRDFnCpDLCemZX+saSYzsrjvy/GONTBcmufqwRf6EnBXIm8R+/VjJ4w/SKyZFBi8SAAfCK/7KlzhqA==
+"@wixc3/fs-utils@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-11.0.0.tgz#ed8a7b56cfe222fd68c5ab6f1c97c407003c1acd"
+  integrity sha512-XSHA37xsGLUnH2bdUpQUhHD7Xz6odkgm+TC3YazSYqqxcRmOe18hIG6GAdB5HbHcCekAReOMxlLDDrdbUU2Kxw==
   dependencies:
-    "@file-services/memory" "^7.3.0"
-    "@wixc3/common" "^10.0.0"
+    "@file-services/memory" "^7.4.0"
+    "@wixc3/common" "^11.0.0"
 
 "@wixc3/isomorphic-worker@^1.2.4":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
   integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
 
-"@wixc3/patterns@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-10.0.0.tgz#397a47ac430f5f71255b2e08ebee2f6468af13b1"
-  integrity sha512-OfnxiqqWEPW8mMhMbTd3YIcFf7HMoKq2FGiPbvFSRpVwxXtSs+3o3K/4bmsDsrECVdl4OJxegY3zKsvF4FrFEQ==
+"@wixc3/patterns@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-11.0.0.tgz#9f326283d9053be9251821a0781a2947135dbed6"
+  integrity sha512-lYhXRO0Ksn0HlJwKVwrrTRUADkarnORFOZq469d4Q90Jvhp5Cb3dMJdoa2pMwM2HjeDFMTg8GAOSkoLgVmFI1g==
   dependencies:
-    "@wixc3/common" "^10.0.0"
+    "@wixc3/common" "^11.0.0"
     promise-assist "^2.0.1"
 
 "@wixc3/resolve-directory-context@^3.0.5":
@@ -1538,40 +1538,40 @@
     minimatch "^9.0.0"
     type-fest "^3.8.0"
 
-"@wixc3/testing-node@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-10.0.0.tgz#973aaffd3ea9c875ecdd01f90034fe3d234e92a5"
-  integrity sha512-ER65epQcKprBxsMua5djvdk4vTWPOe01Di/rmNst5SaOwGm9XjmVH87yY2zqnLFw0R0M0YgLjDZ87pMZbjp8rw==
+"@wixc3/testing-node@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-11.0.0.tgz#c4e9ecbf5cd117a12c74d670160dc0024ffb4e9c"
+  integrity sha512-jwu6HwuaAeDvA7ZbGNQOYfMhw66j29O+FBnaG/UU44I0UBzrw/Wv4puh+JwSmp0lL9FyVCNttXNGtWBHP3C14w==
   dependencies:
-    "@file-services/node" "^7.3.0"
-    "@file-services/types" "^7.3.0"
-    "@wixc3/common" "^10.0.0"
-    "@wixc3/patterns" "^10.0.0"
+    "@file-services/node" "^7.4.0"
+    "@file-services/types" "^7.4.0"
+    "@wixc3/common" "^11.0.0"
+    "@wixc3/patterns" "^11.0.0"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-10.0.0.tgz#7f454d43806298715ef78091a17c922c6d6944fe"
-  integrity sha512-XVsQqIIp4wreUC8Z9TPP1XAcpP5XU5Xf6jsKiGpeTWhfQpDR3UI+UYOgrxCOPZKsXrFXc8LEE0aHcbmC6it3dA==
+"@wixc3/testing@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-11.0.0.tgz#b16a4cef7375bd4a9c2ecf1716113a37b306c1b4"
+  integrity sha512-6+n++Fdi9n3KQp4EMQUMnJ+0QNs+yeyPr2WTemLkLUuzGxLsMZCECy6FEsFlD8MqiYUzT0zXdPX2BIyQmauvqw==
   dependencies:
-    "@file-services/types" "^7.3.0"
-    "@wixc3/common" "^10.0.0"
-    "@wixc3/patterns" "^10.0.0"
+    "@file-services/types" "^7.4.0"
+    "@wixc3/common" "^11.0.0"
+    "@wixc3/patterns" "^11.0.0"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/typescript@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-10.0.0.tgz#3e94fa1c0a1d8f6106e433a96d7f61d18d70cc5a"
-  integrity sha512-7TPoUuSqI7gRIVzT80xCUUfNQ4WN/GoEHgVLjF4pQo6vhTkwGT8lKGqC3GN6lVAnHtGHBuwfPrxgvV30E5M5lA==
+"@wixc3/typescript@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-11.0.0.tgz#fbbb834d9d1c3e6d2b2a23dd21eb274f6e3106f7"
+  integrity sha512-NTpffzeboEK64oyC9OONLEDtn9i/FdwiVspYaCEJpWQRmAvNxd2HiIZ+l4BR8foHiVvTkbeQzoavuVZ8+egA6g==
 
-"@wixc3/wait-for-call@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-10.0.0.tgz#f54019b6c6c23881389d86ac3f11beaaf4986236"
-  integrity sha512-QzOsXtaE6IhVWrGGZtPurl5jHxk7BBXzvzqFuB2xpOACRib5ZOsSWK89xK8ESxZSW+GJ5A1O3X1T3jAnPCLrJg==
+"@wixc3/wait-for-call@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-11.0.0.tgz#34f4d8c1ec47932d3b0a9d49c1909b410ad34cdf"
+  integrity sha512-mwYwcxkvkzOtCJ3JqGubablAo3uk2STdBJEcCHErEuyjNOhh6Anw0EOw2wVFlIEzp+TTY/uZB+SNx921WXUJ6g==
   dependencies:
     promise-assist "^2.0.1"
 
@@ -4032,7 +4032,7 @@ glob@7.2.0:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^10.0.0, glob@^10.2.2, glob@^10.2.5, glob@^10.2.7:
+glob@^10.0.0, glob@^10.2.2, glob@^10.2.5, glob@^10.3.0:
   version "10.3.0"
   resolved "https://registry.yarnpkg.com/glob/-/glob-10.3.0.tgz#763d02a894f3cdfc521b10bbbbc8e0309e750cce"
   integrity sha512-AQ1/SB9HH0yCx1jXAT4vmCbTOPe5RQ+kCurjbel5xSCGhebumUv+GJZfa1rEqor3XIViqwSEmlkZCQD43RWrBg==
