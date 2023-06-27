@@ -18,7 +18,6 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 import { TargetApplication } from '../application-proxy-service';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 import devServerFeature, { devServerEnv } from './dev-server.feature';
-import { timeout } from 'promise-assist';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
