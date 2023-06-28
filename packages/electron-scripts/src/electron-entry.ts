@@ -1,4 +1,4 @@
-import { createDisposables } from '@wixc3/create-disposables';
+import { createDisposables } from '@wixc3/patterns';
 import { isRunOptionsMessage, runElectronEnv } from '@wixc3/engine-electron-host';
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -11,7 +11,10 @@ process.once('message', async (message) => {
                 ...runOptions,
                 features: new Map(runOptions.features),
             });
-            disposables.add(engine.shutdown);
+            disposables.add(engine.shutdown, {
+                name: `runElectronEnvListener engine shutdown ${engine.entityID}`,
+                timeout: 10_000,
+            });
         } catch (ex) {
             await disposables.dispose();
             process.exitCode = 1;

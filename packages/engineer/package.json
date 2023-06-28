@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engineer",
-  "version": "39.2.1",
+  "version": "39.2.2",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,7 +8,7 @@
     "engineer": "./bin/engineer.js"
   },
   "scripts": {
-    "test": "mocha \"test/**/*.unit.ts?(x)\""
+    "test": "mocha \"dist/test/**/*.unit.js\""
   },
   "peerDependencies": {
     "react": ">=16",
@@ -17,15 +17,15 @@
   },
   "dependencies": {
     "@file-services/node": "^7.4.0",
-    "@wixc3/common": "^10.0.0",
+    "@wixc3/common": "^11.0.0",
     "@wixc3/engine-core": "^39.2.1",
-    "@wixc3/engine-dashboard": "^39.2.1",
-    "@wixc3/engine-runtime-node": "^39.2.1",
-    "@wixc3/engine-scripts": "^39.2.1",
-    "@wixc3/patterns": "^10.0.0",
+    "@wixc3/engine-dashboard": "^39.2.2",
+    "@wixc3/engine-runtime-node": "^39.2.2",
+    "@wixc3/engine-scripts": "^39.2.2",
+    "@wixc3/patterns": "^11.0.0",
     "commander": "^11.0.0",
     "open": "^8.4.2",
-    "socket.io": "^4.7.0",
+    "socket.io": "^4.7.1",
     "webpack-dev-middleware": "^6.1.1"
   },
   "files": [

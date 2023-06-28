@@ -32,7 +32,10 @@ export function workerThreadInitializer({
     const envIsReady = communication.envReady(instanceId);
 
     const metadataProvider = createMetadataProvider(communication);
-    disposables.add(() => metadataProvider.dispose());
+    disposables.add(() => metadataProvider.dispose(), {
+        name: 'worker thread metadataProvider',
+        timeout: 5_000,
+    });
 
     const initialize = async (): Promise<void> => {
         const { requiredModules, basePath, config, featureName, features, runtimeOptions } =
@@ -44,7 +47,10 @@ export function workerThreadInitializer({
             },
         });
 
-        disposables.add(() => worker.terminate());
+        disposables.add(() => worker.terminate(), {
+            name: `worker thread ${instanceId} terminate`,
+            timeout: 5_000,
+        });
 
         const host = new UniversalWorkerHost(worker, instanceId);
         communication.registerEnv(instanceId, host);

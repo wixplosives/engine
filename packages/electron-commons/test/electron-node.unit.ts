@@ -1,12 +1,10 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import type { IOType } from 'child_process';
-
 import fs from '@file-services/node';
 import { TopLevelConfig } from '@wixc3/engine-core';
-
 import testFeature, { serverEnv } from '@fixture/disconnecting-env/dist/disconnecting-env.feature';
-import { setupRunningNodeEnv } from '../../test-kit/setup-running-node-env';
+import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env';
 import { disposeAfter } from '@wixc3/testing';
 
 const { expect } = chai;

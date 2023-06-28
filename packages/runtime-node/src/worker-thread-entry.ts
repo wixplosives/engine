@@ -53,10 +53,13 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         options: runtimeOptions,
     });
 
-    disposables.add(() => {
-        worker.removeEventListener('message', messageHandler);
-        return engine.shutdown();
-    });
+    disposables.add(
+        () => {
+            worker.removeEventListener('message', messageHandler);
+            return engine.shutdown();
+        },
+        { name: `workerThreadEntry engine shutdown ${engine.entityID}`, timeout: 10_000 }
+    );
 };
 
 const messageHandler = (message: unknown) => {
