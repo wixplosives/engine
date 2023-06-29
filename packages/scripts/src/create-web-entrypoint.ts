@@ -18,6 +18,7 @@ export function createMainEntrypoint({
     eagerEntrypoint,
     env,
     featuresBundleName,
+    configLoaderModuleName,
 }: ICreateEntrypointsOptions) {
     const runningEnv = new Environment(
         env.name,
@@ -31,7 +32,7 @@ export function createMainEntrypoint({
         configName,
         env,
         staticBuild,
-        webLoadConfigFileTemplate
+        webLoadConfigFileTemplate.bind(null, configLoaderModuleName)
     );
     const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
     const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
@@ -41,7 +42,7 @@ import { main, COM } from '@wixc3/engine-core';
 
 const urlParams = new URLSearchParams(globalThis.location.search);
 const options = globalThis.engineEntryOptions?.({ urlParams, envName: ${stringify(env.name)} }) ?? urlParams;
-
+const runtimePublicPath = ${runtimePublicPath};
 main({
     featureName: ${stringify(featureName)}, 
     configName: ${stringify(configName)},
@@ -54,7 +55,7 @@ main({
         return [
             COM.use({
                 config: {
-                    publicPath: ${runtimePublicPath},
+                    publicPath: runtimePublicPath,
                     resolvedContexts,
                 },
             }),
@@ -82,8 +83,12 @@ return publicPath;
 
 const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
 
-function webLoadConfigFileTemplate(filePath: string, scopedName: string, configEnvName = ''): string {
-    const configLoaderModuleName = '@wixc3/engine-scripts/dist/default-config-loader';
+function webLoadConfigFileTemplate(
+    configLoaderModuleName: string | undefined = '@wixc3/engine-scripts/dist/default-config-loader',
+    filePath: string,
+    scopedName: string,
+    configEnvName = ''
+): string {
     const request = stringify(
         topLevelConfigLoaderPath +
             `?configLoaderModuleName=${configLoaderModuleName}&scopedName=${scopedName}&envName=${configEnvName}!` +
