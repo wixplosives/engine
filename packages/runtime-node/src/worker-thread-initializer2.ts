@@ -18,9 +18,7 @@ export function workerThreadInitializer2({
     workerURL,
 }: WorkerThreadInitializerOptions2): WorkerThreadInitializer2 {
     const disposables = createDisposables();
-    const envName = env.env;
-    const isSingleton = env.endpointType === 'single';
-    const instanceId = isSingleton ? envName : communication.generateEnvInstanceID(envName);
+    const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
     const envIsReady = communication.envReady(instanceId);
 
     const nodeOnlyParams: object = {
