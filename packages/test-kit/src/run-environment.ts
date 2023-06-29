@@ -167,9 +167,13 @@ function locateEnvironment(
     return undefined;
 }
 
+/**
+ * get a running feature with no browser environment
+ * @param disposeAfterTestTimeout if false, will not dispose the engine after the test
+ */
 export async function getRunningFeature<F extends FeatureClass, ENV extends AnyEnvironment>(
     options: RunningFeatureOptions<F, ENV>,
-    disposeAfterTest = true
+    disposeAfterTestTimeout: false | number = 10_000
 ): Promise<{
     runningApi: Running<F, ENV>;
     engine: RuntimeEngine;
@@ -180,9 +184,10 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
     const engine = await runEngineEnvironment(options);
     const { api } = engine.get(feature);
 
-    if (disposeAfterTest) {
+    if (disposeAfterTestTimeout) {
         disposeAfter(engine.shutdown, {
             name: `engine shutdown for ${options.featureName}`,
+            timeout: disposeAfterTestTimeout,
         });
     }
     return {
