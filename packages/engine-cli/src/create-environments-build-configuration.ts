@@ -11,6 +11,7 @@ import {
 import { SetMultiMap } from '@wixc3/patterns';
 import { BuildOptions, Loader, Plugin } from 'esbuild';
 import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
+import { join } from 'node:path';
 
 export interface CreateEnvBuildConfigOptions {
     buildPlugins: Plugin[];
@@ -19,11 +20,25 @@ export interface CreateEnvBuildConfigOptions {
     publicPath: string;
     environments: ReturnType<typeof getResolvedEnvironments>;
     config: TopLevelConfig;
+    outputPath: string;
+    featureName?: string;
+    configName?: string;
 }
 
 export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConfigOptions) {
-    const { environments, publicPath, features, configurations, config, buildPlugins } = options;
+    const {
+        featureName,
+        configName,
+        outputPath,
+        environments,
+        publicPath,
+        features,
+        configurations,
+        config,
+        buildPlugins,
+    } = options;
 
+    const jsOutExtension = '.mjs';
     const webEntryPoints = new Map<string, string>();
     const nodeEntryPoints = new Map<string, string>();
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
@@ -34,8 +49,8 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             features,
             childEnvs,
             env,
-            // featureName,
-            // configName,
+            featureName,
+            configName,
             publicPath,
             publicPathVariableName: 'PUBLIC_PATH',
             configurations,
@@ -45,7 +60,10 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             config,
         });
 
-        webEntryPoints.set(`${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.mjs`, entrypointContent);
+        webEntryPoints.set(
+            `${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.${jsOutExtension}`,
+            entrypointContent
+        );
     }
 
     for (const { env, childEnvs } of nodeTargets) {
@@ -53,17 +71,15 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             features,
             childEnvs,
             env,
-            // featureName,
-            // configName,
-            // publicPath,
-            // publicPathVariableName: 'PUBLIC_PATH',
+            featureName,
+            configName,
             configurations,
             mode: 'development',
             staticBuild: true,
             publicConfigsRoute: '/configs',
             config,
         });
-        nodeEntryPoints.set(`${env.name}.${env.type}.mjs`, entrypointContent);
+        nodeEntryPoints.set(`${env.name}.${env.type}.${jsOutExtension}`, entrypointContent);
     }
 
     const commonConfig = {
@@ -74,7 +90,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         metafile: true,
         sourcemap: true,
         keepNames: true,
-        outExtension: { '.js': '.mjs' },
+        outExtension: { '.js': jsOutExtension },
         loader: {
             '.json': 'json',
             '.png': 'file',
@@ -91,7 +107,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
     const webConfig = {
         ...commonConfig,
         platform: 'browser',
-        outdir: 'dist-web',
+        outdir: join(outputPath, 'web'),
         plugins: [
             ...commonConfig.plugins,
             dynamicEntryPlugin({ entryPoints: webEntryPoints, loader: 'js' }),
@@ -112,7 +128,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
     const nodeConfig = {
         ...commonConfig,
         platform: 'node',
-        outdir: 'dist-node',
+        outdir: join(outputPath, 'node'),
         plugins: [...commonConfig.plugins, dynamicEntryPlugin({ entryPoints: nodeEntryPoints, loader: 'js' })],
     } satisfies BuildOptions;
 

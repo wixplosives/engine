@@ -18,6 +18,7 @@ export type Options = {
     outputPath?: string;
     publicPath?: string;
     featureName?: string;
+    configName?: string;
     singleFeature?: boolean;
     httpServerPort?: number;
 };
@@ -25,9 +26,10 @@ export type Options = {
 async function engineStart({
     dev = { enabled: false, buildTargets: 'both' },
     rootDir = process.cwd(),
-    outputPath = 'dist-web',
+    outputPath = 'dist-engine',
     publicPath = '',
     featureName = '',
+    configName = '',
     singleFeature = false,
     httpServerPort = 3000,
 }: Options = {}) {
@@ -61,9 +63,12 @@ async function engineStart({
         features,
         environments,
         publicPath,
+        outputPath,
+        featureName,
+        configName,
     });
-    await rm('dist-web', { recursive: true, force: true });
-    await rm('dist-node', { recursive: true, force: true });
+
+    await rm(outputPath, { recursive: true, force: true });
 
     if (dev.enabled) {
         await runDevServices({
