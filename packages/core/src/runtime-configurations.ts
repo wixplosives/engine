@@ -48,7 +48,7 @@ export class RuntimeConfigurations {
                 this.fetchConfig(envName, featureName, configName)
                     .then((config) => {
                         // with our flow it can only be a window (currently)
-                        window.postMessage(
+                        (source as Window).postMessage(
                             {
                                 id,
                                 config,
@@ -59,7 +59,7 @@ export class RuntimeConfigurations {
                     })
                     .catch((e) => {
                         // with our flow it can only be a window (currently)
-                        window.postMessage(
+                        (source as Window).postMessage(
                             {
                                 id,
                                 error: String(e),
