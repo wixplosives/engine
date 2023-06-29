@@ -5,7 +5,7 @@
     "engine": "./dist/cli.js"
   },
   "scripts": {
-    "test": "mocha \"test/**/*.unit.ts?(x)\""
+    "test": "mocha \"dist/test/**/*.unit.js\""
   },
   "dependencies": {
     "@file-services/node": "^7.4.0",
