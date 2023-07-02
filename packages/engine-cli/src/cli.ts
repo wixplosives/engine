@@ -57,6 +57,7 @@ async function engineStart({
     });
 
     const buildConfigurations = createEnvironmentsBuildConfiguration({
+        dev: dev.enabled || false,
         buildPlugins,
         config: [],
         configurations,

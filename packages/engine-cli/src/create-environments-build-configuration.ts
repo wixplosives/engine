@@ -14,6 +14,7 @@ import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 import { join } from 'node:path';
 
 export interface CreateEnvBuildConfigOptions {
+    dev: boolean;
     buildPlugins: Plugin[];
     configurations: SetMultiMap<string, IConfigDefinition>;
     features: Map<string, IFeatureDefinition>;
@@ -27,6 +28,7 @@ export interface CreateEnvBuildConfigOptions {
 
 export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConfigOptions) {
     const {
+        dev,
         featureName,
         configName,
         outputPath,
@@ -101,7 +103,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             '.woff2': 'file',
             '.ttf': 'file',
         },
-        plugins: [...buildPlugins, rawLoaderPlugin(), topLevelConfigPlugin()],
+        plugins: [...buildPlugins, rawLoaderPlugin(), topLevelConfigPlugin({ emit: !dev })],
     } satisfies BuildOptions;
 
     const webConfig = {

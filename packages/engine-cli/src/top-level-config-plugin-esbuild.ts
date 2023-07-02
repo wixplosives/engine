@@ -1,4 +1,4 @@
-import { Plugin } from 'esbuild';
+import { BuildOptions, Plugin } from 'esbuild';
 import fs from 'node:fs';
 import { dirname, join } from 'node:path';
 
@@ -10,7 +10,7 @@ export interface PartialWebpackLoaderContext {
     emitFile(filePath: string, contents: string, sourcemap: boolean): void;
 }
 
-export function topLevelConfigPlugin() {
+export function topLevelConfigPlugin({ emit = true }: { emit?: boolean }) {
     const plugin: Plugin = {
         name: 'top-level-config-loader',
         setup(build) {
@@ -22,9 +22,8 @@ export function topLevelConfigPlugin() {
                     namespace: 'top-level-config-loader',
                 };
             });
+
             build.onLoad({ filter: /.*/, namespace: 'top-level-config-loader' }, (args) => {
-                const rootContext = build.initialOptions.absWorkingDir || process.cwd();
-                const outDir = build.initialOptions.outdir;
                 const queryMatch = args.path.match(/\?(.*?)$/);
                 if (!queryMatch || !queryMatch[1]) {
                     throw new Error('top-level-config-loader: query is missing');
@@ -41,14 +40,9 @@ export function topLevelConfigPlugin() {
                 const envName = params.get('envName');
                 const configLoaderModuleName = params.get('configLoaderModuleName');
 
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const imported = require(resourcePath);
-                const content = JSON.stringify(imported);
-
-                const configFileName = envName ? `${fileName!}.${envName}` : fileName;
-                const configPath = `configs/${configFileName!}.json`;
-
-                filesToEmit.set(configPath, { content, path: join(rootContext, outDir!, configPath) });
+                if (emit) {
+                    emitConfigFile(resourcePath, envName, fileName, filesToEmit, build.initialOptions);
+                }
 
                 const module = `
                     import { loadConfig } from '${configLoaderModuleName!}';
@@ -72,4 +66,22 @@ export function topLevelConfigPlugin() {
         },
     };
     return plugin;
+}
+
+function emitConfigFile(
+    resourcePath: string,
+    envName: string | null,
+    fileName: string | null,
+    filesToEmit: Map<string, { content: string; path: string }>,
+    initialOptions: BuildOptions
+) {
+    const outDir = initialOptions.outdir;
+    const rootContext = initialOptions.absWorkingDir || process.cwd();
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const imported = require(resourcePath);
+    const content = JSON.stringify(imported);
+    const configFileName = envName ? `${fileName!}.${envName}` : fileName;
+    const configPath = `configs/${configFileName!}.json`;
+    filesToEmit.set(configPath, { content, path: join(rootContext, outDir!, configPath) });
 }
