@@ -1,6 +1,6 @@
 import fs from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { importModules, type IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
+import { loadTopLevelConfigs, importModules, type IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import {
     Application,
     getExportedEnvironments,
@@ -9,7 +9,7 @@ import {
 } from '@wixc3/engine-scripts';
 import { build as electronBuild, Configuration, FileSet, PublishOptions } from 'electron-builder';
 import { dirname, posix, relative } from 'path';
-import { getConfig } from '../engine-helpers';
+
 import { getEngineConfig } from '../find-features';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -102,7 +102,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
     });
 
     if (configName) {
-        config.push(...getConfig(configName, configurations, envName));
+        config.push(...(await loadTopLevelConfigs(configName, configurations, envName)));
     }
 
     await createElectronEntryFile({
@@ -185,7 +185,6 @@ export function createElectronEntryFile({
         ${[...features.keys()].join(', ')}`);
     }
 
-    
     const env = [...getExportedEnvironments(features)].find(({ name }) => name === envName)?.env;
 
     if (!env) {

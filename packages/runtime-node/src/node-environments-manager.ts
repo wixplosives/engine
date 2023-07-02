@@ -32,6 +32,7 @@ import {
     metadataApiToken,
 } from './types';
 import { runWSEnvironment } from './ws-environment';
+import { loadTopLevelConfigs } from './load-top-level-config';
 
 export interface OverrideConfig {
     configName?: string;
@@ -232,7 +233,11 @@ export class NodeEnvironmentsManager {
             }
 
             config.push(COM.use({ config: { topology, connectedEnvironments } }));
-            config.push(...(await this.getConfig(originalConfigName)), ...overrideConfigs);
+            // TODO: pass filterEnv to getConfig?
+            config.push(
+                ...(await loadTopLevelConfigs(originalConfigName, this.options.configurations)),
+                ...overrideConfigs
+            );
             const preparedEnvironment = await this.prepareEnvironment({
                 nodeEnv,
                 featureName,
@@ -443,32 +448,6 @@ export class NodeEnvironmentsManager {
             },
             port: realPort,
         };
-    }
-
-    private async getConfig(configName: string | undefined) {
-        const config: TopLevelConfig = [];
-        const { configurations } = this.options;
-        if (configurations && configName) {
-            const configDefinition = configurations.get(configName);
-            if (!configDefinition) {
-                const configNames = Array.from(configurations.keys());
-                throw new Error(
-                    `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
-                );
-            }
-            for (const definition of configDefinition) {
-                try {
-                    if (Array.isArray(definition)) {
-                        config.push(...definition);
-                    } else {
-                        config.push(...((await import(definition.filePath)) as { default: TopLevelConfig }).default);
-                    }
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-        }
-        return config;
     }
 
     private async runRemoteNodeEnvironment(options: StartEnvironmentOptions) {

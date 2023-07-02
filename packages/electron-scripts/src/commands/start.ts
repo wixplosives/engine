@@ -4,9 +4,9 @@ import { startDevServer } from '@wixc3/engineer';
 import { IRunOptionsMessage, provideApiForChildProcess } from '@wixc3/engine-electron-host';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import { getEngineConfig } from '../find-features';
-import { getConfig } from '../engine-helpers';
 import { join } from 'path';
 import { getExportedEnvironments, findFeatures } from '@wixc3/engine-scripts';
+import { loadTopLevelConfigs } from '@wixc3/engine-runtime-node';
 
 // electron node lib exports the electron executable path; inside electron, it's the api itself.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -68,7 +68,7 @@ export async function start({
     });
 
     // registering to the dev server ready event
-    serverListeningHandlerSlot.register(({ port, router }) => {
+    serverListeningHandlerSlot.register(async ({ port, router }) => {
         const config: TopLevelConfig = [];
         const { features, configurations } = findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
 
@@ -81,7 +81,7 @@ export async function start({
         }
 
         if (configName) {
-            config.push(...getConfig(configName, configurations, envName));
+            config.push(...(await loadTopLevelConfigs(configName, configurations, envName)));
         }
         if (overrideConfig) {
             config.push(...(typeof overrideConfig === 'function' ? overrideConfig(port) : overrideConfig));

@@ -18,9 +18,10 @@ import {
     metadataApiToken,
     runNodeEnvironment,
     IStaticFeatureDefinition,
+    loadTopLevelConfigs,
 } from '@wixc3/engine-runtime-node';
 
-import { ENGINE_CONFIG_FILE_NAME, findFeatures, evaluateConfig, EngineConfig, IFeatureDefinition } from '.';
+import { ENGINE_CONFIG_FILE_NAME, findFeatures, EngineConfig, IFeatureDefinition } from '.';
 
 export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
@@ -64,7 +65,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
     const { features, configurations } = findFeatures(basePath, fs, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
 
     if (configName) {
-        config = [...evaluateConfig(configName, configurations, envName), ...config];
+        config = [...(await loadTopLevelConfigs(configName, configurations, envName)), ...config];
     }
     const featureDef = features.get(featureName)!;
 
