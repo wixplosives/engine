@@ -63,7 +63,7 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "html-webpack-plugin": "^5.5.3",
-    "lerna": "^7.1.0",
+    "lerna": "^7.1.1",
     "mocha": "^10.2.0",
     "mocha-play": "^5.0.1",
     "playwright-chromium": "^1.35.1",
@@ -75,8 +75,8 @@
     "sinon": "^15.2.0",
     "sinon-chai": "^3.7.0",
     "source-map-loader": "^4.0.1",
-    "typescript": "~5.1.5",
-    "webpack": "^5.88.0"
+    "typescript": "~5.1.6",
+    "webpack": "^5.88.1"
   },
   "license": "MIT",
   "private": true

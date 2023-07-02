@@ -7,7 +7,7 @@ export const Sidebar: FC = () => {
 
     return (
         <section className={classes.leftBar}>
-            {serverState.featuresWithRunningNodeEnvs.length && (
+            {!!serverState.featuresWithRunningNodeEnvs.length && (
                 <div>
                     <div className={classes.title}>Running Features:</div>
                     {serverState.featuresWithRunningNodeEnvs.map(([f, c]) => (

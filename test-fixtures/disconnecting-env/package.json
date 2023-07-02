@@ -1,9 +1,9 @@
 {
   "name": "@fixture/disconnecting-env",
-  "version": "39.2.1",
+  "version": "39.2.3",
   "private": true,
   "dependencies": {
-    "@wixc3/engine-core": "^39.2.1"
+    "@wixc3/engine-core": "^39.2.3"
   },
   "license": "unlicensed",
   "publishConfig": {
