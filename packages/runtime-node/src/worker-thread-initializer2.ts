@@ -32,12 +32,16 @@ export function workerThreadInitializer2({
                 name: instanceId,
             },
         });
-
         disposables.add(() => worker.terminate());
 
         const host = new UniversalWorkerHost(worker, instanceId);
         communication.registerEnv(instanceId, host);
         communication.registerMessageHandler(host);
+
+        disposables.add(() => {
+            communication.clearEnvironment(instanceId);
+            communication.removeMessageHandler(host);
+        });
 
         await envIsReady;
     };
