@@ -21,10 +21,11 @@ import {
     createConfigMiddleware,
     ensureTopLevelConfigMiddleware,
 } from '../config-middleware';
+import { createExternalNodeEntrypoint } from '../create-entrypoint';
 import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs';
 import { generateFeature, pathToFeaturesDirectory } from '../feature-generator';
 import type { EngineConfig, IFeatureDefinition } from '../types';
-import { getFilePathInPackage, scopeFilePathsToPackage } from '../utils';
+import { getFilePathInPackage, IResolvedEnvironment, scopeFilePathsToPackage } from '../utils';
 import { buildDefaults } from './defaults';
 import type {
     IApplicationOptions,
@@ -475,6 +476,23 @@ export class Application {
         const featuresAndConfigs = findFeatures(basePath, fs, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features');
         return featuresAndConfigs;
+    }
+
+    protected createNodeEntrypoint(
+        feature: IFeatureDefinition,
+        nodeEnvs: Map<string, IResolvedEnvironment>,
+        pathToSources: string
+    ) {
+        for (const [envName, { env, childEnvs }] of nodeEnvs) {
+            const entryPath = join(this.outputPath, `${envName}.node.js`);
+            const [, reMappedFeature] = this.generateReMappedFeature({ ...feature }, pathToSources, feature.scopedName);
+            const entryCode = createExternalNodeEntrypoint({
+                ...reMappedFeature,
+                childEnvs,
+                env,
+            });
+            fs.writeFileSync(entryPath, entryCode);
+        }
     }
 
     protected getFeatureEnvDefinitions(
