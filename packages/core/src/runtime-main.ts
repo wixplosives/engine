@@ -48,7 +48,7 @@ export async function main({
     const [buildConfig, runtimeConfig] = await Promise.all([buildConfigPromise, runtimeConfigPromise]);
 
     // only load features after the config is loaded to avoid blocking onload event
-    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName);
+    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName, {});
 
     const topLevelConfig: TopLevelConfig = [
         COM.use({ config: { resolvedContexts, publicPath } }),
