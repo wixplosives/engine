@@ -344,7 +344,3 @@ function loadConfigFileTemplate(
     return `import(/* webpackChunkName: "[config]${scopedName}${configEnvName}" */ /* webpackMode: 'eager' */ ${request})`;
 }
 //#endregion
-
-export function normilizePackageName(packageName: string) {
-    return packageName.replace('@', '').replace(/\//g, '').replace(/-/g, '');
-}
