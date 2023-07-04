@@ -28,7 +28,7 @@ describe('Feature loader registry', () => {
         registry.register('test', featureLoader);
         expect(registry.get('test')).to.eq(featureLoader);
         expect(loaded).to.have.callCount(0);
-        await registry.getLoadedFeatures('test', {}, {});
+        await registry.loadEntryFeature('test', {});
         expect(loaded).to.have.callCount(1);
     });
 
@@ -62,7 +62,7 @@ describe('Feature loader registry', () => {
         const registry = new FeatureLoadersRegistry();
         registry.register('test', featureLoader);
         registry.register('dep', depFeatureLoader);
-        await registry.getLoadedFeatures('test', {}, {});
+        await registry.loadEntryFeature('test', {});
         expect(depLoaded).to.have.callCount(1);
         expect(loaded).to.have.callCount(1);
     });
@@ -94,7 +94,7 @@ describe('Feature loader registry', () => {
 
         const registry = new FeatureLoadersRegistry();
         registry.register('test', featureLoader);
-        const p = registry.getLoadedFeatures('test', {}, {});
+        const p = registry.loadEntryFeature('test', {});
         const callbackCall = spy();
         void p.then(callbackCall);
         await waitFor(() => expect(callbackCall).to.have.callCount(0), { delay: 100 });
