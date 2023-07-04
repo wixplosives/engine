@@ -49,10 +49,7 @@ export interface IRunEngineAppOptions<ENV extends AnyEnvironment> {
 export class FeatureLoadersRegistry {
     private pendingLoaderRequests = new Map<string, IDeferredPromise<IFeatureLoader>>();
     private loadedFeatures = new Set<string>();
-    constructor(
-        private featureMapping = new Map<string, IFeatureLoader>(),
-        private resolvedContexts: Record<string, string> = {}
-    ) {}
+    constructor(private featureMapping = new Map<string, IFeatureLoader>()) {}
     public register(name: string, featureLoader: IFeatureLoader) {
         this.featureMapping.set(name, featureLoader);
         this.pendingLoaderRequests.get(name)?.resolve(featureLoader);
@@ -76,9 +73,10 @@ export class FeatureLoadersRegistry {
     /**
      * returns all features which were actially loaded
      */
-    async getLoadedFeatures(
+    private async getLoadedFeatures(
         rootFeatureName: string,
-        runtimeOptions: Record<string, string | boolean> = {}
+        runtimeOptions: Record<string, string | boolean>,
+        resolvedContexts: Record<string, string>
     ): Promise<FeatureClass[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);
@@ -93,7 +91,7 @@ export class FeatureLoadersRegistry {
         const allPreloadInitFunctions = [];
         for (const featureLoader of featureLoaders) {
             if (featureLoader.preload) {
-                const featureInitFunctions = await featureLoader.preload(this.resolvedContexts);
+                const featureInitFunctions = await featureLoader.preload(resolvedContexts);
                 if (featureInitFunctions) {
                     allPreloadInitFunctions.push(...featureInitFunctions);
                 }
@@ -102,7 +100,33 @@ export class FeatureLoadersRegistry {
         for (const initFunction of allPreloadInitFunctions) {
             await initFunction(runtimeOptions);
         }
-        return Promise.all(featureLoaders.map(({ load }) => load(this.resolvedContexts)));
+        return Promise.all(featureLoaders.map(({ load }) => load(resolvedContexts)));
+    }
+    /**
+     * loads the entry feature and all its dependencies
+     */
+    async loadEntryFeature(rootFeatureName: string, runtimeOptions: Record<string, string | boolean> ) {
+        const rootFeatureLoader = this.featureMapping.get(rootFeatureName);
+        if (!rootFeatureLoader) {
+            throw new Error(
+                `cannot find feature '${rootFeatureName}'. available features:\n${Array.from(
+                    this.featureMapping.keys()
+                ).join('\n')}`
+            );
+        }
+        const resolvedContexts = { ...rootFeatureLoader.resolvedContexts };
+        const features = await this.getLoadedFeatures(rootFeatureName, runtimeOptions, resolvedContexts);
+        const entryFeature = features[features.length - 1];
+        if (!entryFeature) {
+            throw new Error(
+                `no features were loaded for ${rootFeatureName} with runtime options ${JSON.stringify(
+                    runtimeOptions,
+                    null,
+                    2
+                )}`
+            );
+        }
+        return { entryFeature, resolvedContexts };
     }
     /**
      * returns all the dependencies of a feature. doesn't handle duplications

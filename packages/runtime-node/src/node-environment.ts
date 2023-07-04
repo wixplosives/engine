@@ -47,22 +47,12 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
         type,
         env,
     });
-    const rootFeatureLoader = featureLoaders[featureName];
-    if (!rootFeatureLoader) {
-        throw new Error(
-            "cannot find feature '" + featureName + "'. available features: " + Object.keys(featureLoaders).join(', ')
-        );
-    }
-    const { resolvedContexts = {} } = rootFeatureLoader;
 
-    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)), resolvedContexts);
-    const optionsRecord: Record<string, string | boolean> = {};
-
-    for (const [key, val] of options || []) {
-        optionsRecord[key] = val;
-    }
-    const loadedFeatures = await featureLoader.getLoadedFeatures(featureName, optionsRecord);
-    const runningFeatures = [loadedFeatures[loadedFeatures.length - 1]!];
+    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)));
+    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(
+        featureName,
+        Object.fromEntries(options || [])
+    );
 
     const engine = new RuntimeEngine(
         env,
@@ -77,7 +67,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
         new Map(options)
     );
     // we don't wait here because the process of node environment manager prepare environment is two step process
-    void engine.run(runningFeatures);
+    void engine.run(entryFeature);
     return engine;
 }
 
