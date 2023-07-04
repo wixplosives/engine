@@ -49,7 +49,10 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     });
 
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)));
-    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName, toRecord(options));
+    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(
+        featureName,
+        Object.fromEntries(options || [])
+    );
 
     const engine = new RuntimeEngine(
         env,
@@ -124,12 +127,4 @@ export function createFeatureLoaders(
         };
     }
     return featureLoaders;
-}
-
-function toRecord(options: [string, string | boolean][] | undefined) {
-    const optionsRecord: Record<string, string | boolean> = {};
-    for (const [key, val] of options || []) {
-        optionsRecord[key] = val;
-    }
-    return optionsRecord;
 }
