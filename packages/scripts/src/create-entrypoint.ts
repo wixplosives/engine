@@ -113,6 +113,7 @@ import { main } from '@wixc3/engine-core';
 
 const urlParams = new URLSearchParams(globalThis.location.search);
 const options = globalThis.engineEntryOptions?.({ urlParams, envName: ${stringify(env.name)} }) ?? urlParams;
+const runtimePublicPath = ${runtimePublicPath};
 
 main({
     featureName: ${stringify(featureName)}, 
@@ -120,7 +121,7 @@ main({
     env: ${stringify(runningEnv, null, 2)},
     featureLoaders: ${featureLoaders},
     configLoaders: ${configLoaders},
-    publicPath: ${runtimePublicPath},
+    publicPath: runtimePublicPath,
     publicConfigsRoute: ${stringify(publicConfigsRoute)},
     overrideConfig: ${stringify(config, null, 2)},
     options,

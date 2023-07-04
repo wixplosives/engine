@@ -32,6 +32,8 @@ export async function main({
     const runtimeConfiguration = new RuntimeConfigurations(env.env, publicConfigsRoute, configLoaders);
     const featureLoader = new FeatureLoadersRegistry(featureLoaders);
 
+    runtimeConfiguration.installChildEnvConfigFetcher(featureName, configName);
+
     featureName = String(options.get('feature') || featureName);
     configName = String(options.get('config') || configName);
 
@@ -40,19 +42,20 @@ export async function main({
         (globalThis as any).name = instanceId;
     }
 
+    const buildConfigPromise = runtimeConfiguration.importConfig(configName);
+    const runtimeConfigPromise = runtimeConfiguration.load(env.env, featureName, configName);
+
+    const [buildConfig, runtimeConfig] = await Promise.all([buildConfigPromise, runtimeConfigPromise]);
+
+    // only load features after the config is loaded to avoid blocking onload event
     const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName);
 
     const topLevelConfig: TopLevelConfig = [
         COM.use({ config: { resolvedContexts, publicPath } }),
-        // import static config
-        ...(await runtimeConfiguration.importConfig(configName)),
-        // override
+        ...buildConfig,
         ...overrideConfig,
-        // import public config
-        ...(await runtimeConfiguration.load(env.env, featureName, configName)),
+        ...runtimeConfig,
     ];
-
-    runtimeConfiguration.installChildEnvConfigFetcher(featureName, configName);
 
     return new RuntimeEngine(env, topLevelConfig, options).run(entryFeature);
 }

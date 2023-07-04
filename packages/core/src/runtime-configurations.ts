@@ -40,7 +40,7 @@ export class RuntimeConfigurations {
         if (!this.publicConfigsRoute || !this.isMainWebEntrypoint()) {
             return;
         }
-        globalThis.addEventListener('message', ({ data: { id, envName, from }, source }) => {
+        globalThis.addEventListener('message', ({ data: { id, envName, __from }, source }) => {
             if (!source || id !== this.publicConfigsRoute) {
                 return;
             }
@@ -51,7 +51,7 @@ export class RuntimeConfigurations {
                         {
                             id,
                             config,
-                            to: from,
+                            __to: __from,
                         },
                         '*'
                     );
@@ -62,7 +62,7 @@ export class RuntimeConfigurations {
                         {
                             id,
                             error: String(e),
-                            to: from,
+                            __to: __from,
                         },
                         '*'
                     );
@@ -97,11 +97,11 @@ export class RuntimeConfigurations {
                     }
                 };
                 scope.addEventListener('message', configsHandler);
-                this.getOpenerMessageTarget().postMessage(
+                scope.parent.postMessage(
                     {
                         id: this.publicConfigsRoute,
                         envName: envName,
-                        from: this.envName,
+                        __from: this.envName,
                     },
                     '*'
                 );
@@ -121,13 +121,13 @@ export class RuntimeConfigurations {
     }
 
     private fetchConfig(envName: string, featureName: string, configName: string) {
-        let promise = this.fetchedConfigs[envName];
+        let url = addTrailingSlashIfNotEmpty(this.publicConfigsRoute) + configName;
+        url += '?env=' + envName;
+        url += '&feature=' + featureName;
+        let promise = this.fetchedConfigs[url];
         if (!promise) {
-            let url = addTrailingSlashIfNotEmpty(this.publicConfigsRoute) + configName;
-            url += '?env=' + envName;
-            url += '&feature=' + featureName;
             promise = fetch(url).then((res) => res.json());
-            this.fetchedConfigs[envName] = promise;
+            this.fetchedConfigs[url] = promise;
         }
         return promise;
     }
