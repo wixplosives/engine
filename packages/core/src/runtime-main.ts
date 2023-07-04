@@ -18,6 +18,10 @@ export interface MainEntryParams {
     options: IRunOptions;
 }
 
+/**
+ * main engine environment entry point flow
+ * This function is imported by the generated entry file and is the first function to initialize each environment 
+ */
 export async function main({
     env,
     publicPath,

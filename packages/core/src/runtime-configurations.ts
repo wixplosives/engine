@@ -14,18 +14,22 @@ export type ConfigLoader = () => Promise<ConfigModule[]>;
 
 export type ConfigLoaders = Record<string, ConfigLoader>;
 
+/**
+ * Manage for the runtime configurations loading flow
+ */
 export class RuntimeConfigurations {
-    fetchedConfigs: Record<string, Promise<TopLevelConfig>> = {};
+    private fetchedConfigs: Record<string, Promise<TopLevelConfig>> = {};
     constructor(private envName: string, private publicConfigsRoute: string, private loaders: ConfigLoaders) {
         // validate args since we use this class in the entry point template code
         if (!envName) {
             throw new Error('envName must be provided');
         }
     }
-    private isMainWebEntrypoint() {
-        return this.getScope() === this.getOpenerMessageTarget();
-    }
-
+    /**
+     * load config via configuration loader
+     * this is an integration function with the build system
+     * the logic and is based on the "config loader" implementation
+     */
     async importConfig(configName: string) {
         const loader = this.loaders[configName];
         if (!loader || !configName) {
@@ -35,7 +39,10 @@ export class RuntimeConfigurations {
         const allLoadedConfigs = await Promise.all(res.map((module) => module.default));
         return allLoadedConfigs.flat();
     }
-
+    /**
+     * Install a message listener to fetch config for child environments
+     * currently only iframe is supported we should expend support for other environments types
+     */
     installChildEnvConfigFetcher(featureName: string, configName: string) {
         if (!this.publicConfigsRoute || !this.isMainWebEntrypoint()) {
             return;
@@ -69,7 +76,9 @@ export class RuntimeConfigurations {
                 });
         });
     }
-
+    /**
+     * depending on the environment type (main or child) load the config either from the parent or from the public route
+     */
     load(envName: string, featureName: string, configName: string) {
         if (!this.publicConfigsRoute) {
             return Promise.resolve([]);
@@ -77,6 +86,10 @@ export class RuntimeConfigurations {
         return this.isMainWebEntrypoint()
             ? this.fetchConfig(envName, featureName, configName)
             : this.loadFromParent(envName);
+    }
+
+    private isMainWebEntrypoint() {
+        return this.getScope() === this.getOpenerMessageTarget();
     }
 
     private loadFromParent(envName: string) {
