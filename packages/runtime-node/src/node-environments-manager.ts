@@ -205,32 +205,20 @@ export class NodeEnvironmentsManager {
         }
 
         for (const nodeEnv of nodeEnvironments) {
+            const connectedEnvironments = this.createConnectedEnvMapping(
+                envHostMapping,
+                nodeEnv,
+                mode,
+                metadataProviderHost
+            );
+
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
                 configName,
                 nodeEnv.name
             );
-            const config: TopLevelConfig = [];
-            const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
-            for (const [env, host] of envHostMapping) {
-                if (env !== nodeEnv) {
-                    connectedEnvironments[env.name] = { id: env.name, host };
-                } else {
-                    connectedEnvironments[ENGINE_ROOT_ENVIRONMENT_ID] = {
-                        id: ENGINE_ROOT_ENVIRONMENT_ID,
-                        host,
-                        registerMessageHandler: true,
-                    };
 
-                    // in forked mode we are launching a new process, so metadata is handled from inside forked process
-                    if (mode !== 'forked') {
-                        connectedEnvironments[METADATA_PROVIDER_ENV_ID] = {
-                            id: METADATA_PROVIDER_ENV_ID,
-                            host: metadataProviderHost,
-                        };
-                    }
-                }
-            }
+            const config: TopLevelConfig = [];
 
             config.push(COM.use({ config: { topology, connectedEnvironments } }));
             // TODO: pass filterEnv to getConfig?
@@ -273,6 +261,38 @@ export class NodeEnvironmentsManager {
             configName: runtimeConfigName,
             runningEnvironments,
         };
+    }
+
+    private createConnectedEnvMapping(
+        envHostMapping: Map<
+            IEnvironmentDescriptor<import('c:/projects/engine/packages/core/src/index').AnyEnvironment>,
+            ChildBaseHost
+        >,
+        nodeEnv: IEnvironmentDescriptor<import('c:/projects/engine/packages/core/src/index').AnyEnvironment>,
+        mode: string,
+        metadataProviderHost: BaseHost
+    ) {
+        const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
+        for (const [env, host] of envHostMapping) {
+            if (env !== nodeEnv) {
+                connectedEnvironments[env.name] = { id: env.name, host };
+            } else {
+                connectedEnvironments[ENGINE_ROOT_ENVIRONMENT_ID] = {
+                    id: ENGINE_ROOT_ENVIRONMENT_ID,
+                    host,
+                    registerMessageHandler: true,
+                };
+
+                // in forked mode we are launching a new process, so metadata is handled from inside forked process
+                if (mode !== 'forked') {
+                    connectedEnvironments[METADATA_PROVIDER_ENV_ID] = {
+                        id: METADATA_PROVIDER_ENV_ID,
+                        host: metadataProviderHost,
+                    };
+                }
+            }
+        }
+        return connectedEnvironments;
     }
 
     private getOverrideConfig(overrideConfigsMap: Map<string, OverrideConfig>, configName?: string, envName?: string) {

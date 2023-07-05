@@ -6,6 +6,7 @@ import {
     IFeatureDefinition,
     createMainEntrypoint,
     createNodeEntrypoint,
+    createNodeEnvironmentManagerEntrypoint,
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/patterns';
@@ -42,7 +43,9 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
 
     const jsOutExtension = '.mjs';
     const webEntryPoints = new Map<string, string>();
-    const nodeEntryPoints = new Map<string, string>();
+    const nodeEntryPoints = new Map<string, string>([
+        [`engine-environment-manager.${jsOutExtension}`, createNodeEnvironmentManagerEntrypoint({ features })],
+    ]);
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
     const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
 

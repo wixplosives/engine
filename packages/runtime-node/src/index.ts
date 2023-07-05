@@ -4,6 +4,7 @@ export * from './import-modules';
 export * from './ipc-environment';
 export * from './launch-http-server';
 export * from './node-environment';
+export * from './node-env-manager';
 export * from './node-environments-manager';
 export * from './parse-cli-arguments';
 export * from './process-communication';

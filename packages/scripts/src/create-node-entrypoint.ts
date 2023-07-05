@@ -1,7 +1,27 @@
 import { Environment } from '@wixc3/engine-core';
 import { ICreateEntrypointsOptions, createConfigLoaders, createFeatureLoaders } from './create-entrypoint';
+import { resolveEnvironments } from '@wixc3/engine-runtime-node';
 
 const { stringify } = JSON;
+
+export function createNodeEnvironmentManagerEntrypoint({ features }: Pick<ICreateEntrypointsOptions, 'features'>) {
+    const featureToEnvironments: Record<string, string[]> = {};
+    for (const feature of features.values()) {
+        const envs = resolveEnvironments(feature.scopedName, features, ['node'], true);
+        const envList = [...envs.values()].map((e) => e.name);
+        if (envList.length) {
+            featureToEnvironments[feature.scopedName] = [...envs.values()].map((e) => e.name);
+        }
+    }
+
+    console.log({ featureToEnvironments });
+
+    return `
+        import { NodeEnvManager } from '@wixc3/engine-runtime-node';
+        const currentDir = new URL('.', import.meta.url).pathname;
+        new NodeEnvManager().autoLaunch(currentDir);
+    `;
+}
 
 export function createNodeEntrypoint({
     features,

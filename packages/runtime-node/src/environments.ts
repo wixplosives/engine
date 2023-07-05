@@ -5,7 +5,7 @@ import type { IStaticFeatureDefinition } from './types';
 
 export function resolveEnvironments(
     featureName: string,
-    features: Map<string, IStaticFeatureDefinition>,
+    features: ReadonlyMap<string, IStaticFeatureDefinition>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes,
     filterByContext = true
 ) {

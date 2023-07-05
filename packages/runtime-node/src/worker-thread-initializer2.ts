@@ -10,27 +10,27 @@ export interface WorkerThreadInitializer2 {
 
 export interface WorkerThreadInitializerOptions2 extends InitializerOptions {
     workerURL: URL;
+    argv?: string[];
 }
 
 export function workerThreadInitializer2({
     communication,
     env,
     workerURL,
+    argv,
 }: WorkerThreadInitializerOptions2): WorkerThreadInitializer2 {
     const disposables = createDisposables();
     const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
     const envIsReady = communication.envReady(instanceId);
 
     const nodeOnlyParams: object = {
-        argv: process.argv.slice(2),
+        argv: argv || process.argv.slice(2),
     };
 
     const initialize = async (): Promise<void> => {
         const worker = new Worker(workerURL, {
+            name: instanceId,
             ...nodeOnlyParams,
-            workerData: {
-                name: instanceId,
-            },
         });
         disposables.add(() => worker.terminate());
 

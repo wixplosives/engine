@@ -40,6 +40,9 @@ export function createMainEntrypoint({
     return `
 import { main, COM } from '@wixc3/engine-core';
 
+// import process from "process";
+// globalThis.process = process;
+
 const urlParams = new URLSearchParams(globalThis.location.search);
 const options = globalThis.engineEntryOptions?.({ urlParams, envName: ${stringify(env.name)} }) ?? urlParams;
 const runtimePublicPath = ${runtimePublicPath};
