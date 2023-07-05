@@ -3,8 +3,8 @@
   "version": "39.2.3",
   "scripts": {
     "start": "engineer start",
-    "test": "yarn test:ix",
-    "test:ix": "mocha \"dist/test/**/*.ix.js\""
+    "test": "yarn test:it",
+    "test:it": "mocha \"dist/test/**/*.it.js\""
   },
   "license": "UNLICENSED",
   "private": true

@@ -14,18 +14,22 @@ export type ConfigLoader = () => Promise<ConfigModule[]>;
 
 export type ConfigLoaders = Record<string, ConfigLoader>;
 
+/**
+ * Manage for the runtime configurations loading flow
+ */
 export class RuntimeConfigurations {
-    fetchedConfigs: Record<string, Promise<TopLevelConfig>> = {};
+    private fetchedConfigs: Record<string, Promise<TopLevelConfig>> = {};
     constructor(private envName: string, private publicConfigsRoute: string, private loaders: ConfigLoaders) {
         // validate args since we use this class in the entry point template code
         if (!envName) {
             throw new Error('envName must be provided');
         }
     }
-    public isMainEntrypoint() {
-        return this.getScope() === this.getOpenerMessageTarget();
-    }
-
+    /**
+     * load config via configuration loader
+     * this is an integration function with the build system
+     * the logic and is based on the "config loader" implementation
+     */
     async importConfig(configName: string) {
         const loader = this.loaders[configName];
         if (!loader || !configName) {
@@ -35,13 +39,16 @@ export class RuntimeConfigurations {
         const allLoadedConfigs = await Promise.all(res.map((module) => module.default));
         return allLoadedConfigs.flat();
     }
-
+    /**
+     * Install a message listener to fetch config for child environments
+     * currently only iframe is supported we should expend support for other environments types
+     */
     installChildEnvConfigFetcher(featureName: string, configName: string) {
         if (!this.publicConfigsRoute || !this.isMainEntrypoint()) {
             return;
         }
         if (typeof window !== 'undefined') {
-            window.addEventListener('message', ({ data: { id, envName, from }, source }) => {
+            window.addEventListener('message', ({ data: { id, envName, __from }, source }) => {
                 if (!source || id !== this.publicConfigsRoute) {
                     return;
                 }
@@ -52,7 +59,7 @@ export class RuntimeConfigurations {
                             {
                                 id,
                                 config,
-                                to: from,
+                                __to: __from,
                             },
                             '*'
                         );
@@ -63,7 +70,7 @@ export class RuntimeConfigurations {
                             {
                                 id,
                                 error: String(e),
-                                to: from,
+                                __to: __from,
                             },
                             '*'
                         );
@@ -73,7 +80,9 @@ export class RuntimeConfigurations {
             console.log('installChildEnvConfigFetcher is not supported in this environment');
         }
     }
-
+    /**
+     * depending on the environment type (main or child) load the config either from the parent or from the public route
+     */
     load(envName: string, featureName: string, configName: string) {
         if (!this.publicConfigsRoute) {
             return Promise.resolve([]);
@@ -81,6 +90,10 @@ export class RuntimeConfigurations {
         return this.isMainEntrypoint()
             ? this.fetchConfig(envName, featureName, configName)
             : this.loadFromParent(envName);
+    }
+
+    private isMainEntrypoint() {
+        return this.getScope() === this.getOpenerMessageTarget();
     }
 
     private loadFromParent(envName: string) {
@@ -108,7 +121,7 @@ export class RuntimeConfigurations {
                     {
                         id: this.publicConfigsRoute,
                         envName: envName,
-                        from: this.envName,
+                        __from: this.envName,
                     },
                     '*'
                 );
@@ -127,13 +140,13 @@ export class RuntimeConfigurations {
     }
 
     private fetchConfig(envName: string, featureName: string, configName: string) {
-        let promise = this.fetchedConfigs[envName];
+        let url = addTrailingSlashIfNotEmpty(this.publicConfigsRoute) + configName;
+        url += '?env=' + envName;
+        url += '&feature=' + featureName;
+        let promise = this.fetchedConfigs[url];
         if (!promise) {
-            let url = addTrailingSlashIfNotEmpty(this.publicConfigsRoute) + configName;
-            url += '?env=' + envName;
-            url += '&feature=' + featureName;
             promise = fetch(url).then((res) => res.json());
-            this.fetchedConfigs[envName] = promise;
+            this.fetchedConfigs[url] = promise;
         }
         return promise;
     }

@@ -73,10 +73,10 @@ export class FeatureLoadersRegistry {
     /**
      * returns all features which were actially loaded
      */
-    async getLoadedFeatures(
+    private async getLoadedFeatures(
         rootFeatureName: string,
-        runtimeOptions: Record<string, string | boolean> = {},
-        resolvedContexts: Record<string, string> = {}
+        runtimeOptions: Record<string, string | boolean>,
+        resolvedContexts: Record<string, string>
     ): Promise<FeatureClass[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);
@@ -103,9 +103,9 @@ export class FeatureLoadersRegistry {
         return Promise.all(featureLoaders.map(({ load }) => load(resolvedContexts)));
     }
     /**
-     * returns the last loaded feature
+     * loads the entry feature and all its dependencies
      */
-    async loadEntryFeature(rootFeatureName: string, runtimeOptions: Record<string, string | boolean> = {}) {
+    async loadEntryFeature(rootFeatureName: string, runtimeOptions: Record<string, string | boolean> ) {
         const rootFeatureLoader = this.featureMapping.get(rootFeatureName);
         if (!rootFeatureLoader) {
             throw new Error(

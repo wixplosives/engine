@@ -16,6 +16,10 @@ export interface MainEntryParams {
     options: IRunOptions;
 }
 
+/**
+ * main engine environment entry point flow
+ * This function is imported by the generated entry file and is the first function to initialize each environment
+ */
 export async function main({
     env,
     contextualConfig,
@@ -39,21 +43,16 @@ export async function main({
         (globalThis as any).name = instanceId;
     }
 
-    const entryPromise = featureLoader.loadEntryFeature(featureName);
-    const buildConfigPromise = runtimeConfiguration.importConfig(configName);
-    const runtimeConfigPromise = runtimeConfiguration.load(env.env, featureName, configName);
-
-    const [{ entryFeature, resolvedContexts }, buildConfig, runtimeConfig] = await Promise.all([
-        entryPromise,
-        buildConfigPromise,
-        runtimeConfigPromise,
+    const [buildConfig, runtimeConfig] = await Promise.all([
+        runtimeConfiguration.importConfig(configName),
+        runtimeConfiguration.load(env.env, featureName, configName),
     ]);
 
-    const topLevelConfig: TopLevelConfig = [
-        ...buildConfig,
-        ...contextualConfig({ resolvedContexts }),
-        ...runtimeConfig,
-    ];
+    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName, {});
 
-    return new RuntimeEngine(env, topLevelConfig, options).run(entryFeature);
+    return new RuntimeEngine(
+        env,
+        [...buildConfig, ...contextualConfig({ resolvedContexts }), ...runtimeConfig],
+        options
+    ).run(entryFeature);
 }

@@ -47,9 +47,12 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
         type,
         env,
     });
-    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)));
 
-    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName, toRecord(options));
+    const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)));
+    const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(
+        featureName,
+        Object.fromEntries(options || [])
+    );
 
     const engine = new RuntimeEngine(
         env,
@@ -66,14 +69,6 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     // we don't wait here because the process of node environment manager prepare environment is two step process
     void engine.run(entryFeature);
     return engine;
-}
-
-function toRecord(options: [string, string | boolean][] | undefined) {
-    const optionsRecord: Record<string, string | boolean> = {};
-    for (const [key, val] of options || []) {
-        optionsRecord[key] = val;
-    }
-    return optionsRecord;
 }
 
 export function createFeatureLoaders(
