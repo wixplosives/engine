@@ -257,7 +257,7 @@ export class Application {
                     path: engineConfigFilePath,
                 };
             } catch (ex) {
-                throw new Error(`failed evaluating config file: ${engineConfigFilePath}`);
+                throw new Error(`failed importing config file: ${engineConfigFilePath}`, { cause: ex });
             }
         }
         return { config: undefined, path: undefined };
@@ -272,7 +272,7 @@ export class Application {
             try {
                 await import(require.resolve(requiredModule, { paths: [this.basePath] }));
             } catch (ex) {
-                throw new Error(`failed requiring: ${requiredModule} ${(ex as Error)?.stack || String(ex)}`);
+                throw new Error(`failed importing: ${requiredModule}`, { cause: ex });
             }
         }
     }

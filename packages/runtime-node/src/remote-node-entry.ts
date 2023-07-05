@@ -24,7 +24,7 @@ const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : u
         try {
             await import(require.resolve(requiredModule, { paths: [basePath] }));
         } catch (ex) {
-            throw new Error(`failed requiring: ${requiredModule} ${(ex as Error)?.stack || String(ex)}`);
+            throw new Error(`failed importing: ${requiredModule}`, { cause: ex });
         }
     }
     const { socketServer, close, port } = await launchEngineHttpServer({
