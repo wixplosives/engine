@@ -4,6 +4,7 @@ import { delimiter } from 'path';
 import io from 'socket.io';
 
 import {
+    AnyEnvironment,
     BaseHost,
     COM,
     Communication,
@@ -264,11 +265,8 @@ export class NodeEnvironmentsManager {
     }
 
     private createConnectedEnvMapping(
-        envHostMapping: Map<
-            IEnvironmentDescriptor<import('c:/projects/engine/packages/core/src/index').AnyEnvironment>,
-            ChildBaseHost
-        >,
-        nodeEnv: IEnvironmentDescriptor<import('c:/projects/engine/packages/core/src/index').AnyEnvironment>,
+        envHostMapping: Map<IEnvironmentDescriptor<AnyEnvironment>, ChildBaseHost>,
+        nodeEnv: IEnvironmentDescriptor<AnyEnvironment>,
         mode: string,
         metadataProviderHost: BaseHost
     ) {
