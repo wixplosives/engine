@@ -457,14 +457,19 @@ export class NodeEnvironmentsManager {
                 );
             }
             for (const definition of configDefinition) {
-                try {
-                    if (Array.isArray(definition)) {
-                        config.push(...definition);
-                    } else {
+                if (Array.isArray(definition)) {
+                    config.push(...definition);
+                } else {
+                    try {
                         config.push(...((await import(definition.filePath)) as { default: TopLevelConfig }).default);
+                    } catch (e) {
+                        console.error(
+                            new Error(
+                                `while loading config "${definition.name}". importing ${definition.filePath} failed`,
+                                { cause: e }
+                            )
+                        );
                     }
-                } catch (e) {
-                    console.error(e);
                 }
             }
         }
