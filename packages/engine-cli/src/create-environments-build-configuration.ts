@@ -44,7 +44,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
     const jsOutExtension = '.mjs';
     const webEntryPoints = new Map<string, string>();
     const nodeEntryPoints = new Map<string, string>([
-        [`engine-environment-manager.${jsOutExtension}`, createNodeEnvironmentManagerEntrypoint({ features })],
+        [`engine-environment-manager${jsOutExtension}`, createNodeEnvironmentManagerEntrypoint({ features })],
     ]);
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
     const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
@@ -66,7 +66,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         });
 
         webEntryPoints.set(
-            `${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}.${jsOutExtension}`,
+            `${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}${jsOutExtension}`,
             entrypointContent
         );
     }
@@ -84,7 +84,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             publicConfigsRoute: '/configs',
             config,
         });
-        nodeEntryPoints.set(`${env.name}.${env.type}.${jsOutExtension}`, entrypointContent);
+        nodeEntryPoints.set(`${env.name}.${env.type}${jsOutExtension}`, entrypointContent);
     }
 
     const commonConfig = {

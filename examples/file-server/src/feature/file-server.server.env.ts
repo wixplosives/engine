@@ -10,7 +10,7 @@ FileServer.setup(server, ({ [RUN_OPTIONS]: runOptions }, {}) => {
      */
     const optionsProjectPath = runOptions.get('projectPath');
 
-    const projectPath = (typeof optionsProjectPath !== 'boolean' ? optionsProjectPath : undefined) || process.cwd();
+    const projectPath = (typeof optionsProjectPath === 'string' ? optionsProjectPath : undefined) || process.cwd();
 
     return {
         remoteFiles: new RemoteFilesAPI(projectPath),

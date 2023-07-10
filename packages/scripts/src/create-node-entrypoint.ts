@@ -1,25 +1,19 @@
 import { Environment } from '@wixc3/engine-core';
 import { ICreateEntrypointsOptions, createConfigLoaders, createFeatureLoaders } from './create-entrypoint';
-import { resolveEnvironments } from '@wixc3/engine-runtime-node';
+import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
 
 const { stringify } = JSON;
 
 export function createNodeEnvironmentManagerEntrypoint({ features }: Pick<ICreateEntrypointsOptions, 'features'>) {
-    const featureToEnvironments: Record<string, string[]> = {};
-    for (const feature of features.values()) {
-        const envs = resolveEnvironments(feature.scopedName, features, ['node'], true);
-        const envList = [...envs.values()].map((e) => e.name);
-        if (envList.length) {
-            featureToEnvironments[feature.scopedName] = [...envs.values()].map((e) => e.name);
-        }
-    }
-
-    console.log({ featureToEnvironments });
+    const featureToEnvironments = createFeatureEnvironmentsMapping(features);
 
     return `
         import { NodeEnvManager } from '@wixc3/engine-runtime-node';
-        const currentDir = new URL('.', import.meta.url).pathname;
-        new NodeEnvManager().autoLaunch(currentDir);
+        const featureEnvironmentsMapping = ${stringify(featureToEnvironments)};
+        new NodeEnvManager(import.meta, featureEnvironmentsMapping).autoLaunch().catch((e)=>{
+            process.exitCode = 1;
+            console.error(e);
+        });
     `;
 }
 
@@ -44,8 +38,8 @@ export function createNodeEntrypoint({
     const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
     const configLoaders = createConfigLoaders(configurations, mode, configName, env, true, nodeLoadConfigFileTemplate);
     return `
-import { parseArgs } from 'node:util';
 import { main, COM } from '@wixc3/engine-core';
+import { parseArgs } from 'node:util';
 
 const { values: args } = parseArgs({
     strict: false,

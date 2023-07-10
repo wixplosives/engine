@@ -139,7 +139,7 @@ export type WorkerThreadEnvironmentStartupOptions = {
     featureName: string;
     features: [featureName: string, featureDefinition: IStaticFeatureDefinition][];
     parentEnvName: string;
-    env: Environment;
+    env: AnyEnvironment;
     runtimeOptions?: StartEnvironmentOptions['options'];
 };
 
@@ -183,7 +183,7 @@ export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     featureDiscoveryRoot?: string;
     parentEnvName: string;
     execPath?: string;
-    env: Environment;
+    env: AnyEnvironment;
 }
 
 export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment>
