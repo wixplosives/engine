@@ -100,6 +100,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
                 features: staticFeatures,
                 outputPath: process.cwd(),
                 nodeEntryPath: '',
+                runtimeOptions: Object.entries(runtimeOptions),
             };
         },
     });
