@@ -326,20 +326,29 @@
     lodash "^4.17.15"
     tmp-promise "^3.0.2"
 
-"@microsoft/api-documenter@^7.22.22":
-  version "7.22.22"
-  resolved "https://registry.yarnpkg.com/@microsoft/api-documenter/-/api-documenter-7.22.22.tgz#48276318002261ba3f43da9c6a01abcc4987c4de"
-  integrity sha512-eF0jni3CvTuQAtDP2IAW2iJ2ZrN7VEAw0h+mY/czlwrECtDOQwkVv13UB0KAIm8nz7LFvpU0QJPKsg5+R5xcrQ==
+"@microsoft/api-documenter@^7.22.24":
+  version "7.22.24"
+  resolved "https://registry.yarnpkg.com/@microsoft/api-documenter/-/api-documenter-7.22.24.tgz#79b8b8b994268c649efeca568717438fd7d05583"
+  integrity sha512-KdO7p/weirR/po0SqwWsbqoPUTqLv0QVvxqopysxF2PVdBpeKx4eOrII1VGw0rL0QY6WVvttIOJwD/JpYv9oWw==
   dependencies:
-    "@microsoft/api-extractor-model" "7.27.3"
+    "@microsoft/api-extractor-model" "7.27.4"
     "@microsoft/tsdoc" "0.14.2"
-    "@rushstack/node-core-library" "3.59.4"
+    "@rushstack/node-core-library" "3.59.5"
     "@rushstack/ts-command-line" "4.15.1"
     colors "~1.2.1"
     js-yaml "~3.13.1"
     resolve "~1.22.1"
 
-"@microsoft/api-extractor-model@7.27.3", "@microsoft/api-extractor-model@^7.27.3":
+"@microsoft/api-extractor-model@7.27.4":
+  version "7.27.4"
+  resolved "https://registry.yarnpkg.com/@microsoft/api-extractor-model/-/api-extractor-model-7.27.4.tgz#ddc566ead99737c1032d692829edd954870f7d35"
+  integrity sha512-HjqQFmuGPOS20rtnu+9Jj0QrqZyR59E+piUWXPMZTTn4jaZI+4UmsHSf3Id8vyueAhOBH2cgwBuRTE5R+MfSMw==
+  dependencies:
+    "@microsoft/tsdoc" "0.14.2"
+    "@microsoft/tsdoc-config" "~0.16.1"
+    "@rushstack/node-core-library" "3.59.5"
+
+"@microsoft/api-extractor-model@^7.27.3":
   version "7.27.3"
   resolved "https://registry.yarnpkg.com/@microsoft/api-extractor-model/-/api-extractor-model-7.27.3.tgz#a484e0b7e25c4fa85846281aed6b87da0411d96c"
   integrity sha512-fSFvw7otYHduOkyshjTbapKKgwF8bgquVHvgF8VgeKtMYvqXkoaj7W6VcM7PNY7E2bbblhUgC4XNdqZLD4SJGw==
@@ -348,15 +357,15 @@
     "@microsoft/tsdoc-config" "~0.16.1"
     "@rushstack/node-core-library" "3.59.4"
 
-"@microsoft/api-extractor@^7.36.0":
-  version "7.36.0"
-  resolved "https://registry.yarnpkg.com/@microsoft/api-extractor/-/api-extractor-7.36.0.tgz#e0a9f449bb1393697691b79045f384dd78fd760e"
-  integrity sha512-P+kYgJFDXIr+UNzhRMhlpM/dderi6ab4lxn35vdhfAIMPtGCSXIJxrrtpTOQmQW8CZtmoZX06LYoUsKCc1zjow==
+"@microsoft/api-extractor@^7.36.1":
+  version "7.36.1"
+  resolved "https://registry.yarnpkg.com/@microsoft/api-extractor/-/api-extractor-7.36.1.tgz#df5e779a308a76b3e1bdfaf2c66e6f73c09e37cb"
+  integrity sha512-2SPp1jq6wDY5IOsRLUv/4FxngslctBZJlztAJ3uWpCAwqKQG7ESdL3DhEza+StbYLtBQmu1Pk6q1Vkhl7qD/bg==
   dependencies:
-    "@microsoft/api-extractor-model" "7.27.3"
+    "@microsoft/api-extractor-model" "7.27.4"
     "@microsoft/tsdoc" "0.14.2"
     "@microsoft/tsdoc-config" "~0.16.1"
-    "@rushstack/node-core-library" "3.59.4"
+    "@rushstack/node-core-library" "3.59.5"
     "@rushstack/rig-package" "0.4.0"
     "@rushstack/ts-command-line" "4.15.1"
     colors "~1.2.1"
@@ -663,6 +672,19 @@
   version "3.59.4"
   resolved "https://registry.yarnpkg.com/@rushstack/node-core-library/-/node-core-library-3.59.4.tgz#95f9eb3274627a5e84ee9443e65bb6edec1a5dc8"
   integrity sha512-YAKJDC6Mz/KA1D7bvB88WaRX3knt/ZuLzkRu5G9QADGSjLtvTWzCNCytRF2PCSaaHOZaZsWul4F1KQdgFgUDqA==
+  dependencies:
+    colors "~1.2.1"
+    fs-extra "~7.0.1"
+    import-lazy "~4.0.0"
+    jju "~1.4.0"
+    resolve "~1.22.1"
+    semver "~7.3.0"
+    z-schema "~5.0.2"
+
+"@rushstack/node-core-library@3.59.5":
+  version "3.59.5"
+  resolved "https://registry.yarnpkg.com/@rushstack/node-core-library/-/node-core-library-3.59.5.tgz#38034d4c38b5ddd7d1c7f04233ce1b2209b7ae1f"
+  integrity sha512-1IpV7LufrI1EoVO8hYsb3t6L8L+yp40Sa0OaOV2CIu1zx4e6ZeVNaVIEXFgMXBKdGXkAh21MnCaIzlDNpG6ZQw==
   dependencies:
     colors "~1.2.1"
     fs-extra "~7.0.1"
@@ -1477,10 +1499,10 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^11.1.1":
-  version "11.1.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-11.1.1.tgz#bfb00de6ff5557a3a0a4c421f05d823e6e14260c"
-  integrity sha512-uRhrI4ZUI2BoWq8OkCr5FrA7g00BXIjNO+bQ9dmVEFSyIAalHq6Z7jMNURm0h/U7+TzkHkjaKjTIhBMEVn35ew==
+"@wixc3/common@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-12.0.1.tgz#0804e9bb949ec52cbd3c065321285c6d626df9c7"
+  integrity sha512-oJhm4pIFnCz6Q4PWUFrsvdWHyzKWptrh8fmpuYUgWcpSbDIyXNj3yctDMy1/8xtxwBkQaixWjJLdZ9rtvqaplg==
   dependencies:
     "@file-services/path" "^7.4.0"
     "@file-services/types" "^7.4.0"
@@ -1491,39 +1513,39 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^11.1.1":
-  version "11.1.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-11.1.1.tgz#ebe40e837d0492a4760229c35f7093194690fe02"
-  integrity sha512-3dxsQkmGmvEl54XdBUXGVNVyKLSgcNw5vSWgzdHy3AxFOzAYrgr5FAUNvkHVxJ+IXZD758PsEvZGOMywGNyqoQ==
+"@wixc3/docs@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-12.0.1.tgz#5a900a34d867239e5456546b3c997b074f7d86bc"
+  integrity sha512-vZzGUNvdGEzedZVbBtNMFmRDL7+TaSY09wMDm/iM+LzXj+JLZreDpW3B1gkyxaiQ7oZ+kmu4w7NdudZi1dE4lA==
   dependencies:
-    "@microsoft/api-documenter" "^7.22.22"
-    "@microsoft/api-extractor" "^7.36.0"
+    "@microsoft/api-documenter" "^7.22.24"
+    "@microsoft/api-extractor" "^7.36.1"
     "@microsoft/api-extractor-model" "^7.27.3"
-    "@wixc3/common" "^11.1.1"
-    "@wixc3/fs-utils" "^11.1.1"
-    "@wixc3/typescript" "^11.0.0"
+    "@wixc3/common" "^12.0.1"
+    "@wixc3/fs-utils" "^12.0.1"
+    "@wixc3/typescript" "^12.0.1"
     glob "^10.3.1"
     yargs "^17.7.2"
 
-"@wixc3/fs-utils@^11.1.1":
-  version "11.1.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-11.1.1.tgz#9d2985da4e069b94501f82dcbddf3cdfe4d3e97a"
-  integrity sha512-qI/eF4fKdY4GUx986UDhF4EDhMRAjNM+0vOpQzsL3CSbwPacazG0JlnbZOT0jHziV3ko8unWOx+e8D7P1PWT1w==
+"@wixc3/fs-utils@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-12.0.1.tgz#fc7c606d125afa0712c701c2c8e0d6e33317dae7"
+  integrity sha512-5aoRBUp3wUhnp0dTpcADgvy0ZDRkt0HVYE7pea15nlMWyNF6L1YKH1n+D4enufQkxZeCCSRcyh5x+0g/NASgZg==
   dependencies:
     "@file-services/memory" "^7.4.0"
-    "@wixc3/common" "^11.1.1"
+    "@wixc3/common" "^12.0.1"
 
 "@wixc3/isomorphic-worker@^1.2.4":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
   integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
 
-"@wixc3/patterns@^11.3.0":
-  version "11.3.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-11.3.0.tgz#18577f78651bbbafea290ec9d2365d6c4701c1e9"
-  integrity sha512-MTag56Dv0IVtqQChYbQ5QWvqwFnmglYB55vEcFTBDVYiC7Zm/1WLONrO4aC01nNB3fwbCiwMLx4VVVKdEVMEBQ==
+"@wixc3/patterns@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-12.0.1.tgz#555d57e95921e2b5908cd2cae8b74d6b8ba1255d"
+  integrity sha512-OHjlxUFuhGNwmDu3bg/Sl/bOVz7cJmDA9LJ1csW5Uvd3ZZIJ+/Q+X/1IVvQW6NR4VqpXAvJEJMrU4PND1HL73w==
   dependencies:
-    "@wixc3/common" "^11.1.1"
+    "@wixc3/common" "^12.0.1"
     promise-assist "^2.0.1"
 
 "@wixc3/resolve-directory-context@^3.0.5":
@@ -1534,40 +1556,40 @@
     minimatch "^9.0.0"
     type-fest "^3.8.0"
 
-"@wixc3/testing-node@^11.3.0":
-  version "11.3.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-11.3.0.tgz#a517615f89d17febc8d1b1ed4ce235eef57183e1"
-  integrity sha512-0eavQGpiwb3NLZ4OGzXl8T/eUSC3HPEhWQX3fJE336i6Z7I06v+0c/NSLQ5qVXyvLYz0ZU4wrV1XX1If0CvqBA==
+"@wixc3/testing-node@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-12.0.1.tgz#ce3f9f2b278ce042e68c4a3f11e0e0b0fc950155"
+  integrity sha512-LL2emd558O0Qndl6ikAaco6I7/sfoOqIQEgBXdT9UEtgiVmk/DThKMHDqlHiWehHISVQh30hOTMPlU9RRvX/2Q==
   dependencies:
     "@file-services/node" "^7.4.0"
     "@file-services/types" "^7.4.0"
-    "@wixc3/common" "^11.1.1"
-    "@wixc3/patterns" "^11.3.0"
+    "@wixc3/common" "^12.0.1"
+    "@wixc3/patterns" "^12.0.1"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^11.3.0":
-  version "11.3.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-11.3.0.tgz#23f3fbc1969258f2b87bf6185915d58a8a786728"
-  integrity sha512-ggp/19w4x/o0/2pwYwChEQP8KrGl2hH4ncZg9llorxdEJRhpmrOVck/z/IC74/tKVIleLanRcMErDu2SR+8fMQ==
+"@wixc3/testing@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-12.0.1.tgz#c0af350a5bde69402d3a12308d0987e2e7e5e309"
+  integrity sha512-EJhJ0sDZaIYloBOLDZOAUGnr4nEf1K5T062/yesMz+m5HXojJNyB5AE9m9rfSbYZvoLkJwONkGrBcWRBTU4gjg==
   dependencies:
     "@file-services/types" "^7.4.0"
-    "@wixc3/common" "^11.1.1"
-    "@wixc3/patterns" "^11.3.0"
+    "@wixc3/common" "^12.0.1"
+    "@wixc3/patterns" "^12.0.1"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/typescript@^11.0.0":
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-11.0.0.tgz#fbbb834d9d1c3e6d2b2a23dd21eb274f6e3106f7"
-  integrity sha512-NTpffzeboEK64oyC9OONLEDtn9i/FdwiVspYaCEJpWQRmAvNxd2HiIZ+l4BR8foHiVvTkbeQzoavuVZ8+egA6g==
+"@wixc3/typescript@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-12.0.1.tgz#270b23ebb0cbce08ab7aac1b3845c097fdb6ebf5"
+  integrity sha512-mKxBoueDMenMzGmbulK1K6SgG+El7JiVnjw+EMUjcwTWYc89mdRodi4xAqfi8ahTzd3op3ALJv7AuAFrXbjO0g==
 
-"@wixc3/wait-for-call@^11.0.0":
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-11.0.0.tgz#34f4d8c1ec47932d3b0a9d49c1909b410ad34cdf"
-  integrity sha512-mwYwcxkvkzOtCJ3JqGubablAo3uk2STdBJEcCHErEuyjNOhh6Anw0EOw2wVFlIEzp+TTY/uZB+SNx921WXUJ6g==
+"@wixc3/wait-for-call@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-12.0.1.tgz#05a8008c12cb9aa0e90c8371acafa7bc580d7485"
+  integrity sha512-9hr7UsSZTIYWMROiVPBAin1v5AuR6UaGJv9CxAMHOn2/mWx4sfXnd+SU0Dkqwn5OCvswpqejZNo30hG5MWrtbg==
   dependencies:
     promise-assist "^2.0.1"
 
