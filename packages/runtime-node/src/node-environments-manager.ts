@@ -181,6 +181,11 @@ export class NodeEnvironmentsManager {
             rootCom.registerEnv(METADATA_PROVIDER_ENV_ID, metadataProviderHost);
         }
 
+        const effectiveRuntimeOptions = {
+            ...defaultRuntimeOptions,
+            ...runtimeOptions,
+        };
+
         rootCom.registerAPI<MetadataCollectionAPI>(metadataApiToken, {
             getRuntimeArguments: () => {
                 return {
@@ -190,7 +195,7 @@ export class NodeEnvironmentsManager {
                     features: [...features.entries()],
                     outputPath: process.cwd(),
                     nodeEntryPath: '',
-                    runtimeOptions: Object.entries(runtimeOptions),
+                    runtimeOptions: Object.entries(effectiveRuntimeOptions),
                     configName,
                 };
             },
@@ -238,10 +243,7 @@ export class NodeEnvironmentsManager {
                 featureName,
                 bundlePath: this.options.bundlePath,
                 config,
-                options: {
-                    ...defaultRuntimeOptions,
-                    ...runtimeOptions,
-                },
+                options: effectiveRuntimeOptions,
                 mode,
                 com: rootCom,
                 baseHost,
