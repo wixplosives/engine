@@ -197,7 +197,7 @@ export class Application {
 
         const parentProcess = new ForkedProcess(process);
         createIPC(parentProcess, socketServer, { port, onClose: close });
-
+        //
         parentProcess.postMessage({ id: 'initiated' });
     }
 

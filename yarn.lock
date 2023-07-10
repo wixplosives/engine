@@ -1513,10 +1513,10 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^12.0.1":
-  version "12.0.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-12.0.1.tgz#5a900a34d867239e5456546b3c997b074f7d86bc"
-  integrity sha512-vZzGUNvdGEzedZVbBtNMFmRDL7+TaSY09wMDm/iM+LzXj+JLZreDpW3B1gkyxaiQ7oZ+kmu4w7NdudZi1dE4lA==
+"@wixc3/docs@^12.0.2":
+  version "12.0.2"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-12.0.2.tgz#6365767d74aa3d140779fdde3878887165ba1ca5"
+  integrity sha512-9dhox2a1zNvizhAhgjBbV/lbj/qa/ENoNrfWEZOpj0Nj0d6WiFqRfiHOvE3+gIYzeFWGZ1QjNoDBL7fKko3gsw==
   dependencies:
     "@microsoft/api-documenter" "^7.22.24"
     "@microsoft/api-extractor" "^7.36.1"
@@ -1524,7 +1524,7 @@
     "@wixc3/common" "^12.0.1"
     "@wixc3/fs-utils" "^12.0.1"
     "@wixc3/typescript" "^12.0.1"
-    glob "^10.3.1"
+    glob "^10.3.3"
     yargs "^17.7.2"
 
 "@wixc3/fs-utils@^12.0.1":
@@ -1540,10 +1540,10 @@
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
   integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
 
-"@wixc3/patterns@^12.0.1":
-  version "12.0.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-12.0.1.tgz#555d57e95921e2b5908cd2cae8b74d6b8ba1255d"
-  integrity sha512-OHjlxUFuhGNwmDu3bg/Sl/bOVz7cJmDA9LJ1csW5Uvd3ZZIJ+/Q+X/1IVvQW6NR4VqpXAvJEJMrU4PND1HL73w==
+"@wixc3/patterns@^12.0.2":
+  version "12.0.2"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-12.0.2.tgz#4d5917c7e14bd465dcaee778ea0a557a9f18d1db"
+  integrity sha512-+B1sUadTLL5T00nzpgu7WNtU6XOhK1RoEvrjSAPDjbDFACot8kAMrkyNCFur6pWEpzUowKMV3EGfPueBiRqpeg==
   dependencies:
     "@wixc3/common" "^12.0.1"
     promise-assist "^2.0.1"
@@ -1556,27 +1556,27 @@
     minimatch "^9.0.0"
     type-fest "^3.8.0"
 
-"@wixc3/testing-node@^12.0.1":
-  version "12.0.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-12.0.1.tgz#ce3f9f2b278ce042e68c4a3f11e0e0b0fc950155"
-  integrity sha512-LL2emd558O0Qndl6ikAaco6I7/sfoOqIQEgBXdT9UEtgiVmk/DThKMHDqlHiWehHISVQh30hOTMPlU9RRvX/2Q==
+"@wixc3/testing-node@^12.0.2":
+  version "12.0.2"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-12.0.2.tgz#35164df2060558d34780175d0e3ee5e0f7ca8517"
+  integrity sha512-U5g9ueH8mybfvrgn6VoPmTSPQQOss7NPSfZ1eQ4ktcdgCt/UDdl1Z5CplsC30X70367JtxjpYROpxstfafN9Kg==
   dependencies:
     "@file-services/node" "^7.4.0"
     "@file-services/types" "^7.4.0"
     "@wixc3/common" "^12.0.1"
-    "@wixc3/patterns" "^12.0.1"
+    "@wixc3/patterns" "^12.0.2"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^12.0.1":
-  version "12.0.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-12.0.1.tgz#c0af350a5bde69402d3a12308d0987e2e7e5e309"
-  integrity sha512-EJhJ0sDZaIYloBOLDZOAUGnr4nEf1K5T062/yesMz+m5HXojJNyB5AE9m9rfSbYZvoLkJwONkGrBcWRBTU4gjg==
+"@wixc3/testing@^12.0.2":
+  version "12.0.2"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-12.0.2.tgz#0ab4b6ee2267daa6910481853eb034aca7e8b770"
+  integrity sha512-Hkn6FOigZZlE8H+KdtuB4RhKi2fkhtMHsaVs1yotz7x8ZQSHUbS44ampdl4+BYSIANaG4SptJieIE+I1QdGKNw==
   dependencies:
     "@file-services/types" "^7.4.0"
     "@wixc3/common" "^12.0.1"
-    "@wixc3/patterns" "^12.0.1"
+    "@wixc3/patterns" "^12.0.2"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
@@ -4060,7 +4060,7 @@ glob@7.2.0:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^10.0.0, glob@^10.2.2, glob@^10.2.5, glob@^10.3.1:
+glob@^10.0.0, glob@^10.2.2, glob@^10.2.5:
   version "10.3.1"
   resolved "https://registry.yarnpkg.com/glob/-/glob-10.3.1.tgz#9789cb1b994515bedb811a6deca735b5c37d2bf4"
   integrity sha512-9BKYcEeIs7QwlCYs+Y3GBvqAMISufUS0i2ELd11zpZjxI5V9iyRj0HgzB5/cLf2NY4vcYBTYzJ7GIui7j/4DOw==
@@ -4070,6 +4070,17 @@ glob@^10.0.0, glob@^10.2.2, glob@^10.2.5, glob@^10.3.1:
     minimatch "^9.0.1"
     minipass "^5.0.0 || ^6.0.2"
     path-scurry "^1.10.0"
+
+glob@^10.3.3:
+  version "10.3.3"
+  resolved "https://registry.yarnpkg.com/glob/-/glob-10.3.3.tgz#8360a4ffdd6ed90df84aa8d52f21f452e86a123b"
+  integrity sha512-92vPiMb/iqpmEgsOoIDvTjc50wf9CCCvMzsi6W0JLPeUKE8TWP1a73PgqSrqy7iAZxaSD1YdzU7QZR5LF51MJw==
+  dependencies:
+    foreground-child "^3.1.0"
+    jackspeak "^2.0.3"
+    minimatch "^9.0.1"
+    minipass "^5.0.0 || ^6.0.2 || ^7.0.0"
+    path-scurry "^1.10.1"
 
 glob@^7.1.3, glob@^7.1.4, glob@^7.1.6:
   version "7.2.3"
@@ -5532,6 +5543,11 @@ minipass@^5.0.0:
   resolved "https://registry.yarnpkg.com/minipass/-/minipass-6.0.2.tgz#542844b6c4ce95b202c0995b0a471f1229de4c81"
   integrity sha512-MzWSV5nYVT7mVyWCwn2o7JH13w2TBRmmSqSRCKzTw+lmft9X4z+3wjvs06Tzijo5z4W/kahUCDpRXTF+ZrmF/w==
 
+"minipass@^5.0.0 || ^6.0.2 || ^7.0.0":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/minipass/-/minipass-7.0.1.tgz#dff63464407cd8b83d7f008c0f116fa8c9b77ebf"
+  integrity sha512-NQ8MCKimInjVlaIqx51RKJJB7mINVkLTJbsZKmto4UAAOC/CWXES8PGaOgoBZyqoUsUA/U3DToGK7GJkkHbjJw==
+
 minizlib@^2.1.1, minizlib@^2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/minizlib/-/minizlib-2.1.2.tgz#e90d3466ba209b932451508a11ce3d3632145931"
@@ -6321,6 +6337,14 @@ path-scurry@^1.10.0, path-scurry@^1.6.1:
   dependencies:
     lru-cache "^9.1.1 || ^10.0.0"
     minipass "^5.0.0 || ^6.0.2"
+
+path-scurry@^1.10.1:
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/path-scurry/-/path-scurry-1.10.1.tgz#9ba6bf5aa8500fe9fd67df4f0d9483b2b0bfc698"
+  integrity sha512-MkhCqzzBEpPvxxQ71Md0b1Kk51W01lrYvlMzSUaIzNsODdd7mqhiimSZlr+VegAz5Z6Vzt9Xg2ttE//XBhH3EQ==
+  dependencies:
+    lru-cache "^9.1.1 || ^10.0.0"
+    minipass "^5.0.0 || ^6.0.2 || ^7.0.0"
 
 path-to-regexp@0.1.7:
   version "0.1.7"
