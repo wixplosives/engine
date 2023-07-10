@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron-scripts",
-  "version": "39.2.6",
+  "version": "39.2.7",
   "main": "dist/index.js",
   "bin": {
     "engine-electron": "bin/engine-electron.js"
@@ -13,13 +13,13 @@
     "@file-services/node": "^7.4.0",
     "@wixc3/common": "^11.1.1",
     "@wixc3/create-disposables": "^2.2.0",
-    "@wixc3/engine-core": "^39.2.6",
-    "@wixc3/engine-electron": "^39.2.6",
-    "@wixc3/engine-electron-commons": "^39.2.6",
-    "@wixc3/engine-electron-node": "^39.2.6",
-    "@wixc3/engine-runtime-node": "^39.2.6",
-    "@wixc3/engine-scripts": "^39.2.6",
-    "@wixc3/engineer": "^39.2.6",
+    "@wixc3/engine-core": "^39.2.7",
+    "@wixc3/engine-electron": "^39.2.7",
+    "@wixc3/engine-electron-commons": "^39.2.7",
+    "@wixc3/engine-electron-node": "^39.2.7",
+    "@wixc3/engine-runtime-node": "^39.2.7",
+    "@wixc3/engine-scripts": "^39.2.7",
+    "@wixc3/engineer": "^39.2.7",
     "@wixc3/patterns": "^11.3.0",
     "@wixc3/resolve-directory-context": "^3.0.5",
     "yargs": "^17.7.2"
