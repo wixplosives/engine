@@ -1499,10 +1499,10 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^12.0.1":
-  version "12.0.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-12.0.1.tgz#0804e9bb949ec52cbd3c065321285c6d626df9c7"
-  integrity sha512-oJhm4pIFnCz6Q4PWUFrsvdWHyzKWptrh8fmpuYUgWcpSbDIyXNj3yctDMy1/8xtxwBkQaixWjJLdZ9rtvqaplg==
+"@wixc3/common@^12.0.1", "@wixc3/common@^12.0.3":
+  version "12.0.3"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-12.0.3.tgz#0c49a5c90bbef354fc18da0011f3551356a9f9b6"
+  integrity sha512-S+GWlqs5wydCZLFsjfTJKpEdgGKRnR3oIBkczKJsIFA9VyBp//UBuWF9NyxymKkXRMV4o+pBKwR1LbFvWvuY8Q==
   dependencies:
     "@file-services/path" "^7.4.0"
     "@file-services/types" "^7.4.0"
@@ -1540,12 +1540,12 @@
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
   integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
 
-"@wixc3/patterns@^12.0.2":
-  version "12.0.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-12.0.2.tgz#4d5917c7e14bd465dcaee778ea0a557a9f18d1db"
-  integrity sha512-+B1sUadTLL5T00nzpgu7WNtU6XOhK1RoEvrjSAPDjbDFACot8kAMrkyNCFur6pWEpzUowKMV3EGfPueBiRqpeg==
+"@wixc3/patterns@^12.0.2", "@wixc3/patterns@^12.0.3":
+  version "12.0.3"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-12.0.3.tgz#6655bb65e2d72214e51ba45a00a5334235922dd8"
+  integrity sha512-8sn9elebhyOMlI9TdFmmYKXKSrv+YIZxKIB82FGvd6O3RzlNaTWdu9m4enY4JUmdzDbwaz7PiuCA+yG8xV2zdQ==
   dependencies:
-    "@wixc3/common" "^12.0.1"
+    "@wixc3/common" "^12.0.3"
     promise-assist "^2.0.1"
 
 "@wixc3/resolve-directory-context@^3.0.5":
@@ -1569,14 +1569,14 @@
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^12.0.2":
-  version "12.0.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-12.0.2.tgz#0ab4b6ee2267daa6910481853eb034aca7e8b770"
-  integrity sha512-Hkn6FOigZZlE8H+KdtuB4RhKi2fkhtMHsaVs1yotz7x8ZQSHUbS44ampdl4+BYSIANaG4SptJieIE+I1QdGKNw==
+"@wixc3/testing@^12.0.3":
+  version "12.0.3"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-12.0.3.tgz#63123e46a574c1658e0d4f9c06397867c9d7e8c5"
+  integrity sha512-kO6gmc11qFUdaFrPy1DysMByfRJX52VYqrqnKZyP8vMViBhT+R3eayNE0gBlX3ojaIrez5l5bjUX+g0hKpPmFg==
   dependencies:
     "@file-services/types" "^7.4.0"
-    "@wixc3/common" "^12.0.1"
-    "@wixc3/patterns" "^12.0.2"
+    "@wixc3/common" "^12.0.3"
+    "@wixc3/patterns" "^12.0.3"
     chai "^4.3.7"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
