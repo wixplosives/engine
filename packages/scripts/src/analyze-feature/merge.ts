@@ -25,7 +25,7 @@ export function mergeResults<M extends Map<K, V> | Set<V> | SetMultiMap<K, V> | 
                 return result;
             },
             {} as any
-        ) as typeof a & typeof b;
+        ) as M;
     }
     const type = getIterableType(a, b);
     if (type) {

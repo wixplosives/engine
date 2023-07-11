@@ -919,7 +919,7 @@ export class Communication {
     }
 
     // the any is here because issue with typescript and union types Worker | Window have different message handlers
-    private handleEvent = ({ data }: any | MessageEvent): void => {
+    private handleEvent = ({ data }: { data: Message }): void => {
         this.handleMessage(data).catch(reportError);
     };
 

@@ -74,7 +74,7 @@ export class Service<
 Make sure the environment setup file exists and named correctly: [featureName].[envName].env.[ext]
 Service name: ${entityKey}
 Feature id: ${featureID}
-Environment: ${runtimeEngine.entryEnvironment}
+Environment: ${runtimeEngine.entryEnvironment.env}
                         `
                     );
                 }

@@ -22,7 +22,7 @@ export interface CallMessage extends BaseMessage {
 
 export interface CallbackMessage extends BaseMessage {
     type: 'callback';
-    data?: SerializableArguments | unknown;
+    data?: unknown;
 }
 
 export interface ListenMessage extends BaseMessage {
