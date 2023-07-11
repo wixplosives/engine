@@ -290,7 +290,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             disposeAfter(() => browserContext.close(), {
                 group: WITH_FEATURE_DISPOSABLES,
                 name: `close browser context for feature "${featureName}"`,
-                timeout: 2_000,
+                timeout: 5_000,
             });
 
             browserContext.on('page', onPageCreation);
