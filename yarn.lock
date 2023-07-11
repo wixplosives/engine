@@ -1495,24 +1495,24 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^12.0.3":
-  version "12.0.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-12.0.3.tgz#4aaf118ea1504f838bf158f7333d2a865622509c"
-  integrity sha512-6RAbw6eSTt2hrDH8XgrNtxGcmoJLZtSpMj7oMda5V4wIaJgxiN8CTjWmqCRmsr7bvKxmkQfDCMuqoytwbcSLjQ==
+"@wixc3/docs@^12.0.4":
+  version "12.0.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-12.0.4.tgz#85383c155669a89925a221e6a24f45db8510b1e1"
+  integrity sha512-3YhbdK4gxTugorQyYbjN2Dv7B397xzU3P+0vG49Cjpc5rGyqxHsqEW5D+9aiO3asHB991JjBAb1/QuxkV2fQcw==
   dependencies:
     "@microsoft/api-documenter" "^7.22.24"
     "@microsoft/api-extractor" "^7.36.1"
     "@microsoft/api-extractor-model" "^7.27.3"
     "@wixc3/common" "^12.0.3"
-    "@wixc3/fs-utils" "^12.0.3"
+    "@wixc3/fs-utils" "^12.0.4"
     "@wixc3/typescript" "^12.0.1"
     glob "^10.3.3"
     yargs "^17.7.2"
 
-"@wixc3/fs-utils@^12.0.3":
-  version "12.0.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-12.0.3.tgz#193bdd7a948e2dfa3c1fe8a5686391ca71e555c8"
-  integrity sha512-9jawvIDnV1OocLISsEoj+zKSu47rbfNfySaOvirZoTCESPewVIJOkWuwny/Uq6/07aWEFOdhCZz/gMy3VjDXqA==
+"@wixc3/fs-utils@^12.0.4":
+  version "12.0.4"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-12.0.4.tgz#b63d0bdf9a73722cd4ee3598048924c731750a14"
+  integrity sha512-+rp8k/L5Zai1chK21OgwKv7Rp+0Raf0lsHq3Yer/kGBFu28py9S3RE9VOtpmz33DKY7b0X+DBkXZY1NyGwcDGQ==
   dependencies:
     "@file-services/memory" "^7.4.0"
     "@wixc3/common" "^12.0.3"
@@ -3123,9 +3123,9 @@ electron-publish@24.4.0:
     mime "^2.5.2"
 
 electron-to-chromium@^1.4.431:
-  version "1.4.455"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.455.tgz#81fe4353ac970eb971c07088c8da8b7f6280ddc9"
-  integrity sha512-8tgdX0Odl24LtmLwxotpJCVjIndN559AvaOtd67u+2mo+IDsgsTF580NB+uuDCqsHw8yFg53l5+imFV9Fw3cbA==
+  version "1.4.456"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.456.tgz#aab5f3b421a07a73cf646d28e63c41238fc45849"
+  integrity sha512-d+eSL4mT9m72cnDT/kfQj6Pv6Cid4pUVlLOl8esm2SZuXBgtXtUyvCfc9F++GHLWLoY4gMNqg+0IVAoQ3sosKA==
 
 electron@^25.2.0:
   version "25.2.0"
@@ -6385,17 +6385,17 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-playwright-chromium@^1.35.1:
-  version "1.35.1"
-  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.35.1.tgz#ae9855988fdb106220f23ffcd82431c4248c2fda"
-  integrity sha512-bPuWIk/DYWtrg10ajcc9cZLo5s9XQrs6JF6wwiieqZ73rCG3PLVEm0RX8fCUzziuEAhYsoL09UNuKSKv7pKz9A==
+playwright-chromium@^1.36.0:
+  version "1.36.0"
+  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.36.0.tgz#326915c5a5c11aa272425302bcce47858866cd7d"
+  integrity sha512-AU4/euzKqiIeK7JMsxMlgVx3jRFOnXF0vkptF9mfqeNSETVYCbovZ9EpwJ3Kzm/vVAmIlpHp+VoXdX2bi+05Zg==
   dependencies:
-    playwright-core "1.35.1"
+    playwright-core "1.36.0"
 
-playwright-core@1.35.1, playwright-core@^1.32.3, playwright-core@^1.35.1:
-  version "1.35.1"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.35.1.tgz#52c1e6ffaa6a8c29de1a5bdf8cce0ce290ffb81d"
-  integrity sha512-pNXb6CQ7OqmGDRspEjlxE49w+4YtR6a3X6mT1hZXeJHWmsEz7SunmvZeiG/+y1yyMZdHnnn73WKYdtV1er0Xyg==
+playwright-core@1.36.0, playwright-core@^1.32.3, playwright-core@^1.36.0:
+  version "1.36.0"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.36.0.tgz#35d1ed5f364a31e58bc8f06688ab02d538b96eb6"
+  integrity sha512-7RTr8P6YJPAqB+8j5ATGHqD6LvLLM39sYVNsslh78g8QeLcBs5750c6+msjrHUwwGt+kEbczBj1XB22WMwn+WA==
 
 plist@^3.0.4, plist@^3.0.5:
   version "3.1.0"
@@ -7550,9 +7550,9 @@ terser-webpack-plugin@^5.3.7:
     terser "^5.16.8"
 
 terser@^5.10.0, terser@^5.16.8:
-  version "5.18.2"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.18.2.tgz#ff3072a0faf21ffd38f99acc9a0ddf7b5f07b948"
-  integrity sha512-Ah19JS86ypbJzTzvUCX7KOsEIhDaRONungA4aYBjEP3JZRf4ocuDzTg4QWZnPn9DEMiMYGJPiSOy7aykoCc70w==
+  version "5.19.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.19.0.tgz#7b3137b01226bdd179978207b9c8148754a6da9c"
+  integrity sha512-JpcpGOQLOXm2jsomozdMDpd5f8ZHh1rR48OFgWUH3QsyZcfPgv2qDCYbcDEAYNd4OZRj2bWYKpwdll/udZCk/Q==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.8.2"
