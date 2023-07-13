@@ -1596,15 +1596,6 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^11.1.1":
-  version "11.1.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-11.1.1.tgz#bfb00de6ff5557a3a0a4c421f05d823e6e14260c"
-  integrity sha512-uRhrI4ZUI2BoWq8OkCr5FrA7g00BXIjNO+bQ9dmVEFSyIAalHq6Z7jMNURm0h/U7+TzkHkjaKjTIhBMEVn35ew==
-  dependencies:
-    "@file-services/path" "^7.4.0"
-    "@file-services/types" "^7.4.0"
-    promise-assist "^2.0.1"
-
 "@wixc3/common@^12.0.3":
   version "12.0.3"
   resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-12.0.3.tgz#0c49a5c90bbef354fc18da0011f3551356a9f9b6"
@@ -1645,14 +1636,6 @@
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.4.tgz#4fc6f4491601580092a2f5154a25f32f8eff7d8c"
   integrity sha512-+xLuGv15CiysA8KHztCezBb7k+BReJx4LEUi6aXsY4yCcjTdETPl/jIDVTUOPPIzZU6YEgmNVLAJJ3AzfOc/0w==
-
-"@wixc3/patterns@^11.0.0":
-  version "11.3.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-11.3.0.tgz#18577f78651bbbafea290ec9d2365d6c4701c1e9"
-  integrity sha512-MTag56Dv0IVtqQChYbQ5QWvqwFnmglYB55vEcFTBDVYiC7Zm/1WLONrO4aC01nNB3fwbCiwMLx4VVVKdEVMEBQ==
-  dependencies:
-    "@wixc3/common" "^11.1.1"
-    promise-assist "^2.0.1"
 
 "@wixc3/patterns@^12.0.3":
   version "12.0.3"
