@@ -56,6 +56,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
         ],
         context: serverOpts.targetApplicationPath,
         env: devServerEnv,
+        options: Object.entries(serverOpts.runtimeOptions),
     });
     return {
         engine,

@@ -49,8 +49,9 @@ export function createLiveConfigsMiddleware(
                                     const { default: configValue } = importFresh<ConfigFileExports>(resolvedPath);
                                     config.push(...configValue);
                                 } catch (e) {
-                                    console.error(`Failed evaluating config file: ${filePath}`);
-                                    console.error(e);
+                                    console.error(
+                                        new Error(`Failed evaluating config file: ${filePath}`, { cause: e })
+                                    );
                                 }
                             }
                         }

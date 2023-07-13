@@ -56,6 +56,16 @@ export function workerThreadInitializer({
         communication.registerEnv(instanceId, host);
         communication.registerMessageHandler(host);
 
+        disposables.add(
+            () => {
+                communication.clearEnvironment(instanceId);
+                communication.removeMessageHandler(host);
+            },
+            {
+                name: `worker thread ${instanceId} communication cleanup`,
+            }
+        );
+
         const runOptions: WorkerThreadEnvironmentStartupOptions = {
             environmentContextName: environmentStartupOptions?.environmentContextName,
             runtimeOptions,

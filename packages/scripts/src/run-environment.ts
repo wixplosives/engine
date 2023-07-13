@@ -101,6 +101,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
                 features: staticFeatures,
                 outputPath: process.cwd(),
                 nodeEntryPath: '',
+                runtimeOptions: Object.entries(runtimeOptions),
             };
         },
     });
@@ -183,7 +184,7 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
 async function importWithProperError(filePath: string): Promise<unknown> {
     try {
         return import(filePath);
-    } catch (ex: unknown) {
-        throw new Error(`failed evaluating file: ${filePath}\n${(ex as Error).message ?? ex}`);
+    } catch (ex) {
+        throw new Error(`failed importing file: ${filePath}`, { cause: ex });
     }
 }

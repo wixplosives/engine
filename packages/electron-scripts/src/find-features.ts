@@ -7,7 +7,7 @@ export async function getEngineConfig(basePath: string): Promise<EngineConfig | 
         try {
             return (await import(engineConfigFilePath)) as EngineConfig;
         } catch (err) {
-            throw new Error(`failed evaluating config file: ${engineConfigFilePath} ${String(err)}`);
+            throw new Error(`failed importing config file: ${engineConfigFilePath}`, { cause: err });
         }
     }
     return undefined;
