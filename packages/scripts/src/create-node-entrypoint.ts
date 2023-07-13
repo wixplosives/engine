@@ -39,6 +39,7 @@ export function createNodeEntrypoint({
     const configLoaders = createConfigLoaders(configurations, mode, configName, env, true, nodeLoadConfigFileTemplate);
     return `
 import { main, COM } from '@wixc3/engine-core';
+import { ParentPortHost } from '@wixc3/engine-runtime-node';
 import { parseArgs } from 'node:util';
 
 const { values: args } = parseArgs({
@@ -46,7 +47,7 @@ const { values: args } = parseArgs({
     allowPositionals: false
 });
 
-console.log('${env.name}', {...args});
+console.log('[${env.name}]: Started with args: ' + JSON.stringify(args, null, 2));
 
 const options = new Map(Object.entries(args));
 
@@ -63,14 +64,14 @@ main({
             COM.use({
                 config: {
                     resolvedContexts,
-                    // host: new BaseHost(),
-                    // id: 'TODO',
+                    host: new ParentPortHost(),
+                    id: options.get('environment_id') ?? 'unknown_environment',
                 },
             }),
             ...${stringify(config, null, 2)}
         ];
     },
-}).catch(console.error);
+}).then(()=>console.log('[${env.name}]: Running')).catch(console.error);
 `;
 }
 

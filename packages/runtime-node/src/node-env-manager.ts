@@ -29,8 +29,10 @@ export class NodeEnvManager {
         const envNames = this.featureEnvironmentMapping.featureToEnvironments[featureName];
 
         if (!envNames) {
-            console.log(`no environments found for feature ${featureName}`);
+            console.log(`[ENGINE]: no environments found for feature ${featureName}`);
             return;
+        } else {
+            console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
         }
 
         await Promise.all(envNames.map((envName) => this.open(envName, runtimeOptions)));
@@ -41,9 +43,7 @@ export class NodeEnvManager {
         if (!env) {
             throw new Error(`environment ${envName} not found`);
         }
-        // TODO: inject jsOutExtension from the entry point or resolve extensions on disk
-        const jsOutExtension = '.mjs';
-        console.log(this.importMeta.url, '!');
+        const jsOutExtension = this.importMeta.url.endsWith('.mjs') ? '.mjs' : '.js';
         return new URL(`${env.env}.${env.envType}${jsOutExtension}`, this.importMeta.url);
     }
 
@@ -53,17 +53,17 @@ export class NodeEnvManager {
             throw new Error(`environment ${envName} not found`);
         }
 
+        const argv = toNonPositionalArgv(runtimeOptions);
+        console.log(`[ENGINE]: Opening environment ${envName} with argv ${argv.join(' ')}`);
         const runningEnv = workerThreadInitializer2({
             communication: this.communication,
             env,
             workerURL: this.createEnvironmentFileUrl(envName),
-            argv: new Array(runtimeOptions.entries()).flatMap(([key, value]) =>
-                Array.isArray(value) ? value.flatMap((v) => [`--${key}`, String(v)]) : [`--${key}`, String(value)]
-            ),
+            argv,
         });
 
         await runningEnv.initialize();
-
+        console.log(`[ENGINE]: Environment ${runningEnv.id} is ready`);
         this.openEnvironments.add(runningEnv);
 
         return () => {
@@ -73,18 +73,37 @@ export class NodeEnvManager {
     }
 }
 
+function toNonPositionalArgv(runtimeOptions: IRunOptions) {
+    const argv = [];
+    for (const [key, value] of runtimeOptions.entries()) {
+        if (Array.isArray(value)) {
+            for (const v of value) {
+                argv.push(`--${key}=${String(v)}`);
+            }
+        } else {
+            argv.push(`--${key}=${String(value)}`);
+        }
+    }
+    return argv;
+}
+
 function parseRuntimeOptions() {
+    // const { values: args } = parseArgs({
+    //     options: {
+    //         feature: {
+    //             type: 'string',
+    //         },
+    //         require: {
+    //             type: 'string',
+    //             multiple: true,
+    //         },
+    //     },
+    //     strict: true,
+    // });
+
     const { values: args } = parseArgs({
-        options: {
-            feature: {
-                type: 'string',
-            },
-            require: {
-                type: 'string',
-                multiple: true,
-            },
-        },
-        strict: true,
+        strict: false,
+        allowPositionals: false,
     });
 
     return new Map(Object.entries(args));

@@ -17,4 +17,5 @@ export * from './core-node/ipc-host';
 export * from './core-node/create-application-metadata-provider';
 export * from './core-node/local-env-inititializer';
 export * from './core-node/ws-node-host';
+export * from './core-node/parent-port-host';
 export * from './load-top-level-config';

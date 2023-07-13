@@ -22,9 +22,10 @@ export function workerThreadInitializer2({
     const disposables = createDisposables();
     const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
     const envIsReady = communication.envReady(instanceId);
-
+    const finalArgv = argv || process.argv.slice(2);
+    finalArgv.push(`--environment_id=${instanceId}`);
     const nodeOnlyParams: object = {
-        argv: argv || process.argv.slice(2),
+        argv: finalArgv,
     };
 
     const initialize = async (): Promise<void> => {
