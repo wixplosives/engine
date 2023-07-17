@@ -1,6 +1,6 @@
 {
   "name": "@example/playground",
-  "version": "39.2.7",
+  "version": "39.2.10",
   "scripts": {
     "build:stylable": "stc --srcDir src --outDir dist --stcss --no-cjs --unsr",
     "start": "engineer start"

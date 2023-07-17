@@ -1,6 +1,6 @@
 {
   "name": "@examples/react",
-  "version": "39.2.7",
+  "version": "39.2.10",
   "main": "index.js",
   "scripts": {
     "start": "yarn engineer start -f react/someplugin --singleFeature",
