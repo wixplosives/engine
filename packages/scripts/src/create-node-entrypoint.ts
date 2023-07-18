@@ -1,16 +1,27 @@
 import { Environment } from '@wixc3/engine-core';
-import { ICreateEntrypointsOptions, createConfigLoaders, createFeatureLoaders } from './create-entrypoint';
+import {
+    ICreateEntrypointsOptions,
+    createAllValidConfigurationsEnvironmentMapping,
+    createConfigLoaders,
+    createFeatureLoaders,
+} from './create-entrypoint';
 import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
 
 const { stringify } = JSON;
 
-export function createNodeEnvironmentManagerEntrypoint({ features }: Pick<ICreateEntrypointsOptions, 'features'>) {
-    const featureToEnvironments = createFeatureEnvironmentsMapping(features);
-
+export function createNodeEnvironmentManagerEntrypoint({
+    features,
+    configurations,
+    mode,
+    configName,
+}: Pick<ICreateEntrypointsOptions, 'features' | 'configurations' | 'mode' | 'configName'>) {
+    const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
+    const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
     return `
         import { NodeEnvManager } from '@wixc3/engine-runtime-node';
-        const featureEnvironmentsMapping = ${stringify(featureToEnvironments)};
-        new NodeEnvManager(import.meta, featureEnvironmentsMapping).autoLaunch().catch((e)=>{
+        const featureEnvironmentsMapping = ${stringify(featureEnvironmentsMapping)};
+        const configMapping = ${stringify(configMapping)};
+        new NodeEnvManager(import.meta, featureEnvironmentsMapping, configMapping).autoLaunch().catch((e)=>{
             process.exitCode = 1;
             console.error(e);
         });
@@ -36,7 +47,14 @@ export function createNodeEntrypoint({
         env.flatDependencies?.map((d) => d.env) ?? []
     );
     const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
-    const configLoaders = createConfigLoaders(configurations, mode, configName, env, true, nodeLoadConfigFileTemplate);
+    const configLoaders = createConfigLoaders({
+        configurations,
+        mode,
+        configName,
+        envName: env.name,
+        staticBuild: true,
+        loadConfigFileTemplate: nodeLoadConfigFileTemplate,
+    });
     return `
 import { main, COM } from '@wixc3/engine-core';
 import { ParentPortHost } from '@wixc3/engine-runtime-node';

@@ -169,7 +169,7 @@ async function runDevServices({
     // );
 }
 
-engineStart({ dev: { enabled: false, buildTargets: 'node' } }).catch((e) => {
+engineStart({ dev: { enabled: false, buildTargets: 'both' } }).catch((e) => {
     console.error(e);
     process.exitCode = 1;
 });

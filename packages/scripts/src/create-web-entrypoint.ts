@@ -26,14 +26,14 @@ export function createMainEntrypoint({
         env.env.endpointType,
         env.flatDependencies?.map((d) => d.env) ?? []
     );
-    const configLoaders = createConfigLoaders(
+    const configLoaders = createConfigLoaders({
         configurations,
         mode,
         configName,
-        env,
+        envName: env.name,
         staticBuild,
-        webLoadConfigFileTemplate.bind(null, configLoaderModuleName)
-    );
+        loadConfigFileTemplate: webLoadConfigFileTemplate.bind(null, configLoaderModuleName),
+    });
     const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
     const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
 

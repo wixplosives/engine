@@ -80,7 +80,7 @@ function emitConfigFile(
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const imported = require(resourcePath);
-    const content = JSON.stringify(imported);
+    const content = JSON.stringify(imported.default ?? imported);
     const configFileName = envName ? `${fileName!}.${envName}` : fileName;
     const configPath = `configs/${configFileName!}.json`;
     filesToEmit.set(configPath, { content, path: join(rootContext, outDir!, configPath) });

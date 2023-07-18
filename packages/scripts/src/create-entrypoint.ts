@@ -1,5 +1,5 @@
 import { TopLevelConfig } from '@wixc3/engine-core';
-import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import type { ConfigurationEnvironmentMapping, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type { IFeatureDefinition } from './types';
@@ -25,11 +25,6 @@ export interface ICreateEntrypointsOptions {
     env: IEnvironmentDescriptor;
     featuresBundleName?: string;
     configLoaderModuleName?: string;
-}
-
-interface IConfigFileMapping {
-    filePath: string;
-    configEnvName?: string;
 }
 
 export interface ExternalEntrypoint extends IFeatureDefinition {
@@ -215,7 +210,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
 
 //#region config loaders
 const getAllValidConfigurations = (configurations: [string, IConfigDefinition][], envName: string) => {
-    const configNameToFiles: Record<string, IConfigFileMapping[]> = {};
+    const configNameToFiles: Record<string, { filePath: string; configEnvName: string | undefined }[]> = {};
     for (const [configName, { filePath, envName: configEnvName }] of configurations) {
         configNameToFiles[configName] ??= [];
         if (!configEnvName || configEnvName === envName) {
@@ -225,7 +220,29 @@ const getAllValidConfigurations = (configurations: [string, IConfigDefinition][]
     return configNameToFiles;
 };
 
-const getConfigLoaders = (
+export const createAllValidConfigurationsEnvironmentMapping = (
+    configurations: SetMultiMap<string, IConfigDefinition>,
+    mode: 'development' | 'production',
+    configName?: string
+) => {
+    const configurationMapping: ConfigurationEnvironmentMapping = {};
+    const configEntries = filterConfigurationsByMode(configurations, mode, configName);
+    for (const [name, { filePath, envName: configEnvName }] of configEntries) {
+        configurationMapping[name] ??= {
+            byEnv: {},
+            common: [],
+        };
+        if (!configEnvName) {
+            configurationMapping[name]!.common.push({ filePath });
+        } else {
+            configurationMapping[name]!.byEnv[configEnvName] ??= [];
+            configurationMapping[name]!.byEnv[configEnvName]!.push({ filePath });
+        }
+    }
+    return configurationMapping;
+};
+
+const filterConfigurationsByMode = (
     configurations: SetMultiMap<string, IConfigDefinition>,
     mode: 'development' | 'production',
     configName?: string
@@ -236,15 +253,22 @@ const getConfigLoaders = (
     return [...configurations.entries()];
 };
 
-export function createConfigLoaders(
-    configurations: SetMultiMap<string, IConfigDefinition>,
-    mode: 'development' | 'production',
-    configName: string | undefined,
-    env: IEnvironmentDescriptor,
-    staticBuild: boolean,
-    loadConfigFileTemplate: (filePath: string, scopedName: string, configEnvName?: string) => string
-) {
-    const configs = getAllValidConfigurations(getConfigLoaders(configurations, mode, configName), env.name);
+export function createConfigLoaders({
+    configurations,
+    mode,
+    configName,
+    envName,
+    staticBuild,
+    loadConfigFileTemplate,
+}: {
+    configurations: SetMultiMap<string, IConfigDefinition>;
+    mode: 'development' | 'production';
+    configName: string | undefined;
+    envName: string;
+    staticBuild: boolean;
+    loadConfigFileTemplate: (filePath: string, scopedName: string, configEnvName?: string) => string;
+}) {
+    const configs = getAllValidConfigurations(filterConfigurationsByMode(configurations, mode, configName), envName);
     const loaders: string[] = [];
     if (staticBuild) {
         for (const [scopedName, availableConfigs] of Object.entries(configs)) {

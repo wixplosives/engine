@@ -30,13 +30,13 @@ export class RuntimeConfigurations {
      * this is an integration function with the build system
      * the logic and is based on the "config loader" implementation
      */
-    async importConfig(configName: string) {
+    async importConfig(configName: string): Promise<TopLevelConfig> {
         const loader = this.loaders[configName];
         if (!loader || !configName) {
             return [];
         }
         const res = await loader();
-        const allLoadedConfigs = await Promise.all(res.map((module) => module.default));
+        const allLoadedConfigs = await Promise.all(res.map((module) => module.default ?? module));
         return allLoadedConfigs.flat();
     }
     /**

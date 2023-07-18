@@ -10,7 +10,7 @@ export const socketClientInitializer = async ({
     env: { env },
     ...socketClientOptions
 }: SocketClientInitializerOptions) => {
-    const url = communication.topology[env];
+    const url = communication.topology[env] || location.host;
     if (!url) {
         throw new Error(`Could not find node topology for ${env} environment`);
     }

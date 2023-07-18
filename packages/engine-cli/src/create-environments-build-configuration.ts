@@ -41,10 +41,14 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         buildPlugins,
     } = options;
 
+    const mode = dev ? 'development' : 'production';
     const jsOutExtension = '.mjs';
     const webEntryPoints = new Map<string, string>();
     const nodeEntryPoints = new Map<string, string>([
-        [`engine-environment-manager${jsOutExtension}`, createNodeEnvironmentManagerEntrypoint({ features })],
+        [
+            `engine-environment-manager${jsOutExtension}`,
+            createNodeEnvironmentManagerEntrypoint({ features, configurations, mode, configName }),
+        ],
     ]);
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
     const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
@@ -59,7 +63,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             publicPath,
             publicPathVariableName: 'PUBLIC_PATH',
             configurations,
-            mode: 'development',
+            mode,
             staticBuild: true,
             publicConfigsRoute: '/configs',
             config,
@@ -79,7 +83,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             featureName,
             configName,
             configurations,
-            mode: 'development',
+            mode,
             staticBuild: true,
             publicConfigsRoute: '/configs',
             config,

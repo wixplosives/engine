@@ -1,8 +1,21 @@
-import { AnyEnvironment, BaseHost, Communication, IRunOptions } from '@wixc3/engine-core';
+import { AnyEnvironment, BaseHost, Communication, IRunOptions, TopLevelConfig } from '@wixc3/engine-core';
 import { workerThreadInitializer2 } from './worker-thread-initializer2';
 import { resolveEnvironments } from './environments';
 import { IStaticFeatureDefinition } from './types';
 import { parseArgs } from 'node:util';
+import { launchEngineHttpServer } from './launch-http-server';
+import { fileURLToPath } from 'node:url';
+
+export interface ConfigFileMapping {
+    filePath: string;
+}
+
+export interface ConfigurationEnvironmentMappingEntry {
+    common: ConfigFileMapping[];
+    byEnv: Record<string, ConfigFileMapping[]>;
+}
+
+export type ConfigurationEnvironmentMapping = Record<string, ConfigurationEnvironmentMappingEntry>;
 
 interface RunningNodeEnvironment {
     id: string;
@@ -15,6 +28,7 @@ export class NodeEnvManager {
     constructor(
         private importMeta: { url: string },
         private featureEnvironmentMapping: FeatureEnvironmentMapping,
+        private configMapping: ConfigurationEnvironmentMapping,
         private communication = new Communication(new BaseHost(), 'node-environment-manager', {}, {}, true, {})
     ) {}
     async autoLaunch() {
@@ -36,8 +50,64 @@ export class NodeEnvManager {
         }
 
         await Promise.all(envNames.map((envName) => this.open(envName, runtimeOptions)));
-    }
 
+        const { port, socketServer, app } = await launchEngineHttpServer({
+            staticDirPath: fileURLToPath(new URL('../web', this.importMeta.url)),
+        });
+
+        app.get('/configs/*', (req, res) => {
+            const reqEnv = req.query.env as string;
+            if (typeof reqEnv !== 'string') {
+                res.status(400).send('env is required');
+            }
+            const requestedConfig: string = (req.params as any)[0] as string;
+            console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
+            if (!requestedConfig || requestedConfig === 'undefined') {
+                res.json([]);
+            }
+
+            this.loadEnvironmentConfigurations(reqEnv, requestedConfig)
+                .then((configs) => {
+                    res.json(configs.flat());
+                })
+                .catch((e) => {
+                    console.error(e);
+                    res.status(500).send(e.message);
+                });
+        });
+
+        socketServer.on('connection', (socket) => {
+            console.log(`[ENGINE]: socket connected`);
+            socket.on('disconnect', () => {
+                console.log(`[ENGINE]: socket disconnected`);
+            });
+            socket.on('message', (message) => {
+                console.log(`[ENGINE]: socket message`, message);
+            });
+        });
+
+        console.log(`[ENGINE]: http server is listening on port ${port}`);
+    }
+    private async loadEnvironmentConfigurations(envName: string, configName: string) {
+        const mappingEntry = this.configMapping[configName];
+        if (!mappingEntry) {
+            return [];
+        }
+        const { common, byEnv } = mappingEntry;
+        const configFiles = [...common, ...(byEnv[envName] ?? [])];
+        return await Promise.all(
+            configFiles.map(async ({ filePath }) => {
+                try {
+                    const configModule = (await import(filePath)).default;
+                    console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
+                    return (configModule.default ?? configModule) as TopLevelConfig;
+                } catch (e) {
+                    console.error(new Error(`Failed evaluating config file: ${filePath}`, { cause: e }));
+                    return [];
+                }
+            })
+        );
+    }
     private createEnvironmentFileUrl(envName: string) {
         const env = this.featureEnvironmentMapping.availableEnvironments[envName];
         if (!env) {
