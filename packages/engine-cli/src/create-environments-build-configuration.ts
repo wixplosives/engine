@@ -117,6 +117,9 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         ...commonConfig,
         platform: 'browser',
         outdir: join(outputPath, 'web'),
+        banner: {
+            js: `globalThis.__webpack_public_path__ = ${JSON.stringify(publicPath)};\n`
+        },
         plugins: [
             ...commonConfig.plugins,
             dynamicEntryPlugin({ entryPoints: webEntryPoints, loader: 'js' }),

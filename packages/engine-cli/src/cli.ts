@@ -8,6 +8,7 @@ import { importModules } from './import-modules';
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
 import { rm } from 'node:fs/promises';
+import { parseArgs } from 'node:util';
 
 export type Options = {
     dev?: {
@@ -169,7 +170,20 @@ async function runDevServices({
     // );
 }
 
-engineStart({ dev: { enabled: false, buildTargets: 'both' } }).catch((e) => {
+function parseCliArgs() {
+    const { values: args } = parseArgs({
+        strict: false,
+        allowPositionals: false,
+    });
+    return new Map(Object.entries(args));
+}
+
+const args = parseCliArgs();
+const buildTargets = (args.get('buildTargets') as 'node' | 'web' | 'both') ?? 'both';
+
+console.log('Cli run', args);
+
+engineStart({ dev: { enabled: false, buildTargets } }).catch((e) => {
     console.error(e);
     process.exitCode = 1;
 });

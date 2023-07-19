@@ -20,7 +20,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
     private socketToEnvId = new Map<string, { socket: io.Socket; clientID: string }>();
     private disposed = false;
 
-    constructor(private server: io.Namespace) {
+    constructor(private server: io.Server | io.Namespace) {
         super();
         this.server.on('connection', this.onConnection);
     }

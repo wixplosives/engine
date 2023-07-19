@@ -1,10 +1,14 @@
 import { AnyEnvironment, BaseHost, Communication, IRunOptions, TopLevelConfig } from '@wixc3/engine-core';
+// import type io from 'socket.io';
 import { workerThreadInitializer2 } from './worker-thread-initializer2';
 import { resolveEnvironments } from './environments';
 import { IStaticFeatureDefinition } from './types';
 import { parseArgs } from 'node:util';
+import { pathToFileURL } from 'node:url';
 import { launchEngineHttpServer } from './launch-http-server';
 import { fileURLToPath } from 'node:url';
+import { SetMultiMap } from '@wixc3/patterns';
+import { WsServerHost } from './core-node/ws-node-host';
 
 export interface ConfigFileMapping {
     filePath: string;
@@ -24,13 +28,16 @@ interface RunningNodeEnvironment {
 }
 
 export class NodeEnvManager {
-    openEnvironments = new Set<RunningNodeEnvironment>();
+    id = 'node-environment-manager';
+    openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
+    communication: Communication;
     constructor(
         private importMeta: { url: string },
         private featureEnvironmentMapping: FeatureEnvironmentMapping,
-        private configMapping: ConfigurationEnvironmentMapping,
-        private communication = new Communication(new BaseHost(), 'node-environment-manager', {}, {}, true, {})
-    ) {}
+        private configMapping: ConfigurationEnvironmentMapping
+    ) {
+        this.communication = new Communication(new BaseHost(this.id), this.id, {}, {}, true, {});
+    }
     async autoLaunch() {
         const runtimeOptions = parseRuntimeOptions();
 
@@ -50,20 +57,20 @@ export class NodeEnvManager {
         }
 
         await Promise.all(envNames.map((envName) => this.open(envName, runtimeOptions)));
-
-        const { port, socketServer, app } = await launchEngineHttpServer({
-            staticDirPath: fileURLToPath(new URL('../web', this.importMeta.url)),
-        });
+        const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
+        const { port, socketServer, app } = await launchEngineHttpServer({ staticDirPath });
 
         app.get('/configs/*', (req, res) => {
             const reqEnv = req.query.env as string;
             if (typeof reqEnv !== 'string') {
                 res.status(400).send('env is required');
+                return;
             }
             const requestedConfig: string = (req.params as any)[0] as string;
             console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
             if (!requestedConfig || requestedConfig === 'undefined') {
                 res.json([]);
+                return;
             }
 
             this.loadEnvironmentConfigurations(reqEnv, requestedConfig)
@@ -76,17 +83,9 @@ export class NodeEnvManager {
                 });
         });
 
-        socketServer.on('connection', (socket) => {
-            console.log(`[ENGINE]: socket connected`);
-            socket.on('disconnect', () => {
-                console.log(`[ENGINE]: socket disconnected`);
-            });
-            socket.on('message', (message) => {
-                console.log(`[ENGINE]: socket message`, message);
-            });
-        });
-
-        console.log(`[ENGINE]: http server is listening on port ${port}`);
+        const host = new WsServerHost(socketServer);
+        this.communication.registerMessageHandler(host);
+        console.log(`[ENGINE]: http server is listening on http://localhost:${port}`);
     }
     private async loadEnvironmentConfigurations(envName: string, configName: string) {
         const mappingEntry = this.configMapping[configName];
@@ -98,7 +97,7 @@ export class NodeEnvManager {
         return await Promise.all(
             configFiles.map(async ({ filePath }) => {
                 try {
-                    const configModule = (await import(filePath)).default;
+                    const configModule = (await dynamicImport(pathToFileURL(filePath))).default;
                     console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
                     return (configModule.default ?? configModule) as TopLevelConfig;
                 } catch (e) {
@@ -134,10 +133,10 @@ export class NodeEnvManager {
 
         await runningEnv.initialize();
         console.log(`[ENGINE]: Environment ${runningEnv.id} is ready`);
-        this.openEnvironments.add(runningEnv);
+        this.openEnvironments.add(envName, runningEnv);
 
         return () => {
-            this.openEnvironments.delete(runningEnv);
+            this.openEnvironments.delete(envName, runningEnv);
             return runningEnv.dispose();
         };
     }
@@ -157,20 +156,8 @@ function toNonPositionalArgv(runtimeOptions: IRunOptions) {
     return argv;
 }
 
+// TODO: use in node entry point template
 function parseRuntimeOptions() {
-    // const { values: args } = parseArgs({
-    //     options: {
-    //         feature: {
-    //             type: 'string',
-    //         },
-    //         require: {
-    //             type: 'string',
-    //             multiple: true,
-    //         },
-    //     },
-    //     strict: true,
-    // });
-
     const { values: args } = parseArgs({
         strict: false,
         allowPositionals: false,
@@ -205,3 +192,9 @@ export function createFeatureEnvironmentsMapping(
     }
     return { featureToEnvironments, availableEnvironments };
 }
+
+// TODO: move to a shared location
+// eslint-disable-next-line @typescript-eslint/no-implied-eval
+export const dynamicImport = new Function('modulePath', 'return import(modulePath);') as (
+    modulePath: string | URL
+) => Promise<any>;

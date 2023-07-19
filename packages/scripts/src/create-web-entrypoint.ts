@@ -76,8 +76,14 @@ const topWindow = globalThis.parent ?? globalThis;
 let publicPath = ${typeof publicPath === 'string' ? stringify(publicPath) : '__webpack_public_path__'}
 if (options.has('publicPath')) {
     publicPath = options.get('publicPath');
-} else if (${typeof publicPathVariableName === 'string'} && topWindow[${stringify(publicPathVariableName)}]) {
-    publicPath = topWindow[${stringify(publicPathVariableName)}];
+} else if (${typeof publicPathVariableName === 'string'}) {
+    try {
+        if(topWindow[${stringify(publicPathVariableName)}]) {
+            publicPath = topWindow[${stringify(publicPathVariableName)}];
+        }
+    } catch(e) {
+        /* ignore */
+    }
 }
 __webpack_public_path__= publicPath;
 return publicPath;

@@ -6,8 +6,7 @@ export class ParentPortHost implements Target {
         if (!parentPort) {
             throw new Error('parent port host must be initialized in a worker thread');
         }
-        parentPort?.on('message', (message) => {
-            console.log(`[ENGINE]: received message from parent port: ${JSON.stringify(message)}`);
+        parentPort?.on('message', (message: Message) => {
             this.emitMessageHandlers(message);
         });
     }
@@ -30,7 +29,6 @@ export class ParentPortHost implements Target {
     }
 
     public postMessage(message: Message) {
-        console.log(`[ENGINE]: sending message to parent port: ${JSON.stringify(message)}`);
         parentPort?.postMessage(message);
     }
 
