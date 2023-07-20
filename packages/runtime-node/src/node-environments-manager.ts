@@ -227,7 +227,6 @@ export class NodeEnvironmentsManager {
             const config: TopLevelConfig = [];
 
             config.push(COM.use({ config: { topology, connectedEnvironments } }));
-            // TODO: pass filterEnv to getConfig?
             config.push(
                 ...(await loadTopLevelConfigs(originalConfigName, this.options.configurations)),
                 ...overrideConfigs
