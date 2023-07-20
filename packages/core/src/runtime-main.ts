@@ -39,8 +39,8 @@ export async function main({
     configName = String(options.get('config') || configName);
 
     const instanceId = options.get(INSTANCE_ID_PARAM_NAME);
-    if (instanceId && typeof self !== 'undefined') {
-        (globalThis as any).name = instanceId;
+    if (typeof instanceId === 'string' && typeof self !== 'undefined') {
+        self.name = instanceId;
     }
 
     const [buildConfig, runtimeConfig] = await Promise.all([

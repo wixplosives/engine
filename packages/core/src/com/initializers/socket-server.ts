@@ -11,9 +11,6 @@ export const socketClientInitializer = async ({
     ...socketClientOptions
 }: SocketClientInitializerOptions) => {
     const url = communication.topology[env] || location.host;
-    if (!url) {
-        throw new Error(`Could not find node topology for ${env} environment`);
-    }
     const instanceId = env;
     const host = new WsClientHost(url, socketClientOptions);
     if (communication.getEnvironmentHost(instanceId)) {

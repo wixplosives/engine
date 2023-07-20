@@ -44,41 +44,38 @@ export class RuntimeConfigurations {
      * currently only iframe is supported we should expend support for other environments types
      */
     installChildEnvConfigFetcher(featureName: string, configName: string) {
-        if (!this.publicConfigsRoute || !this.isMainEntrypoint()) {
+        if (!this.publicConfigsRoute || !this.isMainEntrypoint() || typeof window === 'undefined') {
             return;
         }
-        if (typeof window !== 'undefined') {
-            window.addEventListener('message', ({ data: { id, envName, __from }, source }) => {
-                if (!source || id !== this.publicConfigsRoute) {
-                    return;
-                }
-                this.fetchConfig(envName, featureName, configName)
-                    .then((config) => {
-                        // with our flow it can only be a window (currently)
-                        (source as Window).postMessage(
-                            {
-                                id,
-                                config,
-                                __to: __from,
-                            },
-                            '*'
-                        );
-                    })
-                    .catch((e) => {
-                        // with our flow it can only be a window (currently)
-                        (source as Window).postMessage(
-                            {
-                                id,
-                                error: String(e),
-                                __to: __from,
-                            },
-                            '*'
-                        );
-                    });
-            });
-        } else {
-            console.log('installChildEnvConfigFetcher is not supported in this environment');
-        }
+
+        window.addEventListener('message', ({ data: { id, envName, __from }, source }) => {
+            if (!source || id !== this.publicConfigsRoute) {
+                return;
+            }
+            this.fetchConfig(envName, featureName, configName)
+                .then((config) => {
+                    // with our flow it can only be a window (currently)
+                    (source as Window).postMessage(
+                        {
+                            id,
+                            config,
+                            __to: __from,
+                        },
+                        '*'
+                    );
+                })
+                .catch((e) => {
+                    // with our flow it can only be a window (currently)
+                    (source as Window).postMessage(
+                        {
+                            id,
+                            error: String(e),
+                            __to: __from,
+                        },
+                        '*'
+                    );
+                });
+        });
     }
     /**
      * depending on the environment type (main or child) load the config either from the parent or from the public route
@@ -93,17 +90,16 @@ export class RuntimeConfigurations {
     }
 
     private isMainEntrypoint() {
-        return this.getScope() === this.getOpenerMessageTarget();
+        return globalThis === this.getOpenerMessageTarget();
     }
 
     private loadFromParent(envName: string) {
-        let promise = this.fetchedConfigs[envName];
-        if (!promise) {
-            promise = new Promise((res, rej) => {
-                if (typeof window === 'undefined') {
-                    return rej('loadFromParent is not supported in this environment ATM');
-                }
-
+        if (typeof window === 'undefined') {
+            return Promise.reject('loadFromParent is not supported in non-browser environments');
+        }
+        let loadConfigPromise = this.fetchedConfigs[envName];
+        if (!loadConfigPromise) {
+            loadConfigPromise = new Promise((res, rej) => {
                 const configsHandler = ({
                     data: { id, config, error },
                 }: {
@@ -126,15 +122,10 @@ export class RuntimeConfigurations {
                     '*'
                 );
             });
-            this.fetchedConfigs[envName] = promise;
+            this.fetchedConfigs[envName] = loadConfigPromise;
         }
-        return promise;
+        return loadConfigPromise;
     }
-
-    private getScope() {
-        return globalThis;
-    }
-
     private getOpenerMessageTarget() {
         return globalThis.parent ?? globalThis;
     }
@@ -155,7 +146,3 @@ export class RuntimeConfigurations {
 function addTrailingSlashIfNotEmpty(route: string) {
     return route ? (route.endsWith('/') ? route : route + '/') : '';
 }
-
-// function isNode() {
-//     return typeof process !== 'undefined' && process.release && process.release.name === 'node';
-// }
