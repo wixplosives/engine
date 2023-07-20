@@ -2,14 +2,12 @@ import fs from '@file-services/node';
 import { ENGINE_CONFIG_FILE_NAME, EngineConfig, analyzeFeatures, getResolvedEnvironments } from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
 import express from 'express';
-import { join } from 'node:path';
 import { fork } from 'node:child_process';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
+import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { importModules } from './import-modules';
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
-import { rm } from 'node:fs/promises';
-import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 
 export type Options = {
     dev?: {
@@ -42,7 +40,8 @@ export async function engineBuild({
         socketServerOptions,
         require: requiredPaths = [],
     } = (await loadConfigFile<EngineConfig>(rootDir, ENGINE_CONFIG_FILE_NAME)).config;
-
+    rootDir = fs.resolve(rootDir);
+    outputPath = fs.resolve(rootDir, outputPath);
     await importModules(rootDir, requiredPaths);
 
     const { features, configurations } = analyzeFeatures(
@@ -71,7 +70,7 @@ export async function engineBuild({
         configName,
     });
 
-    await rm(outputPath, { recursive: true, force: true });
+    await fs.promises.rm(outputPath, { recursive: true, force: true });
 
     if (dev.enabled) {
         await runDevServices({
@@ -139,7 +138,7 @@ async function runDevServices({
         {
             path: '/engine-portal',
             handlers: (req, res) => {
-                res.sendFile(join(__dirname, '..', 'engine-portal', 'index.html'));
+                res.sendFile(fs.join(__dirname, '..', 'engine-portal', 'index.html'));
             },
         },
     ];
@@ -154,8 +153,8 @@ async function runDevServices({
 
     // start node environment manager
     fork(
-        join(outputPath, 'node', `engine-environment-manager.mjs`),
-        [`--applicationPath=${join(outputPath, 'web')}`, `--feature=${featureName}`, `--config=${configName}`],
+        fs.join(outputPath, 'node', `engine-environment-manager.mjs`),
+        [`--applicationPath=${fs.join(outputPath, 'web')}`, `--feature=${featureName}`, `--config=${configName}`],
 
         {
             execArgv: process.execArgv.concat(['--watch']),
