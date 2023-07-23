@@ -1,6 +1,6 @@
 import reactRendererFeature, { MainEnv } from './react-renderer.feature';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 reactRendererFeature.setup(MainEnv, ({}) => {
     const div = document.createElement('div');
@@ -10,7 +10,7 @@ reactRendererFeature.setup(MainEnv, ({}) => {
     return {
         renderingService: {
             render: (Comp: any) => {
-                ReactDOM.render(<Comp />, div);
+                createRoot(div).render(<Comp />);
             },
         },
     };
