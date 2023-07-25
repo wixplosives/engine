@@ -288,7 +288,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 // close browserContext and feature after the suite ends
                 after(async function () {
                     this.timeout(10_000);
-                    executableApp.closeFeature({
+                    await executableApp.closeFeature({
                         featureName,
                         configName: newConfigName,
                     });
