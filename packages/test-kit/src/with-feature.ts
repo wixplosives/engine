@@ -109,6 +109,10 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      * add tracing for the entire suite, the name of the test will be used as the zip name
      */
     tracing?: boolean | Omit<Tracing, 'name'>;
+    /**
+     * Keeps the page open for the all the tests in the suite
+     */
+    persist?: boolean;
 }
 
 export interface Tracing {
@@ -185,6 +189,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         headless = envDebugMode ? !debugMode : undefined,
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
+        persist,
     } = withFeatureOptions;
 
     if (
@@ -255,12 +260,21 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            const runningFeature = await executableApp.runFeature({
-                featureName,
-                configName,
-                runtimeOptions: runOptions,
-                overrideConfig: config,
-            });
+            let runningFeature;
+            const runFeature = async () => {
+                runningFeature = await executableApp.runFeature({
+                    featureName,
+                    configName,
+                    runtimeOptions: runOptions,
+                    overrideConfig: config,
+                });
+            };
+
+            if (persist) {
+                before('load feature', runFeature);
+            } else {
+                await runFeature();
+            }
 
             if (runningFeature === undefined) {
                 throw new Error(`Feature "${featureName}" was not found`);
@@ -268,29 +282,47 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const { configName: newConfigName } = runningFeature;
 
-            disposeAfter(
-                async () =>
+            const browserContext = await browser.newContext(browserContextOptions);
+
+            if (persist) {
+                // close browserContext and feature after the suite ends
+                after(async function () {
+                    this.timeout(10_000);
                     executableApp.closeFeature({
                         featureName,
                         configName: newConfigName,
-                    }),
-                {
+                    });
+                });
+
+                after(async function () {
+                    this.timeout(5_000);
+                    await browserContext.close();
+                });
+            } else {
+                // close browserContext and feature after each test
+                disposeAfter(
+                    async () =>
+                        executableApp.closeFeature({
+                            featureName,
+                            configName: newConfigName,
+                        }),
+                    {
+                        group: WITH_FEATURE_DISPOSABLES,
+                        name: `close feature "${featureName}"`,
+                        timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
+                    }
+                );
+                disposeAfter(() => browserContext.close(), {
                     group: WITH_FEATURE_DISPOSABLES,
-                    name: `close feature "${featureName}"`,
-                    timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
-                }
-            );
+                    name: `close browser context for feature "${featureName}"`,
+                    timeout: 5_000,
+                });
+            }
 
             const search = toSearchQuery({
                 featureName,
                 configName: newConfigName,
                 queryParams,
-            });
-            const browserContext = await browser.newContext(browserContextOptions);
-            disposeAfter(() => browserContext.close(), {
-                group: WITH_FEATURE_DISPOSABLES,
-                name: `close browser context for feature "${featureName}"`,
-                timeout: 5_000,
             });
 
             browserContext.on('page', onPageCreation);
