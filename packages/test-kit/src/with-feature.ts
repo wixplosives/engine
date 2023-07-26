@@ -12,6 +12,7 @@ import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
 import type { IExecutableApplication } from './types';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import { IFeatureMessagePayload } from '@wixc3/engine-scripts';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
@@ -110,7 +111,7 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      */
     tracing?: boolean | Omit<Tracing, 'name'>;
     /**
-     * Keeps the page open for the all the tests in the suite
+     * Keeps the page open and the feature running for the all the tests in the suite
      */
     persist?: boolean;
 }
@@ -232,6 +233,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     });
 
     const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
+    const runningFeatures: IFeatureMessagePayload[] = [];
 
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
@@ -260,32 +262,30 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            let runningFeature;
-            const runFeature = async () => {
-                runningFeature = await executableApp.runFeature({
+            // runs the feature once in the suite if the persist option is being used, otherwise runs it for each test
+            if ((persist && runningFeatures.length === 0) || !persist) {
+                const runningFeature = await executableApp.runFeature({
                     featureName,
                     configName,
                     runtimeOptions: runOptions,
                     overrideConfig: config,
                 });
-            };
-
-            if (persist) {
-                before('load feature', runFeature);
-            } else {
-                await runFeature();
+                runningFeatures.push(runningFeature);
+                console.log('run');
             }
 
-            if (runningFeature === undefined) {
+            const currentRunningFeature = runningFeatures[runningFeatures.length - 1];
+            if (currentRunningFeature === undefined) {
                 throw new Error(`Feature "${featureName}" was not found`);
             }
 
-            const { configName: newConfigName } = runningFeature;
+            const { configName: newConfigName } = currentRunningFeature;
 
             const browserContext = await browser.newContext(browserContextOptions);
 
             if (persist) {
                 // close browserContext and feature after the suite ends
+                console.log('close');
                 after(async function () {
                     this.timeout(10_000);
                     await executableApp.closeFeature({
