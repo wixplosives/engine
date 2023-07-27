@@ -254,9 +254,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         : disposeAfter;
 
     if (persist) {
-        after('dispose suite level page', function () {
+        after('dispose suite level page', async function () {
             this.timeout(10_000);
-            disposables.dispose();
+            await disposables.dispose();
         });
     }
 

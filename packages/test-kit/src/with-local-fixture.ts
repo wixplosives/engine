@@ -1,10 +1,7 @@
 import { spawnSync, SpawnSyncOptions } from 'child_process';
 import fs from '@file-services/node';
-import { createTestDir } from '@wixc3/testing-node';
 import { IFeatureExecutionOptions, IWithFeatureOptions, withFeature } from './with-feature';
 import { createTempDirectorySync } from 'create-temp-directory';
-import type { DisposableOptions } from '@wixc3/patterns';
-import { defaults } from '@wixc3/common';
 import { disposeAfter } from '@wixc3/testing';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
