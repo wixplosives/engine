@@ -9,10 +9,11 @@ import { normalizeTestName } from './normalize-test-name';
 import { RemoteHttpApplication } from './remote-http-application';
 import { ForkedProcessApplication } from './forked-process-application';
 import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
+import { Disposables } from '@wixc3/patterns';
 import type { IExecutableApplication } from './types';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
-import { IFeatureMessagePayload } from '@wixc3/engine-scripts';
+import { DisposableItem, DisposableOptions } from '@wixc3/patterns';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
@@ -233,7 +234,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     });
 
     const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
-    const runningFeatures: IFeatureMessagePayload[] = [];
 
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
@@ -242,6 +242,23 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
         }
     });
+
+    const disposables = new Disposables();
+    disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
+    disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
+    disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
+    disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
+
+    const dispose = persist
+        ? (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options)
+        : disposeAfter;
+
+    if (persist) {
+        after('dispose suite level page', function () {
+            this.timeout(10_000);
+            disposables.dispose();
+        });
+    }
 
     return {
         async getLoadedFeature({
@@ -262,71 +279,46 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            // runs the feature once in the suite if the persist option is being used, otherwise runs it for each test
-            if ((persist && runningFeatures.length === 0) || !persist) {
-                const runningFeature = await executableApp.runFeature({
-                    featureName,
-                    configName,
-                    runtimeOptions: runOptions,
-                    overrideConfig: config,
-                });
-                runningFeatures.push(runningFeature);
-                console.log('run');
-            }
+            const runningFeature = await executableApp.runFeature({
+                featureName,
+                configName,
+                runtimeOptions: runOptions,
+                overrideConfig: config,
+            });
 
-            const currentRunningFeature = runningFeatures[runningFeatures.length - 1];
-            if (currentRunningFeature === undefined) {
+            if (runningFeature === undefined) {
                 throw new Error(`Feature "${featureName}" was not found`);
             }
 
-            const { configName: newConfigName } = currentRunningFeature;
+            const { configName: newConfigName } = runningFeature;
 
-            const browserContext = await browser.newContext(browserContextOptions);
-
-            if (persist) {
-                // close browserContext and feature after the suite ends
-                console.log('close');
-                after(async function () {
-                    this.timeout(10_000);
-                    await executableApp.closeFeature({
+            dispose(
+                async () =>
+                    executableApp.closeFeature({
                         featureName,
                         configName: newConfigName,
-                    });
-                });
-
-                after(async function () {
-                    this.timeout(5_000);
-                    await browserContext.close();
-                });
-            } else {
-                // close browserContext and feature after each test
-                disposeAfter(
-                    async () =>
-                        executableApp.closeFeature({
-                            featureName,
-                            configName: newConfigName,
-                        }),
-                    {
-                        group: WITH_FEATURE_DISPOSABLES,
-                        name: `close feature "${featureName}"`,
-                        timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
-                    }
-                );
-                disposeAfter(() => browserContext.close(), {
+                    }),
+                {
                     group: WITH_FEATURE_DISPOSABLES,
-                    name: `close browser context for feature "${featureName}"`,
-                    timeout: 5_000,
-                });
-            }
+                    name: `close feature "${featureName}"`,
+                    timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
+                }
+            );
 
             const search = toSearchQuery({
                 featureName,
                 configName: newConfigName,
                 queryParams,
             });
+            const browserContext = await browser.newContext(browserContextOptions);
+            dispose(() => browserContext.close(), {
+                group: WITH_FEATURE_DISPOSABLES,
+                name: `close browser context for feature "${featureName}"`,
+                timeout: 5_000,
+            });
 
             browserContext.on('page', onPageCreation);
-            disposeAfter(() => browserContext.off('page', onPageCreation), {
+            dispose(() => browserContext.off('page', onPageCreation), {
                 name: 'stop listening for page creation',
                 group: PAGE_DISPOSABLES,
                 timeout: 1_000,
@@ -357,7 +349,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         }),
                     });
                 });
-                disposeAfter(
+                dispose(
                     async () => {
                         for (const tracingDisposable of tracingDisposables) {
                             await tracingDisposable(mochaCtx()?.currentTest?.title);
@@ -390,12 +382,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
                 const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
-                disposeAfter(disposeConsoleHook, {
+                dispose(disposeConsoleHook, {
                     name: 'stop listening for console messages',
                     group: PAGE_DISPOSABLES,
                 });
                 page.on('pageerror', onPageError);
-                disposeAfter(() => page.off('pageerror', onPageError), {
+                dispose(() => page.off('pageerror', onPageError), {
                     name: 'stop listening for page errors',
                     group: PAGE_DISPOSABLES,
                     timeout: 1_000,
