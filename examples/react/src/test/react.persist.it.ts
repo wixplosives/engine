@@ -2,7 +2,7 @@ import { withFeature } from '@wixc3/engine-test-kit';
 import { join } from 'path';
 import { Page } from 'playwright-core';
 
-describe('Persist option', function () {
+describe('react/someplugin persistent checks', function () {
     this.timeout(20_000);
 
     const { getLoadedFeature } = withFeature({
@@ -14,17 +14,17 @@ describe('Persist option', function () {
     });
 
     let page: Page;
-    before(async function () {
+    before('initialize page', async function () {
         ({ page } = await getLoadedFeature());
     });
 
-    it('Check checkbox in order for it to appear in the next test', async () => {
+    it('checks checkbox in order for it to appear in the next test', async () => {
         const checkbox = page.locator('#checkbox');
         await checkbox.waitFor();
         await checkbox.check();
     });
 
-    it('Validate if checkbox is checked from the previous test', async () => {
+    it('validates if checkbox is checked from the previous test', async () => {
         const checkbox = page.locator('#checkbox');
         await checkbox.isChecked({ timeout: 1000 });
     });
