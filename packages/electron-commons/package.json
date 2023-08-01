@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron-commons",
-  "version": "39.3.0",
+  "version": "39.4.1",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha \"dist/test/**/*.unit.js\""
@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@file-services/node": "^8.0.1",
-    "@wixc3/engine-core": "^39.3.0",
-    "@wixc3/engine-runtime-node": "^39.3.0",
+    "@wixc3/engine-core": "^39.4.1",
+    "@wixc3/engine-runtime-node": "^39.4.1",
     "@wixc3/resolve-directory-context": "^4.0.0",
     "tree-kill": "^1.2.2"
   },

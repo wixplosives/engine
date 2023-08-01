@@ -1,6 +1,6 @@
 {
   "name": "@example/node-only",
-  "version": "39.3.0",
+  "version": "39.4.1",
   "main": "index.js",
   "license": "MIT",
   "private": true,
