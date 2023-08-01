@@ -9,11 +9,10 @@ import { normalizeTestName } from './normalize-test-name';
 import { RemoteHttpApplication } from './remote-http-application';
 import { ForkedProcessApplication } from './forked-process-application';
 import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
-import { Disposables } from '@wixc3/patterns';
+import { Disposables, DisposableItem, DisposableOptions } from '@wixc3/patterns';
 import type { IExecutableApplication } from './types';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
-import { DisposableItem, DisposableOptions } from '@wixc3/patterns';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
