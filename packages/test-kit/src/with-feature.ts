@@ -244,7 +244,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     });
 
     let dispose = disposeAfter;
-    let isInitialized = false;
+    let alreadyInitialized = false;
 
     if (persist) {
         after('dispose suite level page', async function () {
@@ -279,11 +279,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
-            if (isInitialized && persist) {
-                throw new Error('Better error message that will explain the correct usage');
+            if (persist && alreadyInitialized) {
+                throw new Error('getLoadedFeature cannot be called more than once while persist mode is on!');
             }
-            isInitialized = true;
 
+            alreadyInitialized = true;
             const runningFeature = await executableApp.runFeature({
                 featureName,
                 configName,
