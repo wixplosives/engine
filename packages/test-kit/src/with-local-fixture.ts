@@ -23,15 +23,13 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
             );
         }
 
-        // const projectPath = createTestDir('local-test');
-        const dir = createTempDirectorySync('local-test');
+        const { path: projectPath, remove } = createTempDirectorySync('local-test');
         const { persist } = testOptions;
         if (persist) {
-            after(() => dir.remove());
+            after(() => remove());
         } else {
-            disposeAfter(() => dir.remove());
+            disposeAfter(() => remove());
         }
-        const projectPath = fs.realpathSync.native(dir.path);
 
         if (fixturePath) {
             await fs.promises.copyDirectory(fixturePath, projectPath);
