@@ -3,6 +3,8 @@ import fs from '@file-services/node';
 import { IFeatureExecutionOptions, IWithFeatureOptions, withFeature } from './with-feature';
 import { createTempDirectorySync } from 'create-temp-directory';
 import { disposeAfter } from '@wixc3/testing';
+import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
+import { DEFAULT_TIMEOUT } from '@wixc3/patterns';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
     fixturePath?: string;
@@ -26,9 +28,12 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
         const { path: projectPath, remove } = createTempDirectorySync('local-test');
         const { persist } = testOptions;
         if (persist) {
-            after(() => remove());
+            after(function () {
+                this.timeout(DEFAULT_TIMEOUT);
+                remove();
+            });
         } else {
-            disposeAfter(() => remove());
+            disposeAfter(() => remove(), { group: DISPOSE_OF_TEMP_DIRS });
         }
 
         if (fixturePath) {
