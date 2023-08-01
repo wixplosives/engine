@@ -243,21 +243,21 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    const disposables = new Disposables();
-    disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
-    disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
-    disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
-    disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
-
-    const dispose = persist
-        ? (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options)
-        : disposeAfter;
+    let dispose = disposeAfter;
+    let isInitialized = false;
 
     if (persist) {
         after('dispose suite level page', async function () {
             this.timeout(10_000);
             await disposables.dispose();
         });
+        const disposables = new Disposables();
+        disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
+        disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
+        disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
+        disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
+
+        dispose = (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options);
     }
 
     return {
@@ -278,6 +278,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             if (!executableApp) {
                 throw new Error('Engine HTTP server is closed!');
             }
+
+            if (isInitialized && persist) {
+                throw new Error('Better error message that will explain the correct usage');
+            }
+            isInitialized = true;
 
             const runningFeature = await executableApp.runFeature({
                 featureName,
