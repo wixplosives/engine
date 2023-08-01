@@ -1,7 +1,10 @@
 import { withFeature } from '@wixc3/engine-test-kit';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { join } from 'path';
 import { Page } from 'playwright-core';
+
+chai.use(chaiAsPromised);
 
 describe('react/someplugin persistent checks', function () {
     this.timeout(20_000);
@@ -31,6 +34,8 @@ describe('react/someplugin persistent checks', function () {
     });
 
     it('should throw an error if getLoadedFeature is being called more than once', async () => {
-        expect(await getLoadedFeature()).to.throw('getLoadedFeature can be called only once when persist is true');
+        await expect(getLoadedFeature()).to.be.eventually.rejectedWith(
+            'getLoadedFeature cannot be called more than once while persist mode is on!'
+        );
     });
 });
