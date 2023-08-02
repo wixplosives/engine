@@ -432,7 +432,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             return { page: featurePage, response, getMetrics };
         },
-        dispose,
+        disposeAfterTesOrSuite: dispose,
     };
 }
 
