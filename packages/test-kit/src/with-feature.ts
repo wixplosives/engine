@@ -251,7 +251,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             await disposables.dispose();
         });
         const disposables = new Disposables();
-        disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default' });
+        disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
+        disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
         disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
         disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
 
@@ -431,6 +432,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             return { page: featurePage, response, getMetrics };
         },
+        dispose,
     };
 }
 
