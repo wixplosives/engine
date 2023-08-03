@@ -2,7 +2,7 @@ import { spawnSync, SpawnSyncOptions } from 'child_process';
 import fs from '@file-services/node';
 import { IFeatureExecutionOptions, IWithFeatureOptions, withFeature } from './with-feature';
 import { createTempDirectorySync } from 'create-temp-directory';
-import { disposeAfter } from '@wixc3/testing';
+import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
     fixturePath?: string;
@@ -13,7 +13,7 @@ export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
  * and optionally copies a fixture to it as a "project".
  */
 export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
-    const { getLoadedFeature: originalGetLoadedFeature } = withFeature(suiteOptions);
+    const { getLoadedFeature: originalGetLoadedFeature, disposeAfter } = withFeature(suiteOptions);
 
     async function getLoadedFeature(testOptions: IWithLocalFixtureOptions = suiteOptions) {
         const { fixturePath = suiteOptions.fixturePath, runOptions = suiteOptions.runOptions } = testOptions;
@@ -24,12 +24,7 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
         }
 
         const { path: projectPath, remove } = createTempDirectorySync('local-test');
-        const { persist } = testOptions;
-        if (persist) {
-            after(() => remove());
-        } else {
-            disposeAfter(() => remove());
-        }
+        disposeAfter(() => remove(), { group: DISPOSE_OF_TEMP_DIRS });
 
         if (fixturePath) {
             await fs.promises.copyDirectory(fixturePath, projectPath);
