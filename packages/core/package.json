@@ -14,7 +14,7 @@
     "@wixc3/isomorphic-worker": "^1.2.4",
     "@wixc3/patterns": "^13.0.1",
     "promise-assist": "^2.0.1",
-    "socket.io-client": "^4.7.1",
+    "socket.io-client": "^4.7.2",
     "typescript-type-utils": "^0.1.0"
   },
   "files": [
