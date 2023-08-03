@@ -7,7 +7,7 @@ import { deferred } from 'promise-assist';
  */
 export function hookPageConsole(
     page: playwright.Page,
-    filterMessage: (msgType: string, args: unknown[]) => boolean = () => true
+    filterMessage: (msgType: string, args: unknown[]) => boolean = () => true,
 ): () => void {
     let currentMessage: Promise<void> = Promise.resolve();
 

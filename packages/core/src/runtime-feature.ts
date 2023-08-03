@@ -18,7 +18,7 @@ export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> 
         public feature: InstanceType<T>,
         public api: Running<T, ENV>,
         public dependencies: RunningFeatures<InstanceType<T>['dependencies'], ENV>,
-        public environment: ENV
+        public environment: ENV,
     ) {}
     public addRunHandler = (fn: () => unknown) => {
         this.runHandlers.add(this.environment.env, fn);
@@ -61,7 +61,7 @@ export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> 
 
 export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnvironment>(
     FeatureClass: F,
-    runningEngine: RuntimeEngine<E>
+    runningEngine: RuntimeEngine<E>,
 ): RuntimeFeature<F, E> {
     const { features, runOptions, referencedEnvs, entryEnvironment } = runningEngine;
     const feature = instantiateFeature(FeatureClass);

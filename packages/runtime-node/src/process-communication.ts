@@ -24,7 +24,7 @@ export interface ICreateCommunicationOptions {
 export function createIPC(
     remoteProcess: RemoteProcess,
     socketServer: io.Server,
-    { port, onClose }: ICreateCommunicationOptions
+    { port, onClose }: ICreateCommunicationOptions,
 ) {
     const environments: Record<string, () => unknown> = {};
 

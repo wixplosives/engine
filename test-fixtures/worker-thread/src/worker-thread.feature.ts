@@ -9,7 +9,6 @@ export interface WorkerService {
     initAndCallWorkerEcho: (value: string) => Promise<string>;
 }
 
-
 export default class WorkerThread extends Feature<'worker-thread'> {
     id = 'worker-thread' as const;
     api = {

@@ -16,7 +16,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
             defineEntity<E_ENV extends EnvVisibility>(
                 defaultValue: T,
                 mergeConfig?: MergeConfigHook<T>,
-                visibleAt?: E_ENV
+                visibleAt?: E_ENV,
             ) {
                 return new Config(defaultValue, mergeConfig, visibleAt);
             },
@@ -27,7 +27,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
     constructor(
         public defaultValue: T,
         public mergeConfig: MergeConfigHook<T> = (a: T, b: Partial<T>) => ({ ...a, ...b }),
-        visibleAt = AllEnvironments as VisibleAt
+        visibleAt = AllEnvironments as VisibleAt,
     ) {
         super(AllEnvironments, visibleAt);
     }
@@ -44,7 +44,7 @@ export class Config<T extends object, VisibleAt extends EnvVisibility = Environm
         _providedValue: undefined,
         inputValue: T,
         _featureID: string,
-        _entityKey: string
+        _entityKey: string,
     ) {
         return inputValue;
     }

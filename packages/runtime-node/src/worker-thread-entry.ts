@@ -38,7 +38,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
                     },
                 },
             },
-        })
+        }),
     );
 
     const engine = await runNodeEnvironment({
@@ -58,7 +58,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
             worker.removeEventListener('message', messageHandler);
             return engine.shutdown();
         },
-        { name: `workerThreadEntry engine shutdown ${engine.entityID}`, timeout: 10_000 }
+        { name: `workerThreadEntry engine shutdown ${engine.entityID}`, timeout: 10_000 },
     );
 };
 

@@ -42,7 +42,7 @@ function mkCompare<T>(params: SlotOrdering<T>): Compare<T> {
                 func = composeCompare<T>(
                     func,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    (a: any, b: any) => getItemOrder(mode, a[key]) - getItemOrder(mode, b[key])
+                    (a: any, b: any) => getItemOrder(mode, a[key]) - getItemOrder(mode, b[key]),
                 );
             }
         }

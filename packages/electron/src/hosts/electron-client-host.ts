@@ -31,7 +31,7 @@ export class ElectronClientHost extends BaseHost {
 export function registerElectronHostEnvironment(
     ipcRenderer: IpcRenderer,
     envName: string,
-    communication: Communication
+    communication: Communication,
 ): BaseHost {
     const comHost = new ElectronClientHost(ipcRenderer);
     communication.registerEnv(envName, new ElectronClientHost(ipcRenderer));

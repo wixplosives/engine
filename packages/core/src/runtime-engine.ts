@@ -20,7 +20,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         public entryEnvironment: ENV,
         topLevelConfig: TopLevelConfig = [],
         public runOptions: IRunOptions = new Map(),
-        readonly featureShutdownTimeout = 10_000
+        readonly featureShutdownTimeout = 10_000,
     ) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
         this.referencedEnvs = new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(entryEnvironment)]);
@@ -89,7 +89,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
             await timeout(
                 feature.dispose(),
                 this.featureShutdownTimeout,
-                `Failed to dispose feature: ${feature.feature.id}`
+                `Failed to dispose feature: ${feature.feature.id}`,
             );
         }
     };

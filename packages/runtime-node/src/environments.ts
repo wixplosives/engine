@@ -7,7 +7,7 @@ export function resolveEnvironments(
     featureName: string,
     features: Map<string, IStaticFeatureDefinition>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes,
-    filterByContext = true
+    filterByContext = true,
 ) {
     const environmentTypesToFilterBy = Array.isArray(envTypes) ? envTypes : [envTypes];
     const filteredEnvironments = new Set<IEnvironmentDescriptor>();
@@ -19,7 +19,7 @@ export function resolveEnvironments(
     }
     const { resolvedContexts } = featureDefinition;
     const deepDefsForFeature = flattenTree(featureDefinition, (f) =>
-        f.dependencies.map((fName) => features.get(fName)!)
+        f.dependencies.map((fName) => features.get(fName)!),
     );
     for (const { exportedEnvs = [] } of deepDefsForFeature) {
         for (const exportedEnv of exportedEnvs) {

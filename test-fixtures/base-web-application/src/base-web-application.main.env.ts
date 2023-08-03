@@ -41,7 +41,7 @@ BaseAppFeature.setup(client, ({ clientSlot, dataProvider }, { COM: { communicati
         serverSlotTitle,
         serverSlotValue,
         getSlotValues,
-        iframeElement
+        iframeElement,
     );
 
     iframeInitializer({ communication, env: iframe, iframeElement }).catch(console.error);

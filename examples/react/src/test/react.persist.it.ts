@@ -35,7 +35,7 @@ describe('react/someplugin persistent checks', function () {
 
     it('should throw an error if getLoadedFeature is being called more than once', async () => {
         await expect(getLoadedFeature()).to.be.eventually.rejectedWith(
-            'getLoadedFeature cannot be called more than once while persist mode is on!'
+            'getLoadedFeature cannot be called more than once while persist mode is on!',
         );
     });
 });

@@ -7,5 +7,5 @@ com.registerAPI(
     { id: 'myApi' },
     {
         echo: () => 'yo',
-    }
+    },
 );

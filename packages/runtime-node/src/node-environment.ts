@@ -29,7 +29,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
                     host,
                     id: name,
                 },
-            })
+            }),
         );
     }
 
@@ -38,7 +38,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
             engineerMetadataConfig: {
                 applicationPath: bundlePath,
             },
-        })
+        }),
     );
 
     const featureLoaders = createFeatureLoaders(new Map(features), {
@@ -51,7 +51,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     const featureLoader = new FeatureLoadersRegistry(new Map(Object.entries(featureLoaders)));
     const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(
         featureName,
-        Object.fromEntries(options || [])
+        Object.fromEntries(options || []),
     );
 
     const engine = new RuntimeEngine(
@@ -64,7 +64,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
             }),
             ...config,
         ],
-        new Map(options)
+        new Map(options),
     );
     // we don't wait here because the process of node environment manager prepare environment is two step process
     void engine.run(entryFeature);
@@ -73,7 +73,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
 
 export function createFeatureLoaders(
     features: Map<string, IStaticFeatureDefinition>,
-    { childEnvName, env }: IEnvironmentDescriptor
+    { childEnvName, env }: IEnvironmentDescriptor,
 ) {
     const featureLoaders: Record<string, IFeatureLoader> = {};
     for (const {

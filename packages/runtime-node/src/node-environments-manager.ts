@@ -126,7 +126,7 @@ export class NodeEnvironmentsManager {
         private socketServer: io.Server,
         private options: INodeEnvironmentsManagerOptions,
         private context: string,
-        private socketServerOptions?: Partial<io.ServerOptions>
+        private socketServerOptions?: Partial<io.ServerOptions>,
     ) {}
 
     public async runServerEnvironments({
@@ -212,7 +212,7 @@ export class NodeEnvironmentsManager {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
                 configName,
-                nodeEnv.name
+                nodeEnv.name,
             );
             const config: TopLevelConfig = [];
             const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
@@ -376,7 +376,7 @@ export class NodeEnvironmentsManager {
             if (inspect && mode !== 'forked') {
                 console.warn(
                     `Cannot inspect env without forking new process.
-                    Launchihg environment ${nodeEnv.name} on remote process.`
+                    Launchihg environment ${nodeEnv.name} on remote process.`,
                 );
             }
             const { childProcess, port, start } = await this.runRemoteNodeEnvironment(nodeEnvironmentOptions);
@@ -415,7 +415,7 @@ export class NodeEnvironmentsManager {
                 try {
                     const { close: wsEnvClose } = await runWSEnvironment(
                         socketServer,
-                        serverEnvironmentOptions
+                        serverEnvironmentOptions,
                     ).start();
                     close = wsEnvClose;
                 } catch (e) {
@@ -455,7 +455,7 @@ export class NodeEnvironmentsManager {
             if (!configDefinition) {
                 const configNames = Array.from(configurations.keys());
                 throw new Error(
-                    `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`
+                    `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`,
                 );
             }
             for (const definition of configDefinition) {
@@ -468,8 +468,8 @@ export class NodeEnvironmentsManager {
                         console.error(
                             new Error(
                                 `while loading config "${definition.name}". importing ${definition.filePath} failed`,
-                                { cause: e }
-                            )
+                                { cause: e },
+                            ),
                         );
                     }
                 }

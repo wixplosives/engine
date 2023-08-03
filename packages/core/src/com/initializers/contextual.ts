@@ -3,7 +3,7 @@ import type { MapBy } from '../../types';
 import type { InitializerOptions } from './types';
 
 export type EnvironmentInitializer<T, OPTIONS extends InitializerOptions = InitializerOptions> = (
-    options: OPTIONS
+    options: OPTIONS,
 ) => T;
 
 export type EnvironmentInitializers<ENVS extends Environment[], EnvToken extends Promise<{ id: string }>> = {
@@ -12,7 +12,7 @@ export type EnvironmentInitializers<ENVS extends Environment[], EnvToken extends
 
 export interface ContextualEnvironmentInitializerOptions<
     ENVS extends Environment[],
-    EnvToken extends Promise<{ id: string }>
+    EnvToken extends Promise<{ id: string }>,
 > extends InitializerOptions {
     envInitializers: EnvironmentInitializers<ENVS, EnvToken>;
     env: ContextualEnvironment<string, EnvironmentMode, ENVS>;

@@ -232,7 +232,7 @@ describe('Communication API', function () {
                 listen: {
                     listener: true,
                 },
-            }
+            },
         );
         const { promise, resolve } = deferred<TestServiceData>();
 

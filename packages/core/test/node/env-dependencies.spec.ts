@@ -169,8 +169,8 @@ describe('ENV dependencies', () => {
                             service2: EchoService;
                             service3: EchoService;
                         }
-                    >
-                ) => true
+                    >,
+                ) => true,
             );
         });
     });
@@ -205,7 +205,7 @@ describe('ENV dependencies', () => {
         TestFeature.setup(baseEnv, (entry) => {
             typeCheck(
                 (_service: EQUAL<(typeof entry)['service'], MultiEnvAsyncApi<{ increment: (n: number) => number }>>) =>
-                    true
+                    true,
             );
             typeCheck(
                 (
@@ -216,8 +216,8 @@ describe('ENV dependencies', () => {
                                 multiplyThenIncrement: (n: number) => number;
                             }>;
                         }
-                    >
-                ) => true
+                    >,
+                ) => true,
             );
 
             return {
@@ -237,11 +237,11 @@ describe('ENV dependencies', () => {
                         (typeof entry)['service2'],
                         {
                             get(
-                                token: EnvironmentInstanceToken
+                                token: EnvironmentInstanceToken,
                             ): AsyncApi<{ multiplyThenIncrement: (n: number) => number }>;
                         }
-                    >
-                ) => true
+                    >,
+                ) => true,
             );
 
             return {
@@ -256,7 +256,7 @@ describe('ENV dependencies', () => {
         TestFeature.setup(otherEnv, (entry) => {
             typeCheck(
                 (_service: EQUAL<(typeof entry)['service'], MultiEnvAsyncApi<{ increment: (n: number) => number }>>) =>
-                    true
+                    true,
             );
             typeCheck(
                 (
@@ -264,11 +264,11 @@ describe('ENV dependencies', () => {
                         (typeof entry)['service2'],
                         {
                             get(
-                                token: EnvironmentInstanceToken
+                                token: EnvironmentInstanceToken,
                             ): AsyncApi<{ multiplyThenIncrement: (n: number) => number }>;
                         }
-                    >
-                ) => true
+                    >,
+                ) => true,
             );
             return {
                 caller: {

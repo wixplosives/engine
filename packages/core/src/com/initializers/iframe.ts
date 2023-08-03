@@ -108,7 +108,7 @@ async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: St
                 oncePageHide: {
                     listener: true,
                 },
-            }
+            },
         );
         const postInitHref = await api.getHref();
 

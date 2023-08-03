@@ -13,7 +13,7 @@ export interface IStartRemoteNodeEnvironmentOptions {
 
 export async function startRemoteNodeEnvironment(
     entryFilePath: string,
-    { inspect, port, socketServerOptions = {}, requiredPaths = [] }: IStartRemoteNodeEnvironmentOptions
+    { inspect, port, socketServerOptions = {}, requiredPaths = [] }: IStartRemoteNodeEnvironmentOptions,
 ) {
     const execArgv = inspect ? ['--inspect'] : [];
 
@@ -29,7 +29,7 @@ export async function startRemoteNodeEnvironment(
         ],
         {
             execArgv,
-        }
+        },
     );
     await once(childProccess, 'message');
     childProccess.on('error', (e) => console.error(`error in forked process`, e));

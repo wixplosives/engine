@@ -18,7 +18,7 @@ multiFeature.setup(multiServerEnv, ({ onDispose, multiWorkerEcho }, { COM: { com
                             id: worker.id,
                         });
                         return await workerEcho.echo(value);
-                    })
+                    }),
                 );
 
                 return responses;

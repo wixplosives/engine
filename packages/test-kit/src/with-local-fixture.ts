@@ -19,7 +19,7 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
         const { fixturePath = suiteOptions.fixturePath, runOptions = suiteOptions.runOptions } = testOptions;
         if (runOptions && runOptions.projectPath) {
             throw new Error(
-                `runOptions["projectPath"] shouldn't be provided. It will get overriden by returned projectPath.`
+                `runOptions["projectPath"] shouldn't be provided. It will get overriden by returned projectPath.`,
             );
         }
 
@@ -54,7 +54,7 @@ const spawnSyncSafe = ((...args: Parameters<typeof spawnSync>) => {
         throw new Error(
             `Command "${args.filter((arg) => typeof arg === 'string').join(' ')}" failed with exit code ${
                 spawnResult.status ?? 'null'
-            }.`
+            }.`,
         );
     }
     return spawnResult;

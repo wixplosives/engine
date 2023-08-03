@@ -74,7 +74,7 @@ describe('Socket communication', () => {
             {
                 sayHello: () => 'hello',
                 sayHelloWithDataAndParams: (name: string) => `hello ${name}`,
-            }
+            },
         );
 
         const methods = clientCom.apiProxy<ICommunicationTestApi>({ id: 'server-host' }, { id: COMMUNICATION_ID });
@@ -92,7 +92,7 @@ describe('Socket communication', () => {
             {
                 sayHello: () => 'hello',
                 sayHelloWithDataAndParams: (name: string) => `hello ${name}`,
-            }
+            },
         );
 
         const methods = clientCom.apiProxy<ICommunicationTestApi>({ id: 'server-host' }, { id: COMMUNICATION_ID });
@@ -134,7 +134,7 @@ describe('Socket communication', () => {
                 unsub: {
                     removeListener: 'sub',
                 },
-            }
+            },
         );
 
         const listener = spy();
@@ -171,7 +171,7 @@ describe('Socket communication', () => {
             {
                 sayHello: () => 'hello',
                 sayHelloWithDataAndParams: (name: string) => `hello ${name}`,
-            }
+            },
         );
 
         secondServerCom.registerAPI<ICommunicationTestApi>(
@@ -179,16 +179,16 @@ describe('Socket communication', () => {
             {
                 sayHello: () => 'bye',
                 sayHelloWithDataAndParams: (name: string) => `bye ${name}`,
-            }
+            },
         );
 
         const Server1Methods = clientCom.apiProxy<ICommunicationTestApi>(
             { id: 'server-host' },
-            { id: COMMUNICATION_ID }
+            { id: COMMUNICATION_ID },
         );
         const Server2Methods = clientCom.apiProxy<ICommunicationTestApi>(
             { id: 'second-server-host' },
-            { id: COMMUNICATION_ID }
+            { id: COMMUNICATION_ID },
         );
 
         expect(await Server1Methods.sayHelloWithDataAndParams('test')).to.eq('hello test');
@@ -208,16 +208,16 @@ describe('Socket communication', () => {
             {
                 sayHello: () => 'hello',
                 sayHelloWithDataAndParams: (name: string) => `hello ${name}`,
-            }
+            },
         );
 
         const Server1Methods = clientCom.apiProxy<ICommunicationTestApi>(
             { id: 'server-host' },
-            { id: COMMUNICATION_ID }
+            { id: COMMUNICATION_ID },
         );
         const Server2Methods = clientCom2.apiProxy<ICommunicationTestApi>(
             { id: 'server-host' },
-            { id: COMMUNICATION_ID }
+            { id: COMMUNICATION_ID },
         );
 
         expect(await Server1Methods.sayHelloWithDataAndParams('test')).to.eq('hello test');
@@ -242,7 +242,7 @@ describe('Socket communication', () => {
             },
             {
                 timeout: 2_000,
-            }
+            },
         );
     });
 
@@ -309,7 +309,7 @@ describe('IPC communication', () => {
             {
                 id: 'process',
             },
-            { id: 'myApi' }
+            { id: 'myApi' },
         );
 
         expect(await proxy.echo()).to.eq('yo');
@@ -326,7 +326,7 @@ describe('IPC communication', () => {
             {
                 id: 'process',
             },
-            { id: 'myApi' }
+            { id: 'myApi' },
         );
 
         forked.kill();

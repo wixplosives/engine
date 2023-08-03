@@ -12,9 +12,8 @@ import type { IBuildCommandOptions, ICompilerOptions } from './types';
 export const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
 
-
 export function getExportedEnvironments(
-    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
+    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>,
 ): Set<IEnvironmentDescriptor> {
     const environments = new Set<IEnvironmentDescriptor>();
     for (const { exportedEnvs } of features.values()) {
@@ -50,7 +49,7 @@ export const toCompilerOptions = (
     opts: BuildOptions,
     analyzed: FoundFeatures,
     config: EngineConfig,
-    environments: ICompilerOptions['environments']
+    environments: ICompilerOptions['environments'],
 ): ICompilerOptions => ({
     ...analyzed,
     environments,
@@ -81,5 +80,5 @@ export const compile = (compiler: webpack.MultiCompiler) =>
             } else {
                 resolve(s!);
             }
-        })
+        }),
     );

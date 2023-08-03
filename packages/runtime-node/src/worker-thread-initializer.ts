@@ -63,7 +63,7 @@ export function workerThreadInitializer({
             },
             {
                 name: `worker thread ${instanceId} communication cleanup`,
-            }
+            },
         );
 
         const runOptions: WorkerThreadEnvironmentStartupOptions = {

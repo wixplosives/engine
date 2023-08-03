@@ -19,7 +19,7 @@ export class LoggerService extends EventEmitter<{ message: LogMessage }> {
             severity: LogLevel;
             logToConsole?: boolean;
             maxLogMessages?: number;
-        } = { severity: LogLevel.DEBUG }
+        } = { severity: LogLevel.DEBUG },
     ) {
         super();
     }

@@ -7,7 +7,10 @@ export interface CompilerExtension {
 }
 
 export class BaseCompiler {
-    constructor(private codeService: AsyncApi<CodeService>, private compilers: () => CompilerExtension[]) {}
+    constructor(
+        private codeService: AsyncApi<CodeService>,
+        private compilers: () => CompilerExtension[],
+    ) {}
     public async compile() {
         const content = await this.codeService.getContent();
         const thing = this.compilers().filter((i) => i.matcher(content));

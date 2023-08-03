@@ -13,7 +13,7 @@ export interface IFeatureDirectory {
 export function loadFeatureDirectory(
     directoryPath: string,
     fs: IFileSystemSync,
-    ignoreConfigs = false
+    ignoreConfigs = false,
 ): IFeatureDirectory {
     const dir = {
         features: [] as string[],

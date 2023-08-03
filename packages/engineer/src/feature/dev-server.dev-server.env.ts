@@ -35,7 +35,7 @@ devServerFeature.setup(
     devServerEnv,
     (
         { run, devServerConfig, engineerWebpackConfigs, serverListeningHandlerSlot, onDispose },
-        { COM: { communication } }
+        { COM: { communication } },
     ) => {
         const {
             httpServerPort,
@@ -96,11 +96,11 @@ devServerFeature.setup(
             const { features, configurations, packages } = application.getFeatures(
                 singleFeature,
                 featureName,
-                providedFeatureDiscoveryRoot ?? featureDiscoveryRoot
+                providedFeatureDiscoveryRoot ?? featureDiscoveryRoot,
             );
 
             const staticFeatures = new Map(
-                [...features].map(([featureName, feature]) => [featureName, feature.toJSON()])
+                [...features].map(([featureName, feature]) => [featureName, feature.toJSON()]),
             );
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
@@ -124,10 +124,10 @@ devServerFeature.setup(
                                         isWorkspace: packages.length > 1,
                                         featureName,
                                         foundFeatures: Object.values(featureEnvDefinitions).map(
-                                            ({ featureName, configurations }) => ({ featureName, configurations })
+                                            ({ featureName, configurations }) => ({ featureName, configurations }),
                                         ),
                                     },
-                                })
+                                }),
                             );
 
                             return config;
@@ -135,9 +135,9 @@ devServerFeature.setup(
                         requiredPaths,
                     },
                     basePath,
-                    resolvedSocketServerOptions
+                    resolvedSocketServerOptions,
                 ),
-                nodeEnvironmentsMode || engineConfig?.nodeEnvironmentsMode
+                nodeEnvironmentsMode || engineConfig?.nodeEnvironmentsMode,
             );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll(), {
@@ -206,12 +206,12 @@ devServerFeature.setup(
                         new Promise<void>((res, rej) => {
                             devMiddleware.close((e) => (e ? rej(e) : res()));
                         }),
-                    { name: 'close dev middleware', timeout: 10_000 }
+                    { name: 'close dev middleware', timeout: 10_000 },
                 );
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 app.use(devMiddleware);
                 compilationPromises.push(
-                    new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve()))
+                    new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve())),
                 );
             }
 
@@ -219,7 +219,7 @@ devServerFeature.setup(
 
             app.use(
                 '/engine-feature',
-                createFeaturesEngineRouter(application.getOverrideConfigsMap(), application.getNodeEnvManager()!)
+                createFeaturesEngineRouter(application.getOverrideConfigsMap(), application.getNodeEnvManager()!),
             );
 
             app.get('/engine-state', (_req, res) => {
@@ -259,14 +259,14 @@ devServerFeature.setup(
                         new Promise<void>((res, rej) => {
                             engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
                         }),
-                    { name: 'close engineer dev middleware', timeout: 10_000 }
+                    { name: 'close engineer dev middleware', timeout: 10_000 },
                 );
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 app.use(engineerDevMiddleware);
                 compilationPromises.push(
                     new Promise<void>((resolve) =>
-                        engineerCompilers.hooks.done.tap('engineer dashboard', () => resolve())
-                    )
+                        engineerCompilers.hooks.done.tap('engineer dashboard', () => resolve()),
+                    ),
                 );
             }
 
@@ -297,5 +297,5 @@ devServerFeature.setup(
             application,
             devServerActions: { close: disposables.dispose },
         };
-    }
+    },
 );

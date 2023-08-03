@@ -23,7 +23,7 @@ export const RuntimeOption = React.memo<RuntimeOptionProps>(function RuntimeOpti
                 runtimeArguments.splice(index, 1, { ...runtimeArguments[index]!, [key]: runtimeValue });
                 onChange([...runtimeArguments]);
             },
-        [runtimeArguments, index, onChange]
+        [runtimeArguments, index, onChange],
     );
     return (
         <div className={style(classes.root, className)}>

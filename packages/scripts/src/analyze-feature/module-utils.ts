@@ -53,7 +53,7 @@ export const getFeatureModules = (module: NodeJS.Module) =>
     flattenTree(
         module,
         (m) => m.children,
-        (m) => isFeatureFile(basename(m.filename))
+        (m) => isFeatureFile(basename(m.filename)),
     );
 
 export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
@@ -72,7 +72,7 @@ export function computeUsedContext(featureName: string, features: Map<string, IF
         .map((f) => {
             if (!featureToDef.has(f)) {
                 throw new Error(
-                    `Cannot find feature definition for feature with id: ${f.id}. This usually occurs due to duplicate engine/feature versions. Check your lock file.`
+                    `Cannot find feature definition for feature with id: ${f.id}. This usually occurs due to duplicate engine/feature versions. Check your lock file.`,
                 );
             }
             return featureToDef.get(f)!;

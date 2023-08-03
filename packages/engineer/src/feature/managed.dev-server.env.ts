@@ -14,7 +14,7 @@ managedFeature.setup(
                 devServerActions: { close: closeServer },
                 application,
             },
-        }
+        },
     ) => {
         const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
             if (process.send) {
@@ -49,5 +49,5 @@ managedFeature.setup(
                 process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
             }
         });
-    }
+    },
 );

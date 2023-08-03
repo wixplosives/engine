@@ -5,7 +5,7 @@ import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 export function getConfig(
     configName: string,
     configurations: SetMultiMap<string, IConfigDefinition>,
-    envName: string
+    envName: string,
 ): TopLevelConfig {
     const config: TopLevelConfig = [];
     const configs = configurations.get(configName);

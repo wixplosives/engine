@@ -11,7 +11,7 @@ export type TopLevelConfigProvider = (envName: string) => TopLevelConfig;
 
 export function createStaticFeatureDefinition(
     partial: Partial<IStaticFeatureDefinition> &
-        Pick<IStaticFeatureDefinition, 'filePath' | 'packageName' | 'scopedName'>
+        Pick<IStaticFeatureDefinition, 'filePath' | 'packageName' | 'scopedName'>,
 ): IStaticFeatureDefinition {
     return {
         contextFilePaths: {},
@@ -117,11 +117,11 @@ export const isEnvironmentPortMessage = (message: ICommunicationMessage): messag
     message.id === 'port-request';
 
 export const isEnvironmentMetricsRequestMessage = (
-    message: ICommunicationMessage
+    message: ICommunicationMessage,
 ): message is IEnvironmentMetricsRequest => message.id === 'metrics-request';
 
 export const isEnvironmentMetricsResponseMessage = (
-    message: ICommunicationMessage
+    message: ICommunicationMessage,
 ): message is IEnvironmentMetricsResponse => message.id === 'metrics-response';
 
 export interface IConfigDefinition {

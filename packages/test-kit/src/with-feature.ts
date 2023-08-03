@@ -198,7 +198,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         (headless === false || devtools === true || slowMo !== undefined || runningApplicationPort !== undefined)
     ) {
         throw new Error(
-            `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`
+            `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`,
         );
     }
 
@@ -306,7 +306,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     group: WITH_FEATURE_DISPOSABLES,
                     name: `close feature "${featureName}"`,
                     timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
-                }
+                },
             );
 
             const search = toSearchQuery({
@@ -363,14 +363,14 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     {
                         name: 'stop tracing',
                         timeout: withFeatureOptions?.saveTraceTimeout ?? 10_000,
-                    }
+                    },
                 );
             }
 
             function onPageError(e: Error) {
                 if (
                     !allowedErrors.some((allowed) =>
-                        allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed
+                        allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed,
                     )
                 ) {
                     capturedErrors.push(e);

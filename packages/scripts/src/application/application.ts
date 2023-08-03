@@ -150,7 +150,7 @@ export class Application {
                 requiredPaths,
             },
             this.basePath,
-            { ...socketServerOptions, ...configSocketServerOptions }
+            { ...socketServerOptions, ...configSocketServerOptions },
         );
         disposables.add(() => nodeEnvironmentManager.closeAll(), {
             name: 'NodeEnvironmentManager',
@@ -244,7 +244,7 @@ export class Application {
             Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
                 envName,
                 require.resolve(filePath, { paths: [this.outputPath] }),
-            ])
+            ]),
         );
     }
 
@@ -296,7 +296,7 @@ export class Application {
                             const [configName] = configFileName.split('.') as [string];
 
                             const config = (await fs.promises.readJsonFile(
-                                join(featureConfigsDirectory, possibleConfigFile.name)
+                                join(featureConfigsDirectory, possibleConfigFile.name),
                             )) as TopLevelConfig;
 
                             configurations.add(`${featureName}/${configName}`, config);
@@ -313,11 +313,11 @@ export class Application {
         features: Map<string, IFeatureDefinition>,
         opts: IBuildCommandOptions,
         entryPoints: Record<string, Record<string, string>>,
-        pathToSources: string
+        pathToSources: string,
     ) {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()).map(([featureName, featureDef]) =>
-                this.generateReMappedFeature(featureDef, pathToSources, featureName)
+                this.generateReMappedFeature(featureDef, pathToSources, featureName),
             ),
             defaultConfigName: opts.configName,
             defaultFeatureName: opts.featureName,
@@ -331,7 +331,7 @@ export class Application {
     private generateReMappedFeature(
         featureDef: IFeatureDefinition,
         pathToSources: string,
-        featureName: string
+        featureName: string,
     ): [featureName: string, featureDefinition: IFeatureDefinition] {
         const sourcesRoot = fs.resolve(featureDef.directoryPath, pathToSources);
         return [
@@ -353,7 +353,7 @@ export class Application {
             isRoot,
             directoryPath,
         }: IFeatureDefinition,
-        sourcesRoot: string
+        sourcesRoot: string,
     ) {
         if (isRoot) {
             // mapping all paths to the sources folder
@@ -366,7 +366,7 @@ export class Application {
                 contextFilePaths[key] = this.remapPathToSourcesFolder(
                     sourcesRoot,
                     contextFilePaths[key]!,
-                    directoryPath
+                    directoryPath,
                 );
             }
 
@@ -374,7 +374,7 @@ export class Application {
                 preloadFilePaths[key] = this.remapPathToSourcesFolder(
                     sourcesRoot,
                     preloadFilePaths[key]!,
-                    directoryPath
+                    directoryPath,
                 );
             }
         }
@@ -388,21 +388,21 @@ export class Application {
                 packageName,
                 context,
                 isRoot && outputDirInBasePath,
-                envFilePaths
+                envFilePaths,
             ),
             contextFilePaths: scopeFilePathsToPackage(
                 fs,
                 packageName,
                 context,
                 isRoot && outputDirInBasePath,
-                contextFilePaths
+                contextFilePaths,
             ),
             preloadFilePaths: scopeFilePathsToPackage(
                 fs,
                 packageName,
                 context,
                 isRoot && outputDirInBasePath,
-                preloadFilePaths
+                preloadFilePaths,
             ),
         };
     }
@@ -479,7 +479,7 @@ export class Application {
 
     protected getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
-        configurations: SetMultiMap<string, IConfigDefinition>
+        configurations: SetMultiMap<string, IConfigDefinition>,
     ) {
         const rootFeatures = Array.from(features.values()).filter(({ isRoot }) => isRoot);
         const configNames = Array.from(configurations.keys());
@@ -515,12 +515,12 @@ export class Application {
                         return {} as IFeatureDefinition;
                     }
                     return feature;
-                })
+                }),
             ),
         ].map(({ scopedName }) => scopedName);
         if (nonFoundDependencies.length) {
             throw new Error(
-                `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`
+                `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`,
             );
         }
         for (const [foundFeatureName] of features) {

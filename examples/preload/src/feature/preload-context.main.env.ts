@@ -20,7 +20,7 @@ contextualFeature.setup(mainEnv, ({ run, procEnvMessages: { getProcEnvMessages }
                 proc: procMessages,
             },
             null,
-            2
+            2,
         );
 
         document.body.appendChild(pre);

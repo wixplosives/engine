@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 export type URLParamsValue<KEY extends string> = Record<KEY, string | undefined>;
 
 export const useUrlParams = <KEY extends string>(
-    defaults: URLParamsValue<KEY>
+    defaults: URLParamsValue<KEY>,
 ): [URLParamsValue<KEY>, (t: URLParamsValue<KEY>) => void] => {
     const initialValus = useMemo(() => {
         const params = new URLSearchParams(window.location.search);
@@ -29,11 +29,11 @@ export const useUrlParams = <KEY extends string>(
                 Object.entries(values).reduce((acc, [key, val]) => {
                     return `${acc} ${key}:${(val as string) || '*unselected*'}`;
                 }, 'Dashboard>'),
-                url.toString()
+                url.toString(),
             );
             setValues(values);
         },
-        [defaults]
+        [defaults],
     );
     return [values, set];
 };

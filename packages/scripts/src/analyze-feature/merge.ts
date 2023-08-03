@@ -6,7 +6,7 @@ export const mergeAll = <T>(results: Iterable<T>): T =>
         results,
         // @ts-expect-error making overloading the function redundant
         (merged, newItem) => mergeResults(merged, newItem) as T,
-        undefined as unknown as T
+        undefined as unknown as T,
     );
 
 export function mergeResults<K, V>(a?: Map<K, V>, b?: Map<K, V>): Map<K, V>;
@@ -24,7 +24,7 @@ export function mergeResults<M extends Map<K, V> | Set<V> | SetMultiMap<K, V> | 
                 result[key] = mergeResults(result[key], value as object);
                 return result;
             },
-            {} as any
+            {} as any,
         ) as M;
     }
     const type = getIterableType(a, b);

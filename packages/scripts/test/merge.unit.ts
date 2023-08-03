@@ -28,7 +28,7 @@ describe('mergeResults', () => {
                 new Map([
                     [0, 0],
                     [1, 1],
-                ])
+                ]),
             );
         });
         it('merges Maps with overlaps, overriding the first arg', () => {
@@ -46,7 +46,7 @@ describe('mergeResults', () => {
                 new SetMultiMap([
                     [0, 0],
                     [1, 1],
-                ])
+                ]),
             );
         });
         it('merges SetMultiMap with overlaps, merging the value sets', () => {
@@ -57,7 +57,7 @@ describe('mergeResults', () => {
                 new SetMultiMap([
                     [0, 0],
                     [0, 1],
-                ])
+                ]),
             );
         });
     });
@@ -86,7 +86,7 @@ describe('mergeResults', () => {
                     a: new SetMultiMap([[0, 1]]),
                     b: new Map([[1, 1]]),
                     c: new Set([1]),
-                }
+                },
             );
             expect(actual).to.eql({
                 a: new SetMultiMap([
@@ -114,7 +114,7 @@ describe('mergeResults', () => {
                 {
                     b: new Map([[1, 1]]),
                     c: new Set([1]),
-                }
+                },
             );
             expect(actual).to.eql({
                 a: new SetMultiMap([[0, 0]]),

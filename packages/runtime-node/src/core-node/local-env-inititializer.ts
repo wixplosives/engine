@@ -10,7 +10,7 @@ export const localNodeEnvironmentInitializer = ({ communication: com, env }: Ini
     const rootEnvHost = com.getEnvironmentHost(ENGINE_ROOT_ENVIRONMENT_ID)!;
     if (!rootEnvHost) {
         throw new Error(
-            `Registration for ${ENGINE_ROOT_ENVIRONMENT_ID} didn't happen. Cannot connect to remote environment`
+            `Registration for ${ENGINE_ROOT_ENVIRONMENT_ID} didn't happen. Cannot connect to remote environment`,
         );
     }
     if (!com.getEnvironmentHost(env.env)) {

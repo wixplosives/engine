@@ -7,7 +7,7 @@ import type { IProcessMessage, NodeEnvironmentsManager } from '@wixc3/engine-run
 
 export function createFeaturesEngineRouter(
     overrideConfigsMap: Map<string, OverrideConfig>,
-    nodeEnvironmentManager: NodeEnvironmentsManager
+    nodeEnvironmentManager: NodeEnvironmentsManager,
 ) {
     const router = Router();
     router.use(bodyParser.json());

@@ -18,7 +18,7 @@ guiFeature.setup(
                 serverListeningHandlerSlot,
                 application,
             },
-        }
+        },
     ) => {
         const baseConfigPath = fs.findClosestFileSync(__dirname, 'webpack.config.js');
         const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
@@ -50,7 +50,7 @@ guiFeature.setup(
                 title,
                 favicon,
                 outputPath: application.outputPath,
-            })
+            }),
         );
 
         if (log) {
@@ -59,7 +59,7 @@ guiFeature.setup(
                 console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
             });
         }
-    }
+    },
 );
 
 function createDashboardConfig({

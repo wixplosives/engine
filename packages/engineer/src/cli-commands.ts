@@ -22,7 +22,10 @@ const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '';
 export type CliCommand = (program: Command) => void;
 
 export class CliApplication {
-    constructor(protected program: Command, commands: Iterable<CliCommand>) {
+    constructor(
+        protected program: Command,
+        commands: Iterable<CliCommand>,
+    ) {
         for (const command of commands) {
             command(program);
         }
@@ -41,12 +44,12 @@ const engineCommandBuilder = (program: Command, command: string): Command => {
             '-f, --feature <feature>',
             `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName.
         featureName and packageName are the same then featureName is sufficient
-    `
+    `,
         )
         .option(
             '-c, --config <config>',
             `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName.
-    `
+    `,
         )
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--inspect')
@@ -66,13 +69,13 @@ export const startCommand: CliCommand = (program) =>
             '--autoLaunch [autoLaunch]',
             'should auto launch node environments if feature name is provided',
             parseBoolean,
-            true
+            true,
         )
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
         .option(
             '--nodeEnvironmentsMode <nodeEnvironmentsMode>',
-            'one of "new-server", "same-server" or "forked" for choosing how to launch node envs'
+            'one of "new-server", "same-server" or "forked" for choosing how to launch node envs',
         )
         .option('--no-log', 'disable console logs')
         .allowUnknownOption(true)
@@ -146,11 +149,11 @@ export function buildCommand(program: Command) {
         .option('--publicPathVariableName <publicPathVariableName>', 'global variable name which stores public path')
         .option(
             '--configLoaderModuleName [configLoaderModuleName]',
-            'custom config loader module name. used for static builds only'
+            'custom config loader module name. used for static builds only',
         )
         .option(
             '--sourcesRoot <sourcesRoot>',
-            'the directory where the feature library will be published at (relative to the base path). default: "."'
+            'the directory where the feature library will be published at (relative to the base path). default: "."',
         )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -209,7 +212,7 @@ export function runCommand(program: Command) {
             '--autoLaunch <autoLaunch>',
             'should auto launch node environments if feature name is provided',
             (param) => param === 'true',
-            true
+            true,
         )
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .allowUnknownOption(true)

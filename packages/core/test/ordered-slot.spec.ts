@@ -41,7 +41,7 @@ describe('ordered-slot', () => {
         slot.setItems(testItems);
 
         expect(slotToString(slot)).to.eql(
-            `${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2, ${MENU_HELP}:1, ${MENU_HELP}:2`
+            `${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2, ${MENU_HELP}:1, ${MENU_HELP}:2`,
         );
     });
 
@@ -51,7 +51,7 @@ describe('ordered-slot', () => {
             ['age', [1, 2]],
         ]);
         expect(slotToString(slot)).to.eql(
-            `${MENU_HELP}:1, ${MENU_HELP}:2, ${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2`
+            `${MENU_HELP}:1, ${MENU_HELP}:2, ${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2`,
         );
 
         slot.setSortingOrder([
@@ -59,7 +59,7 @@ describe('ordered-slot', () => {
             ['name', [MENU_HELP, MENU_FILE, MENU_EDIT]],
         ]);
         expect(slotToString(slot)).to.eql(
-            `${MENU_HELP}:1, ${MENU_FILE}:1, ${MENU_EDIT}:1, ${MENU_HELP}:2, ${MENU_FILE}:2, ${MENU_EDIT}:2`
+            `${MENU_HELP}:1, ${MENU_FILE}:1, ${MENU_EDIT}:1, ${MENU_HELP}:2, ${MENU_FILE}:2, ${MENU_EDIT}:2`,
         );
 
         slot.setSortingOrder([
@@ -67,7 +67,7 @@ describe('ordered-slot', () => {
             ['name', [MENU_HELP, MENU_FILE, MENU_EDIT]],
         ]);
         expect(slotToString(slot)).to.eql(
-            `${MENU_HELP}:1, ${MENU_FILE}:1, ${MENU_EDIT}:1, ${MENU_HELP}:2, ${MENU_FILE}:2, ${MENU_EDIT}:2`
+            `${MENU_HELP}:1, ${MENU_FILE}:1, ${MENU_EDIT}:1, ${MENU_HELP}:2, ${MENU_FILE}:2, ${MENU_EDIT}:2`,
         );
 
         slot.setSortingOrder([
@@ -75,7 +75,7 @@ describe('ordered-slot', () => {
             ['name', [MENU_HELP, MENU_FILE, MENU_EDIT]],
         ]);
         expect(slotToString(slot)).to.eql(
-            `${MENU_HELP}:2, ${MENU_FILE}:2, ${MENU_EDIT}:2, ${MENU_HELP}:1, ${MENU_FILE}:1, ${MENU_EDIT}:1`
+            `${MENU_HELP}:2, ${MENU_FILE}:2, ${MENU_EDIT}:2, ${MENU_HELP}:1, ${MENU_FILE}:1, ${MENU_EDIT}:1`,
         );
     });
 
@@ -88,7 +88,7 @@ describe('ordered-slot', () => {
         ]);
 
         expect(slotToString(slot)).to.eql(
-            `${MENU_HELP}:1, ${MENU_HELP}:2, ${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2`
+            `${MENU_HELP}:1, ${MENU_HELP}:2, ${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2`,
         );
     });
 
@@ -105,7 +105,7 @@ describe('ordered-slot', () => {
         });
 
         expect(slotToString(slot)).to.eql(
-            `${MENU_HELP}:1, ${MENU_HELP}:2, ${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2`
+            `${MENU_HELP}:1, ${MENU_HELP}:2, ${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2`,
         );
     });
 
@@ -124,7 +124,7 @@ describe('ordered-slot', () => {
         });
 
         expect(slotToString(slot)).to.eql(
-            `${MENU_HELP}:1, ${MENU_HELP}:2, ${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2, More:1`
+            `${MENU_HELP}:1, ${MENU_HELP}:2, ${MENU_FILE}:1, ${MENU_FILE}:2, ${MENU_EDIT}:1, ${MENU_EDIT}:2, More:1`,
         );
     });
 });

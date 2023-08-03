@@ -16,7 +16,10 @@ export interface IEnvironmentHttpCall<T> {
 }
 
 export class RemoteHttpApplication implements IExecutableApplication {
-    constructor(private port: number, private hostname = 'localhost') {}
+    constructor(
+        private port: number,
+        private hostname = 'localhost',
+    ) {}
     public async getServerPort() {
         await this.makeEnvironmentHttpCall({ method: 'GET' });
         return this.port;
@@ -74,7 +77,7 @@ export class RemoteHttpApplication implements IExecutableApplication {
                         }
                     });
                     res.on('error', reject);
-                }
+                },
             );
             req.on('error', reject);
             if (featureTarget) {

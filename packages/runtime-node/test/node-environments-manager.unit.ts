@@ -105,11 +105,11 @@ describe('Node environments manager', function () {
                     Object.entries({
                         [engineNodeEntry.scopedName]: engineNodeEntry,
                         [comEntry.scopedName]: comEntry,
-                    })
+                    }),
                 ),
                 port,
             },
-            process.cwd()
+            process.cwd(),
         );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -129,11 +129,11 @@ describe('Node environments manager', function () {
                     Object.entries({
                         [engineNodeEntry.scopedName]: engineNodeEntry,
                         [comEntry.scopedName]: comEntry,
-                    })
+                    }),
                 ),
                 port,
             },
-            process.cwd()
+            process.cwd(),
         );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -146,7 +146,7 @@ describe('Node environments manager', function () {
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
 
         expect(nodeEnvironmentManager.getFeaturesWithRunningEnvironments()[0]).to.contain(
-            runFeatureOptions.featureName
+            runFeatureOptions.featureName,
         );
     });
 
@@ -158,19 +158,19 @@ describe('Node environments manager', function () {
                     Object.entries({
                         [engineNodeEntry.scopedName]: engineNodeEntry,
                         [comEntry.scopedName]: comEntry,
-                    })
+                    }),
                 ),
                 port,
             },
-            process.cwd()
+            process.cwd(),
         );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
         await expect(
-            nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' })
+            nodeEnvironmentManager.runServerEnvironments({ featureName: 'test' }),
         ).to.eventually.be.rejectedWith(
-            'cannot find feature test. available features: engine-core/communication, engine-node/x'
+            'cannot find feature test. available features: engine-core/communication, engine-node/x',
         );
     });
 
@@ -182,18 +182,18 @@ describe('Node environments manager', function () {
                     Object.entries({
                         [engineNodeEntry.scopedName]: engineNodeEntry,
                         [comEntry.scopedName]: comEntry,
-                    })
+                    }),
                 ),
                 port,
             },
-            process.cwd()
+            process.cwd(),
         );
 
         disposables.add(() => nodeEnvironmentManager.closeAll());
 
         await nodeEnvironmentManager.runServerEnvironments(runFeatureOptions);
         await expect(nodeEnvironmentManager.closeEnvironment({ featureName: 'test' })).to.eventually.be.rejectedWith(
-            'there are no node environments running for test'
+            'there are no node environments running for test',
         );
     });
 
@@ -230,11 +230,11 @@ describe('Node environments manager', function () {
                         Object.entries({
                             [engineMultiNodeSocketCommunication.scopedName]: engineMultiNodeSocketCommunication,
                             [comEntry.scopedName]: comEntry,
-                        })
+                        }),
                     ),
                     port,
                 },
-                process.cwd()
+                process.cwd(),
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -276,11 +276,11 @@ describe('Node environments manager', function () {
                         Object.entries({
                             [engineMultiEnvCommunication.scopedName]: engineMultiEnvCommunication,
                             [comEntry.scopedName]: comEntry,
-                        })
+                        }),
                     ),
                     port,
                 },
-                process.cwd()
+                process.cwd(),
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -312,7 +312,7 @@ describe('Node environments manager', function () {
                             },
                         },
                     };
-                }
+                },
             );
 
             const engine = new RuntimeEngine(env, [
@@ -337,11 +337,11 @@ describe('Node environments manager', function () {
                         Object.entries({
                             [engineMultiNodeSocketCommunication.scopedName]: engineMultiNodeSocketCommunication,
                             [comEntry.scopedName]: comEntry,
-                        })
+                        }),
                     ),
                     port,
                 },
-                process.cwd()
+                process.cwd(),
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -399,11 +399,11 @@ describe('Node environments manager', function () {
                         Object.entries({
                             [engineMultiNodeIPCCommunication.scopedName]: engineMultiNodeIPCCommunication,
                             [comEntry.scopedName]: comEntry,
-                        })
+                        }),
                     ),
                     port,
                 },
-                process.cwd()
+                process.cwd(),
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());
@@ -434,11 +434,11 @@ describe('Node environments manager', function () {
                         Object.entries({
                             [engineMultiNodeIPCCommunication.scopedName]: engineMultiNodeIPCCommunication,
                             [comEntry.scopedName]: comEntry,
-                        })
+                        }),
                     ),
                     port,
                 },
-                process.cwd()
+                process.cwd(),
             );
 
             disposables.add(() => nodeEnvironmentManager.closeAll());

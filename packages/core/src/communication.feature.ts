@@ -49,7 +49,7 @@ export default class COM extends Feature<'COM'> {
                     ...a.connectedEnvironments,
                     ...b.connectedEnvironments,
                 },
-            })
+            }),
         ),
         loggerTransports: Slot.withType<LoggerTransport>().defineEntity(Universal),
         loggerService: Value.withType<LoggerService>().defineEntity(Universal),
@@ -100,7 +100,7 @@ COM.setup(
             topology,
             resolvedContexts,
             isNode,
-            comOptions
+            comOptions,
         );
         // manually register window initialization api service to be used during
         // start of managed iframe in packages/core/src/com/initializers/iframe.ts
@@ -108,14 +108,14 @@ COM.setup(
         const loggerService = new LoggerService(
             loggerTransports,
             { environment: communication.getEnvironmentId() },
-            { severity: loggerSeverity, maxLogMessages, logToConsole }
+            { severity: loggerSeverity, maxLogMessages, logToConsole },
         );
         onDispose(() => communication.dispose());
         return {
             loggerService,
             communication,
         };
-    }
+    },
 );
 // rather than including the entire node types we define it locally
 declare const process: {

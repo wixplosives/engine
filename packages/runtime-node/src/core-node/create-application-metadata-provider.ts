@@ -22,14 +22,14 @@ const loadMetadata = memoizeOne((communication: Communication) => {
     const rootHost = communication.getEnvironmentHost(ENGINE_ROOT_ENVIRONMENT_ID);
     if (!rootHost) {
         throw new Error(
-            `no host was initialized under the environment ${ENGINE_ROOT_ENVIRONMENT_ID}. Cannot get application metadata API`
+            `no host was initialized under the environment ${ENGINE_ROOT_ENVIRONMENT_ID}. Cannot get application metadata API`,
         );
     }
 
     const metadataProviderHost = communication.getEnvironmentHost(METADATA_PROVIDER_ENV_ID);
     if (!metadataProviderHost) {
         throw new Error(
-            `no host was initialized under the environment ${METADATA_PROVIDER_ENV_ID}. Cannot get application metadata API`
+            `no host was initialized under the environment ${METADATA_PROVIDER_ENV_ID}. Cannot get application metadata API`,
         );
     }
 
@@ -40,7 +40,7 @@ const loadMetadata = memoizeOne((communication: Communication) => {
         {
             id: ENGINE_ROOT_ENVIRONMENT_ID,
         },
-        metadataApiToken
+        metadataApiToken,
     );
 
     const metadataPromise = api.getRuntimeArguments();

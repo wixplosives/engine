@@ -26,12 +26,12 @@ contextualMultiPreloadFeature.setup(
                                 id: worker.id,
                             });
                             return await workerEcho.echo(value);
-                        })
+                        }),
                     );
 
                     return responses;
                 },
             },
         };
-    }
+    },
 );

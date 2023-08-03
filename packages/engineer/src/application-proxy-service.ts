@@ -50,7 +50,7 @@ export class TargetApplication extends Application {
 
     public getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
-        configurations: SetMultiMap<string, IConfigDefinition>
+        configurations: SetMultiMap<string, IConfigDefinition>,
     ) {
         return super.getFeatureEnvDefinitions(features, configurations);
     }

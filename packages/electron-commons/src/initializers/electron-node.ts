@@ -75,7 +75,7 @@ export const initializeNodeEnvironment: EnvironmentInitializer<
                 // communication fails quietly for reasons unknown.
                 ELECTRON_RUN_AS_NODE: 'true',
             },
-        }
+        },
     );
 
     child.send({

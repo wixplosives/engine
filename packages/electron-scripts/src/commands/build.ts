@@ -195,7 +195,7 @@ export function createElectronEntryFile({
     const mapAbsolutePathsToRequests = (path: string, packageName: string) => {
         const isThirdParty = packageName !== currentFeature.packageName;
         const absoluteBasePath = fs.dirname(
-            isThirdParty ? require.resolve(posix.join(packageName, 'package.json')) : outputPath
+            isThirdParty ? require.resolve(posix.join(packageName, 'package.json')) : outputPath,
         );
         // creating a posix kind of slashes, to match node requests syntax
         const relativeToPackageFileRequest = relative(absoluteBasePath, path).replace(/\\/gi, '/');
@@ -216,24 +216,24 @@ export function createElectronEntryFile({
                         Object.entries(contextFilePaths).map(([key, value]) => [
                             key,
                             mapAbsolutePathsToRequests(value, packageName),
-                        ])
+                        ]),
                     ),
                     envFilePaths: Object.fromEntries(
                         Object.entries(envFilePaths).map(([key, value]) => [
                             key,
                             mapAbsolutePathsToRequests(value, packageName),
-                        ])
+                        ]),
                     ),
                     filePath: mapAbsolutePathsToRequests(filePath, packageName),
                     preloadFilePaths: Object.fromEntries(
                         Object.entries(preloadFilePaths).map(([key, value]) => [
                             key,
                             mapAbsolutePathsToRequests(value, packageName),
-                        ])
+                        ]),
                     ),
                 },
             ];
-        }
+        },
     );
 
     return fs.promises.writeFile(
@@ -279,7 +279,7 @@ runElectronEnv({
     console.error(e);
     process.exitCode = 1;
 });
-`
+`,
     );
 }
 

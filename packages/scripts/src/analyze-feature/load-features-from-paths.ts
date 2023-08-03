@@ -30,7 +30,7 @@ export function loadFeaturesFromPaths(
     roots: DirFeatures,
     fs: IFileSystemSync,
     packages: INpmPackage[] = [],
-    override = {}
+    override = {},
 ) {
     const imported = getImportedFeatures(roots, fs);
 
@@ -38,7 +38,7 @@ export function loadFeaturesFromPaths(
     // feature/env/config files, both in our repo and from node_modules.
     const featureDirectories = concat(
         map(roots.dirs, (path) => loadFeatureDirectory(path, fs)),
-        map(imported.dirs, (path) => loadFeatureDirectory(path, fs, true))
+        map(imported.dirs, (path) => loadFeatureDirectory(path, fs, true)),
     );
 
     // find closest package.json for each feature directory and generate package name
@@ -53,7 +53,7 @@ export function loadFeaturesFromPaths(
         const featurePackage = getValue(
             directoryToPackage,
             directoryPath,
-            `cannot find package name for ${directoryPath}`
+            `cannot find package name for ${directoryPath}`,
         );
 
         // pick up configs
@@ -101,7 +101,7 @@ function setEnvPath(
     parser: FileNameParser,
     fs: IFileSystemSync,
     foundFeatures: Map<string, IFeatureDefinition>,
-    featurePackage: IPackageDescriptor
+    featurePackage: IPackageDescriptor,
 ) {
     return (path: string) => {
         const { featureName, envName, childEnvName } = parser(fs.basename(path));
@@ -127,7 +127,7 @@ function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): A
 function parseFoundFeature(
     { module, scopedName, filePath }: AnalyzedFeatureModule,
     featurePackage: IPackageDescriptor,
-    isRoot: boolean
+    isRoot: boolean,
 ): IFeatureDefinition {
     return {
         ...module,

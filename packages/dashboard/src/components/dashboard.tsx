@@ -18,7 +18,7 @@ export interface IDashboardProps {
         featureName: string,
         configName: string,
         isNodeEnvActive: boolean,
-        runtimeOptions: Array<IRuntimeOption>
+        runtimeOptions: Array<IRuntimeOption>,
     ) => Promise<unknown>;
     fetchGraphData: (featureName: string) => Promise<GraphData>;
 }
@@ -68,7 +68,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
 
     const configNames = useMemo(
         () => serverState.features[params.user_feature || '']?.configurations ?? [],
-        [params.user_feature, serverState.features]
+        [params.user_feature, serverState.features],
     );
     const [firstConfigName] = configNames;
     const [runtimeArguments, setRuntimeArguments] = useState<Array<IRuntimeOption>>([
@@ -84,7 +84,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
                 params.user_feature!,
                 params.user_config || firstConfigName!,
                 !isNodeEnvActive,
-                runtimeArguments
+                runtimeArguments,
             );
             if (isServerResponseMessage(serverResponse)) {
                 const serverStateResponse = await fetchServerState();
@@ -100,7 +100,7 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
             firstConfigName,
             runtimeArguments,
             fetchServerState,
-        ]
+        ],
     );
 
     useEffect(() => {
@@ -119,20 +119,20 @@ export const Dashboard = React.memo<IDashboardProps>(function Dashboard({
 
     const addRuntimeOption = useCallback(
         () => setRuntimeArguments([...runtimeArguments, { key: '', value: '' }]),
-        [runtimeArguments, setRuntimeArguments]
+        [runtimeArguments, setRuntimeArguments],
     );
 
     const isNodeEnvRunning = !!serverState.featuresWithRunningNodeEnvs.find(
         ([featureName, configName]) =>
             params.user_feature === featureName &&
-            ((!params.user_feature && !configName) || (configName && params.user_config === configName))
+            ((!params.user_feature && !configName) || (configName && params.user_config === configName)),
     );
 
     const handleSelectedFeature = useCallback(
         (featureName = '', configName = '') => {
             setParams({ user_feature: featureName, user_config: configName });
         },
-        [setParams]
+        [setParams],
     );
     serverState.featuresWithRunningNodeEnvs;
 

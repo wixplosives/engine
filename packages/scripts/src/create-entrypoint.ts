@@ -95,7 +95,7 @@ export function createMainEntrypoint({
         env.name,
         env.type,
         env.env.endpointType,
-        env.flatDependencies?.map((d) => d.env) ?? []
+        env.flatDependencies?.map((d) => d.env) ?? [],
     );
     const featureLoaders = createFeatureLoaders(
         features.values(),
@@ -103,7 +103,7 @@ export function createMainEntrypoint({
         target,
         env,
         eagerEntrypoint,
-        featuresBundleName
+        featuresBundleName,
     );
     const configLoaders = createConfigLoadersObject(configLoaderModuleName, configs, staticBuild);
     const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
@@ -166,7 +166,7 @@ function createFeatureLoaders(
     target: 'web' | 'webworker' | 'node' | 'electron-renderer',
     env: IEnvironmentDescriptor,
     eagerEntrypoint?: boolean,
-    featuresBundleName?: string
+    featuresBundleName?: string,
 ) {
     return `new Map(Object.entries({\n${Array.from(features)
         .map(
@@ -179,7 +179,7 @@ function createFeatureLoaders(
                     eagerEntrypoint,
                     env,
                     featuresBundleName,
-                })}`
+                })}`,
         )
         .join(',\n')}\n}))`;
 }
@@ -238,7 +238,7 @@ function loadEnvAndContextFiles({
                     directoryPath,
                     packageName,
                     eagerEntrypoint,
-                })
+                }),
             );
         }
     }
@@ -251,7 +251,7 @@ function loadEnvAndContextFiles({
                 directoryPath,
                 packageName,
                 eagerEntrypoint,
-            })
+            }),
         );
     }
     return { usesResolvedContexts, loadStatements, preloadStatements };
@@ -305,7 +305,7 @@ const getAllValidConfigurations = (configurations: [string, IConfigDefinition][]
 const getConfigLoaders = (
     configurations: SetMultiMap<string, IConfigDefinition>,
     mode: 'development' | 'production',
-    configName?: string
+    configName?: string,
 ) => {
     if (mode === 'production' && configName) {
         return [...configurations.entries()].filter(([scopedConfigName]) => scopedConfigName === configName);
@@ -316,13 +316,13 @@ const getConfigLoaders = (
 function createConfigLoadersObject(
     configLoaderModuleName: string,
     configs: Record<string, IConfigFileMapping[]>,
-    staticBuild: boolean
+    staticBuild: boolean,
 ) {
     const loaders: string[] = [];
     if (staticBuild) {
         for (const [scopedName, availableConfigs] of Object.entries(configs)) {
             const loadStatements = availableConfigs.map(({ filePath, configEnvName }) =>
-                loadConfigFileTemplate(configLoaderModuleName, filePath, scopedName, configEnvName)
+                loadConfigFileTemplate(configLoaderModuleName, filePath, scopedName, configEnvName),
             );
             loaders.push(`    '${scopedName}': async () => (await Promise.all([${loadStatements.join(',')}]))`);
         }
@@ -334,12 +334,12 @@ function loadConfigFileTemplate(
     configLoaderModuleName: string,
     filePath: string,
     scopedName: string,
-    configEnvName = ''
+    configEnvName = '',
 ): string {
     const request = stringify(
         topLevelConfigLoaderPath +
             `?configLoaderModuleName=${configLoaderModuleName}&scopedName=${scopedName}&envName=${configEnvName}!` +
-            filePath
+            filePath,
     );
     return `import(/* webpackChunkName: "[config]${scopedName}${configEnvName}" */ /* webpackMode: 'eager' */ ${request})`;
 }

@@ -90,7 +90,7 @@ describe('com emitter service', () => {
         await proxy.on(testListenerStub);
 
         await expect(proxy.on(testListenerStub)).to.eventually.rejectedWith(
-            'Cannot add same listener instance twice main__main2_EmitterService@on'
+            'Cannot add same listener instance twice main__main2_EmitterService@on',
         );
     });
 });

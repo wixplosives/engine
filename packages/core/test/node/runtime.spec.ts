@@ -467,7 +467,7 @@ describe('Feature', () => {
                 _providedValue: undefined,
                 inputValue: any,
                 _featureID: string,
-                _entityKey: string
+                _entityKey: string,
             ) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return inputValue;
@@ -798,8 +798,8 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                             run(fn: () => unknown): unknown;
                             onDispose(fn: DisposeFunction): unknown;
                         }
-                    >
-                ) => true
+                    >,
+                ) => true,
             );
         });
     });

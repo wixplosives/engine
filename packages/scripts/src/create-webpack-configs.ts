@@ -57,7 +57,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 environments: webEnvs,
                 target: 'web',
                 configLoaderModuleName,
-            })
+            }),
         );
     }
     if (workerEnvs.size) {
@@ -68,7 +68,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 environments: workerEnvs,
                 target: 'webworker',
                 configLoaderModuleName,
-            })
+            }),
         );
     }
     if (featureName && electronRendererEnvs.size) {
@@ -79,7 +79,7 @@ export function createWebpackConfigs(options: ICreateWebpackConfigsOptions): web
                 environments: electronRendererEnvs,
                 target: 'electron-renderer',
                 configLoaderModuleName,
-            })
+            }),
         );
     }
 
@@ -170,7 +170,7 @@ export function createWebpackConfig({
                             crossorigin: 'anonymous',
                         },
                     }),
-                ]
+                ],
             );
         }
     }

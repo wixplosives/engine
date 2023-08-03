@@ -3,7 +3,12 @@ import { app, ipcMain } from 'electron';
 
 import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
 import { communicationChannels, electronRuntimeArguments } from '@wixc3/engine-electron-commons';
-import { importModules, IEngineRuntimeArguments, IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import {
+    importModules,
+    IEngineRuntimeArguments,
+    IStaticFeatureDefinition,
+    runNodeEnvironment,
+} from '@wixc3/engine-runtime-node';
 
 import runtimeArgumentsProvider from './runtime-arguments-provider';
 

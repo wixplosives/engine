@@ -57,7 +57,7 @@ async function handleStartupCommand(command: NodeEnvironmentStartupCommand) {
                     },
                 },
             },
-        })
+        }),
     );
 
     const { close } = await runIPCEnvironment({

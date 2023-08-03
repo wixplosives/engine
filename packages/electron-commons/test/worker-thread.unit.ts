@@ -31,7 +31,7 @@ describe('workerthread environment type', () => {
 
         const workerService = communication.apiProxy<WorkerService>(
             { id: serverEnv.env },
-            { id: `${workerThreadFeature.id}.workerService` }
+            { id: `${workerThreadFeature.id}.workerService` },
         );
 
         const response = await workerService.initAndCallWorkerEcho('hello');
@@ -47,7 +47,7 @@ describe('workerthread environment type', () => {
 
         const multiWorkerService = communication.apiProxy<MultiWorkerService>(
             { id: multiServerEnv.env },
-            { id: `${multiFeature.id}.multiWorkersService` }
+            { id: `${multiFeature.id}.multiWorkersService` },
         );
 
         const response = await multiWorkerService.initAndCallWorkersEcho(['hello1', 'hello2', 'hello3']);
@@ -56,7 +56,7 @@ describe('workerthread environment type', () => {
 
     it('executes preload for contextual multi env', async function () {
         const { dispose, communication } = await setupRunningEnv(
-            `${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`
+            `${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`,
         );
         disposeAfter(dispose, {
             timeout,
@@ -65,7 +65,7 @@ describe('workerthread environment type', () => {
 
         const contextualMultiPreloadWorkerService = communication.apiProxy<ContextualMultiPreloadWorkerService>(
             { id: contextualMultiServerEnv.env },
-            { id: `${contextualMultiPreloadFeature.id}.contextualMultiPreloadWorkersService` }
+            { id: `${contextualMultiPreloadFeature.id}.contextualMultiPreloadWorkersService` },
         );
 
         const response = await contextualMultiPreloadWorkerService.echo(['hello1', 'hello2', 'hello3']);

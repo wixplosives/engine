@@ -16,7 +16,7 @@ interface ConfigFileExports {
 export function createLiveConfigsMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition | TopLevelConfig>,
     basePath: string,
-    overrideConfigMap: Map<string, OverrideConfig>
+    overrideConfigMap: Map<string, OverrideConfig>,
 ): express.RequestHandler {
     return (req, res, next) => {
         const config: TopLevelConfig = [];
@@ -50,7 +50,7 @@ export function createLiveConfigsMiddleware(
                                     config.push(...configValue);
                                 } catch (e) {
                                     console.error(
-                                        new Error(`Failed evaluating config file: ${filePath}`, { cause: e })
+                                        new Error(`Failed evaluating config file: ${filePath}`, { cause: e }),
                                     );
                                 }
                             }
@@ -71,7 +71,7 @@ export function createLiveConfigsMiddleware(
 export function createCommunicationMiddleware(
     nodeEnvironmentsManager: NodeEnvironmentsManager,
     publicPath?: string,
-    topologyOverrides?: (featureName: string) => Record<string, string> | undefined
+    topologyOverrides?: (featureName: string) => Record<string, string> | undefined,
 ): express.RequestHandler {
     return (req, res, next) => {
         const { feature } = req.query;
@@ -82,7 +82,7 @@ export function createCommunicationMiddleware(
                     ? topologyOverrides(feature)
                     : nodeEnvironmentsManager.getTopology(
                           feature,
-                          requestedConfig === 'undefined' ? undefined : requestedConfig
+                          requestedConfig === 'undefined' ? undefined : requestedConfig,
                       )
                 : undefined;
         (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (
@@ -102,15 +102,15 @@ export function createCommunicationMiddleware(
 }
 
 export const createConfigMiddleware: (
-    overrideConfig?: TopLevelConfig | TopLevelConfigProvider
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider,
 ) => express.RequestHandler =
     (overrideConfig = []) =>
     (req, res) => {
         const { env: reqEnv } = req.query;
         res.send(
             (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig.concat(
-                Array.isArray(overrideConfig) ? overrideConfig : reqEnv ? overrideConfig(reqEnv as string) : []
-            )
+                Array.isArray(overrideConfig) ? overrideConfig : reqEnv ? overrideConfig(reqEnv as string) : [],
+            ),
         );
     };
 

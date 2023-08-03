@@ -26,7 +26,7 @@ export function generateFeature({
 export const templateParser = (
     name: string,
     content: string | undefined,
-    templateCompiler: (template: string) => string
+    templateCompiler: (template: string) => string,
 ) => {
     if (!name.endsWith(TEMPLATE_EXTENSION)) {
         return { name, content };
