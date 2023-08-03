@@ -13,7 +13,7 @@ export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
  * and optionally copies a fixture to it as a "project".
  */
 export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
-    const { getLoadedFeature: originalGetLoadedFeature, disposeAfterTesOrSuite } = withFeature(suiteOptions);
+    const { getLoadedFeature: originalGetLoadedFeature, disposeAfter } = withFeature(suiteOptions);
 
     async function getLoadedFeature(testOptions: IWithLocalFixtureOptions = suiteOptions) {
         const { fixturePath = suiteOptions.fixturePath, runOptions = suiteOptions.runOptions } = testOptions;
@@ -24,7 +24,7 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
         }
 
         const { path: projectPath, remove } = createTempDirectorySync('local-test');
-        disposeAfterTesOrSuite(() => remove(), { group: DISPOSE_OF_TEMP_DIRS });
+        disposeAfter(() => remove(), { group: DISPOSE_OF_TEMP_DIRS });
 
         if (fixturePath) {
             await fs.promises.copyDirectory(fixturePath, projectPath);
