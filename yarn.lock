@@ -148,13 +148,13 @@
     "@file-services/types" "^7.4.0"
     "@file-services/utils" "^7.4.0"
 
-"@file-services/node@^8.0.1":
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-8.0.1.tgz#1793a6c7dad36d905c8779824884c0f33c6f296c"
-  integrity sha512-gS7G5jR6pRX5lDZjtplKPoQRNcjoarfa4dD3m10xRYFDVP+fKDnFkL2JdLwr7pJzxrZsb+HIWwkJaww6Vl82tQ==
+"@file-services/node@^8.0.1", "@file-services/node@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@file-services/node/-/node-8.1.0.tgz#cd1b0297b9c75c683c5b0bc6ab7052d34dbad4a2"
+  integrity sha512-pFz5WKRS5p5x3chYQh9TiVmSnte/4m3SE2Pdnmt9i24wU3gv11XqPxTH5AJ8JPjQ9MdesSvj/W1jHDVmTRlEww==
   dependencies:
-    "@file-services/types" "^8.0.0"
-    "@file-services/utils" "^8.0.0"
+    "@file-services/types" "^8.1.0"
+    "@file-services/utils" "^8.1.0"
 
 "@file-services/path@^8.0.1", "@file-services/path@^8.1.0":
   version "8.1.0"
