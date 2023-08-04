@@ -9,7 +9,7 @@
     "electron": ">=9"
   },
   "dependencies": {
-    "@file-services/node": "^8.0.1",
+    "@file-services/node": "^8.1.0",
     "@wixc3/engine-core": "^39.4.2",
     "@wixc3/engine-electron-commons": "^39.4.2",
     "@wixc3/engine-runtime-node": "^39.4.2"
