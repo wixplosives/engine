@@ -168,10 +168,10 @@
   resolved "https://registry.yarnpkg.com/@file-services/types/-/types-7.4.0.tgz#ec99b51f8cf39c839058fd5d045aaf5dd87b6ed9"
   integrity sha512-KZue4o5MRAdpgjTjZU8uC4MRPBHCcxzfcT0cBVwqgEi/8OwCkjBuBm3sdJLVd/AdpZGoh/N4IrSXAgzpxrbjvQ==
 
-"@file-services/types@^8.0.0", "@file-services/types@^8.0.1":
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-8.0.1.tgz#ded6805f32aff46bb42f6489bf0a11efe38fcf68"
-  integrity sha512-HYr5q2R7I2dMigURY6PoNCpKcw7oszPlqbGaDaqp1gQMbPq5sz6bpBqrPRNqk2EKSHuwu2hxmFhSe492bzhqVw==
+"@file-services/types@^8.0.0", "@file-services/types@^8.0.1", "@file-services/types@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@file-services/types/-/types-8.1.0.tgz#f88b628b3cc184a0a02685abbd4275d557ecf579"
+  integrity sha512-z/QNt85X1d7WRW9KvR+z8ByVABr4LTn6k3md6vykc9/DlMrW2VzD5T+f/QvpMIw+Tj1Txvb2zoydvNWzTFtJvQ==
 
 "@file-services/utils@^7.4.0":
   version "7.4.0"
