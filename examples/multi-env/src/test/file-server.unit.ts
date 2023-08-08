@@ -1,5 +1,5 @@
 import { getRunningFeature } from '@wixc3/engine-test-kit';
-import Feature, { processingEnv } from '../feature/multi-env.feature';
+import Feature, { processingEnv } from '../feature/multi-env.feature.js';
 import { expect } from 'chai';
 
 describe('multi-env Processing env test', () => {

@@ -1,4 +1,4 @@
-import MultiEnvFeature, { mainEnv, processingEnv } from './multi-env.feature';
+import MultiEnvFeature, { mainEnv, processingEnv } from './multi-env.feature.js';
 import { webWorkerInitializer, socketClientInitializer, initializeContextualEnv } from '@wixc3/engine-core';
 
 MultiEnvFeature.setup(mainEnv, ({ echoService, run, config }, { COM: { communication } }) => {

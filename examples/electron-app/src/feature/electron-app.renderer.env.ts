@@ -1,5 +1,5 @@
 import { initializeNodeEnvironmentInBrowser } from '@wixc3/engine-electron';
-import ElectronAppFeature, { renderer, server } from './electron-app.feature';
+import ElectronAppFeature, { renderer, server } from './electron-app.feature.js';
 
 ElectronAppFeature.setup(renderer, ({ run }, { COM: { communication } }) => {
     /**

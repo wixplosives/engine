@@ -1,5 +1,5 @@
 import { Feature } from '@wixc3/engine-core';
-import contextualFeature, { procEnv } from '../feature/preload-context.feature';
+import contextualFeature, { procEnv } from '../feature/preload-context.feature.js';
 
 export default class PreloadContextWorker extends Feature<'preloadContextWorker'> {
     id = 'preloadContextWorker' as const;

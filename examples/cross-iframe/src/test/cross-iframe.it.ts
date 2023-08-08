@@ -1,7 +1,7 @@
 import { withFeature } from '@wixc3/engine-test-kit';
-import { waitFor } from 'promise-assist';
 import { expect } from 'chai';
-import { CrossIframeDriver } from './cross-iframe-driver';
+import { waitFor } from 'promise-assist';
+import { CrossIframeDriver } from './cross-iframe-driver.js';
 
 describe('Cross Iframes Example', function () {
     const { getLoadedFeature } = withFeature({

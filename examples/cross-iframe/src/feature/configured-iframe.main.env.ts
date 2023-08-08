@@ -1,6 +1,6 @@
 import { iframeInitializer } from '@wixc3/engine-core';
-import { mainEnv, iframeEnv } from './echo.feature';
-import fixture from './configured-iframe.feature';
+import { mainEnv, iframeEnv } from './echo.feature.js';
+import fixture from './configured-iframe.feature.js';
 
 fixture.setup(mainEnv, ({ run }, { COM: { communication }, echoFeature: { echoService } }) => {
     const myFrame = document.createElement('iframe');

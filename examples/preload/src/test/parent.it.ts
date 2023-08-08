@@ -1,7 +1,7 @@
-import { dirname } from 'path';
-import { expect } from 'chai';
 import { createDisposables } from '@wixc3/create-disposables';
-import { startServerNewProcess } from './utils';
+import { expect } from 'chai';
+import { dirname } from 'node:path';
+import { startServerNewProcess } from './utils.js';
 
 describe('Parent feature', function () {
     const projectPath = dirname(require.resolve('@example/preload/package.json'));

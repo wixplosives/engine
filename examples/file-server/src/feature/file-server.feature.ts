@@ -1,5 +1,5 @@
 import { COM, Config, Environment, Feature, Service } from '@wixc3/engine-core';
-import type { IDirectoryContents } from '../types';
+import type { IDirectoryContents } from '../types.js';
 
 /**
  * defining that this feature uses 2 environments - 'main' (browser) and LiveServer environment with the semantic name 'server'

@@ -1,4 +1,4 @@
-import Preview, { PREVIEW } from './compiler.feature';
+import Preview, { PREVIEW } from './compiler.feature.js';
 
 Preview.setup(PREVIEW, ({ run, compileService }, { playgroundCodeEditor: { remoteCodeService } }) => {
     run(async () => {

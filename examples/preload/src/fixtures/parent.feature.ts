@@ -1,5 +1,5 @@
 import { Feature } from '@wixc3/engine-core';
-import allFeature from '../feature/all.feature';
+import allFeature from '../feature/all.feature.js';
 
 export default class Parent extends Feature<'parent'> {
     id = 'parent' as const;

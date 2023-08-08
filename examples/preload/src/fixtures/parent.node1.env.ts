@@ -1,5 +1,5 @@
-import { nodeEnv } from '../feature/all.feature';
-import parentFeature from './parent.feature';
+import { nodeEnv } from '../feature/all.feature.js';
+import parentFeature from './parent.feature.js';
 globalThis.envMessages.push('parentEnvEval');
 
 parentFeature.setup(nodeEnv, () => undefined);

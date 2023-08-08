@@ -1,8 +1,8 @@
 import { withFeature } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { join } from 'path';
-import { Page } from 'playwright-core';
+import path from 'node:path';
+import { type Page } from 'playwright-core';
 
 chai.use(chaiAsPromised);
 
@@ -12,7 +12,7 @@ describe('react/someplugin persistent checks', function () {
     const { getLoadedFeature } = withFeature({
         featureName: 'react/someplugin',
         runOptions: {
-            projectPath: join(__dirname, '..'),
+            projectPath: path.join(__dirname, '..'),
         },
         persist: true,
     });

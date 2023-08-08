@@ -1,4 +1,4 @@
-import allFeature, { mainEnv, nodeEnv, workerEnv } from './all.feature';
+import allFeature, { mainEnv, nodeEnv, workerEnv } from './all.feature.js';
 import { socketClientInitializer, webWorkerInitializer } from '@wixc3/engine-core';
 globalThis.envMessages = [...(globalThis.envMessages ?? []), 'enveval'];
 

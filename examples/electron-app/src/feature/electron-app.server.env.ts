@@ -1,5 +1,5 @@
-import { initializeNodeEnvironmentInNode } from '@wixc3/engine-electron-node/dist/initializers/node-process';
-import ElectronApp, { server, server2 } from './electron-app.feature';
+import { initializeNodeEnvironmentInNode } from '@wixc3/engine-electron-node';
+import ElectronApp, { server, server2 } from './electron-app.feature.js';
 
 /**
  * setting up the server environment

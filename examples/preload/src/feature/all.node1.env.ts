@@ -1,4 +1,4 @@
-import allFeature, { nodeEnv } from './all.feature';
+import allFeature, { nodeEnv } from './all.feature.js';
 globalThis.envMessages = [...(globalThis.envMessages ?? []), 'enveval'];
 
 allFeature.setup(nodeEnv, () => {
