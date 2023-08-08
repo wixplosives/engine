@@ -1,12 +1,12 @@
-import fs from '@file-services/node';
-import { spawn } from 'child_process';
-import { startDevServer } from '@wixc3/engineer';
-import { IRunOptionsMessage, provideApiForChildProcess } from '@wixc3/engine-electron-host';
+import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { getEngineConfig } from '../find-features';
-import { getConfig } from '../engine-helpers';
-import { join } from 'path';
-import { getExportedEnvironments, findFeatures } from '@wixc3/engine-scripts';
+import { provideApiForChildProcess, type IRunOptionsMessage } from '@wixc3/engine-electron-host';
+import { findFeatures, getExportedEnvironments } from '@wixc3/engine-scripts';
+import { startDevServer } from '@wixc3/engineer';
+import { spawn } from 'node:child_process';
+import { join } from 'node:path';
+import { getConfig } from '../engine-helpers.js';
+import { getEngineConfig } from '../find-features.js';
 
 // electron node lib exports the electron executable path; inside electron, it's the api itself.
 // eslint-disable-next-line @typescript-eslint/no-var-requires

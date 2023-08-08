@@ -1,16 +1,16 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import type { IOType } from 'child_process';
-import fs from '@file-services/node';
-import { TopLevelConfig } from '@wixc3/engine-core';
-import testFeature, { serverEnv } from '@fixture/disconnecting-env/dist/disconnecting-env.feature';
-import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env';
+import type { IOType } from 'node:child_process';
+import path from 'node:path';
+import type { TopLevelConfig } from '@wixc3/engine-core';
+import testFeature, { serverEnv } from '@fixture/disconnecting-env/dist/disconnecting-env.feature.js';
+import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env.js';
 import { disposeAfter } from '@wixc3/testing';
 
 const { expect } = chai;
 chai.use(chaiAsPromised);
 
-const featurePath = fs.dirname(require.resolve('@fixture/disconnecting-env/package.json'));
+const featurePath = path.dirname(require.resolve('@fixture/disconnecting-env/package.json'));
 const timeout = 3000;
 
 interface SetupRunningFeatureOptions {

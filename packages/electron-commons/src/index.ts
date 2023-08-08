@@ -1,4 +1,4 @@
-export * from './types';
-export * from './initializers';
-export * from './communication-channels';
-export { default as communicationChannels } from './communication-channels';
+export * from './types.js';
+export * from './initializers/index.js';
+export * from './communication-channels.js';
+export { default as communicationChannels } from './communication-channels.js';
