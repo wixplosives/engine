@@ -1,6 +1,5 @@
 import { socketClientInitializer } from '@wixc3/engine-core';
-import { mainEnv, serverEnv } from './x.feature';
-import sampleFeature from './x.feature';
+import sampleFeature, { mainEnv, serverEnv } from './x.feature.js';
 
 sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { communication } }) => {
     const echoValue = document.createElement('div');

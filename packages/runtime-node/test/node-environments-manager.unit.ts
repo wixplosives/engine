@@ -14,8 +14,8 @@ import SocketServerNodeFeature, {
 } from '@fixture/engine-multi-socket-node/dist/feature/x.feature.js';
 import defaultArgsEchoFeature, {
     serverEnv as echoServerEnv,
-} from '@fixture/engine-default-args-echo/dist/feature/echo.feature';
-import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
+} from '@fixture/engine-default-args-echo/dist/feature/echo.feature.js';
+import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature.js';
 
 chai.use(chaiAsPromised);
 

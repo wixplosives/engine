@@ -1,4 +1,4 @@
-import echoFeature, { serverEnv } from './echo.feature';
+import echoFeature, { serverEnv } from './echo.feature.js';
 
 echoFeature.setup(serverEnv, () => {
     return {
