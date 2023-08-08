@@ -28,7 +28,12 @@ export async function launchEngineHttpServer({
     httpServerPort = DEFAULT_PORT,
     socketServerOptions,
     routeMiddlewares = [],
-}: ILaunchHttpServerOptions = {}) {
+}: ILaunchHttpServerOptions = {}): Promise<{
+    close: () => Promise<void>;
+    port: number;
+    app: express.Express;
+    socketServer: io.Server;
+}> {
     const app = express();
     for (const { path, handlers } of routeMiddlewares) {
         app.use(path, handlers);

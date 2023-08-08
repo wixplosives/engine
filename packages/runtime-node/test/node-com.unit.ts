@@ -1,24 +1,22 @@
-import { fork } from 'child_process';
-import type { Socket } from 'net';
-import { safeListeningHttpServer } from 'create-listening-server';
-import io from 'socket.io';
-
-import { expect } from 'chai';
-import sinon, { spy } from 'sinon';
-import { waitFor } from 'promise-assist';
-
 import {
+    BaseHost,
     Communication,
+    Environment,
     WsClientHost,
     socketClientInitializer,
-    BaseHost,
-    DisposeMessage,
-    Message,
-    Environment,
+    type DisposeMessage,
+    type Message,
 } from '@wixc3/engine-core';
 import { IPCHost, WsServerHost } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/patterns';
 import { createWaitForCall } from '@wixc3/wait-for-call';
+import { expect } from 'chai';
+import { safeListeningHttpServer } from 'create-listening-server';
+import { fork } from 'node:child_process';
+import type { Socket } from 'node:net';
+import { waitFor } from 'promise-assist';
+import sinon, { spy } from 'sinon';
+import io from 'socket.io';
 
 interface ICommunicationTestApi {
     sayHello: () => string;

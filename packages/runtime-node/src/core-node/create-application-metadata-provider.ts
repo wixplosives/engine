@@ -1,8 +1,8 @@
 import { Communication } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/patterns';
-import { MetadataCollectionAPI, metadataApiToken } from '../types';
-import { METADATA_PROVIDER_ENV_ID, ENGINE_ROOT_ENVIRONMENT_ID } from './constants';
 import memoizeOne from 'memoize-one';
+import { metadataApiToken, type MetadataCollectionAPI } from '../types.js';
+import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './constants.js';
 
 /**
  * creates a new instance of metadata provider that can get application metadata using `MetadataCollectionAPI` api
