@@ -1,12 +1,12 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type { EngineerMetadataConfig, TopLevelConfig } from '@wixc3/engine-core';
-import { Application, IBuildManifest } from '@wixc3/engine-scripts';
+import { Application, type IBuildManifest } from '@wixc3/engine-scripts';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { mkdtempSync } from 'fs';
-import os from 'os';
+import { mkdtempSync } from 'node:fs';
+import os from 'node:os';
 import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
 

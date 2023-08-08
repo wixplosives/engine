@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 
-import { cleanCommand, buildCommand, runCommand, createCommand, CliApplication, startCommand } from './cli-commands';
+import { cleanCommand, buildCommand, runCommand, createCommand, CliApplication, startCommand } from './cli-commands.js';
 
 const program = new Command();
 

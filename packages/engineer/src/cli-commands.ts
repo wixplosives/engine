@@ -5,15 +5,14 @@
  * This configuration can (and should) be written as a `.ts` file.
  */
 
-import type { Command } from 'commander';
-import { resolve } from 'path';
-import open from 'open';
-import fs from '@file-services/node';
-
-import { Application } from '@wixc3/engine-scripts';
-import { startDevServer } from './utils';
 import { parseCliArguments } from '@wixc3/engine-runtime-node';
-import type { ServerListeningHandler } from './feature/dev-server.types';
+import { Application } from '@wixc3/engine-scripts';
+import type { Command } from 'commander';
+import fs from 'node:fs';
+import { resolve } from 'node:path';
+import open from 'open';
+import type { ServerListeningHandler } from './feature/dev-server.types.js';
+import { startDevServer } from './utils.js';
 
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
@@ -118,7 +117,7 @@ export const startCommand: CliCommand = (program) =>
                     publicConfigsRoute,
                     autoLaunch,
                     engineerEntry,
-                    targetApplicationPath: fs.existsSync(path) ? fs.resolve(path) : process.cwd(),
+                    targetApplicationPath: fs.existsSync(path) ? resolve(path) : process.cwd(),
                     runtimeOptions: parseCliArguments(process.argv.slice(3)),
                     inspect,
                     featureDiscoveryRoot,

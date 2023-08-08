@@ -1,15 +1,15 @@
-import type { SetMultiMap } from '@wixc3/patterns';
 import type { IConfigDefinition, LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
     Application,
     generateConfigName,
-    IApplicationOptions,
-    ICompilerOptions,
-    IFeatureDefinition,
-    IFeatureMessagePayload,
-    IRunFeatureOptions,
-    OverrideConfig,
+    type IApplicationOptions,
+    type ICompilerOptions,
+    type IFeatureDefinition,
+    type IFeatureMessagePayload,
+    type IRunFeatureOptions,
+    type OverrideConfig,
 } from '@wixc3/engine-scripts';
+import type { SetMultiMap } from '@wixc3/patterns';
 
 export class TargetApplication extends Application {
     public nodeEnvironmentsMode?: LaunchEnvironmentMode;

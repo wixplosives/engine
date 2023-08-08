@@ -1,6 +1,6 @@
-import React, { FC, useContext } from 'react';
-import { DashboardContext } from '../dashboard';
-import { style, classes } from '../dashboard.st.css';
+import React, { useContext, type FC } from 'react';
+import { DashboardContext } from '../dashboard.js';
+import { classes, style } from '../dashboard.st.css';
 
 export const Sidebar: FC = () => {
     const { serverState, params, setParams } = useContext(DashboardContext);

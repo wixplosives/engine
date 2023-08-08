@@ -1,7 +1,7 @@
+import { COM, Config, Environment, Feature, Service, Slot } from '@wixc3/engine-core';
 import type webpack from 'webpack';
-import { Feature, Service, Environment, COM, Config, Slot } from '@wixc3/engine-core';
-import type { TargetApplication } from '../application-proxy-service';
-import type { DevServerActions, DevServerConfig, ServerListeningHandler } from './dev-server.types';
+import type { TargetApplication } from '../application-proxy-service.js';
+import type { DevServerActions, DevServerConfig, ServerListeningHandler } from './dev-server.types.js';
 
 export const devServerEnv = new Environment('dev-server', 'node', 'single');
 export default class BuildFeature extends Feature<'buildFeature'> {

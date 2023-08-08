@@ -1,14 +1,16 @@
-import fs from '@file-services/node';
-import { expect } from 'chai';
-import { disposeAfter } from '@wixc3/testing';
+import { nodeFs as fs } from '@file-services/node';
 import contextualMultiPreloadFeature, {
-    ContextualMultiPreloadWorkerService,
     contextualMultiServerEnv,
-} from '@fixture/worker-thread/dist/contextual-multi-preload.feature';
-import multiFeature, { multiServerEnv, MultiWorkerService } from '@fixture/worker-thread/dist/multi.feature';
-import workerThreadFeature, { serverEnv, WorkerService } from '@fixture/worker-thread/dist/worker-thread.feature';
-
-import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env';
+    type ContextualMultiPreloadWorkerService,
+} from '@fixture/worker-thread/dist/contextual-multi-preload.feature.js';
+import multiFeature, { multiServerEnv, type MultiWorkerService } from '@fixture/worker-thread/dist/multi.feature.js';
+import workerThreadFeature, {
+    serverEnv,
+    type WorkerService,
+} from '@fixture/worker-thread/dist/worker-thread.feature.js';
+import { disposeAfter } from '@wixc3/testing';
+import { expect } from 'chai';
+import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env.js';
 
 const featurePath = fs.dirname(require.resolve('@fixture/worker-thread/package.json'));
 

@@ -1,4 +1,4 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type { EngineerMetadataConfig, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
 import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';

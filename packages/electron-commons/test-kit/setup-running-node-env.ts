@@ -1,10 +1,9 @@
-import fs from '@file-services/node';
-import type { IOType } from 'child_process';
-import { deferred } from 'promise-assist';
-
-import { BaseHost, Communication, Environment, TopLevelConfig } from '@wixc3/engine-core';
-import { initializeNodeEnvironment, ProcessExitDetails } from '@wixc3/engine-electron-commons';
+import { nodeFs as fs } from '@file-services/node';
+import { BaseHost, Communication, Environment, type TopLevelConfig } from '@wixc3/engine-core';
+import { initializeNodeEnvironment, type ProcessExitDetails } from '@wixc3/engine-electron-commons';
 import { findFeatures } from '@wixc3/engine-scripts';
+import type { IOType } from 'node:child_process';
+import { deferred } from 'promise-assist';
 
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
 

@@ -1,7 +1,5 @@
-import { createDisposables } from '@wixc3/patterns';
 import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
-import { WsServerHost } from '@wixc3/engine-runtime-node';
-import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import { NodeEnvironmentsManager, WsServerHost, launchEngineHttpServer } from '@wixc3/engine-runtime-node';
 import {
     createCommunicationMiddleware,
     createConfigMiddleware,
@@ -11,13 +9,14 @@ import {
     getExportedEnvironments,
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
+import { createDisposables } from '@wixc3/patterns';
 import express from 'express';
 import type io from 'socket.io';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-import { TargetApplication } from '../application-proxy-service';
-import { buildFeatureLinks } from '../feature-dependency-graph';
-import devServerFeature, { devServerEnv } from './dev-server.feature';
+import { TargetApplication } from '../application-proxy-service.js';
+import { buildFeatureLinks } from '../feature-dependency-graph.js';
+import devServerFeature, { devServerEnv } from './dev-server.feature.js';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));

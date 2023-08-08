@@ -8,7 +8,7 @@ import {
     type IBuildCommandOptions as IEngineBuildCommandOptions,
 } from '@wixc3/engine-scripts';
 import { build as electronBuild, type Configuration, type FileSet, type PublishOptions } from 'electron-builder';
-import { dirname, posix, relative } from 'path';
+import { dirname, posix, relative } from 'node:path';
 import { getConfig } from '../engine-helpers.js';
 import { getEngineConfig } from '../find-features.js';
 
