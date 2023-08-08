@@ -1,8 +1,8 @@
-import type { LogMessage } from './common-types';
-import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
-import type { FeatureClass } from './entities/feature';
-import type { RuntimeEngine } from './runtime-engine';
-import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './symbols';
+import type { LogMessage } from './common-types.js';
+import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env.js';
+import type { FeatureClass } from './entities/feature.js';
+import type { RuntimeEngine } from './runtime-engine.js';
+import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './symbols.js';
 
 /*************** HELPER TYPES  ***************/
 type TupleToUnion<T> = T extends ReadonlyArray<infer ITEMS> ? ITEMS : never;

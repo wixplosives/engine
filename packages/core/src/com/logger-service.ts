@@ -1,6 +1,6 @@
-import type { LogMessage, LogMetadata } from '../common-types';
+import type { LogMessage, LogMetadata } from '../common-types.js';
 import { EventEmitter } from '@wixc3/patterns';
-import { LoggerTransport, LogLevel } from '../types';
+import { type LoggerTransport, LogLevel } from '../types.js';
 
 export interface LogValueData {
     value: string;

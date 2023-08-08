@@ -1,19 +1,19 @@
-import chai, { expect } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import sinonChai from 'sinon-chai';
 import {
-    AsyncApi,
     BaseHost,
     COM,
     Environment,
-    EnvironmentInstanceToken,
     Feature,
-    MultiEnvAsyncApi,
-    run as runEngine,
     Service,
+    run as runEngine,
+    type AsyncApi,
+    type EnvironmentInstanceToken,
+    type MultiEnvAsyncApi,
 } from '@wixc3/engine-core';
-import { typeCheck } from '../type-check';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import sinonChai from 'sinon-chai';
 import type { EQUAL } from 'typescript-type-utils';
+import { typeCheck } from '../type-check.js';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

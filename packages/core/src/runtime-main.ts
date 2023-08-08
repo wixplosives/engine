@@ -1,10 +1,10 @@
-import type { IRunOptions, TopLevelConfig } from './types';
-import type { AnyEnvironment } from './entities';
-import { FeatureLoadersRegistry, IFeatureLoader } from './run-engine-app';
-import { ConfigLoaders, RuntimeConfigurations } from './runtime-configurations';
-import { RuntimeEngine } from './runtime-engine';
-import { INSTANCE_ID_PARAM_NAME } from './com';
-import COM from './communication.feature';
+import type { IRunOptions, TopLevelConfig } from './types.js';
+import type { AnyEnvironment } from './entities/index.js';
+import { FeatureLoadersRegistry, type IFeatureLoader } from './run-engine-app.js';
+import { type ConfigLoaders, RuntimeConfigurations } from './runtime-configurations.js';
+import { RuntimeEngine } from './runtime-engine.js';
+import COM from './communication.feature.js';
+import { INSTANCE_ID_PARAM_NAME } from './com/initializers/iframe.js';
 
 export interface MainEntryParams {
     env: AnyEnvironment;

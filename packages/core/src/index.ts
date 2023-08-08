@@ -1,21 +1,21 @@
-export * from './com';
-export * from './helpers';
-export * from './entities';
-export * from './common-types';
-export * from './entity-helpers';
-export * from './run-engine-app';
-export * from './runtime-engine';
-export * from './runtime-feature';
-export * from './symbols';
-export * from './types';
-export * from './communication.feature';
-export * from './runtime-metadata.feature';
+export * from './com/index.js';
+export * from './helpers/index.js';
+export * from './entities/index.js';
+export * from './common-types.js';
+export * from './entity-helpers.js';
+export * from './run-engine-app.js';
+export * from './runtime-engine.js';
+export * from './runtime-feature.js';
+export * from './symbols.js';
+export * from './types.js';
+export * from './communication.feature.js';
+export * from './runtime-metadata.feature.js';
 
-export * from './runtime-main';
-export * from './runtime-configurations';
+export * from './runtime-main.js';
+export * from './runtime-configurations.js';
 
-import COM from './communication.feature';
+import COM from './communication.feature.js';
 export { COM };
 
-import RuntimeMetadata from './runtime-metadata.feature';
+import RuntimeMetadata from './runtime-metadata.feature.js';
 export { RuntimeMetadata };

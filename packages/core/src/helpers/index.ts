@@ -1,3 +1,3 @@
-export * from './flatten-tree';
-export * from './web';
-export * from './serialize-error';
+export * from './flatten-tree.js';
+export * from './web.js';
+export * from './serialize-error.js';

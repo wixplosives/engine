@@ -3,8 +3,7 @@ import type {
     UniversalWorker,
     UniversalWorkerUserMethods,
 } from '@wixc3/isomorphic-worker/types';
-
-import { Target } from '../types';
+import { type Target } from '../types.js';
 
 export class UniversalWorkerHost implements Target {
     private messageHandlersMap = new Map<(event: { data: any }) => void, UniversalMessageHandler>();

@@ -1,8 +1,8 @@
-import type { RuntimeEngine } from '../runtime-engine';
-import { CONFIGURABLE, CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import type { EnvVisibility } from '../types';
-import { AllEnvironments, Environment } from './env';
-import { FeatureInput } from './input';
+import type { RuntimeEngine } from '../runtime-engine.js';
+import { CONFIGURABLE, CREATE_RUNTIME, REGISTER_VALUE } from '../symbols.js';
+import type { EnvVisibility } from '../types.js';
+import { AllEnvironments, Environment } from './env.js';
+import { FeatureInput } from './input.js';
 
 export type MergeConfigHook<T extends object> = (a: Readonly<T>, b: Readonly<Partial<T>>) => T;
 

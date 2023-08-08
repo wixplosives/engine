@@ -1,4 +1,4 @@
-import type { LogLevel } from './types';
+import type { LogLevel } from './types.js';
 
 export interface LogMetadata {
     [key: string]: unknown;

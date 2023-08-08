@@ -1,6 +1,6 @@
-import type { EnvironmentTypes } from '../com/types';
-import { runtimeType } from '../entity-helpers';
-import type { Context, EnvVisibility, MapBy } from '../types';
+import type { EnvironmentTypes } from '../com/types.js';
+import { runtimeType } from '../entity-helpers.js';
+import type { Context, EnvVisibility, MapBy } from '../types.js';
 
 export type EnvironmentMode = 'single' | 'multi';
 export type AnyEnvironment = Environment<

@@ -1,6 +1,6 @@
 import type { EventEmitter } from '@wixc3/patterns';
-import type { Message } from '../message-types';
-import { BaseHost } from './base-host';
+import type { Message } from '../message-types.js';
+import { BaseHost } from './base-host.js';
 
 export class EventEmitterHost extends BaseHost {
     constructor(private host: EventEmitter<{ message: Message }>) {

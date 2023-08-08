@@ -3,10 +3,10 @@
  */
 import '@wixc3/isomorphic-worker/worker';
 
-import { RuntimeEngine } from './runtime-engine';
-import type { IRunOptions, TopLevelConfig } from './types';
-import type { AnyEnvironment, FeatureClass } from './entities';
-import { deferred, IDeferredPromise } from 'promise-assist';
+import { RuntimeEngine } from './runtime-engine.js';
+import type { IRunOptions, TopLevelConfig } from './types.js';
+import type { AnyEnvironment, FeatureClass } from './entities/index.js';
+import { deferred, type IDeferredPromise } from 'promise-assist';
 
 export interface RunEngineOptions<ENV extends AnyEnvironment> {
     entryFeature: FeatureClass | FeatureClass[];

@@ -1,4 +1,4 @@
-import type { AnyFunction, FilterFirstArgument, ValuePromise } from './types';
+import type { AnyFunction, FilterFirstArgument, ValuePromise } from './types.js';
 
 export function multiTenantMethod<T extends AnyFunction>(method: T) {
     return (context: any) => {

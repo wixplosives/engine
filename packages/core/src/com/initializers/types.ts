@@ -1,5 +1,5 @@
-import type { Environment } from '../../entities';
-import type { Communication } from '../communication';
+import type { Environment } from '../../entities/index.js';
+import type { Communication } from '../communication.js';
 
 export interface InitializerOptions {
     communication: Communication;

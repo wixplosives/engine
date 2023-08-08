@@ -1,7 +1,7 @@
 import { Worker } from '@wixc3/isomorphic-worker/worker';
 
-import { UniversalWorkerHost } from '../hosts/universal-worker-host';
-import type { InitializerOptions } from './types';
+import { UniversalWorkerHost } from '../hosts/universal-worker-host.js';
+import type { InitializerOptions } from './types.js';
 
 export async function webWorkerInitializer({ communication, env: { env, endpointType } }: InitializerOptions) {
     const isSingleton = endpointType === 'single';

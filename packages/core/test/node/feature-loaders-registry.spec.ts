@@ -1,4 +1,4 @@
-import { FeatureLoadersRegistry, Feature, IFeatureLoader } from '@wixc3/engine-core';
+import { FeatureLoadersRegistry, Feature, type IFeatureLoader } from '@wixc3/engine-core';
 import chai, { expect } from 'chai';
 import { spy } from 'sinon';
 import sinon from 'sinon-chai';

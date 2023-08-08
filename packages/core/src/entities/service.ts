@@ -1,16 +1,16 @@
-import COM from '../communication.feature';
+import COM from '../communication.feature.js';
 import type {
     AsyncApi,
     EnvironmentInstanceToken,
     EnvironmentTypes,
     MultiEnvAsyncApi,
     ServiceComConfig,
-} from '../com/types';
-import type { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import type { EnvVisibility } from '../types';
-import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
-import { FeatureOutput } from './output';
+} from '../com/types.js';
+import type { RuntimeEngine } from '../runtime-engine.js';
+import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols.js';
+import type { EnvVisibility } from '../types.js';
+import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env.js';
+import { FeatureOutput } from './output.js';
 
 export type ServiceRuntime<T extends object, ProvidedFrom> = ProvidedFrom extends Environment<
     string,

@@ -1,26 +1,25 @@
-import chai, { expect } from 'chai';
-import sinonChai from 'sinon-chai';
-import chaiAsPromised from 'chai-as-promised';
-import { stub, spy } from 'sinon';
-
+import { createDisposables } from '@wixc3/create-disposables';
 import {
-    SERVICE_CONFIG,
-    multiTenantMethod,
     BaseHost,
-    Communication,
-    EventEmitterHost,
-    Message,
-    Environment,
-    Feature,
-    Service,
-    RuntimeEngine,
     COM,
+    Communication,
+    Environment,
+    EventEmitterHost,
+    Feature,
+    RuntimeEngine,
+    SERVICE_CONFIG,
+    Service,
     Slot,
-    ReadyMessage,
+    multiTenantMethod,
+    type Message,
+    type ReadyMessage,
 } from '@wixc3/engine-core';
 import { EventEmitter } from '@wixc3/patterns';
-import { createDisposables } from '@wixc3/create-disposables';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { waitFor } from 'promise-assist';
+import { spy, stub } from 'sinon';
+import sinonChai from 'sinon-chai';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
