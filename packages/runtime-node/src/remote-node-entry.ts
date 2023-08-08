@@ -1,9 +1,9 @@
-import { resolve, join } from 'path';
-import { parseCliArguments } from './parse-cli-arguments.js';
+import path from 'node:path';
+import type { ServerOptions } from 'socket.io';
 import { ForkedProcess } from './forked-process.js';
 import { launchEngineHttpServer } from './launch-http-server.js';
+import { parseCliArguments } from './parse-cli-arguments.js';
 import { createIPC } from './process-communication.js';
-import type { ServerOptions } from 'socket.io';
 
 const {
     preferredPort,
@@ -15,7 +15,7 @@ const requiredPaths = JSON.parse(requiredPathsJson as string) as string[];
 
 const socketServerOptions = JSON.parse(socketServerOptionsJson as string) as Partial<ServerOptions>;
 
-const basePath = resolve(providedPath);
+const basePath = path.resolve(providedPath);
 
 const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : undefined;
 
@@ -28,7 +28,7 @@ const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : u
         }
     }
     const { socketServer, close, port } = await launchEngineHttpServer({
-        staticDirPath: join(basePath, 'dist'),
+        staticDirPath: path.join(basePath, 'dist'),
         httpServerPort,
         socketServerOptions,
     });

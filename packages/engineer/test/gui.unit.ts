@@ -1,9 +1,9 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
+import { createDisposables } from '@wixc3/create-disposables';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
 import guiFeature from '@wixc3/engineer/gui-feature';
-import { join } from 'path';
-import { createDisposables } from '@wixc3/create-disposables';
+import { join } from 'node:path';
 
 const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
 

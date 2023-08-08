@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import guiFeature, { mainDashboardEnv } from './gui.feature';
-import { devServerEnv } from './dev-server.feature';
+import guiFeature, { mainDashboardEnv } from './gui.feature.js';
+import { devServerEnv } from './dev-server.feature.js';
 import { socketClientInitializer } from '@wixc3/engine-core';
 import { App } from '@wixc3/engine-dashboard';
 

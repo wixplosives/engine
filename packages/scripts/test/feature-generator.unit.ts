@@ -1,16 +1,16 @@
 import { createMemoryFs } from '@file-services/memory';
-import fs from '@file-services/node';
-import { expect } from 'chai';
+import { nodeFs as fs } from '@file-services/node';
+import { templateCompilerProvider } from '@wixc3/common';
 import {
+    enrichContext,
     generateFeature,
+    mapDirectory,
+    pathToFeaturesDirectory,
     readDirectoryContentsSync,
     writeDirectoryContentsSync,
-    mapDirectory,
-    enrichContext,
-    pathToFeaturesDirectory,
 } from '@wixc3/engine-scripts';
-import { expectedDirContents, templatesDirContents, FEATURE_NAME } from './mocks/feature-generator.mocks';
-import { templateCompilerProvider } from '@wixc3/common';
+import { expect } from 'chai';
+import { FEATURE_NAME, expectedDirContents, templatesDirContents } from './mocks/feature-generator.mocks.js';
 
 describe('Feature Generator', () => {
     it('reads directory contents', () => {

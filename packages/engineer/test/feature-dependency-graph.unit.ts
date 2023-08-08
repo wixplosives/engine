@@ -1,5 +1,5 @@
-import { buildFeatureLinks } from '@wixc3/engineer/dist/feature-dependency-graph';
 import { Feature } from '@wixc3/engine-core';
+import { buildFeatureLinks } from '@wixc3/engineer/dist/feature-dependency-graph';
 import { expect } from 'chai';
 
 class noDepsFeature extends Feature<'noDepsFeature'> {
