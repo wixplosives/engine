@@ -1,4 +1,4 @@
-import testFeature, { serverEnv } from './disconnecting-env.feature';
+import testFeature, { serverEnv } from './disconnecting-env.feature.js';
 
 testFeature.setup(serverEnv, ({ run, errorsConfig: { throwError, handleUncaught } }) => {
     if (handleUncaught) {
