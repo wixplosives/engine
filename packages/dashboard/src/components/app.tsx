@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dashboard } from './dashboard';
+import { Dashboard } from './dashboard.js';
 import { classes } from './app.st.css';
 import './reset.st.css';
 

@@ -1,10 +1,10 @@
-import React, { memo, useEffect } from 'react';
-import { hierarchy, cluster, HierarchyPointNode } from 'd3-hierarchy';
-import { line, curveBundle } from 'd3-shape';
+import { cluster, hierarchy, type HierarchyPointNode } from 'd3-hierarchy';
 import { select, selectAll } from 'd3-selection';
+import { curveBundle, line } from 'd3-shape';
+import React, { memo, useEffect } from 'react';
+import type { GraphNode, IFeatureGraphProps, Node } from '../graph-types.js';
+import { translateNodeToHierarchy, xAccessor, yAccessor } from '../graph-utils.js';
 import { classes } from './feature-graph.st.css';
-import { translateNodeToHierarchy, xAccessor, yAccessor } from '../graph-utils';
-import type { GraphNode, Node, IFeatureGraphProps } from '../graph-types';
 
 export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) => {
     useEffect(() => {
