@@ -1,6 +1,5 @@
 import { Communication } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/patterns';
-import memoizeOne from 'memoize-one';
 import { metadataApiToken, type MetadataCollectionAPI } from '../types.js';
 import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './constants.js';
 
@@ -14,6 +13,17 @@ export function createMetadataProvider(com: Communication) {
     return {
         getMetadata: () => metadataPromise,
         dispose: disposeCommunication,
+    };
+}
+
+function memoizeOne<A extends object, R>(fn: (arg: A) => R): (arg: A) => R {
+    const argToRes = new WeakMap<A, R>();
+    return (arg: A) => {
+        if (argToRes.has(arg)) {
+            return argToRes.get(arg)!;
+        }
+        const res = fn(arg);
+        return res;
     };
 }
 
