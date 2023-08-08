@@ -23,6 +23,7 @@ function memoizeOne<A extends object, R>(fn: (arg: A) => R): (arg: A) => R {
             return argToRes.get(arg)!;
         }
         const res = fn(arg);
+        argToRes.set(arg, res);
         return res;
     };
 }
