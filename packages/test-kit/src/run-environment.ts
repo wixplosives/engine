@@ -1,31 +1,30 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import {
-    AnyEnvironment,
     BaseHost,
     COM,
     Communication,
     Environment,
-    FeatureClass,
-    Running,
     RuntimeEngine,
-    TopLevelConfig,
     flattenTree,
+    type AnyEnvironment,
+    type FeatureClass,
+    type Running,
+    type TopLevelConfig,
 } from '@wixc3/engine-core';
 import {
     ENGINE_ROOT_ENVIRONMENT_ID,
     METADATA_PROVIDER_ENV_ID,
-    MetadataCollectionAPI,
     metadataApiToken,
     runNodeEnvironment,
-    IStaticFeatureDefinition,
+    type IStaticFeatureDefinition,
+    type MetadataCollectionAPI,
 } from '@wixc3/engine-runtime-node';
-
 import {
     ENGINE_CONFIG_FILE_NAME,
-    findFeatures,
     evaluateConfig,
-    EngineConfig,
-    IFeatureDefinition,
+    findFeatures,
+    type EngineConfig,
+    type IFeatureDefinition,
 } from '@wixc3/engine-scripts';
 import { disposeAfter } from '@wixc3/testing';
 

@@ -1,18 +1,18 @@
-import isCI from 'is-ci';
-import fs from '@file-services/node';
-import playwright from 'playwright-core';
-import { ensureTracePath } from './utils';
-import { hookPageConsole } from './hook-page-console';
-import { validateBrowser } from './supported-browsers';
-import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
-import { normalizeTestName } from './normalize-test-name';
-import { RemoteHttpApplication } from './remote-http-application';
-import { ForkedProcessApplication } from './forked-process-application';
-import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
-import { Disposables, DisposableItem, DisposableOptions } from '@wixc3/patterns';
-import type { IExecutableApplication } from './types';
+import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
+import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
+import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
+import isCI from 'is-ci';
+import playwright from 'playwright-core';
+import { ForkedProcessApplication } from './forked-process-application.js';
+import { hookPageConsole } from './hook-page-console.js';
+import { normalizeTestName } from './normalize-test-name.js';
+import { RemoteHttpApplication } from './remote-http-application.js';
+import { validateBrowser } from './supported-browsers.js';
+import type { IExecutableApplication } from './types.js';
+import { ensureTracePath } from './utils/index.js';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 

@@ -1,9 +1,9 @@
-import { expect } from 'chai';
-import fs from '@file-services/node';
+import workerThreadFeature, { serverEnv } from '@fixture/worker-thread/dist/worker-thread.feature.js';
 import { getRunningFeature } from '@wixc3/engine-test-kit';
-import workerThreadFeature, { serverEnv } from '@fixture/worker-thread/dist/worker-thread.feature';
+import { expect } from 'chai';
+import path from 'node:path';
 
-const featurePath = fs.dirname(require.resolve('@fixture/worker-thread/package.json'));
+const featurePath = path.dirname(require.resolve('@fixture/worker-thread/package.json'));
 
 describe('runs environment', () => {
     it('runs environment with workerthread support', async () => {
