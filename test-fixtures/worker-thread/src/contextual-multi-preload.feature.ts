@@ -1,5 +1,5 @@
 import { Feature, Environment, COM, Service, ContextualEnvironment } from '@wixc3/engine-core';
-import type { ContextualMultiPreloadWorkerEcho } from './contextual-multi-preload.worker.env';
+import type { ContextualMultiPreloadWorkerEcho } from './contextual-multi-preload.worker.env.js';
 
 export const contextualMultiServerEnv = new Environment('server', 'node', 'single');
 export const workerEnv = new ContextualEnvironment('worker', 'multi', [

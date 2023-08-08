@@ -1,4 +1,4 @@
-import contextualMultiPreloadFeature, { workerEnv } from './contextual-multi-preload.feature';
+import contextualMultiPreloadFeature, { workerEnv } from './contextual-multi-preload.feature.js';
 
 export interface ContextualMultiPreloadWorkerEcho {
     echo: (value: string) => string;

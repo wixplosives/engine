@@ -1,5 +1,8 @@
 import { workerThreadInitializer } from '@wixc3/engine-runtime-node';
-import contextualMultiPreloadFeature, { contextualMultiServerEnv, workerEnv } from './contextual-multi-preload.feature';
+import contextualMultiPreloadFeature, {
+    contextualMultiServerEnv,
+    workerEnv,
+} from './contextual-multi-preload.feature.js';
 
 contextualMultiPreloadFeature.setup(
     contextualMultiServerEnv,

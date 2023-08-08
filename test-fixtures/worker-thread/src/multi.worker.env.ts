@@ -1,4 +1,4 @@
-import multiFeature, { workerEnv } from './multi.feature';
+import multiFeature, { workerEnv } from './multi.feature.js';
 
 export interface MultiWorkerEcho {
     echo: (value: string) => string;
