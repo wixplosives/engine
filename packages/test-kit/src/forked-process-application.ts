@@ -1,7 +1,7 @@
-import { PerformanceMetrics, ProcessMessageId, isProcessMessage } from '@wixc3/engine-runtime-node';
-import type { IFeatureTarget, IPortMessage, IFeatureMessagePayload } from '@wixc3/engine-scripts';
-import { ChildProcess, fork } from 'child_process';
-import type { IExecutableApplication } from './types';
+import { isProcessMessage, type PerformanceMetrics, type ProcessMessageId } from '@wixc3/engine-runtime-node';
+import type { IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts';
+import { ChildProcess, fork } from 'node:child_process';
+import type { IExecutableApplication } from './types.js';
 
 export class ForkedProcessApplication implements IExecutableApplication {
     private engineStartProcess: ChildProcess | undefined;

@@ -1,8 +1,8 @@
-import { request } from 'http';
-import { posix } from 'path';
-import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scripts';
-import type { IExecutableApplication } from './types';
-import type { PerformanceMetrics, IProcessMessage } from '@wixc3/engine-runtime-node';
+import type { IProcessMessage, PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import type { IFeatureMessagePayload, IFeatureTarget } from '@wixc3/engine-scripts';
+import { request } from 'node:http';
+import { posix } from 'node:path';
+import type { IExecutableApplication } from './types.js';
 
 const { join } = posix;
 
