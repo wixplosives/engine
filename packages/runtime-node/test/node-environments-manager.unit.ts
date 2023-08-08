@@ -9,15 +9,12 @@ import {
 } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type io from 'socket.io';
-
 import SocketServerNodeFeature, {
     serverEnv as socketServerEnv,
-} from '@fixture/engine-multi-socket-node/dist/feature/x.feature';
-
+} from '@fixture/engine-multi-socket-node/dist/feature/x.feature.js';
 import defaultArgsEchoFeature, {
     serverEnv as echoServerEnv,
 } from '@fixture/engine-default-args-echo/dist/feature/echo.feature';
-
 import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature';
 
 chai.use(chaiAsPromised);

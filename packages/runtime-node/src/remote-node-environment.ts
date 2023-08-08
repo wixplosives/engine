@@ -1,8 +1,8 @@
-import { fork } from 'child_process';
-import { once } from 'events';
+import { fork } from 'node:child_process';
+import { once } from 'node:events';
 import type { ServerOptions } from 'socket.io';
-import { ForkedProcess } from './forked-process';
-import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from './types';
+import { ForkedProcess } from './forked-process.js';
+import { isEnvironmentPortMessage, type ICommunicationMessage, type RemoteProcess } from './types.js';
 
 export interface IStartRemoteNodeEnvironmentOptions {
     port: number;

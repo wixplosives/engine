@@ -1,8 +1,8 @@
 import { resolve, join } from 'path';
-import { parseCliArguments } from './parse-cli-arguments';
-import { ForkedProcess } from './forked-process';
-import { launchEngineHttpServer } from './launch-http-server';
-import { createIPC } from './process-communication';
+import { parseCliArguments } from './parse-cli-arguments.js';
+import { ForkedProcess } from './forked-process.js';
+import { launchEngineHttpServer } from './launch-http-server.js';
+import { createIPC } from './process-communication.js';
 import type { ServerOptions } from 'socket.io';
 
 const {

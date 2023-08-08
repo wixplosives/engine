@@ -1,6 +1,5 @@
-import { InitializerOptions } from '@wixc3/engine-core';
-
-import { ENGINE_ROOT_ENVIRONMENT_ID } from './constants';
+import { type InitializerOptions } from '@wixc3/engine-core';
+import { ENGINE_ROOT_ENVIRONMENT_ID } from './constants.js';
 
 /**
  * when running the engine application, an active environment should be provided to this runtime, with the id {@link ENGINE_ROOT_ENVIRONMENT_ID}

@@ -1,9 +1,7 @@
 import type io from 'socket.io';
-
-import { WsServerHost } from './core-node/ws-node-host';
-
-import { runNodeEnvironment } from './node-environment';
-import { StartEnvironmentOptions } from './types';
+import { WsServerHost } from './core-node/ws-node-host.js';
+import { runNodeEnvironment } from './node-environment.js';
+import { type StartEnvironmentOptions } from './types.js';
 
 export function runWSEnvironment(socketServer: io.Server, startEnvironmentOptions: StartEnvironmentOptions) {
     const socketServerNamespace = socketServer.of(startEnvironmentOptions.name);

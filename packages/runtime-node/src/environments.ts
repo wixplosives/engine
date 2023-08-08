@@ -1,7 +1,5 @@
-import { EnvironmentTypes, flattenTree } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from './types';
-
-import type { IStaticFeatureDefinition } from './types';
+import { type EnvironmentTypes, flattenTree } from '@wixc3/engine-core';
+import type { IStaticFeatureDefinition, IEnvironmentDescriptor } from './types.js';
 
 export function resolveEnvironments(
     featureName: string,
