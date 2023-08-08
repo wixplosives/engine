@@ -1,4 +1,4 @@
-import BaseWebApplicationFeature from './base-web-application.feature';
+import BaseWebApplicationFeature from './base-web-application.feature.js';
 
 export default [
     BaseWebApplicationFeature.use({

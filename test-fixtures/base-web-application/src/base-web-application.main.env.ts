@@ -1,5 +1,5 @@
 import { socketClientInitializer, iframeInitializer } from '@wixc3/engine-core';
-import BaseAppFeature, { client, server, iframe } from './base-web-application.feature';
+import BaseAppFeature, { client, server, iframe } from './base-web-application.feature.js';
 
 BaseAppFeature.setup(client, ({ clientSlot, dataProvider }, { COM: { communication } }) => {
     socketClientInitializer({ communication, env: server }).catch(console.error);

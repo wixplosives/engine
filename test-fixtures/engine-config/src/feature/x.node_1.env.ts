@@ -1,4 +1,4 @@
-import sampleFeature, { NODE_1 } from './x.feature';
+import sampleFeature, { NODE_1 } from './x.feature.js';
 
 sampleFeature.setup(NODE_1, () => {
     return {

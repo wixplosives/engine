@@ -1,5 +1,5 @@
-import { mainEnv } from '../feature/some-feature.feature';
-import ExampleFeature from './server-env.feature';
+import { mainEnv } from '../feature/some-feature.feature.js';
+import ExampleFeature from './server-env.feature.js';
 
 ExampleFeature.setup(mainEnv, ({ run }, { multiEnv: { serverService } }) => {
     run(async () => {

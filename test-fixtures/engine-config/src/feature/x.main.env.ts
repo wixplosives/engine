@@ -1,5 +1,5 @@
 import { socketClientInitializer } from '@wixc3/engine-core';
-import sampleFeature, { MAIN, NODE_1, NODE_2 } from './x.feature';
+import sampleFeature, { MAIN, NODE_1, NODE_2 } from './x.feature.js';
 
 sampleFeature.setup(MAIN, ({ nodeEnv1, nodeEnv2, run }, { COM: { communication } }) => {
     document.body.textContent = `pid_1;$pid_2`;

@@ -1,4 +1,4 @@
-import MultiFeature from '../feature/app.feature';
+import MultiFeature from '../feature/app.feature.js';
 
 export default [
     MultiFeature.use({

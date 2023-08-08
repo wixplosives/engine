@@ -1,4 +1,4 @@
-import sampleFeature, { MAIN } from './x.feature';
+import sampleFeature, { MAIN } from './x.feature.js';
 
 sampleFeature.setup(MAIN, ({ run }) => {
     run(() => {

@@ -1,4 +1,4 @@
-import MultiEnvFeature, { contextualEnv } from './some-feature.feature';
+import MultiEnvFeature, { contextualEnv } from './some-feature.feature.js';
 
 MultiEnvFeature.setupContext(contextualEnv, 'echoContext', () => {
     return {

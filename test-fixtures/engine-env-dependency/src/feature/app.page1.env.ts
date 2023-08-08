@@ -1,5 +1,5 @@
-import { page1 } from './app.feature';
-import MyFeature from './app.feature';
+import { page1 } from './app.feature.js';
+import MyFeature from './app.feature.js';
 
 MyFeature.setup(page1, ({ render, run }) => {
     run(() => {
