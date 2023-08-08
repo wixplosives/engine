@@ -1,7 +1,7 @@
-import React, { useMemo, useCallback } from 'react';
-import type { ServerFeatureDef } from '../server-types';
+import React, { useCallback, useMemo } from 'react';
+import type { ServerFeatureDef } from '../server-types.js';
 import { classes } from './feature-selection.st.css';
-import { TitledElement } from './titled-element';
+import { TitledElement } from './titled-element.js';
 
 export interface FeaturesSelectionProps {
     features: Record<string, ServerFeatureDef>;

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import { TitledElement } from './titled-element';
 import { classes, style } from './runtime-option.st.css';
+import { TitledElement } from './titled-element.js';
 
 export interface RuntimeOptionProps {
     index: number;

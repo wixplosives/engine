@@ -1,5 +1,5 @@
 import type { HierarchyPointNode } from 'd3-hierarchy';
-import type { GraphNode, Node } from './graph-types';
+import type { GraphNode, Node } from './graph-types.js';
 
 export function translateNodeToHierarchy(nodes: Array<Node>) {
     const hierarchy: Record<string, GraphNode> = {

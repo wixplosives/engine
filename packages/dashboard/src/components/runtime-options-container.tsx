@@ -1,6 +1,6 @@
 import React from 'react';
+import { RuntimeOption } from './runtime-option.js';
 import { classes } from './runtime-options-container.st.css';
-import { RuntimeOption } from './runtime-option';
 
 export interface IRuntimeOption {
     key: string;

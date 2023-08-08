@@ -1,13 +1,13 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import type { GraphData } from '../graph-types';
-import { isServerResponseMessage, RunningEngineFeature, ServerState } from '../server-types';
-import { ActionsContainer } from './actions-container';
-import { URLParamsValue, useUrlParams } from './dashboard-hooks';
+import type { GraphData } from '../graph-types.js';
+import { isServerResponseMessage, type RunningEngineFeature, type ServerState } from '../server-types.js';
+import { ActionsContainer } from './actions-container.js';
+import { useUrlParams, type URLParamsValue } from './dashboard-hooks.js';
 import { classes } from './dashboard.st.css';
-import { DependencyGraph } from './dependency-graph/dependency-graph';
-import { FeaturesSelection } from './feature-selection';
-import { IRuntimeOption, RuntimeOptionsContainer } from './runtime-options-container';
-import { Sidebar } from './sidebar/sidebar';
+import { DependencyGraph } from './dependency-graph/dependency-graph.js';
+import { FeaturesSelection } from './feature-selection.js';
+import { RuntimeOptionsContainer, type IRuntimeOption } from './runtime-options-container.js';
+import { Sidebar } from './sidebar/sidebar.js';
 
 export interface IDashboardProps {
     fetchServerState: () => Promise<{
