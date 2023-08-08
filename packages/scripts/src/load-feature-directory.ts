@@ -1,5 +1,5 @@
 import type { IFileSystemSync } from '@file-services/types';
-import { isConfigFile, isContextFile, isEnvFile, isFeatureFile, isPreloadFile } from './build-constants';
+import { isConfigFile, isContextFile, isEnvFile, isFeatureFile, isPreloadFile } from './build-constants.js';
 
 export interface IFeatureDirectory {
     directoryPath: string;

@@ -1,6 +1,6 @@
-import type { DirectoryContentMapper, ITemplateContext, IEnrichedTemplateContext } from './types';
 import type { IDirectoryContents, IFileSystem } from '@file-services/types';
-import { toKebabCase, toCamelCase, capitalizeFirstLetter } from '@wixc3/common';
+import { capitalizeFirstLetter, toCamelCase, toKebabCase } from '@wixc3/common';
+import type { DirectoryContentMapper, IEnrichedTemplateContext, ITemplateContext } from './types.js';
 
 // adds display options to each context value
 export function enrichContext(context: ITemplateContext): IEnrichedTemplateContext {

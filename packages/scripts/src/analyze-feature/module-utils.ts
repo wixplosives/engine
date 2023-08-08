@@ -1,9 +1,15 @@
-import { basename } from 'path';
-import { Environment, EnvironmentContext, ContextualEnvironment, flattenTree, FeatureClass } from '@wixc3/engine-core';
-import { isFeatureFile, parseFeatureFileName } from '../build-constants';
-import { instanceOf } from '../utils/instance-of';
-import type { IFeatureDefinition, IFeatureModule } from '../types';
-import { parseContextualEnv, parseEnv } from './parse-env';
+import {
+    ContextualEnvironment,
+    Environment,
+    EnvironmentContext,
+    flattenTree,
+    type FeatureClass,
+} from '@wixc3/engine-core';
+import { basename } from 'node:path';
+import { isFeatureFile, parseFeatureFileName } from '../build-constants.js';
+import type { IFeatureDefinition, IFeatureModule } from '../types.js';
+import { instanceOf } from '../utils/instance-of.js';
+import { parseContextualEnv, parseEnv } from './parse-env.js';
 
 function isEngineFeature(Class: unknown) {
     return typeof Class === 'function' && (Class as FeatureClass).isEngineFeature;

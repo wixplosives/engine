@@ -1,22 +1,22 @@
 import type { IFileSystemSync } from '@file-services/types';
-import type { FeatureClass } from '@wixc3/engine-core';
 import { concat, getValue, isPlainObject, map } from '@wixc3/common';
+import type { FeatureClass } from '@wixc3/engine-core';
+import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
+import type { INpmPackage } from '@wixc3/resolve-directory-context';
 import {
-    FileNameParser,
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
     parsePreloadFileName,
-} from '../build-constants';
-import { loadFeatureDirectory } from '../load-feature-directory';
-import { evaluateModule } from '../utils/evaluate-module';
-import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
-import type { IFeatureDefinition, IFeatureModule } from '../types';
-import type { DirFeatures } from './find-features';
-import { findPackageOfDirs, IPackageDescriptor, scopeToPackage } from './package-utils';
-import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils';
-import type { INpmPackage } from '@wixc3/resolve-directory-context';
+    type FileNameParser,
+} from '../build-constants.js';
+import { loadFeatureDirectory } from '../load-feature-directory.js';
+import type { IFeatureDefinition, IFeatureModule } from '../types.js';
+import { evaluateModule } from '../utils/evaluate-module.js';
+import type { DirFeatures } from './find-features.js';
+import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils.js';
+import { findPackageOfDirs, scopeToPackage, type IPackageDescriptor } from './package-utils.js';
 
 /**
  * Loads the features and configs of given roots and their imported dependencies

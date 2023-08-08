@@ -1,2 +1,2 @@
-export * from './feature-generator';
-export * from './utils';
+export * from './feature-generator.js';
+export * from './utils.js';

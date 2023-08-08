@@ -1,8 +1,8 @@
-import { COM, TopLevelConfig } from '@wixc3/engine-core';
+import { COM, type TopLevelConfig } from '@wixc3/engine-core';
+import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type express from 'express';
 import importFresh from 'import-fresh';
-import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 
 export interface OverrideConfig {
     configName?: string;
