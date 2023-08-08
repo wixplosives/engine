@@ -1,4 +1,4 @@
-import MultiEnvFeature, { processingEnv } from './multi-env.feature';
+import MultiEnvFeature, { processingEnv } from './multi-env.feature.js';
 
 MultiEnvFeature.setupContext(processingEnv, 'processingContext', () => {
     let testName = 'node env';

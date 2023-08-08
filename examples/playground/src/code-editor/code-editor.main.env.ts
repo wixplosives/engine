@@ -1,7 +1,7 @@
 import { webWorkerInitializer } from '@wixc3/engine-core';
-import CodeEditor, { MAIN, PROCESSING } from './code-editor.feature';
-import { CodeService } from './code-service';
-import { ErrorService } from './error-service';
+import CodeEditor, { MAIN, PROCESSING } from './code-editor.feature.js';
+import { CodeService } from './code-service.js';
+import { ErrorService } from './error-service.js';
 import './style.st.css';
 
 CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { communication } }) => {

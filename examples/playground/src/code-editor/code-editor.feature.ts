@@ -1,6 +1,6 @@
 import { COM, Environment, Feature, Service, Slot } from '@wixc3/engine-core';
-import type { CodeService } from './code-service';
-import type { ErrorService } from './error-service';
+import type { CodeService } from './code-service.js';
+import type { ErrorService } from './error-service.js';
 
 export const MAIN = new Environment('main', 'window', 'single');
 export const PROCESSING = new Environment('processing', 'webworker', 'single');

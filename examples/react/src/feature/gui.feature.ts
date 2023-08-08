@@ -1,6 +1,6 @@
 import { Feature, Slot } from '@wixc3/engine-core';
 import type React from 'react';
-import reactRendererFeature, { MainEnv } from './react-renderer.feature';
+import reactRendererFeature, { MainEnv } from './react-renderer.feature.js';
 
 export default class GuiFeature extends Feature<'guiFeature'> {
     id = 'guiFeature' as const;

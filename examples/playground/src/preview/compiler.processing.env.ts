@@ -1,6 +1,6 @@
-import { PROCESSING } from '../code-editor/code-editor.feature';
-import { BaseCompiler } from './BaseCompiler';
-import Preview from './compiler.feature';
+import { PROCESSING } from '../code-editor/code-editor.feature.js';
+import { BaseCompiler } from './BaseCompiler.js';
+import Preview from './compiler.feature.js';
 
 Preview.setup(PROCESSING, ({ complierExtension }, { playgroundCodeEditor: { remoteCodeService } }) => {
     complierExtension.register({

@@ -1,5 +1,5 @@
 import { withFeature } from '@wixc3/engine-test-kit';
-import { join } from 'path';
+import { join } from 'node:path';
 
 describe('React Feature', function () {
     this.timeout(20_000);

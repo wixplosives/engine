@@ -1,5 +1,5 @@
-import { main } from '../feature/file-server.feature';
-import TestFeature from './example.feature';
+import { main } from '../feature/file-server.feature.js';
+import TestFeature from './example.feature.js';
 
 /**
  * setting up the local main environment file

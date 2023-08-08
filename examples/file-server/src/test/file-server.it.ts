@@ -1,9 +1,9 @@
-import path from 'path';
+import path from 'node:path';
 import { withFeature } from '@wixc3/engine-test-kit';
 import { waitFor } from 'promise-assist';
 import { expect } from 'chai';
-import { FileServerDriver } from './file-server-driver';
-import fileServerFeature, { SERVER_MARK, MAIN_MARK } from '../feature/file-server.feature';
+import { FileServerDriver } from './file-server-driver.js';
+import fileServerFeature, { SERVER_MARK, MAIN_MARK } from '../feature/file-server.feature.js';
 
 describe('File Server Feature', function () {
     this.timeout(20_000);

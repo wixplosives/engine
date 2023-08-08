@@ -1,4 +1,4 @@
-import ElectronApp, { server2 } from './electron-app.feature';
+import ElectronApp, { server2 } from './electron-app.feature.js';
 
 /**
  * setting up the server environment

@@ -1,5 +1,5 @@
-import CodeEditor, { PROCESSING } from './code-editor.feature';
-import { CodeService } from './code-service';
+import CodeEditor, { PROCESSING } from './code-editor.feature.js';
+import { CodeService } from './code-service.js';
 
 CodeEditor.setup(PROCESSING, ({ run, remoteCodeService, errorService }, {}) => {
     const codeService = new CodeService();

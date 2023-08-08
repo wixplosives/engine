@@ -1,5 +1,5 @@
-import { iframeEnv } from './echo.feature';
-import echoFeature from './echo.feature';
+import { iframeEnv } from './echo.feature.js';
+import echoFeature from './echo.feature.js';
 
 echoFeature.setup(iframeEnv, ({}) => {
     return {

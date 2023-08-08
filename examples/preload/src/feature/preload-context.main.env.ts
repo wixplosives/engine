@@ -1,4 +1,4 @@
-import contextualFeature, { mainEnv, procEnv } from './preload-context.feature';
+import contextualFeature, { mainEnv, procEnv } from './preload-context.feature.js';
 import { socketClientInitializer, initializeContextualEnv, webWorkerInitializer } from '@wixc3/engine-core';
 
 contextualFeature.setup(mainEnv, ({ run, procEnvMessages: { getProcEnvMessages } }, { COM: { communication } }) => {

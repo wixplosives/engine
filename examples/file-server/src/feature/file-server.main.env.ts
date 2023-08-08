@@ -1,4 +1,4 @@
-import FileServer, { server, MAIN_MARK, main } from './file-server.feature';
+import FileServer, { server, MAIN_MARK, main } from './file-server.feature.js';
 import { socketClientInitializer } from '@wixc3/engine-core';
 
 /**

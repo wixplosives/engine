@@ -1,7 +1,7 @@
-import { MainEnv } from './react-renderer.feature';
-import somepluginFeature from './someplugin.feature';
 import React from 'react';
-import { Comp } from './someComp';
+import { MainEnv } from './react-renderer.feature.js';
+import { Comp } from './someComp.js';
+import somepluginFeature from './someplugin.feature.js';
 
 somepluginFeature.setup(MainEnv, ({}, { guiFeature: { extentionSlot } }) => {
     extentionSlot.register(<input type="checkbox" key="checkbox" id="checkbox" />);

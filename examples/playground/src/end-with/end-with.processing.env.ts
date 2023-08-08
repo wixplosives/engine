@@ -1,5 +1,5 @@
-import { PROCESSING } from '../code-editor/code-editor.feature';
-import EndWith from './end-with.feature';
+import { PROCESSING } from '../code-editor/code-editor.feature.js';
+import EndWith from './end-with.feature.js';
 
 EndWith.setup(PROCESSING, ({}, { preview }) => {
     preview.complierExtension.register({
