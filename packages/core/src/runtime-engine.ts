@@ -1,12 +1,12 @@
 import { timeout } from 'promise-assist';
 import {
     globallyProvidingEnvironments,
+    normEnvVisibility,
     orderedEnvDependencies,
     type AnyEnvironment,
     type FeatureClass,
-    normEnvVisibility,
 } from './entities/index.js';
-import { createFeatureRuntime, RuntimeFeature } from './runtime-feature.js';
+import { createFeatureRuntime, type RuntimeFeature } from './runtime-feature.js';
 import { RUN } from './symbols.js';
 import type { IRunOptions, TopLevelConfig } from './types.js';
 
