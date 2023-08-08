@@ -1,7 +1,7 @@
 import yargs from 'yargs';
-import { start, build } from './commands';
+import { build, start } from './commands/index.js';
 
-yargs
+yargs()
     .command('start', 'starts the electron application in dev mode', async (command) => {
         const options = command
             .option('featureName', {

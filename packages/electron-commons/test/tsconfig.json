@@ -12,6 +12,9 @@
       "path": "../test-kit"
     },
     {
+      "path": "../../core/src"
+    },
+    {
       "path": "../../../test-fixtures/disconnecting-env/src"
     },
     {

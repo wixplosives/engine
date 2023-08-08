@@ -1,16 +1,16 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import { importModules, type IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import {
     Application,
     getExportedEnvironments,
-    IApplicationOptions,
-    IBuildCommandOptions as IEngineBuildCommandOptions,
+    type IApplicationOptions,
+    type IBuildCommandOptions as IEngineBuildCommandOptions,
 } from '@wixc3/engine-scripts';
-import { build as electronBuild, Configuration, FileSet, PublishOptions } from 'electron-builder';
+import { build as electronBuild, type Configuration, type FileSet, type PublishOptions } from 'electron-builder';
 import { dirname, posix, relative } from 'path';
-import { getConfig } from '../engine-helpers';
-import { getEngineConfig } from '../find-features';
+import { getConfig } from '../engine-helpers.js';
+import { getEngineConfig } from '../find-features.js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: electronVersion } = require('electron/package.json') as { version: string };

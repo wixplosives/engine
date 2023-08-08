@@ -1,6 +1,6 @@
-import type { SetMultiMap } from '@wixc3/patterns';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import type { SetMultiMap } from '@wixc3/patterns';
 
 export function getConfig(
     configName: string,

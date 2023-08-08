@@ -1,1 +1,1 @@
-export * from './electron-client-host';
+export * from './electron-client-host.js';

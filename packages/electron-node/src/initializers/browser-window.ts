@@ -2,10 +2,9 @@ import { once } from '@wixc3/common';
 import type { InitializerOptions } from '@wixc3/engine-core';
 import { electronRuntimeArguments } from '@wixc3/engine-electron-commons';
 import { BrowserWindow, ipcMain } from 'electron';
-import { join } from 'path';
-
-import { ElectronBrowserHost } from '../hosts/electron-node-host';
-import type { InitializedBrowserEnvironment, IWindowEnvironmentOptions } from './types';
+import { join } from 'node:path';
+import { ElectronBrowserHost } from '../hosts/electron-node-host.js';
+import type { IWindowEnvironmentOptions, InitializedBrowserEnvironment } from './types.js';
 
 export interface BrowserWindowEnvironmentInitializerOptions extends InitializerOptions {
     browserWindow: BrowserWindow;

@@ -1,5 +1,5 @@
-import { BaseHost, Message } from '@wixc3/engine-core';
-import type { WebContents, IpcMain, IpcMainEvent } from 'electron';
+import { BaseHost, type Message } from '@wixc3/engine-core';
+import type { IpcMain, IpcMainEvent, WebContents } from 'electron';
 
 /**
  * Communication host for the electron-main process

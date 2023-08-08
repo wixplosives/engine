@@ -1,7 +1,7 @@
-import { EnvironmentInitializer, ActiveEnvironment } from '@wixc3/engine-core';
+import { type ActiveEnvironment, type EnvironmentInitializer } from '@wixc3/engine-core';
+import { initializeNodeEnvironment, type InitializeNodeEnvironmentOptions } from '@wixc3/engine-electron-commons';
 import { createMetadataProvider } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/patterns';
-import { InitializeNodeEnvironmentOptions, initializeNodeEnvironment } from '@wixc3/engine-electron-commons';
 
 /**
  * Spawn a node-based environment from the renderer process.

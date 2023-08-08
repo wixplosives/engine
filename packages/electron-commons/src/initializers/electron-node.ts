@@ -1,14 +1,13 @@
-import { spawn, SpawnOptions } from 'child_process';
-import treeKill from 'tree-kill';
-import { promisify } from 'util';
-const promisifiedTreeKill = promisify(treeKill);
-
 import type { EnvironmentInitializer, InitializerOptions } from '@wixc3/engine-core';
 import type { IEngineRuntimeArguments, NodeEnvironmentStartupOptions } from '@wixc3/engine-runtime-node';
-import { IPCHost } from '@wixc3/engine-runtime-node/dist/core-node/ipc-host';
+import { IPCHost } from '@wixc3/engine-runtime-node';
+import { spawn, type SpawnOptions } from 'node:child_process';
+import { promisify } from 'node:util';
+import treeKill from 'tree-kill';
+import { ExpirableList } from '../expirable-list.js';
+import { type NodeEnvironmentCommand } from '../types.js';
 
-import { ExpirableList } from '../expirable-list';
-import { NodeEnvironmentCommand } from '../types';
+const promisifiedTreeKill = promisify(treeKill);
 
 const TreeKillProcessNotFoundErrorCode = 128;
 

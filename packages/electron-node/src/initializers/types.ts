@@ -1,5 +1,5 @@
+import type { Communication, Environment, IRunOptions } from '@wixc3/engine-core';
 import type { BrowserWindow } from 'electron';
-import type { Environment, IRunOptions, Communication } from '@wixc3/engine-core';
 
 export interface InitializedBrowserEnvironment {
     id: string;

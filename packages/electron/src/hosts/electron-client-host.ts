@@ -1,4 +1,4 @@
-import { BaseHost, Message, Communication } from '@wixc3/engine-core';
+import { BaseHost, Communication, type Message } from '@wixc3/engine-core';
 import type { IpcRenderer, IpcRendererEvent } from 'electron';
 
 /**

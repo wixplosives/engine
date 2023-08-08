@@ -1,4 +1,4 @@
-export * from './start-electron-env';
-export * from './ipc-communication';
-export * from './types';
-export { default as runtimeArgumentsProvider } from './runtime-arguments-provider';
+export * from './ipc-communication.js';
+export { default as runtimeArgumentsProvider } from './runtime-arguments-provider.js';
+export * from './start-electron-env.js';
+export * from './types.js';

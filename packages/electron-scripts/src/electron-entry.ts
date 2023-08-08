@@ -1,5 +1,5 @@
-import { createDisposables } from '@wixc3/patterns';
 import { isRunOptionsMessage, runElectronEnv } from '@wixc3/engine-electron-host';
+import { createDisposables } from '@wixc3/patterns';
 
 const runElectronEnvListener = async (message: unknown) => {
     if (isRunOptionsMessage(message)) {
