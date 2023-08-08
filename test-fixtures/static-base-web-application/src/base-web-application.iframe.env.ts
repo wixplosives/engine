@@ -1,4 +1,4 @@
-import BaseAppFeature, { iframe } from './base-web-application.feature';
+import BaseAppFeature, { iframe } from './base-web-application.feature.js';
 
 BaseAppFeature.setup(iframe, ({ iframeSlot, run }) => {
     iframeSlot.register('hello');

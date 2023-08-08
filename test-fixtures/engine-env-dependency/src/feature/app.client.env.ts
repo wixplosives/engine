@@ -1,5 +1,5 @@
-import { client } from './app.feature';
-import MyFeature from './app.feature';
+import { client } from './app.feature.js';
+import MyFeature from './app.feature.js';
 
 MyFeature.setup(client, ({ wrapRender }) => {
     return {

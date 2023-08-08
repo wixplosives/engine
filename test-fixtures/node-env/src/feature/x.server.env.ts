@@ -1,5 +1,5 @@
-import { serverEnv } from './x.feature';
-import sampleFeature from './x.feature';
+import { serverEnv } from './x.feature.js';
+import sampleFeature from './x.feature.js';
 
 sampleFeature.setup(serverEnv, ({ config }) => {
     return {

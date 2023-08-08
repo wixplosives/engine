@@ -1,5 +1,5 @@
-import { MAIN } from '@fixture/a-in-workspace/dist/feature/a.feature';
-import featureB from './b.feature';
+import { MAIN } from '@fixture/a-in-workspace/dist/feature/a.feature.js';
+import featureB from './b.feature.js';
 
 featureB.setup(MAIN, ({ run }) => {
     run(() => {

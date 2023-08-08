@@ -1,4 +1,4 @@
-import SampleFeature, { server } from './x.feature';
+import SampleFeature, { server } from './x.feature.js';
 
 SampleFeature.setup(server, ({}, { runtimeMetadata: { engineerMetadataConfig } }) => {
     return {

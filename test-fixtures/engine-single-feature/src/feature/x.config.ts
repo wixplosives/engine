@@ -1,4 +1,4 @@
-import MyFeature from './x.feature';
+import MyFeature from './x.feature.js';
 
 export default [
     MyFeature.use({

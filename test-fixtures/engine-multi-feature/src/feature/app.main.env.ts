@@ -1,5 +1,5 @@
-import { MAIN } from '@fixture/3rd-party/dist/3rd-party.feature';
-import MyFeature from './app.feature';
+import { MAIN } from '@fixture/3rd-party/dist/3rd-party.feature.js';
+import MyFeature from './app.feature.js';
 
 MyFeature.setup(MAIN, ({ run, myConfig, mySlot }) => {
     run(() => {

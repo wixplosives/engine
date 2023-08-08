@@ -1,6 +1,6 @@
 import { iframeInitializer } from '@wixc3/engine-core';
-import { mainEnv, iframeEnv } from './x.feature';
-import sampleFeature from './x.feature';
+import { mainEnv, iframeEnv } from './x.feature.js';
+import sampleFeature from './x.feature.js';
 
 sampleFeature.setup(mainEnv, ({ run, echoService }, { COM: { communication } }) => {
     const myFrame = document.createElement('iframe');
