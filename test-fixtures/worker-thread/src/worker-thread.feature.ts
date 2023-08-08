@@ -1,5 +1,5 @@
 import { Feature, Environment, COM, Service } from '@wixc3/engine-core';
-import type { WorkerEcho } from './worker-thread.worker.env';
+import type { WorkerEcho } from './worker-thread.worker.env.js';
 
 export const serverEnv = new Environment('server', 'node', 'single');
 

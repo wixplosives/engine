@@ -1,5 +1,5 @@
 import { workerThreadInitializer } from '@wixc3/engine-runtime-node';
-import workerThreadFeature, { serverEnv, workerEnv } from './worker-thread.feature';
+import workerThreadFeature, { serverEnv, workerEnv } from './worker-thread.feature.js';
 
 workerThreadFeature.setup(serverEnv, ({ onDispose, workerEcho }, { COM: { communication } }) => {
     return {
