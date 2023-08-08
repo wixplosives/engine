@@ -1,4 +1,4 @@
-import { SERVICE_CONFIG } from '../symbols';
+import { SERVICE_CONFIG } from '../symbols.js';
 
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;

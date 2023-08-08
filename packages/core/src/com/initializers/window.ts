@@ -1,7 +1,7 @@
-import type { WindowHost } from '../types';
-import { isIframe } from '../helpers';
-import { injectScript } from '../../helpers';
-import type { InitializerOptions } from './types';
+import type { WindowHost } from '../types.js';
+import { isIframe } from '../helpers.js';
+import { injectScript } from '../../helpers/index.js';
+import type { InitializerOptions } from './types.js';
 
 interface WindowInitializerOptions extends InitializerOptions {
     host?: WindowHost;

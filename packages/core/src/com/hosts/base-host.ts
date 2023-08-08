@@ -1,5 +1,5 @@
-import type { Message } from '../message-types';
-import type { Target } from '../types';
+import type { Message } from '../message-types.js';
+import type { Target } from '../types.js';
 
 export class BaseHost implements Target {
     constructor(public name = 'base-host') {}

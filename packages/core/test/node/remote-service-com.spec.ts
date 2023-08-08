@@ -1,9 +1,8 @@
+import { BaseHost, Communication, declareComEmitter } from '@wixc3/engine-core';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
-
-import { BaseHost, Communication, declareComEmitter } from '@wixc3/engine-core';
+import sinonChai from 'sinon-chai';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

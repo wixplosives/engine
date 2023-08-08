@@ -1,6 +1,6 @@
-import type { Communication } from '../communication';
-import type { InitializerOptions } from './types';
-import { WindowInitializerService } from '../window-initializer-service';
+import type { Communication } from '../communication.js';
+import type { InitializerOptions } from './types.js';
+import { WindowInitializerService } from '../window-initializer-service.js';
 
 export const INSTANCE_ID_PARAM_NAME = 'iframe-instance-id';
 export interface IIframeInitializerOptions {

@@ -1,4 +1,4 @@
-import type { TopLevelConfig } from './index';
+import { type TopLevelConfig } from './types.js';
 
 declare global {
     interface Window {

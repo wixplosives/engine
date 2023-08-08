@@ -1,7 +1,7 @@
-import { runtimeType } from '../entity-helpers';
-import type { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import type { Entity, EnvVisibility } from '../types';
+import { runtimeType } from '../entity-helpers.js';
+import type { RuntimeEngine } from '../runtime-engine.js';
+import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols.js';
+import type { Entity, EnvVisibility } from '../types.js';
 
 export abstract class FeatureInput<
     Type,

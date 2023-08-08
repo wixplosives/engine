@@ -2,13 +2,13 @@ import { timeout } from 'promise-assist';
 import {
     globallyProvidingEnvironments,
     orderedEnvDependencies,
-    AnyEnvironment,
-    FeatureClass,
+    type AnyEnvironment,
+    type FeatureClass,
     normEnvVisibility,
-} from './entities';
-import { createFeatureRuntime, RuntimeFeature } from './runtime-feature';
-import { RUN } from './symbols';
-import type { IRunOptions, TopLevelConfig } from './types';
+} from './entities/index.js';
+import { createFeatureRuntime, RuntimeFeature } from './runtime-feature.js';
+import { RUN } from './symbols.js';
+import type { IRunOptions, TopLevelConfig } from './types.js';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public features = new Map<FeatureClass, RuntimeFeature<any, ENV>>();

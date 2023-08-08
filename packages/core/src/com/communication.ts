@@ -1,3 +1,9 @@
+import { SetMultiMap } from '@wixc3/patterns';
+import { deferred } from 'promise-assist';
+import type { ContextualEnvironment, Environment, EnvironmentMode } from '../entities/env.js';
+import { serializeError } from '../helpers/index.js';
+import { SERVICE_CONFIG } from '../symbols.js';
+import { isDisposable, type IDTag } from '../types.js';
 import {
     CALLBACK_TIMEOUT,
     DUPLICATE_REGISTER,
@@ -5,49 +11,41 @@ import {
     REMOTE_CALL_FAILED,
     reportError,
     UNKNOWN_CALLBACK_ID,
-} from './errors';
+} from './errors.js';
 import {
+    deserializeApiCallArguments,
     isWindow,
     isWorkerContext,
     MultiCounter,
     serializeApiCallArguments,
-    deserializeApiCallArguments,
-} from './helpers';
+} from './helpers.js';
+import { BaseHost } from './hosts/base-host.js';
+import { WsClientHost } from './hosts/ws-client-host.js';
 import type {
     CallbackMessage,
     CallMessage,
     EventMessage,
     ListenMessage,
-    UnListenMessage,
     Message,
     ReadyMessage,
-} from './message-types';
+    UnListenMessage,
+} from './message-types.js';
+import { isMessage } from './message-types.js';
 import {
-    APIService,
-    AsyncApi,
-    CallbackRecord,
-    EnvironmentInstanceToken,
-    EnvironmentRecord,
-    RemoteAPIServicesMapping,
-    SerializableArguments,
-    SerializableMethod,
-    Target,
-    UnknownFunction,
-    AnyServiceMethodOptions,
-    ServiceComConfig,
     HOST_REMOVED,
-} from './types';
-
-import { SERVICE_CONFIG } from '../symbols';
-
-import { serializeError } from '../helpers';
-import { SetMultiMap } from '@wixc3/patterns';
-import type { Environment, ContextualEnvironment, EnvironmentMode } from '../entities/env';
-import { type IDTag, isDisposable } from '../types';
-import { BaseHost } from './hosts/base-host';
-import { WsClientHost } from './hosts/ws-client-host';
-import { isMessage } from './message-types';
-import { deferred } from 'promise-assist';
+    type AnyServiceMethodOptions,
+    type APIService,
+    type AsyncApi,
+    type CallbackRecord,
+    type EnvironmentInstanceToken,
+    type EnvironmentRecord,
+    type RemoteAPIServicesMapping,
+    type SerializableArguments,
+    type SerializableMethod,
+    type ServiceComConfig,
+    type Target,
+    type UnknownFunction,
+} from './types.js';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;

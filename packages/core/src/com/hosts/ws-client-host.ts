@@ -1,6 +1,6 @@
-import { io, Socket, SocketOptions } from 'socket.io-client';
-import type { Message } from '../message-types';
-import { BaseHost } from './base-host';
+import { io, Socket, type SocketOptions } from 'socket.io-client';
+import type { Message } from '../message-types.js';
+import { BaseHost } from './base-host.js';
 import { EventEmitter } from '@wixc3/patterns';
 import { deferred } from 'promise-assist';
 

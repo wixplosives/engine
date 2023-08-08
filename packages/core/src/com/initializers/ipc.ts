@@ -1,4 +1,4 @@
-import type { InitializerOptions } from './types';
+import type { InitializerOptions } from './types.js';
 
 export const ipcInitializer = async ({ communication, env: { env, endpointType } }: InitializerOptions) => {
     const instanceId = communication.getEnvironmentInstanceId(env, endpointType);

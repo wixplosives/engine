@@ -1,6 +1,6 @@
 import { SetMultiMap } from '@wixc3/patterns';
-import type { RuntimeEngine } from '../runtime-engine';
-import { ENGINE, IDENTIFY_API, RUN_OPTIONS } from '../symbols';
+import type { RuntimeEngine } from '../runtime-engine.js';
+import { ENGINE, IDENTIFY_API, RUN_OPTIONS } from '../symbols.js';
 import type {
     Context,
     DeepEnvironmentDeps,
@@ -19,8 +19,8 @@ import type {
     PartialFeatureConfig,
     RegisteringFeature,
     RunningInstance,
-} from '../types';
-import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
+} from '../types.js';
+import type { AnyEnvironment, GloballyProvidingEnvironments } from './env.js';
 
 // this makes the constructor kind of private
 const instantiateFeatureSymbol = Symbol('instantiateFeature');

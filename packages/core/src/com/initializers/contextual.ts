@@ -1,6 +1,6 @@
-import type { ContextualEnvironment, Environment, EnvironmentMode } from '../../entities';
-import type { MapBy } from '../../types';
-import type { InitializerOptions } from './types';
+import type { ContextualEnvironment, Environment, EnvironmentMode } from '../../entities/index.js';
+import type { MapBy } from '../../types.js';
+import type { InitializerOptions } from './types.js';
 
 export type EnvironmentInitializer<T, OPTIONS extends InitializerOptions = InitializerOptions> = (
     options: OPTIONS,

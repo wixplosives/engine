@@ -1,10 +1,15 @@
-import type { RuntimeEngine } from './runtime-engine';
-import type { AnyEnvironment } from './entities/env';
-import { FeatureClass, RunningFeatures, SettingUpFeatureBase, instantiateFeature } from './entities/feature';
-import { CREATE_RUNTIME, ENGINE, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols';
+import type { RuntimeEngine } from './runtime-engine.js';
+import type { AnyEnvironment } from './entities/env.js';
+import {
+    type FeatureClass,
+    type RunningFeatures,
+    type SettingUpFeatureBase,
+    instantiateFeature,
+} from './entities/feature.js';
+import { CREATE_RUNTIME, ENGINE, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols.js';
 import { SetMultiMap } from '@wixc3/patterns';
-import type { Context, DisposeFunction, Running } from './types';
-import { deferred, IDeferredPromise } from 'promise-assist';
+import type { Context, DisposeFunction, Running } from './types.js';
+import { deferred, type IDeferredPromise } from 'promise-assist';
 
 /**
  * Represents a currently running feature instance.
