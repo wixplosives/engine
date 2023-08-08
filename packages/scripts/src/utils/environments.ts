@@ -1,7 +1,6 @@
-import { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import { type IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
-
-import type { IFeatureDefinition } from '../types';
+import type { IFeatureDefinition } from '../types.js';
 
 export interface GetResolveEnvironmentsParams {
     featureName?: string;

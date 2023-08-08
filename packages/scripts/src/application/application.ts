@@ -1,31 +1,30 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import { defaults } from '@wixc3/common';
-import { createDisposables } from '@wixc3/patterns';
-import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
+import { flattenTree, type TopLevelConfig } from '@wixc3/engine-core';
 import {
     createIPC,
     ForkedProcess,
-    IConfigDefinition,
     launchEngineHttpServer,
     NodeEnvironmentsManager,
     resolveEnvironments,
-    RouteMiddleware,
+    type IConfigDefinition,
+    type RouteMiddleware,
 } from '@wixc3/engine-runtime-node';
-import { SetMultiMap } from '@wixc3/patterns';
+import { createDisposables, SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
 import webpack from 'webpack';
-import { findFeatures } from '../analyze-feature';
-import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
+import { findFeatures } from '../analyze-feature/index.js';
+import { ENGINE_CONFIG_FILE_NAME } from '../build-constants.js';
 import {
     createCommunicationMiddleware,
     createConfigMiddleware,
     ensureTopLevelConfigMiddleware,
-} from '../config-middleware';
-import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs';
-import { generateFeature, pathToFeaturesDirectory } from '../feature-generator';
-import type { EngineConfig, IFeatureDefinition } from '../types';
-import { getFilePathInPackage, scopeFilePathsToPackage } from '../utils';
-import { buildDefaults } from './defaults';
+} from '../config-middleware.js';
+import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs.js';
+import { generateFeature, pathToFeaturesDirectory } from '../feature-generator/feature-generator.js';
+import type { EngineConfig, IFeatureDefinition } from '../types.js';
+import { getFilePathInPackage, scopeFilePathsToPackage } from '../utils/paths.js';
+import { buildDefaults } from './defaults.js';
 import type {
     IApplicationOptions,
     IBuildCommandOptions,
@@ -34,8 +33,8 @@ import type {
     ICreateOptions,
     IRunApplicationOptions,
     WebpackMultiStats,
-} from './types';
-import { compile, getResolvedEnvironments, hookCompilerToConsole, toCompilerOptions } from './utils';
+} from './types.js';
+import { compile, getResolvedEnvironments, hookCompilerToConsole, toCompilerOptions } from './utils.js';
 
 const { basename, extname, join } = fs;
 

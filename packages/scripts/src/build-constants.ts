@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 // Conventional filenames
 export const FEATURE_FILENAME_HINT = '.feature.';

@@ -1,10 +1,10 @@
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { SetMultiMap } from '@wixc3/patterns';
 import type { IConfigDefinition, LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
+import type { SetMultiMap } from '@wixc3/patterns';
 import type io from 'socket.io';
 import type webpack from 'webpack';
-import type { IFeatureDefinition, IFeatureTarget } from '../types';
-import type { getResolvedEnvironments } from '../utils/environments';
+import type { IFeatureDefinition, IFeatureTarget } from '../types.js';
+import type { getResolvedEnvironments } from '../utils/environments.js';
 
 export interface IRunFeatureOptions extends IFeatureTarget {
     featureName: string;
