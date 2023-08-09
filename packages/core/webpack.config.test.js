@@ -11,9 +11,6 @@ module.exports = {
     output: {
         filename: '[name].web.js',
     },
-    resolve: {
-        extensions: ['.ts', '.tsx', '.js', '.json'],
-    },
     plugins: [
         new HtmlWebpackPlugin({
             filename: `iframe.html`,
