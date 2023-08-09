@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 const baseWebpackConfig = require('../../../webpack.config');
 
-const entryPath = require.resolve('../src/index.ts');
+const entryPath = require.resolve('../dist/index.js');
 const outputPath = path.join(__dirname, '../dist/umd');
 
 function getConfigForMode(mode) {

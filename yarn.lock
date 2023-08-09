@@ -903,18 +903,6 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@ts-tools/transpile@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@ts-tools/transpile/-/transpile-5.0.1.tgz#04bba2e7cbfe411f15473681bc6e4b91b03a056a"
-  integrity sha512-+Qj+nvg4n/Bf2GHoMUoNC7VI6jAFezHpwe6SegJLSZA8ARdFjtpKAg87Q95FsZpgsmNwlRmJTD4hp9MaWkxEgA==
-
-"@ts-tools/webpack-loader@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@ts-tools/webpack-loader/-/webpack-loader-5.0.1.tgz#1551d2f3885872d792a3494a3c58defd787ce661"
-  integrity sha512-GeACyTpW1lHhRCms4uktH8BcgHm4eMv2SS61PyMgEJdlG2N25aH0WL9kiZ4KTQXqbhauSns4VZOhENn+fwrRdg==
-  dependencies:
-    "@ts-tools/transpile" "^5.0.1"
-
 "@tufjs/canonical-json@1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@tufjs/canonical-json/-/canonical-json-1.0.0.tgz#eade9fd1f537993bc1f0949f3aea276ecc4fab31"
