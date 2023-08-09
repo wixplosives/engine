@@ -5,15 +5,17 @@
  * This configuration can (and should) be written as a `.ts` file.
  */
 
+import { nodeFs as fs } from '@file-services/node';
+import { createRequestResolver } from '@file-services/resolve';
 import { parseCliArguments } from '@wixc3/engine-runtime-node';
 import { Application } from '@wixc3/engine-scripts';
 import type { Command } from 'commander';
-import fs from 'node:fs';
 import { resolve } from 'node:path';
 import open from 'open';
 import type { ServerListeningHandler } from './feature/dev-server.types.js';
 import { startDevServer } from './utils.js';
 
+const resolveRequest = createRequestResolver({ fs, conditions: ['node', 'require'] });
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
 const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '';
@@ -176,7 +178,7 @@ export function buildCommand(program: Command) {
             } = cmd;
             try {
                 const basePath = resolve(path);
-                preRequire(pathsToRequire, basePath);
+                await preRequire(pathsToRequire, basePath);
                 const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
                 const outputPath = resolve(outDir);
                 const app = new Application({ basePath, outputPath });
@@ -228,7 +230,7 @@ export function runCommand(program: Command) {
             } = cmd;
             try {
                 const basePath = resolve(path);
-                preRequire(pathsToRequire, basePath);
+                await preRequire(pathsToRequire, basePath);
                 const outputPath = resolve(outDir);
                 const app = new Application({ basePath, outputPath });
                 const { port } = await app.run({
@@ -277,10 +279,13 @@ export function createCommand(program: Command) {
         });
 }
 
-function preRequire(pathsToRequire: string[], basePath: string) {
+async function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
-        const resolvedRequest = require.resolve(request, { paths: [basePath] });
-        require(resolvedRequest);
+        const { resolvedFile } = resolveRequest(basePath, request);
+        if (!resolvedFile) {
+            throw new Error(`Cannot resolve "${request}"`);
+        }
+        await import(resolvedFile);
     }
 }
 

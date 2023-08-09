@@ -73,7 +73,7 @@ export class Application {
         }
 
         const envs = getResolvedEnvironments(buildOptions, analyzed.features);
-        const { compiler } = this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
+        const { compiler } = await this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
         const stats = await compile(compiler);
         const sourceRoot = buildOptions.sourcesRoot ?? buildOptions.featureDiscoveryRoot ?? '.';
         const manifest = this.writeManifest(analyzed.features, buildOptions, entryPoints, sourceRoot);
@@ -252,7 +252,7 @@ export class Application {
         if (engineConfigFilePath) {
             try {
                 return {
-                    config: (await import(engineConfigFilePath)) as EngineConfig,
+                    config: ((await import(engineConfigFilePath)) as { default: EngineConfig }).default,
                     path: engineConfigFilePath,
                 };
             } catch (ex) {
@@ -414,7 +414,7 @@ export class Application {
         return fs.join(sourcesRoot, relativeRequestToFile);
     }
 
-    protected createCompiler({
+    protected async createCompiler({
         features,
         featureName,
         configName,
@@ -437,8 +437,10 @@ export class Application {
         const baseConfigPath = webpackConfigPath
             ? fs.resolve(webpackConfigPath)
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
-        const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
-
+        const baseConfig =
+            typeof baseConfigPath === 'string'
+                ? ((await import(baseConfigPath)) as { default: webpack.Configuration }).default
+                : {};
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
             context: basePath,

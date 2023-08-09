@@ -181,7 +181,7 @@ devServerFeature.setup(
             });
 
             // Write middleware for each of the apps
-            const { compiler } = application.createCompiler({
+            const { compiler } = await application.createCompiler({
                 ...devServerConfig,
                 features,
                 staticBuild: false,

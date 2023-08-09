@@ -5,7 +5,7 @@ export async function getEngineConfig(basePath: string): Promise<EngineConfig | 
     const engineConfigFilePath = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
     if (engineConfigFilePath) {
         try {
-            return (await import(engineConfigFilePath)) as EngineConfig;
+            return ((await import(engineConfigFilePath)) as { default: EngineConfig }).default;
         } catch (err) {
             throw new Error(`failed importing config file: ${engineConfigFilePath}`, { cause: err });
         }
