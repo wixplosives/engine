@@ -1,16 +1,12 @@
-import { COM, type TopLevelConfig } from '@wixc3/engine-core';
+import { COM, ConfigModule, type TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type express from 'express';
-import importFresh from 'import-fresh';
+import { importFresh } from './import-fresh';
 
 export interface OverrideConfig {
     configName?: string;
     overrideConfig: TopLevelConfig;
-}
-
-interface ConfigFileExports {
-    default: TopLevelConfig;
 }
 
 export function createLiveConfigsMiddleware(
@@ -18,7 +14,8 @@ export function createLiveConfigsMiddleware(
     basePath: string,
     overrideConfigMap: Map<string, OverrideConfig>,
 ): express.RequestHandler {
-    return (req, res, next) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    return async (req, res, next) => {
         const config: TopLevelConfig = [];
         const { env: reqEnv } = req.query;
         const overrideConfig: TopLevelConfig = [];
@@ -46,7 +43,7 @@ export function createLiveConfigsMiddleware(
                             if (envName === reqEnv || !envName) {
                                 const resolvedPath = require.resolve(filePath, { paths: [basePath] });
                                 try {
-                                    const { default: configValue } = importFresh<ConfigFileExports>(resolvedPath);
+                                    const { default: configValue } = (await importFresh(resolvedPath)) as ConfigModule;
                                     config.push(...configValue);
                                 } catch (e) {
                                     console.error(

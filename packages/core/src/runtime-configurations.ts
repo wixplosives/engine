@@ -6,9 +6,9 @@ declare global {
     }
 }
 
-export type ConfigModule = {
+export interface ConfigModule {
     default: TopLevelConfig;
-};
+}
 
 export type ConfigLoader = () => Promise<ConfigModule[]>;
 

@@ -2,6 +2,7 @@ import {
     BaseHost,
     COM,
     Communication,
+    ConfigModule,
     type ConfigEnvironmentRecord,
     type Message,
     type ReadyMessage,
@@ -461,7 +462,7 @@ export class NodeEnvironmentsManager {
                     config.push(...definition);
                 } else {
                     try {
-                        config.push(...((await import(definition.filePath)) as { default: TopLevelConfig }).default);
+                        config.push(...((await import(definition.filePath)) as ConfigModule).default);
                     } catch (e) {
                         console.error(
                             new Error(
