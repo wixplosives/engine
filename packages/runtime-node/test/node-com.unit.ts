@@ -16,7 +16,7 @@ import { fork } from 'node:child_process';
 import type { Socket } from 'node:net';
 import { waitFor } from 'promise-assist';
 import sinon, { spy } from 'sinon';
-import io from 'socket.io';
+import * as io from 'socket.io';
 
 interface ICommunicationTestApi {
     sayHello: () => string;
