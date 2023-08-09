@@ -1,4 +1,4 @@
-import { ResolvedRequests, createDependencyResolver, createRequestResolver } from '@file-services/resolve';
+import { createDependencyResolver, createRequestResolver, type ResolvedRequests } from '@file-services/resolve';
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';

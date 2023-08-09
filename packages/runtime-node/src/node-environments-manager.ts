@@ -2,7 +2,7 @@ import {
     BaseHost,
     COM,
     Communication,
-    ConfigModule,
+    type ConfigModule,
     type ConfigEnvironmentRecord,
     type Message,
     type ReadyMessage,

@@ -1,4 +1,4 @@
-import { ConfigModule } from '@wixc3/engine-core';
+import type { ConfigModule } from '@wixc3/engine-core';
 import type webpack from 'webpack';
 import { importFresh } from './import-fresh.js';
 
