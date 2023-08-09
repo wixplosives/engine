@@ -66,7 +66,7 @@ export class Application {
         if (config.require) await this.importModules(config.require);
 
         const entryPoints: Record<string, Record<string, string>> = {};
-        const analyzed = this.analyzeFeatures(buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot);
+        const analyzed = await this.analyzeFeatures(buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot);
 
         if (buildOptions.singleFeature && buildOptions.featureName) {
             this.filterByFeatureName(analyzed.features, buildOptions.featureName);
@@ -466,12 +466,12 @@ export class Application {
         return { compiler };
     }
 
-    protected analyzeFeatures(featureDiscoveryRoot = '.') {
+    protected async analyzeFeatures(featureDiscoveryRoot = '.') {
         const { basePath } = this;
 
         console.time(`Analyzing Features`);
         // const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
-        const featuresAndConfigs = findFeatures(basePath, fs, featureDiscoveryRoot);
+        const featuresAndConfigs = await findFeatures(basePath, fs, featureDiscoveryRoot);
         console.timeEnd('Analyzing Features');
         return featuresAndConfigs;
     }

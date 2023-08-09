@@ -26,7 +26,7 @@ import { findPackageOfDirs, scopeToPackage, type IPackageDescriptor } from './pa
  * @param override overrides to apply to found features
  * @returns
  */
-export function loadFeaturesFromPaths(
+export async function loadFeaturesFromPaths(
     roots: DirFeatures,
     fs: IFileSystemSync,
     packages: INpmPackage[] = [],
@@ -63,11 +63,13 @@ export function loadFeaturesFromPaths(
         });
 
         // pick up features
-        const analyzedFeatures = features
-            // filter out features that are not root, nor imported -
-            // i.e. that exist on the directory but are not required
-            .filter((f) => imported.files.has(f) || roots.files.has(f))
-            .map((f) => analyzeFeature(f, featurePackage));
+        const analyzedFeatures = await Promise.all(
+            features
+                // filter out features that are not root, nor imported -
+                // i.e. that exist on the directory but are not required
+                .filter((f) => imported.files.has(f) || roots.files.has(f))
+                .map((f) => analyzeFeature(f, featurePackage)),
+        );
         analyzedFeatures.forEach((a) => {
             foundFeatures.set(a.scopedName, parseFoundFeature(a, featurePackage, roots.files.has(a.filePath)));
             featureToScopedName.set(a.module.exportedFeature, a.scopedName);
@@ -113,9 +115,9 @@ function setEnvPath(
     };
 }
 
-function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): AnalyzedFeatureModule {
-    const [evaluated] = evaluateModule(filePath).children;
-    const module = analyzeFeatureModule(evaluated!);
+async function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): Promise<AnalyzedFeatureModule> {
+    const moduleExports = await import(filePath);
+    const module = analyzeFeatureModule(filePath, moduleExports);
     const scopedName = scopeToPackage(featurePackage.simplifiedName, module.name)!;
     return {
         scopedName,

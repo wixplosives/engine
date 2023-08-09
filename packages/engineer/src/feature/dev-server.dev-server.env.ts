@@ -92,7 +92,7 @@ devServerFeature.setup(
             // So we launch with a basehost and upgrade to a wshost
             attachWSHost(socketServer, devServerEnv.env, communication);
 
-            const { features, configurations, packages } = application.getFeatures(
+            const { features, configurations, packages } = await application.getFeatures(
                 singleFeature,
                 featureName,
                 providedFeatureDiscoveryRoot ?? featureDiscoveryRoot,

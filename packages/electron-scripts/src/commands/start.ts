@@ -68,9 +68,9 @@ export async function start({
     });
 
     // registering to the dev server ready event
-    serverListeningHandlerSlot.register(({ port, router }) => {
+    serverListeningHandlerSlot.register(async ({ port, router }) => {
         const config: TopLevelConfig = [];
-        const { features, configurations } = findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
+        const { features, configurations } = await findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
 
         const environments = getExportedEnvironments(features);
 

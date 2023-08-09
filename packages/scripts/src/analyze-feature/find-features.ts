@@ -8,7 +8,11 @@ import type { IFeatureDefinition } from '../types.js';
 import { loadFeaturesFromPaths } from './load-features-from-paths.js';
 import { mergeAll, mergeResults } from './merge.js';
 
-export function findFeatures(path: string, fs: IFileSystemSync, featureDiscoveryRoot = '.'): FoundFeatures {
+export async function findFeatures(
+    path: string,
+    fs: IFileSystemSync,
+    featureDiscoveryRoot = '.',
+): Promise<FoundFeatures> {
     const packages = childPackagesFromContext(resolveDirectoryContext(path, fs));
     const paths = packages.map(({ directoryPath }) => fs.join(directoryPath, featureDiscoveryRoot));
     const cwd = paths.map((path) => getDirFeatures(fs, path, '.'));
@@ -17,7 +21,10 @@ export function findFeatures(path: string, fs: IFileSystemSync, featureDiscovery
     const fixtures = mergeAll(paths.map((path) => getDirFeatures(fs, path, 'fixtures', 1)));
 
     return {
-        ...mergeResults(loadFeaturesFromPaths(features, fs, packages), loadFeaturesFromPaths(fixtures, fs, packages)),
+        ...mergeResults(
+            await loadFeaturesFromPaths(features, fs, packages),
+            await loadFeaturesFromPaths(fixtures, fs, packages),
+        ),
         packages,
     };
 }

@@ -23,7 +23,7 @@ export const setupRunningNodeEnv = async ({
     stdio = 'ignore',
 }: SetupRunningEnvOptions) => {
     const communication = new Communication(new BaseHost(), 'someId');
-    const { features } = findFeatures(featurePath, fs, 'dist');
+    const { features } = await findFeatures(featurePath, fs, 'dist');
     const { onExit, dispose, environmentIsReady } = initializeNodeEnvironment({
         communication,
         env,
