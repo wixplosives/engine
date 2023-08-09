@@ -2,7 +2,7 @@ import { COM, ConfigModule, type TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type express from 'express';
-import { importFresh } from './import-fresh';
+import { importFresh } from './import-fresh.js';
 
 export interface OverrideConfig {
     configName?: string;
