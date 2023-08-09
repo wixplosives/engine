@@ -6,7 +6,7 @@ import {
     type FeatureClass,
 } from '@wixc3/engine-core';
 import { basename } from 'node:path';
-import { isFeatureFile, parseFeatureFileName } from '../build-constants.js';
+import { parseFeatureFileName } from '../build-constants.js';
 import type { IFeatureDefinition, IFeatureModule } from '../types.js';
 import { instanceOf } from '../utils/instance-of.js';
 import { parseContextualEnv, parseEnv } from './parse-env.js';
@@ -52,13 +52,6 @@ export function analyzeFeatureModule(filePath: string, moduleExports: unknown): 
     }
     return featureFile;
 }
-
-export const getFeatureModules = (module: NodeJS.Module) =>
-    flattenTree(
-        module,
-        (m) => m.children,
-        (m) => isFeatureFile(basename(m.filename)),
-    );
 
 export function computeUsedContext(featureName: string, features: Map<string, IFeatureDefinition>) {
     const featureToDef = new Map<FeatureClass, IFeatureDefinition>();
