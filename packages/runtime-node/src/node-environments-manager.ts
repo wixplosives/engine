@@ -11,7 +11,7 @@ import type { SetMultiMap } from '@wixc3/patterns';
 import { safeListeningHttpServer } from 'create-listening-server';
 import type { Socket } from 'node:net';
 import { delimiter } from 'node:path';
-import io from 'socket.io';
+import * as io from 'socket.io';
 import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './core-node/constants.js';
 import { IPCHost } from './core-node/ipc-host.js';
 import { resolveEnvironments } from './environments.js';
