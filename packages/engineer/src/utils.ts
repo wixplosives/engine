@@ -37,7 +37,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
           });
     preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
-    const { features } = loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
+    const { features } = await loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
 
     const engine = await runNodeEnvironment({
         featureName: serverOpts.engineerEntry,

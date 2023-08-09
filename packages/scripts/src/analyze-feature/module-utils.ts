@@ -19,12 +19,12 @@ function getFeaturesDeep(feature: FeatureClass) {
     return flattenTree(feature, (f) => f.dependencies());
 }
 
-export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Module): IFeatureModule {
-    if (typeof exports !== 'object' || exports === null) {
+export function analyzeFeatureModule(filePath: string, moduleExports: unknown): IFeatureModule {
+    if (typeof moduleExports !== 'object' || moduleExports === null) {
         throw new Error(`${filePath} does not export an object.`);
     }
 
-    const { default: exportedFeature } = exports as { default: FeatureClass };
+    const { default: exportedFeature } = moduleExports as { default: FeatureClass };
 
     if (!isEngineFeature(exportedFeature)) {
         throw new Error(`${filePath} does not "export default" a Feature.`);
@@ -38,18 +38,16 @@ export function analyzeFeatureModule({ filename: filePath, exports }: NodeJS.Mod
         usedContexts: {},
     };
 
-    if (typeof exports === 'object' && exports !== null) {
-        const { exportedEnvs: envs = [], usedContexts = {} } = featureFile;
-        for (const exportValue of Object.values(exports)) {
-            if (instanceOf(exportValue, Environment)) {
-                if (instanceOf(exportValue, ContextualEnvironment)) {
-                    envs.push(...parseContextualEnv(exportValue));
-                } else {
-                    envs.push(parseEnv(exportValue));
-                }
-            } else if (instanceOf(exportValue, EnvironmentContext)) {
-                usedContexts[exportValue.env] = exportValue.activeEnvironmentName;
+    const { exportedEnvs: envs = [], usedContexts = {} } = featureFile;
+    for (const exportValue of Object.values(moduleExports)) {
+        if (instanceOf(exportValue, Environment)) {
+            if (instanceOf(exportValue, ContextualEnvironment)) {
+                envs.push(...parseContextualEnv(exportValue));
+            } else {
+                envs.push(parseEnv(exportValue));
             }
+        } else if (instanceOf(exportValue, EnvironmentContext)) {
+            usedContexts[exportValue.env] = exportValue.activeEnvironmentName;
         }
     }
     return featureFile;
