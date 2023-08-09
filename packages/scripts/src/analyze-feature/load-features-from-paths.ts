@@ -5,6 +5,7 @@ import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { INpmPackage } from '@wixc3/resolve-directory-context';
 import {
+    isFeatureFile,
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
@@ -13,9 +14,9 @@ import {
 } from '../build-constants.js';
 import { loadFeatureDirectory } from '../load-feature-directory.js';
 import type { IFeatureDefinition, IFeatureModule } from '../types.js';
-import { evaluateModule } from '../utils/evaluate-module.js';
+import { resolveModuleGraph } from '../utils/resolve-module-graph.js';
 import type { DirFeatures } from './find-features.js';
-import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils.js';
+import { analyzeFeatureModule, computeUsedContext } from './module-utils.js';
 import { findPackageOfDirs, scopeToPackage, type IPackageDescriptor } from './package-utils.js';
 
 /**
@@ -164,11 +165,12 @@ function getImportedFeatures(roots: DirFeatures, fs: IFileSystemSync): DirFeatur
         dirs: new Set<string>(),
         files: new Set<string>(),
     };
-    // find all require()'ed feature files from initial ones
-    const featureModules = getFeatureModules(evaluateModule(roots.files));
-    for (const { filename } of featureModules) {
-        addNew(roots.files, imported.files, filename);
-        addNew(roots.dirs, imported.dirs, fs.dirname(filename));
+    // find all imported feature files from initial ones
+    const filePathsInGraph = Object.keys(resolveModuleGraph(Array.from(roots.files)));
+    const featureFilePaths = filePathsInGraph.filter((filePath) => isFeatureFile(fs.basename(filePath)));
+    for (const filePath of featureFilePaths) {
+        addNew(roots.files, imported.files, filePath);
+        addNew(roots.dirs, imported.dirs, fs.dirname(filePath));
     }
     return imported;
 }
