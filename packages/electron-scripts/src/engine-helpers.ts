@@ -2,11 +2,11 @@ import type { ConfigModule, TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 
-export function getConfig(
+export async function getConfig(
     configName: string,
     configurations: SetMultiMap<string, IConfigDefinition>,
     envName: string,
-): TopLevelConfig {
+): Promise<TopLevelConfig> {
     const config: TopLevelConfig = [];
     const configs = configurations.get(configName);
     if (!configs) {
@@ -15,8 +15,8 @@ export function getConfig(
 
     for (const { filePath, envName: configEnvName } of configs) {
         if (!configEnvName || configEnvName === envName) {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            config.push(...(require(filePath) as ConfigModule).default);
+            const { default: configValue } = (await import(filePath)) as ConfigModule;
+            config.push(...configValue);
         }
     }
 

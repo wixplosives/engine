@@ -102,7 +102,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
     });
 
     if (configName) {
-        config.push(...getConfig(configName, configurations, envName));
+        config.push(...(await getConfig(configName, configurations, envName)));
     }
 
     await createElectronEntryFile({

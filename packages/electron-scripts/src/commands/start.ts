@@ -84,7 +84,7 @@ export async function start({
         }
 
         if (configName) {
-            config.push(...getConfig(configName, configurations, envName));
+            config.push(...(await getConfig(configName, configurations, envName)));
         }
         if (overrideConfig) {
             config.push(...(typeof overrideConfig === 'function' ? overrideConfig(port) : overrideConfig));
