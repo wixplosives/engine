@@ -3,7 +3,13 @@
   "version": "39.4.3",
   "license": "MIT",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./bin/engineer": "./bin/engineer.js",
+    "./gui-feature": "./dist/feature/gui.feature.js",
+    "./dist/feature-dependency-graph": "./dist/feature-dependency-graph.js",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "engineer": "./bin/engineer.js"
   },
@@ -35,7 +41,6 @@
     "!dist/test",
     "src",
     "!*/tsconfig.{json,tsbuildinfo}",
-    "gui-feature.js",
     "gui-feature.d.ts"
   ],
   "publishConfig": {

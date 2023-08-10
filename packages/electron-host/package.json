@@ -2,8 +2,9 @@
   "name": "@wixc3/engine-electron-host",
   "version": "39.4.3",
   "main": "dist/index.js",
-  "bin": {
-    "engine-electron": "bin/engine-electron.js"
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
   },
   "peerDependencies": {
     "electron": ">=9"
@@ -15,7 +16,6 @@
     "@wixc3/engine-runtime-node": "^39.4.3"
   },
   "files": [
-    "bin",
     "dist",
     "src",
     "!*/tsconfig.{json,tsbuildinfo}"

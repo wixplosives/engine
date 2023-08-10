@@ -2,6 +2,10 @@
   "name": "@wixc3/engine-electron-scripts",
   "version": "39.4.3",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "engine-electron": "bin/engine-electron.js"
   },
