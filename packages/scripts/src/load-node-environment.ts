@@ -2,7 +2,7 @@ import type { SetMultiMap } from '@wixc3/patterns';
 import type { ConfigModule, TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 
-export function evaluateConfig(
+export async function evaluateConfig(
     configName: string,
     configurations: SetMultiMap<string, IConfigDefinition>,
     envName: string,
@@ -15,8 +15,8 @@ export function evaluateConfig(
 
     for (const { filePath, envName: configEnvName } of configs) {
         if (!configEnvName || configEnvName === envName) {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            config.push(...(require(filePath) as ConfigModule).default);
+            const { default: configValue } = (await import(filePath)) as ConfigModule;
+            config.push(...configValue);
         }
     }
 

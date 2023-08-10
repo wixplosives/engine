@@ -74,7 +74,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
     );
 
     if (configName) {
-        config = [...evaluateConfig(configName, configurations, envName), ...config];
+        config = [...(await evaluateConfig(configName, configurations, envName)), ...config];
     }
     const featureDef = features.get(featureName)!;
 
