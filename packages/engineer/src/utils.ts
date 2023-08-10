@@ -35,7 +35,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
           fs.findFilesSync(basePath, {
               filterFile: ({ name }) => isFeatureFile(name),
           });
-    preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
+    await preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
     const { features } = await loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
 
@@ -81,9 +81,9 @@ function asDevConfig(options: DStartOptions, engineConfig: DEngineConfig): Parti
     };
 }
 
-function preRequire(pathsToRequire: string[], basePath: string) {
+async function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
         const resolvedRequest = require.resolve(request, { paths: [basePath] });
-        require(resolvedRequest);
+        await import(resolvedRequest);
     }
 }
