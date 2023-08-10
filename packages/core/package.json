@@ -2,7 +2,12 @@
   "name": "@wixc3/engine-core",
   "version": "39.4.3",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./dist/communication.feature": "./dist/communication.feature.js",
+    "./dist/runtime-metadata.feature": "./dist/runtime-metadata.feature.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build:umd": "node ./scripts/bundle",
     "test": "yarn test:node && yarn test:browser",
