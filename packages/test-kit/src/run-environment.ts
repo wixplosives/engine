@@ -202,7 +202,7 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
 
 async function importWithProperError(filePath: string): Promise<unknown> {
     try {
-        return import(filePath);
+        return ((await import(filePath)) as { default: unknown }).default;
     } catch (ex) {
         throw new Error(`failed importing file: ${filePath}`, { cause: ex });
     }
