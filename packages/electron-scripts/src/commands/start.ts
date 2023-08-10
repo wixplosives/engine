@@ -3,14 +3,14 @@ import type { TopLevelConfig } from '@wixc3/engine-core';
 import { provideApiForChildProcess, type IRunOptionsMessage } from '@wixc3/engine-electron-host';
 import { findFeatures, getExportedEnvironments } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
+import electron from 'electron';
 import { spawn } from 'node:child_process';
-import { join } from 'node:path';
 import { getConfig } from '../engine-helpers.js';
 import { getEngineConfig } from '../find-features.js';
 
 // electron node lib exports the electron executable path; inside electron, it's the api itself.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const electronPath = require('electron') as unknown as string;
+const electronPath = electron as unknown as string;
+const electronEntryPath = require.resolve('../electron-entry.js');
 
 export interface IStartCommandOptions {
     /**
@@ -89,8 +89,9 @@ export async function start({
         if (overrideConfig) {
             config.push(...(typeof overrideConfig === 'function' ? overrideConfig(port) : overrideConfig));
         }
+
         // running electon application
-        const electronApp = spawn(electronPath, [require.resolve(join(__dirname, '../electron-entry'))], {
+        const electronApp = spawn(electronPath, [electronEntryPath], {
             cwd: basePath,
             stdio: ['ipc', 'inherit', 'inherit'],
         });
@@ -102,7 +103,7 @@ export async function start({
             runOptions: {
                 featureName,
                 envName,
-                outputPath: join(basePath, 'dist-app'),
+                outputPath: fs.join(basePath, 'dist-app'),
                 devport: port,
                 basePath,
                 configName,
