@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type { ServerOptions } from 'socket.io';
 import { ForkedProcess } from './forked-process.js';
+import { importModules } from './import-modules.js';
 import { launchEngineHttpServer } from './launch-http-server.js';
 import { parseCliArguments } from './parse-cli-arguments.js';
 import { createIPC } from './process-communication.js';
@@ -20,13 +21,7 @@ const basePath = path.resolve(providedPath);
 const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : undefined;
 
 (async () => {
-    for (const requiredModule of requiredPaths) {
-        try {
-            await import(require.resolve(requiredModule, { paths: [basePath] }));
-        } catch (ex) {
-            throw new Error(`failed importing: ${requiredModule}`, { cause: ex });
-        }
-    }
+    await importModules(basePath, requiredPaths);
     const { socketServer, close, port } = await launchEngineHttpServer({
         staticDirPath: path.join(basePath, 'dist'),
         httpServerPort,
