@@ -153,10 +153,6 @@ export function dynamicImportStatement({ moduleIdentifier, filePath, eagerEntryp
     } ${stringify(filePath)});`;
 }
 
-export function nodeImportStatement({ filePath }: LoadStatementArguments) {
-    return `require(${stringify(filePath)})`;
-}
-
 //#endregion
 
 //#region feature loaders generation
