@@ -8,7 +8,7 @@
     "test:unit": "mocha \"dist/test/**/*.unit.js\""
   },
   "dependencies": {
-    "@file-services/node": "^8.1.1"
+    "@file-services/node": "^8.1.2"
   },
   "license": "UNLICENSED",
   "private": true

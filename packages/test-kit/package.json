@@ -14,7 +14,7 @@
     "playwright-core": ">=1.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^8.1.1",
+    "@file-services/node": "^8.1.2",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/engine-core": "^40.0.1",
     "@wixc3/engine-runtime-node": "^40.0.1",
