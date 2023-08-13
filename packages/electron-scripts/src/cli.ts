@@ -20,7 +20,7 @@ createCommand('start')
     .description('starts the electron application in dev mode')
     .option('--devtools')
     .action(async (options) => {
-        const { start } = await import('./commands/start');
+        const { start } = await import('./commands/start.js');
         await start(options);
     });
 
@@ -42,7 +42,7 @@ createCommand('build')
     .option('--publish <publish>')
     .option('--eagerEntrypoint')
     .action(async (options) => {
-        const { build } = await import('./commands/build');
+        const { build } = await import('./commands/build.js');
         await build(options);
     });
 
