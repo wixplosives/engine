@@ -1,6 +1,6 @@
 {
   "name": "@example/reloaded-iframe",
-  "version": "39.4.3",
+  "version": "40.0.0",
   "scripts": {
     "start": "engineer start",
     "test": "yarn test:it",
