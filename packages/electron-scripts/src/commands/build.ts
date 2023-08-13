@@ -85,7 +85,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
     } = options;
     const outputPath = fs.join(basePath, outDir);
     if (!isPublishValid(publish)) {
-        throw new Error(`publish value can be defined with the wollowing values: ${possiblePublishValues.join(',')}`);
+        throw new Error(`publish value can be defined with the following values: ${possiblePublishValues.join(',')}`);
     }
 
     if (requiredModules) {
