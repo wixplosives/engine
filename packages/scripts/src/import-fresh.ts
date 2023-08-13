@@ -17,5 +17,7 @@ export async function importFresh(filePath: string): Promise<unknown> {
 if (!isMainThread && typeof workerData === 'string') {
     import(workerData)
         .then((moduleExports) => parentPort?.postMessage(moduleExports))
-        .catch((e) => parentPort?.emit('error', e));
+        .catch((e) => {
+            throw e;
+        });
 }
