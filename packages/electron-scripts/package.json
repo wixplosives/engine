@@ -4,6 +4,7 @@
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
+    "./dist/commands": "./dist/commands/index.js",
     "./package.json": "./package.json"
   },
   "bin": {
