@@ -5,7 +5,9 @@
   "exports": {
     ".": "./dist/index.js",
     "./dist/communication.feature": "./dist/communication.feature.js",
+    "./dist/communication.feature.js": "./dist/communication.feature.js",
     "./dist/runtime-metadata.feature": "./dist/runtime-metadata.feature.js",
+    "./dist/runtime-metadata.feature.js": "./dist/runtime-metadata.feature.js",
     "./package.json": "./package.json"
   },
   "scripts": {
