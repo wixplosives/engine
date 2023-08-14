@@ -1,4 +1,4 @@
-import type { ConfigModule } from '@wixc3/engine-core';
+import type { TopLevelConfig } from '@wixc3/engine-core';
 import type webpack from 'webpack';
 import { importFresh } from './import-fresh.js';
 
@@ -15,7 +15,7 @@ const topLevelConfigLoader: webpack.LoaderDefinition<TopLevelConfigLoaderOptions
     } else if (!configLoaderModuleName) {
         throw new Error('configLoaderModuleName is required');
     }
-    const { default: topLevelConfig } = (await importFresh(this.resourcePath)) as ConfigModule;
+    const topLevelConfig = (await importFresh(this.resourcePath)) as TopLevelConfig;
     const configFileName = envName ? `${scopedName}.${envName}` : scopedName;
     const configPath = `configs/${configFileName}.json`;
 
