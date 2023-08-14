@@ -1,4 +1,4 @@
-import { COM, type ConfigModule, type TopLevelConfig } from '@wixc3/engine-core';
+import { COM, type TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type express from 'express';
@@ -43,7 +43,7 @@ export function createLiveConfigsMiddleware(
                             if (envName === reqEnv || !envName) {
                                 const resolvedPath = require.resolve(filePath, { paths: [basePath] });
                                 try {
-                                    const { default: configValue } = (await importFresh(resolvedPath)) as ConfigModule;
+                                    const configValue = (await importFresh(resolvedPath)) as TopLevelConfig;
                                     config.push(...configValue);
                                 } catch (e) {
                                     console.error(
