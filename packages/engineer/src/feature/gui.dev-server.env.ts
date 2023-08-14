@@ -10,7 +10,7 @@ import guiFeature, { mainDashboardEnv } from './gui.feature.js';
 guiFeature.setup(
     devServerEnv,
     (
-        { engineerConfig: { features } },
+        { run, engineerConfig: { features } },
         {
             buildFeature: {
                 engineerWebpackConfigs,
@@ -20,45 +20,51 @@ guiFeature.setup(
             },
         },
     ) => {
-        const baseConfigPath = fs.findClosestFileSync(__dirname, 'webpack.config.js');
-        const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
-        const virtualModules: Record<string, string> = {};
+        run(async () => {
+            const selfDirectoryPath = __dirname;
+            const baseConfigPath = fs.findClosestFileSync(selfDirectoryPath, 'webpack.config.js');
+            const baseConfig =
+                typeof baseConfigPath === 'string'
+                    ? ((await import(baseConfigPath)) as { default: webpack.Configuration }).default
+                    : {};
+            const virtualModules: Record<string, string> = {};
 
-        const configurations = new SetMultiMap<string, IConfigDefinition>();
+            const configurations = new SetMultiMap<string, IConfigDefinition>();
 
-        virtualModules['index'] = createMainEntrypoint({
-            features,
-            childEnvs: [],
-            env: {
-                name: mainDashboardEnv.env,
-                env: mainDashboardEnv,
-                type: mainDashboardEnv.envType,
-            },
-            mode: 'development',
-            publicConfigsRoute,
-            staticBuild: false,
-            configurations,
-            featureName: 'engineer/gui',
-            target: 'web',
-            featuresBundleName: 'dashboard-features',
-        });
-
-        engineerWebpackConfigs.register(
-            createDashboardConfig({
-                baseConfig,
-                virtualModules,
-                title,
-                favicon,
-                outputPath: application.outputPath,
-            }),
-        );
-
-        if (log) {
-            serverListeningHandlerSlot.register(({ port, host }) => {
-                console.log(`Dashboard Listening:`);
-                console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
+            virtualModules['index'] = createMainEntrypoint({
+                features,
+                childEnvs: [],
+                env: {
+                    name: mainDashboardEnv.env,
+                    env: mainDashboardEnv,
+                    type: mainDashboardEnv.envType,
+                },
+                mode: 'development',
+                publicConfigsRoute,
+                staticBuild: false,
+                configurations,
+                featureName: 'engineer/gui',
+                target: 'web',
+                featuresBundleName: 'dashboard-features',
             });
-        }
+
+            engineerWebpackConfigs.register(
+                createDashboardConfig({
+                    baseConfig,
+                    virtualModules,
+                    title,
+                    favicon,
+                    outputPath: application.outputPath,
+                }),
+            );
+
+            if (log) {
+                serverListeningHandlerSlot.register(({ port, host }) => {
+                    console.log(`Dashboard Listening:`);
+                    console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
+                });
+            }
+        });
     },
 );
 
