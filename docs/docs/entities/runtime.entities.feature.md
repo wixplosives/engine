@@ -39,7 +39,7 @@ export default new Feature({
 
 Unique identifier, This is the feature name. For example a `file-server` feature will be initiated as `const fileServerFeature = new Feature({id: 'file-server', ...rest})` and the rest of the folder structure should be prefixed with `file-server`.
 
-![Feature file structure](../static/img/feature_folder_example.png){max-width: 300px}
+![Feature file structure](../../static/img/feature_folder_example.png){max-width: 300px}
 
 ### `Dependencies: []`
 

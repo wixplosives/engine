@@ -1,3 +1,7 @@
+---
+title: Introduction
+sidebar_position: 1
+---
 ## Approach
 
 - An application is a set of one or more features.

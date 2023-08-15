@@ -1,4 +1,7 @@
-# Getting started with the engine
+---
+title: Getting started with the engine
+sidebar_position: 2
+---
 
 After understanding a bit about the engine, let's create a simple hello-world app with an engine feature.
 

@@ -39,20 +39,14 @@ const config = {
     themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
         ({
-            // Replace with your project's social card
-            image: 'img/docusaurus-social-card.jpg',
             navbar: {
                 title: 'Engine',
-                logo: {
-                    alt: 'Engine',
-                    src: 'img/logo.svg',
-                },
                 items: [
                     {
                         type: 'docSidebar',
                         sidebarId: 'tutorialSidebar',
                         position: 'left',
-                        label: 'Tutorial',
+                        label: 'Docs',
                     },
                     {
                         href: 'https://github.com/wixplosives/engine',
@@ -68,7 +62,7 @@ const config = {
                         title: 'Docs',
                         items: [
                             {
-                                label: 'Tutorial',
+                                label: 'Docs',
                                 to: '/docs/intro',
                             },
                         ],
