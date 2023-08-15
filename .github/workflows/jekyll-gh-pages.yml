@@ -46,7 +46,7 @@ jobs:
       - name: Build docusaurus docs
         run: cd ./docs && yarn && yarn build
       - name: Copy docusaurus docs to the Jekyll site
-        run: cp -pr ./docs/build/* ./_site/docs
+        run: sudo mkdir -p ./site/docs && cp -pr ./docs/build/* ./_site/docs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
