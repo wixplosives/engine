@@ -18,4 +18,4 @@ MIT
 
 ## Guides
 
-Refer to the [docs section](./docs/root.md)
+Refer to the [docs](https://wixplosives.github.io/engine/docs)
