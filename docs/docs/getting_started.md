@@ -1,5 +1,5 @@
 ---
-title: Getting started with the engine
+title: Getting started with the Engine
 sidebar_position: 2
 ---
 
@@ -26,7 +26,6 @@ create `tsconfig.json` file in the root directory
 ```json
 {
   "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig to read more about this file */
     "target": "es2020",
     "lib": ["dom", "es2020"],
     "jsx": "react-jsx",
