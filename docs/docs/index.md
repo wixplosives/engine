@@ -1,8 +1,9 @@
 ---
-title: Introduction to Engine
 sidebar_position: 1
 slug: /
 ---
+# Introduction to Engine
+
 ## Approach
 
 - An application is a set of one or more features.
@@ -16,7 +17,7 @@ slug: /
 
 ## Feature
 
-![[runtime.entities.feature#^feature_pitch:#^feature_files_naming]]
+[Feature](/entities/feature.md) is the main entity in the engine. It is the main building block of the application.
 
 #### Run
 

@@ -1,3 +1,5 @@
+# Features
+
 A feature is combined of several files: ^feature_pitch
 
 - `<feature-name>.feature.ts` - feature definition file.
@@ -39,7 +41,7 @@ export default new Feature({
 
 Unique identifier, This is the feature name. For example a `file-server` feature will be initiated as `const fileServerFeature = new Feature({id: 'file-server', ...rest})` and the rest of the folder structure should be prefixed with `file-server`.
 
-![Feature file structure](../../static/img/feature_folder_example.png){max-width: 300px}
+![Feature file structure](../../static/img/feature_folder_example.png)
 
 ### `Dependencies: []`
 
@@ -73,14 +75,14 @@ const myFeature = new Feature({
 
 ### setup(env, handler)
 
-This is the method of a feature to set itself up in an [[runtime.entities.environment]]
+This is the method of a feature to set itself up in an [environment](/entities/environment.md)
 
 #### arguments
 
-| argument | description                                                                         |
-| -------- | ----------------------------------------------------------------------------------- |
-| env      | [[runtime.entities.environment]] - the environemnt we want to set the feature up in |
-| handler  | [[Set up handler\|runtime.entities.feature#^setup_handler]]                         |
+| argument | description                                                                        |
+| -------- | ---------------------------------------------------------------------------------- |
+| env      | the [environment](/entities/environment.md) we want to set the feature up in |
+| handler  | [[Set up handler\|runtime.entities.feature#^setup_handler]]                        |
 
 #### Setup handler
 

@@ -1,7 +1,8 @@
 ---
-title: Getting started with the Engine
 sidebar_position: 2
 ---
+
+# Getting started with the Engine
 
 After understanding a bit about the engine, let's create a simple hello-world app with an engine feature.
 
@@ -105,16 +106,16 @@ In the run phase, we will print `world`.
 In order to run this feature, all we need to do, is in the terminal just to run `npx engineer start -f hello-world` .
 This command will locate from the `process.cwd()` or `join(process.cwd(), featureDiscoveryRoot)` if provided, the `hello-world` feature and run it.
 
-###### \* The `-f` and `-c` flags in engineer are calculated as follows:
+The `-f` and `-c` flags in engineer are calculated as follows:
 
-###### 1. find the name of the closest package.
+1. find the name of the closest package.
 
-###### 2. remove the scope, if exists, and the `-feature` suffix of exists.
+2. remove the scope, if exists, and the `-feature` suffix of exists.
 
-###### 3. if the feature name is different then the result in #2, append the feature name (as stated in the file name) with a `/`.
+3. if the feature name is different then the result in #2, append the feature name (as stated in the file name) with a `/`.
 
-###### for an example, if, in our example, the package name was `@example/hello-feature` then the call to engineer would be `npx engineer start -f hello/hello-world`, while if the package name was `@example/hello-world-feature`, the call to engineer would be `npx engineer start -f hello-world`
+In our example, the package name was `@example/hello-feature` then the call to engineer would be `npx engineer start -f hello/hello-world`, while if the package name was `@example/hello-world-feature`, the call to engineer would be `npx engineer start -f hello-world`
 
-We should see `hello` followd by `world` written in the console.
+We should see `hello` followed by `world` written in the console.
 
-For a living example, go to `examples/hello-world` and run `yarn start`
+For a live example, go to `examples/hello-world` and run `yarn start`

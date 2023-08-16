@@ -1,3 +1,5 @@
+# Slots
+
 Features declares slots - which are integration points for other features of the application. The reason behind this is separation of concerns.
 
 ^slots-pitch

@@ -1,6 +1,7 @@
+# Services
 Service is an entiry defined in the feature's API and it represents the an 'output' of the feature.
 
-Each [[runtime.entities.feature]] defines integration points and services, which other features will be able to use.
+Each [feature](/entities/feature.md) defines integration points and services, which other features will be able to use.
 
 A service is defined by the feature, **for an environment**, meaning that the implementation to that service should return from the setup function of that feature in that environment.
 

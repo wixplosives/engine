@@ -1,4 +1,6 @@
-Each [[runtime.entities.feature]] can declare that it can be configured using the `Config` entity.
+# Configs
+
+Each [feature](/entities/feature.md) can declare that it can be configured using the `Config` entity.
 we can import the `Config` entity and use in the the feature declaration
 
 ```ts
