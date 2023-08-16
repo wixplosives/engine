@@ -1,4 +1,7 @@
-[[utils.engineer#^build_flow]]
+---
+sidebar_position: 2
+---
+# Build
 
 ## Options
 
@@ -16,6 +19,6 @@
 - `--external [true|false]` - build feature as external (default: false)
 - `--eagerEntrypoints [true|false]` - build feature as external (default: false)
 - `--configLoaderModuleName [configLoaderModuleName]` - custom config loader module name. used for static builds only
-  `--sourcesRoot <sourcesRoot>` - the directory where the feature library will be published at (relative to the base path). default: "."
+- `--sourcesRoot <sourcesRoot>` - the directory where the feature library will be published at (relative to the base path). default: "."
 - `--staticExternalsDescriptor <staticExternalsDescriptor>` - relative to the output directory - a path to a json file which retrieves all external feature descriptors
 - `--includeExternalFeatures <includeExternalFeatures>` - should include defined external features in the built output (default: false)

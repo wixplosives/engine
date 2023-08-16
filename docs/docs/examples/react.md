@@ -1,3 +1,5 @@
+# React application
+
 ## How to run it
 
 - Go to example react `Feature` (`examples/react`).

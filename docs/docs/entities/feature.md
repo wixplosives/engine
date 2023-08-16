@@ -86,20 +86,21 @@ The setup handler is a method being called with 3 arguments.
 myFeature.setup(myEnv, (settingUpFeature, dependencies, contexts) => { ... });
 ```
 
-- **_settingUpFeature_** - all the entities related to the feature:
+- **_settingUpFeature_** - an object containing all the entities related to the feature:
 
-| argument  | description                                                                            |
-| --------- | -------------------------------------------------------------------------------------- |
-| id        | (_string_) - id                                                                        |
-| run       | (method) - [[run method\|runtime.entities.feature#^run_method]]                        |
-| onDispose | (method) - a method will be called once this feature gets disposed in this environment |
-| Own slots | all the slots defined in the feature api for this environment                          |
-| Configs   | all the configurations defined in the feature api and accessible in this environment   |
+| argument  | description                                                                                     |
+|-----------|-------------------------------------------------------------------------------------------------|
+| id        | _(string)_ - id of the feature                                                                  |
+| run       | _(method)_ - a method will be called once this feature is ready in this environment             |
+| onDispose | _(method)_ - a method will be called once this feature gets disposed in this environment        |
+| Own slots | _(object)_ all the slots defined in the feature api for this environment                        |
+| Configs   | _(object)_ all the configurations defined in the feature api and accessible in this environment |
 
-#### `run(cb: Function)`
+:::tip
+`run(cb: Function)`
 
 This will be called when the environment is ready. For example, when we want to render a react component we need the document to be ready. In this case we will insert all react rendering logic inside the `run` method.
-
+:::
 - **_dependencies_** - a list of all the dependencies the feature declared dependency on, and all the api's available from that feature in the current environment
 
 - **_contexts_** - api's provided to the specific environment in case the environment is a [[contextual environment|runtime.entities.environment.targets]]
