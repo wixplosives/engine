@@ -10,7 +10,7 @@ const config = {
     tagline: 'The Engine is cool',
     favicon: 'img/favicon.ico',
     url: 'https://wixplosives.github.io/',
-    baseUrl: '/',
+    baseUrl: '/engine/docs/',
     onBrokenLinks: 'throw',
     onBrokenMarkdownLinks: 'warn',
     i18n: {
