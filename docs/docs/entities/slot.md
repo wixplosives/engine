@@ -2,8 +2,6 @@
 
 Features declares slots - which are integration points for other features of the application. The reason behind this is separation of concerns.
 
-^slots-pitch
-
 Let's imaging a text editor with a top bar, which currently has in it's right corner 3 buttons:
 
 - copy (will copy selected content)

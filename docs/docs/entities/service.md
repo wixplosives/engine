@@ -50,8 +50,6 @@ const f2 = new Feature({
 
 This will allow f2, when running in `myEnv`, to access the services of `f1`.
 
-^dependency_setup
-
 ```ts
 f2.setup(myEnv, (_, { f1: { echoService } }) => {
   console.log(echoService.echo());
@@ -96,8 +94,6 @@ f1.setup(otherEnv, ({ echoService }) => {
 If any other feature which has a direct dependency on `f1` wants to access that service from any other environment that is not `myEnv`, the usage will be the same as [[runtime.entities.service#^dependency_setup]] but, again, all the services would be async.
 
 ### .allowRemoteAccess(options)
-
-^remote_access
 
 The `allowRemoteAccess` is the only method esposed from the service instance, and it notifys the engine, that for any other environment we should proxy this api call to the environment where the service is provided from.
 

@@ -19,8 +19,6 @@ This is also used as a name surving a purpose for the application, such as `serv
 
 _node_ - The target on which this environment should be evaluated on.
 
-^dfff
-
 The possible targets for an environment
 
 | target name       | description                                                                                                              |

@@ -4,16 +4,12 @@ Every initializer returns a Promise to the id of the initiated environment, or j
 
 ## Socket client initializer
 
-^socket_client
-
 This initializer is intended to connect from any environment to an environment which exposes a socket server connection.
 
 It looks at the topology key of the options provided to the `communication` instance, and looks if a url for a socket server is provided for this environment.
 _(the node environments are initialized by the engineer cli. read more about it at [[utils.engineer#^run_node_envs]])_
 
 ## Iframe initializer
-
-^iframe
 
 This initialized is intended to run from an environment with DOM available.
 It receives an iframe element, and loads the engine environment on that iframe.

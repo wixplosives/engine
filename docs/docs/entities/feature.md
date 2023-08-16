@@ -1,12 +1,10 @@
 # Features
 
-A feature is combined of several files: ^feature_pitch
+A feature is combined of several files:
 
 - `<feature-name>.feature.ts` - feature definition file.
-- `<feature-name>.<some-env>.env.ts` - some-env specific setup code. ^feature_env_file_example
+- `<feature-name>.<some-env>.env.ts` - some-env specific setup code.
 - `<feature-name>.<another-env>.env.ts` - another-env specific setup code.
-
-^feature_files_naming
 
 ### Feature definition file
 
@@ -33,8 +31,6 @@ export default new Feature({
 });
 ```
 
-^feature_constructor
-
 `Feature` constructor accepts 3 options
 
 ### `id: string`
@@ -54,8 +50,6 @@ Api implements 3 types of interfaces:
 #### Config
 
 #### Slot
-
-![[runtime.entities.slot#^slots-pitch]]
 
 #### Service
 
@@ -86,8 +80,6 @@ This is the method of a feature to set itself up in an [environment](/entities/e
 
 #### Setup handler
 
-^setup_handler
-
 The setup handler is a method being called with 3 arguments.
 
 ```ts
@@ -105,8 +97,6 @@ myFeature.setup(myEnv, (settingUpFeature, dependencies, contexts) => { ... });
 | Configs   | all the configurations defined in the feature api and accessible in this environment   |
 
 #### `run(cb: Function)`
-
-^run_method
 
 This will be called when the environment is ready. For example, when we want to render a react component we need the document to be ready. In this case we will insert all react rendering logic inside the `run` method.
 
