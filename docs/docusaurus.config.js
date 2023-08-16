@@ -50,7 +50,7 @@ const config = {
                         items: [
                             {
                                 label: 'API Reference',
-                                to: '../',
+                                to: 'https://wixplosives.github.io/engine/',
                             },
                         ],
                     },
