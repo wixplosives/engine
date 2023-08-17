@@ -17,7 +17,7 @@ slug: /
 
 ## Feature
 
-[Feature](/entities/feature.md) is the main entity in the engine. It is the main building block of the application.
+[Feature](entities/feature) is the main entity in the engine. It is the main building block of the application.
 
 #### Run
 

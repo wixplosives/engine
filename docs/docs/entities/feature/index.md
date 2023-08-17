@@ -73,14 +73,14 @@ const myFeature = new Feature({
 
 ### setup(env, handler)
 
-This is the method of a feature to set itself up in an [environment](/entities/environment.md)
+This is the method of a feature to set itself up in an [environment](../environment/index.md)
 
 #### arguments
 
-| argument | description                                                                        |
-| -------- | ---------------------------------------------------------------------------------- |
-| env      | the [environment](/entities/environment.md) we want to set the feature up in |
-| handler  | [[Set up handler\|runtime.entities.feature#^setup_handler]]                        |
+| argument | description                                                                   |
+| -------- |-------------------------------------------------------------------------------|
+| env      | the [environment](../environment) we want to set the feature up in |
+| handler  | [[Set up handler\|runtime.entities.feature#^setup_handler]]                   |
 
 #### Setup handler
 

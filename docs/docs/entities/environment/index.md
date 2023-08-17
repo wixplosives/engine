@@ -5,7 +5,7 @@ sidebar_position: 2
 
 An Environment is basically a semantic name for an engine instance in a runtime.
 
-In engine applications, [feature](/entities/feature.md)s sets themselfes up in an environment, and when that environment will be launched at runtime, these setups will happen.
+In engine applications, [feature](../feature)s sets themselfes up in an environment, and when that environment will be launched at runtime, these setups will happen.
 
 Creating a new environment is as simple as
 
