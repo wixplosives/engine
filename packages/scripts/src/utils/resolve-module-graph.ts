@@ -27,7 +27,11 @@ export function resolveModuleGraph(filePaths: string | string[]): Record<string,
         },
         resolveRequest(filePath, request) {
             const contextPath = path.dirname(filePath);
-            return resolveRequest(contextPath, request).resolvedFile;
+            const { resolvedFile } = resolveRequest(contextPath, request);
+            if (resolvedFile === undefined) {
+                throw new Error(`Could not resolve "${request}" from ${filePath}`);
+            }
+            return resolvedFile;
         },
     });
     return dependencyResolver(filePaths, true);
