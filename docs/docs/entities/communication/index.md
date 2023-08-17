@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # Communication
 
 The communication is a feature and an entity that is responsible for communication between [[environments|runtime.entities.environment]].

@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Features
 
 A feature is combined of several files:
@@ -37,7 +41,7 @@ export default new Feature({
 
 Unique identifier, This is the feature name. For example a `file-server` feature will be initiated as `const fileServerFeature = new Feature({id: 'file-server', ...rest})` and the rest of the folder structure should be prefixed with `file-server`.
 
-![Feature file structure](../../static/img/feature_folder_example.png)
+![Feature file structure](../../../static/img/feature_folder_example.png)
 
 ### `Dependencies: []`
 

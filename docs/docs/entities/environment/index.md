@@ -1,3 +1,6 @@
+---
+sidebar_position: 2
+---
 # Environments
 
 An Environment is basically a semantic name for an engine instance in a runtime.

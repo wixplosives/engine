@@ -1,13 +1,6 @@
-# Engine 
-
-Any engine application consists of 2 things.
-
-- [feature](/entities/feature.md)
-- [environment](/entities/environment.md)
-
-The `RuntimeEngine` entity is the engine instance running all the features in every environment of the application.
-
-Every environment, down the line, will do `new RuntimeEngine(...)` and then will call the `.run` method of it.
+---
+sidebar_position: 3
+---
 
 # RuntimeEngine
 

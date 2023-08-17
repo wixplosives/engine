@@ -1,3 +1,5 @@
+# Contextual Environments
+
 A special kind of an environment is the `SingleEndpointContextualEnvironment`.
 
 This is an environment which doesn't know in dev time to which target it resolves.

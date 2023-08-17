@@ -1,3 +1,5 @@
+# Initializers
+
 The initializers are helper methods to simplify environment initiation/communication.
 
 Every initializer returns a Promise to the id of the initiated environment, or just the id.
