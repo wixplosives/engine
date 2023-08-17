@@ -30,7 +30,11 @@ const config = {
     themeConfig:
         ({
             navbar: {
-                title: 'Engine',
+                logo: {
+                    alt: 'Engine Logo',
+                    src: 'img/logo_light.svg',
+                    srcDark: 'img/logo_dark.svg',
+                },
                 items: [
                     {
                         type: 'docSidebar',
