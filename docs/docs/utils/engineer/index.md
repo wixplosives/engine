@@ -64,7 +64,7 @@ environment.
 
 If the current running feature has running node environments, the mentioned above servers will also respond with a
 configuration to the communication feature which states the `topology`. this data is later used
-by [[The socket client initializer|runtime.entities.communication.initializers#^socket_client]] to connnect between
+by [The socket client initializer](../../entities/communication/initializers.md#socket-client-initializer) to connect between
 browser environment and node environments launched in the previous step
 
 #### 4. show a link to the dashboard, using which it is possible to run all features found, and launch their node environments

@@ -61,11 +61,13 @@ Service is a method within an API. When we need to declare API methods we will c
 
 ```typescript
 const myFeature = new Feature({
-  id: 'myFeature',
-  api: {
-    echoService: Service.withType< echo(): string>().defineEntity(env1)
-  },
-  // etc..
+    id: 'myFeature',
+    api: {
+        echoService: Service.withType < echo()
+:
+string > ().defineEntity(env1)
+},
+// etc..
 })
 ```
 
@@ -77,10 +79,10 @@ This is the method of a feature to set itself up in an [environment](../environm
 
 #### arguments
 
-| argument | description                                                                   |
-| -------- |-------------------------------------------------------------------------------|
+| argument | description                                                        |
+|----------|--------------------------------------------------------------------|
 | env      | the [environment](../environment) we want to set the feature up in |
-| handler  | [[Set up handler\|runtime.entities.feature#^setup_handler]]                   |
+| handler  | [Set up handler](#setup-handler)                                   |
 
 #### Setup handler
 
@@ -103,21 +105,26 @@ myFeature.setup(myEnv, (settingUpFeature, dependencies, contexts) => { ... });
 :::tip
 `run(cb: Function)`
 
-This will be called when the environment is ready. For example, when we want to render a react component we need the document to be ready. In this case we will insert all react rendering logic inside the `run` method.
+This will be called when the environment is ready. For example, when we want to render a react component we need the
+document to be ready. In this case we will insert all react rendering logic inside the `run` method.
 :::
-- **_dependencies_** - a list of all the dependencies the feature declared dependency on, and all the api's available from that feature in the current environment
 
-- **_contexts_** - api's provided to the specific environment in case the environment is a [[contextual environment|runtime.entities.environment.targets]]
+- **_dependencies_** - a list of all the dependencies the feature declared dependency on, and all the api's available
+  from that feature in the current environment
+
+- **_contexts_** - api's provided to the specific environment in case the environment is
+  a [[contextual environment|runtime.entities.environment.targets]]
 
 ### setupContext(env, contextName,handler)
 
-In case the environment is a [[contextual environment|runtime.entities.environment.targets]], this is how we can provide a specific context to the environment.
+In case the environment is a [[contextual environment|runtime.entities.environment.targets]], this is how we can provide
+a specific context to the environment.
 
 ```ts
 myFeature.setupContext(myEnv, 'envContext', (deps) => {
-  return {
-    method: () => 'from context',
-  };
+    return {
+        method: () => 'from context',
+    };
 });
 ```
 
