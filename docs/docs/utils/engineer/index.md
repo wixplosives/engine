@@ -63,9 +63,10 @@ The engineer dev server or the `run` command will respond to these requests and 
 environment.
 
 If the current running feature has running node environments, the mentioned above servers will also respond with a
-configuration to the communication feature which states the `topology`. this data is later used
-by [The socket client initializer](../../entities/communication/initializers.md#socket-client-initializer) to connect between
-browser environment and node environments launched in the previous step
+configuration to the communication feature which states the `topology`.
+This data is later used
+by [The socket client initializer](../../entities/communication/initializers.md#socket-client-initializer)
+to connect browser environment and node environments launched in the previous step
 
 #### 4. show a link to the dashboard, using which it is possible to run all features found, and launch their node environments
 
@@ -73,20 +74,19 @@ browser environment and node environments launched in the previous step
 
 ### build
 
-#### 1. Analyze Features
+1. Analyze Features
 
-#### 2. Compile Web entrypoints
+2. Compile Web entrypoints
 
-#### 3. Generate a manifest file.
+3. Generate a manifest file.
 
-This file will store the results of the feature
-analyzation, to later be consumed by the `run` phase.
+This file will store the results of the feature analysis, to later be consumed by the `run` phase.
 It will also store some metadata like the provided feature name and config name
 
 ### run
 
-#### 1. read and analyze the Manifest file
+1. Read and analyze the Manifest file
 
-#### 2. Run node environments
+2. Run node environments
 
-#### 3. open the browser for the selected feature
+3. Open the browser for the selected feature

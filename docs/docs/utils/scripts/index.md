@@ -27,7 +27,7 @@ Each file/folder name you want as a template should end with `.tmpl`, other exte
 - dash-case: `${featureName.dashCase}`
 - PascalCase: `${featureName.pascalCase}`
 
-For example, given the following templates folder:
+For example, given the following templates' folder:
 
 - feature
   - \${featureName.dashCase}.feature.ts.tmpl = `export const ${featureName.camelCase} = ...`

@@ -1,7 +1,7 @@
 # Configs
 
 Each [feature](index.md) can declare that it can be configured using the `Config` entity.
-we can import the `Config` entity and use in the the feature declaration
+We can import the `Config` entity and use in the feature declaration.
 
 ```ts
 export default new Feature({

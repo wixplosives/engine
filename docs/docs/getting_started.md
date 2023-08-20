@@ -13,7 +13,8 @@ In your blank typescript repo:
 1. install engine-core package `yarn add @wixc3/engine-core`
 2. install dev-dependencies `yarn add -D typescript webpack html-webpack-plugin react stylable`
 3. install engineer as a dev dependency `yarn add @wixc3/engineer -D`
-4. if this is a typescript project, in the root of the project create an `engine.config.js` file, and inside we should add one of the following:
+4. if this is a typescript project, in the root of the project create an `engine.config.js` file, and inside we should
+   add one of the following:
 
 ```ts
 module.exports = {
@@ -28,7 +29,10 @@ create `tsconfig.json` file in the root directory
 {
   "compilerOptions": {
     "target": "es2020",
-    "lib": ["dom", "es2020"],
+    "lib": [
+      "dom",
+      "es2020"
+    ],
     "jsx": "react-jsx",
     "module": "commonjs",
     "declaration": true,
@@ -44,7 +48,8 @@ create `tsconfig.json` file in the root directory
 }
 ```
 
-Then, let's create 2 files in the `src/feature/hello-world` folder (every feature should have it's own `<feature_name>` directory):
+Then, let's create 2 files in the `src/feature/hello-world` folder (every feature should have it's own `<feature_name>`
+directory):
 
 a. hello-world.feature.ts
 b. hello-world.my-env.env.ts
@@ -104,7 +109,8 @@ In the run phase, we will print `world`.
 ## Running the feature
 
 In order to run this feature, all we need to do, is in the terminal just to run `npx engineer start -f hello-world` .
-This command will locate from the `process.cwd()` or `join(process.cwd(), featureDiscoveryRoot)` if provided, the `hello-world` feature and run it.
+This command will locate from the `process.cwd()` or `join(process.cwd(), featureDiscoveryRoot)` if provided,
+the `hello-world` feature and run it.
 
 The `-f` and `-c` flags in engineer are calculated as follows:
 
@@ -112,9 +118,12 @@ The `-f` and `-c` flags in engineer are calculated as follows:
 
 2. remove the scope, if exists, and the `-feature` suffix of exists.
 
-3. if the feature name is different then the result in #2, append the feature name (as stated in the file name) with a `/`.
+3. if the feature name is different then the result in #2, append the feature name (as stated in the file name) with
+   a `/`.
 
-In our example, the package name was `@example/hello-feature` then the call to engineer would be `npx engineer start -f hello/hello-world`, while if the package name was `@example/hello-world-feature`, the call to engineer would be `npx engineer start -f hello-world`
+In our example, the package name was `@example/hello-feature` then the call to engineer would
+be `npx engineer start -f hello/hello-world`, while if the package name was `@example/hello-world-feature`, the call to
+engineer would be `npx engineer start -f hello-world`
 
 We should see `hello` followed by `world` written in the console.
 

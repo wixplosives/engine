@@ -35,11 +35,13 @@ export default new Feature({
 });
 ```
 
-`Feature` constructor accepts 3 options
+`Feature` constructor accepts three options
 
 ### `id: string`
 
-Unique identifier, This is the feature name. For example a `file-server` feature will be initiated as `const fileServerFeature = new Feature({id: 'file-server', ...rest})` and the rest of the folder structure should be prefixed with `file-server`.
+Unique identifier, This is the feature name. For example a `file-server` feature will be initiated
+as `const fileServerFeature = new Feature({id: 'file-server', ...rest})` and the rest of the folder structure should be
+prefixed with `file-server`.
 
 ![Feature file structure](../../../static/img/feature_folder_example.png)
 
@@ -49,7 +51,7 @@ Features that this current feature is dependant upon
 
 ### `api: Api`
 
-Api implements 3 types of interfaces:
+Api implements three types of interfaces:
 
 #### Config
 
@@ -61,9 +63,9 @@ Service is a method within an API. When we need to declare API methods we will c
 
 ```typescript
 const myFeature = new Feature({
-    id: 'myFeature',
-    api: {
-        echoService: Service.withType < echo()
+  id: 'myFeature',
+  api: {
+    echoService: Service.withType < echo()
 :
 string > ().defineEntity(env1)
 },
@@ -112,7 +114,7 @@ document to be ready. In this case we will insert all react rendering logic insi
 - **_dependencies_** - a list of all the dependencies the feature declared dependency on, and all the api's available
   from that feature in the current environment
 
-- **_contexts_** - api's provided to the specific environment in case the environment is
+- **_contexts_** - APIs provided to the specific environment in case the environment is
   a [[contextual environment|runtime.entities.environment.targets]]
 
 ### setupContext(env, contextName,handler)
@@ -122,9 +124,9 @@ a specific context to the environment.
 
 ```ts
 myFeature.setupContext(myEnv, 'envContext', (deps) => {
-    return {
-        method: () => 'from context',
-    };
+  return {
+    method: () => 'from context',
+  };
 });
 ```
 

@@ -1,20 +1,25 @@
 # Slots
 
-Features declares slots - which are integration points for other features of the application. The reason behind this is separation of concerns.
+Features declare slots — which are integration points for other features of the application.
+The reason behind this is separation of concerns.
 
-Let's imaging a text editor with a top bar, which currently has in it's right corner 3 buttons:
+Lets imaging a text editor with a top bar, which currently has in its right corner 3 buttons:
 
 - copy (will copy selected content)
 - paste (will paste from clipboard at the current cursor location)
 - save (saves file)
 
-Now let's say, We want to create a new button, which shows the git history for that file.
+Now, let's say we want to create a new button, which shows the git history for that file.
 
-Traditionally, what you need to do is to create the git history component, which will probably be some icon with an onClick event, implement the logic of the action, and add this component to the array of components currently displaying the previous 3 items.
+Traditionally, what you need to do is to create the git history component, which will probably be some icon with an
+onClick event, implement the logic of the action, and add this component to the array of components currently displaying
+the previous three items.
 
-What slots allow is to say that the array of the icons is an integration point, and every feature can register with it's own items.
+What slots allow is to say that the array of the icons is an integration point, and every feature can register with its
+own items.
 In this case, the top-bar component will render all the icons provided to it either by itself or other features.
-We will create a `GitHistory` feature, which will be responsible of all the logic of the action, and will register this action to the slot of the top bar.
+We will create a `GitHistory` feature, which will be responsible for all the logic of the action, and will register this
+action to the slot of the top bar.
 
 a basic example of the mentioned above will look something like this:
 
@@ -77,5 +82,6 @@ gitHistoryFeature.setup(browserEnv, (_, { gui: { topBarItems } }) => {
 });
 ```
 
-This allowd us to separate concerns.
-The `guiFeature` will forever be responsible for the application UI, and the `gitHistory` feature will be responsible for that specific integration.
+This allows us to separate concerns.
+The `guiFeature` will forever be responsible for the application UI, and the `gitHistory` feature will be responsible
+for that specific integration.

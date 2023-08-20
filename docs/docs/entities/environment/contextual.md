@@ -1,6 +1,6 @@
 # Contextual Environments
 
-A special kind of an environment is the `SingleEndpointContextualEnvironment`.
+A special kind of environment is the `SingleEndpointContextualEnvironment`.
 
 This is an environment which doesn't know in dev time to which target it resolves.
 
@@ -21,7 +21,8 @@ const workerEnv = new Environment('webserver', 'webworker', 'single');
 export const myContextual = new SingleEndpointContextualEnvironment('ctx', [serverEnv, workerEnv]);
 ```
 
-After declaring that environment, we can, in each feature, to declare that a "context" is provided to setup the feature in this environment.
+After declaring that environment, we can, in each feature, to declare that a "context" is provided to setup the feature
+in this environment.
 
 so for an example We can declare a feature `f1`:
 
@@ -48,7 +49,8 @@ f1.setup(myContextual, (_ownApis, _dependencies, envContext) => {
 
 For the `fetchFile` to be available in the environment setup, we need to provide the actual implementation.
 
-For the `server` context (which will be executed in a node process), we would provide this implementation (for an example)
+For the `server` context (which will be executed in a node process), we would provide this implementation (for an
+example)
 
 ```ts
 import fetch from 'node-fetch';
@@ -62,7 +64,8 @@ f1.setupContext(myContextual, 'contextName', () => {
 });
 ```
 
-For the `webserver` context (which will be executed in a browser webworker), we would provide this implementation (for an example)
+For the `webserver` context (which will be executed in a browser webworker), we would provide this implementation (for
+an example)
 
 ```ts
 f1.setupContext(myContextual, 'contextName', () => {

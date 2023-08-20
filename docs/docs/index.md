@@ -30,33 +30,35 @@ The `setup` method are running in sync and are in the dependency order
 Example
 
 ```typescript
-import { Feature, Environment, Service } from '@wixc3/engine-core'
+import { Environment, Feature, Service } from '@wixc3/engine-core';
 
-const env1 = new Environment('env1', 'node', 'single')
+const env1 = new Environment('env1', 'node', 'single');
 
 const feat1 = new Feature({
   id: 'feat1',
   api: {
-    echoService: Service.withType< echo(): string>().defineEntity(env1)
-  },
-  dependencies: []
+    echoService: Service.withType < echo()
+:
+string > ().defineEntity(env1);
+},
+dependencies: [];
 })
 
-feat1.setup(env1, ({}, {})=> {
+feat1.setup(env1, ({}, {}) => {
   return {
-    echoService:{
-      echo: ()=> 'Hello World'
+    echoService: {
+      echo: () => 'Hello World'
     }
-  }
-})
+  };
+});
 
 const feat2 = new Feature({
   id: 'feat2',
   api: {},
   dependencies: [feat1]
-})
+});
 
-feat2.setup(env1, ({}, {feat1: {echoService}})=> {
-  echoService.echo()
-})
+feat2.setup(env1, ({}, { feat1: { echoService } }) => {
+  echoService.echo();
+});
 ```
