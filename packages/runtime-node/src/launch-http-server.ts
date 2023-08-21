@@ -21,7 +21,7 @@ export interface ILaunchHttpServerOptions {
     httpServerPort?: number;
     socketServerOptions?: Partial<io.ServerOptions>;
     routeMiddlewares?: Array<RouteMiddleware>;
-    hostname?: string | undefined;
+    hostname?: string;
 }
 
 export async function launchEngineHttpServer({
