@@ -1,7 +1,7 @@
-import React, { FC, useContext, useEffect, useState } from 'react';
-import type { GraphData } from '../../graph-types';
-import { DashboardContext } from '../dashboard';
-import { FeatureGraph } from '../feature-graph';
+import React, { useContext, useEffect, useState, type FC } from 'react';
+import type { GraphData } from '../../graph-types.js';
+import { DashboardContext } from '../dashboard.js';
+import { FeatureGraph } from '../feature-graph.js';
 
 interface IDependencyGraphProps {
     fetchGraphData: (featureName: string) => Promise<GraphData>;

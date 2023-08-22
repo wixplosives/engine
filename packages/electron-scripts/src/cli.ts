@@ -1,97 +1,54 @@
-import yargs from 'yargs';
-import { start, build } from './commands';
+import { Command } from 'commander';
 
-yargs
-    .command('start', 'starts the electron application in dev mode', async (command) => {
-        const options = command
-            .option('featureName', {
-                alias: 'f',
-                type: 'string',
-                required: true,
-            })
-            .option('configName', {
-                alias: 'c',
-                type: 'string',
-            })
-            .option('envName', {
-                alias: 'e',
-                type: 'string',
-                demandOption: true,
-            })
-            .option('basePath', {
-                type: 'string',
-            })
-            .option('devtools', {
-                type: 'boolean',
-            })
-            .option('featureDiscoveryRoot', {
-                type: 'string',
-            })
-            .parseSync();
+process.on('unhandledRejection', reportProcessError);
+process.on('uncaughtException', reportProcessError);
 
-        await start({
-            ...options,
-        });
-    })
-    .command('build', 'builds the elecrton application', async (command) => {
-        const options = command
-            .option('featureName', {
-                alias: 'f',
-                type: 'string',
-                demandOption: true,
-            })
-            .option('configName', {
-                alias: 'c',
-                type: 'string',
-            })
-            .option('basePath', {
-                default: process.cwd(),
-            })
-            .option('outDir', {
-                default: 'dist',
-                describe: 'the directory to which the bundled and transpiled code will be saved (relative to basePath)',
-            })
-            .option('envName', {
-                alias: 'e',
-                type: 'string',
-                demandOption: true,
-                describe: 'The name of the electron main process environment',
-            })
-            .option('electronBuilderConfigFileName', {
-                describe: 'The name of the electrion builder config file (relative to basePath)',
-                default: 'electron-build.json',
-            })
-            .option('linux', {
-                type: 'boolean',
-                default: undefined,
-            })
-            .option('mac', {
-                type: 'boolean',
-                default: undefined,
-            })
-            .option('windows', {
-                type: 'boolean',
-                default: undefined,
-            })
-            .option('publish', {
-                type: 'string',
-            })
-            .option('featureDiscoveryRoot', {
-                type: 'string',
-            })
-            .option('eagerEntrypoint', {
-                type: 'boolean',
-                default: false,
-            })
-            .parseSync();
+const program = new Command();
 
-        await build({
-            ...options,
-        });
-    })
-    .parseAsync()
-    .catch((e) => {
-        process.exitCode = 1;
-        // eslint-disable-next-line no-console
-        console.log(e);
+function createCommand(commandName: string): Command {
+    return program
+        .command(commandName)
+        .requiredOption('-f, --featureName <featureName>')
+        .option('-c, --configName <configName>')
+        .requiredOption('-e, --envName <envName>', 'The name of the electron main process environment')
+        .option('--basePath <basePath>', undefined, process.cwd())
+        .option('--featureDiscoveryRoot <featureDiscoveryRoot>')
+        .option('--singleFeature');
+}
+
+createCommand('start')
+    .description('starts the electron application in dev mode')
+    .option('--devtools')
+    .action(async (options) => {
+        const { start } = await import('./commands/start.js');
+        await start(options);
     });
+
+createCommand('build')
+    .description('builds the electron application')
+    .option(
+        '--outDir <outDir>',
+        'the directory to which the bundled and transpiled code will be saved (relative to basePath)',
+        'dist',
+    )
+    .option(
+        '--electronBuilderConfigFileName <electronBuilderConfigFileName>',
+        'The name of the electron builder config file (relative to basePath)',
+        'electron-build.json',
+    )
+    .option('--linux')
+    .option('--mac')
+    .option('--windows')
+    .option('--publish <publish>')
+    .option('--eagerEntrypoint')
+    .action(async (options) => {
+        const { build } = await import('./commands/build.js');
+        await build(options);
+    });
+
+program.parseAsync().catch(reportProcessError);
+
+function reportProcessError(error: unknown): void {
+    console.log(error);
+    process.exitCode = 1;
+}

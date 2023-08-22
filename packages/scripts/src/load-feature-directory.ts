@@ -1,5 +1,5 @@
 import type { IFileSystemSync } from '@file-services/types';
-import { isConfigFile, isContextFile, isEnvFile, isFeatureFile, isPreloadFile } from './build-constants';
+import { isConfigFile, isContextFile, isEnvFile, isFeatureFile, isPreloadFile } from './build-constants.js';
 
 export interface IFeatureDirectory {
     directoryPath: string;
@@ -13,7 +13,7 @@ export interface IFeatureDirectory {
 export function loadFeatureDirectory(
     directoryPath: string,
     fs: IFileSystemSync,
-    ignoreConfigs = false
+    ignoreConfigs = false,
 ): IFeatureDirectory {
     const dir = {
         features: [] as string[],

@@ -1,11 +1,14 @@
-import { BaseHost, Message } from '@wixc3/engine-core';
-import type { WebContents, IpcMain, IpcMainEvent } from 'electron';
+import { BaseHost, type Message } from '@wixc3/engine-core';
+import type { IpcMain, IpcMainEvent, WebContents } from 'electron';
 
 /**
  * Communication host for the electron-main process
  */
 export class ElectronBrowserHost extends BaseHost {
-    constructor(private host: IpcMain, private webContents: WebContents) {
+    constructor(
+        private host: IpcMain,
+        private webContents: WebContents,
+    ) {
         super();
         this.host.on('message', this.onMessage);
     }

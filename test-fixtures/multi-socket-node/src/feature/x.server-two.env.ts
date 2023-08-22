@@ -1,5 +1,4 @@
-import { anotherServerEnv } from './x.feature';
-import sampleFeature from './x.feature';
+import sampleFeature, { anotherServerEnv } from './x.feature.js';
 
 sampleFeature.setup(anotherServerEnv, ({ echoService }) => {
     return {

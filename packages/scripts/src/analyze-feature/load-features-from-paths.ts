@@ -1,22 +1,23 @@
 import type { IFileSystemSync } from '@file-services/types';
-import type { FeatureClass } from '@wixc3/engine-core';
 import { concat, getValue, isPlainObject, map } from '@wixc3/common';
+import type { FeatureClass } from '@wixc3/engine-core';
+import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
+import type { INpmPackage } from '@wixc3/resolve-directory-context';
 import {
-    FileNameParser,
+    isFeatureFile,
     parseConfigFileName,
     parseContextFileName,
     parseEnvFileName,
     parsePreloadFileName,
-} from '../build-constants';
-import { loadFeatureDirectory } from '../load-feature-directory';
-import { evaluateModule } from '../utils/evaluate-module';
-import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
-import type { IFeatureDefinition, IFeatureModule } from '../types';
-import type { DirFeatures } from './find-features';
-import { findPackageOfDirs, IPackageDescriptor, scopeToPackage } from './package-utils';
-import { analyzeFeatureModule, computeUsedContext, getFeatureModules } from './module-utils';
-import type { INpmPackage } from '@wixc3/resolve-directory-context';
+    type FileNameParser,
+} from '../build-constants.js';
+import { loadFeatureDirectory } from '../load-feature-directory.js';
+import type { IFeatureDefinition, IFeatureModule } from '../types.js';
+import { resolveModuleGraph } from '../utils/resolve-module-graph.js';
+import type { DirFeatures } from './find-features.js';
+import { analyzeFeatureModule, computeUsedContext } from './module-utils.js';
+import { findPackageOfDirs, scopeToPackage, type IPackageDescriptor } from './package-utils.js';
 
 /**
  * Loads the features and configs of given roots and their imported dependencies
@@ -26,11 +27,11 @@ import type { INpmPackage } from '@wixc3/resolve-directory-context';
  * @param override overrides to apply to found features
  * @returns
  */
-export function loadFeaturesFromPaths(
+export async function loadFeaturesFromPaths(
     roots: DirFeatures,
     fs: IFileSystemSync,
     packages: INpmPackage[] = [],
-    override = {}
+    override = {},
 ) {
     const imported = getImportedFeatures(roots, fs);
 
@@ -38,7 +39,7 @@ export function loadFeaturesFromPaths(
     // feature/env/config files, both in our repo and from node_modules.
     const featureDirectories = concat(
         map(roots.dirs, (path) => loadFeatureDirectory(path, fs)),
-        map(imported.dirs, (path) => loadFeatureDirectory(path, fs, true))
+        map(imported.dirs, (path) => loadFeatureDirectory(path, fs, true)),
     );
 
     // find closest package.json for each feature directory and generate package name
@@ -53,7 +54,7 @@ export function loadFeaturesFromPaths(
         const featurePackage = getValue(
             directoryToPackage,
             directoryPath,
-            `cannot find package name for ${directoryPath}`
+            `cannot find package name for ${directoryPath}`,
         );
 
         // pick up configs
@@ -63,11 +64,13 @@ export function loadFeaturesFromPaths(
         });
 
         // pick up features
-        const analyzedFeatures = features
-            // filter out features that are not root, nor imported -
-            // i.e. that exist on the directory but are not required
-            .filter((f) => imported.files.has(f) || roots.files.has(f))
-            .map((f) => analyzeFeature(f, featurePackage));
+        const analyzedFeatures = await Promise.all(
+            features
+                // filter out features that are not root, nor imported -
+                // i.e. that exist on the directory but are not required
+                .filter((f) => imported.files.has(f) || roots.files.has(f))
+                .map((f) => analyzeFeature(f, featurePackage)),
+        );
         analyzedFeatures.forEach((a) => {
             foundFeatures.set(a.scopedName, parseFoundFeature(a, featurePackage, roots.files.has(a.filePath)));
             featureToScopedName.set(a.module.exportedFeature, a.scopedName);
@@ -101,7 +104,7 @@ function setEnvPath(
     parser: FileNameParser,
     fs: IFileSystemSync,
     foundFeatures: Map<string, IFeatureDefinition>,
-    featurePackage: IPackageDescriptor
+    featurePackage: IPackageDescriptor,
 ) {
     return (path: string) => {
         const { featureName, envName, childEnvName } = parser(fs.basename(path));
@@ -113,9 +116,9 @@ function setEnvPath(
     };
 }
 
-function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): AnalyzedFeatureModule {
-    const [evaluated] = evaluateModule(filePath).children;
-    const module = analyzeFeatureModule(evaluated!);
+async function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): Promise<AnalyzedFeatureModule> {
+    const moduleExports = await import(filePath);
+    const module = analyzeFeatureModule(filePath, moduleExports);
     const scopedName = scopeToPackage(featurePackage.simplifiedName, module.name)!;
     return {
         scopedName,
@@ -127,7 +130,7 @@ function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): A
 function parseFoundFeature(
     { module, scopedName, filePath }: AnalyzedFeatureModule,
     featurePackage: IPackageDescriptor,
-    isRoot: boolean
+    isRoot: boolean,
 ): IFeatureDefinition {
     return {
         ...module,
@@ -162,11 +165,12 @@ function getImportedFeatures(roots: DirFeatures, fs: IFileSystemSync): DirFeatur
         dirs: new Set<string>(),
         files: new Set<string>(),
     };
-    // find all require()'ed feature files from initial ones
-    const featureModules = getFeatureModules(evaluateModule(roots.files));
-    for (const { filename } of featureModules) {
-        addNew(roots.files, imported.files, filename);
-        addNew(roots.dirs, imported.dirs, fs.dirname(filename));
+    // find all imported feature files from initial ones
+    const filePathsInGraph = Object.keys(resolveModuleGraph(Array.from(roots.files)));
+    const featureFilePaths = filePathsInGraph.filter((filePath) => isFeatureFile(fs.basename(filePath)));
+    for (const filePath of featureFilePaths) {
+        addNew(roots.files, imported.files, filePath);
+        addNew(roots.dirs, imported.dirs, fs.dirname(filePath));
     }
     return imported;
 }

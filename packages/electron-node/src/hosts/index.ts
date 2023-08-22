@@ -1,1 +1,1 @@
-export * from './electron-node-host';
+export * from './electron-node-host.js';

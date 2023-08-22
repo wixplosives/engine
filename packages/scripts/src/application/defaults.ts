@@ -1,4 +1,4 @@
-import type { IBuildCommandOptions } from './types';
+import type { IBuildCommandOptions } from './types.js';
 
 export const buildDefaults = {
     mode: 'production',

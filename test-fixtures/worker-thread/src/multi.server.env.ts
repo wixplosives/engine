@@ -1,5 +1,5 @@
 import { workerThreadInitializer } from '@wixc3/engine-runtime-node';
-import multiFeature, { multiServerEnv, workerEnv } from './multi.feature';
+import multiFeature, { multiServerEnv, workerEnv } from './multi.feature.js';
 
 multiFeature.setup(multiServerEnv, ({ onDispose, multiWorkerEcho }, { COM: { communication } }) => {
     return {
@@ -18,7 +18,7 @@ multiFeature.setup(multiServerEnv, ({ onDispose, multiWorkerEcho }, { COM: { com
                             id: worker.id,
                         });
                         return await workerEcho.echo(value);
-                    })
+                    }),
                 );
 
                 return responses;

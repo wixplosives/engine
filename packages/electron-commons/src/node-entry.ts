@@ -2,12 +2,12 @@ import { BaseHost, COM, Communication, reportError } from '@wixc3/engine-core';
 import {
     ENGINE_ROOT_ENVIRONMENT_ID,
     METADATA_PROVIDER_ENV_ID,
-    MetadataCollectionAPI,
+    importModules,
     metadataApiToken,
+    runIPCEnvironment,
+    type MetadataCollectionAPI,
 } from '@wixc3/engine-runtime-node';
-import { importModules, runIPCEnvironment } from '@wixc3/engine-runtime-node';
-
-import { NodeEnvironmentCommand, NodeEnvironmentEvent, NodeEnvironmentStartupCommand } from './types';
+import { type NodeEnvironmentCommand, type NodeEnvironmentEvent, type NodeEnvironmentStartupCommand } from './types.js';
 
 const openEnvsDisposeHandlers = new Set<() => Promise<void>>();
 
@@ -57,7 +57,7 @@ async function handleStartupCommand(command: NodeEnvironmentStartupCommand) {
                     },
                 },
             },
-        })
+        }),
     );
 
     const { close } = await runIPCEnvironment({

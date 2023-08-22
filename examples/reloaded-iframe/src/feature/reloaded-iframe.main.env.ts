@@ -1,6 +1,6 @@
 import { iframeInitializer } from '@wixc3/engine-core';
-import ReloadedIframe, { iframeEnv, mainEnv } from './reloaded-iframe.feature';
-import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../consts';
+import ReloadedIframe, { iframeEnv, mainEnv } from './reloaded-iframe.feature.js';
+import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../consts.js';
 
 ReloadedIframe.setup(mainEnv, ({ run, echoService }, { COM }) => {
     const div = document.createElement('div');

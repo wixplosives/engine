@@ -1,17 +1,18 @@
-import isCI from 'is-ci';
-import fs from '@file-services/node';
-import playwright from 'playwright-core';
-import { ensureTracePath } from './utils';
-import { hookPageConsole } from './hook-page-console';
-import { validateBrowser } from './supported-browsers';
-import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
-import { normalizeTestName } from './normalize-test-name';
-import { RemoteHttpApplication } from './remote-http-application';
-import { ForkedProcessApplication } from './forked-process-application';
-import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
-import type { IExecutableApplication } from './types';
+import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
+import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
+import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
+import isCI from 'is-ci';
+import playwright from 'playwright-core';
+import { ForkedProcessApplication } from './forked-process-application.js';
+import { hookPageConsole } from './hook-page-console.js';
+import { normalizeTestName } from './normalize-test-name.js';
+import { RemoteHttpApplication } from './remote-http-application.js';
+import { validateBrowser } from './supported-browsers.js';
+import type { IExecutableApplication } from './types.js';
+import { ensureTracePath } from './utils/index.js';
 
 const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
 
@@ -109,6 +110,10 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      * add tracing for the entire suite, the name of the test will be used as the zip name
      */
     tracing?: boolean | Omit<Tracing, 'name'>;
+    /**
+     * Keeps the page open and the feature running for the all the tests in the suite
+     */
+    persist?: boolean;
 }
 
 export interface Tracing {
@@ -185,6 +190,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         headless = envDebugMode ? !debugMode : undefined,
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
+        persist,
     } = withFeatureOptions;
 
     if (
@@ -192,7 +198,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         (headless === false || devtools === true || slowMo !== undefined || runningApplicationPort !== undefined)
     ) {
         throw new Error(
-            `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`
+            `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`,
         );
     }
 
@@ -236,6 +242,23 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
+    let dispose = disposeAfter;
+    let alreadyInitialized = false;
+
+    if (persist) {
+        after('dispose suite level page', async function () {
+            this.timeout(10_000);
+            await disposables.dispose();
+        });
+        const disposables = new Disposables();
+        disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
+        disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
+        disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
+        disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
+
+        dispose = (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options);
+    }
+
     return {
         async getLoadedFeature({
             featureName = suiteFeatureName,
@@ -255,6 +278,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 throw new Error('Engine HTTP server is closed!');
             }
 
+            if (persist && alreadyInitialized) {
+                throw new Error('getLoadedFeature cannot be called more than once while persist mode is on!');
+            }
+
+            alreadyInitialized = true;
             const runningFeature = await executableApp.runFeature({
                 featureName,
                 configName,
@@ -268,7 +296,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const { configName: newConfigName } = runningFeature;
 
-            disposeAfter(
+            dispose(
                 async () =>
                     executableApp.closeFeature({
                         featureName,
@@ -278,7 +306,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     group: WITH_FEATURE_DISPOSABLES,
                     name: `close feature "${featureName}"`,
                     timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
-                }
+                },
             );
 
             const search = toSearchQuery({
@@ -287,14 +315,14 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 queryParams,
             });
             const browserContext = await browser.newContext(browserContextOptions);
-            disposeAfter(() => browserContext.close(), {
+            dispose(() => browserContext.close(), {
                 group: WITH_FEATURE_DISPOSABLES,
                 name: `close browser context for feature "${featureName}"`,
                 timeout: 5_000,
             });
 
             browserContext.on('page', onPageCreation);
-            disposeAfter(() => browserContext.off('page', onPageCreation), {
+            dispose(() => browserContext.off('page', onPageCreation), {
                 name: 'stop listening for page creation',
                 group: PAGE_DISPOSABLES,
                 timeout: 1_000,
@@ -325,7 +353,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         }),
                     });
                 });
-                disposeAfter(
+                dispose(
                     async () => {
                         for (const tracingDisposable of tracingDisposables) {
                             await tracingDisposable(mochaCtx()?.currentTest?.title);
@@ -335,14 +363,14 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     {
                         name: 'stop tracing',
                         timeout: withFeatureOptions?.saveTraceTimeout ?? 10_000,
-                    }
+                    },
                 );
             }
 
             function onPageError(e: Error) {
                 if (
                     !allowedErrors.some((allowed) =>
-                        allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed
+                        allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed,
                     )
                 ) {
                     capturedErrors.push(e);
@@ -358,12 +386,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 page.setDefaultNavigationTimeout(30_000);
                 page.setDefaultTimeout(10_000);
                 const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
-                disposeAfter(disposeConsoleHook, {
+                dispose(disposeConsoleHook, {
                     name: 'stop listening for console messages',
                     group: PAGE_DISPOSABLES,
                 });
                 page.on('pageerror', onPageError);
-                disposeAfter(() => page.off('pageerror', onPageError), {
+                dispose(() => page.off('pageerror', onPageError), {
                     name: 'stop listening for page errors',
                     group: PAGE_DISPOSABLES,
                     timeout: 1_000,
@@ -404,6 +432,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             return { page: featurePage, response, getMetrics };
         },
+        disposeAfter: dispose,
     };
 }
 

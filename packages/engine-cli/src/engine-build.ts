@@ -44,7 +44,7 @@ export async function engineBuild({
     outputPath = fs.resolve(rootDir, outputPath);
     await importModules(rootDir, requiredPaths);
 
-    const { features, configurations } = analyzeFeatures(
+    const { features, configurations } = await analyzeFeatures(
         fs,
         rootDir,
         featureDiscoveryRoot,

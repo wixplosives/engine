@@ -1,7 +1,7 @@
-import { spawnSync, SpawnSyncOptions } from 'child_process';
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import { createTestDir } from '@wixc3/testing-node';
-import { IFeatureExecutionOptions, IWithFeatureOptions, withFeature } from './with-feature';
+import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
+import { withFeature, type IFeatureExecutionOptions, type IWithFeatureOptions } from './with-feature.js';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
     fixturePath?: string;
@@ -12,17 +12,17 @@ export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
  * and optionally copies a fixture to it as a "project".
  */
 export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
-    const { getLoadedFeature: originalGetLoadedFeature } = withFeature(suiteOptions);
+    const { getLoadedFeature: originalGetLoadedFeature, disposeAfter } = withFeature(suiteOptions);
 
     async function getLoadedFeature(testOptions: IWithLocalFixtureOptions = suiteOptions) {
         const { fixturePath = suiteOptions.fixturePath, runOptions = suiteOptions.runOptions } = testOptions;
         if (runOptions && runOptions.projectPath) {
             throw new Error(
-                `runOptions["projectPath"] shouldn't be provided. It will get overriden by returned projectPath.`
+                `runOptions["projectPath"] shouldn't be provided. It will get overriden by returned projectPath.`,
             );
         }
 
-        const projectPath = createTestDir('local-test');
+        const projectPath = createTestDir('local-test', {}, disposeAfter);
 
         if (fixturePath) {
             await fs.promises.copyDirectory(fixturePath, projectPath);
@@ -52,7 +52,7 @@ const spawnSyncSafe = ((...args: Parameters<typeof spawnSync>) => {
         throw new Error(
             `Command "${args.filter((arg) => typeof arg === 'string').join(' ')}" failed with exit code ${
                 spawnResult.status ?? 'null'
-            }.`
+            }.`,
         );
     }
     return spawnResult;

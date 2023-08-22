@@ -1,7 +1,7 @@
-import type { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import type { EnvVisibility } from '../types';
-import { FeatureOutput } from './output';
+import type { RuntimeEngine } from '../runtime-engine.js';
+import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols.js';
+import type { EnvVisibility } from '../types.js';
+import { FeatureOutput } from './output.js';
 
 export class Value<T, ProvidedFrom extends EnvVisibility> extends FeatureOutput<
     T,

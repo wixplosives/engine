@@ -32,7 +32,7 @@ describe('ensure trace path', () => {
                 outPath: filePath,
                 name: fallbackNameWithoutSpaces + TRACE_FILE_EXT,
             }),
-            `fails for ${fallbackNameWithoutSpaces}${TRACE_FILE_EXT}`
+            `fails for ${fallbackNameWithoutSpaces}${TRACE_FILE_EXT}`,
         ).to.eq(filePath + fallbackNameWithoutSpaces + TRACE_FILE_EXT);
 
         expect(
@@ -41,7 +41,7 @@ describe('ensure trace path', () => {
                 outPath: filePath,
                 name: fallbackNameWithoutSpaces,
             }),
-            `fails for ${fallbackNameWithoutSpaces}`
+            `fails for ${fallbackNameWithoutSpaces}`,
         ).to.eq(filePath + fallbackNameWithoutSpaces + TRACE_FILE_EXT);
     });
 
@@ -53,7 +53,7 @@ describe('ensure trace path', () => {
                 fs,
                 outPath,
                 name,
-            })
+            }),
         ).to.eq(fs.join(outPath, name));
         expect(fs.directoryExistsSync(outPath)).to.eq(true);
     });

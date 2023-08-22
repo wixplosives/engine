@@ -1,9 +1,9 @@
-import type { IRunOptions, TopLevelConfig } from './types';
-import type { AnyEnvironment } from './entities';
-import { FeatureLoadersRegistry, IFeatureLoader } from './run-engine-app';
-import { ConfigLoaders, RuntimeConfigurations } from './runtime-configurations';
-import { RuntimeEngine } from './runtime-engine';
-import { INSTANCE_ID_PARAM_NAME } from './com';
+import type { IRunOptions, TopLevelConfig } from './types.js';
+import type { AnyEnvironment } from './entities/index.js';
+import { FeatureLoadersRegistry, IFeatureLoader } from './run-engine-app.js';
+import { ConfigLoaders, RuntimeConfigurations } from './runtime-configurations.js';
+import { RuntimeEngine } from './runtime-engine.js';
+import { INSTANCE_ID_PARAM_NAME } from './com/index.js';
 
 export interface MainEntryParams {
     env: AnyEnvironment;

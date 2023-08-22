@@ -1,4 +1,5 @@
 {
+  "root": true,
   "env": {
     "browser": true,
     "es2020": true,
@@ -25,7 +26,7 @@
     {
       "files": ["*.ts", "*.tsx"],
       "parserOptions": {
-        "project": "./tsconfig.lint.json"
+        "EXPERIMENTAL_useProjectService": true
       },
       "extends": [
         "plugin:@typescript-eslint/recommended",

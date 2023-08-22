@@ -1,6 +1,6 @@
 import { COM, Environment, Feature, Service, Slot } from '@wixc3/engine-core';
-import CodeEditor, { PROCESSING } from '../code-editor/code-editor.feature';
-import type { BaseCompiler, CompilerExtension } from './BaseCompiler';
+import CodeEditor, { PROCESSING } from '../code-editor/code-editor.feature.js';
+import type { BaseCompiler, CompilerExtension } from './BaseCompiler.js';
 
 export const PREVIEW = new Environment('preview', 'iframe', 'single');
 

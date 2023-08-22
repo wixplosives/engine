@@ -1,16 +1,16 @@
-import COM from '../communication.feature';
+import COM from '../communication.feature.js';
 import type {
     AsyncApi,
     EnvironmentInstanceToken,
     EnvironmentTypes,
     MultiEnvAsyncApi,
     ServiceComConfig,
-} from '../com/types';
-import type { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import type { EnvVisibility } from '../types';
-import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env';
-import { FeatureOutput } from './output';
+} from '../com/types.js';
+import type { RuntimeEngine } from '../runtime-engine.js';
+import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols.js';
+import type { EnvVisibility } from '../types.js';
+import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env.js';
+import { FeatureOutput } from './output.js';
 
 export type ServiceRuntime<T extends object, ProvidedFrom> = ProvidedFrom extends Environment<
     string,
@@ -27,7 +27,7 @@ export class Service<
     PT,
     ProvidedFrom extends EnvVisibility,
     VisibleAt extends EnvVisibility,
-    RemoteAccess extends boolean
+    RemoteAccess extends boolean,
 > extends FeatureOutput<T, PT, ProvidedFrom, VisibleAt, RemoteAccess> {
     public static withType<T extends object>() {
         return {
@@ -40,7 +40,7 @@ export class Service<
         public providedFrom: ProvidedFrom,
         public visibleAt: VisibleAt,
         public remoteAccess: RemoteAccess,
-        private options: ServiceComConfig<T> = {}
+        private options: ServiceComConfig<T> = {},
     ) {
         super(providedFrom, visibleAt, remoteAccess);
     }
@@ -49,7 +49,7 @@ export class Service<
             this.providedFrom,
             AllEnvironments,
             true,
-            options
+            options,
         );
     }
 
@@ -58,7 +58,7 @@ export class Service<
         providedValue: T | undefined,
         inputValue: PT,
         featureID: string,
-        entityKey: string
+        entityKey: string,
     ) {
         if (this.remoteAccess) {
             const { communication } = runtimeEngine.get(COM).api;
@@ -75,7 +75,7 @@ Make sure the environment setup file exists and named correctly: [featureName].[
 Service name: ${entityKey}
 Feature id: ${featureID}
 Environment: ${runtimeEngine.entryEnvironment.env}
-                        `
+                        `,
                     );
                 }
                 communication.registerAPI({ id: serviceKey }, providedValue);

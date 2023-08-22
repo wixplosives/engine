@@ -1,4 +1,4 @@
-import ReloadedIframe, { iframeEnv } from './reloaded-iframe.feature';
+import ReloadedIframe, { iframeEnv } from './reloaded-iframe.feature.js';
 
 ReloadedIframe.setup(iframeEnv, ({}, {}) => {
     let times = 0;

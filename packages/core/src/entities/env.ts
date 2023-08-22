@@ -1,6 +1,6 @@
-import type { EnvironmentTypes } from '../com/types';
-import { runtimeType } from '../entity-helpers';
-import type { Context, EnvVisibility, MapBy } from '../types';
+import type { EnvironmentTypes } from '../com/types.js';
+import { runtimeType } from '../entity-helpers.js';
+import type { Context, EnvVisibility, MapBy } from '../types.js';
 
 export type EnvironmentMode = 'single' | 'multi';
 export type AnyEnvironment = Environment<
@@ -21,18 +21,21 @@ export class Environment<
     NAME extends string = string,
     TYPE extends EnvironmentTypes = EnvironmentTypes,
     MODE extends EnvironmentMode = EnvironmentMode,
-    DEPS extends MultiEnvironment<TYPE>[] | [] = []
+    DEPS extends MultiEnvironment<TYPE>[] | [] = [],
 > {
     constructor(
         public readonly env: NAME,
         public readonly envType: TYPE,
         public readonly endpointType: MODE,
-        public readonly dependencies: DEPS = [] as DEPS
+        public readonly dependencies: DEPS = [] as DEPS,
     ) {}
 }
 
 export class EnvironmentContext {
-    constructor(public env: string, public activeEnvironmentName: string) {}
+    constructor(
+        public env: string,
+        public activeEnvironmentName: string,
+    ) {}
 }
 
 export const Universal = new Environment('<Universal>', 'window', 'multi');
@@ -49,9 +52,13 @@ export function orderedEnvDependencies(env: AnyEnvironment): string[] {
 export class ContextualEnvironment<
     NAME extends string,
     MODE extends EnvironmentMode,
-    ENVS extends Environment<string, EnvironmentTypes, MODE>[]
+    ENVS extends Environment<string, EnvironmentTypes, MODE>[],
 > extends Environment<NAME, EnvironmentTypes, MODE, []> {
-    constructor(env: NAME, mode: MODE, public environments: ENVS) {
+    constructor(
+        env: NAME,
+        mode: MODE,
+        public environments: ENVS,
+    ) {
         super(env, 'context', mode);
 
         if (environments.length === 0) {

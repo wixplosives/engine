@@ -1,8 +1,8 @@
-import managedFeature from './managed.feature';
-import { devServerEnv } from './dev-server.feature';
-import type { IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts';
 import type { IProcessMessage } from '@wixc3/engine-runtime-node';
-import type { ServerListeningParams } from './dev-server.types';
+import type { IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts';
+import { devServerEnv } from './dev-server.feature.js';
+import type { ServerListeningParams } from './dev-server.types.js';
+import managedFeature from './managed.feature.js';
 
 managedFeature.setup(
     devServerEnv,
@@ -14,7 +14,7 @@ managedFeature.setup(
                 devServerActions: { close: closeServer },
                 application,
             },
-        }
+        },
     ) => {
         const processListener = async ({ id, payload }: IProcessMessage<unknown>) => {
             if (process.send) {
@@ -49,5 +49,5 @@ managedFeature.setup(
                 process.send({ id: 'port-request', payload: { port } } as IProcessMessage<IPortMessage>);
             }
         });
-    }
+    },
 );

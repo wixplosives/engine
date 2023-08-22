@@ -1,6 +1,6 @@
-import { CREATE_RUNTIME } from '../symbols';
-import type { EnvVisibility } from '../types';
-import { FeatureInput } from './input';
+import { CREATE_RUNTIME } from '../symbols.js';
+import type { EnvVisibility } from '../types.js';
+import { FeatureInput } from './input.js';
 
 export class Registry<T> {
     private items: T[] = [];

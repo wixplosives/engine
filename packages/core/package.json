@@ -1,8 +1,15 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "39.2.10",
+  "version": "40.0.7",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./dist/communication.feature": "./dist/communication.feature.js",
+    "./dist/communication.feature.js": "./dist/communication.feature.js",
+    "./dist/runtime-metadata.feature": "./dist/runtime-metadata.feature.js",
+    "./dist/runtime-metadata.feature.js": "./dist/runtime-metadata.feature.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build:umd": "node ./scripts/bundle",
     "test": "yarn test:node && yarn test:browser",
@@ -11,10 +18,10 @@
     "prepack": "yarn build:umd"
   },
   "dependencies": {
-    "@wixc3/isomorphic-worker": "^1.2.4",
-    "@wixc3/patterns": "^12.1.0",
+    "@wixc3/isomorphic-worker": "^1.2.5",
+    "@wixc3/patterns": "^13.2.0",
     "promise-assist": "^2.0.1",
-    "socket.io-client": "^4.7.1",
+    "socket.io-client": "^4.7.2",
     "typescript-type-utils": "^0.1.0"
   },
   "files": [

@@ -1,8 +1,8 @@
-import { request } from 'http';
-import { posix } from 'path';
-import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scripts';
-import type { IExecutableApplication } from './types';
-import type { PerformanceMetrics, IProcessMessage } from '@wixc3/engine-runtime-node';
+import type { IProcessMessage, PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import type { IFeatureMessagePayload, IFeatureTarget } from '@wixc3/engine-scripts';
+import { request } from 'node:http';
+import { posix } from 'node:path';
+import type { IExecutableApplication } from './types.js';
 
 const { join } = posix;
 
@@ -16,7 +16,10 @@ export interface IEnvironmentHttpCall<T> {
 }
 
 export class RemoteHttpApplication implements IExecutableApplication {
-    constructor(private port: number, private hostname = 'localhost') {}
+    constructor(
+        private port: number,
+        private hostname = 'localhost',
+    ) {}
     public async getServerPort() {
         await this.makeEnvironmentHttpCall({ method: 'GET' });
         return this.port;
@@ -74,7 +77,7 @@ export class RemoteHttpApplication implements IExecutableApplication {
                         }
                     });
                     res.on('error', reject);
-                }
+                },
             );
             req.on('error', reject);
             if (featureTarget) {

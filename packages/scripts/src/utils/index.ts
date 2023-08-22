@@ -1,3 +1,3 @@
-export * from './instance-of';
-export * from './paths';
-export * from './environments';
+export * from './instance-of.js';
+export * from './paths.js';
+export * from './environments.js';

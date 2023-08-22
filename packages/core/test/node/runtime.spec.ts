@@ -1,31 +1,31 @@
+import {
+    AllEnvironments,
+    COM,
+    CREATE_RUNTIME,
+    Config,
+    ContextualEnvironment,
+    ENGINE,
+    Environment,
+    Feature,
+    FeatureInput,
+    IDENTIFY_API,
+    MapSlot,
+    REGISTER_VALUE,
+    RUN_OPTIONS,
+    RuntimeEngine,
+    Service,
+    Slot,
+    Universal,
+    run as runEngine,
+    type DisposeFunction,
+    type IRunOptions,
+} from '@wixc3/engine-core';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { spy } from 'sinon';
 import sinonChai from 'sinon-chai';
 import type { EQUAL } from 'typescript-type-utils';
-import {
-    AllEnvironments,
-    COM,
-    Config,
-    CREATE_RUNTIME,
-    DisposeFunction,
-    Environment,
-    Feature,
-    FeatureInput,
-    IDENTIFY_API,
-    IRunOptions,
-    MapSlot,
-    REGISTER_VALUE,
-    run as runEngine,
-    RUN_OPTIONS,
-    RuntimeEngine,
-    Service,
-    ContextualEnvironment,
-    Slot,
-    Universal,
-    ENGINE,
-} from '@wixc3/engine-core';
-import { typeCheck } from '../type-check';
+import { typeCheck } from '../type-check.js';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -467,7 +467,7 @@ describe('Feature', () => {
                 _providedValue: undefined,
                 inputValue: any,
                 _featureID: string,
-                _entityKey: string
+                _entityKey: string,
             ) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return inputValue;
@@ -798,8 +798,8 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                             run(fn: () => unknown): unknown;
                             onDispose(fn: DisposeFunction): unknown;
                         }
-                    >
-                ) => true
+                    >,
+                ) => true,
             );
         });
     });

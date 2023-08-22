@@ -1,7 +1,12 @@
 {
   "name": "@wixc3/engine-electron-commons",
-  "version": "39.2.10",
+  "version": "40.0.7",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./node-entry": "./dist/node-entry.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "test": "mocha \"dist/test/**/*.unit.js\""
   },
@@ -9,17 +14,16 @@
     "electron": ">=9"
   },
   "dependencies": {
-    "@file-services/node": "^7.4.0",
-    "@wixc3/engine-core": "^39.2.10",
-    "@wixc3/engine-runtime-node": "^39.2.10",
+    "@file-services/node": "^8.1.2",
+    "@wixc3/engine-core": "^40.0.7",
+    "@wixc3/engine-runtime-node": "^40.0.7",
     "@wixc3/resolve-directory-context": "^4.0.0",
     "tree-kill": "^1.2.2"
   },
   "files": [
     "dist",
     "src",
-    "!*/tsconfig.{json,tsbuildinfo}",
-    "node-entry.js"
+    "!*/tsconfig.{json,tsbuildinfo}"
   ],
   "license": "MIT",
   "publishConfig": {

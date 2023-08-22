@@ -1,13 +1,12 @@
-import { Router } from 'express';
-import bodyParser from 'body-parser';
-
-import type { OverrideConfig } from './config-middleware';
-import type { IFeatureMessagePayload, IFeatureTarget } from './types';
 import type { IProcessMessage, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import bodyParser from 'body-parser';
+import { Router } from 'express';
+import type { OverrideConfig } from './config-middleware.js';
+import type { IFeatureMessagePayload, IFeatureTarget } from './types.js';
 
 export function createFeaturesEngineRouter(
     overrideConfigsMap: Map<string, OverrideConfig>,
-    nodeEnvironmentManager: NodeEnvironmentsManager
+    nodeEnvironmentManager: NodeEnvironmentsManager,
 ) {
     const router = Router();
     router.use(bodyParser.json());

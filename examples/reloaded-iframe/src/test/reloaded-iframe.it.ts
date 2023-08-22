@@ -1,7 +1,7 @@
 import { withFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
-import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../consts';
+import { contentId, echoBtnId, refreshBtnId, timesRefreshedId } from '../consts.js';
 
 describe('managed iframe environment', () => {
     const { getLoadedFeature } = withFeature({

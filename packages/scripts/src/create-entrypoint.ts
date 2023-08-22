@@ -1,9 +1,8 @@
 import { TopLevelConfig } from '@wixc3/engine-core';
-import type { ConfigurationEnvironmentMapping, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
-import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import type { ConfigurationEnvironmentMapping, IConfigDefinition, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
-import type { IFeatureDefinition } from './types';
-import { relative } from 'path';
+import { relative } from 'node:path';
+import type { IFeatureDefinition } from './types.js';
 
 const { stringify } = JSON;
 
@@ -85,7 +84,7 @@ export function createFeatureLoaders(
     childEnvs: string[],
     env: IEnvironmentDescriptor,
     eagerEntrypoint?: boolean,
-    featuresBundleName?: string
+    featuresBundleName?: string,
 ) {
     return `new Map(Object.entries({\n${Array.from(features)
         .map(
@@ -97,7 +96,7 @@ export function createFeatureLoaders(
                     eagerEntrypoint,
                     env,
                     featuresBundleName,
-                })}`
+                })}`,
         )
         .join(',\n')}\n}))`;
 }
@@ -156,7 +155,7 @@ function loadEnvAndContextFiles({
                     directoryPath,
                     packageName,
                     eagerEntrypoint,
-                })
+                }),
             );
         }
     }
@@ -169,7 +168,7 @@ function loadEnvAndContextFiles({
                 directoryPath,
                 packageName,
                 eagerEntrypoint,
-            })
+            }),
         );
     }
     return { usesResolvedContexts, loadStatements, preloadStatements };
@@ -245,7 +244,7 @@ export const createAllValidConfigurationsEnvironmentMapping = (
 const filterConfigurationsByMode = (
     configurations: SetMultiMap<string, IConfigDefinition>,
     mode: 'development' | 'production',
-    configName?: string
+    configName?: string,
 ) => {
     if (mode === 'production' && configName) {
         return [...configurations.entries()].filter(([scopedConfigName]) => scopedConfigName === configName);

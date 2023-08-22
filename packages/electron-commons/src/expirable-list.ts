@@ -31,7 +31,7 @@ export class ExpirableList<T> {
     private removeExpiredItems() {
         const currentTimestamp = performance.now();
         this.items = this.items.filter(
-            ({ timestamp }) => timestamp + this.expirationTimeMilliseconds > currentTimestamp
+            ({ timestamp }) => timestamp + this.expirationTimeMilliseconds > currentTimestamp,
         );
     }
 }

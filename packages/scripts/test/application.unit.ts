@@ -1,12 +1,12 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type { EngineerMetadataConfig, TopLevelConfig } from '@wixc3/engine-core';
-import { Application, IBuildManifest } from '@wixc3/engine-scripts';
+import { Application, type IBuildManifest } from '@wixc3/engine-scripts';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { mkdtempSync } from 'fs';
-import os from 'os';
+import { mkdtempSync } from 'node:fs';
+import os from 'node:os';
 import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
 
@@ -34,14 +34,14 @@ describe('Application', function () {
 
     const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
     const staticBaseWebApplicationFixturePath = fs.dirname(
-        require.resolve('@fixture/static-base-web-application-feature/package.json')
+        require.resolve('@fixture/static-base-web-application-feature/package.json'),
     );
     const withIframeFixturePath = fs.dirname(require.resolve('@fixture/with-iframe/package.json'));
     const nodeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-node/package.json'));
     const contextualFeatureFixturePath = fs.dirname(require.resolve('@fixture/contextual-feature/package.json'));
 
     const engineRuntimeMetadataFixturePath = fs.dirname(
-        require.resolve('@fixture/engine-runtime-metadata/package.json')
+        require.resolve('@fixture/engine-runtime-metadata/package.json'),
     );
 
     describe('build', () => {
@@ -307,7 +307,7 @@ describe('Application', function () {
             disposables.add(close);
 
             const webWorkerAppPage = await loadPage(
-                `http://localhost:${webWorkerAppPort}/main.html?feature=contextual/some-feature`
+                `http://localhost:${webWorkerAppPort}/main.html?feature=contextual/some-feature`,
             );
 
             await waitFor(async () => {
@@ -322,7 +322,7 @@ describe('Application', function () {
             disposables.add(closeServer);
 
             const serverAppPage = await loadPage(
-                `http://localhost:${serverAppPort}/main.html?feature=contextual/server-env`
+                `http://localhost:${serverAppPort}/main.html?feature=contextual/server-env`,
             );
 
             await waitFor(async () => {

@@ -19,6 +19,6 @@ export const ensureTracePath = ({ outPath, name, fs }: EnsureTracePathOptions) =
             ? fs.extname(name) === TRACE_FILE_EXT
                 ? name
                 : name + TRACE_FILE_EXT
-            : Math.random().toString(16).slice(2) + TRACE_FILE_EXT
+            : Math.random().toString(16).slice(2) + TRACE_FILE_EXT,
     );
 };

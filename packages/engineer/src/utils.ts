@@ -1,13 +1,19 @@
-import fs from '@file-services/node';
-import { EngineConfig, isFeatureFile, loadFeaturesFromPaths } from '@wixc3/engine-scripts';
-import { RuntimeEngine, BaseHost, RuntimeFeature } from '@wixc3/engine-core';
-import devServerFeature, { devServerEnv } from './feature/dev-server.feature';
-import type { DevServerConfig } from './feature/dev-server.types';
-import guiFeature from './feature/gui.feature';
-import { defaultOptions, defaultsEngineConfig, DEngineConfig, DStartOptions, IStartOptions } from './utils.types';
+import { nodeFs as fs } from '@file-services/node';
 import { defaults } from '@wixc3/common';
-import { TargetApplication } from './application-proxy-service';
+import { BaseHost, RuntimeEngine, RuntimeFeature } from '@wixc3/engine-core';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
+import { isFeatureFile, loadFeaturesFromPaths, type EngineConfig } from '@wixc3/engine-scripts';
+import { TargetApplication } from './application-proxy-service.js';
+import devServerFeature, { devServerEnv } from './feature/dev-server.feature.js';
+import type { DevServerConfig } from './feature/dev-server.types.js';
+import guiFeature from './feature/gui.feature.js';
+import {
+    defaultOptions,
+    defaultsEngineConfig,
+    type DEngineConfig,
+    type DStartOptions,
+    type IStartOptions,
+} from './utils.types.js';
 
 const basePath = fs.join(__dirname, './feature');
 
@@ -29,9 +35,9 @@ export async function startDevServer(options: IStartOptions): Promise<{
           fs.findFilesSync(basePath, {
               filterFile: ({ name }) => isFeatureFile(name),
           });
-    preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
+    await preRequire([...serverOpts.pathsToRequire, ...engineCnf.require], basePath);
 
-    const { features } = loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
+    const { features } = await loadFeaturesFromPaths({ files: new Set(featurePaths), dirs: new Set([basePath]) }, fs);
 
     const engine = await runNodeEnvironment({
         featureName: serverOpts.engineerEntry,
@@ -75,9 +81,9 @@ function asDevConfig(options: DStartOptions, engineConfig: DEngineConfig): Parti
     };
 }
 
-function preRequire(pathsToRequire: string[], basePath: string) {
+async function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
         const resolvedRequest = require.resolve(request, { paths: [basePath] });
-        require(resolvedRequest);
+        await import(resolvedRequest);
     }
 }

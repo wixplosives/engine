@@ -1,6 +1,6 @@
 import type { IFileSystem } from '@file-services/types';
-import type { IGeneratorOptions } from './types';
-import { mapDirectory, writeDirectoryContentsSync, enrichContext, readDirectoryContentsSync } from './utils';
+import type { IGeneratorOptions } from './types.js';
+import { mapDirectory, writeDirectoryContentsSync, enrichContext, readDirectoryContentsSync } from './utils.js';
 import { templateCompilerProvider } from '@wixc3/common';
 
 export const TEMPLATE_EXTENSION = '.tmpl';
@@ -26,7 +26,7 @@ export function generateFeature({
 export const templateParser = (
     name: string,
     content: string | undefined,
-    templateCompiler: (template: string) => string
+    templateCompiler: (template: string) => string,
 ) => {
     if (!name.endsWith(TEMPLATE_EXTENSION)) {
         return { name, content };

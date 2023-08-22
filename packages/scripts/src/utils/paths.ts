@@ -5,7 +5,7 @@ export function getFilePathInPackage(
     packageName: string,
     context: string,
     filePath: string,
-    isRelativeRequest: boolean
+    isRelativeRequest: boolean,
 ) {
     const relativeFilePath = fs.relative(context, filePath);
     const relativeRequest = fs
@@ -23,7 +23,7 @@ export function scopeFilePathsToPackage(
     packageName: string,
     context: string,
     isRoot: boolean,
-    envFiles: Record<string, string> = {}
+    envFiles: Record<string, string> = {},
 ) {
     return Object.entries(envFiles).reduce<Record<string, string>>((acc, [envName, filePath]) => {
         acc[envName] = getFilePathInPackage(fs, packageName, context, filePath, isRoot);

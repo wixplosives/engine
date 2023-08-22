@@ -1,16 +1,16 @@
-import fs from '@file-services/node';
-import { spawn } from 'child_process';
-import { startDevServer } from '@wixc3/engineer';
-import { IRunOptionsMessage, provideApiForChildProcess } from '@wixc3/engine-electron-host';
+import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { getEngineConfig } from '../find-features';
-import { join } from 'path';
-import { getExportedEnvironments, findFeatures } from '@wixc3/engine-scripts';
+import { IRunOptionsMessage, provideApiForChildProcess } from '@wixc3/engine-electron-host';
 import { loadTopLevelConfigs } from '@wixc3/engine-runtime-node';
+import { findFeatures, getExportedEnvironments } from '@wixc3/engine-scripts';
+import { startDevServer } from '@wixc3/engineer';
+import electron from 'electron';
+import { spawn } from 'node:child_process';
+import { getEngineConfig } from '../find-features';
 
 // electron node lib exports the electron executable path; inside electron, it's the api itself.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const electronPath = require('electron') as unknown as string;
+const electronPath = electron as unknown as string;
+const electronEntryPath = require.resolve('../electron-entry.js');
 
 export interface IStartCommandOptions {
     /**
@@ -70,7 +70,7 @@ export async function start({
     // registering to the dev server ready event
     serverListeningHandlerSlot.register(async ({ port, router }) => {
         const config: TopLevelConfig = [];
-        const { features, configurations } = findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
+        const { features, configurations } = await findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
 
         const env = [...getExportedEnvironments(features)].find(
             ({ type, name }) => type === 'electron-main' && name === envName
@@ -86,8 +86,9 @@ export async function start({
         if (overrideConfig) {
             config.push(...(typeof overrideConfig === 'function' ? overrideConfig(port) : overrideConfig));
         }
+
         // running electon application
-        const electronApp = spawn(electronPath, [require.resolve(join(__dirname, '../electron-entry'))], {
+        const electronApp = spawn(electronPath, [electronEntryPath], {
             cwd: basePath,
             stdio: ['ipc', 'inherit', 'inherit'],
         });
@@ -99,7 +100,7 @@ export async function start({
             runOptions: {
                 featureName,
                 envName,
-                outputPath: join(basePath, 'dist-app'),
+                outputPath: fs.join(basePath, 'dist-app'),
                 devport: port,
                 basePath,
                 configName,

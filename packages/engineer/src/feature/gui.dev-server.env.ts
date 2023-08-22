@@ -1,16 +1,16 @@
-import type webpack from 'webpack';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import fs from '@file-services/node';
-import { SetMultiMap } from '@wixc3/patterns';
-import { createMainEntrypoint, createVirtualEntries } from '@wixc3/engine-scripts';
-import guiFeature, { mainDashboardEnv } from './gui.feature';
-import { devServerEnv } from './dev-server.feature';
+import { nodeFs as fs } from '@file-services/node';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import { createMainEntrypoint, createVirtualEntries } from '@wixc3/engine-scripts';
+import { SetMultiMap } from '@wixc3/patterns';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import type webpack from 'webpack';
+import { devServerEnv } from './dev-server.feature.js';
+import guiFeature, { mainDashboardEnv } from './gui.feature.js';
 
 guiFeature.setup(
     devServerEnv,
     (
-        { engineerConfig: { features } },
+        { run, engineerConfig: { features } },
         {
             buildFeature: {
                 engineerWebpackConfigs,
@@ -18,13 +18,18 @@ guiFeature.setup(
                 serverListeningHandlerSlot,
                 application,
             },
-        }
+        },
     ) => {
-        const baseConfigPath = fs.findClosestFileSync(__dirname, 'webpack.config.js');
-        const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
-        const virtualModules: Record<string, string> = {};
+        run(async () => {
+            const selfDirectoryPath = __dirname;
+            const baseConfigPath = fs.findClosestFileSync(selfDirectoryPath, 'webpack.config.js');
+            const baseConfig =
+                typeof baseConfigPath === 'string'
+                    ? ((await import(baseConfigPath)) as { default: webpack.Configuration }).default
+                    : {};
+            const virtualModules: Record<string, string> = {};
 
-        const configurations = new SetMultiMap<string, IConfigDefinition>();
+            const configurations = new SetMultiMap<string, IConfigDefinition>();
 
         virtualModules['index'] = createMainEntrypoint({
             features,
@@ -57,8 +62,20 @@ guiFeature.setup(
                 console.log(`Dashboard Listening:`);
                 console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
             });
-        }
-    }
+
+            engineerWebpackConfigs.register(
+                createDashboardConfig({
+                    baseConfig,
+                    virtualModules,
+                    title,
+                    favicon,
+                    outputPath: application.outputPath,
+                }),
+            );
+
+            }
+        });
+    },
 );
 
 function createDashboardConfig({

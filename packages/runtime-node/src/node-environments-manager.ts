@@ -1,39 +1,37 @@
-import { safeListeningHttpServer } from 'create-listening-server';
-import type { Socket } from 'net';
-import { delimiter } from 'path';
-import io from 'socket.io';
-
 import {
     AnyEnvironment,
     BaseHost,
     COM,
     Communication,
-    ConfigEnvironmentRecord,
-    Message,
-    ReadyMessage,
-    TopLevelConfig,
+    type ConfigEnvironmentRecord,
+    type Message,
+    type ReadyMessage,
+    type TopLevelConfig
 } from '@wixc3/engine-core';
-import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './core-node/constants';
-import { IPCHost } from './core-node/ipc-host';
 import type { SetMultiMap } from '@wixc3/patterns';
-
-import { resolveEnvironments } from './environments';
-import { startRemoteNodeEnvironment } from './remote-node-environment';
+import { safeListeningHttpServer } from 'create-listening-server';
+import type { Socket } from 'node:net';
+import { delimiter } from 'node:path';
+import * as io from 'socket.io';
+import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './core-node/constants.js';
+import { IPCHost } from './core-node/ipc-host.js';
+import { resolveEnvironments } from './environments.js';
+import { loadTopLevelConfigs } from './load-top-level-config.js';
+import { startRemoteNodeEnvironment } from './remote-node-environment.js';
 import {
     ICommunicationMessage,
     IConfigDefinition,
+    IEnvironmentDescriptor,
     IEnvironmentMessage,
     IEnvironmentStartMessage,
     IStaticFeatureDefinition,
-    TopLevelConfigProvider,
-    isEnvironmentStartMessage,
-    IEnvironmentDescriptor,
     MetadataCollectionAPI,
     StartEnvironmentOptions,
+    TopLevelConfigProvider,
+    isEnvironmentStartMessage,
     metadataApiToken,
-} from './types';
-import { runWSEnvironment } from './ws-environment';
-import { loadTopLevelConfigs } from './load-top-level-config';
+} from './types.js';
+import { runWSEnvironment } from './ws-environment.js';
 
 export interface OverrideConfig {
     configName?: string;
@@ -128,7 +126,7 @@ export class NodeEnvironmentsManager {
         private socketServer: io.Server,
         private options: INodeEnvironmentsManagerOptions,
         private context: string,
-        private socketServerOptions?: Partial<io.ServerOptions>
+        private socketServerOptions?: Partial<io.ServerOptions>,
     ) {}
 
     public async runServerEnvironments({
@@ -221,7 +219,7 @@ export class NodeEnvironmentsManager {
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
                 configName,
-                nodeEnv.name
+                nodeEnv.name,
             );
 
             const config: TopLevelConfig = [];
@@ -398,7 +396,7 @@ export class NodeEnvironmentsManager {
             if (inspect && mode !== 'forked') {
                 console.warn(
                     `Cannot inspect env without forking new process.
-                    Launchihg environment ${nodeEnv.name} on remote process.`
+                    Launchihg environment ${nodeEnv.name} on remote process.`,
                 );
             }
             const { childProcess, port, start } = await this.runRemoteNodeEnvironment(nodeEnvironmentOptions);
@@ -437,7 +435,7 @@ export class NodeEnvironmentsManager {
                 try {
                     const { close: wsEnvClose } = await runWSEnvironment(
                         socketServer,
-                        serverEnvironmentOptions
+                        serverEnvironmentOptions,
                     ).start();
                     close = wsEnvClose;
                 } catch (e) {

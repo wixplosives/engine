@@ -1,26 +1,25 @@
-import chai, { expect } from 'chai';
-import sinonChai from 'sinon-chai';
-import chaiAsPromised from 'chai-as-promised';
-import { stub, spy } from 'sinon';
-
+import { createDisposables } from '@wixc3/create-disposables';
 import {
-    SERVICE_CONFIG,
-    multiTenantMethod,
     BaseHost,
-    Communication,
-    EventEmitterHost,
-    Message,
-    Environment,
-    Feature,
-    Service,
-    RuntimeEngine,
     COM,
+    Communication,
+    Environment,
+    EventEmitterHost,
+    Feature,
+    RuntimeEngine,
+    SERVICE_CONFIG,
+    Service,
     Slot,
-    ReadyMessage,
+    multiTenantMethod,
+    type Message,
+    type ReadyMessage,
 } from '@wixc3/engine-core';
 import { EventEmitter } from '@wixc3/patterns';
-import { createDisposables } from '@wixc3/create-disposables';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { waitFor } from 'promise-assist';
+import { spy, stub } from 'sinon';
+import sinonChai from 'sinon-chai';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -47,7 +46,7 @@ describe('Communication', () => {
                 echo(s: string) {
                     return s;
                 },
-            }
+            },
         );
 
         const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
@@ -72,7 +71,7 @@ describe('Communication', () => {
                 echo(s: string) {
                     return s;
                 },
-            }
+            },
         );
 
         const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main2' }), { id: 'echoService' });
@@ -149,7 +148,7 @@ describe('Communication', () => {
                 echo: {
                     emitOnly: true,
                 },
-            }
+            },
         );
         await proxy.echo('Yo!');
 
@@ -192,7 +191,7 @@ describe('Communication', () => {
                 listen: {
                     listener: true,
                 },
-            }
+            },
         );
 
         const spyFn = spy();
@@ -236,7 +235,7 @@ describe('Communication', () => {
 
         const spyFn = spy();
         await expect(mockApiProxyFromAEnv.listen(spyFn)).to.be.eventually.rejectedWith(
-            'cannot add listener to unconfigured method myApi listen'
+            'cannot add listener to unconfigured method myApi listen',
         );
     });
 
@@ -313,7 +312,7 @@ describe('Communication', () => {
                 unsubscribe: {
                     removeListener: 'listen',
                 },
-            }
+            },
         );
 
         const spyFn = spy();
@@ -366,11 +365,11 @@ describe('Communication', () => {
 
         const echoServiceProxyInClient1 = client1.apiProxy<EchoService>(
             Promise.resolve({ id: 'server' }),
-            echoServiceComID
+            echoServiceComID,
         );
         const echoServiceInstanceInClient2 = client2.apiProxy<EchoService>(
             Promise.resolve({ id: 'server' }),
-            echoServiceComID
+            echoServiceComID,
         );
 
         const responseToClient1 = await echoServiceProxyInClient1.echo(testText);
@@ -382,23 +381,23 @@ describe('Communication', () => {
         client1.registerAPI(echoServiceComID, echoService);
         const echoServiceProxyFromServerToClient1 = serverEnv.apiProxy<EchoService>(
             { id: 'client1' },
-            echoServiceComID
+            echoServiceComID,
         );
 
         expect(
             await echoServiceProxyFromServerToClient1.echo(testText),
-            'after handshake is done - allow sending message from base to client1'
+            'after handshake is done - allow sending message from base to client1',
         ).to.eq(testText);
 
         client2.registerAPI(echoServiceComID, echoService);
         const echoServiceProxyFromServerToClient2 = serverEnv.apiProxy<EchoService>(
             { id: 'client2' },
-            echoServiceComID
+            echoServiceComID,
         );
 
         expect(
             await echoServiceProxyFromServerToClient2.echo(testText),
-            'after handshake is done - allow sending message from base to client2'
+            'after handshake is done - allow sending message from base to client2',
         ).to.eq(testText);
     });
 
@@ -581,7 +580,7 @@ describe('Event Emitter communication', () => {
                 echo(s: string) {
                     return s;
                 },
-            }
+            },
         );
 
         const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
@@ -608,7 +607,7 @@ describe('Event Emitter communication', () => {
                 echo(s: string) {
                     return s;
                 },
-            }
+            },
         );
 
         main2.registerEnv('main', host);
@@ -640,7 +639,7 @@ describe('Event Emitter communication', () => {
                 echo(s: string) {
                     return s;
                 },
-            }
+            },
         );
 
         const getProxy = async () => {

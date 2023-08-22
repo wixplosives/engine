@@ -85,7 +85,7 @@ const runtimeEngine = new RuntimeEngine(
       },
     }),
   ],
-  new Map([some, 'value'])
+  new Map([some, 'value']),
 );
 
 runtimeEngine.run(f);

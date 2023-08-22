@@ -1,16 +1,17 @@
 import { nodeFs } from '@file-services/node';
-import type { LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import type { IConfigDefinition, LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
     analyzeFeatures,
     Application,
     generateConfigName,
-    IApplicationOptions,
-    ICompilerOptions,
-    IFeatureDefinition,
-    IFeatureMessagePayload,
-    IRunFeatureOptions,
-    OverrideConfig,
+    type IApplicationOptions,
+    type ICompilerOptions,
+    type IFeatureDefinition,
+    type IFeatureMessagePayload,
+    type IRunFeatureOptions,
+    type OverrideConfig,
 } from '@wixc3/engine-scripts';
+import type { SetMultiMap } from '@wixc3/patterns';
 
 export class TargetApplication extends Application {
     public nodeEnvironmentsMode?: LaunchEnvironmentMode;
@@ -43,6 +44,13 @@ export class TargetApplication extends Application {
 
     public createCompiler(compilerArgs: ICompilerOptions) {
         return super.createCompiler(compilerArgs);
+    }
+
+    public getFeatureEnvDefinitions(
+        features: Map<string, IFeatureDefinition>,
+        configurations: SetMultiMap<string, IConfigDefinition>,
+    ) {
+        return super.getFeatureEnvDefinitions(features, configurations);
     }
 
     public setNodeEnvManager(nem: NodeEnvironmentsManager, nodeEnvironmentsMode?: LaunchEnvironmentMode) {

@@ -1,5 +1,5 @@
 import { Feature, Environment, ContextualEnvironment, Service, COM } from '@wixc3/engine-core';
-import nonContextualFeature from './non-contextual.feature';
+import nonContextualFeature from './non-contextual.feature.js';
 
 const nodeEnv = new Environment('nodeCtx', 'node', 'single');
 const workerEnv = new Environment('workerCtx', 'webworker', 'single');

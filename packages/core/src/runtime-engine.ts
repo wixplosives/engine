@@ -1,14 +1,14 @@
 import { timeout } from 'promise-assist';
 import {
     globallyProvidingEnvironments,
-    orderedEnvDependencies,
-    AnyEnvironment,
-    FeatureClass,
     normEnvVisibility,
-} from './entities';
-import { createFeatureRuntime, RuntimeFeature } from './runtime-feature';
-import { RUN } from './symbols';
-import type { IRunOptions, TopLevelConfig } from './types';
+    orderedEnvDependencies,
+    type AnyEnvironment,
+    type FeatureClass,
+} from './entities/index.js';
+import { createFeatureRuntime, type RuntimeFeature } from './runtime-feature.js';
+import { RUN } from './symbols.js';
+import type { IRunOptions, TopLevelConfig } from './types.js';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public features = new Map<FeatureClass, RuntimeFeature<any, ENV>>();
@@ -20,7 +20,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         public entryEnvironment: ENV,
         topLevelConfig: TopLevelConfig = [],
         public runOptions: IRunOptions = new Map(),
-        readonly featureShutdownTimeout = 10_000
+        readonly featureShutdownTimeout = 10_000,
     ) {
         this.topLevelConfigMap = this.createConfigMap(topLevelConfig);
         this.referencedEnvs = new Set([...globallyProvidingEnvironments, ...orderedEnvDependencies(entryEnvironment)]);
@@ -89,7 +89,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
             await timeout(
                 feature.dispose(),
                 this.featureShutdownTimeout,
-                `Failed to dispose feature: ${feature.feature.id}`
+                `Failed to dispose feature: ${feature.feature.id}`,
             );
         }
     };

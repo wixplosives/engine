@@ -1,4 +1,4 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type { EngineerMetadataConfig, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
 import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
@@ -150,7 +150,7 @@ describe('engineer:dev-server', function () {
                 });
                 expect(mySlot).to.eql(['testing 1 2 3']);
             },
-            { timeout }
+            { timeout },
         );
     });
 
@@ -180,7 +180,7 @@ describe('engineer:dev-server', function () {
         } = await setup({ basePath: multiFeatureFixturePath });
 
         const page = await loadPage(
-            `http://localhost:${port}/main.html?feature=engine-multi/variant&config=engine-multi/variant2`
+            `http://localhost:${port}/main.html?feature=engine-multi/variant&config=engine-multi/variant2`,
         );
 
         await waitFor(
@@ -195,7 +195,7 @@ describe('engineer:dev-server', function () {
                 });
                 expect(mySlot).to.eql(['testing 1 2 3']);
             },
-            { timeout }
+            { timeout },
         );
     });
 
@@ -291,7 +291,7 @@ describe('engineer:dev-server', function () {
                     }
                 }
             },
-            { timeout }
+            { timeout },
         );
     });
 
@@ -318,7 +318,7 @@ describe('engineer:dev-server', function () {
                     }
                 }
             },
-            { timeout }
+            { timeout },
         );
     });
 
@@ -345,7 +345,7 @@ describe('engineer:dev-server', function () {
                     }
                 }
             },
-            { timeout }
+            { timeout },
         );
     });
 
@@ -388,18 +388,18 @@ describe('engineer:dev-server', function () {
         expect(firstFeatureConfigName).to.not.equal(undefined);
         expect(secondFeatureConfigName).to.not.equal(undefined);
         disposables.add(() =>
-            application.closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName! })
+            application.closeFeature({ featureName: 'engine-node/x', configName: firstFeatureConfigName! }),
         );
         disposables.add(() =>
-            application.closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName! })
+            application.closeFeature({ featureName: 'engine-node/x', configName: secondFeatureConfigName! }),
         );
 
         const pageOne = await loadPage(
-            `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName!}`
+            `http://localhost:${port}/main.html?feature=engine-node/x&config=${firstFeatureConfigName!}`,
         );
 
         const pageTwo = await loadPage(
-            `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName!}`
+            `http://localhost:${port}/main.html?feature=engine-node/x&config=${secondFeatureConfigName!}`,
         );
 
         await pageOne.locator('body', { hasText: '1' }).waitFor({ state: 'visible' });
@@ -445,7 +445,7 @@ describe('engineer:dev-server', function () {
 
                 expect(responseText).to.eq(fileContent);
             },
-            { timeout }
+            { timeout },
         );
     });
 
@@ -482,7 +482,7 @@ describe('engineer:dev-server', function () {
                 expect(pid1).not.to.eq(process.pid);
                 expect(pid2).not.to.eq(process.pid);
             },
-            { timeout }
+            { timeout },
         );
     });
 
@@ -505,7 +505,7 @@ describe('engineer:dev-server', function () {
                 expect(pid1).to.eq(pid2);
                 expect(pid1).to.eq(process.pid);
             },
-            { timeout }
+            { timeout },
         );
     });
 
@@ -582,7 +582,7 @@ describe('engineer:dev-server', function () {
                     ],
                 });
             },
-            { timeout }
+            { timeout },
         );
     });
 });

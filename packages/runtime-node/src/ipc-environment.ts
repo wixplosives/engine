@@ -1,8 +1,7 @@
 import { COM } from '@wixc3/engine-core';
-import { IPCHost } from './core-node/ipc-host';
-
-import { runNodeEnvironment } from './node-environment';
-import { StartEnvironmentOptions } from './types';
+import { IPCHost } from './core-node/ipc-host.js';
+import { runNodeEnvironment } from './node-environment.js';
+import { type StartEnvironmentOptions } from './types.js';
 
 export interface StartIPCEnvironmntOptions extends StartEnvironmentOptions {
     parentEnvName: string;

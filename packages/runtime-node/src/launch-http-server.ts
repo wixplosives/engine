@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { safeListeningHttpServer } from 'create-listening-server';
-import io from 'socket.io';
+import * as io from 'socket.io';
 import type { Socket } from 'net';
 
 export const DEFAULT_PORT = 3000;
@@ -21,6 +21,7 @@ export interface ILaunchHttpServerOptions {
     httpServerPort?: number;
     socketServerOptions?: Partial<io.ServerOptions>;
     routeMiddlewares?: Array<RouteMiddleware>;
+    hostname?: string;
 }
 
 export async function launchEngineHttpServer({
@@ -28,13 +29,19 @@ export async function launchEngineHttpServer({
     httpServerPort = DEFAULT_PORT,
     socketServerOptions,
     routeMiddlewares = [],
-}: ILaunchHttpServerOptions = {}) {
+    hostname,
+}: ILaunchHttpServerOptions = {}): Promise<{
+    close: () => Promise<void>;
+    port: number;
+    app: express.Express;
+    socketServer: io.Server;
+}> {
     const app = express();
     for (const { path, handlers } of routeMiddlewares) {
         app.use(path, handlers);
     }
     app.use(cors());
-    const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
+    const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app, 100, hostname);
 
     if (staticDirPath) {
         app.use('/', express.static(staticDirPath));

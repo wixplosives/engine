@@ -1,14 +1,14 @@
-import { runtimeType } from '../entity-helpers';
-import type { RuntimeEngine } from '../runtime-engine';
-import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols';
-import type { Entity, EnvVisibility } from '../types';
+import { runtimeType } from '../entity-helpers.js';
+import type { RuntimeEngine } from '../runtime-engine.js';
+import { CREATE_RUNTIME, REGISTER_VALUE } from '../symbols.js';
+import type { Entity, EnvVisibility } from '../types.js';
 
 export abstract class FeatureOutput<
     Type,
     Proxy,
     ProvidedFrom extends EnvVisibility,
     VisibleAt extends EnvVisibility,
-    RemoteAccess extends boolean
+    RemoteAccess extends boolean,
 > implements Entity<Type, Proxy, ProvidedFrom, VisibleAt, 'output', RemoteAccess>
 {
     public mode = 'output' as const;
@@ -17,7 +17,7 @@ export abstract class FeatureOutput<
     protected constructor(
         public providedFrom: ProvidedFrom,
         public visibleAt: VisibleAt,
-        public remoteAccess: RemoteAccess
+        public remoteAccess: RemoteAccess,
     ) {}
     public abstract [CREATE_RUNTIME](context: RuntimeEngine, featureID: string, entityKey: string): Proxy | void;
     public abstract [REGISTER_VALUE](
@@ -25,6 +25,6 @@ export abstract class FeatureOutput<
         providedValue: Type | undefined,
         inputValue: Proxy,
         featureID: string,
-        entityKey: string
+        entityKey: string,
     ): Proxy;
 }

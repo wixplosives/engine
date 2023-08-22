@@ -1,3 +1,3 @@
-export * from './browser-window';
-export * from './node-process';
-export * from './types';
+export * from './browser-window.js';
+export * from './node-process.js';
+export * from './types.js';

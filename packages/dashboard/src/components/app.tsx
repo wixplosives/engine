@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dashboard } from './dashboard';
+import { Dashboard } from './dashboard.js';
 import { classes } from './app.st.css';
 import './reset.st.css';
 
@@ -10,7 +10,7 @@ const changeNodeEnvironmentState = async (
     featureName: string,
     configName: string,
     isNodeEnvActive: boolean,
-    runtimeOptions: Array<{ key: string; value: string }> = []
+    runtimeOptions: Array<{ key: string; value: string }> = [],
 ) =>
     (await (
         await fetch(`engine-feature`, {
@@ -18,10 +18,13 @@ const changeNodeEnvironmentState = async (
             body: JSON.stringify({
                 featureName,
                 configName,
-                runtimeOptions: runtimeOptions.reduce((acc, curr) => {
-                    acc[curr.key] = curr.value;
-                    return acc;
-                }, {} as Record<string, string>),
+                runtimeOptions: runtimeOptions.reduce(
+                    (acc, curr) => {
+                        acc[curr.key] = curr.value;
+                        return acc;
+                    },
+                    {} as Record<string, string>,
+                ),
             }),
             headers: {
                 'Content-type': 'application/json',

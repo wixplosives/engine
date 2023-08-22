@@ -5,16 +5,17 @@
  * This configuration can (and should) be written as a `.ts` file.
  */
 
-import type { Command } from 'commander';
-import { resolve } from 'path';
-import open from 'open';
-import fs from '@file-services/node';
-
-import { Application } from '@wixc3/engine-scripts';
-import { startDevServer } from './utils';
+import { nodeFs as fs } from '@file-services/node';
+import { createRequestResolver } from '@file-services/resolve';
 import { parseCliArguments } from '@wixc3/engine-runtime-node';
-import type { ServerListeningHandler } from './feature/dev-server.types';
+import { Application } from '@wixc3/engine-scripts';
+import type { Command } from 'commander';
+import { resolve } from 'node:path';
+import open from 'open';
+import type { ServerListeningHandler } from './feature/dev-server.types.js';
+import { startDevServer } from './utils.js';
 
+const resolveRequest = createRequestResolver({ fs, conditions: ['node', 'require'] });
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
 const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '';
@@ -22,7 +23,10 @@ const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '';
 export type CliCommand = (program: Command) => void;
 
 export class CliApplication {
-    constructor(protected program: Command, commands: Iterable<CliCommand>) {
+    constructor(
+        protected program: Command,
+        commands: Iterable<CliCommand>,
+    ) {
         for (const command of commands) {
             command(program);
         }
@@ -41,12 +45,12 @@ const engineCommandBuilder = (program: Command, command: string): Command => {
             '-f, --feature <feature>',
             `feature name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName.
         featureName and packageName are the same then featureName is sufficient
-    `
+    `,
         )
         .option(
             '-c, --config <config>',
             `config name is combined using the package name (without the scope (@) and "-feature" parts) and the feature name (file name) - e.g. packageName/featureName.
-    `
+    `,
         )
         .option('--publicPath <path>', 'public path prefix to use as base', defaultPublicPath)
         .option('--inspect')
@@ -66,13 +70,13 @@ export const startCommand: CliCommand = (program) =>
             '--autoLaunch [autoLaunch]',
             'should auto launch node environments if feature name is provided',
             parseBoolean,
-            true
+            true,
         )
         .option('--engineerEntry <engineerEntry>', 'entry feature for engineer', 'engineer/gui')
         .option('--webpackConfig <webpackConfig>', 'path to webpack config to build the engine with')
         .option(
             '--nodeEnvironmentsMode <nodeEnvironmentsMode>',
-            'one of "new-server", "same-server" or "forked" for choosing how to launch node envs'
+            'one of "new-server", "same-server" or "forked" for choosing how to launch node envs',
         )
         .option('--no-log', 'disable console logs')
         .allowUnknownOption(true)
@@ -115,7 +119,7 @@ export const startCommand: CliCommand = (program) =>
                     publicConfigsRoute,
                     autoLaunch,
                     engineerEntry,
-                    targetApplicationPath: fs.existsSync(path) ? fs.resolve(path) : process.cwd(),
+                    targetApplicationPath: fs.existsSync(path) ? resolve(path) : process.cwd(),
                     runtimeOptions: parseCliArguments(process.argv.slice(3)),
                     inspect,
                     featureDiscoveryRoot,
@@ -146,11 +150,11 @@ export function buildCommand(program: Command) {
         .option('--publicPathVariableName <publicPathVariableName>', 'global variable name which stores public path')
         .option(
             '--configLoaderModuleName [configLoaderModuleName]',
-            'custom config loader module name. used for static builds only'
+            'custom config loader module name. used for static builds only',
         )
         .option(
             '--sourcesRoot <sourcesRoot>',
-            'the directory where the feature library will be published at (relative to the base path). default: "."'
+            'the directory where the feature library will be published at (relative to the base path). default: "."',
         )
         .allowUnknownOption(true)
         .action(async (path = process.cwd(), cmd: Record<string, any>) => {
@@ -174,7 +178,7 @@ export function buildCommand(program: Command) {
             } = cmd;
             try {
                 const basePath = resolve(path);
-                preRequire(pathsToRequire, basePath);
+                await preRequire(pathsToRequire, basePath);
                 const favicon = faviconPath ? resolve(basePath, faviconPath) : undefined;
                 const outputPath = resolve(outDir);
                 const app = new Application({ basePath, outputPath });
@@ -209,7 +213,7 @@ export function runCommand(program: Command) {
             '--autoLaunch <autoLaunch>',
             'should auto launch node environments if feature name is provided',
             (param) => param === 'true',
-            true
+            true,
         )
         .option('--publicConfigsRoute <publicConfigsRoute>', 'public route for configurations')
         .allowUnknownOption(true)
@@ -226,7 +230,7 @@ export function runCommand(program: Command) {
             } = cmd;
             try {
                 const basePath = resolve(path);
-                preRequire(pathsToRequire, basePath);
+                await preRequire(pathsToRequire, basePath);
                 const outputPath = resolve(outDir);
                 const app = new Application({ basePath, outputPath });
                 const { port } = await app.run({
@@ -275,10 +279,13 @@ export function createCommand(program: Command) {
         });
 }
 
-function preRequire(pathsToRequire: string[], basePath: string) {
+async function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
-        const resolvedRequest = require.resolve(request, { paths: [basePath] });
-        require(resolvedRequest);
+        const { resolvedFile } = resolveRequest(basePath, request);
+        if (!resolvedFile) {
+            throw new Error(`Cannot resolve "${request}"`);
+        }
+        await import(resolvedFile);
     }
 }
 

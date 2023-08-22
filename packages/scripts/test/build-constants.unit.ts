@@ -38,7 +38,7 @@ describe('parsePreloadFileName', () => {
     });
     it('should throw if no env', () => {
         expect(() => parsePreloadFileName(`${featureName}.preload.ts`)).to.throw(
-            `cannot parse preload file: ${featureName}.preload.ts`
+            `cannot parse preload file: ${featureName}.preload.ts`,
         );
     });
 });

@@ -45,7 +45,7 @@ guiFeature.setup(browserEnv, ({ topBarItems, run }) => {
       topBarComponents.push(
         <div onClick={action}>
           <IconComponent />
-        </div>
+        </div>,
       );
     }
   };

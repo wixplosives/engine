@@ -1,8 +1,8 @@
-import { fork } from 'child_process';
-import { once } from 'events';
+import { fork } from 'node:child_process';
+import { once } from 'node:events';
 import type { ServerOptions } from 'socket.io';
-import { ForkedProcess } from './forked-process';
-import { ICommunicationMessage, isEnvironmentPortMessage, RemoteProcess } from './types';
+import { ForkedProcess } from './forked-process.js';
+import { isEnvironmentPortMessage, type ICommunicationMessage, type RemoteProcess } from './types.js';
 
 export interface IStartRemoteNodeEnvironmentOptions {
     port: number;
@@ -13,7 +13,7 @@ export interface IStartRemoteNodeEnvironmentOptions {
 
 export async function startRemoteNodeEnvironment(
     entryFilePath: string,
-    { inspect, port, socketServerOptions = {}, requiredPaths = [] }: IStartRemoteNodeEnvironmentOptions
+    { inspect, port, socketServerOptions = {}, requiredPaths = [] }: IStartRemoteNodeEnvironmentOptions,
 ) {
     const execArgv = inspect ? ['--inspect'] : [];
 
@@ -29,7 +29,7 @@ export async function startRemoteNodeEnvironment(
         ],
         {
             execArgv,
-        }
+        },
     );
     await once(childProccess, 'message');
     childProccess.on('error', (e) => console.error(`error in forked process`, e));

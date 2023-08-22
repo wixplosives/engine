@@ -1,5 +1,5 @@
 import { Communication, INSTANCE_ID_PARAM_NAME, WindowInitializerService } from '@wixc3/engine-core';
-import { TestService } from './test-api-service';
+import { TestService } from './test-api-service.js';
 
 setTimeout(() => {
     const options = new URLSearchParams(window.location.search);

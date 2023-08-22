@@ -1,10 +1,10 @@
-import { resolve, join } from 'path';
-import { parseCliArguments } from './parse-cli-arguments';
-import { ForkedProcess } from './forked-process';
-import { launchEngineHttpServer } from './launch-http-server';
-import { createIPC } from './process-communication';
+import path from 'node:path';
 import type { ServerOptions } from 'socket.io';
-import { importModules } from './import-modules';
+import { ForkedProcess } from './forked-process.js';
+import { importModules } from './import-modules.js';
+import { launchEngineHttpServer } from './launch-http-server.js';
+import { parseCliArguments } from './parse-cli-arguments.js';
+import { createIPC } from './process-communication.js';
 
 const {
     preferredPort,
@@ -16,15 +16,14 @@ const {
 const requiredPaths = JSON.parse(requiredPathsJson as string) as string[];
 const socketServerOptions = JSON.parse(socketServerOptionsJson as string) as Partial<ServerOptions>;
 
-const basePath = resolve(providedPath);
+const basePath = path.resolve(providedPath);
 
 const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : undefined;
 
 (async () => {
     await importModules(basePath, requiredPaths);
-
     const { socketServer, close, port } = await launchEngineHttpServer({
-        staticDirPath: join(basePath, 'dist'),
+        staticDirPath: path.join(basePath, 'dist'),
         httpServerPort,
         socketServerOptions,
     });

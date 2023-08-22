@@ -1,7 +1,7 @@
-import React, { useMemo, useCallback } from 'react';
-import type { ServerFeatureDef } from '../server-types';
+import React, { useCallback, useMemo } from 'react';
+import type { ServerFeatureDef } from '../server-types.js';
 import { classes } from './feature-selection.st.css';
-import { TitledElement } from './titled-element';
+import { TitledElement } from './titled-element.js';
 
 export interface FeaturesSelectionProps {
     features: Record<string, ServerFeatureDef>;
@@ -15,7 +15,7 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
         const featureNames = useMemo(() => Object.keys(features), [features]);
         const configNames = useMemo(
             () => features[selectedFeature!]?.configurations ?? [],
-            [features, selectedFeature]
+            [features, selectedFeature],
         );
         const onFeatureChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
             ({ currentTarget }) => {
@@ -23,7 +23,7 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
                 const newConfigName = features[newFeatureName]?.configurations[0];
                 onSelected?.(newFeatureName, newConfigName);
             },
-            [features, onSelected]
+            [features, onSelected],
         );
 
         const onConfigChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -31,7 +31,7 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
                 const { value: newConfigName } = currentTarget;
                 onSelected?.(selectedFeature, newConfigName);
             },
-            [onSelected, selectedFeature]
+            [onSelected, selectedFeature],
         );
 
         return (
@@ -70,7 +70,7 @@ export const FeaturesSelection = React.memo<FeaturesSelectionProps>(
                 </TitledElement>
             </div>
         );
-    }
+    },
 );
 
 FeaturesSelection.displayName = 'FeaturesSelection';

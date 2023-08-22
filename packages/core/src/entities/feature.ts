@@ -1,6 +1,6 @@
 import { SetMultiMap } from '@wixc3/patterns';
-import type { RuntimeEngine } from '../runtime-engine';
-import { ENGINE, IDENTIFY_API, RUN_OPTIONS } from '../symbols';
+import type { RuntimeEngine } from '../runtime-engine.js';
+import { ENGINE, IDENTIFY_API, RUN_OPTIONS } from '../symbols.js';
 import type {
     Context,
     DeepEnvironmentDeps,
@@ -19,8 +19,8 @@ import type {
     PartialFeatureConfig,
     RegisteringFeature,
     RunningInstance,
-} from '../types';
-import type { AnyEnvironment, GloballyProvidingEnvironments } from './env';
+} from '../types.js';
+import type { AnyEnvironment, GloballyProvidingEnvironments } from './env.js';
 
 // this makes the constructor kind of private
 const instantiateFeatureSymbol = Symbol('instantiateFeature');
@@ -70,14 +70,14 @@ export class Feature<T extends string> {
     static setup<T extends FeatureClass, E extends AnyEnvironment>(
         this: T,
         environment: E,
-        setupHandler: SetupHandler<T, E>
+        setupHandler: SetupHandler<T, E>,
     ): T {
         return setup(this, environment, setupHandler);
     }
     static setupContext<
         T extends FeatureClass,
         E extends AnyEnvironment,
-        C extends keyof InstanceType<T>['context'] & string
+        C extends keyof InstanceType<T>['context'] & string,
     >(this: T, environment: E, context: C, setupHandler: ContextHandler<T, E, C>): T {
         return setupContext(this, environment, context, setupHandler);
     }
@@ -93,7 +93,7 @@ export function createRuntimeInfo(): RuntimeInfo {
 
 export function provideConfig<T extends FeatureClass>(
     feature: T,
-    config: PartialFeatureConfig<InstanceType<T>['api']>
+    config: PartialFeatureConfig<InstanceType<T>['api']>,
 ): [InstanceType<T>['id'], PartialFeatureConfig<InstanceType<T>['api']>] {
     return [feature.id, config];
 }
@@ -101,7 +101,7 @@ export function provideConfig<T extends FeatureClass>(
 export const setup = <T extends FeatureClass, E extends AnyEnvironment>(
     feature: T,
     environment: E,
-    setupHandler: SetupHandler<T, E>
+    setupHandler: SetupHandler<T, E>,
 ): T => {
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateEnvRegistration(environment, feature.id, info.envs);
@@ -112,12 +112,12 @@ export const setup = <T extends FeatureClass, E extends AnyEnvironment>(
 export function setupContext<
     T extends FeatureClass,
     E extends AnyEnvironment,
-    K extends keyof InstanceType<T>['context'] & string
+    K extends keyof InstanceType<T>['context'] & string,
 >(
     feature: T,
     _environment: E, // TODO: add handlers in environments buckets with validation per environment?
     environmentContextKey: K,
-    contextHandler: ContextHandler<T, E, K>
+    contextHandler: ContextHandler<T, E, K>,
 ): T {
     const info = (feature.runtimeInfo ||= createRuntimeInfo());
     validateNoDuplicateContextRegistration(environmentContextKey, feature.id, info.contexts);
@@ -130,7 +130,7 @@ export function validateNoDuplicateEnvRegistration(env: AnyEnvironment, featureI
     if (hasCollision.length) {
         const collisions = hasCollision.join(', ');
         throw new Error(
-            `Feature can only have single setup for each environment. ${featureId} Feature already implements: ${collisions}`
+            `Feature can only have single setup for each environment. ${featureId} Feature already implements: ${collisions}`,
         );
     }
 }
@@ -177,14 +177,14 @@ function testEnvironmentCollision(envVisibility: EnvVisibility, envSet: Set<stri
 export function validateNoDuplicateContextRegistration(
     environmentContext: string,
     featureId: string,
-    contextHandlers: Map<string, ContextHandler<any, any, any>>
+    contextHandlers: Map<string, ContextHandler<any, any, any>>,
 ) {
     const registeredContext = contextHandlers.get(environmentContext);
     if (registeredContext) {
         throw new Error(
             `Feature can only have single setupContext for each context id. ${featureId} Feature already implements: ${String(
-                environmentContext
-            )}`
+                environmentContext,
+            )}`,
         );
     }
 }
@@ -236,13 +236,13 @@ export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> =
 export type SetupHandler<F extends FeatureClass, E extends AnyEnvironment> = (
     feature: SettingUpFeature<F, E>,
     runningFeatures: RunningFeatures<InstanceType<F>['dependencies'], E>,
-    context: MapRecordType<NonNullable<InstanceType<F>['context']>>
+    context: MapRecordType<NonNullable<InstanceType<F>['context']>>,
 ) => RegisteringFeature<InstanceType<F>['api'], OmitCompositeEnvironment<E>>;
 
 export type ContextHandler<
     F extends FeatureClass,
     E extends AnyEnvironment,
-    K extends keyof InstanceType<F>['context']
+    K extends keyof InstanceType<F>['context'],
 > = (
-    runningFeatures: RunningFeatures<InstanceType<F>['dependencies'], E>
+    runningFeatures: RunningFeatures<InstanceType<F>['dependencies'], E>,
 ) => InstanceType<F>['context'][K] extends Context<infer U> ? U & {} : {};

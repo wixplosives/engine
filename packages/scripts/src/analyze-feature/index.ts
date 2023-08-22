@@ -1,3 +1,3 @@
-export { loadFeaturesFromPaths } from './load-features-from-paths';
-export * from './find-features';
-export { findPackageJson } from './package-utils';
+export { loadFeaturesFromPaths } from './load-features-from-paths.js';
+export * from './find-features.js';
+export { findPackageJson } from './package-utils.js';

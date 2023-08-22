@@ -1,7 +1,5 @@
-import { createDisposables } from '@wixc3/patterns';
 import { Communication, Registry, RuntimeMetadata } from '@wixc3/engine-core';
-import { IConfigDefinition, WsServerHost } from '@wixc3/engine-runtime-node';
-import { launchEngineHttpServer, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
+import { IConfigDefinition, NodeEnvironmentsManager, WsServerHost, launchEngineHttpServer } from '@wixc3/engine-runtime-node';
 import {
     IFeatureDefinition,
     createCommunicationMiddleware,
@@ -11,6 +9,7 @@ import {
     ensureTopLevelConfigMiddleware,
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
+import { SetMultiMap, createDisposables } from '@wixc3/patterns';
 import express from 'express';
 import type io from 'socket.io';
 import webpack from 'webpack';
@@ -19,7 +18,6 @@ import { TargetApplication } from '../application-proxy-service';
 import { buildFeatureLinks } from '../feature-dependency-graph';
 import devServerFeature, { devServerEnv } from './dev-server.feature';
 import { DevServerConfig } from './dev-server.types';
-import { SetMultiMap } from '@wixc3/patterns';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
@@ -37,7 +35,7 @@ devServerFeature.setup(
     devServerEnv,
     (
         { run, devServerConfig, engineerWebpackConfigs, serverListeningHandlerSlot, onDispose },
-        { COM: { communication } }
+        { COM: { communication } },
     ) => {
         const {
             httpServerPort,
@@ -98,14 +96,14 @@ devServerFeature.setup(
             // So we launch with a basehost and upgrade to a wshost
             attachWSHost(socketServer, devServerEnv.env, communication);
 
-            const { features, configurations, packages } = application.getFeatures(
+            const { features, configurations, packages } = await application.getFeatures(
                 singleFeature,
                 featureName,
-                providedFeatureDiscoveryRoot ?? featureDiscoveryRoot
+                providedFeatureDiscoveryRoot ?? featureDiscoveryRoot,
             );
 
             const staticFeatures = new Map(
-                [...features].map(([featureName, feature]) => [featureName, feature.toJSON()])
+                [...features].map(([featureName, feature]) => [featureName, feature.toJSON()]),
             );
 
             //Node environment manager, need to add self to the topology, I thing starting the server and the NEM should happen in the setup and not in the run
@@ -129,10 +127,10 @@ devServerFeature.setup(
                                         isWorkspace: packages.length > 1,
                                         featureName,
                                         foundFeatures: Object.values(featureEnvDefinitions).map(
-                                            ({ featureName, configurations }) => ({ featureName, configurations })
+                                            ({ featureName, configurations }) => ({ featureName, configurations }),
                                         ),
                                     },
-                                })
+                                }),
                             );
 
                             return config;
@@ -140,9 +138,9 @@ devServerFeature.setup(
                         requiredPaths,
                     },
                     basePath,
-                    resolvedSocketServerOptions
+                    resolvedSocketServerOptions,
                 ),
-                nodeEnvironmentsMode || engineConfig?.nodeEnvironmentsMode
+                nodeEnvironmentsMode || engineConfig?.nodeEnvironmentsMode,
             );
 
             disposables.add(() => application.getNodeEnvManager()?.closeAll(), {
@@ -184,7 +182,7 @@ devServerFeature.setup(
             });
 
             // Write middleware for each of the apps
-            const compilationPromises: Promise<void>[] = runCompilerInWatch(
+            const compilationPromises: Promise<void>[] = await runCompilerInWatch(
                 application,
                 devServerConfig,
                 features,
@@ -201,7 +199,7 @@ devServerFeature.setup(
 
             app.use(
                 '/engine-feature',
-                createFeaturesEngineRouter(application.getOverrideConfigsMap(), application.getNodeEnvManager()!)
+                createFeaturesEngineRouter(application.getOverrideConfigsMap(), application.getNodeEnvManager()!),
             );
 
             app.get('/engine-state', (_req, res) => {
@@ -252,7 +250,7 @@ devServerFeature.setup(
             application,
             devServerActions: { close: disposables.dispose },
         };
-    }
+    },
 );
 
 function createEngineerTopologyOverrides(actualPort: number) {
@@ -298,7 +296,7 @@ function addEngineerCompilations(
     }
 }
 
-function runCompilerInWatch(
+async function runCompilerInWatch(
     application: TargetApplication,
     devServerConfig: DevServerConfig,
     features: Map<string, IFeatureDefinition>,
@@ -310,7 +308,7 @@ function runCompilerInWatch(
     disposables: ReturnType<typeof createDisposables>,
     app: express.Express
 ) {
-    const { compiler } = application.createCompiler({
+    const { compiler } = await application.createCompiler({
         ...devServerConfig,
         features,
         staticBuild: false,

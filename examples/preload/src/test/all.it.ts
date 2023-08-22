@@ -1,8 +1,8 @@
-import { expect } from 'chai';
-import { dirname } from 'path';
 import { createDisposables } from '@wixc3/create-disposables';
-import { startServerNewProcess } from './utils';
+import { expect } from 'chai';
+import { dirname } from 'node:path';
 import type { Page } from 'playwright-core';
+import { startServerNewProcess } from './utils.js';
 
 describe('All Environment', () => {
     const projectPath = dirname(require.resolve('@example/preload/package.json'));

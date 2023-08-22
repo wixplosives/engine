@@ -1,4 +1,4 @@
-import type { TopLevelConfig } from './index';
+import { type TopLevelConfig } from './types.js';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace globalThis {
@@ -6,9 +6,9 @@ declare namespace globalThis {
     const engineEntryOptions: (options: { urlParams: URLSearchParams; envName: string }) => URLSearchParams;
 }
 
-export type ConfigModule = {
+export interface ConfigModule {
     default: TopLevelConfig;
-};
+}
 
 export type ConfigLoader = () => Promise<ConfigModule[]>;
 
@@ -19,7 +19,11 @@ export type ConfigLoaders = Record<string, ConfigLoader>;
  */
 export class RuntimeConfigurations {
     private fetchedConfigs: Record<string, Promise<TopLevelConfig>> = {};
-    constructor(private envName: string, private publicConfigsRoute: string, private loaders: ConfigLoaders) {
+    constructor(
+        private envName: string,
+        private publicConfigsRoute: string,
+        private loaders: ConfigLoaders,
+    ) {
         // validate args since we use this class in the entry point template code
         if (!envName) {
             throw new Error('envName must be provided');
@@ -61,7 +65,7 @@ export class RuntimeConfigurations {
                             config,
                             __to: __from,
                         },
-                        '*'
+                        '*',
                     );
                 })
                 .catch((e) => {
@@ -72,7 +76,7 @@ export class RuntimeConfigurations {
                             error: String(e),
                             __to: __from,
                         },
-                        '*'
+                        '*',
                     );
                 });
         });
@@ -119,7 +123,7 @@ export class RuntimeConfigurations {
                         envName: envName,
                         __from: this.envName,
                     },
-                    '*'
+                    '*',
                 );
             });
             this.fetchedConfigs[envName] = loadConfigPromise;

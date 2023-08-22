@@ -1,12 +1,11 @@
 import type webpack from 'webpack';
-import type { FoundFeatures } from '../analyze-feature';
-import type { EngineConfig } from '../types';
-import type { BuildOptions } from './defaults';
-import type { ICompilerOptions } from './types';
+import type { FoundFeatures } from '../analyze-feature/index.js';
+import type { EngineConfig } from '../types.js';
+import type { BuildOptions } from './defaults.js';
+import type { ICompilerOptions } from './types.js';
 
 export const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
-
 
 
 export function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
@@ -26,7 +25,7 @@ export const toCompilerOptions = (
     opts: BuildOptions,
     analyzed: FoundFeatures,
     config: EngineConfig,
-    environments: ICompilerOptions['environments']
+    environments: ICompilerOptions['environments'],
 ): ICompilerOptions => ({
     ...analyzed,
     environments,
@@ -57,5 +56,5 @@ export const compile = (compiler: webpack.MultiCompiler) =>
             } else {
                 resolve(s!);
             }
-        })
+        }),
     );

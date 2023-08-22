@@ -1,21 +1,21 @@
 {
   "name": "@wixc3/engine-electron-host",
-  "version": "39.2.10",
+  "version": "40.0.7",
   "main": "dist/index.js",
-  "bin": {
-    "engine-electron": "bin/engine-electron.js"
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
   },
   "peerDependencies": {
     "electron": ">=9"
   },
   "dependencies": {
-    "@file-services/node": "^7.4.0",
-    "@wixc3/engine-core": "^39.2.10",
-    "@wixc3/engine-electron-commons": "^39.2.10",
-    "@wixc3/engine-runtime-node": "^39.2.10"
+    "@file-services/node": "^8.1.2",
+    "@wixc3/engine-core": "^40.0.7",
+    "@wixc3/engine-electron-commons": "^40.0.7",
+    "@wixc3/engine-runtime-node": "^40.0.7"
   },
   "files": [
-    "bin",
     "dist",
     "src",
     "!*/tsconfig.{json,tsbuildinfo}"

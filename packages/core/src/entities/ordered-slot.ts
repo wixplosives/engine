@@ -1,6 +1,6 @@
-import { CREATE_RUNTIME } from '../symbols';
-import type { EnvVisibility } from '../types';
-import { FeatureInput } from './input';
+import { CREATE_RUNTIME } from '../symbols.js';
+import type { EnvVisibility } from '../types.js';
+import { FeatureInput } from './input.js';
 
 type Param<T, K extends keyof T> = K extends any ? [K, boolean | Array<T[K]>] : never;
 
@@ -42,7 +42,7 @@ function mkCompare<T>(params: SlotOrdering<T>): Compare<T> {
                 func = composeCompare<T>(
                     func,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    (a: any, b: any) => getItemOrder(mode, a[key]) - getItemOrder(mode, b[key])
+                    (a: any, b: any) => getItemOrder(mode, a[key]) - getItemOrder(mode, b[key]),
                 );
             }
         }

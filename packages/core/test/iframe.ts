@@ -5,7 +5,7 @@ import {
     TestService,
     hashParamsRetriever,
     HashParamsRetriever,
-} from './test-api-service';
+} from './test-api-service.js';
 
 const options = new URLSearchParams(window.location.search);
 const instanceId = options.get(INSTANCE_ID_PARAM_NAME)!;

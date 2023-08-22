@@ -1,68 +1,29 @@
-export interface PartialWebpackLoaderContext {
-    query: string;
-    resourcePath: string;
-    rootContext: string;
-    addDependency(filePath: string): void;
-    emitFile(filePath: string, contents: string, sourcemap: boolean): void;
+import type { TopLevelConfig } from '@wixc3/engine-core';
+import type webpack from 'webpack';
+import { importFresh } from './import-fresh.js';
+
+export interface TopLevelConfigLoaderOptions {
+    scopedName: string;
+    envName?: string;
+    configLoaderModuleName: string;
 }
 
-export default function topLevelConfigLoader(this: PartialWebpackLoaderContext) {
-    const params = new URLSearchParams(this.query.slice(1));
-
-    const fileName = params.get('scopedName');
-    const envName = params.get('envName');
-    const configLoaderModuleName = params.get('configLoaderModuleName');
-    const cachedModule = require.cache[this.resourcePath];
-    const imported = requireDeepHack(this.resourcePath, this.rootContext);
-    if (cachedModule) {
-        walkChildModules(cachedModule, ({ filename }) => {
-            if (!filename.includes('node_modules') && filename.includes(this.rootContext)) {
-                this.addDependency(filename);
-            }
-        });
+const topLevelConfigLoader: webpack.LoaderDefinition<TopLevelConfigLoaderOptions> = async function () {
+    const { scopedName, envName, configLoaderModuleName } = this.getOptions();
+    if (!scopedName) {
+        throw new Error('scopedName is required');
+    } else if (!configLoaderModuleName) {
+        throw new Error('configLoaderModuleName is required');
     }
-    const importedString = JSON.stringify(imported);
+    const topLevelConfig = (await importFresh(this.resourcePath)) as TopLevelConfig;
+    const configFileName = envName ? `${scopedName}.${envName}` : scopedName;
+    const configPath = `configs/${configFileName}.json`;
 
-    const configFileName = envName ? `${fileName!}.${envName}` : fileName;
-    const configPath = `configs/${configFileName!}.json`;
+    this.emitFile(configPath, JSON.stringify(topLevelConfig));
 
-    this.emitFile(configPath, importedString, false);
+    return `import { loadConfig } from "${configLoaderModuleName}";
+const fetchResult = loadConfig("${scopedName}", "${envName}");
+export default fetchResult`;
+};
 
-    return `
-    import { loadConfig } from '${configLoaderModuleName!}';
-    const fetchResult = loadConfig('${fileName!}', '${envName!}');
-    export default fetchResult`;
-}
-
-function walkChildModules(nodeJsModule: NodeModule, visitor: (module: NodeModule) => void, registryCache = new Set()) {
-    if (!nodeJsModule || registryCache.has(nodeJsModule)) {
-        return;
-    }
-    registryCache.add(nodeJsModule);
-    visitor(nodeJsModule);
-    if (nodeJsModule && nodeJsModule.children) {
-        nodeJsModule.children.forEach((cm) => {
-            walkChildModules(cm, visitor, registryCache);
-        });
-    }
-}
-
-/**
- * This all method is a hack that allows fresh requiring modules
- */
-function requireDeepHack(resourcePath: string, rootContext: string): unknown {
-    const previousCache: Record<string, NodeModule> = {};
-    walkChildModules(require.cache[resourcePath]!, ({ filename }) => {
-        if (!filename.includes('node_modules') && filename.includes(rootContext)) {
-            previousCache[filename] = require.cache[filename]!;
-            delete require.cache[filename];
-        }
-    });
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const imported = require(resourcePath) as { default?: any };
-    for (const [key, nodeModule] of Object.entries(previousCache)) {
-        require.cache[key] = nodeModule;
-    }
-
-    return imported.default ?? imported;
-}
+export default topLevelConfigLoader;

@@ -1,11 +1,9 @@
-import { worker } from '@wixc3/isomorphic-worker/worker-scope';
-
 import { COM, reportError, UniversalWorkerHost } from '@wixc3/engine-core';
-
-import { importModules } from './import-modules';
-import { runNodeEnvironment } from './node-environment';
-import { WorkerThreadCommand, WorkerThreadEvent, WorkerThreadStartupCommand } from './types';
+import { worker } from '@wixc3/isomorphic-worker/worker-scope';
 import { createDisposables } from '@wixc3/patterns';
+import { importModules } from './import-modules.js';
+import { runNodeEnvironment } from './node-environment.js';
+import { type WorkerThreadCommand, type WorkerThreadEvent, type WorkerThreadStartupCommand } from './types.js';
 
 const disposables = createDisposables();
 
@@ -38,7 +36,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
                     },
                 },
             },
-        })
+        }),
     );
 
     const engine = await runNodeEnvironment({
@@ -58,7 +56,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
             worker.removeEventListener('message', messageHandler);
             return engine.shutdown();
         },
-        { name: `workerThreadEntry engine shutdown ${engine.entityID}`, timeout: 10_000 }
+        { name: `workerThreadEntry engine shutdown ${engine.entityID}`, timeout: 10_000 },
     );
 };
 

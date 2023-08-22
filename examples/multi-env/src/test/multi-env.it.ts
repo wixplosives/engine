@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { waitFor } from 'promise-assist';
 import { withFeature } from '@wixc3/engine-test-kit';
-import MultiEnv from '../feature/multi-env.feature';
+import MultiEnv from '../feature/multi-env.feature.js';
 
 describe('Multi Environment', () => {
     const { getLoadedFeature } = withFeature({

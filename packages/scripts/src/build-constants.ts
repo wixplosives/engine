@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 // Conventional filenames
 export const FEATURE_FILENAME_HINT = '.feature.';
@@ -16,8 +16,23 @@ export const CONFIG_QUERY_PARAM = 'config';
 export const FEATURE_QUERY_PARAM = 'feature';
 
 // File naming helpers
-export const isCodeModule = (fileName: string) =>
-    (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) || fileName.endsWith('.tsx') || fileName.endsWith('.js');
+export function isCodeModule(fileName: string) {
+    const fileExtension = path.extname(fileName);
+    switch (fileExtension) {
+        case '.ts':
+        case '.mts':
+        case '.cts':
+            return path.extname(path.basename(fileName, fileExtension)) !== '.d';
+        case '.tsx':
+        case '.js':
+        case '.mjs':
+        case '.cjs':
+            return true;
+        default:
+            return false;
+    }
+}
+
 export const isConfigFile = (fileName: string) => fileName.indexOf(CONFIG_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isEnvFile = (fileName: string) => fileName.indexOf(ENV_FILENAME_HINT) >= 1 && isCodeModule(fileName);
 export const isPreloadFile = (fileName: string) =>

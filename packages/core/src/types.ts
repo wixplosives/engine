@@ -1,8 +1,8 @@
-import type { LogMessage } from './common-types';
-import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env';
-import type { FeatureClass } from './entities/feature';
-import type { RuntimeEngine } from './runtime-engine';
-import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './symbols';
+import type { LogMessage } from './common-types.js';
+import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env.js';
+import type { FeatureClass } from './entities/feature.js';
+import type { RuntimeEngine } from './runtime-engine.js';
+import { CONFIGURABLE, CREATE_RUNTIME, IDENTIFY_API, REGISTER_VALUE } from './symbols.js';
 
 /*************** HELPER TYPES  ***************/
 type TupleToUnion<T> = T extends ReadonlyArray<infer ITEMS> ? ITEMS : never;
@@ -29,7 +29,7 @@ export interface Entity<
     ProvidedFrom extends EnvVisibility = EnvVisibility,
     VisibleAt extends EnvVisibility = EnvVisibility,
     Mode extends EntityDefModes = EntityDefModes,
-    RemoteAccess extends boolean = boolean
+    RemoteAccess extends boolean = boolean,
 > {
     type: TYPE;
     proxyType: PROXY_TYPE;
@@ -42,7 +42,7 @@ export interface Entity<
         providedValue: TYPE | undefined,
         inputValue: PROXY_TYPE,
         featureID: string,
-        entityKey: string
+        entityKey: string,
     ) => PROXY_TYPE;
     [CREATE_RUNTIME]: (context: RuntimeEngine, featureID: string, entityKey: string) => TYPE | PROXY_TYPE | void;
     [IDENTIFY_API]?: (featureID: string, entityKey: string) => void;
@@ -69,12 +69,12 @@ export interface EntityRecord {
 
 type DeepEnvNameDepsTuple<T extends AnyEnvironment> = [
     T['dependencies'][number]['env'],
-    DeepEnvNameDepsTuple<T['dependencies'][number]>
+    DeepEnvNameDepsTuple<T['dependencies'][number]>,
 ];
 
 export type DeepEnvDepsTuple<T extends AnyEnvironment> = [
     T['dependencies'][number],
-    DeepEnvDepsTuple<T['dependencies'][number]>
+    DeepEnvDepsTuple<T['dependencies'][number]>,
 ];
 
 export type Flatten<T extends any[]> = {
@@ -106,13 +106,13 @@ type FilterENVKeys<T extends EntityRecord, ENV extends AnyEnvironment, Key exten
 export type FilterEnv<
     T extends EntityRecord,
     EnvFilter extends AnyEnvironment,
-    Key extends 'visibleAt' | 'providedFrom'
+    Key extends 'visibleAt' | 'providedFrom',
 > = Pick<T, FilterENVKeys<T, EnvFilter, Key>>;
 
 export type FilterNotENVKeys<
     T extends EntityRecord,
     ENV extends AnyEnvironment,
-    Key extends 'visibleAt' | 'providedFrom'
+    Key extends 'visibleAt' | 'providedFrom',
 > = {
     [P in keyof T]: EnvType<T[P][Key]> extends ReferencedEnvironments<ENV> ? never : P;
 }[keyof T];
@@ -120,7 +120,7 @@ export type FilterNotENVKeys<
 export type FilterNotEnv<
     T extends EntityRecord,
     EnvFilter extends AnyEnvironment,
-    Key extends 'visibleAt' | 'providedFrom'
+    Key extends 'visibleAt' | 'providedFrom',
 > = Pick<T, FilterNotENVKeys<T, EnvFilter, Key>>;
 
 export type MapType<X extends EntityRecord> = { [k in keyof X]: X[k]['type'] };
@@ -150,7 +150,7 @@ export type MapAllTypesForEnv<T extends EntityRecord, EnvFilter extends AnyEnvir
 type MapTypesForEnv<
     T extends EntityRecord,
     EnvFilter extends AnyEnvironment,
-    Key extends 'visibleAt' | 'providedFrom'
+    Key extends 'visibleAt' | 'providedFrom',
 > = MapType<FilterEnv<T, EnvFilter, Key>>;
 
 export type MapVisibleInputs<T extends EntityRecord, EnvFilter extends AnyEnvironment> = MapType<
@@ -180,7 +180,7 @@ export type RegisteringFeature<
         GetOutputs<API>,
         ENV,
         'providedFrom'
-    >
+    >,
 > = keyof ProvidedOutputs extends never ? undefined | void : ProvidedOutputs;
 
 export interface Context<T> {

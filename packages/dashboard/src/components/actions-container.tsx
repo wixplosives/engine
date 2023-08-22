@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Toggle } from './toggle';
+import { Toggle } from './toggle.js';
 import { classes } from './actions-container.st.css';
 
 export interface IActionsContainerProps {

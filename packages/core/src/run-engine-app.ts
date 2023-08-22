@@ -3,10 +3,10 @@
  */
 import '@wixc3/isomorphic-worker/worker';
 
-import { RuntimeEngine } from './runtime-engine';
-import type { IRunOptions, TopLevelConfig } from './types';
-import type { AnyEnvironment, FeatureClass } from './entities';
-import { deferred, IDeferredPromise } from 'promise-assist';
+import { RuntimeEngine } from './runtime-engine.js';
+import type { IRunOptions, TopLevelConfig } from './types.js';
+import type { AnyEnvironment, FeatureClass } from './entities/index.js';
+import { deferred, type IDeferredPromise } from 'promise-assist';
 
 export interface RunEngineOptions<ENV extends AnyEnvironment> {
     entryFeature: FeatureClass | FeatureClass[];
@@ -27,7 +27,7 @@ export function run<ENV extends AnyEnvironment>({
 export interface IFeatureLoader {
     load: (resolvedContexts: Record<string, string>) => Promise<FeatureClass> | FeatureClass;
     preload: (
-        resolveContexts: Record<string, string>
+        resolveContexts: Record<string, string>,
     ) => Promise<Array<(runtimeOptions: Record<string, string | boolean>) => void | Promise<void>>> | undefined;
     depFeatures: string[];
     resolvedContexts: Record<string, string>;
@@ -76,7 +76,7 @@ export class FeatureLoadersRegistry {
     private async getLoadedFeatures(
         rootFeatureName: string,
         runtimeOptions: Record<string, string | boolean>,
-        resolvedContexts: Record<string, string>
+        resolvedContexts: Record<string, string>,
     ): Promise<FeatureClass[]> {
         const loaded = [];
         const dependencies = await this.getFeatureDependencies(rootFeatureName);
@@ -105,7 +105,7 @@ export class FeatureLoadersRegistry {
     /**
      * loads the entry feature and all its dependencies
      */
-    async loadEntryFeature(rootFeatureName: string, runtimeOptions: Record<string, string | boolean> ) {
+    async loadEntryFeature(rootFeatureName: string, runtimeOptions: Record<string, string | boolean>) {
         const rootFeatureLoader = this.featureMapping.get(rootFeatureName);
         if (!rootFeatureLoader) {
             throw new Error(
@@ -122,8 +122,8 @@ export class FeatureLoadersRegistry {
                 `no features were loaded for ${rootFeatureName} with runtime options ${JSON.stringify(
                     runtimeOptions,
                     null,
-                    2
-                )}`
+                    2,
+                )}`,
             );
         }
         return { entryFeature, resolvedContexts };

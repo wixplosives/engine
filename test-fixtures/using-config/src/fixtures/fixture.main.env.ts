@@ -1,5 +1,5 @@
-import MyFeature from './fixture.feature';
-import { main } from '../feature/use-configs.feature';
+import MyFeature from './fixture.feature.js';
+import { main } from '../feature/use-configs.feature.js';
 
 MyFeature.setup(main, ({ run }) => {
     run(() => {

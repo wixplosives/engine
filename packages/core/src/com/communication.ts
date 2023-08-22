@@ -1,3 +1,9 @@
+import { SetMultiMap } from '@wixc3/patterns';
+import { deferred } from 'promise-assist';
+import type { ContextualEnvironment, Environment, EnvironmentMode } from '../entities/env.js';
+import { serializeError } from '../helpers/index.js';
+import { SERVICE_CONFIG } from '../symbols.js';
+import { isDisposable, type IDTag } from '../types.js';
 import {
     CALLBACK_TIMEOUT,
     DUPLICATE_REGISTER,
@@ -5,49 +11,41 @@ import {
     REMOTE_CALL_FAILED,
     reportError,
     UNKNOWN_CALLBACK_ID,
-} from './errors';
+} from './errors.js';
 import {
+    deserializeApiCallArguments,
     isWindow,
     isWorkerContext,
     MultiCounter,
     serializeApiCallArguments,
-    deserializeApiCallArguments,
-} from './helpers';
+} from './helpers.js';
+import { BaseHost } from './hosts/base-host.js';
+import { WsClientHost } from './hosts/ws-client-host.js';
 import type {
     CallbackMessage,
     CallMessage,
     EventMessage,
     ListenMessage,
-    UnListenMessage,
     Message,
     ReadyMessage,
-} from './message-types';
+    UnListenMessage,
+} from './message-types.js';
+import { isMessage } from './message-types.js';
 import {
-    APIService,
-    AsyncApi,
-    CallbackRecord,
-    EnvironmentInstanceToken,
-    EnvironmentRecord,
-    RemoteAPIServicesMapping,
-    SerializableArguments,
-    SerializableMethod,
-    Target,
-    UnknownFunction,
-    AnyServiceMethodOptions,
-    ServiceComConfig,
     HOST_REMOVED,
-} from './types';
-
-import { SERVICE_CONFIG } from '../symbols';
-
-import { serializeError } from '../helpers';
-import { SetMultiMap } from '@wixc3/patterns';
-import type { Environment, ContextualEnvironment, EnvironmentMode } from '../entities/env';
-import { type IDTag, isDisposable } from '../types';
-import { BaseHost } from './hosts/base-host';
-import { WsClientHost } from './hosts/ws-client-host';
-import { isMessage } from './message-types';
-import { deferred } from 'promise-assist';
+    type AnyServiceMethodOptions,
+    type APIService,
+    type AsyncApi,
+    type CallbackRecord,
+    type EnvironmentInstanceToken,
+    type EnvironmentRecord,
+    type RemoteAPIServicesMapping,
+    type SerializableArguments,
+    type SerializableMethod,
+    type ServiceComConfig,
+    type Target,
+    type UnknownFunction,
+} from './types.js';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;
@@ -90,7 +88,7 @@ export class Communication {
         public topology: Record<string, string> = {},
         public resolvedContexts: Record<string, string> = {},
         public isServer = false,
-        options?: CommunicationOptions
+        options?: CommunicationOptions,
     ) {
         this.options = { warnOnSlow: false, publicPath: '', connectedEnvironments: {}, ...options };
         this.rootEnvId = id;
@@ -168,7 +166,7 @@ export class Communication {
     public apiProxy<T extends object>(
         instanceToken: EnvironmentInstanceToken | Promise<EnvironmentInstanceToken>,
         { id: api }: IDTag,
-        serviceComConfig: ServiceComConfig<T> = {}
+        serviceComConfig: ServiceComConfig<T> = {},
     ): AsyncApi<T> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return new Proxy(Object.create(null), {
@@ -190,7 +188,7 @@ export class Communication {
                                 args,
                                 this.rootEnvId,
                                 serviceComConfig as Record<string, AnyServiceMethodOptions>,
-                                []
+                                [],
                             );
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         obj[method] = runtimeMethod;
@@ -249,7 +247,7 @@ export class Communication {
         args: unknown[],
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
-        forwardingChain: string[]
+        forwardingChain: string[],
     ): Promise<unknown> {
         return new Promise<void>((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly
@@ -267,7 +265,7 @@ export class Communication {
                     args[0] as UnknownFunction,
                     forwardingChain,
                     res,
-                    rej
+                    rej,
                 );
             } else {
                 const message: CallMessage = {
@@ -390,7 +388,7 @@ export class Communication {
                 type: 'listen',
                 data: this.parseHandlerId(
                     handlerId,
-                    this.createHandlerIdPrefix({ from: this.rootEnvId, to: instanceId })
+                    this.createHandlerIdPrefix({ from: this.rootEnvId, to: instanceId }),
                 ),
                 callbackId: this.idsCounter.next(this.messageIdPrefix),
                 origin: this.rootEnvId,
@@ -492,7 +490,7 @@ export class Communication {
             this.sendTo(message.from, {
                 ...responseMessage,
                 error: new Error(
-                    `cannot reach environment '${message.to}' from '${message.from}' since it's stuck in circular messaging loop`
+                    `cannot reach environment '${message.to}' from '${message.from}' since it's stuck in circular messaging loop`,
                 ),
             });
             return;
@@ -509,7 +507,7 @@ export class Communication {
                     message.data.args,
                     message.origin,
                     {},
-                    message.forwardingChain
+                    message.forwardingChain,
                 );
 
                 if (message.callbackId) {
@@ -567,7 +565,7 @@ export class Communication {
                 handler,
                 message.forwardingChain,
                 res,
-                rej
+                rej,
             );
         });
 
@@ -607,7 +605,7 @@ export class Communication {
         fn: UnknownFunction,
         forwardingChain: string[],
         res: () => void,
-        rej: () => void
+        rej: () => void,
     ) {
         const removeListenerRef =
             serviceComConfig[method]?.removeAllListeners || serviceComConfig[method]?.removeListener;
@@ -651,7 +649,7 @@ export class Communication {
                 if (handlersBucket && handlersBucket.size !== 0) {
                     if (handlersBucket.has(fn)) {
                         throw new Error(
-                            'Cannot add same listener instance twice ' + this.getHandlerId(envId, api, method)
+                            'Cannot add same listener instance twice ' + this.getHandlerId(envId, api, method),
                         );
                     }
                     handlersBucket.add(fn);
@@ -683,7 +681,7 @@ export class Communication {
         message: Message,
         callbackId: string | undefined,
         res: () => void,
-        rej: () => void
+        rej: () => void,
     ) {
         if (callbackId) {
             this.createCallbackRecord(message, callbackId, res, rej);
@@ -797,8 +795,8 @@ export class Communication {
                 this.eventDispatchers[message.handlerId]!,
                 message.forwardingChain,
                 res,
-                rej
-            )
+                rej,
+            ),
         );
 
         delete this.eventDispatchers[message.handlerId];
@@ -943,7 +941,7 @@ export class Communication {
         message: Message,
         callbackId: string,
         res: (value: unknown) => void,
-        rej: (reason: Error) => void
+        rej: (reason: Error) => void,
     ) {
         if (!this.disposing) {
             this.callbackToEnvMapping.set(callbackId, message.to);
@@ -992,7 +990,7 @@ const removeMessageArgs = (message: Message): Message => {
 export function declareComEmitter<T>(
     onMethod: keyof T,
     offMethod: keyof T,
-    removeAll?: keyof T
+    removeAll?: keyof T,
 ): Record<string, AnyServiceMethodOptions> {
     if (typeof onMethod !== 'string') {
         throw 'onMethod ref must be a string';

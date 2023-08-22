@@ -1,24 +1,21 @@
-import { COM, TopLevelConfig } from '@wixc3/engine-core';
+import { COM, type TopLevelConfig } from '@wixc3/engine-core';
+import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type express from 'express';
-import importFresh from 'import-fresh';
-import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
+import { importFresh } from './import-fresh.js';
 
 export interface OverrideConfig {
     configName?: string;
     overrideConfig: TopLevelConfig;
 }
 
-interface ConfigFileExports {
-    default: TopLevelConfig;
-}
-
 export function createLiveConfigsMiddleware(
     configurations: SetMultiMap<string, IConfigDefinition | TopLevelConfig>,
     basePath: string,
-    overrideConfigMap: Map<string, OverrideConfig>
+    overrideConfigMap: Map<string, OverrideConfig>,
 ): express.RequestHandler {
-    return (req, res, next) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    return async (req, res, next) => {
         const config: TopLevelConfig = [];
         const { env: reqEnv } = req.query;
         const overrideConfig: TopLevelConfig = [];
@@ -46,11 +43,11 @@ export function createLiveConfigsMiddleware(
                             if (envName === reqEnv || !envName) {
                                 const resolvedPath = require.resolve(filePath, { paths: [basePath] });
                                 try {
-                                    const { default: configValue } = importFresh<ConfigFileExports>(resolvedPath);
+                                    const configValue = (await importFresh(resolvedPath)) as TopLevelConfig;
                                     config.push(...configValue);
                                 } catch (e) {
                                     console.error(
-                                        new Error(`Failed evaluating config file: ${filePath}`, { cause: e })
+                                        new Error(`Failed evaluating config file: ${filePath}`, { cause: e }),
                                     );
                                 }
                             }
@@ -71,7 +68,7 @@ export function createLiveConfigsMiddleware(
 export function createCommunicationMiddleware(
     nodeEnvironmentsManager: NodeEnvironmentsManager,
     publicPath?: string,
-    topologyOverrides?: (featureName: string) => Record<string, string> | undefined
+    topologyOverrides?: (featureName: string) => Record<string, string> | undefined,
 ): express.RequestHandler {
     return (req, res, next) => {
         const { feature } = req.query;
@@ -82,7 +79,7 @@ export function createCommunicationMiddleware(
                     ? topologyOverrides(feature)
                     : nodeEnvironmentsManager.getTopology(
                           feature,
-                          requestedConfig === 'undefined' ? undefined : requestedConfig
+                          requestedConfig === 'undefined' ? undefined : requestedConfig,
                       )
                 : undefined;
         (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig = (
@@ -102,15 +99,15 @@ export function createCommunicationMiddleware(
 }
 
 export const createConfigMiddleware: (
-    overrideConfig?: TopLevelConfig | TopLevelConfigProvider
+    overrideConfig?: TopLevelConfig | TopLevelConfigProvider,
 ) => express.RequestHandler =
     (overrideConfig = []) =>
     (req, res) => {
         const { env: reqEnv } = req.query;
         res.send(
             (res.locals as { topLevelConfig: TopLevelConfig[] }).topLevelConfig.concat(
-                Array.isArray(overrideConfig) ? overrideConfig : reqEnv ? overrideConfig(reqEnv as string) : []
-            )
+                Array.isArray(overrideConfig) ? overrideConfig : reqEnv ? overrideConfig(reqEnv as string) : [],
+            ),
         );
     };
 

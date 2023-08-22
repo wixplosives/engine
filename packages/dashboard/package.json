@@ -1,9 +1,14 @@
 {
   "name": "@wixc3/engine-dashboard",
-  "version": "39.2.10",
+  "version": "40.0.7",
   "license": "MIT",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./dist/graph-utils": "./dist/graph-utils.js",
+    "./dist/graph-types": "./dist/graph-types.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build:stylable": "stc --srcDir src --outDir dist --stcss --no-cjs --unsr",
     "test": "mocha \"dist/test/**/*.unit.js\""
@@ -13,9 +18,9 @@
   },
   "dependencies": {
     "@stylable/runtime": "^5.15.1",
-    "@wixc3/engine-core": "^39.2.10",
-    "@wixc3/engine-runtime-node": "^39.2.10",
-    "@wixc3/engine-scripts": "^39.2.10",
+    "@wixc3/engine-core": "^40.0.7",
+    "@wixc3/engine-runtime-node": "^40.0.7",
+    "@wixc3/engine-scripts": "^40.0.7",
     "d3-hierarchy": "^3.1.2",
     "d3-selection": "^3.0.0",
     "d3-shape": "^3.2.0"

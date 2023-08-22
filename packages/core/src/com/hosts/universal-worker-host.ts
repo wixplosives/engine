@@ -3,13 +3,15 @@ import type {
     UniversalWorker,
     UniversalWorkerUserMethods,
 } from '@wixc3/isomorphic-worker/types';
-
-import { Target } from '../types';
+import { type Target } from '../types.js';
 
 export class UniversalWorkerHost implements Target {
     private messageHandlersMap = new Map<(event: { data: any }) => void, UniversalMessageHandler>();
 
-    constructor(private worker: UniversalWorker | UniversalWorkerUserMethods, public name: string) {}
+    constructor(
+        private worker: UniversalWorker | UniversalWorkerUserMethods,
+        public name: string,
+    ) {}
 
     public addEventListener(type: 'message', callback: (event: { data: any }) => void): void {
         const handler = (message: any) => callback(message);

@@ -1,10 +1,8 @@
+import { COM, UniversalWorkerHost, type InitializerOptions } from '@wixc3/engine-core';
 import { Worker } from '@wixc3/isomorphic-worker/worker';
-
-import { COM, InitializerOptions, UniversalWorkerHost } from '@wixc3/engine-core';
-import { createMetadataProvider } from './core-node/create-application-metadata-provider';
-
 import { createDisposables } from '@wixc3/patterns';
-import type { WorkerThreadCommand, WorkerThreadEnvironmentStartupOptions } from './types';
+import { createMetadataProvider } from './core-node/create-application-metadata-provider.js';
+import type { WorkerThreadCommand, WorkerThreadEnvironmentStartupOptions } from './types.js';
 
 export interface WorkerThreadInitializer {
     id: string;
@@ -63,7 +61,7 @@ export function workerThreadInitializer({
             },
             {
                 name: `worker thread ${instanceId} communication cleanup`,
-            }
+            },
         );
 
         const runOptions: WorkerThreadEnvironmentStartupOptions = {

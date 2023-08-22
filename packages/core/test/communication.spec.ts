@@ -9,7 +9,7 @@ import {
 } from '@wixc3/engine-core';
 import { createDisposables } from '@wixc3/create-disposables';
 import {
-    TestServiceData,
+    type TestServiceData,
     multiTanentServiceId,
     MultiTenantTestService,
     TestService,
@@ -17,7 +17,7 @@ import {
     HashParamsRetriever,
     hashParamsRetriever,
     testServiceError,
-} from './test-api-service';
+} from './test-api-service.js';
 
 describe('Communication API', function () {
     this.timeout(15_000);
@@ -232,7 +232,7 @@ describe('Communication API', function () {
                 listen: {
                     listener: true,
                 },
-            }
+            },
         );
         const { promise, resolve } = deferred<TestServiceData>();
 

@@ -1,5 +1,5 @@
-import { renderer } from '../feature/electron-app.feature';
-import TestFeature from './example.feature';
+import { renderer } from '../feature/electron-app.feature.js';
+import TestFeature from './example.feature.js';
 
 TestFeature.setup(renderer, ({ run }, { electronExample: { echoService } }) => {
     run(async () => {

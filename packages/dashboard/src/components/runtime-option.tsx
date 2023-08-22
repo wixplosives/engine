@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import { TitledElement } from './titled-element';
 import { classes, style } from './runtime-option.st.css';
+import { TitledElement } from './titled-element.js';
 
 export interface RuntimeOptionProps {
     index: number;
@@ -23,7 +23,7 @@ export const RuntimeOption = React.memo<RuntimeOptionProps>(function RuntimeOpti
                 runtimeArguments.splice(index, 1, { ...runtimeArguments[index]!, [key]: runtimeValue });
                 onChange([...runtimeArguments]);
             },
-        [runtimeArguments, index, onChange]
+        [runtimeArguments, index, onChange],
     );
     return (
         <div className={style(classes.root, className)}>

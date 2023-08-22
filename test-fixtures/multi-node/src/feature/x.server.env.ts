@@ -1,6 +1,5 @@
-import { serverEnv, anotherServerEnv } from './x.feature';
-import sampleFeature from './x.feature';
 import { localNodeEnvironmentInitializer } from '@wixc3/engine-runtime-node';
+import sampleFeature, { anotherServerEnv, serverEnv } from './x.feature.js';
 
 sampleFeature.setup(serverEnv, ({ anotherEchoService }, { COM: { communication } }) => {
     localNodeEnvironmentInitializer({ communication, env: anotherServerEnv });

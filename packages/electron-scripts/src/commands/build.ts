@@ -1,16 +1,15 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import { loadTopLevelConfigs, importModules, type IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import {
     Application,
     getExportedEnvironments,
-    IApplicationOptions,
-    IBuildCommandOptions as IEngineBuildCommandOptions,
+    type IApplicationOptions,
+    type IBuildCommandOptions as IEngineBuildCommandOptions,
 } from '@wixc3/engine-scripts';
 import { build as electronBuild, Configuration, FileSet, PublishOptions } from 'electron-builder';
 import { dirname, posix, relative } from 'path';
-
-import { getEngineConfig } from '../find-features';
+import { getEngineConfig } from '../find-features.js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: electronVersion } = require('electron/package.json') as { version: string };
@@ -85,7 +84,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
     } = options;
     const outputPath = fs.join(basePath, outDir);
     if (!isPublishValid(publish)) {
-        throw new Error(`publish value can be defined with the wollowing values: ${possiblePublishValues.join(',')}`);
+        throw new Error(`publish value can be defined with the following values: ${possiblePublishValues.join(',')}`);
     }
 
     if (requiredModules) {
@@ -194,7 +193,7 @@ export function createElectronEntryFile({
     const mapAbsolutePathsToRequests = (path: string, packageName: string) => {
         const isThirdParty = packageName !== currentFeature.packageName;
         const absoluteBasePath = fs.dirname(
-            isThirdParty ? require.resolve(posix.join(packageName, 'package.json')) : outputPath
+            isThirdParty ? require.resolve(posix.join(packageName, 'package.json')) : outputPath,
         );
         // creating a posix kind of slashes, to match node requests syntax
         const relativeToPackageFileRequest = relative(absoluteBasePath, path).replace(/\\/gi, '/');
@@ -215,24 +214,24 @@ export function createElectronEntryFile({
                         Object.entries(contextFilePaths).map(([key, value]) => [
                             key,
                             mapAbsolutePathsToRequests(value, packageName),
-                        ])
+                        ]),
                     ),
                     envFilePaths: Object.fromEntries(
                         Object.entries(envFilePaths).map(([key, value]) => [
                             key,
                             mapAbsolutePathsToRequests(value, packageName),
-                        ])
+                        ]),
                     ),
                     filePath: mapAbsolutePathsToRequests(filePath, packageName),
                     preloadFilePaths: Object.fromEntries(
                         Object.entries(preloadFilePaths).map(([key, value]) => [
                             key,
                             mapAbsolutePathsToRequests(value, packageName),
-                        ])
+                        ]),
                     ),
                 },
             ];
-        }
+        },
     );
 
     return fs.promises.writeFile(
@@ -277,7 +276,7 @@ runElectronEnv({
     console.error(e);
     process.exitCode = 1;
 });
-`
+`,
     );
 }
 

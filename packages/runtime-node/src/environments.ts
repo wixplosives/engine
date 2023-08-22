@@ -1,13 +1,11 @@
-import { EnvironmentTypes, flattenTree } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from './types';
-
-import type { IStaticFeatureDefinition } from './types';
+import { type EnvironmentTypes, flattenTree } from '@wixc3/engine-core';
+import type { IStaticFeatureDefinition, IEnvironmentDescriptor } from './types.js';
 
 export function resolveEnvironments(
     featureName: string,
     features: ReadonlyMap<string, IStaticFeatureDefinition>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes,
-    filterByContext = true
+    filterByContext = true,
 ) {
     const environmentTypesToFilterBy = Array.isArray(envTypes) ? envTypes : [envTypes];
     const filteredEnvironments = new Set<IEnvironmentDescriptor>();
@@ -19,7 +17,7 @@ export function resolveEnvironments(
     }
     const { resolvedContexts } = featureDefinition;
     const deepDefsForFeature = flattenTree(featureDefinition, (f) =>
-        f.dependencies.map((fName) => features.get(fName)!)
+        f.dependencies.map((fName) => features.get(fName)!),
     );
     for (const { exportedEnvs = [] } of deepDefsForFeature) {
         for (const exportedEnv of exportedEnvs) {

@@ -1,2 +1,2 @@
-export * from './application-proxy-service';
-export * from './utils';
+export * from './application-proxy-service.js';
+export * from './utils.js';

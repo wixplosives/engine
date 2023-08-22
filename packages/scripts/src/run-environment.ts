@@ -1,27 +1,28 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import {
-    AnyEnvironment,
     BaseHost,
     COM,
     Communication,
     Environment,
-    FeatureClass,
-    Running,
     RuntimeEngine,
-    TopLevelConfig,
     flattenTree,
+    type AnyEnvironment,
+    type FeatureClass,
+    type Running,
+    type TopLevelConfig,
 } from '@wixc3/engine-core';
 import {
     ENGINE_ROOT_ENVIRONMENT_ID,
+    IStaticFeatureDefinition,
     METADATA_PROVIDER_ENV_ID,
     MetadataCollectionAPI,
+    loadTopLevelConfigs,
     metadataApiToken,
     runNodeEnvironment,
-    IStaticFeatureDefinition,
-    loadTopLevelConfigs,
 } from '@wixc3/engine-runtime-node';
-
-import { ENGINE_CONFIG_FILE_NAME, findFeatures, EngineConfig, IFeatureDefinition } from '.';
+import { findFeatures } from './analyze-feature/index.js';
+import { ENGINE_CONFIG_FILE_NAME } from './build-constants.js';
+import { EngineConfig, IFeatureDefinition } from './types.js';
 
 export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
@@ -62,7 +63,11 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}
     ) as EngineConfig;
 
-    const { features, configurations } = findFeatures(basePath, fs, featureDiscoveryRoot ?? configFeatureDiscoveryRoot);
+    const { features, configurations } = await findFeatures(
+        basePath,
+        fs,
+        featureDiscoveryRoot ?? configFeatureDiscoveryRoot,
+    );
 
     if (configName) {
         config = [...(await loadTopLevelConfigs(configName, configurations, envName)), ...config];
@@ -74,12 +79,12 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         const env = locateEnvironment(featureDef, features, envName, childEnvName);
         if (!env) {
             throw new Error(
-                `environment "${envName}" with the context "${childEnvName}" is not found when running "${featureDef.scopedName}" feature`
+                `environment "${envName}" with the context "${childEnvName}" is not found when running "${featureDef.scopedName}" feature`,
             );
         }
         if (env.type !== 'node') {
             throw new Error(
-                `Trying to run "${envName}" with the "${childEnvName}" context, the target of which is "${env.type}"`
+                `Trying to run "${envName}" with the "${childEnvName}" context, the target of which is "${env.type}"`,
             );
         }
     }
@@ -89,7 +94,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
 
     const staticFeatures = [...features].map(([featureName, feature]) => [featureName, feature.toJSON()]) as [
         featureName: string,
-        featureDefinition: IStaticFeatureDefinition
+        featureDefinition: IStaticFeatureDefinition,
     ][];
 
     com.registerAPI<MetadataCollectionAPI>(metadataApiToken, {
@@ -124,7 +129,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
                     },
                 },
             },
-        })
+        }),
     );
 
     return runNodeEnvironment({
@@ -145,11 +150,11 @@ function locateEnvironment(
     featureDef: IFeatureDefinition,
     features: Map<string, IFeatureDefinition>,
     name: string,
-    childEnvName: string
+    childEnvName: string,
 ) {
     const deepDefsForFeature = flattenTree<IFeatureDefinition>(
         featureDef,
-        (f) => f.dependencies?.map((fName) => features.get(fName)!) ?? []
+        (f) => f.dependencies?.map((fName) => features.get(fName)!) ?? [],
     );
     for (const { exportedEnvs } of deepDefsForFeature) {
         for (const env of exportedEnvs) {
@@ -163,7 +168,7 @@ function locateEnvironment(
 }
 
 export async function getRunningFeature<F extends FeatureClass, ENV extends AnyEnvironment>(
-    options: RunningFeatureOptions<F, ENV>
+    options: RunningFeatureOptions<F, ENV>,
 ): Promise<{
     runningApi: Running<F, ENV>;
     engine: RuntimeEngine;
@@ -183,7 +188,7 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
 
 async function importWithProperError(filePath: string): Promise<unknown> {
     try {
-        return import(filePath);
+        return ((await import(filePath)) as { default: unknown }).default;
     } catch (ex) {
         throw new Error(`failed importing file: ${filePath}`, { cause: ex });
     }

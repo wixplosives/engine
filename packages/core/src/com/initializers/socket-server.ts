@@ -1,7 +1,7 @@
 import type { SocketOptions } from 'socket.io-client';
-import { WsClientHost } from '../hosts/ws-client-host';
-import type { ReadyMessage } from '../message-types';
-import type { InitializerOptions } from './types';
+import { WsClientHost } from '../hosts/ws-client-host.js';
+import type { ReadyMessage } from '../message-types.js';
+import type { InitializerOptions } from './types.js';
 
 export interface SocketClientInitializerOptions extends InitializerOptions, Partial<SocketOptions> {}
 

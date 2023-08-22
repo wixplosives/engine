@@ -1,4 +1,4 @@
-import allFeature, { mainEnv, nodeEnv, workerEnv } from './all.feature';
+import allFeature, { mainEnv, nodeEnv, workerEnv } from './all.feature.js';
 import { socketClientInitializer, webWorkerInitializer } from '@wixc3/engine-core';
 globalThis.envMessages = [...(globalThis.envMessages ?? []), 'enveval'];
 
@@ -19,7 +19,7 @@ allFeature.setup(
             nodeEnvMessages: { getNodeEnvMessages, getNodeRuntimeOptions },
             workerEnvMessages: { getWorkerEnvMessages },
         },
-        { COM: { communication } }
+        { COM: { communication } },
     ) => {
         run(async () => {
             await socketClientInitializer({ communication, env: nodeEnv });
@@ -37,7 +37,7 @@ allFeature.setup(
                     webworker: workerMessages,
                 },
                 null,
-                2
+                2,
             );
 
             const runtimeOptionsPre = document.createElement('pre');
@@ -49,7 +49,7 @@ allFeature.setup(
                     node: nodeRuntimeOptions,
                 },
                 null,
-                2
+                2,
             );
 
             const explanation = document.createElement('p');
@@ -59,5 +59,5 @@ allFeature.setup(
             document.body.appendChild(pre);
             document.body.appendChild(runtimeOptionsPre);
         });
-    }
+    },
 );

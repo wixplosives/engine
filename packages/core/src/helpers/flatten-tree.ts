@@ -3,7 +3,7 @@ export const returnsTrue = () => true;
 export function flattenTree<T>(
     root: T,
     children: (node: T) => Iterable<T>,
-    predicate: (node: T) => boolean = returnsTrue
+    predicate: (node: T) => boolean = returnsTrue,
 ): Set<T> {
     const results = new Set<T>();
     const visited = new Set<T>();

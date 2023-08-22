@@ -1,14 +1,13 @@
-import type io from 'socket.io';
-
 import type { AnyEnvironment, FeatureClass, TopLevelConfig } from '@wixc3/engine-core';
-import { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type {
+    IEnvironmentDescriptor,
     IStaticFeatureDefinition,
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
 // we might want our own abstraction for plugin. for now we use esbuild's
 import { Plugin } from 'esbuild';
+import type io from 'socket.io';
 
 export interface IFeatureTarget {
     featureName?: string;

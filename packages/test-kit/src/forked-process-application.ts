@@ -1,13 +1,17 @@
-import { PerformanceMetrics, ProcessMessageId, isProcessMessage } from '@wixc3/engine-runtime-node';
-import type { IFeatureTarget, IPortMessage, IFeatureMessagePayload } from '@wixc3/engine-scripts';
-import { ChildProcess, fork } from 'child_process';
-import type { IExecutableApplication } from './types';
+import { isProcessMessage, type PerformanceMetrics, type ProcessMessageId } from '@wixc3/engine-runtime-node';
+import type { IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts';
+import { ChildProcess, fork } from 'node:child_process';
+import type { IExecutableApplication } from './types.js';
 
 export class ForkedProcessApplication implements IExecutableApplication {
     private engineStartProcess: ChildProcess | undefined;
     private port: number | undefined;
 
-    constructor(private cliEntry: string, private basePath: string, private featureDiscoveryRoot?: string) {}
+    constructor(
+        private cliEntry: string,
+        private basePath: string,
+        private featureDiscoveryRoot?: string,
+    ) {}
 
     public async getServerPort() {
         if (this.port) {
@@ -29,7 +33,7 @@ export class ForkedProcessApplication implements IExecutableApplication {
         });
 
         const { port } = await this.waitForProcessMessage<IPortMessage>('port-request', (p) =>
-            p.send({ id: 'port-request' })
+            p.send({ id: 'port-request' }),
         );
 
         this.port = port;
@@ -67,12 +71,12 @@ export class ForkedProcessApplication implements IExecutableApplication {
 
     private async waitForProcessMessage<T>(
         messageId: ProcessMessageId,
-        action?: (appProcess: ChildProcess) => void
+        action?: (appProcess: ChildProcess) => void,
     ): Promise<T> {
         const { engineStartProcess } = this;
         if (!engineStartProcess) {
             throw new Error(
-                'Engine is not started yet, Make sure you call withFeature / getRunningFeature / withLocalFixture outside of the test function'
+                'Engine is not started yet, Make sure you call withFeature / getRunningFeature / withLocalFixture outside of the test function',
             );
         }
         return new Promise<T>((resolve, reject) => {

@@ -1,4 +1,4 @@
-import { BaseHost, Message, Communication } from '@wixc3/engine-core';
+import { BaseHost, Communication, type Message } from '@wixc3/engine-core';
 import type { IpcRenderer, IpcRendererEvent } from 'electron';
 
 /**
@@ -31,7 +31,7 @@ export class ElectronClientHost extends BaseHost {
 export function registerElectronHostEnvironment(
     ipcRenderer: IpcRenderer,
     envName: string,
-    communication: Communication
+    communication: Communication,
 ): BaseHost {
     const comHost = new ElectronClientHost(ipcRenderer);
     communication.registerEnv(envName, new ElectronClientHost(ipcRenderer));

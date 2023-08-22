@@ -1,6 +1,6 @@
 import { RUN_OPTIONS } from '@wixc3/engine-core';
-import FileServer, { server } from './file-server.feature';
-import { RemoteFilesAPI } from '../remote-files-api';
+import { RemoteFilesAPI } from '../remote-files-api.js';
+import FileServer, { server } from './file-server.feature.js';
 /**
  * setting up the server environment
  */

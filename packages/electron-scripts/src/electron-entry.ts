@@ -1,5 +1,5 @@
-import { createDisposables } from '@wixc3/patterns';
 import { isRunOptionsMessage, runElectronEnv } from '@wixc3/engine-electron-host';
+import { createDisposables } from '@wixc3/patterns';
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 process.once('message', async (message) => {

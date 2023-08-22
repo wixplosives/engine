@@ -1,4 +1,4 @@
-import type { Message } from './message-types';
+import type { Message } from './message-types.js';
 
 export const DUPLICATE_REGISTER = (id: string, type: 'RemoteService' | 'Environment') =>
     `Could not register same id ${id} as ${type}`;

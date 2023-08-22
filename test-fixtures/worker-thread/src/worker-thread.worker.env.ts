@@ -1,4 +1,4 @@
-import workerThreadFeature, { workerEnv } from './worker-thread.feature';
+import workerThreadFeature, { workerEnv } from './worker-thread.feature.js';
 
 export interface WorkerEcho {
     echo: (value: string) => string;

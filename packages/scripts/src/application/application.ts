@@ -1,15 +1,14 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import { defaults } from '@wixc3/common';
-import { createDisposables } from '@wixc3/patterns';
-import { flattenTree, TopLevelConfig } from '@wixc3/engine-core';
+import { flattenTree, type TopLevelConfig } from '@wixc3/engine-core';
 import {
-    IConfigDefinition,
     launchEngineHttpServer,
     NodeEnvironmentsManager,
     resolveEnvironments,
-    RouteMiddleware,
+    type IConfigDefinition,
+    type RouteMiddleware
 } from '@wixc3/engine-runtime-node';
-import { SetMultiMap } from '@wixc3/patterns';
+import { createDisposables, SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
 import webpack from 'webpack';
 import { analyzeFeatures } from '../analyze-feature';
@@ -65,7 +64,7 @@ export class Application {
         if (config.require) await this.importModules(config.require);
 
         const entryPoints: Record<string, Record<string, string>> = {};
-        const analyzed = analyzeFeatures(
+        const analyzed = await analyzeFeatures(
             fs,
             this.basePath,
             buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot,
@@ -78,7 +77,7 @@ export class Application {
             filterContexts: buildOptions.singleFeature,
         });
 
-        const { compiler } = this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
+        const { compiler } = await this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
         const stats = await compile(compiler);
         const sourceRoot = buildOptions.sourcesRoot ?? buildOptions.featureDiscoveryRoot ?? '.';
         const manifest = this.writeManifest(analyzed.features, buildOptions, entryPoints, sourceRoot);
@@ -154,7 +153,7 @@ export class Application {
                 requiredPaths,
             },
             this.basePath,
-            { ...socketServerOptions, ...configSocketServerOptions }
+            { ...socketServerOptions, ...configSocketServerOptions },
         );
         disposables.add(() => nodeEnvironmentManager.closeAll(), {
             name: 'NodeEnvironmentManager',
@@ -228,7 +227,7 @@ export class Application {
             Object.entries(envFilePaths).map<[string, string]>(([envName, filePath]) => [
                 envName,
                 require.resolve(filePath, { paths: [this.outputPath] }),
-            ])
+            ]),
         );
     }
 
@@ -237,7 +236,7 @@ export class Application {
         if (engineConfigFilePath) {
             try {
                 return {
-                    config: (await import(engineConfigFilePath)) as EngineConfig,
+                    config: ((await import(engineConfigFilePath)) as { default: EngineConfig }).default,
                     path: engineConfigFilePath,
                 };
             } catch (ex) {
@@ -280,7 +279,7 @@ export class Application {
                             const [configName] = configFileName.split('.') as [string];
 
                             const config = (await fs.promises.readJsonFile(
-                                join(featureConfigsDirectory, possibleConfigFile.name)
+                                join(featureConfigsDirectory, possibleConfigFile.name),
                             )) as TopLevelConfig;
 
                             configurations.add(`${featureName}/${configName}`, config);
@@ -297,11 +296,11 @@ export class Application {
         features: Map<string, IFeatureDefinition>,
         opts: IBuildCommandOptions,
         entryPoints: Record<string, Record<string, string>>,
-        pathToSources: string
+        pathToSources: string,
     ) {
         const manifest: IBuildManifest = {
             features: Array.from(features.entries()).map(([featureName, featureDef]) =>
-                this.generateReMappedFeature(featureDef, pathToSources, featureName)
+                this.generateReMappedFeature(featureDef, pathToSources, featureName),
             ),
             defaultConfigName: opts.configName,
             defaultFeatureName: opts.featureName,
@@ -315,7 +314,7 @@ export class Application {
     private generateReMappedFeature(
         featureDef: IFeatureDefinition,
         pathToSources: string,
-        featureName: string
+        featureName: string,
     ): [featureName: string, featureDefinition: IFeatureDefinition] {
         const sourcesRoot = fs.resolve(featureDef.directoryPath, pathToSources);
         return [
@@ -337,7 +336,7 @@ export class Application {
             isRoot,
             directoryPath,
         }: IFeatureDefinition,
-        sourcesRoot: string
+        sourcesRoot: string,
     ) {
         if (isRoot) {
             // mapping all paths to the sources folder
@@ -350,7 +349,7 @@ export class Application {
                 contextFilePaths[key] = this.remapPathToSourcesFolder(
                     sourcesRoot,
                     contextFilePaths[key]!,
-                    directoryPath
+                    directoryPath,
                 );
             }
 
@@ -358,7 +357,7 @@ export class Application {
                 preloadFilePaths[key] = this.remapPathToSourcesFolder(
                     sourcesRoot,
                     preloadFilePaths[key]!,
-                    directoryPath
+                    directoryPath,
                 );
             }
         }
@@ -372,21 +371,21 @@ export class Application {
                 packageName,
                 context,
                 isRoot && outputDirInBasePath,
-                envFilePaths
+                envFilePaths,
             ),
             contextFilePaths: scopeFilePathsToPackage(
                 fs,
                 packageName,
                 context,
                 isRoot && outputDirInBasePath,
-                contextFilePaths
+                contextFilePaths,
             ),
             preloadFilePaths: scopeFilePathsToPackage(
                 fs,
                 packageName,
                 context,
                 isRoot && outputDirInBasePath,
-                preloadFilePaths
+                preloadFilePaths,
             ),
         };
     }
@@ -399,7 +398,7 @@ export class Application {
         return fs.join(sourcesRoot, relativeRequestToFile);
     }
 
-    protected createCompiler({
+    protected async createCompiler({
         features,
         featureName,
         configName,
@@ -422,8 +421,10 @@ export class Application {
         const baseConfigPath = webpackConfigPath
             ? fs.resolve(webpackConfigPath)
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
-        const baseConfig = (typeof baseConfigPath === 'string' ? require(baseConfigPath) : {}) as webpack.Configuration;
-
+        const baseConfig =
+            typeof baseConfigPath === 'string'
+                ? ((await import(baseConfigPath)) as { default: webpack.Configuration }).default
+                : {};
         const webpackConfigs = createWebpackConfigs({
             baseConfig,
             context: basePath,
@@ -453,7 +454,7 @@ export class Application {
 
     public getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
-        configurations: SetMultiMap<string, IConfigDefinition>
+        configurations: SetMultiMap<string, IConfigDefinition>,
     ) {
         const rootFeatures = Array.from(features.values()).filter(({ isRoot }) => isRoot);
         const configNames = Array.from(configurations.keys());
@@ -489,12 +490,12 @@ export class Application {
                         return {} as IFeatureDefinition;
                     }
                     return feature;
-                })
+                }),
             ),
         ].map(({ scopedName }) => scopedName);
         if (nonFoundDependencies.length) {
             throw new Error(
-                `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`
+                `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`,
             );
         }
         for (const [foundFeatureName] of features) {

@@ -1,9 +1,8 @@
+import { BaseHost, Communication, declareComEmitter } from '@wixc3/engine-core';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import sinonChai from 'sinon-chai';
 import { stub } from 'sinon';
-
-import { BaseHost, Communication, declareComEmitter } from '@wixc3/engine-core';
+import sinonChai from 'sinon-chai';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -90,7 +89,7 @@ describe('com emitter service', () => {
         await proxy.on(testListenerStub);
 
         await expect(proxy.on(testListenerStub)).to.eventually.rejectedWith(
-            'Cannot add same listener instance twice main__main2_EmitterService@on'
+            'Cannot add same listener instance twice main__main2_EmitterService@on',
         );
     });
 });

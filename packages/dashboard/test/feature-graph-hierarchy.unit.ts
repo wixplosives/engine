@@ -36,7 +36,7 @@ describe('translateNodeToHierarchy', () => {
                 group: 3,
                 children: [nodes[3]!],
                 parent: expectedRoot,
-            }
+            },
         );
         expect(root).to.eql(expectedRoot);
     });

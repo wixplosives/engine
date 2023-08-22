@@ -1,4 +1,4 @@
-import featureA, { MAIN } from './a.feature';
+import featureA, { MAIN } from './a.feature.js';
 
 featureA.setup(MAIN, ({ run }) => {
     run(() => {

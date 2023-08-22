@@ -1,11 +1,14 @@
-import fs from '@file-services/node';
-import { app, ipcMain } from 'electron';
-
-import { BaseHost, Environment, RuntimeEngine, TopLevelConfig } from '@wixc3/engine-core';
+import { BaseHost, Environment, RuntimeEngine, type TopLevelConfig } from '@wixc3/engine-core';
 import { communicationChannels, electronRuntimeArguments } from '@wixc3/engine-electron-commons';
-import { importModules, IEngineRuntimeArguments, IStaticFeatureDefinition, runNodeEnvironment } from '@wixc3/engine-runtime-node';
-
-import runtimeArgumentsProvider from './runtime-arguments-provider';
+import {
+    importModules,
+    runNodeEnvironment,
+    type IEngineRuntimeArguments,
+    type IStaticFeatureDefinition,
+} from '@wixc3/engine-runtime-node';
+import { app, ipcMain } from 'electron';
+import path from 'node:path';
+import runtimeArgumentsProvider from './runtime-arguments-provider.js';
 
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
 
@@ -25,7 +28,7 @@ export interface ElectronEnvParams {
 
 export async function runElectronEnv({
     basePath,
-    outputPath = fs.join(basePath, 'dist-app'),
+    outputPath = path.join(basePath, 'dist-app'),
     configName,
     featureName,
     devport,

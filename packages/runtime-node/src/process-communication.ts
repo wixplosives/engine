@@ -1,20 +1,18 @@
+import { BaseHost, COM, type ConfigEnvironmentRecord, type PartialFeatureConfig } from '@wixc3/engine-core';
 import type io from 'socket.io';
-
-import { BaseHost, COM, ConfigEnvironmentRecord, PartialFeatureConfig } from '@wixc3/engine-core';
-import { IPCHost } from './core-node/ipc-host';
-import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './core-node/constants';
-
+import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './core-node/constants.js';
+import { IPCHost } from './core-node/ipc-host.js';
 import {
-    ICommunicationMessage,
-    IEnvironmentMetricsResponse,
-    IEnvironmentPortMessage,
-    RemoteProcess,
     isEnvironmentCloseMessage,
     isEnvironmentMetricsRequestMessage,
     isEnvironmentPortMessage,
     isEnvironmentStartMessage,
-} from './types';
-import { runWSEnvironment } from './ws-environment';
+    type ICommunicationMessage,
+    type IEnvironmentMetricsResponse,
+    type IEnvironmentPortMessage,
+    type RemoteProcess,
+} from './types.js';
+import { runWSEnvironment } from './ws-environment.js';
 
 export interface ICreateCommunicationOptions {
     port: number;
@@ -24,7 +22,7 @@ export interface ICreateCommunicationOptions {
 export function createIPC(
     remoteProcess: RemoteProcess,
     socketServer: io.Server,
-    { port, onClose }: ICreateCommunicationOptions
+    { port, onClose }: ICreateCommunicationOptions,
 ) {
     const environments: Record<string, () => unknown> = {};
 
