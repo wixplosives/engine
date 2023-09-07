@@ -31,48 +31,37 @@ guiFeature.setup(
 
             const configurations = new SetMultiMap<string, IConfigDefinition>();
 
-        virtualModules['index'] = createMainEntrypoint({
-            features,
-            childEnvs: [],
-            env: {
-                name: mainDashboardEnv.env,
-                env: mainDashboardEnv,
-                type: mainDashboardEnv.envType,
-            },
-            mode: 'development',
-            publicConfigsRoute,
-            staticBuild: false,
-            configurations,
-            featureName: 'engineer/gui',
-            featuresBundleName: 'dashboard-features',
-        });
-
-        engineerWebpackConfigs.register(
-            createDashboardConfig({
-                baseConfig,
-                virtualModules,
-                title,
-                favicon,
-                outputPath: application.outputPath,
-            })
-        );
-
-        if (log) {
-            serverListeningHandlerSlot.register(({ port, host }) => {
-                console.log(`Dashboard Listening:`);
-                console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
+            virtualModules['index'] = createMainEntrypoint({
+                features,
+                childEnvs: [],
+                env: {
+                    name: mainDashboardEnv.env,
+                    env: mainDashboardEnv,
+                    type: mainDashboardEnv.envType,
+                },
+                mode: 'development',
+                publicConfigsRoute,
+                staticBuild: false,
+                configurations,
+                featureName: 'engineer/gui',
+                featuresBundleName: 'dashboard-features',
             });
 
-            engineerWebpackConfigs.register(
-                createDashboardConfig({
-                    baseConfig,
-                    virtualModules,
-                    title,
-                    favicon,
-                    outputPath: application.outputPath,
-                }),
-            );
+            if (log) {
+                serverListeningHandlerSlot.register(({ port, host }) => {
+                    console.log(`Dashboard Listening:`);
+                    console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
+                });
 
+                engineerWebpackConfigs.register(
+                    createDashboardConfig({
+                        baseConfig,
+                        virtualModules,
+                        title,
+                        favicon,
+                        outputPath: application.outputPath,
+                    }),
+                );
             }
         });
     },
