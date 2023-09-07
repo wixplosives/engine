@@ -1,5 +1,4 @@
 import { AnyEnvironment, BaseHost, Communication, IRunOptions, TopLevelConfig } from '@wixc3/engine-core';
-// import type io from 'socket.io';
 import { workerThreadInitializer2 } from './worker-thread-initializer2';
 import { resolveEnvironments } from './environments';
 import { IStaticFeatureDefinition } from './types';
@@ -21,7 +20,7 @@ export interface ConfigurationEnvironmentMappingEntry {
 
 export type ConfigurationEnvironmentMapping = Record<string, ConfigurationEnvironmentMappingEntry>;
 
-interface RunningNodeEnvironment {
+export interface RunningNodeEnvironment {
     id: string;
     initialize(): Promise<void>;
     dispose(): Promise<void>;
@@ -34,7 +33,7 @@ export class NodeEnvManager {
     constructor(
         private importMeta: { url: string },
         private featureEnvironmentMapping: FeatureEnvironmentMapping,
-        private configMapping: ConfigurationEnvironmentMapping
+        private configMapping: ConfigurationEnvironmentMapping,
     ) {
         this.communication = new Communication(new BaseHost(this.id), this.id, {}, {}, true, {});
     }
@@ -104,9 +103,10 @@ export class NodeEnvManager {
                     console.error(new Error(`Failed evaluating config file: ${filePath}`, { cause: e }));
                     return [];
                 }
-            })
+            }),
         );
     }
+
     private createEnvironmentFileUrl(envName: string) {
         const env = this.featureEnvironmentMapping.availableEnvironments[envName];
         if (!env) {
@@ -175,7 +175,7 @@ export type FeatureEnvironmentMapping = {
  * This function generates a mapping from feature name to the environments it should run.
  */
 export function createFeatureEnvironmentsMapping(
-    features: ReadonlyMap<string, IStaticFeatureDefinition>
+    features: ReadonlyMap<string, IStaticFeatureDefinition>,
 ): FeatureEnvironmentMapping {
     const featureToEnvironments: Record<string, string[]> = {};
     const availableEnvironments: Record<string, AnyEnvironment> = {};
@@ -196,5 +196,5 @@ export function createFeatureEnvironmentsMapping(
 // TODO: move to a shared location
 // eslint-disable-next-line @typescript-eslint/no-implied-eval
 export const dynamicImport = new Function('modulePath', 'return import(modulePath);') as (
-    modulePath: string | URL
+    modulePath: string | URL,
 ) => Promise<any>;

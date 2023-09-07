@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url';
-import { dynamicImport } from './import-modules';
+import { dynamicImport } from '@wixc3/engine-runtime-node';
 
 export async function loadConfigFile(filePath: string): Promise<object> {
     try {
