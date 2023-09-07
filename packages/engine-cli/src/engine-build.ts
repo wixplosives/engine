@@ -34,15 +34,20 @@ export async function engineBuild({
     singleFeature = false,
     httpServerPort = 5555,
 }: EngineBuildOptions = {}) {
+    rootDir = fs.resolve(rootDir);
+    outputPath = fs.resolve(rootDir, outputPath);
+
+    const configFilePath = await fs.promises.findClosestFile(rootDir, ENGINE_CONFIG_FILE_NAME);
+    const engineConfig: EngineConfig = configFilePath ? ((await loadConfigFile(configFilePath)) as EngineConfig) : {};
+
     const {
         buildPlugins = [],
         serveStatic = [],
         featureDiscoveryRoot = '.',
         socketServerOptions,
         require: requiredPaths = [],
-    } = (await loadConfigFile<EngineConfig>(rootDir, ENGINE_CONFIG_FILE_NAME)).config;
-    rootDir = fs.resolve(rootDir);
-    outputPath = fs.resolve(rootDir, outputPath);
+    } = engineConfig;
+
     await importModules(rootDir, requiredPaths);
 
     const { features, configurations } = await analyzeFeatures(

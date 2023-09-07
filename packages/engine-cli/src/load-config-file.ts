@@ -1,26 +1,15 @@
-import fs from '@file-services/node';
 import { pathToFileURL } from 'node:url';
 import { dynamicImport } from './import-modules';
 
-export async function loadConfigFile<T extends {}>(
-    basePath: string,
-    name: string
-): Promise<{ config: T; path?: string }> {
-    const filepath = await fs.promises.findClosestFile(basePath, name);
-    if (!filepath) {
-        return { config: {} as T, path: undefined };
-    }
+export async function loadConfigFile(filePath: string): Promise<object> {
     try {
-        let config = (await dynamicImport(pathToFileURL(filepath))) as T;
-        config = (config as any).default || config;
+        let config = (await dynamicImport(pathToFileURL(filePath))) as { default?: object };
+        config = config.default ?? config;
         if (!config || typeof config !== 'object') {
-            throw new Error(`config file: ${filepath} must export an object`);
+            throw new Error(`config file: ${filePath} must export an object`);
         }
-        return {
-            config,
-            path: filepath,
-        };
+        return config;
     } catch (ex) {
-        throw new Error(`failed evaluating config file: ${filepath}\n${ex}`);
+        throw new Error(`failed evaluating config file: ${filePath}\n${ex}`);
     }
 }

@@ -1,5 +1,10 @@
 import { Communication, Registry, RuntimeMetadata } from '@wixc3/engine-core';
-import { IConfigDefinition, NodeEnvironmentsManager, WsServerHost, launchEngineHttpServer } from '@wixc3/engine-runtime-node';
+import {
+    IConfigDefinition,
+    NodeEnvironmentsManager,
+    WsServerHost,
+    launchEngineHttpServer,
+} from '@wixc3/engine-runtime-node';
 import {
     IFeatureDefinition,
     createCommunicationMiddleware,
@@ -159,7 +164,7 @@ devServerFeature.setup(
                 createCommunicationMiddleware(
                     application.getNodeEnvManager()!,
                     publicPath,
-                    createEngineerTopologyOverrides(actualPort)
+                    createEngineerTopologyOverrides(actualPort),
                 ),
                 createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
                 createConfigMiddleware(overrideConfig),
@@ -192,7 +197,7 @@ devServerFeature.setup(
                 featureName,
                 singleFeature,
                 disposables,
-                app
+                app,
             );
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
@@ -223,6 +228,7 @@ devServerFeature.setup(
 
             addEngineerCompilations(engineerWebpackConfigs, disposables, app, compilationPromises);
 
+            console.time('Bundling features and engine');
             await Promise.all(compilationPromises);
             console.timeEnd('Bundling features and engine');
             if (log) {
@@ -266,7 +272,7 @@ function addEngineerCompilations(
     engineerWebpackConfigs: Registry<webpack.Configuration>,
     disposables: ReturnType<typeof createDisposables>,
     app: express.Express,
-    compilationPromises: Promise<void>[]
+    compilationPromises: Promise<void>[],
 ) {
     /* creating new compilers for the engineering config for 2 reasons
      *  1. de-couple the engineering build and the users application build
@@ -274,7 +280,6 @@ function addEngineerCompilations(
      *  but we will keep on watching on the users application
      *  2. the createCompiler function is not extendable with more configs with the current API
      */
-    console.time('Bundling features and engine');
     const engineerCompilers = webpack([...engineerWebpackConfigs]);
     if (engineerCompilers.compilers.length > 0) {
         // This assumes we have only one engineer config - for the dashboard
@@ -286,12 +291,12 @@ function addEngineerCompilations(
                 new Promise<void>((res, rej) => {
                     engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
                 }),
-            { name: 'close dev middleware', timeout: 10_000 }
+            { name: 'close dev middleware', timeout: 10_000 },
         );
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         app.use(engineerDevMiddleware);
         compilationPromises.push(
-            new Promise<void>((resolve) => engineerCompilers.hooks.done.tap('engineer dashboard', () => resolve()))
+            new Promise<void>((resolve) => engineerCompilers.hooks.done.tap('engineer dashboard', () => resolve())),
         );
     }
 }
@@ -306,7 +311,7 @@ async function runCompilerInWatch(
     featureName: string | undefined,
     singleFeature: boolean | undefined,
     disposables: ReturnType<typeof createDisposables>,
-    app: express.Express
+    app: express.Express,
 ) {
     const { compiler } = await application.createCompiler({
         ...devServerConfig,
@@ -331,7 +336,7 @@ async function runCompilerInWatch(
                 new Promise<void>((res, rej) => {
                     devMiddleware.close((e) => (e ? rej(e) : res()));
                 }),
-            { name: 'close engineer dev middleware', timeout: 10_000 }
+            { name: 'close engineer dev middleware', timeout: 10_000 },
         );
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         app.use(devMiddleware);
