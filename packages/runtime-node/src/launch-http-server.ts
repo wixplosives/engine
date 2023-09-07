@@ -60,7 +60,6 @@ export async function launchEngineHttpServer({
 
     const close = () =>
         new Promise<void>((res, rej) => {
-            httpServer.closeAllConnections();
             for (const connection of openSockets) {
                 connection.destroy();
             }
