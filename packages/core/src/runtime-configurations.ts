@@ -39,9 +39,8 @@ export class RuntimeConfigurations {
         if (!loader || !configName) {
             return [];
         }
-        const res = await loader();
-        const allLoadedConfigs = await Promise.all(res.map((module) => module.default ?? module));
-        return allLoadedConfigs.flat();
+        const configModules = await loader();
+        return configModules.map((configModule) => configModule.default ?? configModule).flat();
     }
     /**
      * Install a message listener to fetch config for child environments
@@ -99,7 +98,7 @@ export class RuntimeConfigurations {
 
     private loadFromParent(envName: string) {
         if (typeof window === 'undefined') {
-            return Promise.reject('loadFromParent is not supported in non-browser environments');
+            return Promise.reject(new Error('loadFromParent is not supported in non-browser environments'));
         }
         let loadConfigPromise = this.fetchedConfigs[envName];
         if (!loadConfigPromise) {

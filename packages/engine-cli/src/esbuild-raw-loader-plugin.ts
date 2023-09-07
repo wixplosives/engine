@@ -2,11 +2,12 @@ import fs from '@file-services/node';
 import { createRequestResolver } from '@file-services/resolve';
 import { Plugin } from 'esbuild';
 
+/** handle webpack-style explicit raw-loader */
 export function rawLoaderPlugin() {
     const plugin: Plugin = {
         name: 'raw-loader',
         setup(build) {
-            const resolve = createRequestResolver({ fs: fs, alias: build.initialOptions.alias });
+            const resolve = createRequestResolver({ fs, alias: build.initialOptions.alias });
 
             build.onResolve({ filter: /^raw-loader!/ }, (args) => {
                 return {

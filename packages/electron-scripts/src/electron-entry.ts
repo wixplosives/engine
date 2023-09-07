@@ -21,5 +21,7 @@ process.once('message', async (message) => {
             // eslint-disable-next-line no-console
             console.error(ex);
         }
+    } else {
+        throw new Error(`Unknown message: ${JSON.stringify(message)}`);
     }
 });

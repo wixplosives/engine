@@ -8,7 +8,7 @@ import {
     type IBuildCommandOptions as IEngineBuildCommandOptions,
 } from '@wixc3/engine-scripts';
 import { build as electronBuild, Configuration, FileSet, PublishOptions } from 'electron-builder';
-import { dirname, posix, relative } from 'path';
+import { dirname, posix, relative } from 'node:path';
 import { getEngineConfig } from '../find-features.js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -181,7 +181,7 @@ export function createElectronEntryFile({
     const currentFeature = features.get(featureName);
     if (!currentFeature) {
         throw new Error(`feature ${featureName} was not found. available features:
-        ${[...features.keys()].join(', ')}`);
+        ${[...features.keys()].sort().join(', ')}`);
     }
 
     const env = [...getExportedEnvironments(features)].find(({ name }) => name === envName)?.env;

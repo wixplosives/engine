@@ -1,10 +1,16 @@
 import fs from '@file-services/node';
 import { Plugin } from 'esbuild';
 
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-export function htmlPlugin({ toHtmlPath = (key: string) => key.replace(/\.m?js$/, '.html') } = {}) {
+export interface HTMLPluginOptions {
+    toHtmlPath?: (fileName: string) => string;
+    title?: string;
+}
+
+/** create html for each entrypoint */
+export function htmlPlugin({
+    title = 'Application',
+    toHtmlPath = (fileName: string) => fileName.replace(/\.m?js$/, '.html'),
+}: HTMLPluginOptions = {}) {
     const plugin: Plugin = {
         name: 'html-plugin',
         setup(build) {
@@ -26,9 +32,9 @@ export function htmlPlugin({ toHtmlPath = (key: string) => key.replace(/\.m?js$/
                     if (!key.match(/\.m?js$/)) {
                         continue;
                     }
-                    const jsPath = fs.basename(key);
+                    const fileName = fs.basename(key);
                     const jsDir = fs.dirname(key);
-                    const htmlFile = fs.join(jsDir, toHtmlPath(jsPath));
+                    const htmlFile = fs.join(jsDir, toHtmlPath(fileName));
                     const cssPath = meta.cssBundle ? fs.basename(meta.cssBundle) : undefined;
                     const htmlContent = deindento(`
                         |<!DOCTYPE html>
@@ -36,11 +42,11 @@ export function htmlPlugin({ toHtmlPath = (key: string) => key.replace(/\.m?js$/
                         |    <head>
                         |        <meta charset="utf-8" />
                         |        <meta name="viewport" content="width=device-width, initial-scale=1" />
-                        |        <title>Wixc3</title>
+                        |        <title>${title}</title>
                         |        ${cssPath ? `<link rel="stylesheet" href="${cssPath}" />` : ''}
                         |    </head>
                         |    <body>
-                        |        <script type="module" src="${jsPath}" crossorigin="anonymous"></script>
+                        |        <script type="module" src="${fileName}" crossorigin="anonymous"></script>
                         |    </body>
                         |</html>
                     `);

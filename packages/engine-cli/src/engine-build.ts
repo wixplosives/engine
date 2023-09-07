@@ -9,7 +9,7 @@ import { importModules } from './import-modules';
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
 
-export type Options = {
+export interface EngineBuildOptions {
     dev?: {
         enabled?: boolean;
         buildTargets: 'node' | 'web' | 'both';
@@ -22,7 +22,8 @@ export type Options = {
     configName?: string;
     singleFeature?: boolean;
     httpServerPort?: number;
-};
+}
+
 export async function engineBuild({
     dev = { enabled: false, buildTargets: 'both', clean: true },
     rootDir = process.cwd(),
@@ -32,7 +33,7 @@ export async function engineBuild({
     configName = '',
     singleFeature = false,
     httpServerPort = 5555,
-}: Options = {}) {
+}: EngineBuildOptions = {}) {
     const {
         buildPlugins = [],
         serveStatic = [],
@@ -48,7 +49,7 @@ export async function engineBuild({
         fs,
         rootDir,
         featureDiscoveryRoot,
-        singleFeature ? featureName : undefined
+        singleFeature ? featureName : undefined,
     );
 
     const environments = getResolvedEnvironments({
@@ -70,7 +71,9 @@ export async function engineBuild({
         configName,
     });
 
-    await fs.promises.rm(outputPath, { recursive: true, force: true });
+    if (dev.clean) {
+        await fs.promises.rm(outputPath, { recursive: true, force: true });
+    }
 
     if (dev.enabled) {
         await runDevServices({
@@ -96,7 +99,8 @@ export async function engineBuild({
         console.log(`Build total ${Math.round(end - start)}ms`);
     }
 }
-type DevServicesOptions = {
+
+interface DevServicesOptions {
     buildConfigurations: ReturnType<typeof createEnvironmentsBuildConfiguration>;
     serveStatic: Required<EngineConfig>['serveStatic'];
     httpServerPort: number;
@@ -104,7 +108,7 @@ type DevServicesOptions = {
     featureName: string;
     configName: string;
     socketServerOptions: EngineConfig['socketServerOptions'];
-};
+}
 
 async function runDevServices({
     buildConfigurations,
@@ -136,9 +140,9 @@ async function runDevServices({
 
     const devMiddlewares: RouteMiddleware[] = [
         {
-            path: '/engine-portal',
+            path: '/dashboard',
             handlers: (req, res) => {
-                res.sendFile(fs.join(__dirname, '..', 'engine-portal', 'index.html'));
+                res.sendFile(fs.join(__dirname, '../dashboard/index.html'));
             },
         },
     ];
@@ -153,12 +157,12 @@ async function runDevServices({
 
     // start node environment manager
     fork(
-        fs.join(outputPath, 'node', `engine-environment-manager.mjs`),
+        fs.join(outputPath, 'node/engine-environment-manager.mjs'),
         [`--applicationPath=${fs.join(outputPath, 'web')}`, `--feature=${featureName}`, `--config=${configName}`],
 
         {
             execArgv: process.execArgv.concat(['--watch']),
             stdio: 'inherit',
-        }
+        },
     );
 }

@@ -1,5 +1,6 @@
 import { Plugin } from 'esbuild';
 
+/** we found no other sensible way to know esbuild finished building in watch mode */
 export function createBuildEndPluginHook() {
     let buildEndPromise: Promise<void> | undefined;
 

@@ -3,7 +3,7 @@ import type { UniversalWorkerOptions } from '@wixc3/isomorphic-worker/types';
 import { UniversalWorkerHost } from '../hosts/universal-worker-host.js';
 import type { InitializerOptions } from './types.js';
 
-interface WebWorkerInitializerOptions extends InitializerOptions {
+export interface WebWorkerInitializerOptions extends InitializerOptions {
     workerOptions?: UniversalWorkerOptions;
 }
 

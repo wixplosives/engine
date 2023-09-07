@@ -48,11 +48,12 @@ export async function main({
         runtimeConfiguration.load(env.env, featureName, configName),
     ]);
 
+    // only load features after the config is loaded to avoid blocking onload event
     const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName, {});
 
     return new RuntimeEngine(
         env,
         [...buildConfig, ...contextualConfig({ resolvedContexts }), ...runtimeConfig],
-        options
+        options,
     ).run(entryFeature);
 }
