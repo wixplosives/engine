@@ -15,12 +15,12 @@ export async function loadTopLevelConfigs(
             throw new Error(`cannot find config "${configName}". available configurations: ${configNames.join(', ')}`);
         }
         for (const definition of configs) {
-            try {
-                // top level config
-                if (Array.isArray(definition)) {
-                    config.push(...definition);
-                } else {
-                    // config file
+            // top level config
+            if (Array.isArray(definition)) {
+                config.push(...definition);
+            } else {
+                // config file
+                try {
                     if (envName) {
                         if (!definition.envName || definition.envName === envName) {
                             config.push(
@@ -30,9 +30,9 @@ export async function loadTopLevelConfigs(
                     } else {
                         config.push(...((await import(definition.filePath)) as { default: TopLevelConfig }).default);
                     }
+                } catch (e) {
+                    throw new Error(`failed importing: ${definition.filePath}`, { cause: e });
                 }
-            } catch (e) {
-                console.error(e);
             }
         }
     }
