@@ -39,8 +39,10 @@ export class RuntimeConfigurations {
         if (!loader || !configName) {
             return [];
         }
-        const configModules = await loader();
-        return configModules.map((configModule) => configModule.default ?? configModule).flat();
+        const res = await loader();
+        // top level config creates a module that returns a Promise as default export
+        const allLoadedConfigs = await Promise.all(res.map((module) => module.default ?? module));
+        return allLoadedConfigs.flat();
     }
     /**
      * Install a message listener to fetch config for child environments

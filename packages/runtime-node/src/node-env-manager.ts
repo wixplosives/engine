@@ -86,6 +86,7 @@ export class NodeEnvManager {
         this.communication.registerMessageHandler(host);
         console.log(`[ENGINE]: http server is listening on http://localhost:${port}`);
     }
+
     private async loadEnvironmentConfigurations(envName: string, configName: string) {
         const mappingEntry = this.configMapping[configName];
         if (!mappingEntry) {
@@ -98,7 +99,7 @@ export class NodeEnvManager {
                 try {
                     const configModule = (await dynamicImport(pathToFileURL(filePath))).default as ConfigModule;
                     console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
-                    return configModule;
+                    return configModule.default ?? configModule;
                 } catch (e) {
                     throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
                 }
