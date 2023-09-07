@@ -1,11 +1,11 @@
 import fs from '@file-services/node';
+import { importModules } from '@wixc3/engine-runtime-node';
 import { ENGINE_CONFIG_FILE_NAME, EngineConfig, analyzeFeatures, getResolvedEnvironments } from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
 import express from 'express';
 import { fork } from 'node:child_process';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
-import { importModules } from './import-modules';
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
 
