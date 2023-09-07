@@ -4,6 +4,7 @@ export * from './core-node/ipc-host.js';
 export * from './core-node/local-env-inititializer.js';
 export * from './core-node/parent-port-host.js';
 export * from './core-node/ws-node-host.js';
+export * from './dynamic-import.js';
 export * from './environments.js';
 export * from './forked-process.js';
 export * from './import-modules.js';
@@ -19,4 +20,3 @@ export * from './types.js';
 export * from './worker-thread-initializer.js';
 export * from './worker-thread-initializer2.js';
 export * from './ws-environment.js';
-

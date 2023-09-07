@@ -3,8 +3,7 @@ import { dynamicImport } from '@wixc3/engine-runtime-node';
 
 export async function loadConfigFile(filePath: string): Promise<object> {
     try {
-        let config = (await dynamicImport(pathToFileURL(filePath))) as { default?: object };
-        config = config.default ?? config;
+        const config = (await dynamicImport(pathToFileURL(filePath))).default;
         if (!config || typeof config !== 'object') {
             throw new Error(`config file: ${filePath} must export an object`);
         }

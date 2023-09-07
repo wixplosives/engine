@@ -1,13 +1,13 @@
-import { AnyEnvironment, BaseHost, Communication, IRunOptions, TopLevelConfig } from '@wixc3/engine-core';
-import { workerThreadInitializer2 } from './worker-thread-initializer2';
-import { resolveEnvironments } from './environments';
-import { IStaticFeatureDefinition } from './types';
-import { parseArgs } from 'node:util';
-import { pathToFileURL } from 'node:url';
-import { launchEngineHttpServer } from './launch-http-server';
-import { fileURLToPath } from 'node:url';
+import { AnyEnvironment, BaseHost, Communication, ConfigModule, IRunOptions } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseArgs } from 'node:util';
 import { WsServerHost } from './core-node/ws-node-host';
+import { dynamicImport } from './dynamic-import';
+import { resolveEnvironments } from './environments';
+import { launchEngineHttpServer } from './launch-http-server';
+import { IStaticFeatureDefinition } from './types';
+import { workerThreadInitializer2 } from './worker-thread-initializer2';
 
 export interface ConfigFileMapping {
     filePath: string;
@@ -96,12 +96,11 @@ export class NodeEnvManager {
         return await Promise.all(
             configFiles.map(async ({ filePath }) => {
                 try {
-                    const configModule = (await dynamicImport(pathToFileURL(filePath))).default;
+                    const configModule = (await dynamicImport(pathToFileURL(filePath))).default as ConfigModule;
                     console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
-                    return (configModule.default ?? configModule) as TopLevelConfig;
+                    return configModule;
                 } catch (e) {
-                    console.error(new Error(`Failed evaluating config file: ${filePath}`, { cause: e }));
-                    return [];
+                    throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
                 }
             }),
         );
@@ -192,9 +191,3 @@ export function createFeatureEnvironmentsMapping(
     }
     return { featureToEnvironments, availableEnvironments };
 }
-
-// TODO: move to a shared location
-// eslint-disable-next-line @typescript-eslint/no-implied-eval
-export const dynamicImport = new Function('modulePath', 'return import(modulePath);') as (
-    modulePath: string | URL,
-) => Promise<any>;

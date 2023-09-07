@@ -1,3 +1,6 @@
+import { pathToFileURL } from 'node:url';
+import { dynamicImport } from './dynamic-import';
+
 /**
  * Dynamically imports required modules using the specified base path.
  * @param basePath The base path to use for resolving module paths.
@@ -7,7 +10,7 @@
 export async function importModules(basePath: string, requiredModules: string[]): Promise<void> {
     for (const requiredModule of requiredModules) {
         try {
-            await import(require.resolve(requiredModule, { paths: [basePath] }));
+            await dynamicImport(pathToFileURL(require.resolve(requiredModule, { paths: [basePath] })));
         } catch (ex) {
             throw new Error(`failed importing: ${requiredModule}`, { cause: ex });
         }
