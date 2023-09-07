@@ -9,6 +9,6 @@ export async function loadConfigFile(filePath: string): Promise<object> {
         }
         return config;
     } catch (ex) {
-        throw new Error(`failed evaluating config file: ${filePath}\n${ex}`);
+        throw new Error(`failed evaluating config file: ${filePath}`, { cause: ex });
     }
 }
