@@ -2,7 +2,7 @@
   "name": "@wixc3/engine-cli",
   "version": "40.1.0",
   "bin": {
-    "engine": "./dist/cli.js"
+    "engine": "./bin/engine.js"
   },
   "scripts": {
     "test": "mocha \"dist/test/**/*.unit.js\""
@@ -25,6 +25,7 @@
     "dist",
     "!dist/test",
     "src",
+    "bin",
     "!*/tsconfig.{json,tsbuildinfo}"
   ],
   "license": "MIT",
