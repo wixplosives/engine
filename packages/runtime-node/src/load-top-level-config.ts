@@ -5,13 +5,13 @@ import type { IConfigDefinition } from './types';
 export async function loadTopLevelConfigs(
     configName: string | undefined,
     configurations?: SetMultiMap<string, IConfigDefinition | TopLevelConfig>,
-    envName?: string
+    envName?: string,
 ) {
     const config: TopLevelConfig = [];
     if (configurations && configName) {
         const configs = configurations.get(configName);
         if (!configs) {
-            const configNames = Array.from(configurations.keys());
+            const configNames = Array.from(configurations.keys()).sort();
             throw new Error(`cannot find config "${configName}". available configurations: ${configNames.join(', ')}`);
         }
         for (const definition of configs) {
@@ -24,7 +24,7 @@ export async function loadTopLevelConfigs(
                     if (envName) {
                         if (!definition.envName || definition.envName === envName) {
                             config.push(
-                                ...((await import(definition.filePath)) as { default: TopLevelConfig }).default
+                                ...((await import(definition.filePath)) as { default: TopLevelConfig }).default,
                             );
                         }
                     } else {
