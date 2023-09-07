@@ -247,7 +247,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     if (persist) {
         after('dispose suite level page', async function () {
-            this.timeout(10_000);
+            this.timeout(disposables.list().totalTimeout);
             await disposables.dispose();
         });
         const disposables = new Disposables();
