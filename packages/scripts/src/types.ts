@@ -5,7 +5,6 @@ import type {
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
-// we might want our own abstraction for plugin. for now we use esbuild's
 import { Plugin } from 'esbuild';
 import type io from 'socket.io';
 
