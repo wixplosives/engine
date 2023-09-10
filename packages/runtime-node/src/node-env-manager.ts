@@ -47,11 +47,9 @@ export class NodeEnvManager {
         const envNames = this.featureEnvironmentMapping.featureToEnvironments[featureName];
 
         if (!envNames) {
-            console.log(`[ENGINE]: no environments found for feature ${featureName}`);
-            return;
-        } else {
-            console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
+            throw new Error(`[ENGINE]: no environments found for feature ${featureName}`);
         }
+        console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
 
         await Promise.all(envNames.map((envName) => this.open(envName, runtimeOptions)));
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
