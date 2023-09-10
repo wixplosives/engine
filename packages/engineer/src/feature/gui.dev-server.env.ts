@@ -47,21 +47,21 @@ guiFeature.setup(
                 featuresBundleName: 'dashboard-features',
             });
 
+            engineerWebpackConfigs.register(
+                createDashboardConfig({
+                    baseConfig,
+                    virtualModules,
+                    title,
+                    favicon,
+                    outputPath: application.outputPath,
+                }),
+            );
+
             if (log) {
                 serverListeningHandlerSlot.register(({ port, host }) => {
                     console.log(`Dashboard Listening:`);
                     console.log(`Dashboard URL: http://${host}:${port}/dashboard`);
                 });
-
-                engineerWebpackConfigs.register(
-                    createDashboardConfig({
-                        baseConfig,
-                        virtualModules,
-                        title,
-                        favicon,
-                        outputPath: application.outputPath,
-                    }),
-                );
             }
         });
     },
