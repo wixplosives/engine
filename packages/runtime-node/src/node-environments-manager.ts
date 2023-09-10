@@ -6,7 +6,7 @@ import {
     type ConfigEnvironmentRecord,
     type Message,
     type ReadyMessage,
-    type TopLevelConfig
+    type TopLevelConfig,
 } from '@wixc3/engine-core';
 import type { SetMultiMap } from '@wixc3/patterns';
 import { safeListeningHttpServer } from 'create-listening-server';
@@ -19,17 +19,17 @@ import { resolveEnvironments } from './environments.js';
 import { loadTopLevelConfigs } from './load-top-level-config.js';
 import { startRemoteNodeEnvironment } from './remote-node-environment.js';
 import {
-    ICommunicationMessage,
-    IConfigDefinition,
-    IEnvironmentDescriptor,
-    IEnvironmentMessage,
-    IEnvironmentStartMessage,
-    IStaticFeatureDefinition,
-    MetadataCollectionAPI,
-    StartEnvironmentOptions,
-    TopLevelConfigProvider,
     isEnvironmentStartMessage,
     metadataApiToken,
+    type ICommunicationMessage,
+    type IConfigDefinition,
+    type IEnvironmentDescriptor,
+    type IEnvironmentMessage,
+    type IEnvironmentStartMessage,
+    type IStaticFeatureDefinition,
+    type MetadataCollectionAPI,
+    type StartEnvironmentOptions,
+    type TopLevelConfigProvider,
 } from './types.js';
 import { runWSEnvironment } from './ws-environment.js';
 
@@ -213,7 +213,7 @@ export class NodeEnvironmentsManager {
                 envHostMapping,
                 nodeEnv,
                 mode,
-                metadataProviderHost
+                metadataProviderHost,
             );
 
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
@@ -227,7 +227,7 @@ export class NodeEnvironmentsManager {
             config.push(COM.use({ config: { topology, connectedEnvironments } }));
             config.push(
                 ...(await loadTopLevelConfigs(originalConfigName, this.options.configurations)),
-                ...overrideConfigs
+                ...overrideConfigs,
             );
             const preparedEnvironment = await this.prepareEnvironment({
                 nodeEnv,
@@ -267,7 +267,7 @@ export class NodeEnvironmentsManager {
         envHostMapping: Map<IEnvironmentDescriptor<AnyEnvironment>, ChildBaseHost>,
         nodeEnv: IEnvironmentDescriptor<AnyEnvironment>,
         mode: string,
-        metadataProviderHost: BaseHost
+        metadataProviderHost: BaseHost,
     ) {
         const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
         for (const [env, host] of envHostMapping) {
