@@ -35,7 +35,8 @@ export class NodeEnvManager {
     ) {
         this.communication = new Communication(new BaseHost(this.id), this.id, {}, {}, true, {});
     }
-    async autoLaunch() {
+
+    public async autoLaunch() {
         const runtimeOptions = parseRuntimeOptions();
 
         const featureName = runtimeOptions.get('feature');
@@ -55,13 +56,13 @@ export class NodeEnvManager {
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app } = await launchEngineHttpServer({ staticDirPath });
 
-        app.get('/configs/*', (req, res) => {
+        app.get<[string]>('/configs/*', (req, res) => {
             const reqEnv = req.query.env as string;
             if (typeof reqEnv !== 'string') {
                 res.status(400).end('env is required');
                 return;
             }
-            const requestedConfig: string = (req.params as any)[0] as string;
+            const [requestedConfig] = req.params;
             console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
             if (!requestedConfig || requestedConfig === 'undefined') {
                 res.json([]);
@@ -69,9 +70,7 @@ export class NodeEnvManager {
             }
 
             this.loadEnvironmentConfigurations(reqEnv, requestedConfig)
-                .then((configs) => {
-                    res.json(configs.flat());
-                })
+                .then((configs) => res.json(configs.flat()))
                 .catch((e) => {
                     console.error(e);
                     res.status(500).end(e.stack);
@@ -112,7 +111,7 @@ export class NodeEnvManager {
         return new URL(`${env.env}.${env.envType}${jsOutExtension}`, this.importMeta.url);
     }
 
-    async initializeWorkerEnvironment(envName: string, runtimeOptions: IRunOptions) {
+    private async initializeWorkerEnvironment(envName: string, runtimeOptions: IRunOptions) {
         const env = this.featureEnvironmentMapping.availableEnvironments[envName];
         if (!env) {
             throw new Error(`environment ${envName} not found`);
