@@ -24,7 +24,7 @@ export async function analyzeFeatures(
     return featuresAndConfigs;
 }
 
-export function filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+function filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
     const foundFeature = features.get(featureName);
     if (!foundFeature) {
         throw new Error(`cannot find feature: ${featureName}`);

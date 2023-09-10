@@ -28,7 +28,6 @@ export function workerThreadInitializer2({
     const initialize = async (): Promise<void> => {
         const worker = new Worker(workerURL, {
             name: instanceId,
-            // type: 'module',
             workerData: { runtimeOptions: envRuntimeOptions },
         });
         disposables.add(() => worker.terminate());
