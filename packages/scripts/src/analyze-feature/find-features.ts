@@ -13,7 +13,7 @@ export async function analyzeFeatures(
     fs: IFileSystemSync,
     basePath: string,
     featureDiscoveryRoot = '.',
-    featureName?: string
+    featureName?: string,
 ) {
     console.time(`Analyzing Features`);
     const featuresAndConfigs = await findFeatures(basePath, fs, featureDiscoveryRoot);
@@ -24,27 +24,30 @@ export async function analyzeFeatures(
     return featuresAndConfigs;
 }
 
-function filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+export function filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
     const foundFeature = features.get(featureName);
     if (!foundFeature) {
         throw new Error(`cannot find feature: ${featureName}`);
     }
-    const nonFoundDependencies: string[] = [];
+    const missingFeatureDeps = new Set<string>();
     const filteredFeatures = [
         ...flattenTree(foundFeature, ({ dependencies }) =>
             dependencies.map((dependencyName) => {
                 const feature = features.get(dependencyName);
                 if (!feature) {
-                    nonFoundDependencies.push(dependencyName);
+                    missingFeatureDeps.add(dependencyName);
                     return {} as IFeatureDefinition;
                 }
                 return feature;
-            })
+            }),
         ),
     ].map(({ scopedName }) => scopedName);
-    if (nonFoundDependencies.length) {
+
+    if (missingFeatureDeps.size) {
         throw new Error(
-            `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`
+            `The following features were not found during feature location: ${Array.from(missingFeatureDeps)
+                .sort()
+                .join(', ')}`,
         );
     }
     for (const [foundFeatureName] of features) {

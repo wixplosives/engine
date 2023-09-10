@@ -34,10 +34,6 @@ export class TargetApplication extends Application {
         return analyzeFeatures(nodeFs, this.basePath, featureDiscoveryRoot, singleFeature ? featureName : undefined);
     }
 
-    public filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
-        return super.filterByFeatureName(features, featureName);
-    }
-
     public importModules(requiredModules: string[]) {
         return super.importModules(requiredModules);
     }

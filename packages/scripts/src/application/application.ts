@@ -1,12 +1,12 @@
 import { nodeFs as fs } from '@file-services/node';
 import { defaults } from '@wixc3/common';
-import { flattenTree, type TopLevelConfig } from '@wixc3/engine-core';
+import { type TopLevelConfig } from '@wixc3/engine-core';
 import {
     launchEngineHttpServer,
     NodeEnvironmentsManager,
     resolveEnvironments,
     type IConfigDefinition,
-    type RouteMiddleware
+    type RouteMiddleware,
 } from '@wixc3/engine-runtime-node';
 import { createDisposables, SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
@@ -68,7 +68,7 @@ export class Application {
             fs,
             this.basePath,
             buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot,
-            buildOptions.singleFeature ? buildOptions.featureName : undefined
+            buildOptions.singleFeature ? buildOptions.featureName : undefined,
         );
 
         const envs = getResolvedEnvironments({
@@ -473,35 +473,5 @@ export class Application {
         }
 
         return featureEnvDefinitions;
-    }
-
-    protected filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
-        const foundFeature = features.get(featureName);
-        if (!foundFeature) {
-            throw new Error(`cannot find feature: ${featureName}`);
-        }
-        const nonFoundDependencies: string[] = [];
-        const filteredFeatures = [
-            ...flattenTree(foundFeature, ({ dependencies }) =>
-                dependencies.map((dependencyName) => {
-                    const feature = features.get(dependencyName);
-                    if (!feature) {
-                        nonFoundDependencies.push(dependencyName);
-                        return {} as IFeatureDefinition;
-                    }
-                    return feature;
-                }),
-            ),
-        ].map(({ scopedName }) => scopedName);
-        if (nonFoundDependencies.length) {
-            throw new Error(
-                `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`,
-            );
-        }
-        for (const [foundFeatureName] of features) {
-            if (!filteredFeatures.includes(foundFeatureName)) {
-                features.delete(foundFeatureName);
-            }
-        }
     }
 }
