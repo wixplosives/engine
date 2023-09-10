@@ -44,7 +44,7 @@ export function createNodeEntrypoint({
         env.name,
         env.type,
         env.env.endpointType,
-        env.flatDependencies?.map((d) => d.env) ?? []
+        env.flatDependencies?.map((d) => d.env) ?? [],
     );
     const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
     const configLoaders = createConfigLoaders({
@@ -56,18 +56,13 @@ export function createNodeEntrypoint({
         loadConfigFileTemplate: nodeLoadConfigFileTemplate,
     });
     return `
-import { main, COM } from '@wixc3/engine-core';
-import { ParentPortHost } from '@wixc3/engine-runtime-node';
-import { parseArgs } from 'node:util';
+import { main, COM } from "@wixc3/engine-core";
+import { parseRuntimeOptions, ParentPortHost } from "@wixc3/engine-runtime-node";
+import { parseArgs } from "node:util";
+import { workerData } from "node:worker_threads";
 
-const { values: args } = parseArgs({
-    strict: false,
-    allowPositionals: false
-});
-
-console.log('[${env.name}]: Started with args: ' + JSON.stringify(args, null, 2));
-
-const options = new Map(Object.entries(args));
+const options = workerData?.runtimeOptions ?? parseRuntimeOptions();
+console.log('[${env.name}]: Started with options: ', options);
 
 main({
     featureName: ${stringify(featureName)}, 

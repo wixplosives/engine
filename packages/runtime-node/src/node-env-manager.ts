@@ -118,13 +118,11 @@ export class NodeEnvManager {
             throw new Error(`environment ${envName} not found`);
         }
 
-        const argv = toNonPositionalArgv(runtimeOptions);
-        console.log(`[ENGINE]: Opening environment ${envName} with argv ${argv.join(' ')}`);
         const runningEnv = workerThreadInitializer2({
             communication: this.communication,
             env,
             workerURL: this.createEnvironmentFileUrl(envName),
-            argv,
+            runtimeOptions,
         });
 
         await runningEnv.initialize();
@@ -138,22 +136,7 @@ export class NodeEnvManager {
     }
 }
 
-function toNonPositionalArgv(runtimeOptions: IRunOptions) {
-    const argv: string[] = [];
-    for (const [key, value] of runtimeOptions.entries()) {
-        if (Array.isArray(value)) {
-            for (const v of value) {
-                argv.push(`--${key}=${String(v)}`);
-            }
-        } else {
-            argv.push(`--${key}=${String(value)}`);
-        }
-    }
-    return argv;
-}
-
-// TODO: use in node entry point template
-function parseRuntimeOptions() {
+export function parseRuntimeOptions() {
     const { values: args } = parseArgs({
         strict: false,
         allowPositionals: false,
