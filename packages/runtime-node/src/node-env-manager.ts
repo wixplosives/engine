@@ -51,7 +51,7 @@ export class NodeEnvManager {
         }
         console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
 
-        await Promise.all(envNames.map((envName) => this.open(envName, runtimeOptions)));
+        await Promise.all(envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions)));
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app } = await launchEngineHttpServer({ staticDirPath });
 
@@ -112,7 +112,7 @@ export class NodeEnvManager {
         return new URL(`${env.env}.${env.envType}${jsOutExtension}`, this.importMeta.url);
     }
 
-    async open(envName: string, runtimeOptions: IRunOptions) {
+    async initializeWorkerEnvironment(envName: string, runtimeOptions: IRunOptions) {
         const env = this.featureEnvironmentMapping.availableEnvironments[envName];
         if (!env) {
             throw new Error(`environment ${envName} not found`);
