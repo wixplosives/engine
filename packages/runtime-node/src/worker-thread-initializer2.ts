@@ -22,10 +22,11 @@ export function workerThreadInitializer2({
     const disposables = createDisposables();
     const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
     const envIsReady = communication.envReady(instanceId);
-    const envRuntimeOptions = new Map(runtimeOptions?.entries());
-    envRuntimeOptions.set('environment_id', instanceId);
 
     const initialize = async (): Promise<void> => {
+        const envRuntimeOptions = new Map(runtimeOptions?.entries());
+        envRuntimeOptions.set('environment_id', instanceId);
+
         const worker = new Worker(workerURL, {
             name: instanceId,
             workerData: { runtimeOptions: envRuntimeOptions },
