@@ -1,5 +1,9 @@
 import { TopLevelConfig } from '@wixc3/engine-core';
-import type { ConfigurationEnvironmentMapping, IConfigDefinition, IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import type {
+    ConfigurationEnvironmentMapping,
+    IConfigDefinition,
+    IEnvironmentDescriptor,
+} from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import { relative } from 'node:path';
 import type { IFeatureDefinition } from './types.js';
@@ -222,7 +226,7 @@ const getAllValidConfigurations = (configurations: [string, IConfigDefinition][]
 export const createAllValidConfigurationsEnvironmentMapping = (
     configurations: SetMultiMap<string, IConfigDefinition>,
     mode: 'development' | 'production',
-    configName?: string
+    configName?: string,
 ) => {
     const configurationMapping: ConfigurationEnvironmentMapping = {};
     const configEntries = filterConfigurationsByMode(configurations, mode, configName);
@@ -232,10 +236,10 @@ export const createAllValidConfigurationsEnvironmentMapping = (
             common: [],
         };
         if (!configEnvName) {
-            configurationMapping[name]!.common.push({ filePath });
+            configurationMapping[name]!.common.push(filePath);
         } else {
             configurationMapping[name]!.byEnv[configEnvName] ??= [];
-            configurationMapping[name]!.byEnv[configEnvName]!.push({ filePath });
+            configurationMapping[name]!.byEnv[configEnvName]!.push(filePath);
         }
     }
     return configurationMapping;
@@ -272,7 +276,7 @@ export function createConfigLoaders({
     if (staticBuild) {
         for (const [scopedName, availableConfigs] of Object.entries(configs)) {
             const loadStatements = availableConfigs.map(({ filePath, configEnvName }) =>
-                loadConfigFileTemplate(filePath, scopedName, configEnvName)
+                loadConfigFileTemplate(filePath, scopedName, configEnvName),
             );
             loaders.push(`    '${scopedName}': async () => (await Promise.all([${loadStatements.join(',')}]))`);
         }

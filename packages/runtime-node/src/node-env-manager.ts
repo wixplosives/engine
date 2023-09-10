@@ -9,13 +9,11 @@ import { launchEngineHttpServer } from './launch-http-server';
 import { IStaticFeatureDefinition } from './types';
 import { workerThreadInitializer2 } from './worker-thread-initializer2';
 
-export interface ConfigFileMapping {
-    filePath: string;
-}
+export type ConfigFilePath = string;
 
 export interface ConfigurationEnvironmentMappingEntry {
-    common: ConfigFileMapping[];
-    byEnv: Record<string, ConfigFileMapping[]>;
+    common: ConfigFilePath[];
+    byEnv: Record<string, ConfigFilePath[]>;
 }
 
 export type ConfigurationEnvironmentMapping = Record<string, ConfigurationEnvironmentMappingEntry>;
@@ -62,7 +60,7 @@ export class NodeEnvManager {
         app.get('/configs/*', (req, res) => {
             const reqEnv = req.query.env as string;
             if (typeof reqEnv !== 'string') {
-                res.status(400).send('env is required');
+                res.status(400).end('env is required');
                 return;
             }
             const requestedConfig: string = (req.params as any)[0] as string;
@@ -78,7 +76,7 @@ export class NodeEnvManager {
                 })
                 .catch((e) => {
                     console.error(e);
-                    res.status(500).send(e.message);
+                    res.status(500).end(e.stack);
                 });
         });
 
@@ -95,7 +93,7 @@ export class NodeEnvManager {
         const { common, byEnv } = mappingEntry;
         const configFiles = [...common, ...(byEnv[envName] ?? [])];
         return await Promise.all(
-            configFiles.map(async ({ filePath }) => {
+            configFiles.map(async (filePath) => {
                 try {
                     const configModule = (await dynamicImport(pathToFileURL(filePath))).default as ConfigModule;
                     console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
@@ -143,7 +141,7 @@ export class NodeEnvManager {
 }
 
 function toNonPositionalArgv(runtimeOptions: IRunOptions) {
-    const argv = [];
+    const argv: string[] = [];
     for (const [key, value] of runtimeOptions.entries()) {
         if (Array.isArray(value)) {
             for (const v of value) {
