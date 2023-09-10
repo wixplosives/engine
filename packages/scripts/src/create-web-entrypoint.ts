@@ -24,7 +24,7 @@ export function createMainEntrypoint({
         env.name,
         env.type,
         env.env.endpointType,
-        env.flatDependencies?.map((d) => d.env) ?? []
+        env.flatDependencies?.map((d) => d.env) ?? [],
     );
     const configLoaders = createConfigLoaders({
         configurations,
@@ -39,9 +39,6 @@ export function createMainEntrypoint({
 
     return `
 import { main, COM } from '@wixc3/engine-core';
-
-// import process from "process";
-// globalThis.process = process;
 
 const urlParams = new URLSearchParams(globalThis.location.search);
 const options = globalThis.engineEntryOptions?.({ urlParams, envName: ${stringify(env.name)} }) ?? urlParams;
@@ -95,12 +92,12 @@ function webLoadConfigFileTemplate(
     configLoaderModuleName: string | undefined = '@wixc3/engine-scripts/dist/default-config-loader',
     filePath: string,
     scopedName: string,
-    configEnvName = ''
+    configEnvName = '',
 ): string {
     const request = stringify(
         topLevelConfigLoaderPath +
             `?configLoaderModuleName=${configLoaderModuleName}&scopedName=${scopedName}&envName=${configEnvName}!` +
-            filePath
+            filePath,
     );
     return `import(/* webpackChunkName: "[config]${scopedName}${configEnvName}" */ /* webpackMode: 'eager' */ ${request})`;
 }
