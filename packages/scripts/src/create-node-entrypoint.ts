@@ -84,7 +84,11 @@ main({
             ...${stringify(config, null, 2)}
         ];
     },
-}).then(()=>console.log('[${env.name}]: Running')).catch(console.error);
+}).then(()=>console.log('[${env.name}]: Running'))
+    .catch(e => {
+        process.exitCode = 1;
+        console.error(e);
+    });
 `.trimStart();
 }
 
