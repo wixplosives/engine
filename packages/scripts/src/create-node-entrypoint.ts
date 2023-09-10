@@ -53,7 +53,7 @@ export function createNodeEntrypoint({
         configName,
         envName: env.name,
         staticBuild: true,
-        loadConfigFileTemplate: nodeLoadConfigFileTemplate,
+        loadConfigFileTemplate: (filePath) => `import(${stringify(filePath)})`,
     });
     return `
 import { main, COM } from "@wixc3/engine-core";
@@ -90,8 +90,4 @@ main({
         console.error(e);
     });
 `.trimStart();
-}
-
-function nodeLoadConfigFileTemplate(filePath: string): string {
-    return `import(${stringify(filePath)})`;
 }
