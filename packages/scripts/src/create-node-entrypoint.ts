@@ -1,11 +1,11 @@
 import { Environment } from '@wixc3/engine-core';
+import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
 import {
     ICreateEntrypointsOptions,
     createAllValidConfigurationsEnvironmentMapping,
     createConfigLoaders,
     createFeatureLoaders,
 } from './create-entrypoint';
-import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
 
 const { stringify } = JSON;
 
@@ -18,14 +18,14 @@ export function createNodeEnvironmentManagerEntrypoint({
     const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
     const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
     return `
-        import { NodeEnvManager } from '@wixc3/engine-runtime-node';
-        const featureEnvironmentsMapping = ${stringify(featureEnvironmentsMapping)};
-        const configMapping = ${stringify(configMapping)};
-        new NodeEnvManager(import.meta, featureEnvironmentsMapping, configMapping).autoLaunch().catch((e)=>{
-            process.exitCode = 1;
-            console.error(e);
-        });
-    `;
+import { NodeEnvManager } from '@wixc3/engine-runtime-node';
+const featureEnvironmentsMapping = ${stringify(featureEnvironmentsMapping)};
+const configMapping = ${stringify(configMapping)};
+new NodeEnvManager(import.meta, featureEnvironmentsMapping, configMapping).autoLaunch().catch((e)=>{
+    process.exitCode = 1;
+    console.error(e);
+});
+`.trimStart();
 }
 
 export function createNodeEntrypoint({
@@ -85,7 +85,7 @@ main({
         ];
     },
 }).then(()=>console.log('[${env.name}]: Running')).catch(console.error);
-`;
+`.trimStart();
 }
 
 function nodeLoadConfigFileTemplate(filePath: string): string {
