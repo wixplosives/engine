@@ -88,14 +88,13 @@ function isTypeOnlyImport(node: ts.ImportDeclaration) {
 
 function hasOnlyTypeBindings(bindings?: ts.NamedImportBindings | ts.NamedExportBindings) {
     if (bindings?.kind === ts.SyntaxKind.NamedImports || bindings?.kind === ts.SyntaxKind.NamedExports) {
-        for (const element of bindings.elements) {
-            if (!element.isTypeOnly) {
-                return false;
-            }
-        }
-        return true;
+        return !!bindings.elements.length && bindings.elements.every(isTypeOnlySpecifier);
     }
     return false;
+}
+
+function isTypeOnlySpecifier(specifier: ts.ImportSpecifier | ts.ExportSpecifier): boolean {
+    return specifier.isTypeOnly;
 }
 
 function isRequireIdentifier(expression: ts.Expression): expression is ts.Identifier {
