@@ -76,6 +76,8 @@ devServerFeature.setup(
                 socketServerOptions: configServerOptions = {},
                 serveStatic = [],
                 featureDiscoveryRoot,
+                extensions,
+                conditions,
             } = engineConfig ?? {};
 
             await application.importModules(requiredPaths);
@@ -105,6 +107,8 @@ devServerFeature.setup(
                 singleFeature,
                 featureName,
                 providedFeatureDiscoveryRoot ?? featureDiscoveryRoot,
+                extensions,
+                conditions,
             );
 
             const staticFeatures = new Map(

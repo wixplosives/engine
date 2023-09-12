@@ -59,7 +59,7 @@ export class Application {
     }> {
         const buildOptions = defaults(options, buildDefaults);
         const { config: _config } = await this.getEngineConfig();
-        const config = defaults(_config || {}, buildDefaults);
+        const config = defaults(_config ?? {}, buildDefaults);
 
         if (config.require) await this.importModules(config.require);
 
@@ -69,6 +69,8 @@ export class Application {
             this.basePath,
             buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot,
             buildOptions.singleFeature ? buildOptions.featureName : undefined,
+            config.extensions,
+            config.conditions,
         );
 
         const envs = getResolvedEnvironments({

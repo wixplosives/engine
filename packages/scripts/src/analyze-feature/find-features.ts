@@ -14,9 +14,11 @@ export async function analyzeFeatures(
     basePath: string,
     featureDiscoveryRoot = '.',
     featureName?: string,
+    extensions?: string[],
+    conditions?: string[],
 ) {
     console.time(`Analyzing Features`);
-    const featuresAndConfigs = await findFeatures(basePath, fs, featureDiscoveryRoot);
+    const featuresAndConfigs = await findFeatures(basePath, fs, featureDiscoveryRoot, extensions, conditions);
     if (featureName) {
         filterByFeatureName(featuresAndConfigs.features, featureName);
     }
@@ -61,6 +63,8 @@ export async function findFeatures(
     path: string,
     fs: IFileSystemSync,
     featureDiscoveryRoot = '.',
+    extensions?: string[],
+    conditions?: string[],
 ): Promise<FoundFeatures> {
     const packages = childPackagesFromContext(resolveDirectoryContext(path, fs));
     const paths = packages.map(({ directoryPath }) => fs.join(directoryPath, featureDiscoveryRoot));
@@ -71,8 +75,8 @@ export async function findFeatures(
 
     return {
         ...mergeResults(
-            await loadFeaturesFromPaths(features, fs, packages),
-            await loadFeaturesFromPaths(fixtures, fs, packages),
+            await loadFeaturesFromPaths(features, fs, packages, undefined, extensions, conditions),
+            await loadFeaturesFromPaths(fixtures, fs, packages, undefined, extensions, conditions),
         ),
         packages,
     };

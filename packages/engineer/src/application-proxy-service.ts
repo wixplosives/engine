@@ -30,8 +30,21 @@ export class TargetApplication extends Application {
         return super.getClosestEngineConfigPath();
     }
 
-    public getFeatures(singleFeature?: boolean, featureName?: string, featureDiscoveryRoot?: string) {
-        return analyzeFeatures(nodeFs, this.basePath, featureDiscoveryRoot, singleFeature ? featureName : undefined);
+    public getFeatures(
+        singleFeature?: boolean,
+        featureName?: string,
+        featureDiscoveryRoot?: string,
+        extensions?: string[],
+        conditions?: string[],
+    ) {
+        return analyzeFeatures(
+            nodeFs,
+            this.basePath,
+            featureDiscoveryRoot,
+            singleFeature ? featureName : undefined,
+            extensions,
+            conditions,
+        );
     }
 
     public importModules(requiredModules: string[]) {
