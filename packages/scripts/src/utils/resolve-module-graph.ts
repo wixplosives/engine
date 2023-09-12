@@ -87,10 +87,11 @@ function isTypeOnlyImport(node: ts.ImportDeclaration) {
 }
 
 function hasOnlyTypeBindings(bindings?: ts.NamedImportBindings | ts.NamedExportBindings) {
-    if (bindings?.kind === ts.SyntaxKind.NamedImports || bindings?.kind === ts.SyntaxKind.NamedExports) {
-        return !!bindings.elements.length && bindings.elements.every(isTypeOnlySpecifier);
-    }
-    return false;
+    return (
+        (bindings?.kind === ts.SyntaxKind.NamedImports || bindings?.kind === ts.SyntaxKind.NamedExports) &&
+        bindings.elements.length > 0 &&
+        bindings.elements.every(isTypeOnlySpecifier)
+    );
 }
 
 function isTypeOnlySpecifier(specifier: ts.ImportSpecifier | ts.ExportSpecifier): boolean {
