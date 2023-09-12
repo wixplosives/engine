@@ -78,7 +78,6 @@ function extractModuleRequests(sourceFile: ts.SourceFile): string[] {
     return specifiers;
 }
 
-
 function isTypeOnlyExports(node: ts.ExportDeclaration) {
     return node.isTypeOnly || hasOnlyTypeBindings(node.exportClause);
 }
@@ -94,6 +93,7 @@ function hasOnlyTypeBindings(bindings?: ts.NamedImportBindings | ts.NamedExportB
                 return false;
             }
         }
+        return true;
     }
     return false;
 }
