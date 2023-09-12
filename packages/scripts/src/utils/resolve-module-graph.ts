@@ -60,8 +60,8 @@ function extractModuleRequests(sourceFile: ts.SourceFile): string[] {
     };
 
     const importsFinder = (node: ts.Node) => {
-        const isNonTypeImport = isImportDeclaration(node) && !node.importClause?.isTypeOnly;
-        const isNonTypeExport = isExportDeclaration(node) && !node.isTypeOnly;
+        const isNonTypeImport = isImportDeclaration(node) && !isTypeOnlyImport(node);
+        const isNonTypeExport = isExportDeclaration(node) && !isTypeOnlyExports(node);
 
         if ((isNonTypeImport || isNonTypeExport) && node.moduleSpecifier && isStringLiteral(node.moduleSpecifier)) {
             const originalTarget = node.moduleSpecifier.text;
@@ -76,6 +76,26 @@ function extractModuleRequests(sourceFile: ts.SourceFile): string[] {
 
     forEachChild(sourceFile, importsFinder);
     return specifiers;
+}
+
+function isTypeOnlyExports(node: ts.ExportDeclaration) {
+    return node.isTypeOnly || hasOnlyTypeBindings(node.exportClause);
+}
+
+function isTypeOnlyImport(node: ts.ImportDeclaration) {
+    return node.importClause?.isTypeOnly || hasOnlyTypeBindings(node.importClause?.namedBindings);
+}
+
+function hasOnlyTypeBindings(bindings?: ts.NamedImportBindings | ts.NamedExportBindings) {
+    return (
+        (bindings?.kind === ts.SyntaxKind.NamedImports || bindings?.kind === ts.SyntaxKind.NamedExports) &&
+        bindings.elements.length > 0 &&
+        bindings.elements.every(isTypeOnlySpecifier)
+    );
+}
+
+function isTypeOnlySpecifier(specifier: ts.ImportSpecifier | ts.ExportSpecifier): boolean {
+    return specifier.isTypeOnly;
 }
 
 function isRequireIdentifier(expression: ts.Expression): expression is ts.Identifier {
