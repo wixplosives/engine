@@ -14,8 +14,12 @@ const {
     isStringLiteral,
 } = ts;
 
-export function resolveModuleGraph(filePaths: string | string[]): Record<string, ResolvedRequests> {
-    const resolveRequest = createRequestResolver({ fs: { ...fs, ...path } });
+export function resolveModuleGraph(
+    filePaths: string | string[],
+    extensions?: string[],
+    conditions?: string[],
+): Record<string, ResolvedRequests> {
+    const resolveRequest = createRequestResolver({ fs: { ...fs, ...path }, extensions, conditions });
     const dependencyResolver = createDependencyResolver({
         extractRequests(filePath) {
             if (!isCodeModule(path.basename(filePath))) {

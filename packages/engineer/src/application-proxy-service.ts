@@ -28,8 +28,18 @@ export class TargetApplication extends Application {
         return super.getClosestEngineConfigPath();
     }
 
-    public async getFeatures(singleFeature?: boolean, featureName?: string, featureDiscoveryRoot?: string) {
-        const { features, configurations, packages } = await super.analyzeFeatures(featureDiscoveryRoot);
+    public async getFeatures(
+        singleFeature?: boolean,
+        featureName?: string,
+        featureDiscoveryRoot?: string,
+        extensions?: string[],
+        conditions?: string[],
+    ) {
+        const { features, configurations, packages } = await super.analyzeFeatures(
+            featureDiscoveryRoot,
+            extensions,
+            conditions,
+        );
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);
         }

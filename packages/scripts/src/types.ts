@@ -74,4 +74,10 @@ export interface EngineConfig {
     sourcesRoot?: string;
     favicon?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
+
+    /** @default ["browser", "import", "require"] */
+    conditions?: string[];
+
+    /** @default [".js", ".json"] */
+    extensions?: string[];
 }

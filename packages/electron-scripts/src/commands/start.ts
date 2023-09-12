@@ -50,8 +50,12 @@ export async function start({
     devtools,
     featureDiscoveryRoot,
 }: IStartCommandOptions) {
-    const { require: requiredModules, featureDiscoveryRoot: configFeatureDiscoveryRoot } =
-        (await getEngineConfig(basePath)) || {};
+    const {
+        require: requiredModules,
+        featureDiscoveryRoot: configFeatureDiscoveryRoot,
+        extensions,
+        conditions,
+    } = (await getEngineConfig(basePath)) || {};
 
     const resolvedFeatureDiscoveryRoot = featureDiscoveryRoot ?? configFeatureDiscoveryRoot;
 
@@ -70,7 +74,13 @@ export async function start({
     // registering to the dev server ready event
     serverListeningHandlerSlot.register(async ({ port, router }) => {
         const config: TopLevelConfig = [];
-        const { features, configurations } = await findFeatures(basePath, fs, resolvedFeatureDiscoveryRoot);
+        const { features, configurations } = await findFeatures(
+            basePath,
+            fs,
+            resolvedFeatureDiscoveryRoot,
+            extensions,
+            conditions,
+        );
 
         const environments = getExportedEnvironments(features);
 
