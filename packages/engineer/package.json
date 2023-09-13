@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engineer",
-  "version": "40.2.1",
+  "version": "40.2.2",
   "license": "MIT",
   "main": "dist/index.js",
   "exports": {
@@ -25,10 +25,10 @@
     "@file-services/node": "^8.2.0",
     "@file-services/resolve": "^8.2.0",
     "@wixc3/common": "^13.3.2",
-    "@wixc3/engine-core": "^40.2.1",
-    "@wixc3/engine-dashboard": "^40.2.1",
-    "@wixc3/engine-runtime-node": "^40.2.1",
-    "@wixc3/engine-scripts": "^40.2.1",
+    "@wixc3/engine-core": "^40.2.2",
+    "@wixc3/engine-dashboard": "^40.2.2",
+    "@wixc3/engine-runtime-node": "^40.2.2",
+    "@wixc3/engine-scripts": "^40.2.2",
     "@wixc3/patterns": "^13.3.2",
     "commander": "^11.0.0",
     "open": "^8.4.2",
