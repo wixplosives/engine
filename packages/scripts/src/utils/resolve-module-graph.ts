@@ -83,7 +83,10 @@ function isTypeOnlyExports(node: ts.ExportDeclaration) {
 }
 
 function isTypeOnlyImport(node: ts.ImportDeclaration) {
-    return node.importClause?.isTypeOnly || hasOnlyTypeBindings(node.importClause?.namedBindings);
+    return (
+        node.importClause?.isTypeOnly ||
+        (node.importClause?.name == undefined && hasOnlyTypeBindings(node.importClause?.namedBindings))
+    );
 }
 
 function hasOnlyTypeBindings(bindings?: ts.NamedImportBindings | ts.NamedExportBindings) {
