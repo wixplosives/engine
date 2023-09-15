@@ -22,7 +22,7 @@
   "devDependencies": {
     "@file-services/memory": "^8.2.0",
     "@file-services/types": "^8.2.0",
-    "@stylable/cli": "^5.15.2",
+    "@stylable/cli": "^5.16.0",
     "@stylable/webpack-plugin": "^5.15.2",
     "@types/chai": "^4.3.6",
     "@types/chai-as-promised": "^7.1.6",
