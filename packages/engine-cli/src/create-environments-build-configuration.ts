@@ -26,6 +26,8 @@ export interface CreateEnvBuildConfigOptions {
     outputPath: string;
     featureName?: string;
     configName?: string;
+    conditions?: string[];
+    extensions?: string[];
 }
 
 export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConfigOptions) {
@@ -40,6 +42,8 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         configurations,
         config,
         buildPlugins,
+        conditions,
+        extensions
     } = options;
 
     const mode = dev ? 'development' : 'production';
@@ -100,6 +104,8 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         metafile: true,
         sourcemap: true,
         keepNames: true,
+        conditions,
+        resolveExtensions: extensions,
         outExtension: { '.js': jsOutExtension },
         loader: {
             '.json': 'json',

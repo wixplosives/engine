@@ -78,6 +78,8 @@ export async function engineBuild({
         outputPath,
         featureName,
         configName,
+        extensions,
+        conditions,
     });
 
     if (dev.clean) {
