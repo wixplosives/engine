@@ -41,7 +41,7 @@ export function resolveModuleGraph(
     return dependencyResolver(filePaths, true);
 }
 
-function extractModuleRequests(sourceFile: ts.SourceFile): string[] {
+export function extractModuleRequests(sourceFile: ts.SourceFile): string[] {
     const specifiers: string[] = [];
 
     const dynamicImportsFinder = (node: ts.Node): void => {
@@ -85,7 +85,7 @@ function isTypeOnlyExports(node: ts.ExportDeclaration) {
 function isTypeOnlyImport(node: ts.ImportDeclaration) {
     return (
         node.importClause?.isTypeOnly ||
-        (node.importClause?.name == undefined && hasOnlyTypeBindings(node.importClause?.namedBindings))
+        (node.importClause?.name === undefined && hasOnlyTypeBindings(node.importClause?.namedBindings))
     );
 }
 
