@@ -73,9 +73,12 @@ function emitConfigFile(
     envName: string | null,
     fileName: string | null,
     filesToEmit: Map<string, { content: string; path: string }>,
-    initialOptions: BuildOptions
+    initialOptions: BuildOptions,
 ) {
     const outDir = initialOptions.outdir;
+    if (!outDir) {
+        throw new Error('top-level-config-loader: outdir configuration is missing');
+    }
     const rootContext = initialOptions.absWorkingDir || process.cwd();
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -83,5 +86,5 @@ function emitConfigFile(
     const content = JSON.stringify(imported.default ?? imported);
     const configFileName = envName ? `${fileName!}.${envName}` : fileName;
     const configPath = `configs/${configFileName!}.json`;
-    filesToEmit.set(configPath, { content, path: join(rootContext, outDir!, configPath) });
+    filesToEmit.set(configPath, { content, path: join(rootContext, outDir, configPath) });
 }
