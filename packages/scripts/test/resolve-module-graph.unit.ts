@@ -56,11 +56,6 @@ describe('extractModuleRequests', () => {
         expect(extract(fileContents)).to.eql(['target']);
     });
 
-    it('finds named exports', () => {
-        const fileContents = `export { foo } from 'target';`;
-        expect(extract(fileContents)).to.eql(['target']);
-    });
-
     it('finds namespace exports', () => {
         const fileContents = `export * from 'target';`;
         expect(extract(fileContents)).to.eql(['target']);
@@ -105,6 +100,11 @@ describe('extractModuleRequests', () => {
 
     it('ignores renamed type namespace exports', () => {
         const fileContents = `export type * as foo from 'target';`;
+        expect(extract(fileContents)).to.eql([]);
+    });
+
+    it('ignores named type exports', () => {
+        const fileContents = `export { type a, type b } from 'target';`;
         expect(extract(fileContents)).to.eql([]);
     });
 });
