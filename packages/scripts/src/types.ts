@@ -66,6 +66,7 @@ export interface StaticConfig {
 export interface EngineConfig {
     require?: string[];
     featureDiscoveryRoot?: string;
+    /** relative path to the location where Application.create() initializes a new feature  */
     featuresDirectory?: string;
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
