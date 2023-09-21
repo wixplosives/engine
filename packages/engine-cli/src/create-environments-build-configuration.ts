@@ -42,7 +42,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         configurations,
         config,
         buildPlugins,
-        buildConditions = [],
+        buildConditions,
         extensions,
     } = options;
 
@@ -104,7 +104,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         metafile: true,
         sourcemap: true,
         keepNames: true,
-        conditions: [...buildConditions, 'browser', 'import', 'require'],
+        conditions: buildConditions,
         resolveExtensions: extensions,
         outExtension: { '.js': jsOutExtension },
         loader: {
