@@ -13,6 +13,8 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 export async function importFresh(filePath: string, exportSymbolName = 'default'): Promise<unknown> {
     const worker = new Worker(__filename, {
         workerData: { filePath, exportSymbolName } satisfies ImportFreshWorkerData,
+        // doesn't seem to inherit two levels deep (Worker from Worker)
+        execArgv: [...process.execArgv],
     });
     const [imported] = await once(worker, 'message');
     await worker.terminate();

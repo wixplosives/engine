@@ -14,7 +14,7 @@ import { validateBrowser } from './supported-browsers.js';
 import type { IExecutableApplication } from './types.js';
 import { ensureTracePath } from './utils/index.js';
 
-const cliEntry = require.resolve('@wixc3/engineer/bin/engineer');
+const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
 export interface IFeatureExecutionOptions {
     /**

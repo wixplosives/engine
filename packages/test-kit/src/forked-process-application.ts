@@ -1,5 +1,10 @@
 import { isProcessMessage, type PerformanceMetrics, type ProcessMessageId } from '@wixc3/engine-runtime-node';
-import type { IFeatureMessagePayload, IFeatureTarget, IPortMessage } from '@wixc3/engine-scripts';
+import {
+    resolveExecArgv,
+    type IFeatureMessagePayload,
+    type IFeatureTarget,
+    type IPortMessage,
+} from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'node:child_process';
 import type { IExecutableApplication } from './types.js';
 
@@ -17,7 +22,6 @@ export class ForkedProcessApplication implements IExecutableApplication {
         if (this.port) {
             throw new Error('The server is already running.');
         }
-        const execArgv = process.argv.some((arg) => arg.startsWith('--inspect')) ? ['--inspect'] : [];
 
         const args = ['start', '--engineerEntry', 'engineer/managed'];
 
@@ -25,6 +29,7 @@ export class ForkedProcessApplication implements IExecutableApplication {
             args.push('--featureDiscoveryRoot');
             args.push(this.featureDiscoveryRoot);
         }
+        const execArgv = await resolveExecArgv(this.basePath);
 
         this.engineStartProcess = fork(this.cliEntry, args, {
             stdio: 'inherit',
