@@ -43,7 +43,7 @@ export async function startDevServer(options: IStartOptions): Promise<{
         undefined,
         undefined,
         engineCnf.extensions,
-        engineCnf.conditions,
+        engineCnf.buildConditions,
     );
 
     const engine = await runNodeEnvironment({

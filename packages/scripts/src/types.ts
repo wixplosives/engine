@@ -67,6 +67,7 @@ export interface StaticConfig {
 export interface EngineConfig {
     require?: string[];
     featureDiscoveryRoot?: string;
+    /** relative path to the location where Application.create() initializes a new feature  */
     featuresDirectory?: string;
     featureTemplatesFolder?: string;
     featureFolderNameTemplate?: string;
@@ -77,8 +78,11 @@ export interface EngineConfig {
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     buildPlugins?: Plugin[];
 
-    /** @default ["browser", "import", "require"] */
-    conditions?: string[];
+    /**
+     * extra resolver conditions to add while building project.
+     * used for finding features and running in dev time
+     */
+    buildConditions?: string[];
 
     /** @default [".js", ".json"] */
     extensions?: string[];

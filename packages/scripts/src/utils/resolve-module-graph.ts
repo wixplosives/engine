@@ -1,5 +1,11 @@
-import { createDependencyResolver, createRequestResolver, type ResolvedRequests } from '@file-services/resolve';
+import {
+    createDependencyResolver,
+    createRequestResolver,
+    defaultConditions,
+    type ResolvedRequests,
+} from '@file-services/resolve';
 import fs from 'node:fs';
+import nodeModule from 'node:module';
 import path from 'node:path';
 import ts from 'typescript';
 import { isCodeModule } from '../build-constants.js';
@@ -17,9 +23,13 @@ const {
 export function resolveModuleGraph(
     filePaths: string | string[],
     extensions?: string[],
-    conditions?: string[],
+    extraConditions: string[] = [],
 ): Record<string, ResolvedRequests> {
-    const resolveRequest = createRequestResolver({ fs: { ...fs, ...path }, extensions, conditions });
+    const resolveRequest = createRequestResolver({
+        fs: { ...fs, ...path },
+        extensions,
+        conditions: [...extraConditions, ...defaultConditions],
+    });
     const dependencyResolver = createDependencyResolver({
         extractRequests(filePath) {
             if (!isCodeModule(path.basename(filePath))) {
@@ -31,6 +41,9 @@ export function resolveModuleGraph(
         },
         resolveRequest(filePath, request) {
             const contextPath = path.dirname(filePath);
+            if (nodeModule.isBuiltin(request)) {
+                return undefined;
+            }
             const { resolvedFile } = resolveRequest(contextPath, request);
             if (resolvedFile === undefined) {
                 throw new Error(`Could not resolve "${request}" from ${filePath}`);
@@ -41,7 +54,7 @@ export function resolveModuleGraph(
     return dependencyResolver(filePaths, true);
 }
 
-function extractModuleRequests(sourceFile: ts.SourceFile): string[] {
+export function extractModuleRequests(sourceFile: ts.SourceFile): string[] {
     const specifiers: string[] = [];
 
     const dynamicImportsFinder = (node: ts.Node): void => {
@@ -85,7 +98,7 @@ function isTypeOnlyExports(node: ts.ExportDeclaration) {
 function isTypeOnlyImport(node: ts.ImportDeclaration) {
     return (
         node.importClause?.isTypeOnly ||
-        (node.importClause?.name == undefined && hasOnlyTypeBindings(node.importClause?.namedBindings))
+        (node.importClause?.name === undefined && hasOnlyTypeBindings(node.importClause?.namedBindings))
     );
 }
 

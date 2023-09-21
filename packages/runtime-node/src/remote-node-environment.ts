@@ -28,7 +28,7 @@ export async function startRemoteNodeEnvironment(
             JSON.stringify(requiredPaths),
         ],
         {
-            execArgv,
+            execArgv: [...process.execArgv, ...execArgv],
         },
     );
     await once(childProccess, 'message');

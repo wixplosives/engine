@@ -33,9 +33,9 @@ export async function loadFeaturesFromPaths(
     packages: INpmPackage[] = [],
     override = {},
     extensions?: string[],
-    conditions?: string[],
+    extraConditions?: string[],
 ) {
-    const imported = getImportedFeatures(roots, fs, extensions, conditions);
+    const imported = getImportedFeatures(roots, fs, extensions, extraConditions);
 
     // this is our actual starting point. we now have a list of directories which contain
     // feature/env/config files, both in our repo and from node_modules.
@@ -166,14 +166,14 @@ function getImportedFeatures(
     roots: DirFeatures,
     fs: IFileSystemSync,
     extensions?: string[],
-    conditions?: string[],
+    extraConditions?: string[],
 ): DirFeatures {
     const imported = {
         dirs: new Set<string>(),
         files: new Set<string>(),
     };
     // find all imported feature files from initial ones
-    const filePathsInGraph = Object.keys(resolveModuleGraph(Array.from(roots.files), extensions, conditions));
+    const filePathsInGraph = Object.keys(resolveModuleGraph(Array.from(roots.files), extensions, extraConditions));
     const featureFilePaths = filePathsInGraph.filter((filePath) => isFeatureFile(fs.basename(filePath)));
     for (const filePath of featureFilePaths) {
         addNew(roots.files, imported.files, filePath);

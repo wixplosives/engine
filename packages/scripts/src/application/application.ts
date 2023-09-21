@@ -70,7 +70,7 @@ export class Application {
             buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot,
             buildOptions.singleFeature ? buildOptions.featureName : undefined,
             config.extensions,
-            config.conditions,
+            config.buildConditions,
         );
 
         const envs = getResolvedEnvironments({

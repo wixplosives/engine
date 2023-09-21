@@ -35,7 +35,7 @@ export class TargetApplication extends Application {
         featureName?: string,
         featureDiscoveryRoot?: string,
         extensions?: string[],
-        conditions?: string[],
+        extraConditions?: string[],
     ) {
         return analyzeFeatures(
             nodeFs,
@@ -43,7 +43,7 @@ export class TargetApplication extends Application {
             featureDiscoveryRoot,
             singleFeature ? featureName : undefined,
             extensions,
-            conditions,
+            extraConditions,
         );
     }
 

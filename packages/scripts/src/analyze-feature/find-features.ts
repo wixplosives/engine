@@ -64,7 +64,7 @@ export async function findFeatures(
     fs: IFileSystemSync,
     featureDiscoveryRoot = '.',
     extensions?: string[],
-    conditions?: string[],
+    extraConditions?: string[],
 ): Promise<FoundFeatures> {
     const packages = childPackagesFromContext(resolveDirectoryContext(path, fs));
     const paths = packages.map(({ directoryPath }) => fs.join(directoryPath, featureDiscoveryRoot));
@@ -75,8 +75,8 @@ export async function findFeatures(
 
     return {
         ...mergeResults(
-            await loadFeaturesFromPaths(features, fs, packages, undefined, extensions, conditions),
-            await loadFeaturesFromPaths(fixtures, fs, packages, undefined, extensions, conditions),
+            await loadFeaturesFromPaths(features, fs, packages, undefined, extensions, extraConditions),
+            await loadFeaturesFromPaths(fixtures, fs, packages, undefined, extensions, extraConditions),
         ),
         packages,
     };

@@ -77,7 +77,7 @@ devServerFeature.setup(
                 serveStatic = [],
                 featureDiscoveryRoot,
                 extensions,
-                conditions,
+                buildConditions,
             } = engineConfig ?? {};
 
             await application.importModules(requiredPaths);
@@ -108,7 +108,7 @@ devServerFeature.setup(
                 featureName,
                 providedFeatureDiscoveryRoot ?? featureDiscoveryRoot,
                 extensions,
-                conditions,
+                buildConditions,
             );
 
             const staticFeatures = new Map(
