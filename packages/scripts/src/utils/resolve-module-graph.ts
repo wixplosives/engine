@@ -1,7 +1,12 @@
-import { createDependencyResolver, createRequestResolver, type ResolvedRequests } from '@file-services/resolve';
+import {
+    createDependencyResolver,
+    createRequestResolver,
+    defaultConditions,
+    type ResolvedRequests,
+} from '@file-services/resolve';
 import fs from 'node:fs';
-import path from 'node:path';
 import nodeModule from 'node:module';
+import path from 'node:path';
 import ts from 'typescript';
 import { isCodeModule } from '../build-constants.js';
 
@@ -15,9 +20,6 @@ const {
     isStringLiteral,
 } = ts;
 
-// https://github.com/wixplosives/file-services/blob/v8.2.0/packages/resolve/src/request-resolver.ts#L6
-const defaultResolverConditions = ['browser', 'import', 'require'];
-
 export function resolveModuleGraph(
     filePaths: string | string[],
     extensions?: string[],
@@ -26,7 +28,7 @@ export function resolveModuleGraph(
     const resolveRequest = createRequestResolver({
         fs: { ...fs, ...path },
         extensions,
-        conditions: [...extraConditions, ...defaultResolverConditions],
+        conditions: [...extraConditions, ...defaultConditions],
     });
     const dependencyResolver = createDependencyResolver({
         extractRequests(filePath) {
