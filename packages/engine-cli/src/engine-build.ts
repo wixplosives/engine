@@ -47,7 +47,7 @@ export async function engineBuild({
         socketServerOptions,
         require: requiredPaths = [],
         extensions,
-        conditions,
+        buildConditions,
     } = engineConfig;
 
     await importModules(rootDir, requiredPaths);
@@ -58,7 +58,7 @@ export async function engineBuild({
         featureDiscoveryRoot,
         singleFeature ? featureName : undefined,
         extensions,
-        conditions,
+        buildConditions,
     );
 
     const environments = getResolvedEnvironments({
@@ -79,7 +79,7 @@ export async function engineBuild({
         featureName,
         configName,
         extensions,
-        conditions,
+        buildConditions,
     });
 
     if (dev.clean) {

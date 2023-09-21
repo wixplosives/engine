@@ -26,7 +26,7 @@ export interface CreateEnvBuildConfigOptions {
     outputPath: string;
     featureName?: string;
     configName?: string;
-    conditions?: string[];
+    buildConditions?: string[];
     extensions?: string[];
 }
 
@@ -42,8 +42,8 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         configurations,
         config,
         buildPlugins,
-        conditions,
-        extensions
+        buildConditions = [],
+        extensions,
     } = options;
 
     const mode = dev ? 'development' : 'production';
@@ -76,7 +76,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
 
         webEntryPoints.set(
             `${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}${jsOutExtension}`,
-            entrypointContent
+            entrypointContent,
         );
     }
 
@@ -104,7 +104,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         metafile: true,
         sourcemap: true,
         keepNames: true,
-        conditions,
+        conditions: [...buildConditions, 'browser', 'import', 'require'],
         resolveExtensions: extensions,
         outExtension: { '.js': jsOutExtension },
         loader: {
