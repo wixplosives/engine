@@ -1,4 +1,5 @@
 import { COM, UniversalWorkerHost, type InitializerOptions } from '@wixc3/engine-core';
+import type { UniversalWorkerOptions } from '@wixc3/isomorphic-worker/types';
 import { Worker } from '@wixc3/isomorphic-worker/worker';
 import { createDisposables } from '@wixc3/patterns';
 import { createMetadataProvider } from './core-node/create-application-metadata-provider.js';
@@ -43,7 +44,8 @@ export function workerThreadInitializer({
             workerData: {
                 name: instanceId,
             },
-        });
+            execArgv: [...process.execArgv],
+        } as UniversalWorkerOptions);
 
         disposables.add(() => worker.terminate(), {
             name: `worker thread ${instanceId} terminate`,
