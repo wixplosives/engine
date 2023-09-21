@@ -5,7 +5,7 @@ export function createBuildEndPluginHook() {
     let buildEndPromise: Promise<void> | undefined;
 
     const plugin: Plugin = {
-        name: 'raw-loader',
+        name: 'build-end-plugin',
         setup(build) {
             buildEndPromise = new Promise((res, rej) => {
                 build.onEnd(({ errors }) => (errors.length ? rej(errors) : res()));
