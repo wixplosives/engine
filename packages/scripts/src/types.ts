@@ -76,8 +76,11 @@ export interface EngineConfig {
     favicon?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
 
-    /** @default ["browser", "import", "require"] */
-    conditions?: string[];
+    /**
+     * extra resolver conditions to add while building project.
+     * used for finding features and running in dev time
+     */
+    buildConditions?: string[];
 
     /** @default [".js", ".json"] */
     extensions?: string[];

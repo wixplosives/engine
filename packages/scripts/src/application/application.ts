@@ -69,7 +69,7 @@ export class Application {
         const analyzed = await this.analyzeFeatures(
             buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot,
             config.extensions,
-            config.conditions,
+            config.buildConditions,
         );
 
         if (buildOptions.singleFeature && buildOptions.featureName) {
@@ -472,12 +472,12 @@ export class Application {
         return { compiler };
     }
 
-    protected async analyzeFeatures(featureDiscoveryRoot = '.', extensions?: string[], conditions?: string[]) {
+    protected async analyzeFeatures(featureDiscoveryRoot = '.', extensions?: string[], extraConditions?: string[]) {
         const { basePath } = this;
 
         console.time(`Analyzing Features`);
         // const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
-        const featuresAndConfigs = await findFeatures(basePath, fs, featureDiscoveryRoot, extensions, conditions);
+        const featuresAndConfigs = await findFeatures(basePath, fs, featureDiscoveryRoot, extensions, extraConditions);
         console.timeEnd('Analyzing Features');
         return featuresAndConfigs;
     }

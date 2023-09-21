@@ -54,7 +54,7 @@ export async function start({
         require: requiredModules,
         featureDiscoveryRoot: configFeatureDiscoveryRoot,
         extensions,
-        conditions,
+        buildConditions,
     } = (await getEngineConfig(basePath)) || {};
 
     const resolvedFeatureDiscoveryRoot = featureDiscoveryRoot ?? configFeatureDiscoveryRoot;
@@ -79,7 +79,7 @@ export async function start({
             fs,
             resolvedFeatureDiscoveryRoot,
             extensions,
-            conditions,
+            buildConditions,
         );
 
         const environments = getExportedEnvironments(features);

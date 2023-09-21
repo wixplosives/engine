@@ -33,12 +33,12 @@ export class TargetApplication extends Application {
         featureName?: string,
         featureDiscoveryRoot?: string,
         extensions?: string[],
-        conditions?: string[],
+        extraConditions?: string[],
     ) {
         const { features, configurations, packages } = await super.analyzeFeatures(
             featureDiscoveryRoot,
             extensions,
-            conditions,
+            extraConditions,
         );
         if (singleFeature && featureName) {
             this.filterByFeatureName(features, featureName);

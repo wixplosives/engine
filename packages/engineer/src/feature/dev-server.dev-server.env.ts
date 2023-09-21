@@ -71,7 +71,7 @@ devServerFeature.setup(
                 serveStatic = [],
                 featureDiscoveryRoot,
                 extensions,
-                conditions,
+                buildConditions,
             } = engineConfig ?? {};
             await application.importModules(requiredPaths);
             const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
@@ -99,7 +99,7 @@ devServerFeature.setup(
                 featureName,
                 providedFeatureDiscoveryRoot ?? featureDiscoveryRoot,
                 extensions,
-                conditions,
+                buildConditions,
             );
 
             const staticFeatures = new Map(

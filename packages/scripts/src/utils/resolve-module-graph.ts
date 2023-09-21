@@ -1,6 +1,7 @@
 import { createDependencyResolver, createRequestResolver, type ResolvedRequests } from '@file-services/resolve';
 import fs from 'node:fs';
 import path from 'node:path';
+import nodeModule from 'node:module';
 import ts from 'typescript';
 import { isCodeModule } from '../build-constants.js';
 
@@ -14,12 +15,19 @@ const {
     isStringLiteral,
 } = ts;
 
+// https://github.com/wixplosives/file-services/blob/v8.2.0/packages/resolve/src/request-resolver.ts#L6
+const defaultResolverConditions = ['browser', 'import', 'require'];
+
 export function resolveModuleGraph(
     filePaths: string | string[],
     extensions?: string[],
-    conditions?: string[],
+    extraConditions: string[] = [],
 ): Record<string, ResolvedRequests> {
-    const resolveRequest = createRequestResolver({ fs: { ...fs, ...path }, extensions, conditions });
+    const resolveRequest = createRequestResolver({
+        fs: { ...fs, ...path },
+        extensions,
+        conditions: [...extraConditions, ...defaultResolverConditions],
+    });
     const dependencyResolver = createDependencyResolver({
         extractRequests(filePath) {
             if (!isCodeModule(path.basename(filePath))) {
@@ -31,6 +39,9 @@ export function resolveModuleGraph(
         },
         resolveRequest(filePath, request) {
             const contextPath = path.dirname(filePath);
+            if (nodeModule.isBuiltin(request)) {
+                return undefined;
+            }
             const { resolvedFile } = resolveRequest(contextPath, request);
             if (resolvedFile === undefined) {
                 throw new Error(`Could not resolve "${request}" from ${filePath}`);

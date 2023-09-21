@@ -7,6 +7,7 @@ export * from './engine-router.js';
 export * from './feature-generator/index.js';
 export * from './load-feature-directory.js';
 export * from './load-node-environment.js';
+export * from './resolve-exec-argv.js';
 export * from './run-environment.js';
 export * from './types.js';
 export * from './utils/index.js';
