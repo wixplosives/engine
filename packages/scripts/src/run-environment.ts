@@ -63,6 +63,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         featureDiscoveryRoot: configFeatureDiscoveryRoot,
         extensions,
         buildConditions,
+        require: requiredModules,
     } = (engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}) as EngineConfig;
 
     const { features, configurations } = await findFeatures(
@@ -111,6 +112,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
                 outputPath: process.cwd(),
                 nodeEntryPath: '',
                 runtimeOptions: Object.entries(runtimeOptions),
+                requiredModules,
             };
         },
     });
