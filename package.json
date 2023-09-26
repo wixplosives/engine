@@ -41,7 +41,7 @@
     "@types/node": "18",
     "@types/react": "^18.2.22",
     "@types/react-dom": "^18.2.7",
-    "@types/semver": "^7.5.2",
+    "@types/semver": "^7.5.3",
     "@types/sinon": "^10.0.16",
     "@types/sinon-chai": "^3.2.9",
     "@types/yargs": "^17.0.25",
