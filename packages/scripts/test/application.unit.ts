@@ -105,7 +105,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('../dist/feature/x.feature');
+                expect(filePath).to.eq('../dist/feature/x.feature.js');
             });
 
             it('uses sourcesRoot when building to the output path which is inside package directory', async () => {
@@ -122,7 +122,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('../lib/dist/feature/x.feature');
+                expect(filePath).to.eq('../lib/dist/feature/x.feature.js');
             });
 
             it('maps to own feature request to package requests if output path outside package directory', async () => {
@@ -139,7 +139,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('@fixture/engine-single-feature/dist/feature/x.feature');
+                expect(filePath).to.eq('@fixture/engine-single-feature/dist/feature/x.feature.js');
             });
 
             it('uses package requests when output path is outside package path', async () => {
@@ -157,7 +157,7 @@ describe('Application', function () {
                 const featureDefinition = manifest.features.find(([featureName]) => featureName === 'engine-single/x');
                 expect(featureDefinition).to.not.eq(undefined);
                 const [, { filePath }] = featureDefinition!;
-                expect(filePath).to.eq('@fixture/engine-single-feature/lib/dist/feature/x.feature');
+                expect(filePath).to.eq('@fixture/engine-single-feature/lib/dist/feature/x.feature.js');
             });
         });
     });
