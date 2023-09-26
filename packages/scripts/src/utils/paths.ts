@@ -8,9 +8,7 @@ export function getFilePathInPackage(
     isRelativeRequest: boolean,
 ) {
     const relativeFilePath = fs.relative(context, filePath);
-    const relativeRequest = fs
-        .join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath, fs.extname(relativeFilePath)))
-        .replace(/\\/g, '/');
+    const relativeRequest = fs.join(fs.dirname(relativeFilePath), fs.basename(relativeFilePath)).replace(/\\/g, '/');
     return isRelativeRequest
         ? relativeRequest.startsWith('.')
             ? relativeRequest
