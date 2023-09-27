@@ -100,10 +100,25 @@ export async function start({
             config.push(...(typeof overrideConfig === 'function' ? overrideConfig(port) : overrideConfig));
         }
 
+        let NODE_OPTIONS = '--enable-source-maps';
+        if (requiredModules) {
+            for (const requiredModule of requiredModules) {
+                NODE_OPTIONS += ` --require=${requiredModule}`;
+            }
+        }
+        if (buildConditions) {
+            for (const condition of buildConditions) {
+                NODE_OPTIONS += ` --conditions=${condition}`;
+            }
+        }
         // running electon application
         const electronApp = spawn(electronPath, [electronEntryPath], {
             cwd: basePath,
             stdio: ['ipc', 'inherit', 'inherit'],
+            env: {
+                ...process.env,
+                NODE_OPTIONS,
+            },
         });
 
         provideApiForChildProcess(electronApp, router);
