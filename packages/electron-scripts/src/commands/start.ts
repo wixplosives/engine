@@ -103,7 +103,8 @@ export async function start({
         let NODE_OPTIONS = '--enable-source-maps';
         if (requiredModules) {
             for (const requiredModule of requiredModules) {
-                NODE_OPTIONS += ` --require=${requiredModule}`;
+                const resolvedRequiredModule = require.resolve(requiredModule, { paths: [basePath] });
+                NODE_OPTIONS += ` --require=${resolvedRequiredModule}`;
             }
         }
         if (buildConditions) {
