@@ -34,6 +34,12 @@ export interface IBundleEngineArguments extends IApplicationOptions, IEngineBuil
     configName?: string;
 
     featureDiscoveryRoot?: string;
+
+    /** engine config file path */
+    engineConfigPath?: string;
+
+    /** webpack config file path */
+    webpackConfigPath?: string;
 }
 const possiblePublishValues = ['onTag', 'onTagOrDraft', 'always', 'never'];
 
@@ -69,7 +75,10 @@ const ELECTRON_ENTRY_FILE_NAME = 'electron-entry.js';
 export async function build(options: IBuildCommandOptions): Promise<void> {
     const basePath = options.basePath ?? process.cwd();
     const { require: requiredModules, featureDiscoveryRoot: configFeatureDiscoveryRoot } =
-        (await getEngineConfig(basePath)) || {};
+        (await getEngineConfig(
+            basePath,
+            options.engineConfigPath ? fs.resolve(basePath, options.engineConfigPath) : undefined,
+        )) || {};
 
     const {
         featureName,
@@ -99,6 +108,8 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
         basePath,
         outputPath,
         featureDiscoveryRoot,
+        webpackConfigPath: options.webpackConfigPath ? fs.resolve(basePath, options.webpackConfigPath) : undefined,
+        engineConfigPath: options.engineConfigPath ? fs.resolve(basePath, options.engineConfigPath) : undefined,
     });
 
     if (configName) {

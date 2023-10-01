@@ -60,7 +60,9 @@ export class Application {
         resolvedEnvironments: ReturnType<typeof getResolvedEnvironments>;
     }> {
         const buildOptions = defaults(options, buildDefaults);
-        const { config: _config } = await this.getEngineConfig();
+        const { config: _config } = await this.getEngineConfig(
+            buildOptions.engineConfigPath ? fs.resolve(this.basePath, buildOptions.engineConfigPath) : undefined,
+        );
         const config = defaults(_config || {}, buildDefaults);
 
         if (config.require) await this.importModules(config.require);
@@ -251,8 +253,8 @@ export class Application {
         );
     }
 
-    protected async getEngineConfig(): Promise<{ config?: EngineConfig; path?: string }> {
-        const engineConfigFilePath = await this.getClosestEngineConfigPath();
+    protected async getEngineConfig(customConfigFilePath?: string): Promise<{ config?: EngineConfig; path?: string }> {
+        const engineConfigFilePath = customConfigFilePath ?? (await this.getClosestEngineConfigPath());
         if (engineConfigFilePath) {
             try {
                 return {
