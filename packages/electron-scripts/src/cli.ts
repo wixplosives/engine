@@ -13,7 +13,9 @@ function createCommand(commandName: string): Command {
         .requiredOption('-e, --envName <envName>', 'The name of the electron main process environment')
         .option('--basePath <basePath>', undefined, process.cwd())
         .option('--featureDiscoveryRoot <featureDiscoveryRoot>')
-        .option('--singleFeature');
+        .option('--singleFeature')
+        .option('--engineConfigPath <engineConfigPath>', 'engine config file path')
+        .option('--webpackConfigPath <webpackConfigPath>', 'webpack config file path');
 }
 
 createCommand('start')
