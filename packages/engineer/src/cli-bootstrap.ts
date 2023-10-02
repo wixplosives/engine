@@ -10,7 +10,8 @@ import { Worker } from 'node:worker_threads';
         argv: process.argv.slice(2),
         execArgv,
     });
-    await once(worker, 'exit');
+    const [code] = await once(worker, 'exit');
+    process.exit(code);
 })().catch((err) => {
     console.log(err);
     process.exit(1);
