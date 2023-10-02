@@ -11,7 +11,6 @@ import { SetMultiMap } from '@wixc3/patterns';
 import { BuildOptions, Plugin } from 'esbuild';
 import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 import { join } from 'node:path';
-import { rawLoaderPlugin } from './esbuild-raw-loader-plugin';
 import { htmlPlugin } from './esbuild-html-plugin';
 import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin';
 
@@ -117,7 +116,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             '.woff2': 'file',
             '.ttf': 'file',
         },
-        plugins: [...buildPlugins, rawLoaderPlugin(), topLevelConfigPlugin({ emit: !dev })],
+        plugins: [...buildPlugins, topLevelConfigPlugin({ emit: !dev })],
     } satisfies BuildOptions;
 
     const webConfig = {
