@@ -59,14 +59,19 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
 }: IRunNodeEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
     const { env: envName, envType } = env;
     const engineConfigFilePath = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
-    const { featureDiscoveryRoot: configFeatureDiscoveryRoot } = (
-        engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}
-    ) as EngineConfig;
+    const {
+        featureDiscoveryRoot: configFeatureDiscoveryRoot,
+        extensions,
+        buildConditions,
+        require: requiredModules,
+    } = (engineConfigFilePath ? await importWithProperError(engineConfigFilePath) : {}) as EngineConfig;
 
     const { features, configurations } = await findFeatures(
         basePath,
         fs,
         featureDiscoveryRoot ?? configFeatureDiscoveryRoot,
+        extensions,
+        buildConditions,
     );
 
     if (configName) {
@@ -107,6 +112,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
                 outputPath: process.cwd(),
                 nodeEntryPath: '',
                 runtimeOptions: Object.entries(runtimeOptions),
+                requiredModules,
             };
         },
     });

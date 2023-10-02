@@ -22,7 +22,6 @@ export interface IRunApplicationOptions extends IFeatureTarget {
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
     autoLaunch?: boolean;
     socketServerOptions?: Partial<io.ServerOptions>;
-    webpackConfigPath?: string;
 }
 
 export interface IBuildCommandOptions extends IRunApplicationOptions {
@@ -32,6 +31,8 @@ export interface IBuildCommandOptions extends IRunApplicationOptions {
     eagerEntrypoint?: boolean;
     favicon?: string;
     configLoaderModuleName?: string;
+    engineConfigPath?: string;
+    webpackConfigPath?: string;
 }
 
 // inlined to stay type-compatible with @types/webpack

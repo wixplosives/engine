@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "40.3.0",
+  "version": "40.3.8",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -17,13 +17,13 @@
     "webpack": "^4.0.0 || ^5.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^8.3.0",
-    "@file-services/resolve": "^8.3.0",
-    "@file-services/types": "^8.3.0",
+    "@file-services/node": "^8.3.1",
+    "@file-services/resolve": "^8.3.1",
+    "@file-services/types": "^8.3.1",
     "@wixc3/common": "^13.3.2",
     "@wixc3/create-disposables": "^2.2.0",
-    "@wixc3/engine-core": "^40.3.0",
-    "@wixc3/engine-runtime-node": "^40.3.0",
+    "@wixc3/engine-core": "^40.3.8",
+    "@wixc3/engine-runtime-node": "^40.3.8",
     "@wixc3/patterns": "^13.3.2",
     "@wixc3/resolve-directory-context": "^4.0.0",
     "cors": "^2.8.5",
@@ -31,7 +31,7 @@
     "express": "^4.18.2",
     "semver": "^7.5.4",
     "socket.io": "^4.7.2",
-    "type-fest": "^4.3.1"
+    "type-fest": "^4.3.3"
   },
   "files": [
     "dist",
