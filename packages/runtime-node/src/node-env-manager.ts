@@ -62,7 +62,7 @@ export class NodeEnvManager {
                 res.status(400).end('env is required');
                 return;
             }
-            const [requestedConfig] = req.params;
+            const requestedConfig = req.params[0];
             console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
             if (!requestedConfig || requestedConfig === 'undefined') {
                 res.json([]);
