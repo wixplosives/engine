@@ -1,10 +1,12 @@
 import { createDisposables } from '@wixc3/create-disposables';
 import { expect } from 'chai';
+import { createRequire } from 'node:module';
 import { dirname } from 'node:path';
 import type { Page } from 'playwright-core';
 import { startServerNewProcess } from './utils.js';
 
 describe('All Environment', () => {
+    const require = createRequire(import.meta.url);
     const projectPath = dirname(require.resolve('@example/preload/package.json'));
     const featureName = 'preload/all';
     const disposables = createDisposables();

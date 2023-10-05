@@ -1,6 +1,7 @@
 import type { ConfigModule, TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
+import { pathToFileURL } from 'node:url';
 
 export async function getConfig(
     configName: string,
@@ -15,7 +16,7 @@ export async function getConfig(
 
     for (const { filePath, envName: configEnvName } of configs) {
         if (!configEnvName || configEnvName === envName) {
-            const { default: configValue } = (await import(filePath)) as ConfigModule;
+            const { default: configValue } = (await import(pathToFileURL(filePath).href)) as ConfigModule;
             config.push(...configValue);
         }
     }

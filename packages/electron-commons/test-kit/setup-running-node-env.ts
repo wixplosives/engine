@@ -3,8 +3,10 @@ import { BaseHost, Communication, Environment, type TopLevelConfig } from '@wixc
 import { initializeNodeEnvironment, type ProcessExitDetails } from '@wixc3/engine-electron-commons';
 import { findFeatures } from '@wixc3/engine-scripts';
 import type { IOType } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { deferred } from 'promise-assist';
 
+const require = createRequire(import.meta.url);
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
 
 export interface SetupRunningEnvOptions {

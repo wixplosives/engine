@@ -1,3 +1,4 @@
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { nodeFs as fs } from '@file-services/node';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { createMainEntrypoint, createVirtualEntries } from '@wixc3/engine-scripts';
@@ -21,11 +22,11 @@ guiFeature.setup(
         },
     ) => {
         run(async () => {
-            const selfDirectoryPath = __dirname;
+            const selfDirectoryPath = fileURLToPath(new URL('.', import.meta.url));
             const baseConfigPath = fs.findClosestFileSync(selfDirectoryPath, 'webpack.config.js');
             const baseConfig =
                 typeof baseConfigPath === 'string'
-                    ? ((await import(baseConfigPath)) as { default: webpack.Configuration }).default
+                    ? ((await import(pathToFileURL(baseConfigPath).href)) as { default: webpack.Configuration }).default
                     : {};
             const virtualModules: Record<string, string> = {};
 

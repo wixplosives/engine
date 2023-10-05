@@ -3,8 +3,12 @@ import path from 'node:path';
 import { getRunningFeature } from '@wixc3/engine-test-kit';
 import Feature, { server } from '../feature/file-server.feature.js';
 import { expect } from 'chai';
+import { fileURLToPath } from 'node:url';
 
 describe('file-server Processing env test', () => {
+    const selfPath = fileURLToPath(import.meta.url);
+    const projectPath = fileURLToPath(new URL('.', import.meta.url));
+
     it('reads directory', async () => {
         const {
             runningApi: { remoteFiles },
@@ -12,12 +16,12 @@ describe('file-server Processing env test', () => {
             featureName: 'file-server',
             env: server,
             runtimeOptions: {
-                projectPath: __dirname,
+                projectPath,
             },
             feature: Feature,
         });
 
-        const remoteFile = remoteFiles.readFile(path.basename(__filename));
-        expect(remoteFile).to.eq(fs.readFileSync(__filename, 'utf8'));
+        const remoteFile = remoteFiles.readFile(path.basename(selfPath));
+        expect(remoteFile).to.eq(fs.readFileSync(selfPath, 'utf8'));
     });
 });

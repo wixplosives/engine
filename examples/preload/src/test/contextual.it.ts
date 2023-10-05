@@ -1,9 +1,11 @@
 import { createDisposables } from '@wixc3/create-disposables';
 import { expect } from 'chai';
+import { createRequire } from 'node:module';
 import { dirname } from 'node:path';
 import { startServerNewProcess } from './utils.js';
 
 describe('Contextual preload', () => {
+    const require = createRequire(import.meta.url);
     const projectPath = dirname(require.resolve('@example/preload/package.json'));
     const disposables = createDisposables();
     afterEach(disposables.dispose);

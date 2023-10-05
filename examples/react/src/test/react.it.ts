@@ -1,5 +1,5 @@
 import { withFeature } from '@wixc3/engine-test-kit';
-import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 describe('React Feature', function () {
     this.timeout(20_000);
@@ -7,7 +7,7 @@ describe('React Feature', function () {
     const { getLoadedFeature } = withFeature({
         featureName: 'react/someplugin',
         runOptions: {
-            projectPath: join(__dirname, '..'),
+            projectPath: fileURLToPath(new URL('..', import.meta.url)),
         },
     });
 

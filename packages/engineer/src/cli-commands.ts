@@ -14,8 +14,9 @@ import { resolve } from 'node:path';
 import open from 'open';
 import type { ServerListeningHandler } from './feature/dev-server.types.js';
 import { startDevServer } from './utils.js';
+import { pathToFileURL } from 'node:url';
 
-const resolveRequest = createRequestResolver({ fs, conditions: ['node', 'require'] });
+const resolveRequest = createRequestResolver({ fs, conditions: ['node', 'import', 'require'] });
 const parseBoolean = (value: string) => value === 'true';
 const collectMultiple = (val: string, prev: string[]) => [...prev, val];
 const defaultPublicPath = process.env.ENGINE_PUBLIC_PATH || '';
@@ -285,7 +286,7 @@ async function preRequire(pathsToRequire: string[], basePath: string) {
         if (!resolvedFile) {
             throw new Error(`Cannot resolve "${request}"`);
         }
-        await import(resolvedFile);
+        await import(pathToFileURL(resolvedFile).href);
     }
 }
 

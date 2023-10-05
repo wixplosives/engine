@@ -1,5 +1,6 @@
 {
   "name": "@fixture/engine-default-args-echo",
   "version": "40.3.8",
+  "type": "module",
   "private": true
 }

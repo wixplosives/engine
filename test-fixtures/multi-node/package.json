@@ -1,5 +1,6 @@
 {
   "name": "@fixture/engine-multi-node",
   "version": "40.3.8",
+  "type": "module",
   "private": true
 }

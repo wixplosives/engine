@@ -2,6 +2,7 @@ import { COM, type TopLevelConfig } from '@wixc3/engine-core';
 import type { IConfigDefinition, NodeEnvironmentsManager, TopLevelConfigProvider } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import type express from 'express';
+import { createRequire } from 'node:module';
 import { importFresh } from './import-fresh.js';
 
 export interface OverrideConfig {
@@ -41,6 +42,7 @@ export function createLiveConfigsMiddleware(
                         } else {
                             const { filePath, envName } = configDefinition;
                             if (envName === reqEnv || !envName) {
+                                const require = createRequire(import.meta.url);
                                 const resolvedPath = require.resolve(filePath, { paths: [basePath] });
                                 try {
                                     const configValue = (await importFresh(resolvedPath)) as TopLevelConfig;

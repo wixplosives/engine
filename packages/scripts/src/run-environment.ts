@@ -23,6 +23,7 @@ import { findFeatures } from './analyze-feature/find-features.js';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants.js';
 import { evaluateConfig } from './load-node-environment.js';
 import type { EngineConfig, IFeatureDefinition } from './types.js';
+import { pathToFileURL } from 'node:url';
 
 export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
     featureName: string;
@@ -194,7 +195,7 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
 
 async function importWithProperError(filePath: string): Promise<unknown> {
     try {
-        return ((await import(filePath)) as { default: unknown }).default;
+        return ((await import(pathToFileURL(filePath).href)) as { default: unknown }).default;
     } catch (ex) {
         throw new Error(`failed importing file: ${filePath}`, { cause: ex });
     }

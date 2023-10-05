@@ -1,5 +1,6 @@
 {
   "name": "engine",
+  "type": "module",
   "workspaces": [
     "examples/*",
     "packages/*",

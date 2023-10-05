@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-require('../dist/cli-bootstrap.js');
+import '../dist/cli-bootstrap.js';

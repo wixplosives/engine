@@ -1,4 +1,5 @@
 import { once } from 'node:events';
+import { pathToFileURL } from 'node:url';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
 /**
@@ -11,11 +12,12 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
  * @returns A Promise that resolves to the exports of the imported module.
  */
 export async function importFresh(filePath: string, exportSymbolName = 'default'): Promise<unknown> {
-    const worker = new Worker(__filename, {
+    const worker = new Worker(new URL(import.meta.url), {
         workerData: { filePath, exportSymbolName } satisfies ImportFreshWorkerData,
         // doesn't seem to inherit two levels deep (Worker from Worker)
         execArgv: [...process.execArgv],
     });
+    await once(worker, 'online');
     const [imported] = await once(worker, 'message');
     await worker.terminate();
     return imported;
@@ -23,7 +25,7 @@ export async function importFresh(filePath: string, exportSymbolName = 'default'
 
 if (!isMainThread && isImportWorkerData(workerData)) {
     const { filePath, exportSymbolName } = workerData;
-    import(filePath)
+    import(pathToFileURL(filePath).href)
         .then((moduleExports) => parentPort?.postMessage(moduleExports[exportSymbolName]))
         .catch((e) => {
             throw e;

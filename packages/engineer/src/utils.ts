@@ -3,6 +3,8 @@ import { defaults } from '@wixc3/common';
 import { BaseHost, RuntimeEngine, RuntimeFeature } from '@wixc3/engine-core';
 import { runNodeEnvironment } from '@wixc3/engine-runtime-node';
 import { isFeatureFile, loadFeaturesFromPaths, type EngineConfig } from '@wixc3/engine-scripts';
+import { createRequire } from 'node:module';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { TargetApplication } from './application-proxy-service.js';
 import devServerFeature, { devServerEnv } from './feature/dev-server.feature.js';
 import type { DevServerConfig } from './feature/dev-server.types.js';
@@ -15,7 +17,7 @@ import {
     type IStartOptions,
 } from './utils.types.js';
 
-const basePath = fs.join(__dirname, './feature');
+const basePath = fileURLToPath(new URL('./feature', import.meta.url));
 
 export async function startDevServer(options: IStartOptions): Promise<{
     engine: RuntimeEngine;
@@ -89,8 +91,9 @@ function asDevConfig(options: DStartOptions, engineConfig: DEngineConfig): Parti
 }
 
 async function preRequire(pathsToRequire: string[], basePath: string) {
+    const require = createRequire(import.meta.url);
     for (const request of pathsToRequire) {
         const resolvedRequest = require.resolve(request, { paths: [basePath] });
-        await import(resolvedRequest);
+        await import(pathToFileURL(resolvedRequest).href);
     }
 }

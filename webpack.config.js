@@ -1,8 +1,9 @@
-const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
+import { StylableWebpackPlugin } from '@stylable/webpack-plugin';
+import { fileURLToPath } from 'node:url';
 
 /** @type {import('webpack').Configuration} */
-module.exports = {
-    context: __dirname,
+export default {
+    context: fileURLToPath(new URL('.', import.meta.url)),
     devtool: 'source-map',
     module: {
         rules: [

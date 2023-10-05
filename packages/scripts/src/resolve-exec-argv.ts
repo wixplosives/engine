@@ -1,10 +1,13 @@
 import { nodeFs as fs } from '@file-services/node';
-import type { EngineConfig } from './types';
-import { ENGINE_CONFIG_FILE_NAME } from './build-constants';
+import { pathToFileURL } from 'node:url';
+import { ENGINE_CONFIG_FILE_NAME } from './build-constants.js';
+import type { EngineConfig } from './types.js';
 
 export async function resolveExecArgv(basePath: string) {
     const engineConfig = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
-    const { default: config } = (engineConfig ? await import(engineConfig) : {}) as { default?: EngineConfig };
+    const { default: config } = (engineConfig ? await import(pathToFileURL(engineConfig).href) : {}) as {
+        default?: EngineConfig;
+    };
 
     const execArgv = [...process.execArgv];
     if (config?.require) {

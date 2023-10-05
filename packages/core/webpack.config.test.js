@@ -1,9 +1,10 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { fileURLToPath } from 'node:url';
 
 /** @type {import('webpack').Configuration} */
-module.exports = {
+export default {
     mode: 'development',
-    context: __dirname,
+    context: fileURLToPath(new URL('.', import.meta.url)),
     entry: {
         iframe: './dist/test/iframe.js',
         'delayed-iframe': './dist/test/delayed-iframe.js',

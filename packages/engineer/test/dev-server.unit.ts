@@ -5,9 +5,12 @@ import type { LaunchEnvironmentMode, TopLevelConfigProvider } from '@wixc3/engin
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
 import { expect } from 'chai';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
 
+const require = createRequire(import.meta.url);
 const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
 const engineRuntimeFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-run-options/package.json'));
 const engineFeatureRoots = fs.dirname(require.resolve('@fixture/engine-feature-roots/package.json'));
@@ -423,7 +426,8 @@ describe('engineer:dev-server', function () {
     });
 
     it('can run from arbitrary output dirs', async () => {
-        const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
+        const selfDirectoryPath = fileURLToPath(new URL('.', import.meta.url));
+        const packageFile = fs.findClosestFileSync(selfDirectoryPath, 'package.json') as string;
         const {
             config: { port },
         } = await setup({
@@ -550,7 +554,8 @@ describe('engineer:dev-server', function () {
             .waitFor({ state: 'visible' });
     });
     it('runs app with the correct runtime metadata', async () => {
-        const packageFile = fs.findClosestFileSync(__dirname, 'package.json') as string;
+        const selfDirectoryPath = fileURLToPath(new URL('.', import.meta.url));
+        const packageFile = fs.findClosestFileSync(selfDirectoryPath, 'package.json') as string;
         const outputPath = fs.dirname(packageFile);
         const featureName = 'engine-runtime-metadata/x';
         const {
@@ -588,12 +593,9 @@ describe('engineer:dev-server', function () {
 });
 
 function getConfigFileContent(textText: string) {
-    return `
-const UseConfigs = require('./use-configs.feature').default;
+    return `import UseConfigs from "./use-configs.feature.js";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-
-exports.default = [
+export default [
     UseConfigs.use({
         config: {
             echoText: '${textText}'

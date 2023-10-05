@@ -1,7 +1,7 @@
 {
   "name": "@example/node-only",
   "version": "40.3.8",
-  "main": "index.js",
+  "type": "module",
   "license": "MIT",
   "private": true,
   "scripts": {

@@ -1,7 +1,7 @@
 {
   "name": "@wixc3/engine-runtime-node",
   "version": "40.3.8",
-  "main": "dist/index.js",
+  "type": "module",
   "exports": {
     ".": "./dist/index.js",
     "./worker-thread-entry": "./dist/worker-thread-entry.js",
@@ -11,6 +11,8 @@
     "test": "mocha \"dist/test/**/*.unit.js\""
   },
   "dependencies": {
+    "@file-services/node": "^8.3.1",
+    "@file-services/resolve": "^8.3.1",
     "@wixc3/common": "^13.3.2",
     "@wixc3/engine-core": "^40.3.8",
     "@wixc3/patterns": "^13.3.2",

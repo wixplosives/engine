@@ -1,4 +1,7 @@
+import { fileURLToPath } from 'node:url';
 import type webpack from 'webpack';
+
+const selfPath = fileURLToPath(import.meta.url);
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -24,12 +27,12 @@ export default virtualModulesLoader;
 export function createVirtualEntries(options: VirtualModulesLoaderOptions) {
     const entries: webpack.EntryObject = {};
     for (const entry of Object.keys(options)) {
-        entries[entry] = `${entry}!=!${__filename}?id=${entry}`;
+        entries[entry] = `${entry}!=!${selfPath}?id=${entry}`;
     }
     return {
         entries,
         loaderRule: {
-            loader: __filename,
+            loader: selfPath,
             options,
             test(entry: string) {
                 return hasOwnProperty.call(options, entry);

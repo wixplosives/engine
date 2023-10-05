@@ -9,9 +9,11 @@ import {
     resolveEnvironments,
     type IConfigDefinition,
     type RouteMiddleware,
+    importModules,
 } from '@wixc3/engine-runtime-node';
 import { createDisposables, SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import webpack from 'webpack';
 import { findFeatures } from '../analyze-feature/index.js';
 import { ENGINE_CONFIG_FILE_NAME } from '../build-constants.js';
@@ -35,10 +37,12 @@ import type {
     WebpackMultiStats,
 } from './types.js';
 import { compile, getResolvedEnvironments, hookCompilerToConsole, toCompilerOptions } from './utils.js';
+import { createRequire } from 'node:module';
 
+const require = createRequire(import.meta.url);
 const { basename, extname, join } = fs;
 
-const builtinTemplatesPath = fs.join(__dirname, '../templates');
+const builtinTemplatesPath = fileURLToPath(new URL('../templates', import.meta.url));
 
 export class Application {
     public outputPath: string;
@@ -231,6 +235,7 @@ export class Application {
 
     private remapManifestFeaturePaths(manifestFeatures: [string, IFeatureDefinition][]) {
         const features = new Map<string, IFeatureDefinition>();
+        const require = createRequire(import.meta.url);
         for (const [featureName, featureDef] of manifestFeatures) {
             const { filePath, envFilePaths, contextFilePaths, preloadFilePaths } = featureDef;
             features.set(featureName, {
@@ -257,8 +262,9 @@ export class Application {
         const engineConfigFilePath = customConfigFilePath ?? (await this.getClosestEngineConfigPath());
         if (engineConfigFilePath) {
             try {
+                const engineConfigFileURL = pathToFileURL(engineConfigFilePath).href;
                 return {
-                    config: ((await import(engineConfigFilePath)) as { default: EngineConfig }).default,
+                    config: ((await import(engineConfigFileURL)) as { default: EngineConfig }).default,
                     path: engineConfigFilePath,
                 };
             } catch (ex) {
@@ -273,13 +279,7 @@ export class Application {
     }
 
     protected async importModules(requiredModules: string[]) {
-        for (const requiredModule of requiredModules) {
-            try {
-                await import(require.resolve(requiredModule, { paths: [this.basePath] }));
-            } catch (ex) {
-                throw new Error(`failed importing: ${requiredModule}`, { cause: ex });
-            }
-        }
+        await importModules(this.basePath, requiredModules);
     }
 
     protected async readConfigs(): Promise<SetMultiMap<string, TopLevelConfig>> {
@@ -445,7 +445,7 @@ export class Application {
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig =
             typeof baseConfigPath === 'string'
-                ? ((await import(baseConfigPath)) as { default: webpack.Configuration }).default
+                ? ((await import(pathToFileURL(baseConfigPath).href)) as { default: webpack.Configuration }).default
                 : {};
         const webpackConfigs = createWebpackConfigs({
             baseConfig,

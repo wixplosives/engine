@@ -1,7 +1,7 @@
 import { withFeature } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { type Page } from 'playwright-core';
 
 chai.use(chaiAsPromised);
@@ -12,7 +12,7 @@ describe('react/someplugin persistent checks', function () {
     const { getLoadedFeature } = withFeature({
         featureName: 'react/someplugin',
         runOptions: {
-            projectPath: path.join(__dirname, '..'),
+            projectPath: fileURLToPath(new URL('..', import.meta.url)),
         },
         persist: true,
     });
