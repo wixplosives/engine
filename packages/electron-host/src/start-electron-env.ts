@@ -7,9 +7,11 @@ import {
     type IStaticFeatureDefinition,
 } from '@wixc3/engine-runtime-node';
 import { app, ipcMain } from 'electron';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import runtimeArgumentsProvider from './runtime-arguments-provider.js';
 
+const require = createRequire(import.meta.url);
 const nodeEntryPath = require.resolve('@wixc3/engine-electron-commons/node-entry');
 
 export interface ElectronEnvParams {

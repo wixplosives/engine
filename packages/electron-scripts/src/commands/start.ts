@@ -5,12 +5,15 @@ import { findFeatures, getExportedEnvironments } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
 import electron from 'electron';
 import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { getConfig } from '../engine-helpers.js';
 import { getEngineConfig } from '../find-features.js';
 
+const require = createRequire(import.meta.url);
 // electron node lib exports the electron executable path; inside electron, it's the api itself.
 const electronPath = electron as unknown as string;
-const electronEntryPath = require.resolve('../electron-entry.js');
+const electronEntryPath = fileURLToPath(new URL('../electron-entry.js', import.meta.url));
 
 export interface IStartCommandOptions {
     /**

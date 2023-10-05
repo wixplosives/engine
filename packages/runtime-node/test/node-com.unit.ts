@@ -14,6 +14,7 @@ import { expect } from 'chai';
 import { safeListeningHttpServer } from 'create-listening-server';
 import { fork } from 'node:child_process';
 import type { Socket } from 'node:net';
+import { fileURLToPath } from 'node:url';
 import { waitFor } from 'promise-assist';
 import sinon, { spy } from 'sinon';
 import * as io from 'socket.io';
@@ -298,7 +299,7 @@ describe('IPC communication', () => {
     it('communication with forked process', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
-        const forked = fork(require.resolve('./process-entry'));
+        const forked = fork(fileURLToPath(new URL('./process-entry.js', import.meta.url)));
         disposables.add(() => forked.kill());
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
@@ -316,7 +317,7 @@ describe('IPC communication', () => {
     it('handles forked process closing', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
-        const forked = fork(require.resolve('./process-entry'));
+        const forked = fork(fileURLToPath(new URL('./process-entry.js', import.meta.url)));
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
         communication.registerMessageHandler(host);

@@ -6,6 +6,7 @@ import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { mkdtempSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import type { Frame, Page } from 'playwright-core';
 import { waitFor } from 'promise-assist';
@@ -31,7 +32,7 @@ describe('Application', function () {
         disposables.add(() => page.close());
         return page;
     };
-
+    const require = createRequire(import.meta.url);
     const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
     const staticBaseWebApplicationFixturePath = fs.dirname(
         require.resolve('@fixture/static-base-web-application-feature/package.json'),
@@ -415,7 +416,7 @@ describe('Application', function () {
                 configName: 'static-base-web-application/base',
                 staticBuild: true,
                 configLoaderModuleName:
-                    '@fixture/static-base-web-application-config-loader/dist/override-config-loader',
+                    '@fixture/static-base-web-application-config-loader/dist/override-config-loader.js',
             });
             disposables.add(() => app.clean());
 

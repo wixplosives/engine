@@ -12,6 +12,7 @@ import type { SetMultiMap } from '@wixc3/patterns';
 import { safeListeningHttpServer } from 'create-listening-server';
 import type { Socket } from 'node:net';
 import { delimiter } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as io from 'socket.io';
 import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './core-node/constants.js';
 import { IPCHost } from './core-node/ipc-host.js';
@@ -87,7 +88,7 @@ export interface RunEnvironmentOptions {
     mode?: LaunchEnvironmentMode;
 }
 
-const cliEntry = require.resolve('./remote-node-entry');
+const cliEntry = fileURLToPath(new URL('./remote-node-entry.js', import.meta.url));
 
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IStaticFeatureDefinition>;
@@ -462,7 +463,8 @@ export class NodeEnvironmentsManager {
                     config.push(...definition);
                 } else {
                     try {
-                        config.push(...((await import(definition.filePath)) as ConfigModule).default);
+                        const configFileURL = pathToFileURL(definition.filePath).href;
+                        config.push(...((await import(configFileURL)) as ConfigModule).default);
                     } catch (e) {
                         console.error(
                             new Error(

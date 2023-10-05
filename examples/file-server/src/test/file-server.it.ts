@@ -1,18 +1,19 @@
-import path from 'node:path';
 import { withFeature } from '@wixc3/engine-test-kit';
-import { waitFor } from 'promise-assist';
 import { expect } from 'chai';
+import { fileURLToPath } from 'node:url';
+import { waitFor } from 'promise-assist';
+import fileServerFeature, { MAIN_MARK, SERVER_MARK } from '../feature/file-server.feature.js';
 import { FileServerDriver } from './file-server-driver.js';
-import fileServerFeature, { SERVER_MARK, MAIN_MARK } from '../feature/file-server.feature.js';
 
 describe('File Server Feature', function () {
     this.timeout(20_000);
+    const projectPath = fileURLToPath(new URL('..', import.meta.url));
 
     const { getLoadedFeature } = withFeature({
         featureName: 'file-server/example',
         configName: 'file-server/run',
         runOptions: {
-            projectPath: path.dirname(__dirname),
+            projectPath,
         },
         config: [
             fileServerFeature.use({

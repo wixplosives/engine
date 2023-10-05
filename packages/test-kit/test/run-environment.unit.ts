@@ -1,8 +1,10 @@
 import workerThreadFeature, { serverEnv } from '@fixture/worker-thread/dist/worker-thread.feature.js';
 import { getRunningFeature } from '@wixc3/engine-test-kit';
 import { expect } from 'chai';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
+const require = createRequire(import.meta.url);
 const featurePath = path.dirname(require.resolve('@fixture/worker-thread/package.json'));
 
 describe('runs environment', () => {

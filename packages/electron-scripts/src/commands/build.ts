@@ -11,8 +11,10 @@ import { build as electronBuild, type Configuration, type FileSet, type PublishO
 import { dirname, posix, relative } from 'node:path';
 import { getConfig } from '../engine-helpers.js';
 import { getEngineConfig } from '../find-features.js';
+import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+const require = createRequire(import.meta.url);
 const { version: electronVersion } = require('electron/package.json') as { version: string };
 
 export interface IBundleEngineArguments extends IApplicationOptions, IEngineBuildCommandOptions {
@@ -127,7 +129,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
     });
 
     const configFullPath = fs.resolve(fs.join(basePath, electronBuilderConfigFileName));
-    const { default: builderConfig } = (await import(configFullPath)) as { default: Configuration };
+    const { default: builderConfig } = (await import(pathToFileURL(configFullPath).href)) as { default: Configuration };
 
     const extraFiles: (string | FileSet)[] = [
         {
@@ -251,9 +253,10 @@ export function createElectronEntryFile({
         outputPath,
         `process.env.NODE_ENV='production';
 
-const { app } = require('electron');
-const { join } = require('path')
-const { runElectronEnv } = require('@wixc3/engine-electron-host');
+import { app } from "electron";
+import { createRequire } from "node:module";
+import { join } from "node:path";
+import { runElectronEnv } from "@wixc3/engine-electron-host";
 
 const featureName = ${JSON.stringify(featureName)};
 const configName = ${configName ? JSON.stringify(configName) : 'undefined'};
@@ -263,6 +266,7 @@ const features = new Map(${JSON.stringify(scopedFeatures, null, 4)});
 const basePath = join(app.getAppPath(), ${JSON.stringify(outDir)});
 const env = ${JSON.stringify(env)}
 
+const require = createRequire(import.meta.url);
 const resolvePath = (path) => require.resolve(path, { paths: [basePath] })
 
 for(const featureDef of features.values()) {
@@ -278,7 +282,7 @@ for(const featureDef of features.values()) {
     }
 }
 
-runElectronEnv({
+await runElectronEnv({
     basePath,
     featureName,
     outputPath: basePath,
@@ -286,9 +290,6 @@ runElectronEnv({
     config,
     features,
     env
-}).catch(e => {
-    console.error(e);
-    process.exitCode = 1;
 });
 `,
     );

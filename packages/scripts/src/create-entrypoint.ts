@@ -1,11 +1,12 @@
 import { Environment, type TopLevelConfig } from '@wixc3/engine-core';
-import { type IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import { type IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
+import { fileURLToPath } from 'node:url';
 import type { IFeatureDefinition } from './types.js';
 
 const { stringify } = JSON;
-const topLevelConfigLoaderPath = require.resolve('./top-level-config-loader');
+const topLevelConfigLoaderPath = fileURLToPath(new URL('./top-level-config-loader.js', import.meta.url));
 
 //#region types
 

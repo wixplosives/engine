@@ -5,6 +5,7 @@ import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3
 import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 import isCI from 'is-ci';
+import { createRequire } from 'node:module';
 import playwright from 'playwright-core';
 import { ForkedProcessApplication } from './forked-process-application.js';
 import { hookPageConsole } from './hook-page-console.js';
@@ -14,6 +15,7 @@ import { validateBrowser } from './supported-browsers.js';
 import type { IExecutableApplication } from './types.js';
 import { ensureTracePath } from './utils/index.js';
 
+const require = createRequire(import.meta.url);
 const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
 export interface IFeatureExecutionOptions {

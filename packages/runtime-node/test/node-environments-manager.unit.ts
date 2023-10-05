@@ -1,21 +1,22 @@
-import chai, { expect } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import { COM, Environment, Feature, RuntimeEngine, Service, socketClientInitializer } from '@wixc3/engine-core';
-import { createBrowserProvider } from '@wixc3/engine-test-kit';
-import {
-    launchEngineHttpServer,
-    NodeEnvironmentsManager,
-    createStaticFeatureDefinition,
-} from '@wixc3/engine-runtime-node';
-import { createDisposables } from '@wixc3/create-disposables';
-import type io from 'socket.io';
-import SocketServerNodeFeature, {
-    serverEnv as socketServerEnv,
-} from '@fixture/engine-multi-socket-node/dist/feature/x.feature.js';
 import defaultArgsEchoFeature, {
     serverEnv as echoServerEnv,
 } from '@fixture/engine-default-args-echo/dist/feature/echo.feature.js';
 import ServerNodeFeature, { serverEnv } from '@fixture/engine-multi-node/dist/feature/x.feature.js';
+import SocketServerNodeFeature, {
+    serverEnv as socketServerEnv,
+} from '@fixture/engine-multi-socket-node/dist/feature/x.feature.js';
+import { createDisposables } from '@wixc3/create-disposables';
+import { COM, Environment, Feature, RuntimeEngine, Service, socketClientInitializer } from '@wixc3/engine-core';
+import {
+    NodeEnvironmentsManager,
+    createStaticFeatureDefinition,
+    launchEngineHttpServer,
+} from '@wixc3/engine-runtime-node';
+import { createBrowserProvider } from '@wixc3/engine-test-kit';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import { createRequire } from 'node:module';
+import type io from 'socket.io';
 
 chai.use(chaiAsPromised);
 
@@ -23,6 +24,7 @@ const runFeatureOptions = { featureName: 'engine-node/x' };
 
 const env = new Environment('dev', 'node', 'single');
 
+const require = createRequire(import.meta.url);
 const comEntry = createStaticFeatureDefinition({
     filePath: require.resolve('@wixc3/engine-core/dist/communication.feature'),
     packageName: '@wixc3/engine-core',

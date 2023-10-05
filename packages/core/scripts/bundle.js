@@ -1,9 +1,9 @@
-const webpack = require('webpack');
-const path = require('path');
-const baseWebpackConfig = require('../../../webpack.config');
+import { fileURLToPath } from 'node:url';
+import webpack from 'webpack';
+import baseWebpackConfig from '../../../webpack.config.js';
 
-const entryPath = require.resolve('../dist/index.js');
-const outputPath = path.join(__dirname, '../dist/umd');
+const entryPath = fileURLToPath(new URL('../dist/index.js', import.meta.url));
+const outputPath = fileURLToPath(new URL('../dist/umd', import.meta.url));
 
 function getConfigForMode(mode) {
     return {

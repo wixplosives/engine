@@ -2,6 +2,7 @@ import { COM, UniversalWorkerHost, type InitializerOptions } from '@wixc3/engine
 import type { UniversalWorkerOptions } from '@wixc3/isomorphic-worker/types';
 import { Worker } from '@wixc3/isomorphic-worker/worker';
 import { createDisposables } from '@wixc3/patterns';
+import { fileURLToPath } from 'node:url';
 import { createMetadataProvider } from './core-node/create-application-metadata-provider.js';
 import type { WorkerThreadCommand, WorkerThreadEnvironmentStartupOptions } from './types.js';
 
@@ -17,7 +18,7 @@ export type WorkerThreadInitializerOptions = InitializerOptions & {
     };
 };
 
-const workerThreadEntryPath = require.resolve('./worker-thread-entry');
+const workerThreadEntryPath = fileURLToPath(new URL('./worker-thread-entry.js', import.meta.url));
 
 export function workerThreadInitializer({
     communication,

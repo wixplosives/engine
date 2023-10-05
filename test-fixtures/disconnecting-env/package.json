@@ -1,5 +1,6 @@
 {
   "name": "@fixture/disconnecting-env",
   "version": "40.3.8",
+  "type": "module",
   "private": true
 }

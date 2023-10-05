@@ -1,5 +1,6 @@
 {
   "name": "@fixture/a-in-workspace",
   "version": "40.3.8",
+  "type": "module",
   "private": true
 }

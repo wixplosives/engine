@@ -1,6 +1,6 @@
 /**
  * @type {import('@wixc3/engine-scripts').EngineConfig}
  */
-module.exports = {
+export default {
     featureDiscoveryRoot: 'dist',
 };

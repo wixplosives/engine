@@ -3,8 +3,10 @@ import { createDisposables } from '@wixc3/create-disposables';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import { startDevServer } from '@wixc3/engineer';
 import guiFeature from '@wixc3/engineer/gui-feature';
-import { join } from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
+const require = createRequire(import.meta.url);
 const engineFeatureFixturePath = fs.dirname(require.resolve('@fixture/engine-single-feature/package.json'));
 
 describe('engineer:gui', function () {
@@ -63,7 +65,7 @@ describe('engineer:gui', function () {
         // the project path should be the root of the monorepo, so it will locate the dashboard features
         const {
             config: { port },
-        } = await setup({ basePath: join(__dirname, '../../../') });
+        } = await setup({ basePath: fileURLToPath(new URL('../../..', import.meta.url)) });
 
         const page = await loadPage(`http://localhost:${port}/main-dashboard.html?feature=engineer/gui`);
 
