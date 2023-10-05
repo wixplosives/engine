@@ -1,5 +1,6 @@
 import { IRunOptions, InitializerOptions, UniversalWorkerHost } from '@wixc3/engine-core';
 import { Worker } from '@wixc3/isomorphic-worker/worker';
+import { type UniversalWorkerOptions } from '@wixc3/isomorphic-worker/types';
 import { createDisposables } from '@wixc3/patterns';
 
 export interface WorkerThreadInitializer2 {
@@ -30,7 +31,8 @@ export function workerThreadInitializer2({
         const worker = new Worker(workerURL, {
             name: instanceId,
             workerData: { runtimeOptions: envRuntimeOptions },
-        });
+            execArgv: process.execArgv,
+        } as UniversalWorkerOptions);
         disposables.add(() => worker.terminate());
 
         const host = new UniversalWorkerHost(worker, instanceId);
