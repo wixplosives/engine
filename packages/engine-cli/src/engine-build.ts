@@ -20,7 +20,6 @@ export interface EngineBuildOptions {
     publicPath?: string;
     featureName?: string;
     configName?: string;
-    singleFeature?: boolean;
     httpServerPort?: number;
 }
 
@@ -29,9 +28,8 @@ export async function engineBuild({
     rootDir = process.cwd(),
     outputPath = 'dist-engine',
     publicPath = '',
-    featureName = '',
-    configName = '',
-    singleFeature = false,
+    featureName,
+    configName,
     httpServerPort = 5555,
 }: EngineBuildOptions = {}) {
     rootDir = fs.resolve(rootDir);
@@ -56,7 +54,7 @@ export async function engineBuild({
         fs,
         rootDir,
         featureDiscoveryRoot,
-        singleFeature ? featureName : undefined,
+        featureName,
         extensions,
         buildConditions,
     );
@@ -64,7 +62,7 @@ export async function engineBuild({
     const environments = getResolvedEnvironments({
         featureName,
         features,
-        filterContexts: singleFeature,
+        filterContexts: !!featureName,
     });
 
     const buildConfigurations = createEnvironmentsBuildConfiguration({
@@ -112,12 +110,12 @@ export async function engineBuild({
 }
 
 interface DevServicesOptions {
+    featureName?: string;
+    configName?: string;
     buildConfigurations: ReturnType<typeof createEnvironmentsBuildConfiguration>;
     serveStatic: Required<EngineConfig>['serveStatic'];
     httpServerPort: number;
     outputPath: string;
-    featureName: string;
-    configName: string;
     socketServerOptions: EngineConfig['socketServerOptions'];
 }
 
