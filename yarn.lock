@@ -251,7 +251,7 @@
     "@file-services/types" "^8.3.1"
     "@file-services/utils" "^8.3.1"
 
-"@file-services/node@^8.2.0", "@file-services/node@^8.3.0", "@file-services/node@^8.3.1":
+"@file-services/node@^8.2.0", "@file-services/node@^8.3.1":
   version "8.3.1"
   resolved "https://registry.yarnpkg.com/@file-services/node/-/node-8.3.1.tgz#2a57cb9c0cda9af97bc12ba276fa06f9b0b08d95"
   integrity sha512-vE3CXrWAdWj9AQlN8/q7U6XS2d4yGS7B8VUtkFAVcYoeG6DGHh5HnnABKefml9Ow+fp+48UsERcoNKPlSoUVEQ==
@@ -266,14 +266,14 @@
   dependencies:
     "@file-services/types" "^8.3.1"
 
-"@file-services/resolve@^8.3.0", "@file-services/resolve@^8.3.1":
+"@file-services/resolve@^8.3.1":
   version "8.3.1"
   resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-8.3.1.tgz#ef3c17b78fce7cd32cf1f7a3017b7a858f611beb"
   integrity sha512-eXu/YqpoY3oFZ52freQ9h/9c+9KtLNGtBLa3B5B7rQwjoY7kUHVBfwlNYiHRSw0EBlpLCADVF9CqirY+k93Kpw==
   dependencies:
     type-fest "^4.3.2"
 
-"@file-services/types@^8.2.0", "@file-services/types@^8.3.0", "@file-services/types@^8.3.1":
+"@file-services/types@^8.2.0", "@file-services/types@^8.3.1":
   version "8.3.1"
   resolved "https://registry.yarnpkg.com/@file-services/types/-/types-8.3.1.tgz#4e2fd812d460ee333a7078e6669e14db2e53a9d6"
   integrity sha512-I2oRF38cF6yGMF02d8oLTd07+62pRI0D23LcHaVMXib5A2gB4QOhaQYr9OjIBR9RIaG2P6Byo4y4qvkmgUzYgg==
