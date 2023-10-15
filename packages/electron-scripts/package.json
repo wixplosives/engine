@@ -27,7 +27,7 @@
     "@wixc3/engineer": "^40.3.8",
     "@wixc3/patterns": "^13.3.2",
     "@wixc3/resolve-directory-context": "^4.0.0",
-    "commander": "^11.0.0"
+    "commander": "^11.1.0"
   },
   "files": [
     "bin",
