@@ -27,7 +27,7 @@
     "@stylable/webpack-plugin": "^5.16.0",
     "@types/chai": "^4.3.8",
     "@types/chai-as-promised": "^7.1.6",
-    "@types/cors": "^2.8.14",
+    "@types/cors": "^2.8.15",
     "@types/d3-hierarchy": "^3.1.4",
     "@types/d3-selection": "^3.0.7",
     "@types/d3-shape": "^3.1.3",
