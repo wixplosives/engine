@@ -35,14 +35,17 @@ jobs:
           cache: yarn
       - run: npm i -g yarn@1
       - run: yarn config set network-timeout 300000
+      - run: yarn workspace engine-guides add @docusaurus/core @docusaurus/preset-classic @docusaurus/theme-mermaid @types/fs-extra
       - run: yarn
       - run: yarn build
+      - run: yarn workspace engine-guides build
       - run: yarn docs build
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./_docs
           destination: ./_site
+      - run: sudo mkdir -p ./_site/guides && sudo mv ./guides/build/* ./_site/guides
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
