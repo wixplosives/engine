@@ -4,7 +4,7 @@
 
 ## Guides
 
-You can reade some guides [here](https://plisovyi.github.io/engine/guides/)
+You can reade some guides [here](https://wixplosives.github.io/engine/guides/)
 
 ## Packages
 
