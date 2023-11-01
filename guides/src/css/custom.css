@@ -1,0 +1,7 @@
+:root {
+    --docusaurus-highlighted-code-line-bg: rgba(72, 77, 91, .1);
+}
+
+[data-theme='dark'] {
+    --docusaurus-highlighted-code-line-bg: rgba(100, 100, 100, .3);
+}

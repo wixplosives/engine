@@ -4,7 +4,8 @@
     "examples/*",
     "packages/*",
     "test-fixtures/*",
-    "test-fixtures/workspace/packages/*"
+    "test-fixtures/workspace/packages/*",
+    "guides"
   ],
   "scripts": {
     "clean": "rimraf -g \"./packages/*/dist\" \"./examples/*/dist\" \"./test-fixtures/*/dist\" \"./test-fixtures/workspace/packages/*/dist\"",
