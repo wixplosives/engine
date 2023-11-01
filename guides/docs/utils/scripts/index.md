@@ -29,16 +29,16 @@ Each file/folder name you want as a template should end with `.tmpl`, other exte
 
 For example, given the following templates' folder:
 
-- feature
-  - \${featureName.dashCase}.feature.ts.tmpl = `export const ${featureName.camelCase} = ...`
-- test-\${featureName.dashCase}.tmpl
-  - \${featureName.dashCase}.spec.ts.tmpl = `describe('${featureName.pascalCase} feature', () => ...`
-- README.md = `Hi ${featureName.pascalCase}!`
+- `feature`
+    - `\${featureName.dashCase}.feature.ts.tmpl` = `export const ${featureName.camelCase} = ...`
+- `test-\${featureName.dashCase}.tmpl`
+    - `\${featureName.dashCase}.spec.ts.tmpl` = `describe('${featureName.pascalCase} feature', () => ...`
+- `README.md` = `Hi ${featureName.pascalCase}!`
 
 If `featureName` is `cool-thing`, the parsed folder will be:
 
 - feature
-  - cool-thing.feature.ts = `export const coolThing = ...`
+    - cool-thing.feature.ts = `export const coolThing = ...`
 - test-cool-thing
-  - cool-thing.spec.ts = `describe('CoolThing feature', () => ...`
+    - cool-thing.spec.ts = `describe('CoolThing feature', () => ...`
 - README.md = `Hi ${featureName.pascalCase}!` (NOT PARSED, file doesn't end with `.tmpl`)
