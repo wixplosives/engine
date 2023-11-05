@@ -33,7 +33,7 @@ export function parseContextualEnv(
     env: ContextualEnvironment<string, EnvironmentMode, Environment[]>,
 ): IEnvironmentDescriptor[] {
     const { env: name, environments } = env;
-    const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e: Environment) =>
+    const [, ...dependencies] = [...flattenTree(env, (node) => node.dependencies)].map((e) =>
         convertEnvToIEnv(e),
     );
     return environments.map<IEnvironmentDescriptor>((childEnv) => ({

@@ -187,7 +187,12 @@ export class Application {
             close: disposables.dispose,
         };
     }
-
+    /**
+     * @deprecated this is here for backwards compatibility with the old engine
+     */
+    protected analyzeFeatures(featureDiscoveryRoot: string, extensions: string[], buildConditions: string[]) {
+        return analyzeFeatures(fs, this.basePath, featureDiscoveryRoot, undefined, extensions, buildConditions);
+    }
     public async create({ featureName, templatesDir, featuresDir }: ICreateOptions = {}) {
         if (!featureName) {
             throw new Error('Feature name is mandatory');

@@ -3,7 +3,6 @@ import {
     BaseHost,
     COM,
     Communication,
-    Environment,
     RuntimeEngine,
     flattenTree,
     type AnyEnvironment,
@@ -24,7 +23,7 @@ import { findFeatures } from './analyze-feature/index.js';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants.js';
 import { EngineConfig, IFeatureDefinition } from './types.js';
 
-export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
+export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment> {
     featureName: string;
     bundlePath?: string;
     configName?: string;
