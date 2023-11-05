@@ -1,6 +1,10 @@
-# engine
+# Engine [![Build Status](https://github.com/wixplosives/engine/workflows/tests/badge.svg)](https://github.com/wixplosives/engine/actions)
 
-[![Build Status](https://github.com/wixplosives/engine/workflows/tests/badge.svg)](https://github.com/wixplosives/engine/actions)
+![Engine logo](./guides/static/img/logo_dark.svg)
+
+## Guides
+
+You can reade some guides [here](https://wixplosives.github.io/engine/guides/)
 
 ## Packages
 
@@ -15,7 +19,3 @@
 ## License
 
 MIT
-
-## Guides
-
-Refer to the [docs section](./docs/root.md)
