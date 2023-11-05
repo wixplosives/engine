@@ -63,6 +63,7 @@ export async function engineBuild({
         featureName,
         features,
         filterContexts: !!featureName,
+        findAllEnvironments: false, // ??
     });
 
     const buildConfigurations = createEnvironmentsBuildConfiguration({

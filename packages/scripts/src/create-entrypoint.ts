@@ -271,9 +271,12 @@ export function createConfigLoaders({
     staticBuild: boolean;
     loadConfigFileTemplate: (filePath: string, scopedName: string, configEnvName?: string) => string;
 }) {
-    const configs = getAllValidConfigurations(filterConfigurationsByMode(configurations, mode, configName), envName);
     const loaders: string[] = [];
     if (staticBuild) {
+        const configs = getAllValidConfigurations(
+            filterConfigurationsByMode(configurations, mode, configName),
+            envName,
+        );
         for (const [scopedName, availableConfigs] of Object.entries(configs)) {
             const loadStatements = availableConfigs.map(({ filePath, configEnvName }) =>
                 loadConfigFileTemplate(filePath, scopedName, configEnvName),
