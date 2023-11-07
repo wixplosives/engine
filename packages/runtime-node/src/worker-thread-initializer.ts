@@ -26,8 +26,8 @@ export function workerThreadInitializer({
 }: WorkerThreadInitializerOptions): WorkerThreadInitializer {
     const disposables = createDisposables();
 
-    const isSingleton = env.endpointType === 'single';
-    const instanceId = isSingleton ? env.env : communication.generateEnvInstanceID(env.env);
+    const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
+
     const envIsReady = communication.envReady(instanceId);
 
     const metadataProvider = createMetadataProvider(communication);

@@ -76,7 +76,7 @@ export interface ICompilerOptions {
     overrideConfig?: TopLevelConfig | TopLevelConfigProvider;
     singleFeature?: boolean;
     webpackConfigPath?: string;
-    environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'electronRendererEnvs' | 'workerEnvs' | 'webEnvs'>;
+    environments: ReturnType<typeof getResolvedEnvironments>;
     eagerEntrypoint?: boolean;
     configLoaderModuleName?: string;
 }

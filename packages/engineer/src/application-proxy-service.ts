@@ -1,5 +1,7 @@
+import { nodeFs } from '@file-services/node';
 import type { IConfigDefinition, LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
+    analyzeFeatures,
     Application,
     generateConfigName,
     type IApplicationOptions,
@@ -28,26 +30,21 @@ export class TargetApplication extends Application {
         return super.getClosestEngineConfigPath();
     }
 
-    public async getFeatures(
+    public getFeatures(
         singleFeature?: boolean,
         featureName?: string,
         featureDiscoveryRoot?: string,
         extensions?: string[],
         extraConditions?: string[],
     ) {
-        const { features, configurations, packages } = await super.analyzeFeatures(
+        return analyzeFeatures(
+            nodeFs,
+            this.basePath,
             featureDiscoveryRoot,
+            singleFeature ? featureName : undefined,
             extensions,
             extraConditions,
         );
-        if (singleFeature && featureName) {
-            this.filterByFeatureName(features, featureName);
-        }
-        return { features, configurations, packages };
-    }
-
-    public filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
-        return super.filterByFeatureName(features, featureName);
     }
 
     public importModules(requiredModules: string[]) {

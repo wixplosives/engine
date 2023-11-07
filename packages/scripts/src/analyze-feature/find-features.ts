@@ -1,5 +1,6 @@
 import type { IFileSystemSync } from '@file-services/types';
 import { concat } from '@wixc3/common';
+import { flattenTree } from '@wixc3/engine-core';
 import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import type { SetMultiMap } from '@wixc3/patterns';
 import { childPackagesFromContext, resolveDirectoryContext, type INpmPackage } from '@wixc3/resolve-directory-context';
@@ -7,6 +8,56 @@ import { isFeatureFile } from '../build-constants.js';
 import type { IFeatureDefinition } from '../types.js';
 import { loadFeaturesFromPaths } from './load-features-from-paths.js';
 import { mergeAll, mergeResults } from './merge.js';
+
+export async function analyzeFeatures(
+    fs: IFileSystemSync,
+    basePath: string,
+    featureDiscoveryRoot = '.',
+    featureName?: string,
+    extensions?: string[],
+    conditions?: string[],
+) {
+    console.time(`Analyzing Features`);
+    const featuresAndConfigs = await findFeatures(basePath, fs, featureDiscoveryRoot, extensions, conditions);
+    if (featureName) {
+        filterByFeatureName(featuresAndConfigs.features, featureName);
+    }
+    console.timeEnd('Analyzing Features');
+    return featuresAndConfigs;
+}
+
+function filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
+    const foundFeature = features.get(featureName);
+    if (!foundFeature) {
+        throw new Error(`cannot find feature: ${featureName}`);
+    }
+    const missingFeatureDeps = new Set<string>();
+    const filteredFeatures = [
+        ...flattenTree(foundFeature, ({ dependencies }) =>
+            dependencies.map((dependencyName) => {
+                const feature = features.get(dependencyName);
+                if (!feature) {
+                    missingFeatureDeps.add(dependencyName);
+                    return {} as IFeatureDefinition;
+                }
+                return feature;
+            }),
+        ),
+    ].map(({ scopedName }) => scopedName);
+
+    if (missingFeatureDeps.size) {
+        throw new Error(
+            `The following features were not found during feature location: ${Array.from(missingFeatureDeps)
+                .sort()
+                .join(', ')}`,
+        );
+    }
+    for (const [foundFeatureName] of features) {
+        if (!filteredFeatures.includes(foundFeatureName)) {
+            features.delete(foundFeatureName);
+        }
+    }
+}
 
 export async function findFeatures(
     path: string,

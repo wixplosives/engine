@@ -7,6 +7,10 @@
     ".": "./dist/index.js",
     "./bin/engineer": "./bin/engineer.js",
     "./gui-feature": "./dist/feature/gui.feature.js",
+    "./dist/feature/dev-server.feature.js": "./dist/feature/dev-server.feature.js",
+    "./dist/feature/gui.main-dashboard.env.js": "./dist/feature/gui.main-dashboard.env.js",
+    "./dist/feature/gui.feature.js": "./dist/feature/gui.feature.js",
+    "./dist/feature/managed.feature.js": "./dist/feature/managed.feature.js",
     "./dist/cli": "./dist/cli.js",
     "./dist/feature-dependency-graph": "./dist/feature-dependency-graph.js",
     "./package.json": "./package.json"

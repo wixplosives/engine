@@ -1,8 +1,8 @@
 import {
+    AnyEnvironment,
     BaseHost,
     COM,
     Communication,
-    type ConfigModule,
     type ConfigEnvironmentRecord,
     type Message,
     type ReadyMessage,
@@ -16,6 +16,7 @@ import * as io from 'socket.io';
 import { ENGINE_ROOT_ENVIRONMENT_ID, METADATA_PROVIDER_ENV_ID } from './core-node/constants.js';
 import { IPCHost } from './core-node/ipc-host.js';
 import { resolveEnvironments } from './environments.js';
+import { loadTopLevelConfigs } from './load-top-level-config.js';
 import { startRemoteNodeEnvironment } from './remote-node-environment.js';
 import {
     isEnvironmentStartMessage,
@@ -208,35 +209,26 @@ export class NodeEnvironmentsManager {
         }
 
         for (const nodeEnv of nodeEnvironments) {
+            const connectedEnvironments = this.createConnectedEnvMapping(
+                envHostMapping,
+                nodeEnv,
+                mode,
+                metadataProviderHost,
+            );
+
             const { overrideConfigs, originalConfigName } = this.getOverrideConfig(
                 overrideConfigsMap,
                 configName,
                 nodeEnv.name,
             );
-            const config: TopLevelConfig = [];
-            const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
-            for (const [env, host] of envHostMapping) {
-                if (env !== nodeEnv) {
-                    connectedEnvironments[env.name] = { id: env.name, host };
-                } else {
-                    connectedEnvironments[ENGINE_ROOT_ENVIRONMENT_ID] = {
-                        id: ENGINE_ROOT_ENVIRONMENT_ID,
-                        host,
-                        registerMessageHandler: true,
-                    };
 
-                    // in forked mode we are launching a new process, so metadata is handled from inside forked process
-                    if (mode !== 'forked') {
-                        connectedEnvironments[METADATA_PROVIDER_ENV_ID] = {
-                            id: METADATA_PROVIDER_ENV_ID,
-                            host: metadataProviderHost,
-                        };
-                    }
-                }
-            }
+            const config: TopLevelConfig = [];
 
             config.push(COM.use({ config: { topology, connectedEnvironments } }));
-            config.push(...(await this.getConfig(originalConfigName)), ...overrideConfigs);
+            config.push(
+                ...(await loadTopLevelConfigs(originalConfigName, this.options.configurations)),
+                ...overrideConfigs,
+            );
             const preparedEnvironment = await this.prepareEnvironment({
                 nodeEnv,
                 featureName,
@@ -269,6 +261,35 @@ export class NodeEnvironmentsManager {
             configName: runtimeConfigName,
             runningEnvironments,
         };
+    }
+
+    private createConnectedEnvMapping(
+        envHostMapping: Map<IEnvironmentDescriptor<AnyEnvironment>, ChildBaseHost>,
+        nodeEnv: IEnvironmentDescriptor<AnyEnvironment>,
+        mode: string,
+        metadataProviderHost: BaseHost,
+    ) {
+        const connectedEnvironments: Record<string, ConfigEnvironmentRecord> = {};
+        for (const [env, host] of envHostMapping) {
+            if (env !== nodeEnv) {
+                connectedEnvironments[env.name] = { id: env.name, host };
+            } else {
+                connectedEnvironments[ENGINE_ROOT_ENVIRONMENT_ID] = {
+                    id: ENGINE_ROOT_ENVIRONMENT_ID,
+                    host,
+                    registerMessageHandler: true,
+                };
+
+                // in forked mode we are launching a new process, so metadata is handled from inside forked process
+                if (mode !== 'forked') {
+                    connectedEnvironments[METADATA_PROVIDER_ENV_ID] = {
+                        id: METADATA_PROVIDER_ENV_ID,
+                        host: metadataProviderHost,
+                    };
+                }
+            }
+        }
+        return connectedEnvironments;
     }
 
     private getOverrideConfig(overrideConfigsMap: Map<string, OverrideConfig>, configName?: string, envName?: string) {
@@ -444,37 +465,6 @@ export class NodeEnvironmentsManager {
             },
             port: realPort,
         };
-    }
-
-    private async getConfig(configName: string | undefined) {
-        const config: TopLevelConfig = [];
-        const { configurations } = this.options;
-        if (configurations && configName) {
-            const configDefinition = configurations.get(configName);
-            if (!configDefinition) {
-                const configNames = Array.from(configurations.keys());
-                throw new Error(
-                    `cannot find config "${configName}". available configurations: ${configNames.join(', ')}`,
-                );
-            }
-            for (const definition of configDefinition) {
-                if (Array.isArray(definition)) {
-                    config.push(...definition);
-                } else {
-                    try {
-                        config.push(...((await import(definition.filePath)) as ConfigModule).default);
-                    } catch (e) {
-                        console.error(
-                            new Error(
-                                `while loading config "${definition.name}". importing ${definition.filePath} failed`,
-                                { cause: e },
-                            ),
-                        );
-                    }
-                }
-            }
-        }
-        return config;
     }
 
     private async runRemoteNodeEnvironment(options: StartEnvironmentOptions) {

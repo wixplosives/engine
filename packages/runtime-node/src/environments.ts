@@ -3,7 +3,7 @@ import type { IStaticFeatureDefinition, IEnvironmentDescriptor } from './types.j
 
 export function resolveEnvironments(
     featureName: string,
-    features: Map<string, IStaticFeatureDefinition>,
+    features: ReadonlyMap<string, IStaticFeatureDefinition>,
     envTypes?: EnvironmentTypes[] | EnvironmentTypes,
     filterByContext = true,
 ) {

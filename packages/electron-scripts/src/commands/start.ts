@@ -1,12 +1,12 @@
 import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { provideApiForChildProcess, type IRunOptionsMessage } from '@wixc3/engine-electron-host';
+import { IRunOptionsMessage, provideApiForChildProcess } from '@wixc3/engine-electron-host';
+import { loadTopLevelConfigs } from '@wixc3/engine-runtime-node';
 import { findFeatures, getExportedEnvironments } from '@wixc3/engine-scripts';
 import { startDevServer } from '@wixc3/engineer';
 import electron from 'electron';
 import { spawn } from 'node:child_process';
-import { getConfig } from '../engine-helpers.js';
-import { getEngineConfig } from '../find-features.js';
+import { getEngineConfig } from '../find-features';
 
 // electron node lib exports the electron executable path; inside electron, it's the api itself.
 const electronPath = electron as unknown as string;
@@ -82,19 +82,16 @@ export async function start({
             buildConditions,
         );
 
-        const environments = getExportedEnvironments(features);
-
-        // doing this in 2 steps as a future step for not needing to provide the environment name in the cli
-        const electronHostEnvironments = [...environments].filter(({ type }) => type === 'electron-main');
-
-        const env = electronHostEnvironments.find(({ name }) => name === envName)?.env;
+        const env = [...getExportedEnvironments(features)].find(
+            ({ type, name }) => type === 'electron-main' && name === envName
+        )?.env;
 
         if (!env) {
             throw new Error(`Environment ${envName} not found`);
         }
 
         if (configName) {
-            config.push(...(await getConfig(configName, configurations, envName)));
+            config.push(...(await loadTopLevelConfigs(configName, configurations, envName)));
         }
         if (overrideConfig) {
             config.push(...(typeof overrideConfig === 'function' ? overrideConfig(port) : overrideConfig));

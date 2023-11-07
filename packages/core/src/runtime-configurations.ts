@@ -1,9 +1,9 @@
 import { type TopLevelConfig } from './types.js';
 
-declare global {
-    interface Window {
-        engineEntryOptions?: (options: { urlParams: URLSearchParams; envName: string }) => URLSearchParams;
-    }
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare namespace globalThis {
+    const parent: typeof globalThis | undefined;
+    const engineEntryOptions: (options: { urlParams: URLSearchParams; envName: string }) => URLSearchParams;
 }
 
 export interface ConfigModule {
@@ -34,13 +34,14 @@ export class RuntimeConfigurations {
      * this is an integration function with the build system
      * the logic and is based on the "config loader" implementation
      */
-    async importConfig(configName: string) {
+    async importConfig(configName: string): Promise<TopLevelConfig> {
         const loader = this.loaders[configName];
         if (!loader || !configName) {
             return [];
         }
         const res = await loader();
-        const allLoadedConfigs = await Promise.all(res.map((module) => module.default));
+        // top level config creates a module that returns a Promise as default export
+        const allLoadedConfigs = await Promise.all(res.map((module) => module.default ?? module));
         return allLoadedConfigs.flat();
     }
     /**
@@ -48,10 +49,11 @@ export class RuntimeConfigurations {
      * currently only iframe is supported we should expend support for other environments types
      */
     installChildEnvConfigFetcher(featureName: string, configName: string) {
-        if (!this.publicConfigsRoute || !this.isMainWebEntrypoint()) {
+        if (!this.publicConfigsRoute || !this.isMainEntrypoint() || typeof window === 'undefined') {
             return;
         }
-        globalThis.addEventListener('message', ({ data: { id, envName, __from }, source }) => {
+
+        window.addEventListener('message', ({ data: { id, envName, __from }, source }) => {
             if (!source || id !== this.publicConfigsRoute) {
                 return;
             }
@@ -87,20 +89,22 @@ export class RuntimeConfigurations {
         if (!this.publicConfigsRoute) {
             return Promise.resolve([]);
         }
-        return this.isMainWebEntrypoint()
+        return this.isMainEntrypoint()
             ? this.fetchConfig(envName, featureName, configName)
             : this.loadFromParent(envName);
     }
 
-    private isMainWebEntrypoint() {
-        return this.getScope() === this.getOpenerMessageTarget();
+    private isMainEntrypoint() {
+        return globalThis === this.getOpenerMessageTarget();
     }
 
     private loadFromParent(envName: string) {
-        const scope = this.getScope();
-        let promise = this.fetchedConfigs[envName];
-        if (!promise) {
-            promise = new Promise((res, rej) => {
+        if (typeof window === 'undefined') {
+            return Promise.reject(new Error('loadFromParent is not supported in non-browser environments'));
+        }
+        let loadConfigPromise = this.fetchedConfigs[envName];
+        if (!loadConfigPromise) {
+            loadConfigPromise = new Promise((res, rej) => {
                 const configsHandler = ({
                     data: { id, config, error },
                 }: {
@@ -109,12 +113,12 @@ export class RuntimeConfigurations {
                         | { id: string; config: never; error: string };
                 }) => {
                     if (id === this.publicConfigsRoute) {
-                        scope.removeEventListener('message', configsHandler);
+                        window.removeEventListener('message', configsHandler);
                         error ? rej(error) : res(config);
                     }
                 };
-                scope.addEventListener('message', configsHandler);
-                scope.parent.postMessage(
+                window.addEventListener('message', configsHandler);
+                window.parent.postMessage(
                     {
                         id: this.publicConfigsRoute,
                         envName: envName,
@@ -123,18 +127,12 @@ export class RuntimeConfigurations {
                     '*',
                 );
             });
-            this.fetchedConfigs[envName] = promise;
+            this.fetchedConfigs[envName] = loadConfigPromise;
         }
-        return promise;
+        return loadConfigPromise;
     }
-
-    private getScope() {
-        return typeof self !== 'undefined' ? self : window;
-    }
-
     private getOpenerMessageTarget() {
-        const current = typeof self !== 'undefined' ? self : window;
-        return current.parent ?? current;
+        return globalThis.parent ?? globalThis;
     }
 
     private fetchConfig(envName: string, featureName: string, configName: string) {

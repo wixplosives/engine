@@ -1,4 +1,5 @@
-import { type IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
+import { AnyEnvironment } from '@wixc3/engine-core';
+import type { IEnvironmentDescriptor } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { IFeatureDefinition } from '../types.js';
 
@@ -6,7 +7,7 @@ export interface GetResolveEnvironmentsParams {
     featureName?: string;
     filterContexts?: boolean;
     features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs' | 'resolvedContexts'>>;
-    environments: IEnvironmentDescriptor[];
+    environments?: Iterable<IEnvironmentDescriptor>;
     findAllEnvironments?: boolean;
 }
 
@@ -15,11 +16,21 @@ export interface IResolvedEnvironment {
     env: IEnvironmentDescriptor;
 }
 
+export function* getExportedEnvironments(
+    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
+) {
+    for (const { exportedEnvs } of features.values()) {
+        for (const exportedEnv of exportedEnvs) {
+            yield exportedEnv;
+        }
+    }
+}
+
 export function getResolvedEnvironments({
     featureName,
     filterContexts,
     features,
-    environments,
+    environments = getExportedEnvironments(features),
     findAllEnvironments,
 }: GetResolveEnvironmentsParams) {
     const webEnvs = new Map<string, IResolvedEnvironment>();
@@ -36,7 +47,7 @@ export function getResolvedEnvironments({
         : getAllResolvedContexts(features);
     for (const env of environments) {
         const { name, childEnvName, type } = env;
-        if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName)))
+        if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName))) {
             if (type === 'window' || type === 'iframe') {
                 addEnv(webEnvs, env);
             } else if (type === 'webworker') {
@@ -52,12 +63,14 @@ export function getResolvedEnvironments({
             } else {
                 throw new Error(`unknown environment type: ${type}`);
             }
+        }
     }
     return {
         webEnvs,
         workerEnvs,
         electronRendererEnvs,
         nodeEnvs,
+        workerThreadEnvs,
     };
 }
 

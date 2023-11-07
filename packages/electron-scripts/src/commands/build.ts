@@ -1,15 +1,14 @@
 import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { importModules, type IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
+import { loadTopLevelConfigs, importModules, type IStaticFeatureDefinition } from '@wixc3/engine-runtime-node';
 import {
     Application,
     getExportedEnvironments,
     type IApplicationOptions,
     type IBuildCommandOptions as IEngineBuildCommandOptions,
 } from '@wixc3/engine-scripts';
-import { build as electronBuild, type Configuration, type FileSet, type PublishOptions } from 'electron-builder';
+import { build as electronBuild, Configuration, FileSet, PublishOptions } from 'electron-builder';
 import { dirname, posix, relative } from 'node:path';
-import { getConfig } from '../engine-helpers.js';
 import { getEngineConfig } from '../find-features.js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -113,7 +112,7 @@ export async function build(options: IBuildCommandOptions): Promise<void> {
     });
 
     if (configName) {
-        config.push(...(await getConfig(configName, configurations, envName)));
+        config.push(...(await loadTopLevelConfigs(configName, configurations, envName)));
     }
 
     await createElectronEntryFile({
@@ -191,16 +190,15 @@ export function createElectronEntryFile({
     outDir,
 }: CreateElectronEntryOptions): Promise<void> {
     const currentFeature = features.get(featureName);
+    if (!currentFeature) {
+        throw new Error(`feature ${featureName} was not found. available features:
+        ${[...features.keys()].sort().join(', ')}`);
+    }
 
     const env = [...getExportedEnvironments(features)].find(({ name }) => name === envName)?.env;
 
     if (!env) {
         throw new Error(`cannot create electron entry for ${envName}. No feature found exporting this environment`);
-    }
-
-    if (!currentFeature) {
-        throw new Error(`feature ${featureName} was not found. available features:
-        ${[...features.keys()].join(', ')}`);
     }
 
     const mapAbsolutePathsToRequests = (path: string, packageName: string) => {
@@ -250,7 +248,6 @@ export function createElectronEntryFile({
     return fs.promises.writeFile(
         outputPath,
         `process.env.NODE_ENV='production';
-
 const { app } = require('electron');
 const { join } = require('path')
 const { runElectronEnv } = require('@wixc3/engine-electron-host');
@@ -261,7 +258,7 @@ const configName = ${configName ? JSON.stringify(configName) : 'undefined'};
 const config = ${JSON.stringify(config, null, 4)};
 const features = new Map(${JSON.stringify(scopedFeatures, null, 4)});
 const basePath = join(app.getAppPath(), ${JSON.stringify(outDir)});
-const env = ${JSON.stringify(env)}
+const env = ${JSON.stringify(env)};
 
 const resolvePath = (path) => require.resolve(path, { paths: [basePath] })
 

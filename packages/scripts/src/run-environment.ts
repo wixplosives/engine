@@ -3,7 +3,6 @@ import {
     BaseHost,
     COM,
     Communication,
-    Environment,
     RuntimeEngine,
     flattenTree,
     type AnyEnvironment,
@@ -13,18 +12,18 @@ import {
 } from '@wixc3/engine-core';
 import {
     ENGINE_ROOT_ENVIRONMENT_ID,
+    IStaticFeatureDefinition,
     METADATA_PROVIDER_ENV_ID,
+    MetadataCollectionAPI,
+    loadTopLevelConfigs,
     metadataApiToken,
     runNodeEnvironment,
-    type IStaticFeatureDefinition,
-    type MetadataCollectionAPI,
 } from '@wixc3/engine-runtime-node';
-import { findFeatures } from './analyze-feature/find-features.js';
+import { findFeatures } from './analyze-feature/index.js';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants.js';
-import { evaluateConfig } from './load-node-environment.js';
-import type { EngineConfig, IFeatureDefinition } from './types.js';
+import { EngineConfig, IFeatureDefinition } from './types.js';
 
-export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = Environment> {
+export interface IRunNodeEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment> {
     featureName: string;
     bundlePath?: string;
     configName?: string;
@@ -75,7 +74,7 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
     );
 
     if (configName) {
-        config = [...(await evaluateConfig(configName, configurations, envName)), ...config];
+        config = [...(await loadTopLevelConfigs(configName, configurations, envName)), ...config];
     }
     const featureDef = features.get(featureName)!;
 

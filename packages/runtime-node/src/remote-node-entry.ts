@@ -12,8 +12,8 @@ const {
     requiredPaths: requiredPathsJson,
     _: [providedPath = process.cwd()],
 } = parseCliArguments(process.argv.slice(1));
-const requiredPaths = JSON.parse(requiredPathsJson as string) as string[];
 
+const requiredPaths = JSON.parse(requiredPathsJson as string) as string[];
 const socketServerOptions = JSON.parse(socketServerOptionsJson as string) as Partial<ServerOptions>;
 
 const basePath = path.resolve(providedPath);
@@ -29,6 +29,7 @@ const httpServerPort = preferredPort ? parseInt(preferredPort as string, 10) : u
     });
 
     const parentProcess = new ForkedProcess(process);
+
     createIPC(parentProcess, socketServer, { port, onClose: close });
 
     parentProcess.postMessage({ id: 'initiated' });

@@ -1,9 +1,7 @@
 import { nodeFs as fs } from '@file-services/node';
 import { defaults } from '@wixc3/common';
-import { flattenTree, type TopLevelConfig } from '@wixc3/engine-core';
+import { type TopLevelConfig } from '@wixc3/engine-core';
 import {
-    createIPC,
-    ForkedProcess,
     launchEngineHttpServer,
     NodeEnvironmentsManager,
     resolveEnvironments,
@@ -13,18 +11,18 @@ import {
 import { createDisposables, SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
 import webpack from 'webpack';
-import { findFeatures } from '../analyze-feature/index.js';
-import { ENGINE_CONFIG_FILE_NAME } from '../build-constants.js';
+import { analyzeFeatures } from '../analyze-feature';
+import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
 import {
     createCommunicationMiddleware,
     createConfigMiddleware,
     ensureTopLevelConfigMiddleware,
-} from '../config-middleware.js';
-import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs.js';
-import { generateFeature, pathToFeaturesDirectory } from '../feature-generator/feature-generator.js';
-import type { EngineConfig, IFeatureDefinition } from '../types.js';
-import { getFilePathInPackage, scopeFilePathsToPackage } from '../utils/paths.js';
-import { buildDefaults } from './defaults.js';
+} from '../config-middleware';
+import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs';
+import { generateFeature, pathToFeaturesDirectory } from '../feature-generator';
+import type { EngineConfig, IFeatureDefinition } from '../types';
+import { getFilePathInPackage, getResolvedEnvironments, scopeFilePathsToPackage } from '../utils';
+import { buildDefaults } from './defaults';
 import type {
     IApplicationOptions,
     IBuildCommandOptions,
@@ -33,8 +31,8 @@ import type {
     ICreateOptions,
     IRunApplicationOptions,
     WebpackMultiStats,
-} from './types.js';
-import { compile, getResolvedEnvironments, hookCompilerToConsole, toCompilerOptions } from './utils.js';
+} from './types';
+import { compile, hookCompilerToConsole, toCompilerOptions } from './utils';
 
 const { basename, extname, join } = fs;
 
@@ -63,22 +61,26 @@ export class Application {
         const { config: _config } = await this.getEngineConfig(
             buildOptions.engineConfigPath ? fs.resolve(this.basePath, buildOptions.engineConfigPath) : undefined,
         );
-        const config = defaults(_config || {}, buildDefaults);
+        const config = defaults(_config ?? {}, buildDefaults);
 
         if (config.require) await this.importModules(config.require);
 
         const entryPoints: Record<string, Record<string, string>> = {};
-        const analyzed = await this.analyzeFeatures(
+        const analyzed = await analyzeFeatures(
+            fs,
+            this.basePath,
             buildOptions.featureDiscoveryRoot ?? config.featureDiscoveryRoot,
+            buildOptions.singleFeature ? buildOptions.featureName : undefined,
             config.extensions,
             config.buildConditions,
         );
 
-        if (buildOptions.singleFeature && buildOptions.featureName) {
-            this.filterByFeatureName(analyzed.features, buildOptions.featureName);
-        }
+        const envs = getResolvedEnvironments({
+            featureName: buildOptions.featureName,
+            features: analyzed.features,
+            filterContexts: buildOptions.singleFeature,
+        });
 
-        const envs = getResolvedEnvironments(buildOptions, analyzed.features);
         const { compiler } = await this.createCompiler(toCompilerOptions(buildOptions, analyzed, config, envs));
         const stats = await compile(compiler);
         const sourceRoot = buildOptions.sourcesRoot ?? buildOptions.featureDiscoveryRoot ?? '.';
@@ -185,27 +187,12 @@ export class Application {
             close: disposables.dispose,
         };
     }
-
-    public async remote({ port: preferredPort, socketServerOptions }: IRunApplicationOptions = {}) {
-        if (!process.send) {
-            throw new Error('"remote" command can only be used in a forked process');
-        }
-        const { config } = await this.getEngineConfig();
-        if (config && config.require) {
-            await this.importModules(config.require);
-        }
-        const { socketServer, close, port } = await launchEngineHttpServer({
-            staticDirPath: this.outputPath,
-            httpServerPort: preferredPort,
-            socketServerOptions,
-        });
-
-        const parentProcess = new ForkedProcess(process);
-        createIPC(parentProcess, socketServer, { port, onClose: close });
-        //
-        parentProcess.postMessage({ id: 'initiated' });
+    /**
+     * @deprecated this is here for backwards compatibility with the old engine
+     */
+    protected analyzeFeatures(featureDiscoveryRoot: string, extensions: string[], buildConditions: string[]) {
+        return analyzeFeatures(fs, this.basePath, featureDiscoveryRoot, undefined, extensions, buildConditions);
     }
-
     public async create({ featureName, templatesDir, featuresDir }: ICreateOptions = {}) {
         if (!featureName) {
             throw new Error('Feature name is mandatory');
@@ -474,17 +461,7 @@ export class Application {
         return { compiler };
     }
 
-    protected async analyzeFeatures(featureDiscoveryRoot = '.', extensions?: string[], extraConditions?: string[]) {
-        const { basePath } = this;
-
-        console.time(`Analyzing Features`);
-        // const packages = childPackagesFromContext(resolveDirectoryContext(basePath, fs));
-        const featuresAndConfigs = await findFeatures(basePath, fs, featureDiscoveryRoot, extensions, extraConditions);
-        console.timeEnd('Analyzing Features');
-        return featuresAndConfigs;
-    }
-
-    protected getFeatureEnvDefinitions(
+    public getFeatureEnvDefinitions(
         features: Map<string, IFeatureDefinition>,
         configurations: SetMultiMap<string, IConfigDefinition>,
     ) {
@@ -505,35 +482,5 @@ export class Application {
         }
 
         return featureEnvDefinitions;
-    }
-
-    protected filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
-        const foundFeature = features.get(featureName);
-        if (!foundFeature) {
-            throw new Error(`cannot find feature: ${featureName}`);
-        }
-        const nonFoundDependencies: string[] = [];
-        const filteredFeatures = [
-            ...flattenTree(foundFeature, ({ dependencies }) =>
-                dependencies.map((dependencyName) => {
-                    const feature = features.get(dependencyName);
-                    if (!feature) {
-                        nonFoundDependencies.push(dependencyName);
-                        return {} as IFeatureDefinition;
-                    }
-                    return feature;
-                }),
-            ),
-        ].map(({ scopedName }) => scopedName);
-        if (nonFoundDependencies.length) {
-            throw new Error(
-                `The following features were not found during feature location: ${nonFoundDependencies.join(',')}`,
-            );
-        }
-        for (const [foundFeatureName] of features) {
-            if (!filteredFeatures.includes(foundFeatureName)) {
-                features.delete(foundFeatureName);
-            }
-        }
     }
 }

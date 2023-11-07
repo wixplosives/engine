@@ -14,9 +14,7 @@ export interface EngineerMetadataConfig {
 export default class RuntimeMetadata extends Feature<'runtimeMetadata'> {
     id = 'runtimeMetadata' as const;
     api = {
-        engineerMetadataConfig: new Config<EngineerMetadataConfig>({
-            applicationPath: '',
-        }),
+        engineerMetadataConfig: new Config<EngineerMetadataConfig>({}),
     };
     dependencies = [];
 }

@@ -5,6 +5,7 @@ import type {
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
+import { Plugin } from 'esbuild';
 import type io from 'socket.io';
 
 export interface IFeatureTarget {
@@ -75,6 +76,7 @@ export interface EngineConfig {
     sourcesRoot?: string;
     favicon?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
+    buildPlugins?: Plugin[];
 
     /**
      * extra resolver conditions to add while building project.

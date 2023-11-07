@@ -3,7 +3,7 @@ import type { IConfigDefinition, TopLevelConfigProvider } from '@wixc3/engine-ru
 import type { SetMultiMap } from '@wixc3/patterns';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import type webpack from 'webpack';
-import { createMainEntrypoint } from './create-entrypoint.js';
+import { createMainEntrypoint } from './create-web-entrypoint';
 import type { IFeatureDefinition } from './types.js';
 import type { IResolvedEnvironment, getResolvedEnvironments } from './utils/environments.js';
 import { createVirtualEntries } from './virtual-modules-loader.js';
@@ -18,7 +18,7 @@ export interface ICreateWebpackConfigsOptions {
     context: string;
     mode?: 'production' | 'development';
     outputPath: string;
-    environments: Pick<ReturnType<typeof getResolvedEnvironments>, 'webEnvs' | 'workerEnvs' | 'electronRendererEnvs'>;
+    environments: ReturnType<typeof getResolvedEnvironments>;
     publicPath?: string;
     publicPathVariableName?: string;
     title?: string;
@@ -150,7 +150,6 @@ export function createWebpackConfig({
             staticBuild,
             publicConfigsRoute,
             config,
-            target,
             eagerEntrypoint,
             configLoaderModuleName,
         });

@@ -1,22 +1,28 @@
-import { Communication, RuntimeMetadata } from '@wixc3/engine-core';
-import { NodeEnvironmentsManager, WsServerHost, launchEngineHttpServer } from '@wixc3/engine-runtime-node';
+import { Communication, Registry, RuntimeMetadata } from '@wixc3/engine-core';
 import {
+    IConfigDefinition,
+    NodeEnvironmentsManager,
+    WsServerHost,
+    launchEngineHttpServer,
+} from '@wixc3/engine-runtime-node';
+import {
+    IFeatureDefinition,
     createCommunicationMiddleware,
     createConfigMiddleware,
     createFeaturesEngineRouter,
     createLiveConfigsMiddleware,
     ensureTopLevelConfigMiddleware,
-    getExportedEnvironments,
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
-import { createDisposables } from '@wixc3/patterns';
+import { SetMultiMap, createDisposables } from '@wixc3/patterns';
 import express from 'express';
 import type io from 'socket.io';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
-import { TargetApplication } from '../application-proxy-service.js';
-import { buildFeatureLinks } from '../feature-dependency-graph.js';
-import devServerFeature, { devServerEnv } from './dev-server.feature.js';
+import { TargetApplication } from '../application-proxy-service';
+import { buildFeatureLinks } from '../feature-dependency-graph';
+import devServerFeature, { devServerEnv } from './dev-server.feature';
+import { DevServerConfig } from './dev-server.types';
 
 const attachWSHost = (socketServer: io.Server, envName: string, communication: Communication) => {
     const host = new WsServerHost(socketServer.of(`/${envName}`));
@@ -73,11 +79,14 @@ devServerFeature.setup(
                 extensions,
                 buildConditions,
             } = engineConfig ?? {};
+
             await application.importModules(requiredPaths);
+
             const resolvedSocketServerOptions: Partial<io.ServerOptions> = {
                 ...socketServerOptions,
                 ...configServerOptions,
             };
+
             const {
                 port: actualPort,
                 app,
@@ -154,16 +163,13 @@ devServerFeature.setup(
                 }
             }
 
-            const topologyOverrides = (featureName: string): Record<string, string> | undefined =>
-                featureName.indexOf('engineer/') === 0
-                    ? {
-                          [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
-                      }
-                    : undefined;
-
             app.use(`/${publicConfigsRoute}`, [
                 ensureTopLevelConfigMiddleware,
-                createCommunicationMiddleware(application.getNodeEnvManager()!, publicPath, topologyOverrides),
+                createCommunicationMiddleware(
+                    application.getNodeEnvManager()!,
+                    publicPath,
+                    createEngineerTopologyOverrides(actualPort),
+                ),
                 createLiveConfigsMiddleware(configurations, basePath, application.getOverrideConfigsMap()),
                 createConfigMiddleware(overrideConfig),
             ]);
@@ -185,38 +191,18 @@ devServerFeature.setup(
             });
 
             // Write middleware for each of the apps
-            const { compiler } = await application.createCompiler({
-                ...devServerConfig,
+            const compilationPromises: Promise<void>[] = await runCompilerInWatch(
+                application,
+                devServerConfig,
                 features,
-                staticBuild: false,
                 mode,
                 configurations,
                 webpackConfigPath,
-                environments: getResolvedEnvironments({
-                    featureName,
-                    features,
-                    filterContexts: singleFeature,
-                    environments: [...getExportedEnvironments(features)],
-                }),
-            });
-
-            const compilationPromises: Promise<void>[] = [];
-
-            if (compiler.compilers.length > 0) {
-                const devMiddleware = webpackDevMiddleware(compiler);
-                disposables.add(
-                    () =>
-                        new Promise<void>((res, rej) => {
-                            devMiddleware.close((e) => (e ? rej(e) : res()));
-                        }),
-                    { name: 'close dev middleware', timeout: 10_000 },
-                );
-                // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                app.use(devMiddleware);
-                compilationPromises.push(
-                    new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve())),
-                );
-            }
+                featureName,
+                singleFeature,
+                disposables,
+                app,
+            );
 
             const featureEnvDefinitions = application.getFeatureEnvDefinitions(features, configurations);
 
@@ -244,35 +230,9 @@ devServerFeature.setup(
                 });
             }
 
-            /* creating new compilers for the engineering config for 2 reasons
-             *  1. de-couple the engineering build and the users application build
-             *  For example it's very likely that later down the line we will never watch here
-             *  but we will keep on watching on the users application
-             *  2. the createCompiler function is not extendable with more configs with the current API
-             */
-            console.time('Bundling features and engine');
-            const engineerCompilers = webpack([...engineerWebpackConfigs]);
-            if (engineerCompilers.compilers.length > 0) {
-                // This assumes we have only one engineer config - for the dashboard
-                // If we decide to create more engineers one day we might need to rethink the index file
-                // In any case it's a fallback, full paths should still work as usual
-                const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers, { index: 'main-dashboard.html' });
-                disposables.add(
-                    () =>
-                        new Promise<void>((res, rej) => {
-                            engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
-                        }),
-                    { name: 'close engineer dev middleware', timeout: 10_000 },
-                );
-                // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                app.use(engineerDevMiddleware);
-                compilationPromises.push(
-                    new Promise<void>((resolve) =>
-                        engineerCompilers.hooks.done.tap('engineer dashboard', () => resolve()),
-                    ),
-                );
-            }
+            addEngineerCompilations(engineerWebpackConfigs, disposables, app, compilationPromises);
 
+            console.time('Bundling features and engine');
             await Promise.all(compilationPromises);
             console.timeEnd('Bundling features and engine');
             if (log) {
@@ -302,3 +262,89 @@ devServerFeature.setup(
         };
     },
 );
+
+function createEngineerTopologyOverrides(actualPort: number) {
+    return (featureName: string): Record<string, string> | undefined =>
+        featureName.indexOf('engineer/') === 0
+            ? {
+                  [devServerEnv.env]: `http://localhost:${actualPort}/${devServerEnv.env}`,
+              }
+            : undefined;
+}
+
+function addEngineerCompilations(
+    engineerWebpackConfigs: Registry<webpack.Configuration>,
+    disposables: ReturnType<typeof createDisposables>,
+    app: express.Express,
+    compilationPromises: Promise<void>[],
+) {
+    /* creating new compilers for the engineering config for 2 reasons
+     *  1. de-couple the engineering build and the users application build
+     *  For example it's very likely that later down the line we will never watch here
+     *  but we will keep on watching on the users application
+     *  2. the createCompiler function is not extendable with more configs with the current API
+     */
+    const engineerCompilers = webpack([...engineerWebpackConfigs]);
+    if (engineerCompilers.compilers.length > 0) {
+        // This assumes we have only one engineer config - for the dashboard
+        // If we decide to create more engineers one day we might need to rethink the index file
+        // In any case it's a fallback, full paths should still work as usual
+        const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers, { index: 'main-dashboard.html' });
+        disposables.add(
+            () =>
+                new Promise<void>((res, rej) => {
+                    engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
+                }),
+            { name: 'close dev middleware', timeout: 10_000 },
+        );
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        app.use(engineerDevMiddleware);
+        compilationPromises.push(
+            new Promise<void>((resolve) => engineerCompilers.hooks.done.tap('engineer dashboard', () => resolve())),
+        );
+    }
+}
+
+async function runCompilerInWatch(
+    application: TargetApplication,
+    devServerConfig: DevServerConfig,
+    features: Map<string, IFeatureDefinition>,
+    mode: 'development' | 'production',
+    configurations: SetMultiMap<string, IConfigDefinition>,
+    webpackConfigPath: string | undefined,
+    featureName: string | undefined,
+    singleFeature: boolean | undefined,
+    disposables: ReturnType<typeof createDisposables>,
+    app: express.Express,
+) {
+    const { compiler } = await application.createCompiler({
+        ...devServerConfig,
+        features,
+        staticBuild: false,
+        mode,
+        configurations,
+        webpackConfigPath,
+        environments: getResolvedEnvironments({
+            featureName,
+            features,
+            filterContexts: singleFeature,
+        }),
+    });
+
+    const compilationPromises: Promise<void>[] = [];
+
+    if (compiler.compilers.length > 0) {
+        const devMiddleware = webpackDevMiddleware(compiler);
+        disposables.add(
+            () =>
+                new Promise<void>((res, rej) => {
+                    devMiddleware.close((e) => (e ? rej(e) : res()));
+                }),
+            { name: 'close engineer dev middleware', timeout: 10_000 },
+        );
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        app.use(devMiddleware);
+        compilationPromises.push(new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve())));
+    }
+    return compilationPromises;
+}

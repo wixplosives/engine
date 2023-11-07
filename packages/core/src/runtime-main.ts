@@ -1,17 +1,15 @@
 import type { IRunOptions, TopLevelConfig } from './types.js';
 import type { AnyEnvironment } from './entities/index.js';
-import { FeatureLoadersRegistry, type IFeatureLoader } from './run-engine-app.js';
-import { type ConfigLoaders, RuntimeConfigurations } from './runtime-configurations.js';
+import { FeatureLoadersRegistry, IFeatureLoader } from './run-engine-app.js';
+import { ConfigLoaders, RuntimeConfigurations } from './runtime-configurations.js';
 import { RuntimeEngine } from './runtime-engine.js';
-import COM from './communication.feature.js';
-import { INSTANCE_ID_PARAM_NAME } from './com/initializers/iframe.js';
+import { INSTANCE_ID_PARAM_NAME } from './com/index.js';
 
 export interface MainEntryParams {
     env: AnyEnvironment;
-    overrideConfig: TopLevelConfig;
     featureLoaders: Map<string, IFeatureLoader>;
     configLoaders: ConfigLoaders;
-    publicPath: string;
+    contextualConfig: (options: { resolvedContexts: Record<string, string> }) => TopLevelConfig;
     publicConfigsRoute: string;
     featureName: string;
     configName: string;
@@ -24,9 +22,8 @@ export interface MainEntryParams {
  */
 export async function main({
     env,
-    publicPath,
+    contextualConfig,
     publicConfigsRoute,
-    overrideConfig,
     featureLoaders,
     configLoaders,
     featureName,
@@ -42,24 +39,21 @@ export async function main({
     configName = String(options.get('config') || configName);
 
     const instanceId = options.get(INSTANCE_ID_PARAM_NAME);
-    if (instanceId) {
-        (globalThis as any).name = instanceId;
+    if (typeof instanceId === 'string' && typeof self !== 'undefined') {
+        self.name = instanceId;
     }
 
-    const buildConfigPromise = runtimeConfiguration.importConfig(configName);
-    const runtimeConfigPromise = runtimeConfiguration.load(env.env, featureName, configName);
-
-    const [buildConfig, runtimeConfig] = await Promise.all([buildConfigPromise, runtimeConfigPromise]);
+    const [buildConfig, runtimeConfig] = await Promise.all([
+        runtimeConfiguration.importConfig(configName),
+        runtimeConfiguration.load(env.env, featureName, configName),
+    ]);
 
     // only load features after the config is loaded to avoid blocking onload event
     const { entryFeature, resolvedContexts } = await featureLoader.loadEntryFeature(featureName, {});
 
-    const topLevelConfig: TopLevelConfig = [
-        COM.use({ config: { resolvedContexts, publicPath } }),
-        ...buildConfig,
-        ...overrideConfig,
-        ...runtimeConfig,
-    ];
-
-    return new RuntimeEngine(env, topLevelConfig, options).run(entryFeature);
+    return new RuntimeEngine(
+        env,
+        [...buildConfig, ...contextualConfig({ resolvedContexts }), ...runtimeConfig],
+        options,
+    ).run(entryFeature);
 }

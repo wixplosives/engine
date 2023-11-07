@@ -1,14 +1,23 @@
 import { Worker } from '@wixc3/isomorphic-worker/worker';
-
+import type { UniversalWorkerOptions } from '@wixc3/isomorphic-worker/types';
 import { UniversalWorkerHost } from '../hosts/universal-worker-host.js';
 import type { InitializerOptions } from './types.js';
 
-export async function webWorkerInitializer({ communication, env: { env, endpointType } }: InitializerOptions) {
-    const isSingleton = endpointType === 'single';
-    const instanceId = isSingleton ? env : communication.generateEnvInstanceID(env);
+export interface WebWorkerInitializerOptions extends InitializerOptions {
+    workerOptions?: UniversalWorkerOptions;
+}
 
-    const webWorker = new Worker(`${communication.getPublicPath()}${env}.webworker.js${location.search}`, {
+export async function webWorkerInitializer({
+    communication,
+    env: { env, endpointType },
+    workerOptions,
+}: WebWorkerInitializerOptions) {
+    const isModule = workerOptions?.type === 'module';
+    const instanceId = communication.getEnvironmentInstanceId(env, endpointType);
+    const url = `${communication.getPublicPath()}${env}.webworker.${isModule ? 'mjs' : 'js'}${location.search}`;
+    const webWorker = new Worker(url, {
         name: instanceId,
+        ...workerOptions,
     });
 
     const host = new UniversalWorkerHost(webWorker, instanceId);

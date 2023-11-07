@@ -46,6 +46,7 @@ export class RemoteNodeEnvironment {
 
     public async getRemotePort(): Promise<number> {
         return new Promise((resolve) => {
+            // missing cleanup
             this.subscribe((message) => {
                 if (isEnvironmentPortMessage(message)) {
                     resolve(message.payload.port);
