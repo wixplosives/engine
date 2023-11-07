@@ -2962,10 +2962,10 @@
   dependencies:
     "@types/d3-time" "*"
 
-"@types/d3-selection@^3.0.8":
-  version "3.0.8"
-  resolved "https://registry.yarnpkg.com/@types/d3-selection/-/d3-selection-3.0.8.tgz#9423511db3ed00a55aad4217ac8d546db5d8e5f5"
-  integrity sha512-pxCZUfQyedq/DIlPXIR5wE1mIH37omOdx1yxRudL3KZ4AC+156jMjOv1z5RVlGq62f8WX2kyO0hTVgEx627QFg==
+"@types/d3-selection@^3.0.9":
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/@types/d3-selection/-/d3-selection-3.0.9.tgz#b70e205ebafd8f7f4b662d16254c95aedc11371c"
+  integrity sha512-kpej1+FX3sdL6E3f5R2eySrTVYSRh8OSOWKgEtElTM0ajxOparPf2H6mc32CPJ7aey2NErwenSy/CgNrUvZp0g==
 
 "@types/d3-shape@^3.1.4":
   version "3.1.4"
