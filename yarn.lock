@@ -3400,10 +3400,10 @@
   resolved "https://registry.yarnpkg.com/@types/yargs-parser/-/yargs-parser-21.0.2.tgz#7bd04c5da378496ef1695a1008bf8f71847a8b8b"
   integrity sha512-5qcvofLPbfjmBfKaLfj/+f+Sbd6pN4zl7w7VSVI5uz7m9QZTuB2aZAa2uo1wHFBNN2x6g/SoTkXmd8mQnQF2Cw==
 
-"@types/yargs@^17.0.29", "@types/yargs@^17.0.8":
-  version "17.0.29"
-  resolved "https://registry.yarnpkg.com/@types/yargs/-/yargs-17.0.29.tgz#06aabc72497b798c643c812a8b561537fea760cf"
-  integrity sha512-nacjqA3ee9zRF/++a3FUY1suHTFKZeHba2n8WeDw9cCVdmzmHpIxyzOJBcpHvvEmS8E9KqWlSnWHUkOrkhWcvA==
+"@types/yargs@^17.0.30", "@types/yargs@^17.0.8":
+  version "17.0.30"
+  resolved "https://registry.yarnpkg.com/@types/yargs/-/yargs-17.0.30.tgz#921094ec92faffd2cd7e5ddb02f95ba158ab5c1d"
+  integrity sha512-3SJLzYk3yz3EgI9I8OLoH06B3PdXIoU2imrBZzaGqUtUXf5iUNDtmAfCGuQrny1bnmyjh/GM/YNts6WK5jR5Rw==
   dependencies:
     "@types/yargs-parser" "*"
 
