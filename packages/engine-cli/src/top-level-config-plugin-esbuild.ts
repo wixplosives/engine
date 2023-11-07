@@ -47,7 +47,7 @@ export function topLevelConfigPlugin({ emit = true }: { emit?: boolean }) {
                 const module = `
                     import { loadConfig } from '${configLoaderModuleName!}';
                     const fetchResult = loadConfig(${JSON.stringify(fileName)}, ${JSON.stringify(envName)});
-                    export default fetchResult
+                    export default fetchResult;
                 `;
 
                 return {
