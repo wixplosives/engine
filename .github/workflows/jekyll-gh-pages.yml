@@ -43,8 +43,16 @@ jobs:
         with:
           source: ./_docs
           destination: ./_site
-      - run: cd ./guides && sudo mv ./.package.json ./package.json && yarn && yarn build
-      - run: sudo mkdir -p ./_site/guides && sudo mv ./guides/build/* ./_site/guides
+      - name: Create guides' package.json
+        # using `sudo` to avoid permissions errors
+        run: sudo mv ./.package.json ./package.json
+        working-directory: ./guides
+      - name: Install guides' dependencies
+        run: yarn && yarn build
+        working-directory: ./guides
+      - name: Move guides' output to Jekyll's `_site` in subdirectory
+        # using `sudo` to avoid permissions errors
+        run: sudo mkdir -p ./_site/guides && sudo mv ./guides/build/* ./_site/guides
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
