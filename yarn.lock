@@ -3071,10 +3071,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/d3-hierarchy@^3.1.5":
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/@types/d3-hierarchy/-/d3-hierarchy-3.1.5.tgz#307666c5aea5de800b843f54f3c1d3f81c334285"
-  integrity sha512-DEcBUj1IL3WyPLDlh4m2nsNXnMLITXM5Vwcu4G85yJHtf2cVGPBjgky3L11WBnT+ayHKf06Tchk5mY1eGmd4WQ==
+"@types/d3-hierarchy@^3.1.6":
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/@types/d3-hierarchy/-/d3-hierarchy-3.1.6.tgz#8d3638df273ec90da34b3ac89d8784c59708cb0d"
+  integrity sha512-qlmD/8aMk5xGorUvTUWHCiumvgaUXYldYjNVOWtYoTYY/L+WwIEAmJxUmTgr9LoGNG0PPAOmqMDJVDPc7DOpPw==
 
 "@types/d3-path@*":
   version "3.0.1"
