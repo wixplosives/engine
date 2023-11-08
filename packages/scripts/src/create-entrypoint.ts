@@ -25,28 +25,24 @@ export interface ICreateEntrypointsOptions {
     publicConfigsRoute?: string;
     config?: TopLevelConfig;
     eagerEntrypoint?: boolean;
+    absImports?: boolean;
     env: IEnvironmentDescriptor;
     featuresBundleName?: string;
     configLoaderModuleName?: string;
 }
 
-export interface ExternalEntrypoint extends IFeatureDefinition {
+export interface FeatureLoaderArguments extends IFeatureDefinition {
     childEnvs: string[];
     env: IEnvironmentDescriptor;
     publicPath?: string;
-}
-
-export interface ExternalBrowserEntrypoint extends ExternalEntrypoint {
-    loadStatement: (args: LoadStatementArguments) => string;
-}
-
-export interface WebpackFeatureLoaderArguments extends ExternalBrowserEntrypoint {
     eagerEntrypoint?: boolean;
+    absImports?: boolean;
+    loadStatement: (args: LoadStatementArguments) => string;
     featuresBundleName?: string;
 }
 
 export type LoadStatement = Pick<
-    WebpackFeatureLoaderArguments,
+    FeatureLoaderArguments,
     | 'childEnvs'
     | 'env'
     | 'contextFilePaths'
@@ -57,29 +53,15 @@ export type LoadStatement = Pick<
     | 'directoryPath'
     | 'preloadFilePaths'
     | 'eagerEntrypoint'
+    | 'absImports'
 >;
 
 export interface LoadStatementArguments
-    extends Pick<WebpackFeatureLoaderArguments, 'filePath' | 'directoryPath' | 'packageName'> {
+    extends Pick<FeatureLoaderArguments, 'filePath' | 'directoryPath' | 'packageName'> {
     moduleIdentifier: string;
     eagerEntrypoint?: boolean;
+    absImports?: boolean;
 }
-//#endregion
-
-//#region import statements templates
-export function dynamicImportStatement({
-    moduleIdentifier,
-    filePath,
-    eagerEntrypoint,
-    directoryPath,
-    packageName,
-}: LoadStatementArguments) {
-    const targetSpecifier = packageName + '/' + relative(directoryPath, filePath).replace(/\\/g, '/');
-    return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
-        eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
-    } ${stringify(targetSpecifier)});`;
-}
-
 //#endregion
 
 //#region feature loaders generation
@@ -89,6 +71,7 @@ export function createFeatureLoaders(
     env: IEnvironmentDescriptor,
     eagerEntrypoint?: boolean,
     featuresBundleName?: string,
+    absImports?: boolean,
 ) {
     return `new Map(Object.entries({\n${Array.from(features)
         .map(
@@ -98,6 +81,7 @@ export function createFeatureLoaders(
                     childEnvs,
                     loadStatement: dynamicImportStatement,
                     eagerEntrypoint,
+                    absImports,
                     env,
                     featuresBundleName,
                 })}`,
@@ -115,6 +99,7 @@ function loadEnvAndContextFiles({
     packageName,
     preloadFilePaths,
     eagerEntrypoint,
+    absImports,
     env,
 }: LoadStatement) {
     let usesResolvedContexts = false;
@@ -131,6 +116,7 @@ function loadEnvAndContextFiles({
                     directoryPath,
                     packageName,
                     eagerEntrypoint,
+                    absImports,
                 })};
             }`);
         }
@@ -139,12 +125,13 @@ function loadEnvAndContextFiles({
             // If a context env has a preload file, it's the same as resolving a context
             usesResolvedContexts = true;
             preloadStatements.push(`if (resolvedContexts[${stringify(env.name)}] === ${stringify(childEnvName)}) {
-                ${dynamicImportStatement({
+                ${loadStatement({
                     directoryPath,
                     filePath: preloadFilePath,
                     moduleIdentifier: scopedName,
                     packageName,
                     eagerEntrypoint,
+                    absImports,
                 })};
             }`);
         }
@@ -159,6 +146,7 @@ function loadEnvAndContextFiles({
                     directoryPath,
                     packageName,
                     eagerEntrypoint,
+                    absImports,
                 }),
             );
         }
@@ -166,7 +154,7 @@ function loadEnvAndContextFiles({
     const preloadFilePath = preloadFilePaths?.[env.name];
     if (preloadFilePath) {
         preloadStatements.push(
-            dynamicImportStatement({
+            loadStatement({
                 moduleIdentifier: `[${env.name}]${scopedName}`,
                 filePath: preloadFilePath,
                 directoryPath,
@@ -178,7 +166,7 @@ function loadEnvAndContextFiles({
     return { usesResolvedContexts, loadStatements, preloadStatements };
 }
 
-function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
+function createLoaderInterface(args: FeatureLoaderArguments) {
     const {
         filePath,
         dependencies,
@@ -187,6 +175,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
         packageName,
         directoryPath,
         eagerEntrypoint,
+        absImports,
         featuresBundleName = 'features',
     } = args;
     const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
@@ -199,6 +188,7 @@ function createLoaderInterface(args: WebpackFeatureLoaderArguments) {
                         directoryPath,
                         packageName,
                         eagerEntrypoint,
+                        absImports,
                     })};
                     return featureModule.default;
                 },
@@ -288,3 +278,19 @@ export function createConfigLoaders({
 }
 
 //#endregion
+
+function dynamicImportStatement({
+    moduleIdentifier,
+    filePath,
+    eagerEntrypoint,
+    directoryPath,
+    packageName,
+    absImports,
+}: LoadStatementArguments) {
+    const targetSpecifier = absImports
+        ? filePath
+        : packageName + '/' + relative(directoryPath, filePath).replace(/\\/g, '/');
+    return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
+        eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
+    } ${stringify(targetSpecifier)});`;
+}

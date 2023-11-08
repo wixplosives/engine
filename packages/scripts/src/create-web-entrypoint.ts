@@ -16,6 +16,7 @@ export function createMainEntrypoint({
     publicConfigsRoute,
     config = [],
     eagerEntrypoint,
+    absImports,
     env,
     featuresBundleName,
     configLoaderModuleName,
@@ -35,7 +36,14 @@ export function createMainEntrypoint({
         loadConfigFileTemplate: webLoadConfigFileTemplate.bind(null, configLoaderModuleName),
     });
     const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
-    const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
+    const featureLoaders = createFeatureLoaders(
+        features.values(),
+        childEnvs,
+        env,
+        eagerEntrypoint,
+        featuresBundleName,
+        absImports,
+    );
 
     return `
 import { main, COM } from '@wixc3/engine-core';

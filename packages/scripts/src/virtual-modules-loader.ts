@@ -16,6 +16,9 @@ const virtualModulesLoader: webpack.LoaderDefinition = function () {
     if (!options[fileName]) {
         throw new Error(`missing generator for: ${fileName}`);
     }
+    if (this._module) {
+        this._module.context = this.rootContext;
+    }
     return options[fileName]!;
 };
 
