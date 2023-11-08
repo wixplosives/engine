@@ -1174,10 +1174,10 @@
   resolved "https://registry.yarnpkg.com/@types/d3-path/-/d3-path-3.0.1.tgz#6171c9e388904014764661a37613e3c4ab8df22d"
   integrity sha512-blRhp7ki7pVznM8k6lk5iUU9paDbVRVq+/xpf0RRgSJn5gr6SE7RcFtxooYGMBOc1RZiGyqRpVdu5AD0z0ooMA==
 
-"@types/d3-selection@^3.0.9":
-  version "3.0.9"
-  resolved "https://registry.yarnpkg.com/@types/d3-selection/-/d3-selection-3.0.9.tgz#b70e205ebafd8f7f4b662d16254c95aedc11371c"
-  integrity sha512-kpej1+FX3sdL6E3f5R2eySrTVYSRh8OSOWKgEtElTM0ajxOparPf2H6mc32CPJ7aey2NErwenSy/CgNrUvZp0g==
+"@types/d3-selection@^3.0.10":
+  version "3.0.10"
+  resolved "https://registry.yarnpkg.com/@types/d3-selection/-/d3-selection-3.0.10.tgz#98cdcf986d0986de6912b5892e7c015a95ca27fe"
+  integrity sha512-cuHoUgS/V3hLdjJOLTT691+G2QoqAjCVLmr4kJXR4ha56w1Zdu8UUQ5TxLRqudgNjwXeQxKMq4j+lyf9sWuslg==
 
 "@types/d3-shape@^3.1.4":
   version "3.1.4"
