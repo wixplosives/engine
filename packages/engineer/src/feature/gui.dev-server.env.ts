@@ -45,7 +45,7 @@ guiFeature.setup(
                 configurations,
                 featureName: 'engineer/gui',
                 featuresBundleName: 'dashboard-features',
-                noExtension: true,
+                absImports: true,
             });
 
             engineerWebpackConfigs.register(

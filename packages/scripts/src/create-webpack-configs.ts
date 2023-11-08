@@ -152,7 +152,7 @@ export function createWebpackConfig({
             config,
             eagerEntrypoint,
             configLoaderModuleName,
-            noExtension: true,
+            absImports: true,
         });
 
         entryModules[envName] = entrypointContent;

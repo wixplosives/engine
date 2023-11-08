@@ -16,7 +16,7 @@ export function createMainEntrypoint({
     publicConfigsRoute,
     config = [],
     eagerEntrypoint,
-    noExtension,
+    absImports,
     env,
     featuresBundleName,
     configLoaderModuleName,
@@ -42,7 +42,7 @@ export function createMainEntrypoint({
         env,
         eagerEntrypoint,
         featuresBundleName,
-        noExtension,
+        absImports,
     );
 
     return `

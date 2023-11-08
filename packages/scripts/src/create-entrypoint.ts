@@ -25,7 +25,7 @@ export interface ICreateEntrypointsOptions {
     publicConfigsRoute?: string;
     config?: TopLevelConfig;
     eagerEntrypoint?: boolean;
-    noExtension?: boolean;
+    absImports?: boolean;
     env: IEnvironmentDescriptor;
     featuresBundleName?: string;
     configLoaderModuleName?: string;
@@ -36,7 +36,7 @@ export interface FeatureLoaderArguments extends IFeatureDefinition {
     env: IEnvironmentDescriptor;
     publicPath?: string;
     eagerEntrypoint?: boolean;
-    noExtension?: boolean;
+    absImports?: boolean;
     loadStatement: (args: LoadStatementArguments) => string;
     featuresBundleName?: string;
 }
@@ -53,14 +53,14 @@ export type LoadStatement = Pick<
     | 'directoryPath'
     | 'preloadFilePaths'
     | 'eagerEntrypoint'
-    | 'noExtension'
+    | 'absImports'
 >;
 
 export interface LoadStatementArguments
     extends Pick<FeatureLoaderArguments, 'filePath' | 'directoryPath' | 'packageName'> {
     moduleIdentifier: string;
     eagerEntrypoint?: boolean;
-    noExtension?: boolean;
+    absImports?: boolean;
 }
 //#endregion
 
@@ -71,7 +71,7 @@ export function createFeatureLoaders(
     env: IEnvironmentDescriptor,
     eagerEntrypoint?: boolean,
     featuresBundleName?: string,
-    noExtension?: boolean,
+    absImports?: boolean,
 ) {
     return `new Map(Object.entries({\n${Array.from(features)
         .map(
@@ -81,7 +81,7 @@ export function createFeatureLoaders(
                     childEnvs,
                     loadStatement: dynamicImportStatement,
                     eagerEntrypoint,
-                    noExtension,
+                    absImports,
                     env,
                     featuresBundleName,
                 })}`,
@@ -99,7 +99,7 @@ function loadEnvAndContextFiles({
     packageName,
     preloadFilePaths,
     eagerEntrypoint,
-    noExtension,
+    absImports,
     env,
 }: LoadStatement) {
     let usesResolvedContexts = false;
@@ -116,7 +116,7 @@ function loadEnvAndContextFiles({
                     directoryPath,
                     packageName,
                     eagerEntrypoint,
-                    noExtension,
+                    absImports,
                 })};
             }`);
         }
@@ -131,7 +131,7 @@ function loadEnvAndContextFiles({
                     moduleIdentifier: scopedName,
                     packageName,
                     eagerEntrypoint,
-                    noExtension,
+                    absImports,
                 })};
             }`);
         }
@@ -146,7 +146,7 @@ function loadEnvAndContextFiles({
                     directoryPath,
                     packageName,
                     eagerEntrypoint,
-                    noExtension,
+                    absImports,
                 }),
             );
         }
@@ -175,7 +175,7 @@ function createLoaderInterface(args: FeatureLoaderArguments) {
         packageName,
         directoryPath,
         eagerEntrypoint,
-        noExtension,
+        absImports,
         featuresBundleName = 'features',
     } = args;
     const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
@@ -188,7 +188,7 @@ function createLoaderInterface(args: FeatureLoaderArguments) {
                         directoryPath,
                         packageName,
                         eagerEntrypoint,
-                        noExtension,
+                        absImports,
                     })};
                     return featureModule.default;
                 },
@@ -279,23 +279,17 @@ export function createConfigLoaders({
 
 //#endregion
 
-function removeExtension(filePath: string) {
-    const { dir, name } = parse(filePath);
-    return join(dir, name);
-}
-
 function dynamicImportStatement({
     moduleIdentifier,
     filePath,
     eagerEntrypoint,
     directoryPath,
     packageName,
-    noExtension,
+    absImports,
 }: LoadStatementArguments) {
-    const targetSpecifier =
-        packageName +
-        '/' +
-        relative(directoryPath, noExtension ? removeExtension(filePath) : filePath).replace(/\\/g, '/');
+    const targetSpecifier = absImports
+        ? filePath
+        : packageName + '/' + relative(directoryPath, filePath).replace(/\\/g, '/');
     return `await import(/* webpackChunkName: "${moduleIdentifier}" */${
         eagerEntrypoint ? ` /* webpackMode: 'eager' */` : ''
     } ${stringify(targetSpecifier)});`;
