@@ -1,5 +1,9 @@
 # Engineer
 
+:::warning
+Engineer and engine-scripts are being deprecated in favor of [Engineer CLI](../engine-cli)
+:::
+
 The engineer is the CLI tool of the engine, It's responsible to start (in dev mode), build and run engine applications.
 
 The flow of the major 3 commands (start, build, run) can be summarized as follows:
