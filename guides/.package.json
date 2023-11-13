@@ -1,6 +1,5 @@
 {
   "name": "engine-guides",
-  "version": "41.0.1",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",

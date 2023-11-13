@@ -3,3 +3,8 @@ build
 
 # Generated files
 .docusaurus
+
+# this is a dynamic usage of Docusaurus, so dependencies are not under version control, see README.md
+package.json
+yarn.lock
+node_modules/
