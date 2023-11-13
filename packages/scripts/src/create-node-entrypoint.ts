@@ -21,6 +21,7 @@ export function createNodeEnvironmentManagerEntrypoint({
 import { NodeEnvManager } from '@wixc3/engine-runtime-node';
 const featureEnvironmentsMapping = ${stringify(featureEnvironmentsMapping)};
 const configMapping = ${stringify(configMapping)};
+process.env.ENGINE_FLOW_V2_DIST_URL = import.meta.url; /* compatibility */
 new NodeEnvManager(import.meta, featureEnvironmentsMapping, configMapping).autoLaunch().catch((e)=>{
     process.exitCode = 1;
     console.error(e);
