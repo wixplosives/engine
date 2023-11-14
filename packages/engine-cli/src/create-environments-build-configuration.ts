@@ -46,12 +46,13 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
     } = options;
 
     const mode = dev ? 'development' : 'production';
-    const jsOutExtension = '.mjs';
+    const jsOutExtension = '.js' as '.js' | '.mjs';
+    const nodeFormat = jsOutExtension === '.mjs' ? 'esm' : 'cjs';
     const webEntryPoints = new Map<string, string>();
     const nodeEntryPoints = new Map<string, string>([
         [
             `engine-environment-manager${jsOutExtension}`,
-            createNodeEnvironmentManagerEntrypoint({ features, configurations, mode, configName }),
+            createNodeEnvironmentManagerEntrypoint({ features, configurations, mode, configName }, nodeFormat),
         ],
     ]);
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
@@ -145,6 +146,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
     const nodeConfig = {
         ...commonConfig,
         platform: 'node',
+        format: nodeFormat,
         outdir: join(outputPath, 'node'),
         plugins: [...commonConfig.plugins, dynamicEntryPlugin({ entryPoints: nodeEntryPoints, loader: 'js' })],
     } satisfies BuildOptions;
