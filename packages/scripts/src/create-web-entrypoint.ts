@@ -1,5 +1,5 @@
 import { Environment } from '@wixc3/engine-core';
-import { ICreateEntrypointsOptions, createConfigLoaders, createFeatureLoaders } from './create-entrypoint';
+import { ICreateEntrypointsOptions, createConfigLoaders, createFeatureLoadersSourceCode } from './create-entrypoint';
 
 const { stringify } = JSON;
 
@@ -36,7 +36,7 @@ export function createMainEntrypoint({
         loadConfigFileTemplate: webLoadConfigFileTemplate.bind(null, configLoaderModuleName),
     });
     const runtimePublicPath = handlePublicPathTemplate(publicPath, publicPathVariableName);
-    const featureLoaders = createFeatureLoaders(
+    const featureLoaders = createFeatureLoadersSourceCode(
         features.values(),
         childEnvs,
         env,

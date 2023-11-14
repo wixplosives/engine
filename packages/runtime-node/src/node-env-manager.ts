@@ -1,9 +1,8 @@
 import { AnyEnvironment, BaseHost, Communication, ConfigModule, IRunOptions } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { WsServerHost } from './core-node/ws-node-host';
-import { dynamicImport } from './dynamic-import';
 import { resolveEnvironments } from './environments';
 import { launchEngineHttpServer } from './launch-http-server';
 import { IStaticFeatureDefinition } from './types';
@@ -92,7 +91,8 @@ export class NodeEnvManager {
         return await Promise.all(
             configFiles.map(async (filePath) => {
                 try {
-                    const configModule = (await dynamicImport(pathToFileURL(filePath))).default as ConfigModule;
+                    // TODO: make it work in esm via injection 
+                    const configModule = (await require(filePath)).default as ConfigModule;
                     console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
                     return configModule.default ?? configModule;
                 } catch (e) {

@@ -165,11 +165,18 @@ async function runDevServices({
 
     console.log(`Engine dev server listening on port ${port}`);
 
+    const managerPath = ['.js', '.mjs']
+        .map((ext) => fs.join(outputPath, 'node', `engine-environment-manager${ext}`))
+        .find(fs.existsSync);
+
+    if (!managerPath) {
+        throw new Error(`Could not find "engine-environment-manager" entrypoint in ${fs.join(outputPath, 'node')}`);
+    }
+
     // start node environment manager
     fork(
-        fs.join(outputPath, 'node/engine-environment-manager.mjs'),
+        managerPath,
         [`--applicationPath=${fs.join(outputPath, 'web')}`, `--feature=${featureName}`, `--config=${configName}`],
-
         {
             execArgv: process.execArgv.concat(['--watch']),
             stdio: 'inherit',

@@ -65,7 +65,7 @@ export interface LoadStatementArguments
 //#endregion
 
 //#region feature loaders generation
-export function createFeatureLoaders(
+export function createFeatureLoadersSourceCode(
     features: Iterable<IFeatureDefinition>,
     childEnvs: string[],
     env: IEnvironmentDescriptor,
@@ -73,20 +73,23 @@ export function createFeatureLoaders(
     featuresBundleName?: string,
     absImports?: boolean,
 ) {
-    return `new Map(Object.entries({\n${Array.from(features)
-        .map(
-            (args) =>
-                `    '${args.scopedName}': ${createLoaderInterface({
-                    ...args,
-                    childEnvs,
-                    loadStatement: dynamicImportStatement,
-                    eagerEntrypoint,
-                    absImports,
-                    env,
-                    featuresBundleName,
-                })}`,
-        )
-        .join(',\n')}\n}))`;
+    let entries = '[';
+
+    for (const feature of features) {
+        const loaderCode = createLoaderInterface({
+            ...feature,
+            childEnvs,
+            loadStatement: dynamicImportStatement,
+            eagerEntrypoint,
+            absImports,
+            env,
+            featuresBundleName,
+        });
+        entries += `['${feature.scopedName}', ${loaderCode}],`;
+    }
+
+    entries += ']';
+    return `new Map(${entries})`;
 }
 
 function loadEnvAndContextFiles({
