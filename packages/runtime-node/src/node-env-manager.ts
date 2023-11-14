@@ -92,7 +92,8 @@ export class NodeEnvManager {
         return await Promise.all(
             configFiles.map(async (filePath) => {
                 try {
-                    const configModule = (await dynamicImport(pathToFileURL(filePath))).default as ConfigModule;
+                    // TODO: make it work in esm via injection 
+                    const configModule = (await require(filePath)).default as ConfigModule;
                     console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
                     return configModule.default ?? configModule;
                 } catch (e) {
