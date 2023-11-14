@@ -1,9 +1,8 @@
 import { AnyEnvironment, BaseHost, Communication, ConfigModule, IRunOptions } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { WsServerHost } from './core-node/ws-node-host';
-import { dynamicImport } from './dynamic-import';
 import { resolveEnvironments } from './environments';
 import { launchEngineHttpServer } from './launch-http-server';
 import { IStaticFeatureDefinition } from './types';
