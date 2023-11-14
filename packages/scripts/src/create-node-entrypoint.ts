@@ -4,25 +4,31 @@ import {
     ICreateEntrypointsOptions,
     createAllValidConfigurationsEnvironmentMapping,
     createConfigLoaders,
-    createFeatureLoaders,
+    createFeatureLoadersSourceCode,
 } from './create-entrypoint';
 
 const { stringify } = JSON;
 
-export function createNodeEnvironmentManagerEntrypoint({
-    features,
-    configurations,
-    mode,
-    configName,
-}: Pick<ICreateEntrypointsOptions, 'features' | 'configurations' | 'mode' | 'configName'>) {
+export function createNodeEnvironmentManagerEntrypoint(
+    {
+        features,
+        configurations,
+        mode,
+        configName,
+    }: Pick<ICreateEntrypointsOptions, 'features' | 'configurations' | 'mode' | 'configName'>,
+    moduleType: 'cjs' | 'esm',
+) {
     const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
     const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
+
     return `
+import { pathToFileURL } from 'node:url';    
 import { NodeEnvManager } from '@wixc3/engine-runtime-node';
 const featureEnvironmentsMapping = ${stringify(featureEnvironmentsMapping)};
 const configMapping = ${stringify(configMapping)};
-process.env.ENGINE_FLOW_V2_DIST_URL = import.meta.url; /* compatibility */
-new NodeEnvManager(import.meta, featureEnvironmentsMapping, configMapping).autoLaunch().catch((e)=>{
+const meta = { url: ${moduleType === 'esm' ? 'import.meta.url' : 'pathToFileURL(__filename).href'} };
+process.env.ENGINE_FLOW_V2_DIST_URL = meta.url; /* compatibility */
+new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping).autoLaunch().catch((e)=>{
     process.exitCode = 1;
     console.error(e);
 });
@@ -47,7 +53,13 @@ export function createNodeEntrypoint({
         env.env.endpointType,
         env.flatDependencies?.map((d) => d.env) ?? [],
     );
-    const featureLoaders = createFeatureLoaders(features.values(), childEnvs, env, eagerEntrypoint, featuresBundleName);
+    const featureLoaders = createFeatureLoadersSourceCode(
+        features.values(),
+        childEnvs,
+        env,
+        eagerEntrypoint,
+        featuresBundleName,
+    );
     const configLoaders = createConfigLoaders({
         configurations,
         mode,
