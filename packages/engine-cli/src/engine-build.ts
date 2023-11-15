@@ -9,7 +9,7 @@ import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
 
-export interface EngineBuildOptions {
+export interface RunEngineOptions {
     verbose?: boolean;
     clean?: boolean;
     dev?: boolean;
@@ -22,7 +22,6 @@ export interface EngineBuildOptions {
     feature?: string;
     config?: string;
     httpServerPort?: number;
-
     engineConfigFilePath?: string;
     engineConfigOverride?: Partial<EngineConfig>;
 }
@@ -42,7 +41,7 @@ export async function runEngine({
     buildTargets = 'both',
     engineConfigFilePath,
     engineConfigOverride = {},
-}: EngineBuildOptions = {}) {
+}: RunEngineOptions = {}) {
     let esbuildContextWeb;
     let esbuildContextNode;
     let runManagerContext;
@@ -146,7 +145,7 @@ export async function runEngine({
         if (verbose) {
             console.log('Running engine');
         }
-        runManagerContext = await runManager({
+        runManagerContext = await runNodeManager({
             featureName,
             configName,
             serveStatic,
@@ -163,7 +162,7 @@ export async function runEngine({
     };
 }
 
-interface RunManagerOptions {
+export interface RunNodeManagerOptions {
     featureName?: string;
     configName?: string;
     serveStatic: Required<EngineConfig>['serveStatic'];
@@ -173,7 +172,7 @@ interface RunManagerOptions {
     socketServerOptions: EngineConfig['socketServerOptions'];
 }
 
-async function runManager({
+export async function runNodeManager({
     serveStatic,
     httpServerPort,
     outputPath,
@@ -181,7 +180,7 @@ async function runManager({
     configName,
     socketServerOptions,
     verbose,
-}: RunManagerOptions) {
+}: RunNodeManagerOptions) {
     // start dev server
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
         path: route,
