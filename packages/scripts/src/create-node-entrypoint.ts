@@ -24,11 +24,16 @@ export function createNodeEnvironmentManagerEntrypoint(
     return `
 import { pathToFileURL } from 'node:url';    
 import { NodeEnvManager } from '@wixc3/engine-runtime-node';
+
 const featureEnvironmentsMapping = ${stringify(featureEnvironmentsMapping)};
 const configMapping = ${stringify(configMapping)};
 const meta = { url: ${moduleType === 'esm' ? 'import.meta.url' : 'pathToFileURL(__filename).href'} };
+
 process.env.ENGINE_FLOW_V2_DIST_URL = meta.url; /* compatibility */
-new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping).autoLaunch().catch((e)=>{
+
+const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
+
+manager.autoLaunch().catch((e)=>{
     process.exitCode = 1;
     console.error(e);
 });

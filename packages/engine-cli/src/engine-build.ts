@@ -8,6 +8,7 @@ import { createEnvironmentsBuildConfiguration } from './create-environments-buil
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
+import { parseArgs } from 'node:util';
 
 export interface RunEngineOptions {
     verbose?: boolean;
@@ -22,8 +23,7 @@ export interface RunEngineOptions {
     feature?: string;
     config?: string;
     httpServerPort?: number;
-    engineConfigFilePath?: string;
-    engineConfigOverride?: Partial<EngineConfig>;
+    engineConfig?: EngineConfig;
 }
 
 export async function runEngine({
@@ -39,8 +39,7 @@ export async function runEngine({
     config: configName,
     httpServerPort = 5555,
     buildTargets = 'both',
-    engineConfigFilePath,
-    engineConfigOverride = {},
+    engineConfig = {},
 }: RunEngineOptions = {}) {
     let esbuildContextWeb;
     let esbuildContextNode;
@@ -48,12 +47,6 @@ export async function runEngine({
 
     rootDir = fs.resolve(rootDir);
     outputPath = fs.resolve(rootDir, outputPath);
-
-    const configFilePath =
-        engineConfigFilePath || (await fs.promises.findClosestFile(rootDir, ENGINE_CONFIG_FILE_NAME));
-    const engineConfig: EngineConfig = configFilePath
-        ? { ...((await loadConfigFile(configFilePath)) as EngineConfig), ...engineConfigOverride }
-        : engineConfigOverride;
 
     const {
         buildPlugins = [],
@@ -172,6 +165,12 @@ export interface RunNodeManagerOptions {
     socketServerOptions: EngineConfig['socketServerOptions'];
 }
 
+export async function loadEngineConfig(rootDir: string, engineConfigFilePath?: string) {
+    const configFilePath =
+        engineConfigFilePath || (await fs.promises.findClosestFile(rootDir, ENGINE_CONFIG_FILE_NAME));
+    return (configFilePath ? await loadConfigFile(configFilePath) : {}) as EngineConfig;
+}
+
 export async function runNodeManager({
     serveStatic,
     httpServerPort,
@@ -217,7 +216,7 @@ export async function runNodeManager({
     if (verbose) {
         console.log(`Starting node environment manager at ${managerPath}`);
     }
-
+    // TODO pass in the server topology?????????
     const managerProcess = fork(
         managerPath,
         [
@@ -233,4 +232,12 @@ export async function runNodeManager({
     );
 
     return { server, managerProcess };
+}
+
+export function parseCliArgs() {
+    const { values: args } = parseArgs({
+        strict: false,
+        allowPositionals: false,
+    });
+    return new Map(Object.entries(args));
 }

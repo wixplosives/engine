@@ -1,1 +1,7 @@
-export { runEngine, type RunEngineOptions, runNodeManager, type RunNodeManagerOptions } from './engine-build';
+export {
+    runEngine,
+    type RunEngineOptions,
+    runNodeManager,
+    type RunNodeManagerOptions,
+    loadEngineConfig,
+} from './engine-build';

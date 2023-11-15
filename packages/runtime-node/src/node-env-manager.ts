@@ -36,26 +36,9 @@ export class NodeEnvManager {
     public async autoLaunch() {
         const runtimeOptions = parseRuntimeOptions();
 
-        const featureName = runtimeOptions.get('feature');
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
 
-        if (!featureName || typeof featureName !== 'string') {
-            throw new Error('feature is a required for autoLaunch');
-        }
-
-        const envNames = this.featureEnvironmentMapping.featureToEnvironments[featureName];
-
-        if (!envNames) {
-            throw new Error(`[ENGINE]: no environments found for feature ${featureName}`);
-        }
-
-        if (verbose) {
-            console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
-        }
-
-        await Promise.all(
-            envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, verbose)),
-        );
+        await this.runFeatureEnvironments(verbose, runtimeOptions);
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app } = await launchEngineHttpServer({ staticDirPath });
@@ -86,6 +69,28 @@ export class NodeEnvManager {
         const host = new WsServerHost(socketServer);
         this.communication.registerMessageHandler(host);
         console.log(`[ENGINE]: http server is listening on http://localhost:${port}`);
+    }
+
+    private async runFeatureEnvironments(verbose: boolean, runtimeOptions: Map<string, string | boolean | undefined>) {
+        const featureName = runtimeOptions.get('feature');
+        if (!featureName || typeof featureName !== 'string') {
+            throw new Error('feature is a required for autoLaunch');
+        }
+        const envNames = this.featureEnvironmentMapping.featureToEnvironments[featureName];
+
+        if (!envNames) {
+            throw new Error(`[ENGINE]: no environments found for feature ${featureName}`);
+        }
+
+        if (verbose) {
+            console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
+        }
+
+        const disposes = await Promise.all(
+            envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, verbose)),
+        );
+
+        return () => Promise.all(disposes.map((dispose) => dispose()));
     }
 
     private async loadEnvironmentConfigurations(envName: string, configName: string, verbose = false) {
