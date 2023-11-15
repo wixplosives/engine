@@ -13,12 +13,17 @@ const args = parseCliArgs();
 const buildTargets = (args.get('buildTargets') as 'node' | 'web' | 'both') ?? 'both';
 const clean = Boolean(args.get('clean')) ?? true;
 const watch = Boolean(args.get('watch')) ?? false;
-const featureName = args.get('feature') as string;
-const configName = args.get('config') as string;
+const dev = Boolean(args.get('dev')) ?? watch;
+const run = Boolean(args.get('run')) ?? dev;
+const feature = String(args.get('feature'));
+const config = String(args.get('config'));
+const publicPath = String(args.get('publicPath')) ?? '';
+const verbose = Boolean(args.get('verbose')) ?? false;
+const engineConfigFilePath = String(args.get('engineConfigFilePath'));
 
-console.log('Cli run', args);
-
-engineBuild({ dev: { enabled: watch, buildTargets, clean }, configName, featureName }).catch((e) => {
-    console.error(e);
-    process.exitCode = 1;
-});
+engineBuild({ engineConfigFilePath, verbose, clean, dev, watch, publicPath, buildTargets, feature, config, run }).catch(
+    (e) => {
+        console.error(e);
+        process.exitCode = 1;
+    },
+);

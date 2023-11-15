@@ -26,19 +26,18 @@ export interface RunningNodeEnvironment {
 export class NodeEnvManager {
     id = 'node-environment-manager';
     openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
-    communication: Communication;
+    communication = new Communication(new BaseHost(this.id), this.id, {}, {}, true, {});
     constructor(
         private importMeta: { url: string },
         private featureEnvironmentMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
-    ) {
-        this.communication = new Communication(new BaseHost(this.id), this.id, {}, {}, true, {});
-    }
+    ) {}
 
     public async autoLaunch() {
         const runtimeOptions = parseRuntimeOptions();
 
         const featureName = runtimeOptions.get('feature');
+        const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
 
         if (!featureName || typeof featureName !== 'string') {
             throw new Error('feature is a required for autoLaunch');
@@ -49,9 +48,14 @@ export class NodeEnvManager {
         if (!envNames) {
             throw new Error(`[ENGINE]: no environments found for feature ${featureName}`);
         }
-        console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
 
-        await Promise.all(envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions)));
+        if (verbose) {
+            console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
+        }
+
+        await Promise.all(
+            envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, verbose)),
+        );
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app } = await launchEngineHttpServer({ staticDirPath });
 
@@ -62,13 +66,15 @@ export class NodeEnvManager {
                 return;
             }
             const requestedConfig = req.params[0];
-            console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
+            if (verbose) {
+                console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
+            }
             if (!requestedConfig || requestedConfig === 'undefined') {
                 res.json([]);
                 return;
             }
 
-            this.loadEnvironmentConfigurations(reqEnv, requestedConfig)
+            this.loadEnvironmentConfigurations(reqEnv, requestedConfig, verbose)
                 .then((configs) => res.json(configs.flat()))
                 .catch((e) => {
                     console.error(e);
@@ -81,7 +87,7 @@ export class NodeEnvManager {
         console.log(`[ENGINE]: http server is listening on http://localhost:${port}`);
     }
 
-    private async loadEnvironmentConfigurations(envName: string, configName: string) {
+    private async loadEnvironmentConfigurations(envName: string, configName: string, verbose = false) {
         const mappingEntry = this.configMapping[configName];
         if (!mappingEntry) {
             return [];
@@ -91,9 +97,11 @@ export class NodeEnvManager {
         return await Promise.all(
             configFiles.map(async (filePath) => {
                 try {
-                    // TODO: make it work in esm via injection 
+                    // TODO: make it work in esm via injection
                     const configModule = (await require(filePath)).default as ConfigModule;
-                    console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
+                    if (verbose) {
+                        console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
+                    }
                     return configModule.default ?? configModule;
                 } catch (e) {
                     throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
@@ -111,7 +119,7 @@ export class NodeEnvManager {
         return new URL(`${env.env}.${env.envType}${jsOutExtension}`, this.importMeta.url);
     }
 
-    private async initializeWorkerEnvironment(envName: string, runtimeOptions: IRunOptions) {
+    private async initializeWorkerEnvironment(envName: string, runtimeOptions: IRunOptions, verbose = false) {
         const env = this.featureEnvironmentMapping.availableEnvironments[envName];
         if (!env) {
             throw new Error(`environment ${envName} not found`);
@@ -125,8 +133,10 @@ export class NodeEnvManager {
         });
 
         await runningEnv.initialize();
-        console.log(`[ENGINE]: Environment ${runningEnv.id} is ready`);
         this.openEnvironments.add(envName, runningEnv);
+        if (verbose) {
+            console.log(`[ENGINE]: Environment ${runningEnv.id} is ready`);
+        }
 
         return () => {
             this.openEnvironments.delete(envName, runningEnv);

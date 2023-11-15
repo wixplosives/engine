@@ -10,33 +10,47 @@ import { loadConfigFile } from './load-config-file';
 import { RouteMiddleware, launchServer } from './start-dev-server';
 
 export interface EngineBuildOptions {
-    dev?: {
-        enabled?: boolean;
-        buildTargets: 'node' | 'web' | 'both';
-        clean: boolean;
-    };
+    verbose?: boolean;
+    clean?: boolean;
+    dev?: boolean;
+    watch?: boolean;
+    run?: boolean;
+    buildTargets?: 'node' | 'web' | 'both';
     rootDir?: string;
     outputPath?: string;
     publicPath?: string;
-    featureName?: string;
-    configName?: string;
+    feature?: string;
+    config?: string;
     httpServerPort?: number;
+
+    engineConfigFilePath?: string;
+    engineConfigOverride?: Partial<EngineConfig>;
 }
 
 export async function engineBuild({
-    dev = { enabled: false, buildTargets: 'both', clean: true },
+    verbose = false,
+    clean = true,
+    watch = false,
+    dev = false,
+    run = false,
     rootDir = process.cwd(),
     outputPath = 'dist-engine',
     publicPath = '',
-    featureName,
-    configName,
+    feature: featureName,
+    config: configName,
     httpServerPort = 5555,
+    buildTargets = 'both',
+    engineConfigFilePath,
+    engineConfigOverride = {},
 }: EngineBuildOptions = {}) {
     rootDir = fs.resolve(rootDir);
     outputPath = fs.resolve(rootDir, outputPath);
 
-    const configFilePath = await fs.promises.findClosestFile(rootDir, ENGINE_CONFIG_FILE_NAME);
-    const engineConfig: EngineConfig = configFilePath ? ((await loadConfigFile(configFilePath)) as EngineConfig) : {};
+    const configFilePath =
+        engineConfigFilePath || (await fs.promises.findClosestFile(rootDir, ENGINE_CONFIG_FILE_NAME));
+    const engineConfig: EngineConfig = configFilePath
+        ? { ...((await loadConfigFile(configFilePath)) as EngineConfig), ...engineConfigOverride }
+        : engineConfigOverride;
 
     const {
         buildPlugins = [],
@@ -67,7 +81,7 @@ export async function engineBuild({
     });
 
     const buildConfigurations = createEnvironmentsBuildConfiguration({
-        dev: dev.enabled || false,
+        dev,
         buildPlugins,
         config: [],
         configurations,
@@ -81,67 +95,84 @@ export async function engineBuild({
         buildConditions,
     });
 
-    if (dev.clean) {
+    if (clean) {
+        if (verbose) {
+            console.log(`Cleaning ${outputPath}`);
+        }
         await fs.promises.rm(outputPath, { recursive: true, force: true });
     }
 
-    if (dev.enabled) {
-        await runDevServices({
-            featureName,
-            configName,
-            buildConfigurations,
-            serveStatic,
-            httpServerPort,
-            outputPath,
-            socketServerOptions,
-        });
+    if (watch) {
+        if (buildTargets === 'web' || buildTargets === 'both') {
+            if (verbose) {
+                console.log('Starting web compilation in watch mode');
+            }
+            const esbuildContextWeb = await esbuild.context(buildConfigurations.webConfig);
+            await esbuildContextWeb.watch();
+        }
+
+        if (buildTargets === 'node' || buildTargets === 'both') {
+            if (verbose) {
+                console.log('Starting node compilation in watch mode');
+            }
+            const { buildEndPlugin, waitForBuildEnd } = createBuildEndPluginHook();
+            buildConfigurations.nodeConfig.plugins.push(buildEndPlugin);
+            const esbuildContextNode = await esbuild.context(buildConfigurations.nodeConfig);
+            await esbuildContextNode.watch();
+            if (verbose) {
+                console.log('Waiting for node build end.');
+            }
+            await waitForBuildEnd();
+        }
     } else {
         const start = performance.now();
         await Promise.all([
-            dev.buildTargets === 'node' || dev.buildTargets === 'both'
+            buildTargets === 'node' || buildTargets === 'both'
                 ? esbuild.build(buildConfigurations.nodeConfig)
                 : Promise.resolve(),
-            dev.buildTargets === 'web' || dev.buildTargets === 'both'
+            buildTargets === 'web' || buildTargets === 'both'
                 ? esbuild.build(buildConfigurations.webConfig)
                 : Promise.resolve(),
         ]);
         const end = performance.now();
-        console.log(`Build total ${Math.round(end - start)}ms`);
+        console.log(`Build time ${Math.round(end - start)}ms`);
+    }
+
+    if (run) {
+        if (verbose) {
+            console.log('Running engine');
+        }
+        await runEngineEnvironmentManager({
+            featureName,
+            configName,
+            serveStatic,
+            httpServerPort,
+            outputPath,
+            socketServerOptions,
+            verbose,
+        });
     }
 }
 
-interface DevServicesOptions {
+interface RunEngineEnvironmentManagerOptions {
     featureName?: string;
     configName?: string;
-    buildConfigurations: ReturnType<typeof createEnvironmentsBuildConfiguration>;
     serveStatic: Required<EngineConfig>['serveStatic'];
     httpServerPort: number;
     outputPath: string;
+    verbose: boolean;
     socketServerOptions: EngineConfig['socketServerOptions'];
 }
 
-async function runDevServices({
-    buildConfigurations,
+async function runEngineEnvironmentManager({
     serveStatic,
     httpServerPort,
     outputPath,
     featureName,
     configName,
     socketServerOptions,
-}: DevServicesOptions) {
-    // start web compilation
-    const esbuildContextWeb = await esbuild.context(buildConfigurations.webConfig);
-    await esbuildContextWeb.watch();
-
-    // start node compilation
-    const { buildEndPlugin, waitForBuildEnd } = createBuildEndPluginHook();
-    buildConfigurations.nodeConfig.plugins.push(buildEndPlugin);
-    const esbuildContextNode = await esbuild.context(buildConfigurations.nodeConfig);
-    await esbuildContextNode.watch();
-
-    console.log('Waiting for node build end...');
-    await waitForBuildEnd();
-
+    verbose,
+}: RunEngineEnvironmentManagerOptions) {
     // start dev server
     const staticMiddlewares = serveStatic?.map(({ route, directoryPath }) => ({
         path: route,
@@ -163,7 +194,9 @@ async function runDevServices({
         middlewares: [...devMiddlewares, ...staticMiddlewares],
     });
 
-    console.log(`Engine dev server listening on port ${port}`);
+    if (verbose) {
+        console.log(`Dev server is running. listening on http://localhost:${port}`);
+    }
 
     const managerPath = ['.js', '.mjs']
         .map((ext) => fs.join(outputPath, 'node', `engine-environment-manager${ext}`))
@@ -173,10 +206,18 @@ async function runDevServices({
         throw new Error(`Could not find "engine-environment-manager" entrypoint in ${fs.join(outputPath, 'node')}`);
     }
 
-    // start node environment manager
+    if (verbose) {
+        console.log(`Starting node environment manager at ${managerPath}`);
+    }
+
     fork(
         managerPath,
-        [`--applicationPath=${fs.join(outputPath, 'web')}`, `--feature=${featureName}`, `--config=${configName}`],
+        [
+            `--applicationPath=${fs.join(outputPath, 'web')}`,
+            `--feature=${featureName}`,
+            `--config=${configName}`,
+            verbose ? '--verbose=true' : '',
+        ],
         {
             execArgv: process.execArgv.concat(['--watch']),
             stdio: 'inherit',

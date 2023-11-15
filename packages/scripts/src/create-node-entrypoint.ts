@@ -75,7 +75,11 @@ import { parseArgs } from "node:util";
 import { workerData } from "node:worker_threads";
 
 const options = workerData?.runtimeOptions ?? parseRuntimeOptions();
-console.log('[${env.name}]: Started with options: ', options);
+const verbose = options.get('verbose') ?? false;
+
+if (verbose) {
+    console.log('[${env.name}]: Started with options: ', options);
+}
 
 main({
     featureName: ${stringify(featureName)}, 
@@ -97,10 +101,13 @@ main({
             ...${stringify(config, null, 2)}
         ];
     },
-}).then(()=>console.log('[${env.name}]: Running'))
-    .catch(e => {
-        process.exitCode = 1;
-        console.error(e);
-    });
+}).then(()=>{
+    if (verbose) {
+        console.log('[${env.name}]: Running')
+    }
+}).catch(e => {
+    process.exitCode = 1;
+    console.error(e);
+});
 `.trimStart();
 }
