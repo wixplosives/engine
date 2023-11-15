@@ -366,6 +366,18 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     },
                 );
             }
+            dispose(
+                async () => {
+                    const ctx = mochaCtx();
+
+                    if (ctx?.currentTest?.state === 'failed') {
+                        const screenshotDirPath = `${process.cwd()}/screenshots-of-failed`;
+                        const testPath = ctx.currentTest.titlePath().join('/');
+                        await featurePage.screenshot({ path: `${screenshotDirPath}/${testPath}.png` });
+                    }
+                },
+                { timeout: 3_000 },
+            );
 
             function onPageError(e: Error) {
                 if (
