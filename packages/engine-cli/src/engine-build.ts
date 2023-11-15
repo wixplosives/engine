@@ -27,7 +27,7 @@ export interface EngineBuildOptions {
     engineConfigOverride?: Partial<EngineConfig>;
 }
 
-export async function engineBuild({
+export async function runEngine({
     verbose = false,
     clean = true,
     watch = false,
@@ -43,6 +43,10 @@ export async function engineBuild({
     engineConfigFilePath,
     engineConfigOverride = {},
 }: EngineBuildOptions = {}) {
+    let esbuildContextWeb;
+    let esbuildContextNode;
+    let runManagerContext;
+
     rootDir = fs.resolve(rootDir);
     outputPath = fs.resolve(rootDir, outputPath);
 
@@ -107,7 +111,7 @@ export async function engineBuild({
             if (verbose) {
                 console.log('Starting web compilation in watch mode');
             }
-            const esbuildContextWeb = await esbuild.context(buildConfigurations.webConfig);
+            esbuildContextWeb = await esbuild.context(buildConfigurations.webConfig);
             await esbuildContextWeb.watch();
         }
 
@@ -117,7 +121,7 @@ export async function engineBuild({
             }
             const { buildEndPlugin, waitForBuildEnd } = createBuildEndPluginHook();
             buildConfigurations.nodeConfig.plugins.push(buildEndPlugin);
-            const esbuildContextNode = await esbuild.context(buildConfigurations.nodeConfig);
+            esbuildContextNode = await esbuild.context(buildConfigurations.nodeConfig);
             await esbuildContextNode.watch();
             if (verbose) {
                 console.log('Waiting for node build end.');
@@ -142,7 +146,7 @@ export async function engineBuild({
         if (verbose) {
             console.log('Running engine');
         }
-        await runEngineEnvironmentManager({
+        runManagerContext = await runManager({
             featureName,
             configName,
             serveStatic,
@@ -152,9 +156,14 @@ export async function engineBuild({
             verbose,
         });
     }
+    return {
+        esbuildContextWeb,
+        esbuildContextNode,
+        runManagerContext,
+    };
 }
 
-interface RunEngineEnvironmentManagerOptions {
+interface RunManagerOptions {
     featureName?: string;
     configName?: string;
     serveStatic: Required<EngineConfig>['serveStatic'];
@@ -164,7 +173,7 @@ interface RunEngineEnvironmentManagerOptions {
     socketServerOptions: EngineConfig['socketServerOptions'];
 }
 
-async function runEngineEnvironmentManager({
+async function runManager({
     serveStatic,
     httpServerPort,
     outputPath,
@@ -172,7 +181,7 @@ async function runEngineEnvironmentManager({
     configName,
     socketServerOptions,
     verbose,
-}: RunEngineEnvironmentManagerOptions) {
+}: RunManagerOptions) {
     // start dev server
     const staticMiddlewares = serveStatic?.map(({ route, directoryPath }) => ({
         path: route,
@@ -188,14 +197,14 @@ async function runEngineEnvironmentManager({
         },
     ];
 
-    const { port } = await launchServer({
+    const server = await launchServer({
         httpServerPort,
         socketServerOptions,
         middlewares: [...devMiddlewares, ...staticMiddlewares],
     });
 
     if (verbose) {
-        console.log(`Dev server is running. listening on http://localhost:${port}`);
+        console.log(`Dev server is running. listening on http://localhost:${server.port}`);
     }
 
     const managerPath = ['.js', '.mjs']
@@ -210,7 +219,7 @@ async function runEngineEnvironmentManager({
         console.log(`Starting node environment manager at ${managerPath}`);
     }
 
-    fork(
+    const managerProcess = fork(
         managerPath,
         [
             `--applicationPath=${fs.join(outputPath, 'web')}`,
@@ -223,4 +232,6 @@ async function runEngineEnvironmentManager({
             stdio: 'inherit',
         },
     );
+
+    return { server, managerProcess };
 }

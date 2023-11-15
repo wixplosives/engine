@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { engineBuild } from './engine-build';
+import { runEngine } from './engine-build';
 
 function parseCliArgs() {
     const { values: args } = parseArgs({
@@ -21,7 +21,7 @@ const publicPath = String(args.get('publicPath')) ?? '';
 const verbose = Boolean(args.get('verbose')) ?? false;
 const engineConfigFilePath = String(args.get('engineConfigFilePath'));
 
-engineBuild({ engineConfigFilePath, verbose, clean, dev, watch, publicPath, buildTargets, feature, config, run }).catch(
+runEngine({ engineConfigFilePath, verbose, clean, dev, watch, publicPath, buildTargets, feature, config, run }).catch(
     (e) => {
         console.error(e);
         process.exitCode = 1;
