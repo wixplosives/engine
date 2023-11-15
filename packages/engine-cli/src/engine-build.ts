@@ -183,7 +183,7 @@ async function runManager({
     verbose,
 }: RunManagerOptions) {
     // start dev server
-    const staticMiddlewares = serveStatic?.map(({ route, directoryPath }) => ({
+    const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
         path: route,
         handlers: express.static(directoryPath),
     }));

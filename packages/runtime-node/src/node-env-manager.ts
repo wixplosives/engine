@@ -56,6 +56,7 @@ export class NodeEnvManager {
         await Promise.all(
             envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, verbose)),
         );
+
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app } = await launchEngineHttpServer({ staticDirPath });
 
@@ -75,7 +76,7 @@ export class NodeEnvManager {
             }
 
             this.loadEnvironmentConfigurations(reqEnv, requestedConfig, verbose)
-                .then((configs) => res.json(configs.flat()))
+                .then((configs) => res.json(configs))
                 .catch((e) => {
                     console.error(e);
                     res.status(500).end(e.stack);
@@ -95,18 +96,20 @@ export class NodeEnvManager {
         const { common, byEnv } = mappingEntry;
         const configFiles = [...common, ...(byEnv[envName] ?? [])];
         return await Promise.all(
-            configFiles.map(async (filePath) => {
-                try {
-                    // TODO: make it work in esm via injection
-                    const configModule = (await require(filePath)).default as ConfigModule;
-                    if (verbose) {
-                        console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
+            configFiles
+                .map(async (filePath) => {
+                    try {
+                        // TODO: make it work in esm via injection
+                        const configModule = (await require(filePath)).default as ConfigModule;
+                        if (verbose) {
+                            console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
+                        }
+                        return configModule.default ?? configModule;
+                    } catch (e) {
+                        throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
                     }
-                    return configModule.default ?? configModule;
-                } catch (e) {
-                    throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
-                }
-            }),
+                })
+                .flat(),
         );
     }
 
