@@ -111,6 +111,10 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      */
     tracing?: boolean | Omit<Tracing, 'name'>;
     /**
+     * Take screenshots of failed tests, file name is the test title and the file path is the output folder + the test's titlePath
+     */
+    takeScreenshotsOfFailed?: boolean | Pick<Tracing, 'outPath'>;
+    /**
      * Keeps the page open and the feature running for the all the tests in the suite
      */
     persist?: boolean;
@@ -191,6 +195,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
         persist,
+        takeScreenshotsOfFailed = true,
     } = withFeatureOptions;
 
     if (
@@ -331,14 +336,14 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
             const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
 
+            const combinedTrancingOptions = {
+                screenshots: true,
+                snapshots: true,
+                outPath: process.cwd(),
+                ...suiteTracingOptions,
+                ...testTracingOptions,
+            };
             if (testTracingOptions) {
-                const combinedTrancingOptions = {
-                    screenshots: true,
-                    snapshots: true,
-                    outPath: process.cwd(),
-                    ...suiteTracingOptions,
-                    ...testTracingOptions,
-                };
                 const { screenshots, snapshots, name, outPath } = combinedTrancingOptions;
                 await browserContext.tracing.start({ screenshots, snapshots });
                 tracingDisposables.add((testName) => {
@@ -366,18 +371,23 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     },
                 );
             }
-            dispose(
-                async () => {
-                    const ctx = mochaCtx();
+            if (takeScreenshotsOfFailed) {
+                const outPath =
+                    (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
+                    `${combinedTrancingOptions.outPath}/screenshots-of-failed`;
 
-                    if (ctx?.currentTest?.state === 'failed') {
-                        const screenshotDirPath = `${process.cwd()}/screenshots-of-failed`;
-                        const testPath = ctx.currentTest.titlePath().join('/');
-                        await featurePage.screenshot({ path: `${screenshotDirPath}/${testPath}.png` });
-                    }
-                },
-                { timeout: 3_000 },
-            );
+                dispose(
+                    async () => {
+                        const ctx = mochaCtx();
+
+                        if (ctx?.currentTest?.state === 'failed') {
+                            const testPath = ctx.currentTest.titlePath().join('/');
+                            await featurePage.screenshot({ path: `${outPath}/${testPath}.png` });
+                        }
+                    },
+                    { timeout: 3_000 },
+                );
+            }
 
             function onPageError(e: Error) {
                 if (
