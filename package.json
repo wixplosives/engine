@@ -66,7 +66,7 @@
     "lerna": "^7.4.2",
     "mocha": "^10.2.0",
     "mocha-play": "^7.0.1",
-    "playwright-core": "^1.39.0",
+    "playwright-core": "^1.40.0",
     "prettier": "^3.1.0",
     "promise-assist": "^2.0.1",
     "react": "^18.2.0",
