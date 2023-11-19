@@ -2,7 +2,44 @@ import { webWorkerInitializer } from '@wixc3/engine-core';
 import CodeEditor, { MAIN, PROCESSING } from './code-editor.feature.js';
 import { CodeService } from './code-service.js';
 import { ErrorService } from './error-service.js';
-import './style.st.css';
+
+document.head.appendChild(document.createElement('style')).textContent = `
+body,
+html {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: inherit;
+}
+
+body {
+  display: flex;
+}
+
+aside {
+  display: block;
+  margin: 1em;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+main {
+  margin: 1em;
+  width: 100%;
+}
+
+textarea {
+  display: block;
+  height: 50%;
+  width: 100%;
+}
+
+`;
 
 CodeEditor.setup(MAIN, ({ sidebarSlot, run }, { COM: { communication } }) => {
     const codeService = new CodeService();

@@ -10,7 +10,7 @@
     "clean": "rimraf -g \"./packages/*/dist\" \"./examples/*/dist\" \"./test-fixtures/*/dist\" \"./test-fixtures/workspace/packages/*/dist\"",
     "build": "yarn build:typescript && yarn build:stylable",
     "build:typescript": "tsc --build",
-    "build:stylable": "lerna run build:stylable",
+    "build:stylable": "stc",
     "lint": "eslint .",
     "prestart": "yarn build",
     "start": "engineer start",
