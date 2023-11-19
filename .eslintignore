@@ -5,4 +5,5 @@ umd
 dist
 dist-app
 dist-external
+dist-test-engine
 examples/preload

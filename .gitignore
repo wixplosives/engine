@@ -12,6 +12,7 @@ _wcs
 .idea
 dist-app
 dist-external
+dist-test-engine
 
 # Logs
 logs
