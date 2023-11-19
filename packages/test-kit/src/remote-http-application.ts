@@ -26,7 +26,11 @@ export class RemoteHttpApplication implements IExecutableApplication {
     }
 
     public async runFeature(featureTarget: IFeatureTarget) {
-        return this.makeEnvironmentHttpCall<IFeatureMessagePayload>({ featureTarget, method: 'PUT' });
+        const res = await this.makeEnvironmentHttpCall<IFeatureMessagePayload>({ featureTarget, method: 'PUT' });
+        return {
+            ...res,
+            dispose: async () => this.closeFeature(res),
+        };
     }
 
     public async closeFeature(featureTarget: IFeatureTarget) {

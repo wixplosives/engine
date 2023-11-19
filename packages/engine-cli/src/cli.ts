@@ -19,7 +19,7 @@ async function engine() {
         console.log('🤷‍♂️');
     }
 
-    const engineConfig = await loadEngineConfig(engineConfigFilePath, process.cwd(), {});
+    const engineConfig = await loadEngineConfig(process.cwd(), engineConfigFilePath);
     await runEngine({ engineConfig, verbose, clean, dev, watch, publicPath, buildTargets, feature, config, run });
 }
 

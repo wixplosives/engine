@@ -54,12 +54,16 @@ export class ForkedProcessApplication implements IExecutableApplication {
     }
 
     public async runFeature(payload: IFeatureTarget) {
-        return this.waitForProcessMessage<IFeatureMessagePayload>('feature-initialized', (p) => {
+        const res = await this.waitForProcessMessage<IFeatureMessagePayload>('feature-initialized', (p) => {
             p.send({
                 id: 'run-feature',
                 payload,
             });
         });
+        return {
+            ...res,
+            dispose: () => this.closeFeature(res),
+        };
     }
 
     public async closeFeature(payload: IFeatureTarget) {

@@ -13,6 +13,7 @@ import { RemoteHttpApplication } from './remote-http-application.js';
 import { validateBrowser } from './supported-browsers.js';
 import type { IExecutableApplication } from './types.js';
 import { ensureTracePath } from './utils/index.js';
+import { ManagedRunEngine } from './engine-app-manager.js';
 
 const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
@@ -114,6 +115,10 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      * Keeps the page open and the feature running for the all the tests in the suite
      */
     persist?: boolean;
+    /**
+     * Prebuild the engine before running the tests
+     */
+    buildFlow?: boolean;
 }
 
 export interface Tracing {
@@ -191,6 +196,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
         persist,
+        buildFlow = Boolean(process.env.WITH_FEATURE_BUILD_FLOW),
     } = withFeatureOptions;
 
     if (
@@ -204,14 +210,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     const capturedErrors: Error[] = [];
 
-    const resolvedPort =
-        runningApplicationPort ??
-        (process.env.ENGINE_APPLICATION_PORT ? parseInt(process.env.ENGINE_APPLICATION_PORT) : undefined);
-
-    executableApp = resolvedPort
-        ? new RemoteHttpApplication(resolvedPort)
-        : new ForkedProcessApplication(cliEntry, process.cwd(), featureDiscoveryRoot);
-
     before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
@@ -224,13 +222,26 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    before('engineer start', async function () {
-        if (!featureUrl) {
-            this.timeout(60_000 * 4); // 4 minutes
-            const port = await executableApp.getServerPort();
-            featureUrl = `http://localhost:${port}/main.html`;
-        }
-    });
+    if (buildFlow) {
+        executableApp = executableApp || new ManagedRunEngine();
+    } else {
+        // THIS IS THE DEPRECATED FLOW //
+        const resolvedPort =
+            runningApplicationPort ??
+            (process.env.ENGINE_APPLICATION_PORT ? parseInt(process.env.ENGINE_APPLICATION_PORT) : undefined);
+
+        executableApp = resolvedPort
+            ? new RemoteHttpApplication(resolvedPort)
+            : new ForkedProcessApplication(cliEntry, process.cwd(), featureDiscoveryRoot);
+
+        before('engineer start', async function () {
+            if (!featureUrl) {
+                this.timeout(60_000 * 4); // 4 minutes
+                const port = await executableApp.getServerPort();
+                featureUrl = `http://localhost:${port}/main.html`;
+            }
+        });
+    }
 
     const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
 
@@ -296,18 +307,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const { configName: newConfigName } = runningFeature;
 
-            dispose(
-                async () =>
-                    executableApp.closeFeature({
-                        featureName,
-                        configName: newConfigName,
-                    }),
-                {
-                    group: WITH_FEATURE_DISPOSABLES,
-                    name: `close feature "${featureName}"`,
-                    timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
-                },
-            );
+            dispose(() => runningFeature.dispose(), {
+                group: WITH_FEATURE_DISPOSABLES,
+                name: `close feature "${featureName}"`,
+                timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
+            });
 
             const search = toSearchQuery({
                 featureName,
@@ -399,8 +403,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             }
 
             const featurePage = await browserContext.newPage();
-
-            const response = await featurePage.goto(featureUrl + search, navigationOptions);
+            const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
+            const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
             async function getMetrics(): Promise<PerformanceMetrics> {
                 const measures = await executableApp.getMetrics();
