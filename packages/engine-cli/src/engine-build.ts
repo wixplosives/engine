@@ -1,13 +1,19 @@
 import fs from '@file-services/node';
 import { importModules } from '@wixc3/engine-runtime-node';
-import { ENGINE_CONFIG_FILE_NAME, EngineConfig, analyzeFeatures, getResolvedEnvironments } from '@wixc3/engine-scripts';
+import {
+    ENGINE_CONFIG_FILE_NAME,
+    EngineConfig,
+    StaticConfig,
+    analyzeFeatures,
+    getResolvedEnvironments,
+} from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
 import express from 'express';
 import { fork } from 'node:child_process';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { loadConfigFile } from './load-config-file';
-import { RouteMiddleware, launchServer } from './start-dev-server';
+import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server';
 import { parseArgs } from 'node:util';
 
 export interface RunEngineOptions {
@@ -41,9 +47,10 @@ export async function runEngine({
     buildTargets = 'both',
     engineConfig = {},
 }: RunEngineOptions = {}) {
-    let esbuildContextWeb;
-    let esbuildContextNode;
-    let runManagerContext;
+    let esbuildContextWeb: esbuild.BuildContext | undefined;
+    let esbuildContextNode: esbuild.BuildContext | undefined;
+    let runManagerContext: Awaited<ReturnType<typeof runNodeManager>> | undefined;
+    let devServer: Awaited<ReturnType<typeof launchDevServer>> | undefined;
 
     rootDir = fs.resolve(rootDir);
     outputPath = fs.resolve(rootDir, outputPath);
@@ -136,19 +143,24 @@ export async function runEngine({
 
     if (run) {
         if (verbose) {
-            console.log('Running engine');
+            console.log('Running engine node environment manager');
         }
-        runManagerContext = await runNodeManager({
+
+        runManagerContext = runNodeManager({
             featureName,
             configName,
-            serveStatic,
-            httpServerPort,
             outputPath,
-            socketServerOptions,
             verbose,
+            watch,
         });
+
+        devServer = await launchDevServer(serveStatic, httpServerPort, socketServerOptions);
+        if (verbose) {
+            console.log(`Dev server is running. listening on http://localhost:${devServer.port}`);
+        }
     }
     return {
+        devServer,
         esbuildContextWeb,
         esbuildContextNode,
         runManagerContext,
@@ -156,30 +168,44 @@ export async function runEngine({
 }
 
 export interface RunNodeManagerOptions {
+    outputPath: string;
     featureName?: string;
     configName?: string;
-    serveStatic: Required<EngineConfig>['serveStatic'];
-    httpServerPort: number;
-    outputPath: string;
-    verbose: boolean;
-    socketServerOptions: EngineConfig['socketServerOptions'];
+    verbose?: boolean;
+    watch?: boolean;
 }
 
-export async function loadEngineConfig(rootDir: string, engineConfigFilePath?: string) {
-    const configFilePath =
-        engineConfigFilePath || (await fs.promises.findClosestFile(rootDir, ENGINE_CONFIG_FILE_NAME));
-    return (configFilePath ? await loadConfigFile(configFilePath) : {}) as EngineConfig;
+export function runNodeManager({ outputPath, featureName, configName, watch, verbose }: RunNodeManagerOptions) {
+    const managerPath = ['.js', '.mjs']
+        .map((ext) => fs.join(outputPath, 'node', `engine-environment-manager${ext}`))
+        .find(fs.existsSync);
+
+    if (!managerPath) {
+        throw new Error(`Could not find "engine-environment-manager" entrypoint in ${fs.join(outputPath, 'node')}`);
+    }
+
+    if (verbose) {
+        console.log(`Starting node environment manager at ${managerPath}`);
+    }
+    const args = [`--applicationPath=${fs.join(outputPath, 'web')}`, `--feature=${featureName}`];
+    if (configName) {
+        args.push(`--config=${configName}`);
+    }
+    if (verbose) {
+        args.push('--verbose=true');
+    }
+    const managerProcess = fork(managerPath, args, {
+        execArgv: watch ? process.execArgv.concat(['--watch']) : process.execArgv,
+    });
+
+    return { managerProcess };
 }
 
-export async function runNodeManager({
-    serveStatic,
-    httpServerPort,
-    outputPath,
-    featureName,
-    configName,
-    socketServerOptions,
-    verbose,
-}: RunNodeManagerOptions) {
+async function launchDevServer(
+    serveStatic: StaticConfig[],
+    httpServerPort: number,
+    socketServerOptions: LaunchOptions['socketServerOptions'],
+) {
     // start dev server
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
         path: route,
@@ -195,43 +221,17 @@ export async function runNodeManager({
         },
     ];
 
-    const server = await launchServer({
+    return await launchServer({
         httpServerPort,
         socketServerOptions,
         middlewares: [...devMiddlewares, ...staticMiddlewares],
     });
+}
 
-    if (verbose) {
-        console.log(`Dev server is running. listening on http://localhost:${server.port}`);
-    }
-
-    const managerPath = ['.js', '.mjs']
-        .map((ext) => fs.join(outputPath, 'node', `engine-environment-manager${ext}`))
-        .find(fs.existsSync);
-
-    if (!managerPath) {
-        throw new Error(`Could not find "engine-environment-manager" entrypoint in ${fs.join(outputPath, 'node')}`);
-    }
-
-    if (verbose) {
-        console.log(`Starting node environment manager at ${managerPath}`);
-    }
-    // TODO pass in the server topology?????????
-    const managerProcess = fork(
-        managerPath,
-        [
-            `--applicationPath=${fs.join(outputPath, 'web')}`,
-            `--feature=${featureName}`,
-            `--config=${configName}`,
-            verbose ? '--verbose=true' : '',
-        ],
-        {
-            execArgv: process.execArgv.concat(['--watch']),
-            stdio: 'inherit',
-        },
-    );
-
-    return { server, managerProcess };
+export async function loadEngineConfig(rootDir: string, engineConfigFilePath?: string) {
+    const configFilePath =
+        engineConfigFilePath || (await fs.promises.findClosestFile(rootDir, ENGINE_CONFIG_FILE_NAME));
+    return (configFilePath ? await loadConfigFile(configFilePath) : {}) as EngineConfig;
 }
 
 export function parseCliArgs() {
