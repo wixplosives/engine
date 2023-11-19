@@ -5,7 +5,7 @@ import type {
     LaunchEnvironmentMode,
     TopLevelConfigProvider,
 } from '@wixc3/engine-runtime-node';
-import { Plugin } from 'esbuild';
+import type { BuildOptions, Plugin } from 'esbuild';
 import type io from 'socket.io';
 
 export interface IFeatureTarget {
@@ -64,6 +64,13 @@ export interface StaticConfig {
     directoryPath: string;
 }
 
+export type BuildConfiguration = {
+    webConfig: BuildOptions;
+    nodeConfig: BuildOptions;
+};
+
+export type OverrideConfigHook = <const T extends BuildConfiguration>(config: T) => T;
+
 export interface EngineConfig {
     require?: string[];
     featureDiscoveryRoot?: string;
@@ -76,7 +83,7 @@ export interface EngineConfig {
     sourcesRoot?: string;
     favicon?: string;
     nodeEnvironmentsMode?: LaunchEnvironmentMode;
-    buildPlugins?: Plugin[];
+    buildPlugins?: Plugin[] | OverrideConfigHook;
 
     /**
      * extra resolver conditions to add while building project.
