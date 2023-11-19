@@ -69,6 +69,10 @@ export class NodeEnvManager {
         const host = new WsServerHost(socketServer);
         this.communication.registerMessageHandler(host);
         console.log(`[ENGINE]: http server is listening on http://localhost:${port}`);
+
+        if (process.send) {
+            process.send({ port });
+        }
     }
 
     private async runFeatureEnvironments(verbose: boolean, runtimeOptions: Map<string, string | boolean | undefined>) {
@@ -76,11 +80,13 @@ export class NodeEnvManager {
         if (!featureName || typeof featureName !== 'string') {
             throw new Error('feature is a required for autoLaunch');
         }
-        const envNames = this.featureEnvironmentMapping.featureToEnvironments[featureName];
 
-        if (!envNames) {
+        const hasFeatureDef = Object.hasOwn(this.featureEnvironmentMapping.featureToEnvironments, featureName);
+        if (!hasFeatureDef) {
             throw new Error(`[ENGINE]: no environments found for feature ${featureName}`);
         }
+
+        const envNames = this.featureEnvironmentMapping.featureToEnvironments[featureName] || [];
 
         if (verbose) {
             console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
@@ -182,9 +188,7 @@ export function createFeatureEnvironmentsMapping(
             availableEnvironments[envDescriptor.name] = envDescriptor.env;
             envNames.push(envDescriptor.name);
         }
-        if (envNames.length) {
-            featureToEnvironments[feature.scopedName] = envNames;
-        }
+        featureToEnvironments[feature.scopedName] = envNames;
     }
     return { featureToEnvironments, availableEnvironments };
 }
