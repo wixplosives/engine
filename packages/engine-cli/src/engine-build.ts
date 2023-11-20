@@ -15,6 +15,8 @@ import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { loadConfigFile } from './load-config-file';
 import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server';
 import { parseArgs } from 'node:util';
+import { resolve } from 'node:path';
+import { TopLevelConfig } from '@wixc3/engine-core';
 
 export interface RunEngineOptions {
     verbose?: boolean;
@@ -30,6 +32,7 @@ export interface RunEngineOptions {
     config?: string;
     httpServerPort?: number;
     engineConfig?: EngineConfig;
+    runtimeArgs?: Record<string, string | boolean>;
 }
 
 export async function runEngine({
@@ -46,6 +49,7 @@ export async function runEngine({
     httpServerPort = 5555,
     buildTargets = 'both',
     engineConfig = {},
+    runtimeArgs = {},
 }: RunEngineOptions = {}) {
     let esbuildContextWeb: esbuild.BuildContext | undefined;
     let esbuildContextNode: esbuild.BuildContext | undefined;
@@ -152,6 +156,7 @@ export async function runEngine({
             outputPath,
             verbose,
             watch,
+            runtimeArgs,
         });
 
         devServer = await launchDevServer(serveStatic, httpServerPort, socketServerOptions);
@@ -168,14 +173,26 @@ export async function runEngine({
 }
 
 export interface RunNodeManagerOptions {
+    cwd?: string;
     outputPath: string;
     featureName?: string;
     configName?: string;
     verbose?: boolean;
     watch?: boolean;
+    runtimeArgs?: Record<string, string | boolean>;
+    topLevelConfig?: TopLevelConfig;
 }
 
-export function runNodeManager({ outputPath, featureName, configName, watch, verbose }: RunNodeManagerOptions) {
+export function runNodeManager({
+    cwd,
+    outputPath,
+    featureName,
+    configName,
+    watch,
+    verbose,
+    runtimeArgs,
+    topLevelConfig,
+}: RunNodeManagerOptions) {
     const managerPath = ['.js', '.mjs']
         .map((ext) => fs.join(outputPath, 'node', `engine-environment-manager${ext}`))
         .find(fs.existsSync);
@@ -188,13 +205,20 @@ export function runNodeManager({ outputPath, featureName, configName, watch, ver
         console.log(`Starting node environment manager at ${managerPath}`);
     }
     const args = [`--applicationPath=${fs.join(outputPath, 'web')}`, `--feature=${featureName}`];
-    if (configName) {
-        args.push(`--config=${configName}`);
-    }
     if (verbose) {
         args.push('--verbose=true');
     }
+    if (configName) {
+        args.push(`--config=${configName}`);
+    }
+    if (runtimeArgs) {
+        args.push(...Object.entries(runtimeArgs).map(([key, value]) => `--${key}=${value}`));
+    }
+    if (topLevelConfig) {
+        args.push(`--topLevelConfig=${JSON.stringify(topLevelConfig)}`);
+    }
     const managerProcess = fork(managerPath, args, {
+        cwd: cwd ? resolve(cwd) : process.cwd(),
         execArgv: watch ? process.execArgv.concat(['--watch']) : process.execArgv,
     });
 

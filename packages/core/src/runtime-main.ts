@@ -30,7 +30,7 @@ export async function main({
     configName,
     options,
 }: MainEntryParams) {
-    const runtimeConfiguration = new RuntimeConfigurations(env.env, publicConfigsRoute, configLoaders);
+    const runtimeConfiguration = new RuntimeConfigurations(env.env, publicConfigsRoute, configLoaders, options);
     const featureLoader = new FeatureLoadersRegistry(featureLoaders);
 
     runtimeConfiguration.installChildEnvConfigFetcher(featureName, configName);

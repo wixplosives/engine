@@ -407,7 +407,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
             async function getMetrics(): Promise<PerformanceMetrics> {
-                const measures = await executableApp.getMetrics();
+                const measures = runningFeature.getMetrics
+                    ? await runningFeature.getMetrics()
+                    : await executableApp.getMetrics();
                 for (const webWorker of featurePage.workers()) {
                     const perfEntries = await webWorker.evaluate(() => {
                         return {
@@ -434,7 +436,18 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 return measures;
             }
 
-            return { page: featurePage, response, getMetrics };
+            return {
+                page: featurePage,
+                response,
+                getMetrics: async () => {
+                    try {
+                        return await getMetrics();
+                    } catch (e) {
+                        console.error(`Failed to get metrics for ${featureName} ${configName} with error: ${e}`);
+                        return { marks: [], measures: [] };
+                    }
+                },
+            };
         },
         disposeAfter: dispose,
     };

@@ -5,8 +5,9 @@ import { parseArgs } from 'node:util';
 import { WsServerHost } from './core-node/ws-node-host';
 import { resolveEnvironments } from './environments';
 import { launchEngineHttpServer } from './launch-http-server';
-import { IStaticFeatureDefinition } from './types';
+import { IStaticFeatureDefinition, PerformanceMetrics } from './types';
 import { workerThreadInitializer2 } from './worker-thread-initializer2';
+import { bindMetricsListener } from './metrics-utils';
 
 export type ConfigFilePath = string;
 
@@ -21,6 +22,7 @@ export interface RunningNodeEnvironment {
     id: string;
     initialize(): Promise<void>;
     dispose(): Promise<void>;
+    getMetrics(): Promise<PerformanceMetrics>;
 }
 
 export class NodeEnvManager {
@@ -32,12 +34,25 @@ export class NodeEnvManager {
         private featureEnvironmentMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
     ) {}
-
+    private initInjectRuntimeConfigConfig(options: IRunOptions) {
+        const rawConfigOption = options.get('topLevelConfig');
+        if (typeof rawConfigOption === 'string') {
+            if (rawConfigOption === 'undefined') {
+                return [];
+            }
+            const parsedConfig = JSON.parse(rawConfigOption);
+            return Array.isArray(parsedConfig) ? parsedConfig : [parsedConfig];
+        } else if (rawConfigOption) {
+            throw new Error('topLevelConfig must be a string if provided');
+        }
+        return [];
+    }
     public async autoLaunch() {
         const runtimeOptions = parseRuntimeOptions();
 
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
-
+        const topLevelConfigInject = this.initInjectRuntimeConfigConfig(runtimeOptions) ?? [];
+        bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         await this.runFeatureEnvironments(verbose, runtimeOptions);
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
@@ -54,12 +69,16 @@ export class NodeEnvManager {
                 console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
             }
             if (!requestedConfig || requestedConfig === 'undefined') {
-                res.json([]);
+                res.json(topLevelConfigInject);
                 return;
             }
 
             this.loadEnvironmentConfigurations(reqEnv, requestedConfig, verbose)
-                .then((configs) => res.json(configs))
+                .then((configs) => {
+                    return res.json(
+                        (topLevelConfigInject.length ? [...configs, topLevelConfigInject] : configs).flat(),
+                    );
+                })
                 .catch((e) => {
                     console.error(e);
                     res.status(500).end(e.stack);
@@ -106,22 +125,22 @@ export class NodeEnvManager {
         }
         const { common, byEnv } = mappingEntry;
         const configFiles = [...common, ...(byEnv[envName] ?? [])];
-        return await Promise.all(
-            configFiles
-                .map(async (filePath) => {
-                    try {
-                        // TODO: make it work in esm via injection
-                        const configModule = (await require(filePath)).default as ConfigModule;
-                        if (verbose) {
-                            console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
-                        }
-                        return configModule.default ?? configModule;
-                    } catch (e) {
-                        throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
+        const loadedConfigs = await Promise.all(
+            configFiles.map(async (filePath) => {
+                try {
+                    // TODO: make it work in esm via injection
+                    const configModule = (await require(filePath)).default as ConfigModule;
+                    if (verbose) {
+                        console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
                     }
-                })
-                .flat(),
+                    return configModule.default ?? configModule;
+                } catch (e) {
+                    throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
+                }
+            }),
         );
+
+        return loadedConfigs;
     }
 
     private createEnvironmentFileUrl(envName: string) {
@@ -156,6 +175,19 @@ export class NodeEnvManager {
             this.openEnvironments.delete(envName, runningEnv);
             return runningEnv.dispose();
         };
+    }
+    async collectMetricsFromAllOpenEnvironments() {
+        const metrics = {
+            marks: [] as PerformanceEntry[],
+            measures: [] as PerformanceEntry[],
+        };
+
+        for (const runningEnv of this.openEnvironments.values()) {
+            const { marks, measures } = await runningEnv.getMetrics();
+            metrics.marks.push(...marks.map((m) => ({ ...m, debugInfo: `${runningEnv.id}:${m.name}` })));
+            metrics.measures.push(...measures.map((m) => ({ ...m, debugInfo: `${runningEnv.id}:${m.name}` })));
+        }
+        return metrics;
     }
 }
 

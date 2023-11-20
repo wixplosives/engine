@@ -1,4 +1,4 @@
-import { type TopLevelConfig } from './types.js';
+import { IRunOptions, type TopLevelConfig } from './types.js';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace globalThis {
@@ -19,22 +19,26 @@ export type ConfigLoaders = Record<string, ConfigLoader>;
  */
 export class RuntimeConfigurations {
     private fetchedConfigs: Record<string, Promise<TopLevelConfig>> = {};
+    private topLevelConfig: TopLevelConfig | undefined;
     constructor(
         private envName: string,
         private publicConfigsRoute: string,
         private loaders: ConfigLoaders,
+        private options: IRunOptions,
     ) {
         // validate args since we use this class in the entry point template code
         if (!envName) {
             throw new Error('envName must be provided');
         }
+
+        this.initInjectRuntimeConfigConfig();
     }
     /**
      * load config via configuration loader
      * this is an integration function with the build system
      * the logic and is based on the "config loader" implementation
      */
-    async importConfig(configName: string): Promise<TopLevelConfig> {
+    public async importConfig(configName: string): Promise<TopLevelConfig> {
         const loader = this.loaders[configName];
         if (!loader || !configName) {
             return [];
@@ -48,7 +52,7 @@ export class RuntimeConfigurations {
      * Install a message listener to fetch config for child environments
      * currently only iframe is supported we should expend support for other environments types
      */
-    installChildEnvConfigFetcher(featureName: string, configName: string) {
+    public installChildEnvConfigFetcher(featureName: string, configName: string) {
         if (!this.publicConfigsRoute || !this.isMainEntrypoint() || typeof window === 'undefined') {
             return;
         }
@@ -85,13 +89,17 @@ export class RuntimeConfigurations {
     /**
      * depending on the environment type (main or child) load the config either from the parent or from the public route
      */
-    load(envName: string, featureName: string, configName: string) {
+    public async load(envName: string, featureName: string, configName: string): Promise<TopLevelConfig> {
         if (!this.publicConfigsRoute) {
             return Promise.resolve([]);
         }
-        return this.isMainEntrypoint()
-            ? this.fetchConfig(envName, featureName, configName)
-            : this.loadFromParent(envName);
+        const loaded = this.isMainEntrypoint()
+            ? await this.fetchConfig(envName, featureName, configName)
+            : await this.loadFromParent(envName);
+        if (this.topLevelConfig) {
+            return [...loaded, ...this.topLevelConfig];
+        }
+        return loaded;
     }
 
     private isMainEntrypoint() {
@@ -145,6 +153,15 @@ export class RuntimeConfigurations {
             this.fetchedConfigs[url] = promise;
         }
         return promise;
+    }
+    private initInjectRuntimeConfigConfig() {
+        const rawConfigOption = this.options.get('topLevelConfig');
+        if (typeof rawConfigOption === 'string') {
+            const parsedConfig = JSON.parse(rawConfigOption);
+            this.topLevelConfig = Array.isArray(parsedConfig) ? parsedConfig : [parsedConfig];
+        } else if (rawConfigOption) {
+            throw new Error('topLevelConfig must be a string if provided');
+        }
     }
 }
 

@@ -20,3 +20,4 @@ export * from './types.js';
 export * from './worker-thread-initializer.js';
 export * from './worker-thread-initializer2.js';
 export * from './ws-environment.js';
+export * from './metrics-utils.js';

@@ -1,4 +1,4 @@
-import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import { getMetricsFromProcess, type PerformanceMetrics } from '@wixc3/engine-runtime-node';
 import type { EngineConfig, IFeatureTarget } from '@wixc3/engine-scripts';
 import { loadEngineConfig, runEngine, runNodeManager } from '@wixc3/engine-cli';
 import type { IExecutableApplication } from './types.js';
@@ -33,7 +33,7 @@ export class ManagedRunEngine implements IExecutableApplication {
     public async runFeature(featureTarget: IFeatureTarget) {
         await this.ready;
 
-        const { featureName, configName = '', overrideConfig: _, runtimeOptions: __ } = featureTarget;
+        const { featureName, configName = '', overrideConfig, runtimeOptions } = featureTarget;
         if (!featureName) {
             throw new Error('featureName and configName are required');
         }
@@ -43,6 +43,10 @@ export class ManagedRunEngine implements IExecutableApplication {
             featureName,
             outputPath: OUTPUT_PATH,
             verbose: false,
+            runtimeArgs: {
+                ...runtimeOptions,
+                topLevelConfig: JSON.stringify(overrideConfig),
+            },
         });
 
         const port = await new Promise((resolve, reject) => {
@@ -76,6 +80,7 @@ export class ManagedRunEngine implements IExecutableApplication {
             dispose() {
                 managerProcess.kill();
             },
+            getMetrics: () => getMetricsFromProcess(managerProcess),
         };
     }
 

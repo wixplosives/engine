@@ -75,7 +75,7 @@ export function createNodeEntrypoint({
     });
     return `
 import { main, COM } from "@wixc3/engine-core";
-import { parseRuntimeOptions, ParentPortHost } from "@wixc3/engine-runtime-node";
+import { bindMetricsListener, parseRuntimeOptions, ParentPortHost } from "@wixc3/engine-runtime-node";
 import { parseArgs } from "node:util";
 import { workerData } from "node:worker_threads";
 
@@ -85,6 +85,8 @@ const verbose = options.get('verbose') ?? false;
 if (verbose) {
     console.log('[${env.name}]: Started with options: ', options);
 }
+
+bindMetricsListener();
 
 main({
     featureName: ${stringify(featureName)}, 
