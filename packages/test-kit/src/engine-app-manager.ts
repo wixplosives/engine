@@ -1,4 +1,4 @@
-import { getMetricsFromProcess, type PerformanceMetrics } from '@wixc3/engine-runtime-node';
+import { getMetricsFromProcess } from '@wixc3/engine-runtime-node';
 import type { EngineConfig, IFeatureTarget } from '@wixc3/engine-scripts';
 import { loadEngineConfig, runEngine, runNodeManager } from '@wixc3/engine-cli';
 import type { IExecutableApplication } from './types.js';
