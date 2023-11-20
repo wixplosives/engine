@@ -85,8 +85,4 @@ export class ManagedRunEngine implements IExecutableApplication {
     }
 
     public async closeServer() {}
-
-    public getMetrics(): Promise<PerformanceMetrics> {
-        throw new Error('not implemented');
-    }
 }
