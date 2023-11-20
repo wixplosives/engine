@@ -1,4 +1,11 @@
-import { AnyEnvironment, BaseHost, Communication, ConfigModule, IRunOptions } from '@wixc3/engine-core';
+import {
+    AnyEnvironment,
+    BaseHost,
+    Communication,
+    ConfigModule,
+    IRunOptions,
+    parseInjectRuntimeConfigConfig,
+} from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -34,24 +41,11 @@ export class NodeEnvManager {
         private featureEnvironmentMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
     ) {}
-    private initInjectRuntimeConfigConfig(options: IRunOptions) {
-        const rawConfigOption = options.get('topLevelConfig');
-        if (typeof rawConfigOption === 'string') {
-            if (rawConfigOption === 'undefined') {
-                return [];
-            }
-            const parsedConfig = JSON.parse(rawConfigOption);
-            return Array.isArray(parsedConfig) ? parsedConfig : [parsedConfig];
-        } else if (rawConfigOption) {
-            throw new Error('topLevelConfig must be a string if provided');
-        }
-        return [];
-    }
     public async autoLaunch() {
         const runtimeOptions = parseRuntimeOptions();
 
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
-        const topLevelConfigInject = this.initInjectRuntimeConfigConfig(runtimeOptions) ?? [];
+        const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
         bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         await this.runFeatureEnvironments(verbose, runtimeOptions);
 

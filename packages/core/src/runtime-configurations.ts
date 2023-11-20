@@ -19,7 +19,7 @@ export type ConfigLoaders = Record<string, ConfigLoader>;
  */
 export class RuntimeConfigurations {
     private fetchedConfigs: Record<string, Promise<TopLevelConfig>> = {};
-    private topLevelConfig: TopLevelConfig | undefined;
+    private topLevelConfig: TopLevelConfig;
     constructor(
         private envName: string,
         private publicConfigsRoute: string,
@@ -31,7 +31,7 @@ export class RuntimeConfigurations {
             throw new Error('envName must be provided');
         }
 
-        this.initInjectRuntimeConfigConfig();
+        this.topLevelConfig = parseInjectRuntimeConfigConfig(this.options);
     }
     /**
      * load config via configuration loader
@@ -96,7 +96,8 @@ export class RuntimeConfigurations {
         const loaded = this.isMainEntrypoint()
             ? await this.fetchConfig(envName, featureName, configName)
             : await this.loadFromParent(envName);
-        if (this.topLevelConfig) {
+
+        if (this.topLevelConfig.length) {
             return [...loaded, ...this.topLevelConfig];
         }
         return loaded;
@@ -154,17 +155,22 @@ export class RuntimeConfigurations {
         }
         return promise;
     }
-    private initInjectRuntimeConfigConfig() {
-        const rawConfigOption = this.options.get('topLevelConfig');
-        if (typeof rawConfigOption === 'string') {
-            const parsedConfig = JSON.parse(rawConfigOption);
-            this.topLevelConfig = Array.isArray(parsedConfig) ? parsedConfig : [parsedConfig];
-        } else if (rawConfigOption) {
-            throw new Error('topLevelConfig must be a string if provided');
-        }
-    }
 }
 
 function addTrailingSlashIfNotEmpty(route: string) {
     return route ? (route.endsWith('/') ? route : route + '/') : '';
+}
+
+export function parseInjectRuntimeConfigConfig(options: IRunOptions) {
+    const rawConfigOption = options.get('topLevelConfig');
+    if (typeof rawConfigOption === 'string') {
+        if (rawConfigOption === 'undefined') {
+            return [];
+        }
+        const parsedConfig = JSON.parse(rawConfigOption);
+        return Array.isArray(parsedConfig) ? parsedConfig : [parsedConfig];
+    } else if (rawConfigOption) {
+        throw new Error('topLevelConfig must be a string if provided');
+    }
+    return [];
 }
