@@ -21,15 +21,15 @@ function localPerformanceFetcher() {
 function bindMetricsListenerToProcess(
     customFetcher: () => Promise<PerformanceMetrics> | PerformanceMetrics = localPerformanceFetcher,
 ) {
-    const handler = async (message: { type: 'getMetrics'; id: number }) => {
-        if (message?.type === 'getMetrics' && message?.id !== undefined) {
+    const handler = async (message: unknown) => {
+        if (isValidGetMetricsMessage(message)) {
             process.send?.({
                 id: message.id,
                 metrics: await customFetcher(),
             });
         }
     };
-    process.on('message', (message: { type: 'getMetrics'; id: number }) => {
+    process.on('message', (message) => {
         handler(message).catch(console.error);
     });
 }
@@ -38,8 +38,8 @@ function bindMetricsListenerToMessagePort(
     port: MessagePort,
     customFetcher: () => Promise<PerformanceMetrics> | PerformanceMetrics = localPerformanceFetcher,
 ) {
-    const handler = async (message: { type: 'getMetrics'; id: number }) => {
-        if (message.type === 'getMetrics' && message.id !== undefined) {
+    const handler = async (message: unknown) => {
+        if (isValidGetMetricsMessage(message)) {
             port.postMessage({
                 id: message.id,
                 metrics: await customFetcher(),
@@ -63,15 +63,9 @@ export async function getMetricsFromProcess(
             reject(new Error(`Timeout after ${timeout / 1000} sec, waiting for getMetrics message.`));
         }, timeout);
         managerProcess.on('message', (responseMessage) => {
-            if (
-                responseMessage &&
-                typeof responseMessage === 'object' &&
-                'id' in responseMessage &&
-                'metrics' in responseMessage &&
-                outgoingMessage.id === responseMessage.id
-            ) {
+            if (isValidMetricsResponse(responseMessage, outgoingMessage.id)) {
                 clearTimeout(tm);
-                resolve(responseMessage.metrics as PerformanceMetrics);
+                resolve(responseMessage.metrics);
             }
         });
 
@@ -87,7 +81,7 @@ export function getMetricsFromWorker(worker: Worker): Promise<PerformanceMetrics
     const result = new Promise<PerformanceMetrics>((resolve) => {
         const handler = (event: any) => {
             const responseMessage = event.data;
-            if (responseMessage.metrics && responseMessage.id === outgoingMessage.id) {
+            if (isValidMetricsResponse(responseMessage, outgoingMessage.id)) {
                 worker.removeEventListener('message', handler);
                 resolve(responseMessage.metrics);
             }
@@ -96,4 +90,28 @@ export function getMetricsFromWorker(worker: Worker): Promise<PerformanceMetrics
     });
     worker.postMessage(outgoingMessage);
     return result;
+}
+
+function isValidGetMetricsMessage(message: unknown): message is { type: 'getMetrics'; id: number } {
+    return !!(
+        message &&
+        typeof message === 'object' &&
+        'type' in message &&
+        'id' in message &&
+        message.type === 'getMetrics' &&
+        typeof message.id === 'number'
+    );
+}
+
+function isValidMetricsResponse(
+    responseMessage: unknown,
+    id: number,
+): responseMessage is { id: number; metrics: PerformanceMetrics } {
+    return !!(
+        responseMessage &&
+        typeof responseMessage === 'object' &&
+        'id' in responseMessage &&
+        'metrics' in responseMessage &&
+        id === responseMessage.id
+    );
 }
