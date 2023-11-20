@@ -1,14 +1,30 @@
 import type { PerformanceMetrics } from './types';
-import { parentPort, type MessagePort } from 'node:worker_threads';
+import { parentPort } from 'node:worker_threads';
 import type { ChildProcess } from 'node:child_process';
 import { Worker } from '@wixc3/isomorphic-worker/worker';
 
-export function bindMetricsListener(customFetcher?: () => Promise<PerformanceMetrics> | PerformanceMetrics) {
-    if (parentPort) {
-        bindMetricsListenerToMessagePort(parentPort, customFetcher);
-    } else {
-        bindMetricsListenerToProcess(customFetcher);
-    }
+export function bindMetricsListener(
+    customFetcher: () => Promise<PerformanceMetrics> | PerformanceMetrics = localPerformanceFetcher,
+) {
+    const handler = async (message: unknown) => {
+        if (isValidGetMetricsMessage(message)) {
+            const outgoingMessage = {
+                id: message.id,
+                metrics: await customFetcher(),
+            };
+            if (parentPort) {
+                parentPort.postMessage(outgoingMessage);
+            } else if (process.send) {
+                process.send(outgoingMessage);
+            } else {
+                throw new Error('No parentPort or process.send');
+            }
+        }
+    };
+
+    (parentPort ?? process).on('message', (message) => {
+        handler(message).catch(console.error);
+    });
 }
 
 function localPerformanceFetcher() {
@@ -16,39 +32,6 @@ function localPerformanceFetcher() {
         marks: performance.getEntriesByType('mark').map((_) => _.toJSON()),
         measures: performance.getEntriesByType('measure').map((_) => _.toJSON()),
     };
-}
-
-function bindMetricsListenerToProcess(
-    customFetcher: () => Promise<PerformanceMetrics> | PerformanceMetrics = localPerformanceFetcher,
-) {
-    const handler = async (message: unknown) => {
-        if (isValidGetMetricsMessage(message)) {
-            process.send?.({
-                id: message.id,
-                metrics: await customFetcher(),
-            });
-        }
-    };
-    process.on('message', (message) => {
-        handler(message).catch(console.error);
-    });
-}
-
-function bindMetricsListenerToMessagePort(
-    port: MessagePort,
-    customFetcher: () => Promise<PerformanceMetrics> | PerformanceMetrics = localPerformanceFetcher,
-) {
-    const handler = async (message: unknown) => {
-        if (isValidGetMetricsMessage(message)) {
-            port.postMessage({
-                id: message.id,
-                metrics: await customFetcher(),
-            });
-        }
-    };
-    port.on('message', (message) => {
-        handler(message).catch(console.error);
-    });
 }
 
 let nextMessageId = 0;
