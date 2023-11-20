@@ -4,12 +4,11 @@ import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scrip
 type RunningTestFeature = {
     dispose(): void | Promise<void>;
     url?: string;
-    getMetrics?: () => Promise<PerformanceMetrics>;
+    getMetrics: () => Promise<PerformanceMetrics>;
 };
 
 export interface IExecutableApplication {
     getServerPort(featureTarget?: IFeatureTarget): Promise<number>;
     runFeature(featureTarget: IFeatureTarget): Promise<IFeatureMessagePayload & RunningTestFeature>;
     closeServer(): Promise<void>;
-    getMetrics(): Promise<PerformanceMetrics>;
 }

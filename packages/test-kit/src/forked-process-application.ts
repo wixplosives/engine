@@ -63,6 +63,7 @@ export class ForkedProcessApplication implements IExecutableApplication {
         return {
             ...res,
             dispose: () => this.closeFeature(res),
+            getMetrics: () => this.getMetrics(),
         };
     }
 
@@ -71,8 +72,8 @@ export class ForkedProcessApplication implements IExecutableApplication {
             p.send({ id: 'close-feature', payload });
         });
     }
-
-    public async getMetrics() {
+    // NOTE: this does not support parallel runs
+    private async getMetrics() {
         return this.waitForProcessMessage<PerformanceMetrics>('metrics-response', (p) => {
             p.send({ id: 'metrics-request' });
         });

@@ -407,9 +407,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
             async function getMetrics(): Promise<PerformanceMetrics> {
-                const measures = runningFeature.getMetrics
-                    ? await runningFeature.getMetrics()
-                    : await executableApp.getMetrics();
+                const measures = await runningFeature.getMetrics();
                 for (const webWorker of featurePage.workers()) {
                     const perfEntries = await webWorker.evaluate(() => {
                         return {

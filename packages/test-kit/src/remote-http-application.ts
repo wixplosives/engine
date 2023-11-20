@@ -30,6 +30,7 @@ export class RemoteHttpApplication implements IExecutableApplication {
         return {
             ...res,
             dispose: async () => this.closeFeature(res),
+            getMetrics: () => this.getMetrics(),
         };
     }
 
@@ -40,8 +41,8 @@ export class RemoteHttpApplication implements IExecutableApplication {
     public async closeServer() {
         /* We don't close the running app */
     }
-
-    public async getMetrics(): Promise<PerformanceMetrics> {
+    // NOTE: this does not support parallel runs
+    private async getMetrics(): Promise<PerformanceMetrics> {
         return this.makeEnvironmentHttpCall<PerformanceMetrics>({
             method: 'GET',
             path: join(NODE_ENV_PATH, 'metrics'),
