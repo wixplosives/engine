@@ -36,22 +36,25 @@ export class NodeEnvManager {
     id = 'node-environment-manager';
     openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
     communication = new Communication(new BaseHost(this.id), this.id, {}, {}, true, {});
+    autoLaunchDispose?: () => Promise<void>;
     constructor(
         private importMeta: { url: string },
-        private featureEnvironmentMapping: FeatureEnvironmentMapping,
+        private featureEnvironmentsMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
     ) {}
-    public async autoLaunch() {
-        const runtimeOptions = parseRuntimeOptions();
-
+    public async autoLaunch(runtimeOptions = parseRuntimeOptions()) {
+        process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
+        const disposeListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
         const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
-        bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         await this.runFeatureEnvironments(verbose, runtimeOptions);
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
-        const { port, socketServer, app } = await launchEngineHttpServer({ staticDirPath });
-
+        const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath });
+        this.autoLaunchDispose = async () => {
+            disposeListener();
+            await close();
+        };
         app.get<[string]>('/configs/*', (req, res) => {
             const reqEnv = req.query.env as string;
             if (typeof reqEnv !== 'string') {
@@ -81,11 +84,11 @@ export class NodeEnvManager {
 
         const host = new WsServerHost(socketServer);
         this.communication.registerMessageHandler(host);
-        console.log(`[ENGINE]: http server is listening on http://localhost:${port}`);
 
         if (process.send) {
             process.send({ port });
         }
+        return { port };
     }
 
     private async runFeatureEnvironments(verbose: boolean, runtimeOptions: Map<string, string | boolean | undefined>) {
@@ -94,12 +97,12 @@ export class NodeEnvManager {
             throw new Error('feature is a required for autoLaunch');
         }
 
-        const hasFeatureDef = Object.hasOwn(this.featureEnvironmentMapping.featureToEnvironments, featureName);
+        const hasFeatureDef = Object.hasOwn(this.featureEnvironmentsMapping.featureToEnvironments, featureName);
         if (!hasFeatureDef) {
             throw new Error(`[ENGINE]: no environments found for feature ${featureName}`);
         }
 
-        const envNames = this.featureEnvironmentMapping.featureToEnvironments[featureName] || [];
+        const envNames = this.featureEnvironmentsMapping.featureToEnvironments[featureName] || [];
 
         if (verbose) {
             console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
@@ -138,7 +141,7 @@ export class NodeEnvManager {
     }
 
     private createEnvironmentFileUrl(envName: string) {
-        const env = this.featureEnvironmentMapping.availableEnvironments[envName];
+        const env = this.featureEnvironmentsMapping.availableEnvironments[envName];
         if (!env) {
             throw new Error(`environment ${envName} not found`);
         }
@@ -147,7 +150,7 @@ export class NodeEnvManager {
     }
 
     private async initializeWorkerEnvironment(envName: string, runtimeOptions: IRunOptions, verbose = false) {
-        const env = this.featureEnvironmentMapping.availableEnvironments[envName];
+        const env = this.featureEnvironmentsMapping.availableEnvironments[envName];
         if (!env) {
             throw new Error(`environment ${envName} not found`);
         }
@@ -182,6 +185,11 @@ export class NodeEnvManager {
             metrics.measures.push(...measures.map((m) => ({ ...m, debugInfo: `${runningEnv.id}:${m.name}` })));
         }
         return metrics;
+    }
+    async dispose() {
+        await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
+        this.communication.dispose();
+        await this.autoLaunchDispose?.();
     }
 }
 
