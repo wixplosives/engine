@@ -5,17 +5,19 @@ import type { InitializerOptions } from './types.js';
 
 export interface WebWorkerInitializerOptions extends InitializerOptions {
     workerOptions?: UniversalWorkerOptions;
+    workerExtension?: string;
 }
 
 export async function webWorkerInitializer({
     communication,
     env: { env, endpointType },
-    workerOptions,
+    workerOptions = {},
+    workerExtension = '.js',
 }: WebWorkerInitializerOptions) {
-    const isModule = workerOptions?.type === 'module';
     const instanceId = communication.getEnvironmentInstanceId(env, endpointType);
-    const url = `${communication.getPublicPath()}${env}.webworker.${isModule ? 'mjs' : 'js'}${location.search}`;
+    const url = `${communication.getPublicPath()}${env}.webworker${workerExtension}${location.search}`;
     const webWorker = new Worker(url, {
+        type: 'module',
         name: instanceId,
         ...workerOptions,
     });
