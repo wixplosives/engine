@@ -224,6 +224,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     if (buildFlow) {
         executableApp = executableApp || new ManagedRunEngine();
+        before('build test artifacts', () => executableApp.init?.());
     } else {
         // THIS IS THE DEPRECATED FLOW //
         const resolvedPort =

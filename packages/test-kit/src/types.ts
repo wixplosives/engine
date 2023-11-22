@@ -1,5 +1,5 @@
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
-import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scripts';
+import type { IFeatureTarget, IFeatureMessagePayload, EngineConfig } from '@wixc3/engine-scripts';
 
 type RunningTestFeature = {
     dispose(): void | Promise<void>;
@@ -11,4 +11,5 @@ export interface IExecutableApplication {
     getServerPort(featureTarget?: IFeatureTarget): Promise<number>;
     runFeature(featureTarget: IFeatureTarget): Promise<IFeatureMessagePayload & RunningTestFeature>;
     closeServer(): Promise<void>;
+    init?(): Promise<{ engineConfig: EngineConfig }>;
 }
