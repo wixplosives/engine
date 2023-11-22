@@ -28,12 +28,11 @@ import { NodeEnvManager } from '@wixc3/engine-runtime-node';
 const featureEnvironmentsMapping = ${stringify(featureEnvironmentsMapping)};
 const configMapping = ${stringify(configMapping)};
 const meta = { url: ${moduleType === 'esm' ? 'import.meta.url' : 'pathToFileURL(__filename).href'} };
-
-process.env.ENGINE_FLOW_V2_DIST_URL = meta.url; /* compatibility */
-
 const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
 
-manager.autoLaunch().catch((e)=>{
+manager.autoLaunch().then(({ port })=>{
+    console.log(\`[ENGINE]: http server is listening on http://localhost:\${port}\`);
+}).catch((e)=>{
     process.exitCode = 1;
     console.error(e);
 });
