@@ -7,9 +7,13 @@ import { join } from 'path';
 const OUTPUT_PATH = join(process.cwd(), 'dist-test-engine');
 
 export class ManagedRunEngine implements IExecutableApplication {
-    private ready: Promise<{ engineConfig: EngineConfig }>;
-    constructor(/* { cwd = process.cwd(), featureDiscoveryRoot = 'src' } */) {
-        this.ready = this.run();
+    private ready!: Promise<{ engineConfig: EngineConfig }>;
+    constructor(/* { cwd = process.cwd(), featureDiscoveryRoot = 'src' } */) {}
+    init() {
+        if (this.ready === undefined) {
+            this.ready = this.run();
+        }
+        return this.ready;
     }
     private async run() {
         const engineConfig = await loadEngineConfig(process.cwd());
@@ -31,7 +35,7 @@ export class ManagedRunEngine implements IExecutableApplication {
     }
 
     public async runFeature(featureTarget: IFeatureTarget) {
-        await this.ready;
+        await this.init();
 
         const { featureName, configName = '', overrideConfig, runtimeOptions } = featureTarget;
         if (!featureName) {
