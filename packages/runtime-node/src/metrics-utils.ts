@@ -21,10 +21,13 @@ export function bindMetricsListener(
             }
         }
     };
-
-    (parentPort ?? process).on('message', (message) => {
+    const wrapped = (message: unknown) => {
         handler(message).catch(console.error);
-    });
+    };
+    (parentPort ?? process).on('message', wrapped);
+    return () => {
+        (parentPort ?? process).off('message', wrapped);
+    };
 }
 
 function localPerformanceFetcher() {
@@ -35,7 +38,6 @@ function localPerformanceFetcher() {
 }
 
 let nextMessageId = 0;
-
 export async function getMetricsFromProcess(
     managerProcess: ChildProcess,
     timeout = 10000,
