@@ -54,7 +54,7 @@
     "@wixc3/wait-for-call": "^13.3.2",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "electron": "^27.1.0",
+    "electron": "^27.1.2",
     "electron-builder": "^24.6.4",
     "esbuild": "^0.19.7",
     "eslint": "^8.54.0",
