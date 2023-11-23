@@ -129,7 +129,9 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         platform: 'browser',
         outdir: join(outputPath, 'web'),
         banner: {
-            js: `globalThis.__webpack_public_path__ = ${JSON.stringify(publicPath)};\nglobalThis.process={env:{}};`,
+            js: `globalThis.__webpack_public_path__ = ${JSON.stringify(
+                publicPath,
+            )};\nglobalThis.process={env:{}};globalThis.DEFAULT_WORKER_TYPE = 'module';`,
         },
         plugins: [
             ...commonConfig.plugins,

@@ -17,7 +17,7 @@ export async function webWorkerInitializer({
     const instanceId = communication.getEnvironmentInstanceId(env, endpointType);
     const url = `${communication.getPublicPath()}${env}.webworker${workerExtension}${location.search}`;
     const webWorker = new Worker(url, {
-        type: 'module',
+        type: (globalThis as any).DEFAULT_WORKER_TYPE || 'classic',
         name: instanceId,
         ...workerOptions,
     });
