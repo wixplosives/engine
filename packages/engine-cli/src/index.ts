@@ -4,4 +4,6 @@ export {
     runNodeManager,
     type RunNodeManagerOptions,
     loadEngineConfig,
+    resolveRuntimeOptions,
+    runLocalNodeManager,
 } from './engine-build';

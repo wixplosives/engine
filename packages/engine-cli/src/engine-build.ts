@@ -1,10 +1,17 @@
 import fs from '@file-services/node';
-import { importModules } from '@wixc3/engine-runtime-node';
+import {
+    IConfigDefinition,
+    NodeEnvManager,
+    createFeatureEnvironmentsMapping,
+    importModules,
+} from '@wixc3/engine-runtime-node';
 import {
     ENGINE_CONFIG_FILE_NAME,
     EngineConfig,
+    IFeatureDefinition,
     StaticConfig,
     analyzeFeatures,
+    createAllValidConfigurationsEnvironmentMapping,
     getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
@@ -15,8 +22,10 @@ import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { loadConfigFile } from './load-config-file';
 import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server';
 import { parseArgs } from 'node:util';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { TopLevelConfig } from '@wixc3/engine-core';
+import { SetMultiMap } from '@wixc3/patterns';
+import { pathToFileURL } from 'node:url';
 
 export interface RunEngineOptions {
     verbose?: boolean;
@@ -114,8 +123,14 @@ export async function runEngine({
             if (verbose) {
                 console.log('Starting web compilation in watch mode');
             }
+            const { buildEndPlugin, waitForBuildEnd } = createBuildEndPluginHook();
+            buildConfigurations.webConfig.plugins.push(buildEndPlugin);
             esbuildContextWeb = await esbuild.context(buildConfigurations.webConfig);
             await esbuildContextWeb.watch();
+            if (verbose) {
+                console.log('Waiting for web build end.');
+            }
+            await waitForBuildEnd();
         }
 
         if (buildTargets === 'node' || buildTargets === 'both') {
@@ -144,19 +159,28 @@ export async function runEngine({
         const end = performance.now();
         console.log(`Build time ${Math.round(end - start)}ms`);
     }
-
     if (run) {
         if (verbose) {
             console.log('Running engine node environment manager');
         }
 
-        runManagerContext = runNodeManager({
+        const runtimeOptions = resolveRuntimeOptions({
             featureName,
             configName,
             outputPath,
             verbose,
-            watch,
             runtimeArgs,
+        });
+
+        if (verbose) {
+            console.log(`Runtime options: ${JSON.stringify(Object.fromEntries(runtimeOptions.entries()), null, 2)}`);
+        }
+
+        runManagerContext = runNodeManager({
+            cwd: rootDir,
+            watch,
+            outputPath,
+            runtimeOptions,
         });
 
         devServer = await launchDevServer(serveStatic, httpServerPort, socketServerOptions);
@@ -165,6 +189,9 @@ export async function runEngine({
         }
     }
     return {
+        features,
+        configurations,
+        environments,
         devServer,
         esbuildContextWeb,
         esbuildContextNode,
@@ -173,26 +200,15 @@ export async function runEngine({
 }
 
 export interface RunNodeManagerOptions {
-    cwd?: string;
     outputPath: string;
     featureName?: string;
     configName?: string;
     verbose?: boolean;
-    watch?: boolean;
     runtimeArgs?: Record<string, string | boolean>;
     topLevelConfig?: TopLevelConfig;
 }
 
-export function runNodeManager({
-    cwd,
-    outputPath,
-    featureName,
-    configName,
-    watch,
-    verbose,
-    runtimeArgs,
-    topLevelConfig,
-}: RunNodeManagerOptions) {
+function findNodeEnvManagerEntrypoint(outputPath: any) {
     const managerPath = ['.js', '.mjs']
         .map((ext) => fs.join(outputPath, 'node', `engine-environment-manager${ext}`))
         .find(fs.existsSync);
@@ -200,28 +216,57 @@ export function runNodeManager({
     if (!managerPath) {
         throw new Error(`Could not find "engine-environment-manager" entrypoint in ${fs.join(outputPath, 'node')}`);
     }
+    return managerPath;
+}
 
+export function resolveRuntimeOptions({
+    outputPath,
+    featureName,
+    configName,
+    verbose,
+    runtimeArgs,
+    topLevelConfig,
+}: RunNodeManagerOptions) {
+    const runtimeOptions = new Map<string, string | boolean | undefined>();
+    runtimeOptions.set('applicationPath', fs.join(outputPath, 'web'));
+    runtimeOptions.set('feature', featureName);
     if (verbose) {
-        console.log(`Starting node environment manager at ${managerPath}`);
-    }
-    const args = [`--applicationPath=${fs.join(outputPath, 'web')}`, `--feature=${featureName}`];
-    if (verbose) {
-        args.push('--verbose=true');
+        runtimeOptions.set('verbose', 'true');
     }
     if (configName) {
-        args.push(`--config=${configName}`);
+        runtimeOptions.set('config', configName);
     }
     if (runtimeArgs) {
-        args.push(...Object.entries(runtimeArgs).map(([key, value]) => `--${key}=${value}`));
+        for (const [key, value] of Object.entries(runtimeArgs)) {
+            runtimeOptions.set(key, value);
+        }
     }
     if (topLevelConfig) {
-        args.push(`--topLevelConfig=${JSON.stringify(topLevelConfig)}`);
+        runtimeOptions.set('topLevelConfig', JSON.stringify(topLevelConfig));
     }
-    const managerProcess = fork(managerPath, args, {
-        cwd: cwd ? resolve(cwd) : process.cwd(),
-        execArgv: watch ? process.execArgv.concat(['--watch']) : process.execArgv,
-    });
+    return runtimeOptions;
+}
 
+export function runNodeManager({
+    outputPath,
+    runtimeOptions,
+    cwd,
+    watch,
+}: {
+    outputPath: string;
+    runtimeOptions: Map<string, string | boolean | undefined>;
+    cwd?: string;
+    watch?: boolean;
+}) {
+    const managerProcess = fork(
+        findNodeEnvManagerEntrypoint(outputPath),
+        Array.from(runtimeOptions.entries()).map(([key, value]) => `--${key}=${value}`),
+        {
+            cwd: cwd ? resolve(cwd) : process.cwd(),
+            execArgv: watch ? process.execArgv.concat(['--watch']) : process.execArgv,
+            // execArgv: process.execArgv,
+        },
+    );
     return { managerProcess };
 }
 
@@ -250,6 +295,21 @@ async function launchDevServer(
         socketServerOptions,
         middlewares: [...devMiddlewares, ...staticMiddlewares],
     });
+}
+
+export async function runLocalNodeManager(
+    features: Map<string, IFeatureDefinition>,
+    configurations: SetMultiMap<string, IConfigDefinition>,
+    configName: string,
+    execRuntimeOptions: Map<string, string | boolean | undefined>,
+    outputPath: string = 'dist-engine',
+) {
+    const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
+    const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, 'development', configName);
+    const meta = { url: pathToFileURL(join(outputPath, 'node/')).href };
+    const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
+    const { port } = await manager.autoLaunch(execRuntimeOptions);
+    return { port, manager };
 }
 
 export async function loadEngineConfig(rootDir: string, engineConfigFilePath?: string) {

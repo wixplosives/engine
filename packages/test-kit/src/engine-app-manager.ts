@@ -1,6 +1,5 @@
-import { getMetricsFromProcess } from '@wixc3/engine-runtime-node';
-import type { EngineConfig, IFeatureTarget } from '@wixc3/engine-scripts';
-import { loadEngineConfig, runEngine, runNodeManager } from '@wixc3/engine-cli';
+import { type EngineConfig, type IFeatureTarget } from '@wixc3/engine-scripts';
+import { loadEngineConfig, resolveRuntimeOptions, runEngine, runLocalNodeManager } from '@wixc3/engine-cli';
 import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
 
@@ -8,14 +7,19 @@ const OUTPUT_PATH = join(process.cwd(), 'dist-test-engine');
 
 export class ManagedRunEngine implements IExecutableApplication {
     private ready!: Promise<{ engineConfig: EngineConfig }>;
-    constructor(/* { cwd = process.cwd(), featureDiscoveryRoot = 'src' } */) {}
+    private runResult!: Awaited<ReturnType<typeof runEngine>>;
+    constructor(private options: { skipBuild: boolean }) {}
     init() {
         if (this.ready === undefined) {
-            this.ready = this.run();
+            this.ready = this.build();
         }
         return this.ready;
     }
-    private async run() {
+    private async build() {
+        if (this.options.skipBuild) {
+            console.log('skipping build');
+            return Promise.resolve({ engineConfig: {} });
+        }
         const engineConfig = await loadEngineConfig(process.cwd());
 
         const buildOnlyInDevModeOptions = {
@@ -26,7 +30,7 @@ export class ManagedRunEngine implements IExecutableApplication {
             outputPath: OUTPUT_PATH,
             engineConfig,
         };
-        await runEngine(buildOnlyInDevModeOptions);
+        this.runResult = await runEngine(buildOnlyInDevModeOptions);
 
         return { engineConfig };
     }
@@ -34,15 +38,14 @@ export class ManagedRunEngine implements IExecutableApplication {
         throw new Error('not implemented');
     }
 
-    public async runFeature(featureTarget: IFeatureTarget) {
+    public async runFeature({ featureName, configName = '', overrideConfig, runtimeOptions }: IFeatureTarget) {
         await this.init();
 
-        const { featureName, configName = '', overrideConfig, runtimeOptions } = featureTarget;
         if (!featureName) {
             throw new Error('featureName and configName are required');
         }
 
-        const { managerProcess } = runNodeManager({
+        const execRuntimeOptions = resolveRuntimeOptions({
             configName,
             featureName,
             outputPath: OUTPUT_PATH,
@@ -53,38 +56,20 @@ export class ManagedRunEngine implements IExecutableApplication {
             },
         });
 
-        const port = await new Promise((resolve, reject) => {
-            const errMessage = (msg = '') =>
-                `starting node environment for feature: "${featureName}" and config: "${configName}" failed. ${msg}`;
-            managerProcess.once('error', (e) => {
-                reject(new Error(errMessage(), { cause: e }));
-            });
-            managerProcess.once('message', (message) => {
-                if (typeof message === 'object' && 'port' in message) {
-                    resolve(message.port);
-                } else {
-                    reject(
-                        new Error(
-                            errMessage('Invalid init message. expected {port:string} got ' + JSON.stringify(message)),
-                        ),
-                    );
-                }
-            });
-            const time = 10000;
-            setTimeout(() => {
-                reject(new Error(errMessage(`Timeout after ${time / 1000} sec, waiting for init message.`)));
-            }, time);
-        });
-        // this is for config proxy...we might want to change approach here related to overrideConfig
-        // for now we don't support it
+        const { port, manager } = await runLocalNodeManager(
+            this.runResult.features,
+            this.runResult.configurations,
+            configName,
+            execRuntimeOptions,
+            OUTPUT_PATH,
+        );
+
         return {
             featureName,
             configName,
             url: `http://localhost:${port}/main.html`,
-            dispose() {
-                managerProcess.kill();
-            },
-            getMetrics: () => getMetricsFromProcess(managerProcess),
+            dispose: () => manager.dispose(),
+            getMetrics: () => manager.collectMetricsFromAllOpenEnvironments(),
         };
     }
 

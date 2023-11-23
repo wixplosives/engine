@@ -118,7 +118,7 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     /**
      * Prebuild the engine before running the tests
      */
-    buildFlow?: boolean;
+    buildFlow?: 'prebuild' | 'lazy';
 }
 
 export interface Tracing {
@@ -196,7 +196,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
         persist,
-        buildFlow = Boolean(process.env.WITH_FEATURE_BUILD_FLOW),
+        buildFlow = process.env.WITH_FEATURE_BUILD_FLOW,
     } = withFeatureOptions;
 
     if (
@@ -223,7 +223,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     });
 
     if (buildFlow) {
-        executableApp = executableApp || new ManagedRunEngine();
+        executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuild' });
         before('build test artifacts', () => executableApp.init?.());
     } else {
         // THIS IS THE DEPRECATED FLOW //

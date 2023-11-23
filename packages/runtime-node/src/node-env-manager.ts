@@ -15,6 +15,7 @@ import { launchEngineHttpServer } from './launch-http-server';
 import { IStaticFeatureDefinition, PerformanceMetrics } from './types';
 import { workerThreadInitializer2 } from './worker-thread-initializer2';
 import { bindMetricsListener } from './metrics-utils';
+import { ChildProcess } from 'node:child_process';
 
 export type ConfigFilePath = string;
 
@@ -225,4 +226,29 @@ export function createFeatureEnvironmentsMapping(
         featureToEnvironments[feature.scopedName] = envNames;
     }
     return { featureToEnvironments, availableEnvironments };
+}
+
+async function _getPortFromManagerProcessInit(managerProcess: ChildProcess, featureName: string, configName: string) {
+    return await new Promise((resolve, reject) => {
+        const errMessage = (msg = '') =>
+            `starting node environment for feature: "${featureName}" and config: "${configName}" failed. ${msg}`;
+        managerProcess.once('error', (e) => {
+            reject(new Error(errMessage(), { cause: e }));
+        });
+        managerProcess.once('message', (message) => {
+            if (typeof message === 'object' && 'port' in message) {
+                resolve(message.port);
+            } else {
+                reject(
+                    new Error(
+                        errMessage('Invalid init message. expected {port:string} got ' + JSON.stringify(message)),
+                    ),
+                );
+            }
+        });
+        const time = 10000;
+        setTimeout(() => {
+            reject(new Error(errMessage(`Timeout after ${time / 1000} sec, waiting for init message.`)));
+        }, time);
+    });
 }
