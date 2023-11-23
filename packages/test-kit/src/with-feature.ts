@@ -4,8 +4,10 @@ import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
 import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
 import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
+import { uniqueHash } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import playwright from 'playwright-core';
+import { reporters } from 'mocha';
 import { ForkedProcessApplication } from './forked-process-application.js';
 import { hookPageConsole } from './hook-page-console.js';
 import { normalizeTestName } from './normalize-test-name.js';
@@ -381,8 +383,13 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         const ctx = mochaCtx();
 
                         if (ctx?.currentTest?.state === 'failed') {
-                            const testPath = ctx.currentTest.titlePath().join('/');
-                            await featurePage.screenshot({ path: `${outPath}/${testPath}.png` });
+                            const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
+                            const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
+                            await featurePage.screenshot({ path: filePath });
+
+                            console.log(
+                                reporters.Base.color('bright yellow', `The screenshot has been saved at ${filePath}`),
+                            );
                         }
                     },
                     { timeout: 3_000 },
