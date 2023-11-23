@@ -54,7 +54,6 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
 
     const webEntryPoints = new Map<string, string>();
     const nodeEntryPoints = new Map<string, string>();
-    // const hasNodeTargets = environments.nodeEnvs.size + environments.workerThreadEnvs.size;
     const commonPlugins = Array.isArray(buildPlugins) ? buildPlugins : [];
 
     const entrypointContent = createNodeEnvironmentManagerEntrypoint(
