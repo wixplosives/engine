@@ -2,11 +2,14 @@ import { IRunOptions, InitializerOptions, UniversalWorkerHost } from '@wixc3/eng
 import { Worker } from '@wixc3/isomorphic-worker/worker';
 import { type UniversalWorkerOptions } from '@wixc3/isomorphic-worker/types';
 import { createDisposables } from '@wixc3/patterns';
+import { PerformanceMetrics } from './types';
+import { getMetricsFromWorker } from './metrics-utils';
 
 export interface WorkerThreadInitializer2 {
     id: string;
     dispose: () => Promise<void>;
     initialize: () => Promise<void>;
+    getMetrics(): Promise<PerformanceMetrics>;
 }
 
 export interface WorkerThreadInitializerOptions2 extends InitializerOptions {
@@ -23,16 +26,17 @@ export function workerThreadInitializer2({
     const disposables = createDisposables();
     const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
     const envIsReady = communication.envReady(instanceId);
-
-    const initialize = async (): Promise<void> => {
+    let worker: Worker;
+    const initialize = async () => {
         const envRuntimeOptions = new Map(runtimeOptions?.entries());
         envRuntimeOptions.set('environment_id', instanceId);
 
-        const worker = new Worker(workerURL, {
+        worker = new Worker(workerURL, {
             name: instanceId,
             workerData: { runtimeOptions: envRuntimeOptions },
             execArgv: process.execArgv,
         } as UniversalWorkerOptions);
+
         disposables.add(() => worker.terminate());
 
         const host = new UniversalWorkerHost(worker, instanceId);
@@ -51,5 +55,6 @@ export function workerThreadInitializer2({
         id: instanceId,
         initialize,
         dispose: disposables.dispose,
+        getMetrics: () => getMetricsFromWorker(worker),
     };
 }

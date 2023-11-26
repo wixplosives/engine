@@ -20,6 +20,7 @@
     "@wixc3/engine-core": "^41.1.0",
     "@wixc3/engine-runtime-node": "^41.1.0",
     "@wixc3/engine-scripts": "^41.1.0",
+    "@wixc3/engine-cli": "^41.1.0",
     "@wixc3/testing-node": "^13.3.2",
     "create-temp-directory": "^2.4.0",
     "is-ci": "^3.0.1",

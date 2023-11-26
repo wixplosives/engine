@@ -70,7 +70,10 @@ main({
             ...${stringify(config, null, 2)}
         ];
     },
-}).catch(console.error);
+}).catch((e)=>{
+    console.error(${JSON.stringify(runningEnv.env)}, e, { runtimeOptions: options });
+    throw e;
+});
 `;
 }
 

@@ -6,7 +6,7 @@ import FileServer, { server } from './file-server.feature.js';
  */
 FileServer.setup(server, ({ [RUN_OPTIONS]: runOptions }, {}) => {
     /**
-     * exposing the remoteFiles implementation of thje server side
+     * exposing the remoteFiles implementation of the server side
      */
     const optionsProjectPath = runOptions.get('projectPath');
 

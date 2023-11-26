@@ -7,6 +7,10 @@
   "scripts": {
     "test": "mocha \"dist/test/**/*.unit.js\""
   },
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "dependencies": {
     "@file-services/node": "^8.3.3",
     "@file-services/resolve": "^8.3.3",

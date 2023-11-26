@@ -26,7 +26,12 @@ export class RemoteHttpApplication implements IExecutableApplication {
     }
 
     public async runFeature(featureTarget: IFeatureTarget) {
-        return this.makeEnvironmentHttpCall<IFeatureMessagePayload>({ featureTarget, method: 'PUT' });
+        const res = await this.makeEnvironmentHttpCall<IFeatureMessagePayload>({ featureTarget, method: 'PUT' });
+        return {
+            ...res,
+            dispose: async () => this.closeFeature(res),
+            getMetrics: () => this.getMetrics(),
+        };
     }
 
     public async closeFeature(featureTarget: IFeatureTarget) {
@@ -36,8 +41,8 @@ export class RemoteHttpApplication implements IExecutableApplication {
     public async closeServer() {
         /* We don't close the running app */
     }
-
-    public async getMetrics(): Promise<PerformanceMetrics> {
+    // NOTE: this does not support parallel runs
+    private async getMetrics(): Promise<PerformanceMetrics> {
         return this.makeEnvironmentHttpCall<PerformanceMetrics>({
             method: 'GET',
             path: join(NODE_ENV_PATH, 'metrics'),

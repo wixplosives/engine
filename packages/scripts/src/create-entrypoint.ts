@@ -193,7 +193,11 @@ function createLoaderInterface(args: FeatureLoaderArguments) {
                         eagerEntrypoint,
                         absImports,
                     })};
-                    return featureModule.default;
+                    // dynamic import esm
+                    let featureClass = featureModule.default;
+                    // dynamic import cjs from esm
+                    featureClass = featureClass.__esModule ? featureClass.default : featureClass;
+                    return featureClass;
                 },
                 async preload(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                     ${preloadStatements.join('\n')}
