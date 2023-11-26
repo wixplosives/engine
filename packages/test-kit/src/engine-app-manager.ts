@@ -1,13 +1,24 @@
-import { type EngineConfig, type IFeatureTarget } from '@wixc3/engine-scripts';
-import { loadEngineConfig, resolveRuntimeOptions, runEngine, runLocalNodeManager } from '@wixc3/engine-cli';
+import { createAllValidConfigurationsEnvironmentMapping, type IFeatureTarget } from '@wixc3/engine-scripts';
+import {
+    loadEngineConfig,
+    readMetadataFiles,
+    resolveRuntimeOptions,
+    runEngine,
+    RunEngineOptions,
+    runLocalNodeManager,
+} from '@wixc3/engine-cli';
 import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
+import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
 
 const OUTPUT_PATH = join(process.cwd(), 'dist-test-engine');
 
 export class ManagedRunEngine implements IExecutableApplication {
-    private ready!: Promise<{ engineConfig: EngineConfig }>;
-    private runResult!: Awaited<ReturnType<typeof runEngine>>;
+    private ready!: Promise<void>;
+    private runMetadata!: {
+        featureEnvironmentsMapping: ReturnType<typeof createFeatureEnvironmentsMapping>;
+        configMapping: ReturnType<typeof createAllValidConfigurationsEnvironmentMapping>;
+    };
     constructor(private options: { skipBuild: boolean }) {}
     init() {
         if (this.ready === undefined) {
@@ -17,22 +28,29 @@ export class ManagedRunEngine implements IExecutableApplication {
     }
     private async build() {
         if (this.options.skipBuild) {
-            console.log('skipping build');
-            return Promise.resolve({ engineConfig: {} });
+            this.runMetadata = readMetadataFiles(OUTPUT_PATH);
+            return;
         }
         const engineConfig = await loadEngineConfig(process.cwd());
-
-        const buildOnlyInDevModeOptions = {
-            clean: true,
+        const build = this.options.skipBuild === false;
+        const buildOnlyInDevModeOptions: RunEngineOptions = {
+            clean: build,
             dev: true,
             watch: false,
             run: false,
             outputPath: OUTPUT_PATH,
             engineConfig,
+            build,
+            writeMetadataFiles: true,
         };
-        this.runResult = await runEngine(buildOnlyInDevModeOptions);
+        const res = await runEngine(buildOnlyInDevModeOptions);
 
-        return { engineConfig };
+        const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(res.features);
+        const configMapping = createAllValidConfigurationsEnvironmentMapping(res.configurations, 'development');
+        this.runMetadata = {
+            featureEnvironmentsMapping,
+            configMapping,
+        };
     }
     public getServerPort(): Promise<number> {
         throw new Error('not implemented');
@@ -57,8 +75,8 @@ export class ManagedRunEngine implements IExecutableApplication {
         });
 
         const { port, manager } = await runLocalNodeManager(
-            this.runResult.features,
-            this.runResult.configurations,
+            this.runMetadata.featureEnvironmentsMapping,
+            this.runMetadata.configMapping,
             configName,
             execRuntimeOptions,
             OUTPUT_PATH,
