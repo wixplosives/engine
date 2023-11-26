@@ -210,21 +210,29 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     const capturedErrors: Error[] = [];
 
+    const launchOptions = {
+        ...withFeatureOptions,
+        headless,
+        devtools,
+        args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
+    };
     before('launch browser', async function () {
         if (!browser) {
             this.timeout(60_000); // 1 minute
-            browser = await playwright[browserToRun].launch({
-                ...withFeatureOptions,
-                headless,
-                devtools,
-                args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
-            });
+            if (process.env.PLAYWRIGHT_SERVER) {
+                browser = await playwright[browserToRun].connect(process.env.PLAYWRIGHT_SERVER, launchOptions);
+            } else {
+                browser = await playwright[browserToRun].launch(launchOptions);
+            }
         }
     });
 
     if (buildFlow) {
         executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuild' });
-        before('build test artifacts', () => executableApp.init?.());
+        before('build test artifacts', function () {
+            this.timeout(60_000 * 4);
+            return executableApp.init?.();
+        });
     } else {
         // THIS IS THE DEPRECATED FLOW //
         const resolvedPort =
@@ -293,7 +301,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             if (persist && alreadyInitialized) {
                 throw new Error('getLoadedFeature cannot be called more than once while persist mode is on!');
             }
-
             alreadyInitialized = true;
             const runningFeature = await executableApp.runFeature({
                 featureName,
