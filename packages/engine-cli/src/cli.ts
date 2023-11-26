@@ -19,6 +19,7 @@ async function engine() {
     if (help) {
         console.log(engine.toString());
         console.log('🤷‍♂️');
+        return;
     }
 
     const engineConfig = await loadEngineConfig(process.cwd(), engineConfigFilePath);

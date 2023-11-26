@@ -32,15 +32,15 @@ export class ManagedRunEngine implements IExecutableApplication {
             return;
         }
         const engineConfig = await loadEngineConfig(process.cwd());
-        const build = this.options.skipBuild === false;
+        
         const buildOnlyInDevModeOptions: RunEngineOptions = {
-            clean: build,
+            build: true,
+            clean: true,
             dev: true,
             watch: false,
             run: false,
             outputPath: OUTPUT_PATH,
             engineConfig,
-            build,
             writeMetadataFiles: true,
         };
         const res = await runEngine(buildOnlyInDevModeOptions);

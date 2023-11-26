@@ -77,7 +77,7 @@ if (verbose) {
     console.log('[${env.name}]: Started with options: ', options);
 }
 
-bindMetricsListener();
+const unbindMetricsListener = bindMetricsListener();
 
 main({
     featureName: ${stringify(featureName)}, 
@@ -104,6 +104,7 @@ main({
         console.log('[${env.name}]: Running')
     }
 }).catch(e => {
+    unbindMetricsListener();
     process.exitCode = 1;
     console.error(envId, e, { runtimeOptions: options });
 });
