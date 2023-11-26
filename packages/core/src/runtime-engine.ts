@@ -76,7 +76,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         }
         const startTime = Date.now();
         const intervalId = setInterval(() => {
-            console.log(`Feature ${feature.id} is run is taking ${(Date.now() - startTime / 1000).toFixed(2)}s`);
+            console.log(`Feature ${feature.id} "run()" is taking ${((Date.now() - startTime) / 1000).toFixed(2)}s`);
         }, 15000);
         await featureInstance[RUN](this);
         clearInterval(intervalId);
