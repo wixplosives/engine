@@ -15,7 +15,6 @@ import { launchEngineHttpServer } from './launch-http-server';
 import { IStaticFeatureDefinition, PerformanceMetrics } from './types';
 import { workerThreadInitializer2 } from './worker-thread-initializer2';
 import { bindMetricsListener } from './metrics-utils';
-import { ChildProcess } from 'node:child_process';
 
 export type ConfigFilePath = string;
 
