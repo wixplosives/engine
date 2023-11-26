@@ -1,5 +1,7 @@
 import fs from '@file-services/node';
 import {
+    ConfigurationEnvironmentMapping,
+    FeatureEnvironmentMapping,
     IConfigDefinition,
     NodeEnvManager,
     createFeatureEnvironmentsMapping,
@@ -9,6 +11,7 @@ import {
     ENGINE_CONFIG_FILE_NAME,
     EngineConfig,
     IFeatureDefinition,
+    OverrideConfigHook,
     StaticConfig,
     analyzeFeatures,
     createAllValidConfigurationsEnvironmentMapping,
@@ -27,22 +30,7 @@ import { TopLevelConfig } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
 import { pathToFileURL } from 'node:url';
 
-export interface RunEngineOptions {
-    verbose?: boolean;
-    clean?: boolean;
-    dev?: boolean;
-    watch?: boolean;
-    run?: boolean;
-    buildTargets?: 'node' | 'web' | 'both';
-    rootDir?: string;
-    outputPath?: string;
-    publicPath?: string;
-    feature?: string;
-    config?: string;
-    httpServerPort?: number;
-    engineConfig?: EngineConfig;
-    runtimeArgs?: Record<string, string | boolean>;
-}
+export type RunEngineOptions = Parameters<typeof runEngine>[0];
 
 export async function runEngine({
     verbose = false,
@@ -50,16 +38,19 @@ export async function runEngine({
     watch = false,
     dev = false,
     run = false,
+    build = true,
     rootDir = process.cwd(),
     outputPath = 'dist-engine',
     publicPath = '',
-    feature: featureName,
-    config: configName,
+    feature: featureName = undefined as string | undefined,
+    config: configName = undefined as string | undefined,
     httpServerPort = 5555,
-    buildTargets = 'both',
-    engineConfig = {},
-    runtimeArgs = {},
-}: RunEngineOptions = {}) {
+    buildTargets = 'both' as 'node' | 'web' | 'both',
+    engineConfig = {} as EngineConfig,
+    runtimeArgs = {} as Record<string, string | boolean>,
+    writeMetadataFiles = !watch as boolean,
+} = {}) {
+    const mode: '' | 'development' | 'production' = dev ? 'development' : 'production';
     let esbuildContextWeb: esbuild.BuildContext | undefined;
     let esbuildContextNode: esbuild.BuildContext | undefined;
     let runManagerContext: Awaited<ReturnType<typeof runNodeManager>> | undefined;
@@ -89,28 +80,6 @@ export async function runEngine({
         buildConditions,
     );
 
-    const environments = getResolvedEnvironments({
-        featureName,
-        features,
-        filterContexts: !!featureName,
-        findAllEnvironments: false, // ??
-    });
-
-    const buildConfigurations = createEnvironmentsBuildConfiguration({
-        dev,
-        buildPlugins,
-        config: [],
-        configurations,
-        features,
-        environments,
-        publicPath,
-        outputPath,
-        featureName,
-        configName,
-        extensions,
-        buildConditions,
-    });
-
     if (clean) {
         if (verbose) {
             console.log(`Cleaning ${outputPath}`);
@@ -118,7 +87,23 @@ export async function runEngine({
         await fs.promises.rm(outputPath, { recursive: true, force: true });
     }
 
+    const buildConfigurationsOptions = {
+        features,
+        configurations,
+        mode,
+        configName,
+        featureName,
+        dev,
+        buildPlugins,
+        publicPath,
+        outputPath,
+        extensions,
+        buildConditions,
+    };
+
     if (watch) {
+        const { buildConfigurations } = resolveBuildConfigurations(buildConfigurationsOptions);
+
         if (buildTargets === 'web' || buildTargets === 'both') {
             if (verbose) {
                 console.log('Starting web compilation in watch mode');
@@ -146,7 +131,10 @@ export async function runEngine({
             }
             await waitForBuildEnd();
         }
-    } else {
+    } else if (build) {
+        const { buildConfigurations, featureEnvironmentsMapping, configMapping } =
+            resolveBuildConfigurations(buildConfigurationsOptions);
+
         const start = performance.now();
         await Promise.all([
             buildTargets === 'node' || buildTargets === 'both'
@@ -156,6 +144,16 @@ export async function runEngine({
                 ? esbuild.build(buildConfigurations.webConfig)
                 : Promise.resolve(),
         ]);
+        if (writeMetadataFiles) {
+            fs.writeFileSync(
+                join(buildConfigurations.nodeConfig.outdir, 'engine-feature-environments-mapping.json'),
+                JSON.stringify(featureEnvironmentsMapping, null, 2),
+            );
+            fs.writeFileSync(
+                join(buildConfigurations.nodeConfig.outdir, 'engine-config-mapping.json'),
+                JSON.stringify(configMapping, null, 2),
+            );
+        }
         const end = performance.now();
         console.log(`Build time ${Math.round(end - start)}ms`);
     }
@@ -191,7 +189,6 @@ export async function runEngine({
     return {
         features,
         configurations,
-        environments,
         devServer,
         esbuildContextWeb,
         esbuildContextNode,
@@ -206,6 +203,60 @@ export interface RunNodeManagerOptions {
     verbose?: boolean;
     runtimeArgs?: Record<string, string | boolean>;
     topLevelConfig?: TopLevelConfig;
+}
+
+function resolveBuildConfigurations({
+    features,
+    configurations,
+    mode,
+    configName,
+    featureName,
+    dev,
+    buildPlugins,
+    publicPath,
+    outputPath,
+    extensions,
+    buildConditions,
+}: {
+    features: Map<string, IFeatureDefinition>;
+    configurations: SetMultiMap<string, IConfigDefinition>;
+    mode: 'development' | 'production';
+    configName: string | undefined;
+    featureName: string | undefined;
+    dev: boolean;
+    buildPlugins: esbuild.Plugin[] | OverrideConfigHook;
+    publicPath: string;
+    outputPath: string;
+    extensions: string[] | undefined;
+    buildConditions: string[] | undefined;
+}) {
+    const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
+    const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
+
+    const environments = getResolvedEnvironments({
+        featureName,
+        features,
+        filterContexts: !!featureName,
+        findAllEnvironments: false, // ??
+    });
+
+    const buildConfigurations = createEnvironmentsBuildConfiguration({
+        dev,
+        buildPlugins,
+        config: [],
+        configurations,
+        featureEnvironmentsMapping,
+        configMapping,
+        features,
+        environments,
+        publicPath,
+        outputPath,
+        featureName,
+        configName,
+        extensions,
+        buildConditions,
+    });
+    return { buildConfigurations, featureEnvironmentsMapping, configMapping, environments };
 }
 
 function findNodeEnvManagerEntrypoint(outputPath: any) {
@@ -298,14 +349,12 @@ async function launchDevServer(
 }
 
 export async function runLocalNodeManager(
-    features: Map<string, IFeatureDefinition>,
-    configurations: SetMultiMap<string, IConfigDefinition>,
+    featureEnvironmentsMapping: FeatureEnvironmentMapping,
+    configMapping: ConfigurationEnvironmentMapping,
     configName: string,
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
 ) {
-    const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
-    const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, 'development', configName);
     const meta = { url: pathToFileURL(join(outputPath, 'node/')).href };
     const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
     const { port } = await manager.autoLaunch(execRuntimeOptions);
@@ -324,4 +373,14 @@ export function parseCliArgs() {
         allowPositionals: false,
     });
     return new Map(Object.entries(args));
+}
+
+export function readMetadataFiles(dir: string) {
+    const featureEnvironmentsMapping = fs.readJsonFileSync(
+        join(dir, 'node', 'engine-feature-environments-mapping.json'),
+    ) as ReturnType<typeof createFeatureEnvironmentsMapping>;
+    const configMapping = fs.readJsonFileSync(join(dir, 'node', 'engine-config-mapping.json')) as ReturnType<
+        typeof createAllValidConfigurationsEnvironmentMapping
+    >;
+    return { featureEnvironmentsMapping, configMapping };
 }

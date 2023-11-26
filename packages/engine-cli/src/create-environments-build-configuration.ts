@@ -1,5 +1,9 @@
 import { TopLevelConfig } from '@wixc3/engine-core';
-import { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import {
+    ConfigurationEnvironmentMapping,
+    FeatureEnvironmentMapping,
+    IConfigDefinition,
+} from '@wixc3/engine-runtime-node';
 import {
     IFeatureDefinition,
     OverrideConfigHook,
@@ -18,6 +22,8 @@ import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin';
 export interface CreateEnvBuildConfigOptions {
     dev: boolean;
     buildPlugins: Plugin[] | OverrideConfigHook;
+    featureEnvironmentsMapping: FeatureEnvironmentMapping;
+    configMapping: ConfigurationEnvironmentMapping;
     configurations: SetMultiMap<string, IConfigDefinition>;
     features: Map<string, IFeatureDefinition>;
     publicPath: string;
@@ -44,6 +50,8 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         buildPlugins,
         buildConditions,
         extensions,
+        featureEnvironmentsMapping,
+        configMapping,
     } = options;
 
     const mode = dev ? 'development' : 'production';
@@ -56,10 +64,12 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
     const nodeEntryPoints = new Map<string, string>();
     const commonPlugins = Array.isArray(buildPlugins) ? buildPlugins : [];
 
-    const entrypointContent = createNodeEnvironmentManagerEntrypoint(
-        { features, configurations, mode, configName },
-        nodeFormat,
-    );
+    const entrypointContent = createNodeEnvironmentManagerEntrypoint({
+        featureEnvironmentsMapping,
+        configMapping,
+        moduleType: nodeFormat,
+    });
+
     nodeEntryPoints.set(`engine-environment-manager${jsOutExtension}`, entrypointContent);
 
     for (const { env, childEnvs } of browserTargets) {

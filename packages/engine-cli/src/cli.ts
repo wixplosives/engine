@@ -9,17 +9,33 @@ async function engine() {
     const dev = boolParam(args.get('dev')) ?? watch;
     const run = boolParam(args.get('run')) ?? dev;
     const verbose = boolParam(args.get('verbose')) ?? false;
+    const writeMetadataFiles = boolParam(args.get('writeMetadataFiles')) ?? !watch;
+
     const feature = strParam(args.get('feature'));
     const config = strParam(args.get('config'));
     const publicPath = strParam(args.get('publicPath')) ?? '';
     const engineConfigFilePath = strParam(args.get('engineConfigFilePath'));
+
     if (help) {
         console.log(engine.toString());
         console.log('🤷‍♂️');
     }
 
     const engineConfig = await loadEngineConfig(process.cwd(), engineConfigFilePath);
-    await runEngine({ engineConfig, verbose, clean, dev, watch, publicPath, buildTargets, feature, config, run });
+
+    await runEngine({
+        engineConfig,
+        verbose,
+        clean,
+        dev,
+        watch,
+        publicPath,
+        buildTargets,
+        feature,
+        config,
+        run,
+        writeMetadataFiles,
+    });
 }
 
 function strParam(param?: string | boolean) {

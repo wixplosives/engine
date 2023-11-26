@@ -6,4 +6,5 @@ export {
     loadEngineConfig,
     resolveRuntimeOptions,
     runLocalNodeManager,
+    readMetadataFiles,
 } from './engine-build';
