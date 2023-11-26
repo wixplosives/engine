@@ -1,26 +1,18 @@
 import { Environment } from '@wixc3/engine-core';
-import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
-import {
-    ICreateEntrypointsOptions,
-    createAllValidConfigurationsEnvironmentMapping,
-    createConfigLoaders,
-    createFeatureLoadersSourceCode,
-} from './create-entrypoint';
+import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
+import { ICreateEntrypointsOptions, createConfigLoaders, createFeatureLoadersSourceCode } from './create-entrypoint';
 
 const { stringify } = JSON;
 
-export function createNodeEnvironmentManagerEntrypoint(
-    {
-        features,
-        configurations,
-        mode,
-        configName,
-    }: Pick<ICreateEntrypointsOptions, 'features' | 'configurations' | 'mode' | 'configName'>,
-    moduleType: 'cjs' | 'esm',
-) {
-    const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
-    const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
-
+export function createNodeEnvironmentManagerEntrypoint({
+    featureEnvironmentsMapping,
+    configMapping,
+    moduleType,
+}: {
+    featureEnvironmentsMapping: FeatureEnvironmentMapping;
+    configMapping: ConfigurationEnvironmentMapping;
+    moduleType: 'cjs' | 'esm';
+}) {
     return `
 import { pathToFileURL } from 'node:url';    
 import { NodeEnvManager } from '@wixc3/engine-runtime-node';
@@ -80,7 +72,7 @@ import { workerData } from "node:worker_threads";
 
 const options = workerData?.runtimeOptions ?? parseRuntimeOptions();
 const verbose = options.get('verbose') ?? false;
-
+const envId = options.get('environment_id') ?? 'unknown_environment';
 if (verbose) {
     console.log('[${env.name}]: Started with options: ', options);
 }
@@ -101,7 +93,7 @@ main({
                 config: {
                     resolvedContexts,
                     host: new ParentPortHost(),
-                    id: options.get('environment_id') ?? 'unknown_environment',
+                    id: envId,
                 },
             }),
             ...${stringify(config, null, 2)}
@@ -113,7 +105,7 @@ main({
     }
 }).catch(e => {
     process.exitCode = 1;
-    console.error(e);
+    console.error(envId, e, { runtimeOptions: options });
 });
 `.trimStart();
 }
