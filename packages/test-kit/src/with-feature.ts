@@ -114,7 +114,7 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      */
     tracing?: boolean | Omit<Tracing, 'name'>;
     /**
-     * Take screenshots of failed tests, file name is the test title and the file path is the output folder + the test's titlePath
+     * Take screenshots of failed tests, file name is the test title + hash, the file path is the output folder + the test's titlePath
      */
     takeScreenshotsOfFailed?: boolean | Pick<Tracing, 'outPath'>;
     /**
@@ -388,7 +388,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             if (takeScreenshotsOfFailed) {
                 const outPath =
                     (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
-                    `${combinedTrancingOptions.outPath}/screenshots-of-failed`;
+                    `${combinedTrancingOptions.outPath}/screenshots-of-failed-tests`;
 
                 dispose(
                     async () => {
