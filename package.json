@@ -55,7 +55,7 @@
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "electron": "^27.1.2",
-    "electron-builder": "^24.6.4",
+    "electron-builder": "^24.9.1",
     "esbuild": "^0.19.7",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",
