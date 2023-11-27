@@ -1,7 +1,12 @@
 import { TopLevelConfig } from '@wixc3/engine-core';
-import { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import {
+    ConfigurationEnvironmentMapping,
+    FeatureEnvironmentMapping,
+    IConfigDefinition,
+} from '@wixc3/engine-runtime-node';
 import {
     IFeatureDefinition,
+    OverrideConfigHook,
     createMainEntrypoint,
     createNodeEntrypoint,
     createNodeEnvironmentManagerEntrypoint,
@@ -16,7 +21,9 @@ import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin';
 
 export interface CreateEnvBuildConfigOptions {
     dev: boolean;
-    buildPlugins: Plugin[];
+    buildPlugins: Plugin[] | OverrideConfigHook;
+    featureEnvironmentsMapping: FeatureEnvironmentMapping;
+    configMapping: ConfigurationEnvironmentMapping;
     configurations: SetMultiMap<string, IConfigDefinition>;
     features: Map<string, IFeatureDefinition>;
     publicPath: string;
@@ -43,20 +50,27 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         buildPlugins,
         buildConditions,
         extensions,
+        featureEnvironmentsMapping,
+        configMapping,
     } = options;
 
     const mode = dev ? 'development' : 'production';
     const jsOutExtension = '.js' as '.js' | '.mjs';
     const nodeFormat = jsOutExtension === '.mjs' ? 'esm' : 'cjs';
-    const webEntryPoints = new Map<string, string>();
-    const nodeEntryPoints = new Map<string, string>([
-        [
-            `engine-environment-manager${jsOutExtension}`,
-            createNodeEnvironmentManagerEntrypoint({ features, configurations, mode, configName }, nodeFormat),
-        ],
-    ]);
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
     const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
+
+    const webEntryPoints = new Map<string, string>();
+    const nodeEntryPoints = new Map<string, string>();
+    const commonPlugins = Array.isArray(buildPlugins) ? buildPlugins : [];
+
+    const entrypointContent = createNodeEnvironmentManagerEntrypoint({
+        featureEnvironmentsMapping,
+        configMapping,
+        moduleType: nodeFormat,
+    });
+
+    nodeEntryPoints.set(`engine-environment-manager${jsOutExtension}`, entrypointContent);
 
     for (const { env, childEnvs } of browserTargets) {
         const entrypointContent = createMainEntrypoint({
@@ -117,7 +131,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             '.woff2': 'file',
             '.ttf': 'file',
         },
-        plugins: [...buildPlugins, topLevelConfigPlugin({ emit: !dev })],
+        plugins: [...commonPlugins, topLevelConfigPlugin({ emit: !dev })],
     } satisfies BuildOptions;
 
     const webConfig = {
@@ -125,7 +139,9 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         platform: 'browser',
         outdir: join(outputPath, 'web'),
         banner: {
-            js: `globalThis.__webpack_public_path__ = ${JSON.stringify(publicPath)};\n`,
+            js: `globalThis.__webpack_public_path__ = ${JSON.stringify(
+                publicPath,
+            )};\nglobalThis.process={env:{}};globalThis.DEFAULT_WORKER_TYPE = 'module';`,
         },
         plugins: [
             ...commonConfig.plugins,
@@ -150,6 +166,10 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         outdir: join(outputPath, 'node'),
         plugins: [...commonConfig.plugins, dynamicEntryPlugin({ entryPoints: nodeEntryPoints, loader: 'js' })],
     } satisfies BuildOptions;
+
+    if (typeof buildPlugins === 'function') {
+        return buildPlugins({ webConfig, nodeConfig });
+    }
 
     return {
         webConfig,

@@ -74,7 +74,12 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         if (!featureInstance) {
             throw new Error(`Feature not found during run phase: ${feature.id}`);
         }
+        const startTime = Date.now();
+        const intervalId = setInterval(() => {
+            console.log(`Feature ${feature.id} "run()" is taking ${((Date.now() - startTime) / 1000).toFixed(2)}s`);
+        }, 15000);
         await featureInstance[RUN](this);
+        clearInterval(intervalId);
     }
 
     public shutdown = async () => {

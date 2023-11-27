@@ -7,7 +7,10 @@ sampleFeature.setup(mainEnv, ({ run, serverService }, { COM: { communication } }
         await initializeContextualEnv({
             communication,
             env: contextualEnv,
-            envInitializers: { server: socketClientInitializer, webworker: webWorkerInitializer },
+            envInitializers: {
+                server: socketClientInitializer,
+                webworker: webWorkerInitializer,
+            },
         });
 
         document.body.innerText = await serverService.echo();

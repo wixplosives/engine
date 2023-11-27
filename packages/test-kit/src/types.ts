@@ -1,10 +1,15 @@
 import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
 import type { IFeatureTarget, IFeatureMessagePayload } from '@wixc3/engine-scripts';
 
+type RunningTestFeature = {
+    dispose(): void | Promise<void>;
+    url?: string;
+    getMetrics: () => Promise<PerformanceMetrics>;
+};
+
 export interface IExecutableApplication {
-    getServerPort(): Promise<number>;
-    runFeature(featureTarget: IFeatureTarget): Promise<IFeatureMessagePayload>;
-    closeFeature(featureTarget: IFeatureTarget): Promise<void>;
+    getServerPort(featureTarget?: IFeatureTarget): Promise<number>;
+    runFeature(featureTarget: IFeatureTarget): Promise<IFeatureMessagePayload & RunningTestFeature>;
     closeServer(): Promise<void>;
-    getMetrics(): Promise<PerformanceMetrics>;
+    init?(): Promise<void>;
 }
