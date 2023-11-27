@@ -4,8 +4,10 @@ import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
 import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
 import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
+import { uniqueHash } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import playwright from 'playwright-core';
+import { reporters } from 'mocha';
 import { ForkedProcessApplication } from './forked-process-application.js';
 import { hookPageConsole } from './hook-page-console.js';
 import { normalizeTestName } from './normalize-test-name.js';
@@ -112,6 +114,10 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      */
     tracing?: boolean | Omit<Tracing, 'name'>;
     /**
+     * Take screenshots of failed tests, file name is the test title + hash, the file path is the output folder + the test's titlePath
+     */
+    takeScreenshotsOfFailed?: boolean | Pick<Tracing, 'outPath'>;
+    /**
      * Keeps the page open and the feature running for the all the tests in the suite
      */
     persist?: boolean;
@@ -196,6 +202,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
         persist,
+        takeScreenshotsOfFailed = true,
         buildFlow = process.env.WITH_FEATURE_BUILD_FLOW,
     } = withFeatureOptions;
 
@@ -343,14 +350,14 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
             const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
 
+            const combinedTrancingOptions = {
+                screenshots: true,
+                snapshots: true,
+                outPath: process.cwd(),
+                ...suiteTracingOptions,
+                ...testTracingOptions,
+            };
             if (testTracingOptions) {
-                const combinedTrancingOptions = {
-                    screenshots: true,
-                    snapshots: true,
-                    outPath: process.cwd(),
-                    ...suiteTracingOptions,
-                    ...testTracingOptions,
-                };
                 const { screenshots, snapshots, name, outPath } = combinedTrancingOptions;
                 await browserContext.tracing.start({ screenshots, snapshots });
                 tracingDisposables.add((testName) => {
@@ -376,6 +383,28 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         name: 'stop tracing',
                         timeout: withFeatureOptions?.saveTraceTimeout ?? 10_000,
                     },
+                );
+            }
+            if (takeScreenshotsOfFailed) {
+                const outPath =
+                    (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
+                    `${combinedTrancingOptions.outPath}/screenshots-of-failed-tests`;
+
+                dispose(
+                    async () => {
+                        const ctx = mochaCtx();
+
+                        if (ctx?.currentTest?.state === 'failed') {
+                            const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
+                            const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
+                            await featurePage.screenshot({ path: filePath });
+
+                            console.log(
+                                reporters.Base.color('bright yellow', `The screenshot has been saved at ${filePath}`),
+                            );
+                        }
+                    },
+                    { timeout: 3_000 },
                 );
             }
 
