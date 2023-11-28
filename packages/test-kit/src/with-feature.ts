@@ -1,6 +1,5 @@
 import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import type { PerformanceMetrics } from '@wixc3/engine-runtime-node';
 import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
 import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
@@ -13,7 +12,7 @@ import { hookPageConsole } from './hook-page-console.js';
 import { normalizeTestName } from './normalize-test-name.js';
 import { RemoteHttpApplication } from './remote-http-application.js';
 import { validateBrowser } from './supported-browsers.js';
-import type { IExecutableApplication } from './types.js';
+import type { IExecutableApplication, RunningTestFeature } from './types.js';
 import { ensureTracePath } from './utils/index.js';
 import { ManagedRunEngine } from './engine-app-manager.js';
 
@@ -216,23 +215,19 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     }
 
     const capturedErrors: Error[] = [];
-
-    const launchOptions = {
-        ...withFeatureOptions,
-        headless,
-        devtools,
-        args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
-    };
-    before('launch browser', async function () {
-        if (!browser) {
-            this.timeout(60_000); // 1 minute
-            if (process.env.PLAYWRIGHT_SERVER) {
-                browser = await playwright[browserToRun].connect(process.env.PLAYWRIGHT_SERVER, launchOptions);
-            } else {
-                browser = await playwright[browserToRun].launch(launchOptions);
+    if (!process.env.PLAYWRIGHT_SERVER) {
+        before('launch browser', async function () {
+            if (!browser) {
+                this.timeout(60_000); // 1 minute
+                browser = await playwright[browserToRun].launch({
+                    ...withFeatureOptions,
+                    headless,
+                    devtools,
+                    args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
+                });
             }
-        }
-    });
+        });
+    }
 
     if (buildFlow) {
         executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuild' });
@@ -261,11 +256,22 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
     const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
 
+    let dedicatedBrowser: playwright.Browser | undefined;
+    let dedicatedBrowserContext: playwright.BrowserContext | undefined;
+
     afterEach('verify no page errors', () => {
         if (capturedErrors.length) {
             const errorsText = capturedErrors.join('\n');
             capturedErrors.length = 0;
             throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
+        }
+    });
+
+    after('close browser context, if open', async function () {
+        this.timeout(20_000);
+        if (dedicatedBrowser) {
+            await dedicatedBrowser.close();
+            dedicatedBrowser = undefined;
         }
     });
 
@@ -298,9 +304,51 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             allowedErrors = suiteAllowedErrors,
             navigationOptions = suiteNavigationOptions,
         }: IFeatureExecutionOptions = {}) {
-            if (!browser) {
-                throw new Error('Browser is not open!');
+            if (process.env.PLAYWRIGHT_SERVER) {
+                if (!dedicatedBrowser) {
+                    dedicatedBrowser = await playwright[browserToRun].connect(process.env.PLAYWRIGHT_SERVER, {
+                        slowMo,
+                    });
+                }
+
+                if (!dedicatedBrowserContext) {
+                    dedicatedBrowserContext = await dedicatedBrowser.newContext(browserContextOptions);
+                    await enableTestBrowserContext({
+                        browserContext: dedicatedBrowserContext,
+                        dispose,
+                        suiteTracing,
+                        tracing,
+                        tracingDisposables,
+                        withFeatureOptions,
+                        allowedErrors,
+                        capturedErrors,
+                        consoleLogAllowedErrors,
+                    });
+                }
+            } else {
+                if (!browser) {
+                    throw new Error('Browser is not open!');
+                }
+                dedicatedBrowserContext = await browser.newContext(browserContextOptions);
+
+                await enableTestBrowserContext({
+                    browserContext: dedicatedBrowserContext,
+                    dispose,
+                    suiteTracing,
+                    tracing,
+                    tracingDisposables,
+                    withFeatureOptions,
+                    allowedErrors,
+                    capturedErrors,
+                    consoleLogAllowedErrors,
+                });
+                dispose(() => dedicatedBrowserContext?.close(), {
+                    group: WITH_FEATURE_DISPOSABLES,
+                    name: `close browser context for feature "${featureName}"`,
+                    timeout: 5000,
+                });
             }
+
             if (!executableApp) {
                 throw new Error('Engine HTTP server is closed!');
             }
@@ -333,62 +381,19 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 configName: newConfigName,
                 queryParams,
             });
-            const browserContext = await browser.newContext(browserContextOptions);
-            dispose(() => browserContext.close(), {
-                group: WITH_FEATURE_DISPOSABLES,
-                name: `close browser context for feature "${featureName}"`,
-                timeout: 5_000,
-            });
 
-            browserContext.on('page', onPageCreation);
-            dispose(() => browserContext.off('page', onPageCreation), {
-                name: 'stop listening for page creation',
-                group: PAGE_DISPOSABLES,
-                timeout: 1_000,
-            });
+            const featurePage = await dedicatedBrowserContext.newPage();
+            const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
+            const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
-            const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
-            const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
-
-            const combinedTrancingOptions = {
-                screenshots: true,
-                snapshots: true,
-                outPath: process.cwd(),
-                ...suiteTracingOptions,
-                ...testTracingOptions,
-            };
-            if (testTracingOptions) {
-                const { screenshots, snapshots, name, outPath } = combinedTrancingOptions;
-                await browserContext.tracing.start({ screenshots, snapshots });
-                tracingDisposables.add((testName) => {
-                    return browserContext.tracing.stop({
-                        path: ensureTracePath({
-                            outPath,
-                            fs,
-                            name:
-                                process.env.TRACING && process.env.TRACING !== 'true'
-                                    ? process.env.TRACING
-                                    : name ?? (testName ? normalizeTestName(testName) : 'nameless-test'),
-                        }),
-                    });
-                });
-                dispose(
-                    async () => {
-                        for (const tracingDisposable of tracingDisposables) {
-                            await tracingDisposable(mochaCtx()?.currentTest?.title);
-                        }
-                        tracingDisposables.clear();
-                    },
-                    {
-                        name: 'stop tracing',
-                        timeout: withFeatureOptions?.saveTraceTimeout ?? 10_000,
-                    },
-                );
-            }
             if (takeScreenshotsOfFailed) {
+                const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+                const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
                 const outPath =
                     (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
-                    `${combinedTrancingOptions.outPath}/screenshots-of-failed-tests`;
+                    `${
+                        suiteTracingOptions?.outPath ?? testTracingOptions?.outPath ?? process.cwd()
+                    }/screenshots-of-failed-tests`;
 
                 dispose(
                     async () => {
@@ -408,84 +413,170 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 );
             }
 
-            function onPageError(e: Error) {
-                if (
-                    !allowedErrors.some((allowed) =>
-                        allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed,
-                    )
-                ) {
-                    capturedErrors.push(e);
-                    console.error(e);
-                } else {
-                    if (consoleLogAllowedErrors) {
-                        console.error(e);
-                    }
-                }
-            }
-
-            function onPageCreation(page: playwright.Page) {
-                page.setDefaultNavigationTimeout(30_000);
-                page.setDefaultTimeout(10_000);
-                const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
-                dispose(disposeConsoleHook, {
-                    name: 'stop listening for console messages',
-                    group: PAGE_DISPOSABLES,
-                });
-                page.on('pageerror', onPageError);
-                dispose(() => page.off('pageerror', onPageError), {
-                    name: 'stop listening for page errors',
-                    group: PAGE_DISPOSABLES,
-                    timeout: 1_000,
-                });
-            }
-
-            const featurePage = await browserContext.newPage();
-            const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
-            const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
-
-            async function getMetrics(): Promise<PerformanceMetrics> {
-                const measures = await runningFeature.getMetrics();
-                for (const webWorker of featurePage.workers()) {
-                    const perfEntries = await webWorker.evaluate(() => {
-                        return {
-                            marks: JSON.stringify(globalThis.performance.getEntriesByType('mark')),
-                            measures: JSON.stringify(globalThis.performance.getEntriesByType('measure')),
-                        };
-                    });
-
-                    measures.marks.push(...(JSON.parse(perfEntries.marks) as PerformanceEntry[]));
-                    measures.measures.push(...(JSON.parse(perfEntries.measures) as PerformanceEntry[]));
-                }
-
-                for (const frame of featurePage.frames()) {
-                    const frameEntries = await frame.evaluate(() => {
-                        return {
-                            marks: JSON.stringify(globalThis.performance.getEntriesByType('mark')),
-                            measures: JSON.stringify(globalThis.performance.getEntriesByType('measure')),
-                        };
-                    });
-
-                    measures.marks.push(...(JSON.parse(frameEntries.marks) as PerformanceEntry[]));
-                    measures.measures.push(...(JSON.parse(frameEntries.measures) as PerformanceEntry[]));
-                }
-                return measures;
-            }
-
             return {
                 page: featurePage,
                 response,
-                getMetrics: async () => {
-                    try {
-                        return await getMetrics();
-                    } catch (e) {
-                        console.error(`Failed to get metrics for ${featureName} ${configName} with error: ${e}`);
-                        return { marks: [], measures: [] };
-                    }
-                },
+                getMetrics: () => getMetrics(runningFeature, featurePage),
             };
         },
         disposeAfter: dispose,
     };
+}
+
+async function getMetrics(runningFeature: RunningTestFeature, featurePage: playwright.Page) {
+    try {
+        const measures = await runningFeature.getMetrics();
+        for (const webWorker of featurePage.workers()) {
+            const perfEntries = await webWorker.evaluate(() => {
+                return {
+                    marks: JSON.stringify(globalThis.performance.getEntriesByType('mark')),
+                    measures: JSON.stringify(globalThis.performance.getEntriesByType('measure')),
+                };
+            });
+
+            measures.marks.push(...(JSON.parse(perfEntries.marks) as PerformanceEntry[]));
+            measures.measures.push(...(JSON.parse(perfEntries.measures) as PerformanceEntry[]));
+        }
+
+        for (const frame of featurePage.frames()) {
+            const frameEntries = await frame.evaluate(() => {
+                return {
+                    marks: JSON.stringify(globalThis.performance.getEntriesByType('mark')),
+                    measures: JSON.stringify(globalThis.performance.getEntriesByType('measure')),
+                };
+            });
+
+            measures.marks.push(...(JSON.parse(frameEntries.marks) as PerformanceEntry[]));
+            measures.measures.push(...(JSON.parse(frameEntries.measures) as PerformanceEntry[]));
+        }
+        return measures;
+    } catch (e) {
+        console.error(
+            `Failed to get metrics for ${runningFeature.featureName} ${runningFeature.configName} with error: ${e}`,
+        );
+        return { marks: [], measures: [] };
+    }
+}
+
+async function enableTestBrowserContext({
+    browserContext,
+    dispose,
+    suiteTracing,
+    tracing,
+    tracingDisposables,
+    withFeatureOptions,
+    allowedErrors,
+    capturedErrors,
+    consoleLogAllowedErrors,
+}: {
+    browserContext: playwright.BrowserContext;
+    dispose: (disposable: DisposableItem, options?: DisposableOptions | undefined) => void;
+    suiteTracing: boolean | Omit<Tracing, 'name'> | undefined;
+    tracing: boolean | Tracing | undefined;
+    tracingDisposables: Set<(testName?: string) => Promise<void>>;
+    withFeatureOptions: IWithFeatureOptions;
+    allowedErrors: (string | RegExp)[];
+    capturedErrors: Error[];
+    consoleLogAllowedErrors: boolean;
+}) {
+    browserContext.on('page', onPageCreation);
+    dispose(() => browserContext.off('page', onPageCreation), {
+        name: 'stop listening for page creation',
+        group: PAGE_DISPOSABLES,
+        timeout: 1000,
+    });
+
+    const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+    const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
+
+    if (testTracingOptions) {
+        await enableTracing({
+            suiteTracingOptions,
+            testTracingOptions,
+            browserContext,
+            tracingDisposables,
+            dispose,
+            withFeatureOptions,
+        });
+    }
+
+    function onPageError(e: Error) {
+        if (
+            !allowedErrors.some((allowed) =>
+                allowed instanceof RegExp ? allowed.test(e.message) : e.message === allowed,
+            )
+        ) {
+            capturedErrors.push(e);
+            console.error(e);
+        } else {
+            if (consoleLogAllowedErrors) {
+                console.error(e);
+            }
+        }
+    }
+
+    function onPageCreation(page: playwright.Page) {
+        page.setDefaultNavigationTimeout(30000);
+        page.setDefaultTimeout(10000);
+        const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
+        dispose(disposeConsoleHook, {
+            name: 'stop listening for console messages',
+            group: PAGE_DISPOSABLES,
+        });
+        page.on('pageerror', onPageError);
+        dispose(() => page.off('pageerror', onPageError), {
+            name: 'stop listening for page errors',
+            group: PAGE_DISPOSABLES,
+            timeout: 1000,
+        });
+    }
+}
+
+async function enableTracing({
+    suiteTracingOptions,
+    testTracingOptions,
+    browserContext,
+    tracingDisposables,
+    dispose,
+    withFeatureOptions,
+}: {
+    suiteTracingOptions: Omit<Tracing, 'name'> | undefined;
+    testTracingOptions: Tracing;
+    browserContext: playwright.BrowserContext;
+    tracingDisposables: Set<(testName?: string) => Promise<void>>;
+    dispose: (disposable: DisposableItem, options?: DisposableOptions | undefined) => void;
+    withFeatureOptions: IWithFeatureOptions;
+}) {
+    const screenshots = suiteTracingOptions?.screenshots ?? testTracingOptions.screenshots ?? true;
+    const snapshots = suiteTracingOptions?.snapshots ?? testTracingOptions.snapshots ?? true;
+    const outPath = suiteTracingOptions?.outPath ?? testTracingOptions.outPath ?? process.cwd();
+    const name = testTracingOptions.name;
+
+    await browserContext.tracing.start({ screenshots, snapshots });
+    tracingDisposables.add((testName) => {
+        return browserContext.tracing.stop({
+            path: ensureTracePath({
+                outPath,
+                fs,
+                name:
+                    process.env.TRACING && process.env.TRACING !== 'true'
+                        ? process.env.TRACING
+                        : name ?? (testName ? normalizeTestName(testName) : 'nameless-test'),
+            }),
+        });
+    });
+    dispose(
+        async () => {
+            for (const tracingDisposable of tracingDisposables) {
+                await tracingDisposable(mochaCtx()?.currentTest?.title);
+            }
+            tracingDisposables.clear();
+        },
+        {
+            name: 'stop tracing',
+            timeout: withFeatureOptions?.saveTraceTimeout ?? 10000,
+        },
+    );
 }
 
 function toSearchQuery({ featureName, configName, queryParams }: IWithFeatureOptions): string {
