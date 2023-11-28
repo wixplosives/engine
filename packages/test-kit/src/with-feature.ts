@@ -208,18 +208,19 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     }
 
     const capturedErrors: Error[] = [];
-
-    before('launch browser', async function () {
-        if (!browser && !process.env.PLAYWRIGHT_SERVER) {
-            this.timeout(60_000); // 1 minute
-            browser = await playwright[browserToRun].launch({
-                ...withFeatureOptions,
-                headless,
-                devtools,
-                args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
-            });
-        }
-    });
+    if (!process.env.PLAYWRIGHT_SERVER) {
+        before('launch browser', async function () {
+            if (!browser) {
+                this.timeout(60_000); // 1 minute
+                browser = await playwright[browserToRun].launch({
+                    ...withFeatureOptions,
+                    headless,
+                    devtools,
+                    args: ['--enable-precise-memory-info', ...(withFeatureOptions.args ?? [])],
+                });
+            }
+        });
+    }
 
     if (buildFlow) {
         executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuild' });
