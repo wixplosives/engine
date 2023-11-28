@@ -91,7 +91,7 @@ export class RuntimeConfigurations {
      */
     public async load(envName: string, featureName: string, configName: string): Promise<TopLevelConfig> {
         if (!this.publicConfigsRoute) {
-            return Promise.resolve([]);
+            return Promise.resolve(this.topLevelConfig);
         }
         const loaded = this.isMainEntrypoint()
             ? await this.fetchConfig(envName, featureName, configName)
