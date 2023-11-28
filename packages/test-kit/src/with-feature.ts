@@ -292,6 +292,15 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         dispose = (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options);
     }
 
+    const afterEachDisposables = new Set<() => Promise<void>>();
+    afterEach('dispose all', async function () {
+        this.timeout(20_000);
+        for (const disposable of afterEachDisposables) {
+            await disposable();
+        }
+        afterEachDisposables.clear();
+    });
+
     return {
         async getLoadedFeature({
             featureName = suiteFeatureName,
@@ -383,6 +392,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             });
 
             const featurePage = await dedicatedBrowserContext.newPage();
+            afterEachDisposables.add(() => featurePage.close());
             const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
