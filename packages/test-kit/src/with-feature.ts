@@ -297,25 +297,27 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             navigationOptions = suiteNavigationOptions,
         }: IFeatureExecutionOptions = {}) {
             if (process.env.PLAYWRIGHT_SERVER) {
-                dedicatedBrowser =
-                    dedicatedBrowser ||
-                    (await playwright[browserToRun].connect(process.env.PLAYWRIGHT_SERVER, { slowMo }));
+                if (!dedicatedBrowser) {
+                    dedicatedBrowser = await playwright[browserToRun].connect(process.env.PLAYWRIGHT_SERVER, {
+                        slowMo,
+                    });
+                }
 
-                dedicatedBrowserContext =
-                    dedicatedBrowserContext || (await dedicatedBrowser.newContext(browserContextOptions));
-
-                await enableTestBrowserContext(
-                    dedicatedBrowserContext,
-                    dispose,
-                    featureName,
-                    suiteTracing,
-                    tracing,
-                    tracingDisposables,
-                    withFeatureOptions,
-                    allowedErrors,
-                    capturedErrors,
-                    consoleLogAllowedErrors,
-                );
+                if (!dedicatedBrowserContext) {
+                    dedicatedBrowserContext = await dedicatedBrowser.newContext(browserContextOptions);
+                    await enableTestBrowserContext(
+                        dedicatedBrowserContext,
+                        dispose,
+                        featureName,
+                        suiteTracing,
+                        tracing,
+                        tracingDisposables,
+                        withFeatureOptions,
+                        allowedErrors,
+                        capturedErrors,
+                        consoleLogAllowedErrors,
+                    );
+                }
             } else {
                 if (!browser) {
                     throw new Error('Browser is not open!');
