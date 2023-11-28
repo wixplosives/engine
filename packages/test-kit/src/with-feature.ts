@@ -305,10 +305,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
                 if (!dedicatedBrowserContext) {
                     dedicatedBrowserContext = await dedicatedBrowser.newContext(browserContextOptions);
-                    await enableTestBrowserContext(
-                        dedicatedBrowserContext,
+                    await enableTestBrowserContext({
+                        browserContext: dedicatedBrowserContext,
                         dispose,
-                        featureName,
                         suiteTracing,
                         tracing,
                         tracingDisposables,
@@ -316,7 +315,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         allowedErrors,
                         capturedErrors,
                         consoleLogAllowedErrors,
-                    );
+                    });
                 }
             } else {
                 if (!browser) {
@@ -324,10 +323,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 }
                 dedicatedBrowserContext = await browser.newContext(browserContextOptions);
 
-                await enableTestBrowserContext(
-                    dedicatedBrowserContext,
+                await enableTestBrowserContext({
+                    browserContext: dedicatedBrowserContext,
                     dispose,
-                    featureName,
                     suiteTracing,
                     tracing,
                     tracingDisposables,
@@ -335,7 +333,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     allowedErrors,
                     capturedErrors,
                     consoleLogAllowedErrors,
-                );
+                });
                 dispose(() => dedicatedBrowserContext?.close(), {
                     group: WITH_FEATURE_DISPOSABLES,
                     name: `close browser context for feature "${featureName}"`,
@@ -425,18 +423,27 @@ async function getMetrics(runningFeature: RunningTestFeature, featurePage: playw
     }
 }
 
-async function enableTestBrowserContext(
-    browserContext: playwright.BrowserContext,
-    dispose: (disposable: DisposableItem, options?: DisposableOptions | undefined) => void,
-    featureName: string | undefined,
-    suiteTracing: boolean | Omit<Tracing, 'name'> | undefined,
-    tracing: boolean | Tracing | undefined,
-    tracingDisposables: Set<(testName?: string) => Promise<void>>,
-    withFeatureOptions: IWithFeatureOptions,
-    allowedErrors: (string | RegExp)[],
-    capturedErrors: Error[],
-    consoleLogAllowedErrors: boolean,
-) {
+async function enableTestBrowserContext({
+    browserContext,
+    dispose,
+    suiteTracing,
+    tracing,
+    tracingDisposables,
+    withFeatureOptions,
+    allowedErrors,
+    capturedErrors,
+    consoleLogAllowedErrors,
+}: {
+    browserContext: playwright.BrowserContext;
+    dispose: (disposable: DisposableItem, options?: DisposableOptions | undefined) => void;
+    suiteTracing: boolean | Omit<Tracing, 'name'> | undefined;
+    tracing: boolean | Tracing | undefined;
+    tracingDisposables: Set<(testName?: string) => Promise<void>>;
+    withFeatureOptions: IWithFeatureOptions;
+    allowedErrors: (string | RegExp)[];
+    capturedErrors: Error[];
+    consoleLogAllowedErrors: boolean;
+}) {
     browserContext.on('page', onPageCreation);
     dispose(() => browserContext.off('page', onPageCreation), {
         name: 'stop listening for page creation',
