@@ -281,17 +281,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     const afterEachDisposables = new Set<() => Promise<void>>();
 
     if (persist) {
-        after('dispose suite level page', async function () {
-            this.timeout(disposables.list().totalTimeout);
-            await disposables.dispose();
-        });
         const disposables = new Disposables();
         disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
         disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
         disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
         disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
-
         dispose = (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options);
+        after('dispose suite level page', async function () {
+            this.timeout(disposables.list().totalTimeout);
+            await disposables.dispose();
+        });
     } else {
         afterEach('dispose all', async function () {
             this.timeout(20_000);
@@ -393,36 +392,35 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             });
 
             const featurePage = await dedicatedBrowserContext.newPage();
-            afterEachDisposables.add(() => featurePage.close());
+
+            afterEachDisposables.add(async () => {
+                await featurePage.close();
+
+                if (takeScreenshotsOfFailed) {
+                    const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+                    const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
+                    const outPath =
+                        (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
+                        `${
+                            suiteTracingOptions?.outPath ?? testTracingOptions?.outPath ?? process.cwd()
+                        }/screenshots-of-failed-tests`;
+
+                    const ctx = mochaCtx();
+
+                    if (ctx?.currentTest?.state === 'failed') {
+                        const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
+                        const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
+                        await featurePage.screenshot({ path: filePath });
+
+                        console.log(
+                            reporters.Base.color('bright yellow', `The screenshot has been saved at ${filePath}`),
+                        );
+                    }
+                }
+            });
+
             const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
-
-            if (takeScreenshotsOfFailed) {
-                const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
-                const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
-                const outPath =
-                    (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
-                    `${
-                        suiteTracingOptions?.outPath ?? testTracingOptions?.outPath ?? process.cwd()
-                    }/screenshots-of-failed-tests`;
-
-                dispose(
-                    async () => {
-                        const ctx = mochaCtx();
-
-                        if (ctx?.currentTest?.state === 'failed') {
-                            const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
-                            const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
-                            await featurePage.screenshot({ path: filePath });
-
-                            console.log(
-                                reporters.Base.color('bright yellow', `The screenshot has been saved at ${filePath}`),
-                            );
-                        }
-                    },
-                    { timeout: 3_000 },
-                );
-            }
 
             return {
                 page: featurePage,
