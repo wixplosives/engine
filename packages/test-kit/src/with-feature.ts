@@ -394,8 +394,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
             const featurePage = await dedicatedBrowserContext.newPage();
 
             afterEachDisposables.add(async () => {
-                await featurePage.close();
-
                 if (takeScreenshotsOfFailed) {
                     const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
                     const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
@@ -417,6 +415,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         );
                     }
                 }
+                await featurePage.close();
             });
 
             const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
