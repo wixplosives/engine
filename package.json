@@ -15,8 +15,9 @@
     "prestart": "yarn build",
     "start": "engineer start",
     "pretest": "yarn lint && yarn build",
-    "test": "yarn test:unit",
-    "test:unit": "lerna run test --stream --concurrency=1",
+    "test": "yarn test:node && yarn test:browser",
+    "test:browser": "mocha-play -c packages/core/webpack.config.test.js \"packages/*/dist/test/**/*.spec.js\"",
+    "test:node": "mocha \"packages/*/dist/test/**/*.{unit,it}.js\" \"packages/core/dist/test/node/**/*.spec.js\" --parallel",
     "prettify": "npx prettier . --write"
   },
   "devDependencies": {
