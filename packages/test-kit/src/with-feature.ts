@@ -335,6 +335,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     throw new Error('Browser is not open!');
                 }
                 dedicatedBrowserContext = await browser.newContext(browserContextOptions);
+                
+                dispose(() => dedicatedBrowserContext?.close(), {
+                    group: WITH_FEATURE_DISPOSABLES,
+                    name: `close browser context for feature "${featureName}"`,
+                    timeout: 5000,
+                });
 
                 await enableTestBrowserContext({
                     browserContext: dedicatedBrowserContext,
@@ -345,11 +351,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     allowedErrors,
                     capturedErrors,
                     consoleLogAllowedErrors,
-                });
-                dispose(() => dedicatedBrowserContext?.close(), {
-                    group: WITH_FEATURE_DISPOSABLES,
-                    name: `close browser context for feature "${featureName}"`,
-                    timeout: 5000,
                 });
             }
 
