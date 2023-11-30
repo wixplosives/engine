@@ -1,7 +1,7 @@
 import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
-import { createDisposalGroup, disposeAfter, mochaCtx } from '@wixc3/testing';
+import { createDisposalGroup, mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 import { uniqueHash } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
@@ -152,9 +152,11 @@ export interface Tracing {
 export const WITH_FEATURE_DISPOSABLES = 'WITH_FEATURE_DISPOSABLES';
 export const PAGE_DISPOSABLES = 'PAGE_DISPOSABLES';
 export const TRACING_DISPOSABLES = 'TRACING_DISPOSABLES';
+export const AFTER_PAGE = 'AFTER_PAGE';
 createDisposalGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
 createDisposalGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
 createDisposalGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
+createDisposalGroup(AFTER_PAGE, { after: PAGE_DISPOSABLES });
 
 let browser: playwright.Browser | undefined = undefined;
 let featureUrl = '';
@@ -254,8 +256,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         });
     }
 
-    const tracingDisposables = new Set<(testName?: string) => Promise<void>>();
-
     let dedicatedBrowser: playwright.Browser | undefined;
     let dedicatedBrowserContext: playwright.BrowserContext | undefined;
 
@@ -275,33 +275,30 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         }
     });
 
-    let dispose = disposeAfter;
+    const disposables = new Disposables();
+    disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
+    disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
+    disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
+    disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
+    disposables.registerGroup(AFTER_PAGE, { after: PAGE_DISPOSABLES });
+    const dispose = (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options);
+
     let alreadyInitialized = false;
 
-    const afterEachDisposables = new Set<() => Promise<void>>();
-
     if (persist) {
-        const disposables = new Disposables();
-        disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
-        disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
-        disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
-        disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
-        dispose = (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options);
         after('dispose suite level page', async function () {
             this.timeout(disposables.list().totalTimeout);
             await disposables.dispose();
         });
     } else {
         afterEach('dispose all', async function () {
-            this.timeout(20_000);
-            for (const disposable of afterEachDisposables) {
-                await disposable();
-            }
-            afterEachDisposables.clear();
+            this.timeout(disposables.list().totalTimeout);
+            await disposables.dispose();
         });
     }
 
     return {
+        disposables,
         async getLoadedFeature({
             featureName = suiteFeatureName,
             configName = suiteConfigName,
@@ -327,7 +324,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                         dispose,
                         suiteTracing,
                         tracing,
-                        tracingDisposables,
                         withFeatureOptions,
                         allowedErrors,
                         capturedErrors,
@@ -345,7 +341,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     dispose,
                     suiteTracing,
                     tracing,
-                    tracingDisposables,
                     withFeatureOptions,
                     allowedErrors,
                     capturedErrors,
@@ -393,30 +388,37 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const featurePage = await dedicatedBrowserContext.newPage();
 
-            afterEachDisposables.add(async () => {
-                if (takeScreenshotsOfFailed) {
-                    const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
-                    const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
-                    const outPath =
-                        (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
-                        `${
-                            suiteTracingOptions?.outPath ?? testTracingOptions?.outPath ?? process.cwd()
-                        }/screenshots-of-failed-tests`;
+            dispose(
+                async () => {
+                    if (takeScreenshotsOfFailed) {
+                        const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+                        const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
+                        const outPath =
+                            (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
+                            `${
+                                suiteTracingOptions?.outPath ?? testTracingOptions?.outPath ?? process.cwd()
+                            }/screenshots-of-failed-tests`;
 
-                    const ctx = mochaCtx();
+                        const ctx = mochaCtx();
 
-                    if (ctx?.currentTest?.state === 'failed') {
-                        const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
-                        const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
-                        await featurePage.screenshot({ path: filePath });
+                        if (ctx?.currentTest?.state === 'failed') {
+                            const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
+                            const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
+                            await featurePage.screenshot({ path: filePath });
 
-                        console.log(
-                            reporters.Base.color('bright yellow', `The screenshot has been saved at ${filePath}`),
-                        );
+                            console.log(
+                                reporters.Base.color('bright yellow', `The screenshot has been saved at ${filePath}`),
+                            );
+                        }
                     }
-                }
-                await featurePage.close();
-            });
+                    await featurePage.close();
+                },
+                {
+                    group: AFTER_PAGE,
+                    name: 'close feature page' + (takeScreenshotsOfFailed ? ' and take screenshot' : ''),
+                    timeout: 10_000,
+                },
+            );
 
             const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
@@ -471,7 +473,6 @@ async function enableTestBrowserContext({
     dispose,
     suiteTracing,
     tracing,
-    tracingDisposables,
     withFeatureOptions,
     allowedErrors,
     capturedErrors,
@@ -481,7 +482,6 @@ async function enableTestBrowserContext({
     dispose: (disposable: DisposableItem, options?: DisposableOptions | undefined) => void;
     suiteTracing: boolean | Omit<Tracing, 'name'> | undefined;
     tracing: boolean | Tracing | undefined;
-    tracingDisposables: Set<(testName?: string) => Promise<void>>;
     withFeatureOptions: IWithFeatureOptions;
     allowedErrors: (string | RegExp)[];
     capturedErrors: Error[];
@@ -502,7 +502,6 @@ async function enableTestBrowserContext({
             suiteTracingOptions,
             testTracingOptions,
             browserContext,
-            tracingDisposables,
             dispose,
             withFeatureOptions,
         });
@@ -544,14 +543,12 @@ async function enableTracing({
     suiteTracingOptions,
     testTracingOptions,
     browserContext,
-    tracingDisposables,
     dispose,
     withFeatureOptions,
 }: {
     suiteTracingOptions: Omit<Tracing, 'name'> | undefined;
     testTracingOptions: Tracing;
     browserContext: playwright.BrowserContext;
-    tracingDisposables: Set<(testName?: string) => Promise<void>>;
     dispose: (disposable: DisposableItem, options?: DisposableOptions | undefined) => void;
     withFeatureOptions: IWithFeatureOptions;
 }) {
@@ -561,26 +558,22 @@ async function enableTracing({
     const name = testTracingOptions.name;
 
     await browserContext.tracing.start({ screenshots, snapshots });
-    tracingDisposables.add((testName) => {
-        return browserContext.tracing.stop({
-            path: ensureTracePath({
-                outPath,
-                fs,
-                name:
-                    process.env.TRACING && process.env.TRACING !== 'true'
-                        ? process.env.TRACING
-                        : name ?? (testName ? normalizeTestName(testName) : 'nameless-test'),
-            }),
-        });
-    });
     dispose(
         async () => {
-            for (const tracingDisposable of tracingDisposables) {
-                await tracingDisposable(mochaCtx()?.currentTest?.title);
-            }
-            tracingDisposables.clear();
+            const testName = mochaCtx()?.currentTest?.title;
+            return browserContext.tracing.stop({
+                path: ensureTracePath({
+                    outPath,
+                    fs,
+                    name:
+                        process.env.TRACING && process.env.TRACING !== 'true'
+                            ? process.env.TRACING
+                            : name ?? (testName ? normalizeTestName(testName) : 'nameless-test'),
+                }),
+            });
         },
         {
+            group: TRACING_DISPOSABLES,
             name: 'stop tracing',
             timeout: withFeatureOptions?.saveTraceTimeout ?? 10000,
         },
