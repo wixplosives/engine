@@ -115,6 +115,8 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     tracing?: boolean | Omit<Tracing, 'name'>;
     /**
      * Take screenshots of failed tests, file name is the test title + hash, the file path is the output folder + the test's titlePath
+     * takes the value from process.env.TESTS_SCREENSHOTS
+     * @default false
      */
     takeScreenshotsOfFailed?: boolean | Pick<Tracing, 'outPath'>;
     /**
@@ -202,7 +204,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
         devtools = envDebugMode ? debugMode : undefined,
         slowMo,
         persist,
-        takeScreenshotsOfFailed = true,
+        takeScreenshotsOfFailed = process.env.TESTS_SCREENSHOTS === 'true',
         buildFlow = process.env.WITH_FEATURE_BUILD_FLOW,
     } = withFeatureOptions;
 
