@@ -5,7 +5,7 @@ import path from 'node:path';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import testFeature, { serverEnv } from '@fixture/disconnecting-env/dist/disconnecting-env.feature.js';
 import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env.js';
-import { disposeAfter } from '@wixc3/testing';
+import { Disposables } from '@wixc3/patterns';
 
 const { expect } = chai;
 chai.use(chaiAsPromised);
@@ -28,6 +28,8 @@ const setupRunningEnv = ({ featuresConfig, stdio }: SetupRunningFeatureOptions) 
     });
 
 describe('onDisconnectHandler for node environment initializer', () => {
+    const disposables = new Disposables();
+    afterEach(() => disposables.dispose());
     describe('without own uncaughtException handling', () => {
         it('should catch on dispose of env', async () => {
             const { dispose, exitPromise } = await setupRunningEnv({
@@ -42,7 +44,8 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit' } })],
             });
-            disposeAfter(dispose, {
+
+            disposables.add(dispose, {
                 timeout,
                 name: `env ${testFeature.id}`,
             });
@@ -53,7 +56,8 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception' } })],
             });
-            disposeAfter(dispose, {
+
+            disposables.add(dispose, {
                 timeout,
                 name: `env ${testFeature.id}`,
             });
@@ -64,7 +68,7 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'promise-reject' } })],
             });
-            disposeAfter(dispose, {
+            disposables.add(dispose, {
                 timeout,
                 name: `env ${testFeature.id}`,
             });
@@ -76,7 +80,7 @@ describe('onDisconnectHandler for node environment initializer', () => {
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception' } })],
                 stdio: 'pipe',
             });
-            disposeAfter(dispose, {
+            disposables.add(dispose, {
                 timeout,
                 name: `env ${testFeature.id}`,
             });
@@ -100,7 +104,7 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit', handleUncaught } })],
             });
-            disposeAfter(dispose, {
+            disposables.add(dispose, {
                 timeout,
                 name: `env ${testFeature.id}`,
             });
@@ -110,18 +114,17 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception', handleUncaught } })],
             });
-            disposeAfter(dispose, {
+            disposables.add(dispose, {
                 timeout,
                 name: `env ${testFeature.id}`,
             });
-
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
         it('should catch on env unhandled promise rejection', async () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'promise-reject', handleUncaught } })],
             });
-            disposeAfter(dispose, {
+            disposables.add(dispose, {
                 timeout,
                 name: `env ${testFeature.id}`,
             });

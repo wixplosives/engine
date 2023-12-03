@@ -8,7 +8,7 @@ import workerThreadFeature, {
     serverEnv,
     type WorkerService,
 } from '@fixture/worker-thread/dist/worker-thread.feature.js';
-import { disposeAfter } from '@wixc3/testing';
+import { Disposables } from '@wixc3/patterns';
 import { expect } from 'chai';
 import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env.js';
 
@@ -24,9 +24,12 @@ const setupRunningEnv = (featureId: string) =>
 const timeout = 3000;
 
 describe('workerthread environment type', () => {
+    const disposables = new Disposables();
+    afterEach(() => disposables.dispose());
     it('initializes worker, calls API and disposes', async () => {
         const { dispose, communication } = await setupRunningEnv(workerThreadFeature.id);
-        disposeAfter(dispose, {
+
+        disposables.add(dispose, {
             timeout,
             name: `worker thread ${workerThreadFeature.id}`,
         });
@@ -42,7 +45,7 @@ describe('workerthread environment type', () => {
 
     it('initializes multiple workers, calls API and disposes', async () => {
         const { dispose, communication } = await setupRunningEnv(`${workerThreadFeature.id}/${multiFeature.id}`);
-        disposeAfter(dispose, {
+        disposables.add(dispose, {
             timeout,
             name: `worker thread ${workerThreadFeature.id}/${multiFeature.id}`,
         });
@@ -60,7 +63,7 @@ describe('workerthread environment type', () => {
         const { dispose, communication } = await setupRunningEnv(
             `${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`,
         );
-        disposeAfter(dispose, {
+        disposables.add(dispose, {
             timeout,
             name: `worker thread ${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`,
         });
