@@ -1,7 +1,7 @@
 import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
-import { createDisposalGroup, mochaCtx } from '@wixc3/testing';
+import { mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 import { uniqueHash } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
@@ -149,14 +149,36 @@ export interface Tracing {
     name?: string;
 }
 
+export type WithFeatureApi = {
+    /**
+     * Opens a browser page with the feature loaded
+     * @param options - options to override the suite options
+     * @returns a promise that resolves to the page and the response
+     */
+    getLoadedFeature: (options?: IFeatureExecutionOptions) => Promise<{
+        page: playwright.Page;
+        response: playwright.Response | null;
+        getMetrics: () => Promise<{
+            marks: PerformanceEntry[];
+            measures: PerformanceEntry[];
+        }>;
+    }>;
+    /**
+     * @deprecated use `onDispose` instead
+     */
+    disposeAfter: typeof Disposables.prototype.add;
+    /**
+     * Add a disposable to be disposed after the test.
+     * by default this will add the disposable to the `FINALE` group
+     * if running in persist mode, the disposable will be disposed after the suite
+     */
+    onDispose: typeof Disposables.prototype.add;
+};
+
 export const WITH_FEATURE_DISPOSABLES = 'WITH_FEATURE_DISPOSABLES';
 export const PAGE_DISPOSABLES = 'PAGE_DISPOSABLES';
 export const TRACING_DISPOSABLES = 'TRACING_DISPOSABLES';
-export const AFTER_PAGE = 'AFTER_PAGE';
-createDisposalGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
-createDisposalGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
-createDisposalGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
-createDisposalGroup(AFTER_PAGE, { after: PAGE_DISPOSABLES });
+export const FINALE = 'FINALE';
 
 let browser: playwright.Browser | undefined = undefined;
 let featureUrl = '';
@@ -180,7 +202,7 @@ if (typeof after !== 'undefined') {
     });
 }
 
-export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
+export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithFeatureApi {
     const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
     const port = parseInt(process.env.DEBUG!);
@@ -280,8 +302,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
     disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
     disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
-    disposables.registerGroup(AFTER_PAGE, { after: PAGE_DISPOSABLES });
-    const dispose = (disposable: DisposableItem, options?: DisposableOptions) => disposables.add(disposable, options);
+    disposables.registerGroup(FINALE, { after: PAGE_DISPOSABLES });
+    const onDispose = (disposable: DisposableItem, options?: DisposableOptions) =>
+        disposables.add(disposable, { group: FINALE, ...options });
 
     let alreadyInitialized = false;
 
@@ -298,7 +321,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
     }
 
     return {
-        disposables,
         async getLoadedFeature({
             featureName = suiteFeatureName,
             configName = suiteConfigName,
@@ -320,8 +342,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 if (!dedicatedBrowserContext) {
                     dedicatedBrowserContext = await dedicatedBrowser.newContext(browserContextOptions);
                     await enableTestBrowserContext({
+                        disposables,
                         browserContext: dedicatedBrowserContext,
-                        dispose,
                         suiteTracing,
                         tracing,
                         withFeatureOptions,
@@ -336,7 +358,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 }
                 dedicatedBrowserContext = await browser.newContext(browserContextOptions);
 
-                dispose(() => dedicatedBrowserContext?.close(), {
+                disposables.add(() => dedicatedBrowserContext?.close(), {
                     group: WITH_FEATURE_DISPOSABLES,
                     name: `close browser context for feature "${featureName}"`,
                     timeout: 5000,
@@ -344,7 +366,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
                 await enableTestBrowserContext({
                     browserContext: dedicatedBrowserContext,
-                    dispose,
+                    disposables,
                     suiteTracing,
                     tracing,
                     withFeatureOptions,
@@ -375,7 +397,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const { configName: newConfigName } = runningFeature;
 
-            dispose(() => runningFeature.dispose(), {
+            disposables.add(() => runningFeature.dispose(), {
                 group: WITH_FEATURE_DISPOSABLES,
                 name: `close feature "${featureName}"`,
                 timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
@@ -389,7 +411,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
 
             const featurePage = await dedicatedBrowserContext.newPage();
 
-            dispose(
+            disposables.add(
                 async () => {
                     if (takeScreenshotsOfFailed) {
                         const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
@@ -415,7 +437,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     await featurePage.close();
                 },
                 {
-                    group: AFTER_PAGE,
+                    group: FINALE,
                     name: 'close feature page' + (takeScreenshotsOfFailed ? ' and take screenshot' : ''),
                     timeout: 10_000,
                 },
@@ -430,7 +452,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                 getMetrics: () => getMetrics(runningFeature, featurePage),
             };
         },
-        disposeAfter: dispose,
+        disposeAfter: onDispose,
+        onDispose,
     };
 }
 
@@ -471,7 +494,7 @@ async function getMetrics(runningFeature: RunningTestFeature, featurePage: playw
 
 async function enableTestBrowserContext({
     browserContext,
-    dispose,
+    disposables,
     suiteTracing,
     tracing,
     withFeatureOptions,
@@ -480,7 +503,7 @@ async function enableTestBrowserContext({
     consoleLogAllowedErrors,
 }: {
     browserContext: playwright.BrowserContext;
-    dispose: (disposable: DisposableItem, options?: DisposableOptions | undefined) => void;
+    disposables: Disposables;
     suiteTracing: boolean | Omit<Tracing, 'name'> | undefined;
     tracing: boolean | Tracing | undefined;
     withFeatureOptions: IWithFeatureOptions;
@@ -489,7 +512,7 @@ async function enableTestBrowserContext({
     consoleLogAllowedErrors: boolean;
 }) {
     browserContext.on('page', onPageCreation);
-    dispose(() => browserContext.off('page', onPageCreation), {
+    disposables.add(() => browserContext.off('page', onPageCreation), {
         name: 'stop listening for page creation',
         group: PAGE_DISPOSABLES,
         timeout: 1000,
@@ -503,7 +526,7 @@ async function enableTestBrowserContext({
             suiteTracingOptions,
             testTracingOptions,
             browserContext,
-            dispose,
+            disposables,
             withFeatureOptions,
         });
     }
@@ -527,12 +550,12 @@ async function enableTestBrowserContext({
         page.setDefaultNavigationTimeout(30000);
         page.setDefaultTimeout(10000);
         const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
-        dispose(disposeConsoleHook, {
+        disposables.add(disposeConsoleHook, {
             name: 'stop listening for console messages',
             group: PAGE_DISPOSABLES,
         });
         page.on('pageerror', onPageError);
-        dispose(() => page.off('pageerror', onPageError), {
+        disposables.add(() => page.off('pageerror', onPageError), {
             name: 'stop listening for page errors',
             group: PAGE_DISPOSABLES,
             timeout: 1000,
@@ -544,13 +567,13 @@ async function enableTracing({
     suiteTracingOptions,
     testTracingOptions,
     browserContext,
-    dispose,
+    disposables,
     withFeatureOptions,
 }: {
     suiteTracingOptions: Omit<Tracing, 'name'> | undefined;
     testTracingOptions: Tracing;
     browserContext: playwright.BrowserContext;
-    dispose: (disposable: DisposableItem, options?: DisposableOptions | undefined) => void;
+    disposables: Disposables;
     withFeatureOptions: IWithFeatureOptions;
 }) {
     const screenshots = suiteTracingOptions?.screenshots ?? testTracingOptions.screenshots ?? true;
@@ -559,7 +582,7 @@ async function enableTracing({
     const name = testTracingOptions.name;
 
     await browserContext.tracing.start({ screenshots, snapshots });
-    dispose(
+    disposables.add(
         () => {
             const testName = mochaCtx()?.currentTest?.title;
             return browserContext.tracing.stop({

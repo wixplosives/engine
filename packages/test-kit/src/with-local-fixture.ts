@@ -1,7 +1,7 @@
 import { nodeFs as fs } from '@file-services/node';
 import { createTestDir } from '@wixc3/testing-node';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
-import { withFeature, type IFeatureExecutionOptions, type IWithFeatureOptions } from './with-feature.js';
+import { withFeature, type IFeatureExecutionOptions, type IWithFeatureOptions, FINALE } from './with-feature.js';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
     fixturePath?: string;
@@ -12,7 +12,7 @@ export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
  * and optionally copies a fixture to it as a "project".
  */
 export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
-    const { getLoadedFeature: originalGetLoadedFeature, disposeAfter } = withFeature(suiteOptions);
+    const { getLoadedFeature: originalGetLoadedFeature, onDispose } = withFeature(suiteOptions);
 
     async function getLoadedFeature(testOptions: IWithLocalFixtureOptions = suiteOptions) {
         const { fixturePath = suiteOptions.fixturePath, runOptions = suiteOptions.runOptions } = testOptions;
@@ -22,7 +22,7 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
             );
         }
 
-        const projectPath = createTestDir('local-test', {}, disposeAfter);
+        const projectPath = createTestDir('local-test', FINALE, onDispose);
 
         if (fixturePath) {
             await fs.promises.copyDirectory(fixturePath, projectPath);
