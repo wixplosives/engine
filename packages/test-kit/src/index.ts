@@ -1,6 +1,7 @@
 export * from './create-browser-provider.js';
 export * from './remote-http-application.js';
 export * from './forked-process-application.js';
+export * from './engine-app-manager.js';
 export * from './run-environment.js';
 export * from './types.js';
 export * from './with-feature.js';
