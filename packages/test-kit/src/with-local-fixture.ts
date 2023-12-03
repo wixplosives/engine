@@ -18,7 +18,7 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
         const { fixturePath = suiteOptions.fixturePath, runOptions = suiteOptions.runOptions } = testOptions;
         if (runOptions && runOptions.projectPath) {
             throw new Error(
-                `runOptions["projectPath"] shouldn't be provided. It will get overriden by returned projectPath.`,
+                `runOptions["projectPath"] shouldn't be provided. It will get overridden by returned projectPath.`,
             );
         }
 
