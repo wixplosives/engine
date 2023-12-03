@@ -335,7 +335,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}) {
                     throw new Error('Browser is not open!');
                 }
                 dedicatedBrowserContext = await browser.newContext(browserContextOptions);
-                
+
                 dispose(() => dedicatedBrowserContext?.close(), {
                     group: WITH_FEATURE_DISPOSABLES,
                     name: `close browser context for feature "${featureName}"`,
@@ -560,7 +560,7 @@ async function enableTracing({
 
     await browserContext.tracing.start({ screenshots, snapshots });
     dispose(
-        async () => {
+        () => {
             const testName = mochaCtx()?.currentTest?.title;
             return browserContext.tracing.stop({
                 path: ensureTracePath({
