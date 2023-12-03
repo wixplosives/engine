@@ -16,10 +16,16 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
 }> {
     const runningFeature = await originalGetRunningFeature(options);
     if (autoDisposeTimeout) {
-        afterEach(`engine shutdown for ${options.featureName}`, function () {
-            this.timeout(autoDisposeTimeout);
-            return runningFeature.engine.shutdown();
-        });
+        if (typeof afterEach !== 'undefined') {
+            afterEach(`engine shutdown for ${options.featureName}`, function () {
+                this.timeout(autoDisposeTimeout);
+                return runningFeature.engine.shutdown();
+            });
+        } else {
+            throw new Error(
+                `autoDisposeTimeout is set but the environment you are running does not have global "afterEach", set it to false to avoid auto-dispose.`,
+            );
+        }
     }
 
     return runningFeature;
