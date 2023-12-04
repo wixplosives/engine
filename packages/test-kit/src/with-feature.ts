@@ -298,11 +298,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     });
 
     const disposables = new Disposables();
-    disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: 'default' });
-    disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: 'default', before: DISPOSE_OF_TEMP_DIRS });
-    disposables.registerGroup(PAGE_DISPOSABLES, { before: WITH_FEATURE_DISPOSABLES });
-    disposables.registerGroup(TRACING_DISPOSABLES, { before: PAGE_DISPOSABLES });
-    disposables.registerGroup(FINALE, { after: PAGE_DISPOSABLES });
+    disposables.registerGroup(TRACING_DISPOSABLES, { after: 'default' });
+    disposables.registerGroup(PAGE_DISPOSABLES, { after: TRACING_DISPOSABLES });
+    disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: PAGE_DISPOSABLES });
+    disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: WITH_FEATURE_DISPOSABLES });
+    disposables.registerGroup(FINALE, { after: DISPOSE_OF_TEMP_DIRS });
     const onDispose = (disposable: DisposableItem, options?: DisposableOptions) =>
         disposables.add(disposable, { group: FINALE, ...options });
 
@@ -437,7 +437,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                     await featurePage.close();
                 },
                 {
-                    group: FINALE,
+                    group: PAGE_DISPOSABLES,
                     name: 'close feature page' + (takeScreenshotsOfFailed ? ' and take screenshot' : ''),
                     timeout: 10_000,
                 },
