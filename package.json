@@ -51,7 +51,7 @@
     "@wixc3/docs": "^13.3.2",
     "@wixc3/testing": "^13.3.2",
     "@wixc3/testing-node": "^13.3.2",
-    "@wixc3/wait-for-call": "^13.3.2",
+    "@wixc3/wait-for-call": "^13.4.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "electron": "^28.0.0",

@@ -1749,10 +1749,10 @@
   resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-13.3.2.tgz#0e98f948189ec3d97583b3336bb893d0ff9faf8c"
   integrity sha512-Sc9Hubr3xLqoQRLV7cnxvpBfMLclo2RzrJiPcaoRWY5YjMw6TTF35TsuiT0B7DW+ubE9oquETKVaZ1v0pXplsg==
 
-"@wixc3/wait-for-call@^13.3.2":
-  version "13.3.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-13.3.2.tgz#37ff44c378402345457517991d605a843c6cef8b"
-  integrity sha512-XUgu3oKVI9M/ylxKmTlilI2jeizaw1XEC+t7920PRcpUgE7KvE+0+E2Zfj1ySE6hSuh6YuAnMENBM0oVi/SWXg==
+"@wixc3/wait-for-call@^13.4.0":
+  version "13.4.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/wait-for-call/-/wait-for-call-13.4.0.tgz#586602d34333eb656578aaaf482f59c18ad6141a"
+  integrity sha512-e2LbNsJSu/smWfdrNO/9JZKFcsZS++xBxIZUYe6qbL56XqWt4xmDmK2gjmzMAqJeuvD7I51ngs7K8Z/x8e146A==
   dependencies:
     promise-assist "^2.0.1"
 
