@@ -259,7 +259,7 @@
     "@file-services/types" "^8.3.3"
     "@file-services/utils" "^8.3.3"
 
-"@file-services/path@^8.2.0", "@file-services/path@^8.3.3":
+"@file-services/path@^8.3.3":
   version "8.3.3"
   resolved "https://registry.yarnpkg.com/@file-services/path/-/path-8.3.3.tgz#9f46c6a6e20e486db289f94f981f2ef37470092e"
   integrity sha512-zM2/I4uIA+Hq8fC0XhBfo7ZC3t/shX3gjwl3z+lmtHxtNfxProf6hsmR1VI0qLDEFcIog7tB89HOR7H5DWj+qQ==
@@ -1654,13 +1654,13 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^13.3.2":
-  version "13.3.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-13.3.2.tgz#1e54707415c0e2d7ca1fdf37c25a215ab99a53e9"
-  integrity sha512-ST5YT1V9zW1j1ir4pjX7jXJt+RduYZc/XLUI/1svgQ6VVF0EOOKhjXcxCllqkWm1Ki1e8WE7fbr9fkyBldNf9w==
+"@wixc3/common@^13.3.2", "@wixc3/common@^13.4.0":
+  version "13.4.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-13.4.0.tgz#0ec4dade2d37bc7c6fd580611c3cce519cf92a34"
+  integrity sha512-L/tYXZin/rOaXyNGTJns1DYigMRX6bUQq0XF4sgX9YaEdILATsiGkFms3XFu1dBfyxUzh6iboO0+jwsTMjPBLA==
   dependencies:
-    "@file-services/path" "^8.2.0"
-    "@file-services/types" "^8.2.0"
+    "@file-services/path" "^8.3.3"
+    "@file-services/types" "^8.3.3"
     promise-assist "^2.0.1"
 
 "@wixc3/create-disposables@^2.2.0":
