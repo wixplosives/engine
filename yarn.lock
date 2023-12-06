@@ -242,7 +242,7 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.55.0.tgz#b721d52060f369aa259cf97392403cb9ce892ec6"
   integrity sha512-qQfo2mxH5yVom1kacMtZZJFVdW+E70mqHMJvVg6WTLo+VBuQJ4TojZlfWBjK0ve5BdEeNAVxOsl/nvNMpJOaJA==
 
-"@file-services/memory@^8.2.0", "@file-services/memory@^8.3.3":
+"@file-services/memory@^8.3.3":
   version "8.3.3"
   resolved "https://registry.yarnpkg.com/@file-services/memory/-/memory-8.3.3.tgz#6d53d26406d95a045afdb1b36713a4b2c918322a"
   integrity sha512-WBgpmTvO2Bkl9zD0Vdyt4hjScZ5p5ytqcpG9y7pMAZITSw9Slv/pjK0jKkJMg4reb2nHjzEEgYzggfd2FibDsA==
@@ -460,10 +460,10 @@
     lodash "^4.17.15"
     tmp-promise "^3.0.2"
 
-"@microsoft/api-documenter@^7.22.33":
-  version "7.23.12"
-  resolved "https://registry.yarnpkg.com/@microsoft/api-documenter/-/api-documenter-7.23.12.tgz#ca01da3c790709220fb9a9158ba7ec8148ca2e54"
-  integrity sha512-ZFQGHNs8fSe3KoSCNa+jt/HLTN8IdTRGd0TZqmSeHpz2cSvUYHJeyQKhv8s7yi2flr1LezBq5/ig65ITZPSSqw==
+"@microsoft/api-documenter@^7.23.12":
+  version "7.23.13"
+  resolved "https://registry.yarnpkg.com/@microsoft/api-documenter/-/api-documenter-7.23.13.tgz#35f9d153db0ac0891822987b497c4b0acc790eb5"
+  integrity sha512-RPHIpoaOOohujsI1Cy3YBMonpipY3eVzkSLTeRkHmO6k8FbKbrU95PazCjQVSCsGaqvEosy6kac760vVarrDKQ==
   dependencies:
     "@microsoft/api-extractor-model" "7.28.2"
     "@microsoft/tsdoc" "0.14.2"
@@ -473,7 +473,7 @@
     js-yaml "~3.13.1"
     resolve "~1.22.1"
 
-"@microsoft/api-extractor-model@7.28.2", "@microsoft/api-extractor-model@^7.27.6":
+"@microsoft/api-extractor-model@7.28.2", "@microsoft/api-extractor-model@^7.28.2":
   version "7.28.2"
   resolved "https://registry.yarnpkg.com/@microsoft/api-extractor-model/-/api-extractor-model-7.28.2.tgz#91c66dd820ccc70e0c163e06b392d8363f1b9269"
   integrity sha512-vkojrM2fo3q4n4oPh4uUZdjJ2DxQ2+RnDQL/xhTWSRUNPF6P4QyrvY357HBxbnltKcYu+nNNolVqc6TIGQ73Ig==
@@ -482,10 +482,10 @@
     "@microsoft/tsdoc-config" "~0.16.1"
     "@rushstack/node-core-library" "3.61.0"
 
-"@microsoft/api-extractor@^7.36.4":
-  version "7.38.3"
-  resolved "https://registry.yarnpkg.com/@microsoft/api-extractor/-/api-extractor-7.38.3.tgz#2b0157d166c1a23642e22d139c7b7b39ad6340fd"
-  integrity sha512-xt9iYyC5f39281j77JTA9C3ISJpW1XWkCcnw+2vM78CPnro6KhPfwQdPDfwS5JCPNuq0grm8cMdPUOPvrchDWw==
+"@microsoft/api-extractor@^7.38.3":
+  version "7.38.4"
+  resolved "https://registry.yarnpkg.com/@microsoft/api-extractor/-/api-extractor-7.38.4.tgz#bb7847cbec6af4f762762a0897c312d434e12ae5"
+  integrity sha512-0SW3Of6os4bAYlHdiD1hJx/ygXr7vRZi92E1pREufNERH87aZ0B9Vhku/4Mj2Oxp58gyV5d18t7uZold6HCSEw==
   dependencies:
     "@microsoft/api-extractor-model" "7.28.2"
     "@microsoft/tsdoc" "0.14.2"
@@ -1654,7 +1654,7 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^13.3.2", "@wixc3/common@^13.4.0":
+"@wixc3/common@^13.4.0":
   version "13.4.0"
   resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-13.4.0.tgz#0ec4dade2d37bc7c6fd580611c3cce519cf92a34"
   integrity sha512-L/tYXZin/rOaXyNGTJns1DYigMRX6bUQq0XF4sgX9YaEdILATsiGkFms3XFu1dBfyxUzh6iboO0+jwsTMjPBLA==
@@ -1668,27 +1668,27 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^13.3.2":
-  version "13.3.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-13.3.2.tgz#8197590863d1eab73456d4bb61ce35fb5d21473a"
-  integrity sha512-uTX0ZjhogAEk3GVruHiRFnodjPQrIF73JW9QdNLXzprlWzMoXR4q9erFdidCwHuCPi6Ic4kWvobCYplOYgHvpQ==
+"@wixc3/docs@^13.4.0":
+  version "13.4.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-13.4.0.tgz#ae4427e7973b2c5db8dac1625d6da32a28ad5fb4"
+  integrity sha512-xFpQHkNApXkEmnzcr3SKPgHo6GRH9WNHaMCUQhAZR44ZivQ+nt+Hm9FnwZF0OfzIKSKE7pvadXuzXegUVz7ElA==
   dependencies:
-    "@microsoft/api-documenter" "^7.22.33"
-    "@microsoft/api-extractor" "^7.36.4"
-    "@microsoft/api-extractor-model" "^7.27.6"
-    "@wixc3/common" "^13.3.2"
-    "@wixc3/fs-utils" "^13.3.2"
-    "@wixc3/typescript" "^13.3.2"
-    glob "^10.3.4"
+    "@microsoft/api-documenter" "^7.23.12"
+    "@microsoft/api-extractor" "^7.38.3"
+    "@microsoft/api-extractor-model" "^7.28.2"
+    "@wixc3/common" "^13.4.0"
+    "@wixc3/fs-utils" "^13.4.0"
+    "@wixc3/typescript" "^13.4.0"
+    glob "^10.3.10"
     yargs "^17.7.2"
 
-"@wixc3/fs-utils@^13.3.2":
-  version "13.3.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-13.3.2.tgz#30e660b14e6353cf92910790b0f7d13fc860b563"
-  integrity sha512-ndck+p4OzzVDZUCPuG/TSHJCo+2f4yXcvtublqIBXtjXEqlmwrpZmV4wJBzcnYTVBceKTjNISeZFQ7lKa6m5RQ==
+"@wixc3/fs-utils@^13.4.0":
+  version "13.4.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-13.4.0.tgz#7349ea497161a70dc8d36b6bc183cce4d90da07d"
+  integrity sha512-XDreX5mYXmTX5/mCzP4fiI4ByJ+GhEy216X2O3JuVCp1TVDaAasHIvkwgjZow5ako55ODkVrvbQ+slwMKlH9wA==
   dependencies:
-    "@file-services/memory" "^8.2.0"
-    "@wixc3/common" "^13.3.2"
+    "@file-services/memory" "^8.3.3"
+    "@wixc3/common" "^13.4.0"
 
 "@wixc3/isomorphic-worker@^1.2.5":
   version "1.2.5"
@@ -1744,10 +1744,10 @@
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/typescript@^13.3.2":
-  version "13.3.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-13.3.2.tgz#0e98f948189ec3d97583b3336bb893d0ff9faf8c"
-  integrity sha512-Sc9Hubr3xLqoQRLV7cnxvpBfMLclo2RzrJiPcaoRWY5YjMw6TTF35TsuiT0B7DW+ubE9oquETKVaZ1v0pXplsg==
+"@wixc3/typescript@^13.4.0":
+  version "13.4.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-13.4.0.tgz#e9dff6bae6394893966b0341f052b58f64e7e7a6"
+  integrity sha512-xLonm0sSRGG5eWdHPK6ii+RLYGptw5hsQSRwonoof0xaPOQIjPCFwMKYu+y/XWgfR69GFPznTJhKxrCjOw505w==
 
 "@wixc3/wait-for-call@^13.4.0":
   version "13.4.0"
@@ -4315,7 +4315,7 @@ glob@7.2.0:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^10.2.2, glob@^10.3.10, glob@^10.3.3, glob@^10.3.4, glob@^10.3.7:
+glob@^10.2.2, glob@^10.3.10, glob@^10.3.3, glob@^10.3.7:
   version "10.3.10"
   resolved "https://registry.yarnpkg.com/glob/-/glob-10.3.10.tgz#0351ebb809fd187fe421ab96af83d3a70715df4b"
   integrity sha512-fa46+tv1Ak0UPK1TOy/pZrIybNNt4HCv7SDzwyfiOZkvZLEbjsZkJBPtDHVshZjbecAoAGSC20MjLDG/qr679g==

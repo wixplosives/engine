@@ -48,7 +48,7 @@
     "@typescript-eslint/eslint-plugin": "^6.13.1",
     "@typescript-eslint/parser": "^6.13.1",
     "@wixc3/create-disposables": "^2.2.0",
-    "@wixc3/docs": "^13.3.2",
+    "@wixc3/docs": "^13.4.0",
     "@wixc3/testing": "^13.4.0",
     "@wixc3/testing-node": "^13.4.0",
     "@wixc3/wait-for-call": "^13.4.0",
