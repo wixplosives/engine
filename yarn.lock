@@ -251,7 +251,7 @@
     "@file-services/types" "^8.3.3"
     "@file-services/utils" "^8.3.3"
 
-"@file-services/node@^8.2.0", "@file-services/node@^8.3.1", "@file-services/node@^8.3.3":
+"@file-services/node@^8.3.1", "@file-services/node@^8.3.3":
   version "8.3.3"
   resolved "https://registry.yarnpkg.com/@file-services/node/-/node-8.3.3.tgz#56eec5239a75b31d42a92177517e8f7916ac2edd"
   integrity sha512-gZH5C4QRs4DurIxu/xa44zfqELHYtxjyQAx9NwDD7eNjst1jVbSOKtWD6beDXw88OI/6KzpxnbOnhwksQphJ6g==
@@ -273,7 +273,7 @@
   dependencies:
     type-fest "^4.6.0"
 
-"@file-services/types@^8.2.0", "@file-services/types@^8.3.1", "@file-services/types@^8.3.3":
+"@file-services/types@^8.3.1", "@file-services/types@^8.3.3":
   version "8.3.3"
   resolved "https://registry.yarnpkg.com/@file-services/types/-/types-8.3.3.tgz#33817a1cb7e2fdbf51354ef6beb6663cd55a265d"
   integrity sha512-b6IM6MNZ6HKm5GicSKI61Rj1UZy87UtBCUvBiqT+w16biEYxeV7fBCj6gCeu8fWdPdfXgUK2QFKAB0RST+D4GQ==
@@ -1695,7 +1695,7 @@
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.5.tgz#c8316aef842f74158b26412978c768756da4ee17"
   integrity sha512-QpUk3Y2ASLhyF3rwevjkl8VCbxVDNq72yQ9Jnqsn/GXeE/g3s8fg47659dOdHOV2ZQDBhku4vYAK4puHBI4MRQ==
 
-"@wixc3/patterns@^13.3.2", "@wixc3/patterns@^13.4.0":
+"@wixc3/patterns@^13.4.0":
   version "13.4.0"
   resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-13.4.0.tgz#161e34785586de43ae33b8d7ab3c7d4495c26bea"
   integrity sha512-bm/GG2hapFFHBWW45qr+Y458Z6SYQl5VbUKH9+xZfX4nq3XAdHnM7kk00hWQkixBu9EirI+Gi+SaB9VTUwiOig==
@@ -1719,16 +1719,16 @@
     minimatch "^9.0.3"
     type-fest "^4.0.0"
 
-"@wixc3/testing-node@^13.3.2":
-  version "13.3.2"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-13.3.2.tgz#7b08a745a771c364bfb93395dba2216a5844c442"
-  integrity sha512-qCNTGbz/5HtgMH81i9Acwo60K+AMRXXeXXtHRdEd5IACEW5JbcUgjcKRkv8clUrTjjcO8+sz1cxvx3T7JlukiA==
+"@wixc3/testing-node@^13.4.0":
+  version "13.4.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-13.4.0.tgz#81d594efdd798ec1c115ed1bf3c0702f4841e114"
+  integrity sha512-sM9m9e2g6UneKmfC5ZR5woyFrfQXHx3xshSNJm6XrtbiI9ml8fJryc/nnbahAbgoHbN8buTJaxLvk2rIEs9CzA==
   dependencies:
-    "@file-services/node" "^8.2.0"
-    "@file-services/types" "^8.2.0"
-    "@wixc3/common" "^13.3.2"
-    "@wixc3/patterns" "^13.3.2"
-    chai "^4.3.8"
+    "@file-services/node" "^8.3.3"
+    "@file-services/types" "^8.3.3"
+    "@wixc3/common" "^13.4.0"
+    "@wixc3/patterns" "^13.4.0"
+    chai "^4.3.10"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
@@ -2489,7 +2489,7 @@ chai-as-promised@^7.1.1:
   dependencies:
     check-error "^1.0.2"
 
-chai@^4.3.10, chai@^4.3.8:
+chai@^4.3.10:
   version "4.3.10"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.3.10.tgz#d784cec635e3b7e2ffb66446a63b4e33bd390384"
   integrity sha512-0UXG04VuVbruMUYbJ6JctvH0YnC/4q3/AkT18q4NaITo91CUm0liMS9VqzT9vZhVQ/1eqPanMWjBM+Juhfb/9g==
