@@ -5,7 +5,7 @@ import { importModules } from './import-modules.js';
 import { runNodeEnvironment } from './node-environment.js';
 import { type WorkerThreadCommand, type WorkerThreadEvent, type WorkerThreadStartupCommand } from './types.js';
 
-const disposables = createDisposables();
+const disposables = createDisposables('workerThreadEntry');
 
 const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
     const {
@@ -51,13 +51,14 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         options: runtimeOptions,
     });
 
-    disposables.add(
-        () => {
+    disposables.add({
+        name: `workerThreadEntry engine shutdown ${engine.entityID}`,
+        timeout: 10_000,
+        dispose: () => {
             worker.removeEventListener('message', messageHandler);
             return engine.shutdown();
         },
-        { name: `workerThreadEntry engine shutdown ${engine.entityID}`, timeout: 10_000 },
-    );
+    });
 };
 
 const messageHandler = (message: unknown) => {

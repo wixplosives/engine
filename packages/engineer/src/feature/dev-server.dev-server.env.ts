@@ -63,7 +63,7 @@ devServerFeature.setup(
             log,
         } = devServerConfig;
         const application = new TargetApplication({ basePath, outputPath });
-        const disposables = createDisposables();
+        const disposables = createDisposables('dev-server');
 
         onDispose(disposables.dispose);
 
@@ -97,7 +97,7 @@ devServerFeature.setup(
                 httpServerPort,
                 socketServerOptions: resolvedSocketServerOptions,
             });
-            disposables.add(close, { name: 'close dev server', timeout: 10_000 });
+            disposables.add({ name: 'close dev server', timeout: 10_000, dispose: close });
 
             // we need to switch hosts because we can only attach a WS host after we have a socket server
             // So we launch with a basehost and upgrade to a wshost
@@ -152,9 +152,10 @@ devServerFeature.setup(
                 nodeEnvironmentsMode || engineConfig?.nodeEnvironmentsMode,
             );
 
-            disposables.add(() => application.getNodeEnvManager()?.closeAll(), {
+            disposables.add({
                 name: 'close node environments',
                 timeout: 10_000,
+                dispose: () => application.getNodeEnvManager()?.closeAll(),
             });
 
             if (serveStatic.length) {
@@ -290,13 +291,14 @@ function addEngineerCompilations(
         // If we decide to create more engineers one day we might need to rethink the index file
         // In any case it's a fallback, full paths should still work as usual
         const engineerDevMiddleware = webpackDevMiddleware(engineerCompilers, { index: 'main-dashboard.html' });
-        disposables.add(
-            () =>
+        disposables.add({
+            name: 'close dev middleware',
+            timeout: 10_000,
+            dispose: () =>
                 new Promise<void>((res, rej) => {
                     engineerDevMiddleware.close((e) => (e ? rej(e) : res()));
                 }),
-            { name: 'close dev middleware', timeout: 10_000 },
-        );
+        });
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         app.use(engineerDevMiddleware);
         compilationPromises.push(
@@ -335,13 +337,14 @@ async function runCompilerInWatch(
 
     if (compiler.compilers.length > 0) {
         const devMiddleware = webpackDevMiddleware(compiler);
-        disposables.add(
-            () =>
+        disposables.add({
+            name: 'close engineer dev middleware',
+            timeout: 10_000,
+            dispose: () =>
                 new Promise<void>((res, rej) => {
                     devMiddleware.close((e) => (e ? rej(e) : res()));
                 }),
-            { name: 'close engineer dev middleware', timeout: 10_000 },
-        );
+        });
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         app.use(devMiddleware);
         compilationPromises.push(new Promise<void>((resolve) => compiler.hooks.done.tap('engineer', () => resolve())));

@@ -11,7 +11,7 @@ export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
     Promise<ActiveEnvironment>,
     Omit<InitializeNodeEnvironmentOptions, 'runtimeArguments'>
 > = async (options) => {
-    const disposables = createDisposables();
+    const disposables = createDisposables('initializeNodeEnvironmentInNode');
 
     const metadataProvider = createMetadataProvider(options.communication);
 
@@ -22,9 +22,10 @@ export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
     });
 
     // a single dispose step ensures on exit events the dispose commands will be sent synchronously to other processes
-    disposables.add(() => Promise.all([metadataProvider.dispose(), dispose()]), {
+    disposables.add({
         name: 'node-environment-dispose',
         timeout: 5_000,
+        dispose: () => Promise.all([metadataProvider.dispose(), dispose()]),
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

@@ -5,15 +5,16 @@ import { createDisposables } from '@wixc3/patterns';
 process.once('message', async (message) => {
     if (isRunOptionsMessage(message)) {
         const { runOptions } = message;
-        const disposables = createDisposables();
+        const disposables = createDisposables('electron-entry');
         try {
             const engine = await runElectronEnv({
                 ...runOptions,
                 features: new Map(runOptions.features),
             });
-            disposables.add(engine.shutdown, {
+            disposables.add({
                 name: `runElectronEnvListener engine shutdown ${engine.entityID}`,
                 timeout: 10_000,
+                dispose: engine.shutdown,
             });
         } catch (ex) {
             await disposables.dispose();

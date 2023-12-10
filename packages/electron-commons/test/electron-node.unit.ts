@@ -5,7 +5,7 @@ import path from 'node:path';
 import type { TopLevelConfig } from '@wixc3/engine-core';
 import testFeature, { serverEnv } from '@fixture/disconnecting-env/dist/disconnecting-env.feature.js';
 import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env.js';
-import { Disposables } from '@wixc3/patterns';
+import { createTestDisposables } from '@wixc3/testing';
 
 const { expect } = chai;
 chai.use(chaiAsPromised);
@@ -28,8 +28,7 @@ const setupRunningEnv = ({ featuresConfig, stdio }: SetupRunningFeatureOptions) 
     });
 
 describe('onDisconnectHandler for node environment initializer', () => {
-    const disposables = new Disposables();
-    afterEach(() => disposables.dispose());
+    const disposables = createTestDisposables();
     describe('without own uncaughtException handling', () => {
         it('should catch on dispose of env', async () => {
             const { dispose, exitPromise } = await setupRunningEnv({
@@ -45,9 +44,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit' } })],
             });
 
-            disposables.add(dispose, {
+            disposables.add({
                 timeout,
                 name: `env ${testFeature.id}`,
+                dispose,
             });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
@@ -57,9 +57,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception' } })],
             });
 
-            disposables.add(dispose, {
+            disposables.add({
                 timeout,
                 name: `env ${testFeature.id}`,
+                dispose,
             });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
@@ -68,9 +69,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'promise-reject' } })],
             });
-            disposables.add(dispose, {
+            disposables.add({
                 timeout,
                 name: `env ${testFeature.id}`,
+                dispose,
             });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
@@ -80,9 +82,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception' } })],
                 stdio: 'pipe',
             });
-            disposables.add(dispose, {
+            disposables.add({
                 timeout,
                 name: `env ${testFeature.id}`,
+                dispose,
             });
 
             const exitDetails = await exitPromise;
@@ -104,9 +107,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exit', handleUncaught } })],
             });
-            disposables.add(dispose, {
+            disposables.add({
                 timeout,
                 name: `env ${testFeature.id}`,
+                dispose,
             });
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
@@ -114,9 +118,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'exception', handleUncaught } })],
             });
-            disposables.add(dispose, {
+            disposables.add({
                 timeout,
                 name: `env ${testFeature.id}`,
+                dispose,
             });
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
         });
@@ -124,9 +129,10 @@ describe('onDisconnectHandler for node environment initializer', () => {
             const { exitPromise, dispose } = await setupRunningEnv({
                 featuresConfig: [testFeature.use({ errorsConfig: { throwError: 'promise-reject', handleUncaught } })],
             });
-            disposables.add(dispose, {
+            disposables.add({
                 timeout,
                 name: `env ${testFeature.id}`,
+                dispose,
             });
 
             await expect(exitPromise).to.eventually.deep.eq({ exitCode: 1 });
