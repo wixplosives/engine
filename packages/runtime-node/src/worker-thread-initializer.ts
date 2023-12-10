@@ -34,7 +34,7 @@ export function workerThreadInitializer({
     disposables.add({
         name: 'worker thread metadataProvider',
         timeout: 5_000,
-        dispose: () => metadataProvider.dispose(),
+        dispose: metadataProvider,
     });
 
     const initialize = async (): Promise<void> => {
