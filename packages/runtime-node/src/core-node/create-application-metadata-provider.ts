@@ -58,7 +58,7 @@ const loadMetadata = memoizeOne((communication: Communication) => {
 
     // use disposables to ignore multiple dispose calls
     const disposables = createDisposables('metadataProvider');
-    disposables.add('metadataProvider metadataProviderCom', () => metadataProviderCom.dispose());
+    disposables.add('metadataProvider metadataProviderCom', metadataProviderCom);
 
     return {
         metadataPromise,
