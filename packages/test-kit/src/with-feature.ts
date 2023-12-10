@@ -432,6 +432,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         });
                     }
                 }
+                runOptions = { ...runOptions, projectPath };
             }
 
             if (process.env.PLAYWRIGHT_SERVER) {
