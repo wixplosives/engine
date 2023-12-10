@@ -402,7 +402,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 group: WITH_FEATURE_DISPOSABLES,
                 name: `close feature "${featureName}"`,
                 timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
-                dispose: () => runningFeature.dispose(),
+                dispose: runningFeature,
             });
 
             const search = toSearchQuery({
