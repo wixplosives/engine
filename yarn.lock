@@ -1663,6 +1663,15 @@
     "@file-services/types" "^8.3.3"
     promise-assist "^2.0.1"
 
+"@wixc3/common@^14.1.0":
+  version "14.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-14.1.0.tgz#fe3ebd55cd69cd87a4111a03610953165ad3a433"
+  integrity sha512-CW6k9nvFWpgEBAjEeKwcZAqibfsL1FruubyBJgQPdJyRSjHn3IQB3VfiKqj5xul9BfN1g9OGc6qRQrci18CZzg==
+  dependencies:
+    "@file-services/path" "^8.3.3"
+    "@file-services/types" "^8.3.3"
+    promise-assist "^2.0.1"
+
 "@wixc3/create-disposables@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
@@ -1703,6 +1712,14 @@
     "@wixc3/common" "^13.4.0"
     promise-assist "^2.0.1"
 
+"@wixc3/patterns@^14.1.0":
+  version "14.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-14.1.0.tgz#34c412a02e11029afe6daae1c0050f021bb85170"
+  integrity sha512-h+sR2SMUziMMDATchzWrN7+MQOz/1aTTlg1rGGTQ1S0IWgFhOkROLV5Pbb7UO5eKIJfKZDL3j1wKtqmRoAuh3w==
+  dependencies:
+    "@wixc3/common" "^14.1.0"
+    promise-assist "^2.0.1"
+
 "@wixc3/resolve-directory-context@^3.0.5":
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/@wixc3/resolve-directory-context/-/resolve-directory-context-3.0.5.tgz#5a9f2bf1ae44e585612cdb4e7e78251c3317f01a"
@@ -1719,15 +1736,15 @@
     minimatch "^9.0.3"
     type-fest "^4.0.0"
 
-"@wixc3/testing-node@^13.4.0":
-  version "13.4.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-13.4.0.tgz#81d594efdd798ec1c115ed1bf3c0702f4841e114"
-  integrity sha512-sM9m9e2g6UneKmfC5ZR5woyFrfQXHx3xshSNJm6XrtbiI9ml8fJryc/nnbahAbgoHbN8buTJaxLvk2rIEs9CzA==
+"@wixc3/testing-node@^14.1.0":
+  version "14.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-14.1.0.tgz#3a83a3a51b03ff6580d2d31ab8b872ac24518726"
+  integrity sha512-64emPOXFr9qGx5HJGjXg2oATE+/aZIB0uvcBIbBdmDKUc24kMcFkYZv0zSsv32ofEqxWXqvO9i9yT5aANsNuKQ==
   dependencies:
     "@file-services/node" "^8.3.3"
     "@file-services/types" "^8.3.3"
-    "@wixc3/common" "^13.4.0"
-    "@wixc3/patterns" "^13.4.0"
+    "@wixc3/common" "^14.1.0"
+    "@wixc3/patterns" "^14.1.0"
     chai "^4.3.10"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
