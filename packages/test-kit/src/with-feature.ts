@@ -139,14 +139,6 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      * Prebuild the engine before running the tests
      */
     buildFlow?: 'prebuild' | 'lazy';
-    /**
-     * path to a directory where the fixture will be copied from
-     */
-    fixturePath?: string;
-    /**
-     * link node_modules for the fixture to the project
-     */
-    dependencies?: { type: 'link'; path: string } | { type: 'yarn' };
 }
 
 export interface Tracing {
@@ -364,7 +356,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     if (persist) {
         after('dispose suite level page', cleanup);
     } else {
-        afterEach('withFeature cleanup', cleanup);
+        afterEach('cleanup', cleanup);
     }
 
     function ensureProjectPath() {
