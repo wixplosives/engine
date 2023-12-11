@@ -9,7 +9,7 @@ workerThreadFeature.setup(serverEnv, ({ onDispose, workerEcho }, { COM: { commun
                     communication,
                     env: workerEnv,
                 });
-                onDispose(worker.dispose);
+                onDispose(() => worker.dispose());
 
                 await worker.initialize();
 

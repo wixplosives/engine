@@ -1,13 +1,7 @@
 import { nodeFs as fs } from '@file-services/node';
-import { createTestDir } from '@wixc3/testing-node';
+import { DISPOSE_OF_TEMP_DIRS, createTestDir } from '@wixc3/testing-node';
 import { type SpawnSyncOptions } from 'node:child_process';
-import {
-    withFeature,
-    type IFeatureExecutionOptions,
-    type IWithFeatureOptions,
-    FINALE,
-    spawnSyncSafe,
-} from './with-feature.js';
+import { withFeature, type IFeatureExecutionOptions, type IWithFeatureOptions, spawnSyncSafe } from './with-feature.js';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
     fixturePath?: string;
@@ -29,7 +23,12 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
             );
         }
 
-        const projectPath = createTestDir('local-test', FINALE, disposeAfter);
+        const projectPath = createTestDir('local-test', undefined, (disposable) =>
+            disposeAfter(disposable, {
+                name: 'local fixture temp dir',
+                group: DISPOSE_OF_TEMP_DIRS,
+            }),
+        );
 
         if (fixturePath) {
             await fs.promises.copyDirectory(fixturePath, projectPath);

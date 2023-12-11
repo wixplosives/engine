@@ -22,7 +22,7 @@ contextualMultiPreloadFeature.setup(
                                     environmentContextName: context,
                                 },
                             });
-                            onDispose(worker.dispose);
+                            onDispose(() => worker.dispose());
 
                             await worker.initialize();
                             const workerEcho = contextualMultiPreloadWorkerEcho.get({

@@ -99,7 +99,7 @@ describe('engineer:dev-server', function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
-    after(browserProvider.dispose);
+    after(() => browserProvider.dispose());
 
     it(`serves and allows running a feature`, async () => {
         const {

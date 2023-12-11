@@ -8,7 +8,7 @@ import workerThreadFeature, {
     serverEnv,
     type WorkerService,
 } from '@fixture/worker-thread/dist/worker-thread.feature.js';
-import { Disposables } from '@wixc3/patterns';
+import { createTestDisposables } from '@wixc3/testing';
 import { expect } from 'chai';
 import { setupRunningNodeEnv } from '../test-kit/setup-running-node-env.js';
 
@@ -24,14 +24,14 @@ const setupRunningEnv = (featureId: string) =>
 const timeout = 3000;
 
 describe('workerthread environment type', () => {
-    const disposables = new Disposables();
-    afterEach(() => disposables.dispose());
+    const disposables = createTestDisposables();
     it('initializes worker, calls API and disposes', async () => {
         const { dispose, communication } = await setupRunningEnv(workerThreadFeature.id);
 
-        disposables.add(dispose, {
+        disposables.add({
             timeout,
             name: `worker thread ${workerThreadFeature.id}`,
+            dispose,
         });
 
         const workerService = communication.apiProxy<WorkerService>(
@@ -45,9 +45,10 @@ describe('workerthread environment type', () => {
 
     it('initializes multiple workers, calls API and disposes', async () => {
         const { dispose, communication } = await setupRunningEnv(`${workerThreadFeature.id}/${multiFeature.id}`);
-        disposables.add(dispose, {
+        disposables.add({
             timeout,
             name: `worker thread ${workerThreadFeature.id}/${multiFeature.id}`,
+            dispose,
         });
 
         const multiWorkerService = communication.apiProxy<MultiWorkerService>(
@@ -63,9 +64,10 @@ describe('workerthread environment type', () => {
         const { dispose, communication } = await setupRunningEnv(
             `${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`,
         );
-        disposables.add(dispose, {
+        disposables.add({
             timeout,
             name: `worker thread ${workerThreadFeature.id}/${contextualMultiPreloadFeature.id}`,
+            dispose,
         });
 
         const contextualMultiPreloadWorkerService = communication.apiProxy<ContextualMultiPreloadWorkerService>(

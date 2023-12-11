@@ -7,14 +7,14 @@ describe('Parent feature', function () {
     const projectPath = dirname(require.resolve('@example/preload/package.json'));
     const featureName = 'preload/parent';
     const disposables = createDisposables();
-    afterEach(disposables.dispose);
+    afterEach(() => disposables.dispose());
 
     it('When loading a feature that depends on a feature that has preload, the preloads are still loaded first', async () => {
         const { dispose, browserProvider, featureUrl } = await startServerNewProcess({
             projectPath,
             featureName,
         });
-        disposables.add(browserProvider.dispose);
+        disposables.add(() => browserProvider.dispose());
         disposables.add(dispose);
 
         const page = await browserProvider.loadPage(featureUrl);

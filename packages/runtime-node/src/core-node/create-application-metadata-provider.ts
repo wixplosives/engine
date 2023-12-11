@@ -57,13 +57,11 @@ const loadMetadata = memoizeOne((communication: Communication) => {
     const metadataPromise = api.getRuntimeArguments();
 
     // use disposables to ignore multiple dispose calls
-    const disposables = createDisposables();
-    disposables.add(() => metadataProviderCom.dispose(), {
-        name: 'metadataProvider metadataProviderCom',
-    });
+    const disposables = createDisposables('metadataProvider');
+    disposables.add('metadataProvider metadataProviderCom', metadataProviderCom);
 
     return {
         metadataPromise,
-        disposeCommunication: disposables.dispose,
+        disposeCommunication: () => disposables.dispose(),
     };
 });

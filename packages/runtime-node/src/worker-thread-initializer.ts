@@ -24,16 +24,17 @@ export function workerThreadInitializer({
     env,
     environmentStartupOptions,
 }: WorkerThreadInitializerOptions): WorkerThreadInitializer {
-    const disposables = createDisposables();
+    const disposables = createDisposables('workerThreadInitializer');
 
     const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
 
     const envIsReady = communication.envReady(instanceId);
 
     const metadataProvider = createMetadataProvider(communication);
-    disposables.add(() => metadataProvider.dispose(), {
+    disposables.add({
         name: 'worker thread metadataProvider',
         timeout: 5_000,
+        dispose: metadataProvider,
     });
 
     const initialize = async (): Promise<void> => {
@@ -47,24 +48,20 @@ export function workerThreadInitializer({
             execArgv: [...process.execArgv],
         } as UniversalWorkerOptions);
 
-        disposables.add(() => worker.terminate(), {
+        disposables.add({
             name: `worker thread ${instanceId} terminate`,
             timeout: 5_000,
+            dispose: () => worker.terminate(),
         });
 
         const host = new UniversalWorkerHost(worker, instanceId);
         communication.registerEnv(instanceId, host);
         communication.registerMessageHandler(host);
 
-        disposables.add(
-            () => {
-                communication.clearEnvironment(instanceId);
-                communication.removeMessageHandler(host);
-            },
-            {
-                name: `worker thread ${instanceId} communication cleanup`,
-            },
-        );
+        disposables.add(`worker thread ${instanceId} communication cleanup`, () => {
+            communication.clearEnvironment(instanceId);
+            communication.removeMessageHandler(host);
+        });
 
         const runOptions: WorkerThreadEnvironmentStartupOptions = {
             environmentContextName: environmentStartupOptions?.environmentContextName,
@@ -96,6 +93,6 @@ export function workerThreadInitializer({
     return {
         id: instanceId,
         initialize,
-        dispose: disposables.dispose,
+        dispose: ()=>disposables.dispose(),
     };
 }
