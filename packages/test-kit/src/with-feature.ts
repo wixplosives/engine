@@ -345,30 +345,23 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     });
 
     let alreadyInitialized = false;
-
-    if (persist) {
-        after('dispose suite level page', async function () {
-            this.timeout(disposables.list().totalTimeout);
-            await disposables.dispose();
-        });
-    } else {
-        afterEach('dispose all', async function () {
-            this.timeout(disposables.list().totalTimeout);
-            await disposables.dispose();
-        });
-    }
-    /** we don't allow to call getLoadedFeature more than once inside the same test. */
     let fixtureSetup = false;
     let projectPath = '';
     let tmpDir: ReturnType<typeof createTempDirectorySync>;
-    disposables.add(
-        () => {
-            fixtureSetup = false;
-            tmpDir?.remove();
-        },
-        { name: 'remove fixture temp dir', group: DISPOSE_OF_TEMP_DIRS },
-    );
 
+    async function cleanup(this: Mocha.Context) {
+        fixtureSetup = false;
+        this.timeout(disposables.list().totalTimeout);
+        await disposables.dispose();
+        tmpDir?.remove();
+    }
+
+    if (persist) {
+        after('dispose suite level page', cleanup);
+    } else {
+        afterEach('withFeature cleanup', cleanup);
+    }
+    
     function ensureProjectPath() {
         if (!tmpDir) {
             tmpDir = createTempDirectorySync('with-fixture');
