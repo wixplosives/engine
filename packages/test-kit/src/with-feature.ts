@@ -109,6 +109,10 @@ export interface IFeatureExecutionOptions {
      * link node_modules for the fixture to the project
      */
     dependencies?: { type: 'link'; path: string } | { type: 'yarn' };
+    /**
+     * hook to manage initial fixture creation each hook is inherited from the suite level individually
+     */
+    hooks?: { afterFixtureCopy?: () => Promise<void> | void; afterInstall?: () => Promise<void> | void };
 }
 
 export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
@@ -264,6 +268,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         buildFlow = process.env.WITH_FEATURE_BUILD_FLOW,
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
+        hooks: suiteHooks = {},
     } = withFeatureOptions;
 
     if (
@@ -361,7 +366,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     } else {
         afterEach('withFeature cleanup', cleanup);
     }
-    
+
     function ensureProjectPath() {
         if (!tmpDir) {
             tmpDir = createTempDirectorySync('with-fixture');
@@ -406,7 +411,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
             navigationOptions = suiteNavigationOptions,
             fixturePath = suiteFixturePath,
             dependencies = suiteDependencies,
+            hooks = {},
         }: IFeatureExecutionOptions = {}) {
+            hooks = { ...suiteHooks, ...hooks };
             if (fixtureSetup) {
                 throw new Error('getLoadedFeature cannot be called more than once while fixturePath is provided!');
             }
@@ -414,6 +421,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 fixtureSetup = true;
                 ensureProjectPath();
                 fs.copyDirectorySync(fixturePath, projectPath);
+                await hooks.afterFixtureCopy?.();
                 if (dependencies) {
                     if (dependencies.type === 'link') {
                         linkNodeModules(projectPath, dependencies.path);
@@ -424,6 +432,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                             stdio: debugMode ? 'inherit' : 'ignore',
                         });
                     }
+                    await hooks.afterInstall?.();
                 }
                 runOptions = { ...runOptions, projectPath };
             }
