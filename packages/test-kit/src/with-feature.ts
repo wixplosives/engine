@@ -3,7 +3,7 @@ import type { TopLevelConfig } from '@wixc3/engine-core';
 import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
 import { mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
-import { uniqueHash } from '@wixc3/engine-scripts';
+import { getRunningFeature, uniqueHash } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import playwright from 'playwright-core';
 import { reporters } from 'mocha';
@@ -15,6 +15,9 @@ import { validateBrowser } from './supported-browsers.js';
 import type { IExecutableApplication, RunningTestFeature } from './types.js';
 import { ensureTracePath } from './utils/index.js';
 import { ManagedRunEngine } from './engine-app-manager.js';
+import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
+import { createTempDirectorySync } from 'create-temp-directory';
+import { linkNodeModules } from './link-test-dir.js';
 
 const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
@@ -98,6 +101,18 @@ export interface IFeatureExecutionOptions {
      * @defaultValue 10_000
      */
     saveTraceTimeout?: number;
+    /**
+     * path to a directory where the fixture will be copied from
+     */
+    fixturePath?: string;
+    /**
+     * link node_modules for the fixture to the project
+     */
+    dependencies?: { type: 'link'; path: string } | { type: 'yarn' };
+    /**
+     * hook to manage initial fixture creation each hook is inherited from the suite level individually
+     */
+    hooks?: { afterFixtureCopy?: () => Promise<void> | void; afterInstall?: () => Promise<void> | void };
 }
 
 export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
@@ -164,7 +179,7 @@ export type WithFeatureApi = {
         }>;
     }>;
     /**
-     * @deprecated use `onDispose` instead
+     * @deprecated use `disposables` instead
      */
     disposeAfter: (disposable: DisposableItem, options?: Omit<DisposableOptions, 'dispose'>) => void;
     /**
@@ -172,12 +187,25 @@ export type WithFeatureApi = {
      * by default this will add the disposable to the `FINALE` group
      * if running in persist mode, the disposable will be disposed after the suite
      */
-    onDispose: (disposable: DisposableItem, options?: DisposableOptions) => void;
+    disposables: Disposables;
+    /**
+     * spawn a node environment
+     */
+    spawnProcessingEnv: typeof getRunningFeature;
+    /**
+     * spawn a child process
+     */
+    spawnSync: (command: string, args?: string[], spawnOptions?: SpawnSyncOptions) => ReturnType<typeof spawnSync>;
+    /**
+     * ensure a the path to the test temp directory exists and return it.
+     */
+    ensureProjectPath: () => string;
 };
 
-export const WITH_FEATURE_DISPOSABLES = 'WITH_FEATURE_DISPOSABLES';
-export const PAGE_DISPOSABLES = 'PAGE_DISPOSABLES';
 export const TRACING_DISPOSABLES = 'TRACING_DISPOSABLES';
+export const PAGE_DISPOSABLES = 'PAGE_DISPOSABLES';
+export const WITH_FEATURE_DISPOSABLES = 'WITH_FEATURE_DISPOSABLES';
+export const ENGINE_DISPOSABLES = 'ENGINE_DISPOSABLES';
 export const FINALE = 'FINALE';
 
 let browser: playwright.Browser | undefined = undefined;
@@ -203,6 +231,9 @@ if (typeof after !== 'undefined') {
 }
 
 export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithFeatureApi {
+    if (mochaCtx()?.currentTest) {
+        throw new Error('withFeature cannot be called inside a test');
+    }
     const envDebugMode = 'DEBUG' in process.env;
     const debugMode = !!process.env.DEBUG;
     const port = parseInt(process.env.DEBUG!);
@@ -227,6 +258,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         persist,
         takeScreenshotsOfFailed = true,
         buildFlow = process.env.WITH_FEATURE_BUILD_FLOW,
+        fixturePath: suiteFixturePath,
+        dependencies: suiteDependencies,
+        hooks: suiteHooks = {},
     } = withFeatureOptions;
 
     if (
@@ -237,6 +271,16 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
             `withFeature was called with development time options in CI:\n${JSON.stringify(withFeatureOptions)}`,
         );
     }
+
+    const disposables = new Disposables('withFeature');
+    disposables.registerGroup(TRACING_DISPOSABLES, { after: 'default' });
+    disposables.registerGroup(PAGE_DISPOSABLES, { after: TRACING_DISPOSABLES });
+    disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: PAGE_DISPOSABLES });
+    disposables.registerGroup(ENGINE_DISPOSABLES, { after: WITH_FEATURE_DISPOSABLES });
+    disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: ENGINE_DISPOSABLES });
+    disposables.registerGroup(FINALE, { after: DISPOSE_OF_TEMP_DIRS });
+    const onDispose = (disposable: DisposableItem, options?: Omit<DisposableOptions, 'dispose'>) =>
+        disposables.add({ name: 'onDispose', group: FINALE, dispose: disposable, ...options });
 
     const capturedErrors: Error[] = [];
     if (!process.env.PLAYWRIGHT_SERVER) {
@@ -297,30 +341,57 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         }
     });
 
-    const disposables = new Disposables('withFeature');
-    disposables.registerGroup(TRACING_DISPOSABLES, { after: 'default' });
-    disposables.registerGroup(PAGE_DISPOSABLES, { after: TRACING_DISPOSABLES });
-    disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: PAGE_DISPOSABLES });
-    disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: WITH_FEATURE_DISPOSABLES });
-    disposables.registerGroup(FINALE, { after: DISPOSE_OF_TEMP_DIRS });
-    const onDispose = (disposable: DisposableItem, options?: Omit<DisposableOptions, 'dispose'>) =>
-        disposables.add({ name: 'onDispose', group: FINALE, dispose: disposable, ...options });
-
     let alreadyInitialized = false;
+    let fixtureSetup = false;
+    let projectPath = '';
+    let tmpDir: ReturnType<typeof createTempDirectorySync>;
+
+    async function cleanup(this: Mocha.Context) {
+        fixtureSetup = false;
+        this.timeout(disposables.list().totalTimeout);
+        await disposables.dispose();
+        tmpDir?.remove();
+    }
 
     if (persist) {
-        after('dispose suite level page', async function () {
-            this.timeout(disposables.list().totalTimeout);
-            await disposables.dispose();
-        });
+        after('dispose suite level page', cleanup);
     } else {
-        afterEach('dispose all', async function () {
-            this.timeout(disposables.list().totalTimeout);
-            await disposables.dispose();
-        });
+        afterEach('cleanup', cleanup);
+    }
+
+    function ensureProjectPath() {
+        if (!tmpDir) {
+            tmpDir = createTempDirectorySync('with-fixture');
+            projectPath = tmpDir.path;
+        }
+        if (!fs.existsSync(projectPath)) {
+            fs.mkdirSync(projectPath);
+        }
+        return projectPath;
     }
 
     return {
+        ensureProjectPath,
+        spawnSync: (command, args = [], spawnOptions = {}) => {
+            if (!spawnOptions.cwd && !projectPath) {
+                throw new Error('spawnSync cannot be called without providing a fixturePath or cwd');
+            }
+            return spawnSyncSafe(command, args, {
+                stdio: 'inherit',
+                cwd: projectPath,
+                shell: true,
+                ...spawnOptions,
+            });
+        },
+        async spawnProcessingEnv(options) {
+            const running = await getRunningFeature(options);
+            disposables.add({
+                name: `spawnProcessingEnv(${JSON.stringify(options)})`,
+                group: ENGINE_DISPOSABLES,
+                dispose: () => running.engine.shutdown(),
+            });
+            return running;
+        },
         async getLoadedFeature({
             featureName = suiteFeatureName,
             configName = suiteConfigName,
@@ -331,7 +402,34 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
             tracing = suiteTracing,
             allowedErrors = suiteAllowedErrors,
             navigationOptions = suiteNavigationOptions,
+            fixturePath = suiteFixturePath,
+            dependencies = suiteDependencies,
+            hooks = {},
         }: IFeatureExecutionOptions = {}) {
+            hooks = { ...suiteHooks, ...hooks };
+            if (fixtureSetup) {
+                throw new Error('getLoadedFeature cannot be called more than once while fixturePath is provided!');
+            }
+            if (fixturePath) {
+                fixtureSetup = true;
+                ensureProjectPath();
+                fs.copyDirectorySync(fixturePath, projectPath);
+                await hooks.afterFixtureCopy?.();
+                if (dependencies) {
+                    if (dependencies.type === 'link') {
+                        linkNodeModules(projectPath, dependencies.path);
+                    } else if (dependencies.type === 'yarn') {
+                        spawnSyncSafe('yarn', ['install'], {
+                            cwd: projectPath,
+                            shell: true,
+                            stdio: debugMode ? 'inherit' : 'ignore',
+                        });
+                    }
+                    await hooks.afterInstall?.();
+                }
+                runOptions = { ...runOptions, projectPath };
+            }
+
             if (process.env.PLAYWRIGHT_SERVER) {
                 if (!dedicatedBrowser) {
                     dedicatedBrowser = await playwright[browserToRun].connect(process.env.PLAYWRIGHT_SERVER, {
@@ -453,7 +551,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
             };
         },
         disposeAfter: onDispose,
-        onDispose,
+        disposables,
     };
 }
 
@@ -618,3 +716,15 @@ function toSearchQuery({ featureName, configName, queryParams }: IWithFeatureOpt
 function isNonReactDevMessage(type: string, [firstArg]: unknown[]) {
     return type !== 'info' || typeof firstArg !== 'string' || !firstArg.startsWith('%cDownload the React DevTools');
 }
+
+export const spawnSyncSafe = ((...args: Parameters<typeof spawnSync>) => {
+    const spawnResult = spawnSync(...args);
+    if (spawnResult.status !== 0) {
+        throw new Error(
+            `Command "${args.filter((arg) => typeof arg === 'string').join(' ')}" failed with exit code ${
+                spawnResult.status ?? 'null'
+            }.`,
+        );
+    }
+    return spawnResult;
+}) as typeof spawnSync;

@@ -1,13 +1,14 @@
 import { nodeFs as fs } from '@file-services/node';
-import { createTestDir, DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
-import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
-import { withFeature, type IFeatureExecutionOptions, type IWithFeatureOptions } from './with-feature.js';
+import { DISPOSE_OF_TEMP_DIRS, createTestDir } from '@wixc3/testing-node';
+import { type SpawnSyncOptions } from 'node:child_process';
+import { withFeature, type IFeatureExecutionOptions, type IWithFeatureOptions, spawnSyncSafe } from './with-feature.js';
 
 export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
     fixturePath?: string;
 }
 
 /**
+ * @deprecated use `withFixture` with fixturePath instead.
  * Similar to `withFeature`, but creates a temp directory
  * and optionally copies a fixture to it as a "project".
  */
@@ -50,15 +51,3 @@ export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
         getLoadedFeature,
     };
 }
-
-const spawnSyncSafe = ((...args: Parameters<typeof spawnSync>) => {
-    const spawnResult = spawnSync(...args);
-    if (spawnResult.status !== 0) {
-        throw new Error(
-            `Command "${args.filter((arg) => typeof arg === 'string').join(' ')}" failed with exit code ${
-                spawnResult.status ?? 'null'
-            }.`,
-        );
-    }
-    return spawnResult;
-}) as typeof spawnSync;
