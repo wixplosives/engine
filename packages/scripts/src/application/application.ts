@@ -186,7 +186,7 @@ export class Application {
             port,
             router: app,
             nodeEnvironmentManager,
-            close: disposables.dispose,
+            close: () => disposables.dispose(),
         };
     }
     /**

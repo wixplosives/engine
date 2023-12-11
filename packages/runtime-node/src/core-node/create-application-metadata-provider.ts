@@ -62,6 +62,6 @@ const loadMetadata = memoizeOne((communication: Communication) => {
 
     return {
         metadataPromise,
-        disposeCommunication: disposables.dispose,
+        disposeCommunication: () => disposables.dispose(),
     };
 });

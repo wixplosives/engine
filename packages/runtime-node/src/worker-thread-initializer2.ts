@@ -54,7 +54,7 @@ export function workerThreadInitializer2({
     return {
         id: instanceId,
         initialize,
-        dispose: disposables.dispose,
+        dispose: () => disposables.dispose(),
         getMetrics: () => getMetricsFromWorker(worker),
     };
 }
