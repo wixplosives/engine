@@ -23,7 +23,7 @@ describe('Communication API', function () {
     this.timeout(15_000);
 
     const disposables = createDisposables();
-    afterEach(disposables.dispose);
+    afterEach(() => disposables.dispose());
 
     const iframeStyle: Partial<CSSStyleDeclaration> = {
         width: '300px',

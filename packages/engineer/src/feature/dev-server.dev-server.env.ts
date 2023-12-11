@@ -65,7 +65,7 @@ devServerFeature.setup(
         const application = new TargetApplication({ basePath, outputPath });
         const disposables = createDisposables('dev-server');
 
-        onDispose(disposables.dispose);
+        onDispose(() => disposables.dispose());
 
         run(async () => {
             // Should engine config be part of the dev experience of the engine????

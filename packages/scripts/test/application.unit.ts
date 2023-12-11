@@ -24,7 +24,7 @@ describe('Application', function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
-    after(browserProvider.dispose);
+    after(()=>browserProvider.dispose());
 
     const loadPage = async (url: string) => {
         const page = await browserProvider.loadPage(url);

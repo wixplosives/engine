@@ -29,7 +29,7 @@ export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    process.on('exit', disposables.dispose);
+    process.on('exit', () => disposables.dispose());
 
     await environmentIsReady;
 

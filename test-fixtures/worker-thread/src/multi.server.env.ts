@@ -11,7 +11,7 @@ multiFeature.setup(multiServerEnv, ({ onDispose, multiWorkerEcho }, { COM: { com
                             communication,
                             env: workerEnv,
                         });
-                        onDispose(worker.dispose);
+                        onDispose(() => worker.dispose());
 
                         await worker.initialize();
                         const workerEcho = multiWorkerEcho.get({

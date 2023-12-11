@@ -6,7 +6,7 @@ import { startServerNewProcess } from './utils.js';
 describe('Contextual preload', () => {
     const projectPath = dirname(require.resolve('@example/preload/package.json'));
     const disposables = createDisposables();
-    afterEach(disposables.dispose);
+    afterEach(() => disposables.dispose());
 
     describe('node context', () => {
         // Preload declares 2 messages, nodeCtx declares 1, procEnv declares 1
@@ -17,7 +17,7 @@ describe('Contextual preload', () => {
                 projectPath,
                 featureName,
             });
-            disposables.add(browserProvider.dispose);
+            disposables.add(() => browserProvider.dispose());
             disposables.add(dispose);
             const page = await browserProvider.loadPage(featureUrl);
 
@@ -44,7 +44,7 @@ describe('Contextual preload', () => {
                 projectPath,
                 featureName,
             });
-            disposables.add(browserProvider.dispose);
+            disposables.add(() => browserProvider.dispose());
             disposables.add(dispose);
             const page = await browserProvider.loadPage(featureUrl);
 
