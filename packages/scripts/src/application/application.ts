@@ -112,7 +112,7 @@ export class Application {
         } = runOptions;
         const { config: engineConfig } = await this.getEngineConfig();
 
-        const disposables = createDisposables();
+        const disposables = createDisposables('Application.run');
         const configurations = await this.readConfigs();
         const socketServerOptions = { ...runtimeSocketServerOptions, ...engineConfig?.socketServerOptions };
 
@@ -139,9 +139,10 @@ export class Application {
             socketServerOptions,
             routeMiddlewares,
         });
-        disposables.add(close, {
+        disposables.add({
             name: 'EngineHttpServer',
             timeout: 10_000,
+            dispose: close,
         });
 
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
@@ -159,9 +160,10 @@ export class Application {
             this.basePath,
             { ...socketServerOptions, ...configSocketServerOptions },
         );
-        disposables.add(() => nodeEnvironmentManager.closeAll(), {
+        disposables.add({
             name: 'NodeEnvironmentManager',
             timeout: 10_000,
+            dispose: () => nodeEnvironmentManager.closeAll(),
         });
 
         if (publicConfigsRoute) {
@@ -184,7 +186,7 @@ export class Application {
             port,
             router: app,
             nodeEnvironmentManager,
-            close: disposables.dispose,
+            close: () => disposables.dispose(),
         };
     }
     /**

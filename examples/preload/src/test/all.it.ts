@@ -28,7 +28,7 @@ describe('All Environment', () => {
             }
         });
     });
-    afterEach(disposables.dispose);
+    afterEach(() => disposables.dispose());
 
     it('loads preload files in all environments, non-contextual', async () => {
         await page!.waitForSelector('#envMessages');

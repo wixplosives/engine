@@ -8,7 +8,7 @@ import {
     type Message,
 } from '@wixc3/engine-core';
 import { IPCHost, WsServerHost } from '@wixc3/engine-runtime-node';
-import { createDisposables } from '@wixc3/patterns';
+import { createTestDisposables } from '@wixc3/testing';
 import { createWaitForCall } from '@wixc3/wait-for-call';
 import { expect } from 'chai';
 import { safeListeningHttpServer } from 'create-listening-server';
@@ -30,7 +30,7 @@ describe('Socket communication', () => {
     let serverTopology: Record<string, string> = {};
     let port: number;
 
-    const disposables = createDisposables();
+    const disposables = createTestDisposables();
 
     beforeEach(async () => {
         const { httpServer: server, port: servingPort } = await safeListeningHttpServer(3050);
@@ -39,16 +39,16 @@ describe('Socket communication', () => {
         const nameSpace = socketServer.of('processing');
         serverTopology['server-host'] = `http://localhost:${port}/processing`;
         const connections = new Set<Socket>();
-        disposables.add(() => new Promise((res) => socketServer.close(res)));
-        disposables.add(() => (serverTopology = {}));
+        disposables.add('socketServer.close', () => new Promise((res) => socketServer.close(res)));
+        disposables.add('reset serverTopology', () => (serverTopology = {}));
         const onConnection = (connection: Socket): void => {
             connections.add(connection);
-            disposables.add(() => {
+            disposables.add('connections.delete', () => {
                 connections.delete(connection);
             });
         };
         server.on('connection', onConnection);
-        disposables.add(() => {
+        disposables.add('destroy connections', () => {
             for (const connection of connections) {
                 connection.destroy();
             }
@@ -58,8 +58,6 @@ describe('Socket communication', () => {
         serverHost = new WsServerHost(nameSpace);
         await clientHost.connected;
     });
-
-    afterEach(disposables.dispose);
 
     it('Should activate a function from the client communication on the server communication and receive response', async () => {
         const COMMUNICATION_ID = 'node-com';
@@ -292,14 +290,13 @@ describe('Socket communication', () => {
 });
 
 describe('IPC communication', () => {
-    const disposables = createDisposables();
+    const disposables = createTestDisposables();
 
-    afterEach(disposables.dispose);
     it('communication with forked process', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
         const forked = fork(require.resolve('./process-entry'));
-        disposables.add(() => forked.kill());
+        disposables.add('kill process', () => forked.kill());
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
         communication.registerMessageHandler(host);

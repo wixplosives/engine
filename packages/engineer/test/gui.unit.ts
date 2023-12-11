@@ -46,7 +46,7 @@ describe('engineer:gui', function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
-    after(browserProvider.dispose);
+    after(() => browserProvider.dispose());
 
     it('should allow visit of dashboard gui', async () => {
         const {

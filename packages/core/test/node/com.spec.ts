@@ -33,7 +33,7 @@ class EchoService {
 describe('Communication', () => {
     const disposables = createDisposables();
 
-    afterEach(disposables.dispose);
+    afterEach(() => disposables.dispose());
 
     it('single communication', async () => {
         const host = new BaseHost();

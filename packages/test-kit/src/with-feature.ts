@@ -166,13 +166,13 @@ export type WithFeatureApi = {
     /**
      * @deprecated use `onDispose` instead
      */
-    disposeAfter: typeof Disposables.prototype.add;
+    disposeAfter: (disposable: DisposableItem, options?: Omit<DisposableOptions, 'dispose'>) => void;
     /**
      * Add a disposable to be disposed after the test.
      * by default this will add the disposable to the `FINALE` group
      * if running in persist mode, the disposable will be disposed after the suite
      */
-    onDispose: typeof Disposables.prototype.add;
+    onDispose: (disposable: DisposableItem, options?: DisposableOptions) => void;
 };
 
 export const WITH_FEATURE_DISPOSABLES = 'WITH_FEATURE_DISPOSABLES';
@@ -297,14 +297,14 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         }
     });
 
-    const disposables = new Disposables();
+    const disposables = new Disposables('withFeature');
     disposables.registerGroup(TRACING_DISPOSABLES, { after: 'default' });
     disposables.registerGroup(PAGE_DISPOSABLES, { after: TRACING_DISPOSABLES });
     disposables.registerGroup(WITH_FEATURE_DISPOSABLES, { after: PAGE_DISPOSABLES });
     disposables.registerGroup(DISPOSE_OF_TEMP_DIRS, { after: WITH_FEATURE_DISPOSABLES });
     disposables.registerGroup(FINALE, { after: DISPOSE_OF_TEMP_DIRS });
-    const onDispose = (disposable: DisposableItem, options?: DisposableOptions) =>
-        disposables.add(disposable, { group: FINALE, ...options });
+    const onDispose = (disposable: DisposableItem, options?: Omit<DisposableOptions, 'dispose'>) =>
+        disposables.add({ name: 'onDispose', group: FINALE, dispose: disposable, ...options });
 
     let alreadyInitialized = false;
 
@@ -358,10 +358,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 }
                 dedicatedBrowserContext = await browser.newContext(browserContextOptions);
 
-                disposables.add(() => dedicatedBrowserContext?.close(), {
+                disposables.add({
                     group: WITH_FEATURE_DISPOSABLES,
                     name: `close browser context for feature "${featureName}"`,
                     timeout: 5000,
+                    dispose: () => dedicatedBrowserContext?.close(),
                 });
 
                 await enableTestBrowserContext({
@@ -397,10 +398,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
 
             const { configName: newConfigName } = runningFeature;
 
-            disposables.add(() => runningFeature.dispose(), {
+            disposables.add({
                 group: WITH_FEATURE_DISPOSABLES,
                 name: `close feature "${featureName}"`,
                 timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
+                dispose: runningFeature,
             });
 
             const search = toSearchQuery({
@@ -411,8 +413,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
 
             const featurePage = await dedicatedBrowserContext.newPage();
 
-            disposables.add(
-                async () => {
+            disposables.add({
+                group: PAGE_DISPOSABLES,
+                name: 'close feature page' + (takeScreenshotsOfFailed ? ' and take screenshot' : ''),
+                timeout: 10_000,
+                dispose: async () => {
                     if (takeScreenshotsOfFailed) {
                         const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
                         const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
@@ -436,12 +441,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                     }
                     await featurePage.close();
                 },
-                {
-                    group: PAGE_DISPOSABLES,
-                    name: 'close feature page' + (takeScreenshotsOfFailed ? ' and take screenshot' : ''),
-                    timeout: 10_000,
-                },
-            );
+            });
 
             const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
@@ -512,10 +512,11 @@ async function enableTestBrowserContext({
     consoleLogAllowedErrors: boolean;
 }) {
     browserContext.on('page', onPageCreation);
-    disposables.add(() => browserContext.off('page', onPageCreation), {
+    disposables.add({
         name: 'stop listening for page creation',
         group: PAGE_DISPOSABLES,
         timeout: 1000,
+        dispose: () => browserContext.off('page', onPageCreation),
     });
 
     const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
@@ -550,15 +551,17 @@ async function enableTestBrowserContext({
         page.setDefaultNavigationTimeout(30000);
         page.setDefaultTimeout(10000);
         const disposeConsoleHook = hookPageConsole(page, isNonReactDevMessage);
-        disposables.add(disposeConsoleHook, {
+        disposables.add({
             name: 'stop listening for console messages',
             group: PAGE_DISPOSABLES,
+            dispose: disposeConsoleHook,
         });
         page.on('pageerror', onPageError);
-        disposables.add(() => page.off('pageerror', onPageError), {
+        disposables.add({
             name: 'stop listening for page errors',
             group: PAGE_DISPOSABLES,
             timeout: 1000,
+            dispose: () => page.off('pageerror', onPageError),
         });
     }
 }
@@ -582,8 +585,11 @@ async function enableTracing({
     const name = testTracingOptions.name;
 
     await browserContext.tracing.start({ screenshots, snapshots });
-    disposables.add(
-        () => {
+    disposables.add({
+        group: TRACING_DISPOSABLES,
+        name: 'stop tracing',
+        timeout: withFeatureOptions?.saveTraceTimeout ?? 10000,
+        dispose: () => {
             const testName = mochaCtx()?.currentTest?.title;
             return browserContext.tracing.stop({
                 path: ensureTracePath({
@@ -596,12 +602,7 @@ async function enableTracing({
                 }),
             });
         },
-        {
-            group: TRACING_DISPOSABLES,
-            name: 'stop tracing',
-            timeout: withFeatureOptions?.saveTraceTimeout ?? 10000,
-        },
-    );
+    });
 }
 
 function toSearchQuery({ featureName, configName, queryParams }: IWithFeatureOptions): string {

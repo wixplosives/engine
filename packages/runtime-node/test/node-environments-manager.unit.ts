@@ -92,7 +92,7 @@ describe('Node environments manager', function () {
 
     after(() => browserProvider.dispose());
 
-    afterEach(disposables.dispose);
+    afterEach(() => disposables.dispose());
 
     it('launches a new node environment', async () => {
         const nodeEnvironmentManager = new NodeEnvironmentsManager(
