@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-cli",
-  "version": "42.1.0",
+  "version": "42.1.1",
   "bin": {
     "engine": "./bin/engine.js"
   },
@@ -16,9 +16,9 @@
     "@file-services/resolve": "^8.3.3",
     "@file-services/types": "^8.3.3",
     "@wixc3/create-disposables": "^2.2.0",
-    "@wixc3/engine-core": "^42.1.0",
-    "@wixc3/engine-runtime-node": "^42.1.0",
-    "@wixc3/engine-scripts": "^42.1.0",
+    "@wixc3/engine-core": "^42.1.1",
+    "@wixc3/engine-runtime-node": "^42.1.1",
+    "@wixc3/engine-scripts": "^42.1.1",
     "@wixc3/patterns": "^14.1.1",
     "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
