@@ -530,10 +530,15 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         if (ctx?.currentTest?.state === 'failed') {
                             const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
                             const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
-                            await featurePage.screenshot({ path: filePath });
+                            const sanitizedFilePath = filePath.replace(/[<>:"|?*]/g, '-');
+
+                            await featurePage.screenshot({ path: sanitizedFilePath });
 
                             console.log(
-                                reporters.Base.color('bright yellow', `The screenshot has been saved at ${filePath}`),
+                                reporters.Base.color(
+                                    'bright yellow',
+                                    `The screenshot has been saved at ${sanitizedFilePath}`,
+                                ),
                             );
                         }
                     }
