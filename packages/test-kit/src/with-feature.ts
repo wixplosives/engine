@@ -530,7 +530,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         if (ctx?.currentTest?.state === 'failed') {
                             const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
                             const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
-                            const sanitizedFilePath = filePath.replace(/[<>:"'`|?*]/g, '-');
+                            const sanitizedFilePath = filePath.replace(/[<>:"|?*]/g, '-');
 
                             await featurePage.screenshot({ path: sanitizedFilePath });
 
