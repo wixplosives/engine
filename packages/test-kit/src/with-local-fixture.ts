@@ -12,11 +12,13 @@ export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
  * Similar to `withFeature`, but creates a temp directory
  * and optionally copies a fixture to it as a "project".
  */
-export function withLocalFixture(suiteOptions: IWithLocalFixtureOptions) {
+export function withLocalFixture(fullSuiteOptions: IWithLocalFixtureOptions) {
+    /** we don't want to pass `fixturePath` to `withFeature` because it will kick in the new mechanism  */
+    const { fixturePath: suiteFixturePath, ...suiteOptions } = fullSuiteOptions;
     const { getLoadedFeature: originalGetLoadedFeature, disposeAfter } = withFeature(suiteOptions);
 
     async function getLoadedFeature(testOptions: IWithLocalFixtureOptions = suiteOptions) {
-        const { fixturePath = suiteOptions.fixturePath, runOptions = suiteOptions.runOptions } = testOptions;
+        const { fixturePath = suiteFixturePath, runOptions = suiteOptions.runOptions } = testOptions;
         if (runOptions && runOptions.projectPath) {
             throw new Error(
                 `runOptions["projectPath"] shouldn't be provided. It will get overridden by returned projectPath.`,
