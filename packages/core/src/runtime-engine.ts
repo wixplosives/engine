@@ -14,6 +14,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public features = new Map<FeatureClass, RuntimeFeature<any, ENV>>();
     public referencedEnvs: Set<string>;
     private running: Promise<void[]> | undefined;
+    private shutingDown = false;
     private topLevelConfigMap: Record<string, object[]>;
     public runningEnvNames: Set<string>;
     constructor(
@@ -86,16 +87,24 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         if (!this.running) {
             return;
         }
-        // don't report error on running
-        await Promise.allSettled([this.running]);
-        this.running = undefined;
-        const toDispose = Array.from(this.features.values()).reverse();
-        for (const feature of toDispose) {
-            await timeout(
-                feature.dispose(),
-                this.featureShutdownTimeout,
-                `Failed to dispose feature: ${feature.feature.id}`,
-            );
+        if (this.shutingDown) {
+            return;
+        }
+        this.shutingDown = true;
+        try {
+            // don't report error on running
+            await Promise.allSettled([this.running]);
+            this.running = undefined;
+            const toDispose = Array.from(this.features.values()).reverse();
+            for (const feature of toDispose) {
+                await timeout(
+                    feature.dispose(),
+                    this.featureShutdownTimeout,
+                    `Failed to dispose feature: ${feature.feature.id}`,
+                );
+            }
+        } finally {
+            this.shutingDown = false;
         }
     };
 
