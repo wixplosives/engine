@@ -18,6 +18,7 @@ import { ManagedRunEngine } from './engine-app-manager.js';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import { createTempDirectorySync } from 'create-temp-directory';
 import { linkNodeModules } from './link-test-dir.js';
+import { retry } from 'promise-assist';
 
 const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
@@ -350,7 +351,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         fixtureSetup = false;
         this.timeout(disposables.list().totalTimeout);
         await disposables.dispose();
-        tmpDir?.remove();
+        await retry(() => tmpDir?.remove(), { retries: 5, delay: 200 });
     }
 
     if (persist) {
