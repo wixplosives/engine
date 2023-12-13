@@ -49,6 +49,7 @@ export async function runEngine({
     engineConfig = {} as EngineConfig,
     runtimeArgs = {} as Record<string, string | boolean>,
     writeMetadataFiles = !watch as boolean,
+    publicConfigsRoute = 'configs',
 } = {}) {
     const mode: '' | 'development' | 'production' = dev ? 'development' : 'production';
     let esbuildContextWeb: esbuild.BuildContext | undefined;
@@ -99,6 +100,7 @@ export async function runEngine({
         outputPath,
         extensions,
         buildConditions,
+        publicConfigsRoute,
     };
 
     if (watch) {
@@ -217,6 +219,7 @@ function resolveBuildConfigurations({
     outputPath,
     extensions,
     buildConditions,
+    publicConfigsRoute,
 }: {
     features: Map<string, IFeatureDefinition>;
     configurations: SetMultiMap<string, IConfigDefinition>;
@@ -229,6 +232,7 @@ function resolveBuildConfigurations({
     outputPath: string;
     extensions: string[] | undefined;
     buildConditions: string[] | undefined;
+    publicConfigsRoute: string;
 }) {
     const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
     const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
@@ -255,6 +259,7 @@ function resolveBuildConfigurations({
         configName,
         extensions,
         buildConditions,
+        publicConfigsRoute,
     });
     return { buildConfigurations, featureEnvironmentsMapping, configMapping, environments };
 }

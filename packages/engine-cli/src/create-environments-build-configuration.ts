@@ -30,6 +30,7 @@ export interface CreateEnvBuildConfigOptions {
     environments: ReturnType<typeof getResolvedEnvironments>;
     config: TopLevelConfig;
     outputPath: string;
+    publicConfigsRoute: string;
     featureName?: string;
     configName?: string;
     buildConditions?: string[];
@@ -52,6 +53,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         extensions,
         featureEnvironmentsMapping,
         configMapping,
+        publicConfigsRoute,
     } = options;
 
     const mode = dev ? 'development' : 'production';
@@ -84,7 +86,7 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
             configurations,
             mode,
             staticBuild: false,
-            publicConfigsRoute: '/configs',
+            publicConfigsRoute,
             config,
         });
 

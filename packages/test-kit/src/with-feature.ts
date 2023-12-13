@@ -18,6 +18,7 @@ import { ManagedRunEngine } from './engine-app-manager.js';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import { createTempDirectorySync } from 'create-temp-directory';
 import { linkNodeModules } from './link-test-dir.js';
+import { retry } from 'promise-assist';
 
 const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
@@ -325,14 +326,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     let dedicatedBrowser: playwright.Browser | undefined;
     let dedicatedBrowserContext: playwright.BrowserContext | undefined;
 
-    afterEach('verify no page errors', () => {
-        if (capturedErrors.length) {
-            const errorsText = capturedErrors.join('\n');
-            capturedErrors.length = 0;
-            throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
-        }
-    });
-
     after('close browser context, if open', async function () {
         this.timeout(20_000);
         if (dedicatedBrowser) {
@@ -347,10 +340,18 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     let tmpDir: ReturnType<typeof createTempDirectorySync>;
 
     async function cleanup(this: Mocha.Context) {
+        // capture errors before disposing environment
+        const capturedErrorsSnapshot = [...capturedErrors];
         fixtureSetup = false;
         this.timeout(disposables.list().totalTimeout);
         await disposables.dispose();
-        tmpDir?.remove();
+        await retry(() => tmpDir?.remove(), { retries: 5, delay: 200 });
+        if (capturedErrorsSnapshot.length) {
+            // clear captured errors for next test after disposing
+            capturedErrors.length = 0;
+            const errorsText = capturedErrorsSnapshot.join('\n');
+            throw new Error(`there were uncaught page errors during the test:\n${errorsText}`);
+        }
     }
 
     if (persist) {
