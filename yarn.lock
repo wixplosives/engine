@@ -1695,10 +1695,10 @@
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.5.tgz#c8316aef842f74158b26412978c768756da4ee17"
   integrity sha512-QpUk3Y2ASLhyF3rwevjkl8VCbxVDNq72yQ9Jnqsn/GXeE/g3s8fg47659dOdHOV2ZQDBhku4vYAK4puHBI4MRQ==
 
-"@wixc3/patterns@^14.1.1":
-  version "14.1.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-14.1.1.tgz#343ccb0b93ada20010ef49bec3f2be4f28d2068a"
-  integrity sha512-fP8QBfq+yXrU9KeehRFqQ375xvKPlOo1cl7BEngyXG89Ss/IpidKduPonXo1eFzb7tlesu0FVdTK4LSS8eSq1g==
+"@wixc3/patterns@^14.1.1", "@wixc3/patterns@^14.1.3":
+  version "14.1.3"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-14.1.3.tgz#a8aae900ccc72cc8bea5f1ccf0115a1906ad629c"
+  integrity sha512-vh40tRlD0QE+76nxEV7y21OWfkR6C5gCPJ68fFrY+e3ba9yba8hInQJnaqo1fsOLoFuT3S50df3MCEERoHcDvQ==
   dependencies:
     "@wixc3/common" "^14.1.0"
     promise-assist "^2.0.1"
@@ -1732,14 +1732,14 @@
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^14.1.1":
-  version "14.1.1"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-14.1.1.tgz#e2fd2ca717ac89971ff5cbcec77f05592f31848d"
-  integrity sha512-ZmGl8AJTLfWgMm2a9eAzDBmSxhIBX49C1wWSt/RH9dqiDy4ze2DymUc4VqoMoD7PK6LbMsmmMxRc8nrP9J58Uw==
+"@wixc3/testing@^14.1.3":
+  version "14.1.3"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-14.1.3.tgz#1c25ab823ee5f6b0a2016f48b6f6a6540faaca3e"
+  integrity sha512-mTHomMYv1UJpFcck/r1/DTWVVGBh0POvEWfgDm78b0+rq2biW7XTZxSL3zhslMfh6+MuifpVDq4GrrAtnYiD8g==
   dependencies:
     "@file-services/types" "^8.3.3"
     "@wixc3/common" "^14.1.0"
-    "@wixc3/patterns" "^14.1.1"
+    "@wixc3/patterns" "^14.1.3"
     chai "^4.3.10"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
