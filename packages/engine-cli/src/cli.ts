@@ -15,6 +15,7 @@ async function engine() {
     const config = strParam(args.get('config'));
     const publicPath = strParam(args.get('publicPath')) ?? '';
     const engineConfigFilePath = strParam(args.get('engineConfigFilePath'));
+    const publicConfigsRoute = strParam(args.get('publicConfigsRoute')) ?? 'configs';
 
     if (help) {
         console.log(engine.toString());
@@ -36,6 +37,7 @@ async function engine() {
         config,
         run,
         writeMetadataFiles,
+        publicConfigsRoute,
     });
 }
 
