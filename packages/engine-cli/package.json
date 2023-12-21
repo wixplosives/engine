@@ -19,7 +19,7 @@
     "@wixc3/engine-core": "^42.1.4",
     "@wixc3/engine-runtime-node": "^42.1.4",
     "@wixc3/engine-scripts": "^42.1.4",
-    "@wixc3/patterns": "^15.0.0",
+    "@wixc3/patterns": "^15.1.0",
     "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
     "express": "^4.18.2",
