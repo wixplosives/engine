@@ -1686,10 +1686,10 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-15.0.0.tgz#9ff90e72e5fc6be7600bbc098df15d062cc52933"
-  integrity sha512-OvSWCkOYvXNFMlnOvmB3PECL6NWwcUytVwKi3daOFTv8MGhy/KrUeiFXTOLAzWoV7XAhCraVDX5Jxn52VzM11Q==
+"@wixc3/common@^15.1.0":
+  version "15.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-15.1.0.tgz#06e524b7d2b7871922c6efcaeb3b2a99a16f0977"
+  integrity sha512-1tRirJwCcvxEkBljG8AcEByBfXeTHHtighgqwA0LXqE2SGNTRzYvObzV8XVLQNB5hHT6mRlpNqRkt+ncs0pRcw==
   dependencies:
     "@file-services/path" "^8.3.3"
     "@file-services/types" "^8.3.3"
@@ -1700,39 +1700,39 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-15.0.0.tgz#c116aa6126c5d2ca071bb328d62ac7137989617e"
-  integrity sha512-S0y+BjXi7XPTw0MYw8iIjCd9Oz0GHRlkjHO3JqpptGf0uf6lrz+e3wf6wmUyL+rPPzR6cFhbbYasHgymO4ggzA==
+"@wixc3/docs@^15.1.0":
+  version "15.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-15.1.0.tgz#6fb375bad110341e427af974063de437159f6097"
+  integrity sha512-u8LhN+Wamsk9KQFml0aTvqOOwZthjjtXjH8DenFgRvyVY9k5+pzpWAE2tVlVJqrxNft41EtZ+eXtiPP067fyVQ==
   dependencies:
     "@microsoft/api-documenter" "^7.23.14"
     "@microsoft/api-extractor" "^7.38.5"
     "@microsoft/api-extractor-model" "^7.28.3"
-    "@wixc3/common" "^15.0.0"
-    "@wixc3/fs-utils" "^15.0.0"
+    "@wixc3/common" "^15.1.0"
+    "@wixc3/fs-utils" "^15.1.0"
     "@wixc3/typescript" "^15.0.0"
     glob "^10.3.10"
     yargs "^17.7.2"
 
-"@wixc3/fs-utils@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-15.0.0.tgz#f7f5bead0325975d9442aa840201eef77a28c4ee"
-  integrity sha512-+xyaV0DjPgtn8AIOezYIy+QwfXfue09yqm+8JCGMQX74YHZhtmbiqptcM+dF7FkWfj54lUIxtKDfEUXpMUGB2w==
+"@wixc3/fs-utils@^15.1.0":
+  version "15.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-15.1.0.tgz#1dc030ea50af4cf4dcc810d90e1c5b8849dd6a5e"
+  integrity sha512-K1YXBv+KVRzMts6oaT6StnuJRojRMQH74ahxcOoBKGlFgUWI9BA1HECH9kmkxSEvHkkmhzmBg4Pw7Aj1w9JFWw==
   dependencies:
     "@file-services/memory" "^8.3.3"
-    "@wixc3/common" "^15.0.0"
+    "@wixc3/common" "^15.1.0"
 
 "@wixc3/isomorphic-worker@^1.2.5":
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/@wixc3/isomorphic-worker/-/isomorphic-worker-1.2.5.tgz#c8316aef842f74158b26412978c768756da4ee17"
   integrity sha512-QpUk3Y2ASLhyF3rwevjkl8VCbxVDNq72yQ9Jnqsn/GXeE/g3s8fg47659dOdHOV2ZQDBhku4vYAK4puHBI4MRQ==
 
-"@wixc3/patterns@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-15.0.0.tgz#2208b031864150e8500df8a06b2f9f43bf5f0375"
-  integrity sha512-Vf2/Vpr/ieRpdgkgsPZQj2w2Qh2TQ2nuqkB7c+K8YDkurBvFdP21Vbr7HV9DXWwfZdkMYWgJBRTZk9CJga3oDg==
+"@wixc3/patterns@^15.1.0":
+  version "15.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-15.1.0.tgz#3e1210a37c27a27fc7e287f5810ef128c06f91eb"
+  integrity sha512-zNkPWHYOZeJYYbOfBit5wcVYJvd2LBA9HLl6xwLXM4rWTf5l13T/kvW1OZOwQGyohDHwO9KbVzhyTaajNwDWBw==
   dependencies:
-    "@wixc3/common" "^15.0.0"
+    "@wixc3/common" "^15.1.0"
     promise-assist "^2.0.1"
 
 "@wixc3/resolve-directory-context@^3.0.5":
@@ -1751,27 +1751,27 @@
     minimatch "^9.0.3"
     type-fest "^4.0.0"
 
-"@wixc3/testing-node@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-15.0.0.tgz#e218ea4a5647f5db1a6794d131b0631a19e54da9"
-  integrity sha512-VBfeKH7J2q6oolMq6N4KmoXohgpIwpoD6R6vdWr0aL1ipAGq+kttQDndLdCCbVdT3qb2661DISXTk2DPQRte0A==
+"@wixc3/testing-node@^15.1.0":
+  version "15.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing-node/-/testing-node-15.1.0.tgz#d203ce44330d599ecff292a3bfd7a6e75b491c9b"
+  integrity sha512-lxm6pAlF/r9FQ1h1rSSP5tD961YAupV2c0s1tMNhLX86/5rn1z+/pltTcEoF+nlO2IRwJ+MFynWarjIk2OwREw==
   dependencies:
     "@file-services/node" "^8.3.3"
     "@file-services/types" "^8.3.3"
-    "@wixc3/common" "^15.0.0"
-    "@wixc3/patterns" "^15.0.0"
+    "@wixc3/common" "^15.1.0"
+    "@wixc3/patterns" "^15.1.0"
     chai "^4.3.10"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-15.0.0.tgz#924b3d4b31341a7113a4eb62daf1300475481b99"
-  integrity sha512-JuK5xTyR3/jLmJWr/v8ZIvZyAhKSxnPeSDp8/gYBAsHduihJG0jz3f+I7qyfkhmypIGaY1C8/ggmnJobzZni4g==
+"@wixc3/testing@^15.1.0":
+  version "15.1.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-15.1.0.tgz#94f9037a3950955833c42493bd045ede67fc3d49"
+  integrity sha512-ZbllcveV0RhJUbBoSiWbYtfNAzfPVH7ZcznR2mgYhK/cZ9IPEfWloEoHJK/vwse/T7m04ee9UrzmMVeTr+8XKQ==
   dependencies:
     "@file-services/types" "^8.3.3"
-    "@wixc3/common" "^15.0.0"
-    "@wixc3/patterns" "^15.0.0"
+    "@wixc3/common" "^15.1.0"
+    "@wixc3/patterns" "^15.1.0"
     chai "^4.3.10"
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
@@ -3395,10 +3395,10 @@ electron-to-chromium@^1.4.601:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.610.tgz#e17b22203f4aa2e1ed77759c720546d95a51186f"
   integrity sha512-mqi2oL1mfeHYtOdCxbPQYV/PL7YrQlxbvFEZ0Ee8GbDdShimqt2/S6z2RWqysuvlwdOrQdqvE0KZrBTipAeJzg==
 
-electron@^28.0.0:
-  version "28.0.0"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-28.0.0.tgz#21e5590c967125a3c1ec6b0d8d923baf9eb6fd72"
-  integrity sha512-eDhnCFBvG0PGFVEpNIEdBvyuGUBsFdlokd+CtuCe2ER3P+17qxaRfWRxMmksCOKgDHb5Wif5UxqOkZSlA4snlw==
+electron@^28.1.0:
+  version "28.1.0"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-28.1.0.tgz#9de1ecdaafcb0ec5753827f14dfb199e6c84545e"
+  integrity sha512-82Y7o4PSWPn1o/aVwYPsgmBw6Gyf2lVHpaBu3Ef8LrLWXxytg7ZRZr/RtDqEMOzQp3+mcuy3huH84MyjdmP50Q==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^18.11.18"
