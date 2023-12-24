@@ -345,7 +345,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         const capturedErrorsSnapshot = [...capturedErrors];
         fixtureSetup = false;
         const list = disposables.list();
-        this.timeout(disposables.list().totalTimeout);
+        this.timeout(list.totalTimeout);
         if (verbose) {
             console.log(`Disposing`);
             console.log(JSON.stringify(list, null, 2));
