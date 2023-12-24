@@ -82,9 +82,8 @@ export class NodeEnvManager {
                 });
         });
 
-        const host = new WsServerHost(socketServer);
-        this.communication.registerMessageHandler(host);
-
+        const host = new WsServerHost(socketServer, this.communication);
+        this.communication?.registerMessageHandler(host);
         if (process.send) {
             process.send({ port });
         }

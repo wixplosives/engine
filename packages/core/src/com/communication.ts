@@ -119,7 +119,7 @@ export class Communication {
     public registerEnv(id: string, host: Target): void {
         if (!this.environments[id]) {
             this.environments[id] = { id, host } as EnvironmentRecord;
-        } else {
+        } else if (this.environments[id]?.host !== host) {
             throw new Error(DUPLICATE_REGISTER(id, 'Environment'));
         }
     }
