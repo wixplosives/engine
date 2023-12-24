@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron-commons",
-  "version": "42.1.2",
+  "version": "42.1.5",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@file-services/node": "^8.3.3",
-    "@wixc3/engine-core": "^42.1.2",
-    "@wixc3/engine-runtime-node": "^42.1.2",
+    "@wixc3/engine-core": "^42.1.5",
+    "@wixc3/engine-runtime-node": "^42.1.5",
     "@wixc3/resolve-directory-context": "^4.0.0",
     "tree-kill": "^1.2.2"
   },
