@@ -47,6 +47,7 @@ export class NodeEnvManager {
         const disposeListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
         const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
+
         await this.runFeatureEnvironments(verbose, runtimeOptions);
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
@@ -82,9 +83,8 @@ export class NodeEnvManager {
                 });
         });
 
-        const host = new WsServerHost(socketServer);
+        const host = new WsServerHost(socketServer, this.communication);
         this.communication.registerMessageHandler(host);
-
         if (process.send) {
             process.send({ port });
         }
