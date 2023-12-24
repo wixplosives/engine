@@ -340,12 +340,25 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     let tmpDir: ReturnType<typeof createTempDirectorySync>;
 
     async function cleanup(this: Mocha.Context) {
+        const verbose = process.env.VERBOSE_DISPOSE === 'true';
         // capture errors before disposing environment
         const capturedErrorsSnapshot = [...capturedErrors];
         fixtureSetup = false;
-        this.timeout(disposables.list().totalTimeout);
+        const list = disposables.list();
+        this.timeout(list.totalTimeout);
+        if (verbose) {
+            console.log(`Disposing`);
+            console.log(JSON.stringify(list, null, 2));
+        }
         await disposables.dispose();
+        if (verbose) {
+            console.log(`Disposed`);
+            console.log('Disposing temp dirs');
+        }
         await retry(() => tmpDir?.remove(), { retries: 5, delay: 200 });
+        if (verbose) {
+            console.log('Disposed temp dirs');
+        }
         if (capturedErrorsSnapshot.length) {
             // clear captured errors for next test after disposing
             capturedErrors.length = 0;
@@ -355,9 +368,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     }
 
     if (persist) {
-        after('dispose suite level page', cleanup);
+        after('withFeature: cleanup suite level page', cleanup);
     } else {
-        afterEach('cleanup', cleanup);
+        afterEach('withFeature: cleanup', cleanup);
     }
 
     function ensureProjectPath() {
