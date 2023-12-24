@@ -117,9 +117,10 @@ export class Communication {
      * Registers environments that spawned in the same execution context as the root environment.
      */
     public registerEnv(id: string, host: Target): void {
-        if (!this.environments[id]) {
+        const existingEnv = this.environments[id];
+        if (!existingEnv) {
             this.environments[id] = { id, host } as EnvironmentRecord;
-        } else if (this.environments[id]?.host !== host) {
+        } else if (existingEnv.host !== host) {
             throw new Error(DUPLICATE_REGISTER(id, 'Environment'));
         }
     }
