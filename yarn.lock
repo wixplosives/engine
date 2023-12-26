@@ -1693,10 +1693,10 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^15.1.0":
-  version "15.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-15.1.0.tgz#06e524b7d2b7871922c6efcaeb3b2a99a16f0977"
-  integrity sha512-1tRirJwCcvxEkBljG8AcEByBfXeTHHtighgqwA0LXqE2SGNTRzYvObzV8XVLQNB5hHT6mRlpNqRkt+ncs0pRcw==
+"@wixc3/common@^15.1.0", "@wixc3/common@^15.1.1":
+  version "15.1.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-15.1.1.tgz#baa1e4e4c7eea5aa2ad1ca523f3e1e3234bff399"
+  integrity sha512-ZO0MZ65QBIV3lzz07DU+JZ/CrqYIB6/Mft0C1adHVWwYU33ynv61K0QuLCpE/+M2Y5AJpTdbUqosfHBKrFgHJw==
   dependencies:
     "@file-services/path" "^8.3.3"
     "@file-services/types" "^8.3.3"
@@ -1707,27 +1707,27 @@
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
   integrity sha512-YQAvDKG8k503Pnak6kj0lNbGaLcyZSjFipFmK17rcE2jpLOrA5B72jrUAPGCbDrXnVCyc+U7Xmr8eyxxKRoIuQ==
 
-"@wixc3/docs@^15.1.0":
-  version "15.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-15.1.0.tgz#6fb375bad110341e427af974063de437159f6097"
-  integrity sha512-u8LhN+Wamsk9KQFml0aTvqOOwZthjjtXjH8DenFgRvyVY9k5+pzpWAE2tVlVJqrxNft41EtZ+eXtiPP067fyVQ==
+"@wixc3/docs@^15.1.1":
+  version "15.1.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/docs/-/docs-15.1.1.tgz#8dc5264992592fb620679d5727e647ed6940203a"
+  integrity sha512-1KhGzNBHYmHXdz4jNuUlB2VRACKTzBVlpMEcdNPiIBdX227te2whCaHrshVbnGZuaGGTDMtsghjg/yAs2tSwkQ==
   dependencies:
     "@microsoft/api-documenter" "^7.23.14"
     "@microsoft/api-extractor" "^7.38.5"
     "@microsoft/api-extractor-model" "^7.28.3"
-    "@wixc3/common" "^15.1.0"
-    "@wixc3/fs-utils" "^15.1.0"
-    "@wixc3/typescript" "^15.0.0"
+    "@wixc3/common" "^15.1.1"
+    "@wixc3/fs-utils" "^15.1.1"
+    "@wixc3/typescript" "^15.1.1"
     glob "^10.3.10"
     yargs "^17.7.2"
 
-"@wixc3/fs-utils@^15.1.0":
-  version "15.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-15.1.0.tgz#1dc030ea50af4cf4dcc810d90e1c5b8849dd6a5e"
-  integrity sha512-K1YXBv+KVRzMts6oaT6StnuJRojRMQH74ahxcOoBKGlFgUWI9BA1HECH9kmkxSEvHkkmhzmBg4Pw7Aj1w9JFWw==
+"@wixc3/fs-utils@^15.1.1":
+  version "15.1.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/fs-utils/-/fs-utils-15.1.1.tgz#07be4abc73b4686cd64992c064b21d38508b169c"
+  integrity sha512-5iJOXIxlD8PdutLQb/2q74xZhqOgmeio1a72RLmItnNMHWenuDGakOudh3z+oSA4Ym3KcesPfzlNFoZFWBDgkg==
   dependencies:
     "@file-services/memory" "^8.3.3"
-    "@wixc3/common" "^15.1.0"
+    "@wixc3/common" "^15.1.1"
 
 "@wixc3/isomorphic-worker@^1.2.5":
   version "1.2.5"
@@ -1783,10 +1783,10 @@
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/typescript@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-15.0.0.tgz#faa038cae3f9f7842f057c2a77222312fbeffee1"
-  integrity sha512-FwCx3q4PoI/TqfKl/ZKW7wNiBvB14QhNvZOBfLmhN+p3iWFqv1cEMlJ9NFspVdMzV38CCyrdBcqFmAV+TH/B/Q==
+"@wixc3/typescript@^15.1.1":
+  version "15.1.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/typescript/-/typescript-15.1.1.tgz#e5f3cfbcc423157da272fc36f8d97afd633d195f"
+  integrity sha512-Xv2liBbvMbMEySh17UQ4V9IgQccYj8fLUm0VzMq3fetVwEtXLzvNiyhe08AKKR4tGmN4AfGdAsbpqFmd3jwUng==
 
 "@wixc3/wait-for-call@^15.0.0":
   version "15.0.0"
