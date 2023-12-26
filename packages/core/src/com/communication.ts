@@ -176,7 +176,15 @@ export class Communication {
                 if (method === 'then') {
                     return undefined;
                 }
-
+                // NOTICE!
+                // WHEN DEBUGGING, UNCOMMENT to prevent debug only calls to `toString` `valueOf` etc.
+                // if (Object.hasOwn(Object.prototype, method)) {
+                //     const thing = Reflect.get(Object.prototype, method);
+                //     if (typeof thing === 'function') {
+                //         return thing.bind(obj);
+                //     }
+                //     return thing;
+                // }
                 if (typeof method === 'string') {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     let runtimeMethod = obj[method];
