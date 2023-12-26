@@ -17,6 +17,16 @@ export interface WorkerThreadInitializerOptions2 extends InitializerOptions {
     runtimeOptions?: IRunOptions;
 }
 
+export function runWorker(instanceId: string, workerURL: URL, runtimeOptions?: IRunOptions) {
+    const envRuntimeOptions = new Map(runtimeOptions?.entries());
+    envRuntimeOptions.set('environment_id', instanceId);
+    return new Worker(workerURL, {
+        name: instanceId,
+        workerData: { runtimeOptions: envRuntimeOptions },
+        execArgv: process.execArgv,
+    } as UniversalWorkerOptions);
+}
+
 export function workerThreadInitializer2({
     communication,
     env,
