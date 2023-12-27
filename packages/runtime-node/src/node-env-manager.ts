@@ -83,7 +83,7 @@ export class NodeEnvManager {
             disposeListener();
             await close();
         };
-        this.runFeatureEnvironments(verbose, runtimeOptions, host);
+        await this.runFeatureEnvironments(verbose, runtimeOptions, host);
 
         if (process.send) {
             process.send({ port });
@@ -91,7 +91,7 @@ export class NodeEnvManager {
         return { port };
     }
 
-    private runFeatureEnvironments(
+    private async runFeatureEnvironments(
         verbose: boolean,
         runtimeOptions: Map<string, string | boolean | undefined>,
         host: WsServerHost,
@@ -112,8 +112,8 @@ export class NodeEnvManager {
             console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
         }
 
-        const disposes = envNames.map((envName) =>
-            this.initializeWorkerEnvironment(envName, runtimeOptions, host, verbose),
+        const disposes = await Promise.all(
+            envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, host, verbose)),
         );
 
         return () => Promise.all(disposes.map((dispose) => dispose()));
@@ -153,7 +153,7 @@ export class NodeEnvManager {
         return new URL(`${env.env}.${env.envType}${jsOutExtension}`, this.importMeta.url);
     }
 
-    private initializeWorkerEnvironment(
+    private async initializeWorkerEnvironment(
         envName: string,
         runtimeOptions: IRunOptions,
         host: WsServerHost,
@@ -166,7 +166,7 @@ export class NodeEnvManager {
         const envInstanceId =
             env.endpointType === 'single' ? env.env : `${envName}/${this.envInstanceIdCounter.next(envName)}`;
         const worker = runWorker(envInstanceId, this.createEnvironmentFileUrl(envName), runtimeOptions);
-        const runningEnv = connectWorkerToHost(envName, worker, host);
+        const runningEnv = await connectWorkerToHost(envName, worker, host);
 
         this.openEnvironments.add(envName, runningEnv);
         if (verbose) {
@@ -198,25 +198,41 @@ export class NodeEnvManager {
 }
 
 function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorker>, host: WsServerHost) {
-    const runningEnv = {
-        id: envName,
-        dispose: async () => {
-            await worker.terminate();
-        },
-        getMetrics: async () => {
-            return getMetricsFromWorker(worker);
-        },
-    };
+    type AnyMessage = { data?: any };
+    return new Promise<RunningNodeEnvironment>((res, rej) => {
+        const runningEnv: RunningNodeEnvironment = {
+            id: envName,
+            dispose: async () => {
+                worker.removeEventListener('message', handleWorkerMessage);
+                worker.removeEventListener('error', handleInitializeError);
+                host.removeEventListener('message', handleClientMessage);
+                await worker.terminate();
+            },
+            getMetrics: async () => {
+                return getMetricsFromWorker(worker);
+            },
+        };
+        const ready = () => {
+            worker.removeEventListener('error', handleInitializeError);
+            res(runningEnv);
+        };
+        const handleWorkerMessage = (message: AnyMessage) => {
+            if (message.data?.type === 'ready') {
+                ready();
+            }
+            host.postMessage(message.data);
+        };
+        const handleClientMessage = (message: AnyMessage) => {
+            worker.postMessage(message.data);
+        };
+        const handleInitializeError = () => {
+            rej(new Error(`failed initializing environment ${envName}`));
+        };
 
-    type UnknownMessage = any;
-    worker.addEventListener('message', (message) => {
-        host.postMessage(message.data as UnknownMessage);
+        worker.addEventListener('message', handleWorkerMessage);
+        worker.addEventListener('error', handleInitializeError);
+        host.addEventListener('message', handleClientMessage);
     });
-
-    host.addEventListener('message', (message) => {
-        worker.postMessage(message.data as UnknownMessage);
-    });
-    return runningEnv;
 }
 
 export function parseRuntimeOptions() {
