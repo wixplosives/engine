@@ -1,5 +1,5 @@
 import type io from 'socket.io';
-import { BaseHost, Communication, type IDisposable, type Message } from '@wixc3/engine-core';
+import { BaseHost, type IDisposable, type Message } from '@wixc3/engine-core';
 
 export class WsHost extends BaseHost {
     constructor(private socket: io.Socket) {
@@ -20,14 +20,7 @@ export class WsServerHost extends BaseHost implements IDisposable {
     private socketToEnvId = new Map<string, { socket: io.Socket; clientID: string }>();
     private disposed = false;
 
-    constructor(
-        private server: io.Server | io.Namespace,
-        /**
-         * Used to register the proxy connection origin ('main') to the communication
-         * this needed because when you use AsyncProxy and call to 'main' from 'processing/node', you have the original env name not the namespaced one.
-         */
-        private communication?: Communication,
-    ) {
+    constructor(private server: io.Server | io.Namespace) {
         super();
         this.server.on('connection', this.onConnection);
     }
@@ -67,8 +60,6 @@ export class WsServerHost extends BaseHost implements IDisposable {
             const fromId = nameSpace(message.from);
             this.socketToEnvId.set(fromId, { socket, clientID: message.from });
             this.socketToEnvId.set(originId, { socket, clientID: message.origin });
-            this.communication?.registerEnv(message.origin, this);
-            this.communication?.registerEnv(message.from, this);
             // modify message to be able to forward it
             message.from = fromId;
             message.origin = originId;

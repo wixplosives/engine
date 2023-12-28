@@ -1,9 +1,8 @@
 import {
     AnyEnvironment,
-    BaseHost,
-    Communication,
     ConfigModule,
     IRunOptions,
+    MultiCounter,
     parseInjectRuntimeConfigConfig,
 } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
@@ -13,8 +12,8 @@ import { WsServerHost } from './core-node/ws-node-host';
 import { resolveEnvironments } from './environments';
 import { launchEngineHttpServer } from './launch-http-server';
 import { IStaticFeatureDefinition, PerformanceMetrics } from './types';
-import { workerThreadInitializer2 } from './worker-thread-initializer2';
-import { bindMetricsListener } from './metrics-utils';
+import { runWorker } from './worker-thread-initializer2';
+import { bindMetricsListener, getMetricsFromWorker } from './metrics-utils';
 
 export type ConfigFilePath = string;
 
@@ -27,15 +26,14 @@ export type ConfigurationEnvironmentMapping = Record<string, ConfigurationEnviro
 
 export interface RunningNodeEnvironment {
     id: string;
-    initialize(): Promise<void>;
     dispose(): Promise<void>;
     getMetrics(): Promise<PerformanceMetrics>;
 }
 
 export class NodeEnvManager {
+    envInstanceIdCounter = new MultiCounter();
     id = 'node-environment-manager';
     openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
-    communication = new Communication(new BaseHost(this.id), this.id, {}, {}, true, {});
     autoLaunchDispose?: () => Promise<void>;
     constructor(
         private importMeta: { url: string },
@@ -48,14 +46,9 @@ export class NodeEnvManager {
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
         const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
 
-        await this.runFeatureEnvironments(verbose, runtimeOptions);
-
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath });
-        this.autoLaunchDispose = async () => {
-            disposeListener();
-            await close();
-        };
+
         app.get<[string]>('/configs/*', (req, res) => {
             const reqEnv = req.query.env as string;
             if (typeof reqEnv !== 'string') {
@@ -83,15 +76,26 @@ export class NodeEnvManager {
                 });
         });
 
-        const host = new WsServerHost(socketServer, this.communication);
-        this.communication.registerMessageHandler(host);
+        const host = new WsServerHost(socketServer);
+
+        this.autoLaunchDispose = async () => {
+            host.dispose();
+            disposeListener();
+            await close();
+        };
+        await this.runFeatureEnvironments(verbose, runtimeOptions, host);
+
         if (process.send) {
             process.send({ port });
         }
         return { port };
     }
 
-    private async runFeatureEnvironments(verbose: boolean, runtimeOptions: Map<string, string | boolean | undefined>) {
+    private async runFeatureEnvironments(
+        verbose: boolean,
+        runtimeOptions: Map<string, string | boolean | undefined>,
+        host: WsServerHost,
+    ) {
         const featureName = runtimeOptions.get('feature');
         if (!featureName || typeof featureName !== 'string') {
             throw new Error('feature is a required for autoLaunch');
@@ -109,7 +113,7 @@ export class NodeEnvManager {
         }
 
         const disposes = await Promise.all(
-            envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, verbose)),
+            envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, host, verbose)),
         );
 
         return () => Promise.all(disposes.map((dispose) => dispose()));
@@ -149,20 +153,21 @@ export class NodeEnvManager {
         return new URL(`${env.env}.${env.envType}${jsOutExtension}`, this.importMeta.url);
     }
 
-    private async initializeWorkerEnvironment(envName: string, runtimeOptions: IRunOptions, verbose = false) {
+    private async initializeWorkerEnvironment(
+        envName: string,
+        runtimeOptions: IRunOptions,
+        host: WsServerHost,
+        verbose: boolean,
+    ) {
         const env = this.featureEnvironmentsMapping.availableEnvironments[envName];
         if (!env) {
             throw new Error(`environment ${envName} not found`);
         }
+        const envInstanceId =
+            env.endpointType === 'single' ? env.env : `${envName}/${this.envInstanceIdCounter.next(envName)}`;
+        const worker = runWorker(envInstanceId, this.createEnvironmentFileUrl(envName), runtimeOptions);
+        const runningEnv = await connectWorkerToHost(envName, worker, host);
 
-        const runningEnv = workerThreadInitializer2({
-            communication: this.communication,
-            env,
-            workerURL: this.createEnvironmentFileUrl(envName),
-            runtimeOptions,
-        });
-
-        await runningEnv.initialize();
         this.openEnvironments.add(envName, runningEnv);
         if (verbose) {
             console.log(`[ENGINE]: Environment ${runningEnv.id} is ready`);
@@ -188,9 +193,46 @@ export class NodeEnvManager {
     }
     async dispose() {
         await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
-        this.communication.dispose();
         await this.autoLaunchDispose?.();
     }
+}
+
+function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorker>, host: WsServerHost) {
+    type AnyMessage = { data?: any };
+    return new Promise<RunningNodeEnvironment>((res, rej) => {
+        const runningEnv: RunningNodeEnvironment = {
+            id: envName,
+            dispose: async () => {
+                worker.removeEventListener('message', handleWorkerMessage);
+                worker.removeEventListener('error', handleInitializeError);
+                host.removeEventListener('message', handleClientMessage);
+                await worker.terminate();
+            },
+            getMetrics: async () => {
+                return getMetricsFromWorker(worker);
+            },
+        };
+        const ready = () => {
+            worker.removeEventListener('error', handleInitializeError);
+            res(runningEnv);
+        };
+        const handleWorkerMessage = (message: AnyMessage) => {
+            if (message.data?.type === 'ready') {
+                ready();
+            }
+            host.postMessage(message.data);
+        };
+        const handleClientMessage = (message: AnyMessage) => {
+            worker.postMessage(message.data);
+        };
+        const handleInitializeError = () => {
+            rej(new Error(`failed initializing environment ${envName}`));
+        };
+
+        worker.addEventListener('message', handleWorkerMessage);
+        worker.addEventListener('error', handleInitializeError);
+        host.addEventListener('message', handleClientMessage);
+    });
 }
 
 export function parseRuntimeOptions() {
