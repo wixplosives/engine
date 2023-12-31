@@ -140,6 +140,10 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      * Prebuild the engine before running the tests
      */
     buildFlow?: 'prebuild' | 'lazy';
+    /**
+     * fresh context for each test
+     */
+    freshContext?: boolean;
 }
 
 export interface Tracing {
@@ -262,6 +266,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
+        freshContext = true,
     } = withFeatureOptions;
 
     if (
@@ -329,8 +334,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     after('close browser context, if open', async function () {
         this.timeout(20_000);
         if (dedicatedBrowser) {
+            await dedicatedBrowserContext?.close();
             await dedicatedBrowser.close();
             dedicatedBrowser = undefined;
+            dedicatedBrowserContext = undefined;
         }
     });
 
@@ -463,6 +470,17 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         capturedErrors,
                         consoleLogAllowedErrors,
                     });
+                    if (freshContext) {
+                        disposables.add({
+                            group: PAGE_DISPOSABLES,
+                            name: 'close browser context',
+                            timeout: 5000,
+                            dispose: async () => {
+                                await dedicatedBrowserContext?.close();
+                                dedicatedBrowserContext = undefined;
+                            },
+                        });
+                    }
                 }
             } else {
                 if (!browser) {
