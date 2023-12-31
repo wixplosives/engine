@@ -11,6 +11,7 @@ async function engine() {
     const verbose = boolParam(args.get('verbose')) ?? false;
     const writeMetadataFiles = boolParam(args.get('writeMetadataFiles')) ?? !watch;
 
+    const runtimeArgs = JSON.parse(strParam(args.get('runtimeArgs')) ?? '{}');
     const feature = strParam(args.get('feature'));
     const config = strParam(args.get('config'));
     const publicPath = strParam(args.get('publicPath')) ?? '';
@@ -26,6 +27,7 @@ async function engine() {
     const engineConfig = await loadEngineConfig(process.cwd(), engineConfigFilePath);
 
     await runEngine({
+        runtimeArgs,
         engineConfig,
         verbose,
         clean,
