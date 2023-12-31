@@ -141,9 +141,9 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      */
     buildFlow?: 'prebuild' | 'lazy';
     /**
-     * fresh context for each test
+     * resets the browser context before each test
      */
-    freshContext?: boolean;
+    resetContextBetweenTests?: boolean;
 }
 
 export interface Tracing {
@@ -266,7 +266,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
-        freshContext = true,
+        resetContextBetweenTests = true,
     } = withFeatureOptions;
 
     if (
@@ -470,7 +470,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         capturedErrors,
                         consoleLogAllowedErrors,
                     });
-                    if (freshContext) {
+                    if (resetContextBetweenTests) {
                         disposables.add({
                             group: PAGE_DISPOSABLES,
                             name: 'close browser context',
