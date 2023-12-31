@@ -29,7 +29,7 @@
   "dependencies": {
     "@file-services/node": "^8.3.3",
     "@file-services/resolve": "^8.3.3",
-    "@wixc3/common": "^15.1.0",
+    "@wixc3/common": "^15.1.1",
     "@wixc3/engine-core": "^42.1.8",
     "@wixc3/engine-dashboard": "^42.1.8",
     "@wixc3/engine-runtime-node": "^42.1.8",
