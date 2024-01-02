@@ -2,7 +2,7 @@ import { COM, UniversalWorkerHost, type InitializerOptions } from '@wixc3/engine
 import type { UniversalWorkerOptions } from '@wixc3/isomorphic-worker/types';
 import { Worker } from '@wixc3/isomorphic-worker/worker';
 import { createDisposables } from '@wixc3/patterns';
-import { createMetadataProvider } from './core-node/create-application-metadata-provider.js';
+import { getMetaData } from './core-node/create-application-metadata-provider.js';
 import type { WorkerThreadCommand, WorkerThreadEnvironmentStartupOptions } from './types.js';
 
 export interface WorkerThreadInitializer {
@@ -25,21 +25,12 @@ export function workerThreadInitializer({
     environmentStartupOptions,
 }: WorkerThreadInitializerOptions): WorkerThreadInitializer {
     const disposables = createDisposables('workerThreadInitializer');
-
     const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
-
     const envIsReady = communication.envReady(instanceId);
-
-    const metadataProvider = createMetadataProvider(communication);
-    disposables.add({
-        name: 'worker thread metadataProvider',
-        timeout: 5_000,
-        dispose: metadataProvider,
-    });
 
     const initialize = async (): Promise<void> => {
         const { requiredModules, basePath, config, featureName, features, runtimeOptions } =
-            await metadataProvider.getMetadata();
+            await getMetaData(communication);
 
         const worker = new Worker(workerThreadEntryPath, {
             workerData: {
@@ -93,6 +84,6 @@ export function workerThreadInitializer({
     return {
         id: instanceId,
         initialize,
-        dispose: ()=>disposables.dispose(),
+        dispose: () => disposables.dispose(),
     };
 }

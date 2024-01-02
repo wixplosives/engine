@@ -1,6 +1,6 @@
 import { type ActiveEnvironment, type EnvironmentInitializer } from '@wixc3/engine-core';
 import { initializeNodeEnvironment, type InitializeNodeEnvironmentOptions } from '@wixc3/engine-electron-commons';
-import { createMetadataProvider } from '@wixc3/engine-runtime-node';
+import { getMetaData } from '@wixc3/engine-runtime-node';
 import { createDisposables } from '@wixc3/patterns';
 
 /**
@@ -13,9 +13,8 @@ export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
 > = async (options) => {
     const disposables = createDisposables('initializeNodeEnvironmentInNode');
 
-    const metadataProvider = createMetadataProvider(options.communication);
+    const runtimeArguments = await getMetaData(options.communication);
 
-    const runtimeArguments = await metadataProvider.getMetadata();
     const { id, dispose, onExit, environmentIsReady } = initializeNodeEnvironment({
         runtimeArguments,
         ...options,
@@ -25,7 +24,7 @@ export const initializeNodeEnvironmentInNode: EnvironmentInitializer<
     disposables.add({
         name: 'node-environment-dispose',
         timeout: 5_000,
-        dispose: () => Promise.all([metadataProvider.dispose(), dispose()]),
+        dispose,
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
