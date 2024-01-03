@@ -65,7 +65,7 @@
     "html-webpack-plugin": "^5.6.0",
     "lerna": "^8.0.1",
     "mocha": "^10.2.0",
-    "mocha-play": "^7.0.1",
+    "mocha-play": "^7.0.2",
     "playwright-core": "^1.40.1",
     "prettier": "^3.1.1",
     "promise-assist": "^2.0.1",
