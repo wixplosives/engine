@@ -494,6 +494,17 @@ export class Communication {
         // eslint-disable-next-line no-constant-condition
         if (message.forwardingChain.indexOf(this.rootEnvId) > -1) {
             console.error(FORWARDING_MESSAGE_STUCK_IN_CIRCULAR(cleanMessage(message), this.rootEnvId, env.id));
+            this.sendTo(message.from, {
+                from: this.rootEnvId,
+                origin: this.rootEnvId,
+                to: message.origin,
+                callbackId: message.callbackId,
+                type: 'callback',
+                forwardingChain: [this.rootEnvId],
+                error: new Error(
+                    `cannot reach environment '${message.to}' from '${message.from}' since it's stuck in circular messaging loop`,
+                ),
+            });
             return;
         } else if (this.DEBUG) {
             console.debug(FORWARDING_MESSAGE(cleanMessage(message), this.rootEnvId, env.id));
