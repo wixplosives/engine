@@ -31,9 +31,13 @@ export const MESSAGE_FROM_UNKNOWN_ENVIRONMENT = (message: Message, hostId: strin
         message.from
     }" at "${hostId}": ${JSON.stringify(message)}`;
 
-export const FORWARDING_MESSAGE_STUCK_IN_CIRCULAR = (forwardingChain: string[]) =>
-    `\t\t^ is stuck in circular messaging loop ${JSON.stringify(
-        forwardingChain,
+export const FORWARDING_MESSAGE_STUCK_IN_CIRCULAR = (message: Message, fromEnv: string, toEnv: string) =>
+    `forwarding message ${JSON.stringify(
+        message,
+        null,
+        2,
+    )} from "${fromEnv}" to "${toEnv}"\n\t^ is stuck in circular messaging loop ${JSON.stringify(
+        message.forwardingChain,
     )}. this probably happened because you are forwarding a message to an environment that is not connected to the root environment`;
 
 export const FORWARDING_MESSAGE = (message: Message, fromEnv: string, toEnv: string) =>

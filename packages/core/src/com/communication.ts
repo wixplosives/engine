@@ -490,14 +490,13 @@ export class Communication {
     }
 
     private forwardMessage(message: Message, env: EnvironmentRecord) {
-        if (this.DEBUG) {
-            console.debug(FORWARDING_MESSAGE(cleanMessage(message), this.rootEnvId, env.id));
-        }
         message.forwardingChain ??= [];
         // eslint-disable-next-line no-constant-condition
         if (message.forwardingChain.indexOf(this.rootEnvId) > -1) {
-            console.error(FORWARDING_MESSAGE_STUCK_IN_CIRCULAR(message.forwardingChain));
+            console.error(FORWARDING_MESSAGE_STUCK_IN_CIRCULAR(cleanMessage(message), this.rootEnvId, env.id));
             return;
+        } else if (this.DEBUG) {
+            console.debug(FORWARDING_MESSAGE(cleanMessage(message), this.rootEnvId, env.id));
         }
         message.forwardingChain.push(this.rootEnvId);
         this.post(env.host, message);
