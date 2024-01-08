@@ -497,6 +497,7 @@ export class Communication {
         // eslint-disable-next-line no-constant-condition
         if (message.forwardingChain.indexOf(this.rootEnvId) > -1) {
             console.error(FORWARDING_MESSAGE_STUCK_IN_CIRCULAR(message.forwardingChain));
+            return;
         }
         message.forwardingChain.push(this.rootEnvId);
         this.post(env.host, message);
