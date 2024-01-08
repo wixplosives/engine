@@ -46,7 +46,7 @@
     "@types/sinon-chai": "^3.2.12",
     "@types/yargs": "^17.0.32",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0",
+    "@typescript-eslint/parser": "^6.18.0",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/docs": "^15.1.0",
     "@wixc3/testing": "^15.1.0",
