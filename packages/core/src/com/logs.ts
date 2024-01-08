@@ -4,9 +4,9 @@ export const DUPLICATE_REGISTER = (id: string, type: 'RemoteService' | 'Environm
     `Could not register same id ${id} as ${type}`;
 export const GLOBAL_REF = (id: string) => `Com with id "${id}" is already running.`;
 export const REMOTE_CALL_FAILED = (environment: string, stack?: string) =>
-    `Remote call failed in ${environment}${stack ? `\n${stack}` : ''}`;
+    `Remote call failed in "${environment}"${stack ? `\n${stack}` : ''}`;
 export const ENV_DISCONNECTED = (environment: string, hostId: string) =>
-    `Remote call failed in ${environment} - environment disconnected at "${hostId}"`;
+    `Remote call failed in "${environment}" - environment disconnected at "${hostId}"`;
 export const UNKNOWN_CALLBACK_ID = (message: Message, hostId: string) =>
     `Unknown callback id "${message.callbackId!}" at "${hostId}" in message:\n${JSON.stringify(message)}`;
 export const CALLBACK_TIMEOUT = (callbackId: string, hostId: string, message: Message) =>
