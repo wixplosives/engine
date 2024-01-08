@@ -10,9 +10,13 @@ export class ParentPortHost implements Target {
             this.emitMessageHandlers(message);
         });
     }
-    protected handlers = new Map<'message', Set<(e: { data: Message }) => void>>();
+    protected handlers = new Map<'message', Set<(e: { data: Message; source: Target }) => void>>();
 
-    public addEventListener(name: 'message', handler: (e: { data: Message }) => void, _capture?: boolean) {
+    public addEventListener(
+        name: 'message',
+        handler: (e: { data: Message; source: Target }) => void,
+        _capture?: boolean,
+    ) {
         const handlers = this.handlers.get(name);
         if (!handlers) {
             this.handlers.set(name, new Set([handler]));
@@ -34,7 +38,7 @@ export class ParentPortHost implements Target {
 
     protected emitMessageHandlers(message: Message) {
         for (const handler of this.handlers.get('message') || []) {
-            handler({ data: message });
+            handler({ data: message, source: this });
         }
     }
 }
