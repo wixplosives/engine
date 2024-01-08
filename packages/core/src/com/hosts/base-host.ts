@@ -38,7 +38,7 @@ export class BaseHost implements Target {
 
     protected emitMessageHandlers(message: Message) {
         for (const handler of this.handlers.get('message') || []) {
-            handler({ data: message, source: this });
+            handler({ data: message, source: this.parent || this });
         }
     }
 }
