@@ -1,3 +1,4 @@
+import type { IDisposable } from '@wixc3/patterns';
 import type { LogMessage } from './common-types.js';
 import type { AnyEnvironment, Environment, GloballyProvidingEnvironments, Universal } from './entities/env.js';
 import type { FeatureClass } from './entities/feature.js';
@@ -187,17 +188,6 @@ export interface Context<T> {
     type: T & { dispose?: DisposeFunction };
 }
 
-export interface IDisposable {
-    /**
-     * disposes the instance removing all event listeners
-     */
-    dispose(): void;
-
-    /**
-     * is the instance disposed
-     */
-    isDisposed(): boolean;
-}
 export function isDisposable(value: any): value is IDisposable {
     return (
         'dispose' in value &&
