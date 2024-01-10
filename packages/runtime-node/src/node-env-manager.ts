@@ -5,7 +5,7 @@ import {
     MultiCounter,
     parseInjectRuntimeConfigConfig,
 } from '@wixc3/engine-core';
-import { IDisposable, SafeDisposable, SetMultiMap } from '@wixc3/patterns';
+import { SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { WsServerHost } from './core-node/ws-node-host';
@@ -30,22 +30,16 @@ export interface RunningNodeEnvironment {
     getMetrics(): Promise<PerformanceMetrics>;
 }
 
-export class NodeEnvManager implements IDisposable {
-    disposables = new SafeDisposable(NodeEnvManager.name);
-    isDisposed = this.disposables.isDisposed;
-    dispose = this.disposables.dispose;
+export class NodeEnvManager {
     envInstanceIdCounter = new MultiCounter();
     id = 'node-environment-manager';
     openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
+    autoLaunchDispose?: () => Promise<void>;
     constructor(
         private importMeta: { url: string },
         private featureEnvironmentsMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
-    ) {
-        this.disposables.add('open environments', () =>
-            Promise.all([...this.openEnvironments.values()].map((env) => env.dispose())),
-        );
-    }
+    ) {}
     public async autoLaunch(runtimeOptions = parseRuntimeOptions()) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
         const disposeListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
@@ -84,16 +78,11 @@ export class NodeEnvManager implements IDisposable {
 
         const host = new WsServerHost(socketServer);
 
-        this.disposables.registerGroupIfNotExists('autoLaunch', { before: 'default' });
-        this.disposables.add({
-            name: 'autoLaunch',
-            dispose: async () => {
-                host.dispose();
-                disposeListener();
-                await close();
-            },
-            group: 'autoLaunch',
-        });
+        this.autoLaunchDispose = async () => {
+            host.dispose();
+            disposeListener();
+            await close();
+        };
         await this.runFeatureEnvironments(verbose, runtimeOptions, host);
 
         if (process.send) {
@@ -201,6 +190,10 @@ export class NodeEnvManager implements IDisposable {
             metrics.measures.push(...measures.map((m) => ({ ...m, debugInfo: `${runningEnv.id}:${m.name}` })));
         }
         return metrics;
+    }
+    async dispose() {
+        await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
+        await this.autoLaunchDispose?.();
     }
 }
 
