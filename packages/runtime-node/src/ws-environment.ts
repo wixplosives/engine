@@ -18,13 +18,13 @@ export function runWSEnvironment(socketServer: io.Server, startEnvironmentOption
                 return {
                     engine,
                     close: async () => {
-                        wsHost.dispose();
+                        await wsHost.dispose();
                         await engine.shutdown();
                     },
                     host: wsHost,
                 };
             } catch (e) {
-                wsHost.dispose();
+                void wsHost.dispose();
                 throw e;
             }
         },

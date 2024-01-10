@@ -1,5 +1,6 @@
 import type io from 'socket.io';
-import { BaseHost, type IDisposable, type Message } from '@wixc3/engine-core';
+import { BaseHost, type Message } from '@wixc3/engine-core';
+import { SafeDisposable, type IDisposable } from '@wixc3/patterns';
 
 export class WsHost extends BaseHost {
     constructor(private socket: io.Socket) {
@@ -13,16 +14,17 @@ export class WsHost extends BaseHost {
     }
 }
 
-/**
- * TODO: handle disconnect
- */
 export class WsServerHost extends BaseHost implements IDisposable {
     private socketToEnvId = new Map<string, { socket: io.Socket; clientID: string }>();
-    private disposed = false;
+    private disposables = new SafeDisposable(WsServerHost.name);
+    dispose = this.disposables.dispose;
+    isDisposed = this.disposables.isDisposed;
 
     constructor(private server: io.Server | io.Namespace) {
         super();
         this.server.on('connection', this.onConnection);
+        this.disposables.add('connection', () => this.server.off('connection', this.onConnection));
+        this.disposables.add('clear handlers', () => this.handlers.clear());
     }
 
     public postMessage(data: Message) {
@@ -37,16 +39,6 @@ export class WsServerHost extends BaseHost implements IDisposable {
         } else {
             this.server.emit('message', data);
         }
-    }
-
-    public dispose() {
-        this.handlers.clear();
-        this.server.off('connection', this.onConnection);
-        this.disposed = true;
-    }
-
-    public isDisposed() {
-        return this.disposed;
     }
 
     private onConnection = (socket: io.Socket): void => {

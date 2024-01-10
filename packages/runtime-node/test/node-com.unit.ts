@@ -273,7 +273,7 @@ describe('Socket communication', () => {
         clientCom1.registerEnv('client-host2', clientCom1.getEnvironmentHost('server-host')!);
         serverHost.addEventListener('message', spyServer);
         clientHost1.addEventListener('message', spyClient1);
-        clientHost2.dispose();
+        await clientHost2.dispose();
         await waitForServerCall(([arg]) => {
             const message = arg.data as DisposeMessage;
             expect(message.type).to.eql('dispose');

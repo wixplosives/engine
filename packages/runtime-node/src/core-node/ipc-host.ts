@@ -1,12 +1,15 @@
-import { BaseHost, type IDisposable, type Message } from '@wixc3/engine-core';
+import { BaseHost, type Message } from '@wixc3/engine-core';
 import type { ChildProcess } from 'node:child_process';
+import { SafeDisposable, type IDisposable } from '@wixc3/patterns';
 
 export const isParentProcess = (process: NodeJS.Process | ChildProcess): process is NodeJS.Process => {
     return (process as NodeJS.Process).constructor.name === 'process';
 };
 
 export class IPCHost extends BaseHost implements IDisposable {
-    private disposed = false;
+    private disposables = new SafeDisposable(IPCHost.name);
+    dispose = this.disposables.dispose;
+    isDisposed = this.disposables.isDisposed;
     private envs = new Set<string>();
 
     constructor(private process: NodeJS.Process | ChildProcess) {
@@ -24,6 +27,8 @@ export class IPCHost extends BaseHost implements IDisposable {
                 });
             }
         });
+        this.disposables.add('process listeners', () => this.process.removeAllListeners());
+        this.disposables.add('clear handlers', () => this.handlers.clear());
     }
 
     private onMessage: (...args: any[]) => void = (message) => {
@@ -52,15 +57,5 @@ export class IPCHost extends BaseHost implements IDisposable {
         } else {
             this.process.send(data, disposeHandlers);
         }
-    }
-
-    public dispose() {
-        this.handlers.clear();
-        this.process.removeAllListeners();
-        this.disposed = true;
-    }
-
-    public isDisposed() {
-        return this.disposed;
     }
 }
