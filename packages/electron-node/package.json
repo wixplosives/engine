@@ -11,7 +11,7 @@
     "@wixc3/engine-core": "^42.1.8",
     "@wixc3/engine-electron-commons": "^42.1.8",
     "@wixc3/engine-runtime-node": "^42.1.8",
-    "@wixc3/patterns": "^15.2.0"
+    "@wixc3/patterns": "^15.3.0"
   },
   "peerDependencies": {
     "electron": ">=9"
