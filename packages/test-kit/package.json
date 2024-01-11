@@ -21,7 +21,7 @@
     "@wixc3/engine-core": "^42.1.8",
     "@wixc3/engine-runtime-node": "^42.1.8",
     "@wixc3/engine-scripts": "^42.1.8",
-    "@wixc3/testing-node": "^15.3.0",
+    "@wixc3/testing-node": "^15.3.1",
     "create-temp-directory": "^2.4.0",
     "is-ci": "^3.0.1",
     "promise-assist": "^2.0.1",
