@@ -36,9 +36,9 @@ export const socketClientInitializer = async ({
         onReconnect: (cb: () => void) => {
             host.subscribers.on('reconnect', cb);
         },
-        dispose: async () => {
+        dispose: () => {
             communication.clearEnvironment(instanceId, undefined, false);
-            await host.dispose();
+            return host.dispose();
         },
     };
 };

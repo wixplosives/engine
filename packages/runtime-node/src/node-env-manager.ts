@@ -84,15 +84,10 @@ export class NodeEnvManager implements IDisposable {
 
         const host = new WsServerHost(socketServer);
 
-        this.disposables.registerGroup('auto launch', { before: 'default' });
-        this.disposables.add({
-            name: 'auto launch',
-            dispose: async () => {
-                await host.dispose();
-                disposeListener();
-                await close();
-            },
-            group: 'auto launch',
+        this.disposables.add('auto launch', async () => {
+            await host.dispose();
+            disposeListener();
+            await close();
         });
         await this.runFeatureEnvironments(verbose, runtimeOptions, host);
 
