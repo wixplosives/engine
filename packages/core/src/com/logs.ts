@@ -51,3 +51,12 @@ export const UNHANDLED = (message: Message, hostId: string) =>
 export function reportError(e: unknown) {
     console.error(e);
 }
+
+
+export function UN_CONFIGURED_METHOD(api: string, method: string): string | undefined {
+    return `cannot add listener to un-configured method ${api} ${method}`;
+}
+
+export function DOUBLE_REGISTER_ERROR(handlerId: string): string | undefined {
+    return 'Cannot add same listener instance twice ' + handlerId;
+}

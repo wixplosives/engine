@@ -17,6 +17,8 @@ import {
     MESSAGE_FROM_UNKNOWN_ENVIRONMENT,
     REGISTER_ENV,
     UNHANDLED,
+    DOUBLE_REGISTER_ERROR,
+    UN_CONFIGURED_METHOD,
 } from './logs.js';
 import {
     deserializeApiCallArguments,
@@ -356,7 +358,7 @@ export class Communication {
             // if we try to register the host itself, we will get stuck in an infinite loop
             // this happens when the host is a window and the message is from the same window
             if (this.DEBUG) {
-                console.debug(AUTO_REGISTER_ENVIRONMENT(cleanMessage(message), this.rootEnvId));
+                console.debug(AUTO_REGISTER_ENVIRONMENT(cleanMessageForLog(message), this.rootEnvId));
             }
             return false;
         }
@@ -365,7 +367,7 @@ export class Communication {
     private autoRegisterEnvFromMessage(message: Message, source: Target) {
         if (!this.environments[message.from]) {
             if (this.DEBUG) {
-                console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(cleanMessage(message), this.rootEnvId));
+                console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(cleanMessageForLog(message), this.rootEnvId));
             }
             if (this.validateRegistration(source, message)) {
                 this.registerEnv(message.from, source);
@@ -373,7 +375,7 @@ export class Communication {
         }
         if (!this.environments[message.origin]) {
             if (this.DEBUG) {
-                console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(cleanMessage(message), this.rootEnvId), 'origin');
+                console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(cleanMessageForLog(message), this.rootEnvId), 'origin');
             }
             if (this.validateRegistration(source, message)) {
                 this.registerEnv(message.origin, source);
@@ -496,7 +498,6 @@ export class Communication {
         // push after check so we see the cycle in the forwardingChain
         message.forwardingChain.push(this.rootEnvId);
         if (cycle) {
-            console.error(FORWARDING_MESSAGE_STUCK_IN_CIRCULAR(cleanMessage(message), this.rootEnvId, env.id));
             this.sendTo(message.from, {
                 from: this.rootEnvId,
                 origin: this.rootEnvId,
@@ -505,12 +506,12 @@ export class Communication {
                 type: 'callback',
                 forwardingChain: message.forwardingChain,
                 error: new Error(
-                    `cannot reach environment '${message.to}' from '${message.from}' since it's stuck in circular messaging loop`,
+                    FORWARDING_MESSAGE_STUCK_IN_CIRCULAR(cleanMessageForLog(message), this.rootEnvId, env.id),
                 ),
             });
             return;
         } else if (this.DEBUG) {
-            console.debug(FORWARDING_MESSAGE(cleanMessage(message), this.rootEnvId, env.id));
+            console.debug(FORWARDING_MESSAGE(cleanMessageForLog(message), this.rootEnvId, env.id));
         }
 
         this.post(env.host, message);
@@ -525,7 +526,7 @@ export class Communication {
 
     private unhandledMessage(message: Message): void {
         if (this.DEBUG) {
-            console.debug(UNHANDLED(cleanMessage(message), this.rootEnvId));
+            console.debug(UNHANDLED(cleanMessageForLog(message), this.rootEnvId));
         }
     }
 
@@ -580,9 +581,8 @@ export class Communication {
 
                 if (handlersBucket && handlersBucket.size !== 0) {
                     if (handlersBucket.has(fn)) {
-                        throw new Error(
-                            'Cannot add same listener instance twice ' + this.getHandlerId(envId, api, method),
-                        );
+                        const handlerId = this.getHandlerId(envId, api, method);
+                        throw new Error(DOUBLE_REGISTER_ERROR(handlerId));
                     }
                     handlersBucket.add(fn);
                     res();
@@ -603,7 +603,7 @@ export class Communication {
                     this.callWithCallback(envId, message, callbackId, res, rej);
                 }
             } else {
-                throw new Error(`cannot add listener to un-configured method ${api} ${method}`);
+                throw new Error(UN_CONFIGURED_METHOD(api, method));
             }
         }
     }
@@ -781,7 +781,7 @@ export class Communication {
         } else {
             // TODO: only in dev mode
             if (message.callbackId) {
-                throw new Error(UNKNOWN_CALLBACK_ID(cleanMessage(message), this.rootEnvId));
+                throw new Error(UNKNOWN_CALLBACK_ID(cleanMessageForLog(message), this.rootEnvId));
             }
         }
     }
@@ -848,12 +848,12 @@ export class Communication {
             if (this.options.warnOnSlow) {
                 setTimeout(() => {
                     if (this.callbacks[callbackId]) {
-                        console.warn(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessage(message)));
+                        console.warn(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessageForLog(message)));
                     }
                 }, this.slowThreshold);
             }
             const timerId = setTimeout(() => {
-                reject(new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessage(message))));
+                reject(new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessageForLog(message))));
             }, this.callbackTimeout);
             this.callbacks[callbackId] = {
                 timerId,
@@ -864,7 +864,7 @@ export class Communication {
     }
 }
 
-function cleanMessage(message: Message) {
+function cleanMessageForLog(message: Message) {
     if ('data' in message && typeof message.data === 'object' && message.data !== null) {
         return {
             ...message,

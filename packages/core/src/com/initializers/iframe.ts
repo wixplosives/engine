@@ -72,13 +72,7 @@ interface StartIframeParams {
 
 const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
-export async function startIframe({
-    com,
-    iframe,
-    instanceId,
-    src,
-    envReadyPromise,
-}: StartIframeParams): Promise<void> {
+export async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: StartIframeParams): Promise<void> {
     if (!iframe.contentWindow) {
         throw new Error('Cannot initialize environment in a detached iframe');
     }
@@ -106,9 +100,7 @@ export async function startIframe({
         iframe.src = url.href;
 
         await Promise.race([waitForCancel, envReadyPromise]);
-        if (!(com as any).environments[instanceId]) {
-            throw new Error('Environment initialization failed');
-        }
+
         const api = com.apiProxy<WindowInitializerService>(
             { id: instanceId },
             { id: WindowInitializerService.apiId },
@@ -131,7 +123,6 @@ export async function startIframe({
             cleanup();
         });
         cancellationTriggers.delete(iframe);
-
     } catch (e) {
         cleanup();
         throw e;
