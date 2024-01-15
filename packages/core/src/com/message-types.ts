@@ -12,7 +12,7 @@ export interface BaseMessage {
     callbackId?: string;
     error?: Error;
     origin: string;
-    forwardingChain: string[];
+    forwardingChain?: string[];
 }
 
 export interface CallMessage extends BaseMessage {
@@ -23,6 +23,7 @@ export interface CallMessage extends BaseMessage {
 export interface CallbackMessage extends BaseMessage {
     type: 'callback';
     data?: unknown;
+    DEBUG_CALL_INFO?: RemoteCallAddress & { args: SerializableArguments };
 }
 
 export interface ListenMessage extends BaseMessage {

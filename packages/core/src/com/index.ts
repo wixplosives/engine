@@ -1,6 +1,6 @@
 export * from './hosts/base-host.js';
 export * from './communication.js';
-export * from './errors.js';
+export * from './logs.js';
 export * from './helpers.js';
 export * from './logger-service.js';
 export * from './window-initializer-service.js';

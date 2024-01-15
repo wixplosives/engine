@@ -235,7 +235,7 @@ describe('Communication', () => {
 
         const spyFn = spy();
         await expect(mockApiProxyFromAEnv.listen(spyFn)).to.be.eventually.rejectedWith(
-            'cannot add listener to unconfigured method myApi listen',
+            'cannot add listener to un-configured method myApi listen',
         );
     });
 

@@ -57,7 +57,7 @@ export function deferredIframeInitializer({ communication: com, env: { env, endp
                 iframe: iframeElement,
                 src: src ?? defaultHtmlSourceFactory(env, publicPath, hashParams, origin),
             };
-            return startIframe(startIframeParams);
+            return startIframe(startIframeParams).then(() => instanceId);
         },
     };
 }
@@ -72,7 +72,7 @@ interface StartIframeParams {
 
 const cancellationTriggers = new WeakMap<HTMLIFrameElement, () => void>();
 
-async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: StartIframeParams): Promise<string> {
+export async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: StartIframeParams): Promise<void> {
     if (!iframe.contentWindow) {
         throw new Error('Cannot initialize environment in a detached iframe');
     }
@@ -99,7 +99,7 @@ async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: St
         url.searchParams.set(INSTANCE_ID_PARAM_NAME, instanceId);
         iframe.src = url.href;
 
-        await Promise.race([waitForCancel, waitForLoad(iframe), envReadyPromise]);
+        await Promise.race([waitForCancel, envReadyPromise]);
 
         const api = com.apiProxy<WindowInitializerService>(
             { id: instanceId },
@@ -123,16 +123,11 @@ async function startIframe({ com, iframe, instanceId, src, envReadyPromise }: St
             cleanup();
         });
         cancellationTriggers.delete(iframe);
-
-        return instanceId;
     } catch (e) {
         cleanup();
         throw e;
     }
 }
-
-const waitForLoad = (elem: HTMLElement) =>
-    new Promise((resolve) => elem.addEventListener('load', resolve, { once: true }));
 
 const defaultHtmlSourceFactory = (envName: string, publicPath = '', hashParams?: string, origin = '') => {
     return `${origin}${publicPath}${envName}.html${location.search}${hashParams ?? ''}`;
