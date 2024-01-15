@@ -37,7 +37,7 @@
     "@wixc3/patterns": "^15.3.1",
     "commander": "^11.1.0",
     "open": "^8.4.2",
-    "socket.io": "^4.7.3",
+    "socket.io": "^4.7.4",
     "webpack-dev-middleware": "^7.0.0"
   },
   "files": [
