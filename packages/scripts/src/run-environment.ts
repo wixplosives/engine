@@ -46,17 +46,18 @@ export interface RunningFeatureOptions<F extends FeatureClass, ENV extends AnyEn
     feature: F;
 }
 
-export async function runEngineEnvironment<ENV extends AnyEnvironment>({
-    featureName,
-    configName,
-    bundlePath,
-    runtimeOptions = {},
-    config = [],
-    env,
-    basePath = process.cwd(),
-    featureDiscoveryRoot,
-}: IRunNodeEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
-    const { env: envName, envType } = env;
+function memoize<T extends (...args: string[]) => any>(fn: T): T {
+    const cache = new Map<string, ReturnType<T>>();
+    return ((...args: string[]) => {
+        const key = args.join(',');
+        if (!cache.has(key)) {
+            cache.set(key, fn(...args));
+        }
+        return cache.get(key)!;
+    }) as T;
+}
+
+async function getFeatures(basePath: string, featureDiscoveryRoot?: string) {
     const engineConfigFilePath = await fs.promises.findClosestFile(basePath, ENGINE_CONFIG_FILE_NAME);
     const {
         featureDiscoveryRoot: configFeatureDiscoveryRoot,
@@ -72,7 +73,28 @@ export async function runEngineEnvironment<ENV extends AnyEnvironment>({
         extensions,
         buildConditions,
     );
+    return {
+        features,
+        configurations,
+        requiredModules,
+    };
+}
 
+/** it's possible to memoize this function because the features are not expected to change during the runtime of the process */
+const getFeaturesMemo = memoize(getFeatures);
+
+async function runEngineEnvironment<ENV extends AnyEnvironment>({
+    featureName,
+    configName,
+    bundlePath,
+    runtimeOptions = {},
+    config = [],
+    env,
+    basePath = process.cwd(),
+    featureDiscoveryRoot,
+}: IRunNodeEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
+    const { features, configurations, requiredModules } = await getFeaturesMemo(basePath, featureDiscoveryRoot);
+    const { env: envName, envType } = env;
     if (configName) {
         config = [...(await loadTopLevelConfigs(configName, configurations, envName)), ...config];
     }
