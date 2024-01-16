@@ -3,6 +3,7 @@ import { getRunningFeature as originalGetRunningFeature, type RunningFeatureOpti
 
 /**
  * get a running feature with no browser environment
+ * this is used for running tests in node and only for tests
  * @param autoDisposeTimeout if false, will not dispose the engine after the test
  */
 export async function getRunningFeature<F extends FeatureClass, ENV extends AnyEnvironment>(

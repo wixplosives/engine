@@ -194,6 +194,9 @@ function locateEnvironment(
     return undefined;
 }
 
+/**
+ * this is used for running tests in node and only for tests
+ */
 export async function getRunningFeature<F extends FeatureClass, ENV extends AnyEnvironment>(
     options: RunningFeatureOptions<F, ENV>,
 ): Promise<{
