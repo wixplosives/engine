@@ -13,7 +13,7 @@ import type { IRunOptions, TopLevelConfig } from './types.js';
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public features = new Map<FeatureClass, RuntimeFeature<any, ENV>>();
     public referencedEnvs: Set<string>;
-    private running: Promise<void[]> | undefined;
+    public running: Promise<void[]> | undefined;
     private shutingDown = false;
     private topLevelConfigMap: Record<string, object[]>;
     public runningEnvNames: Set<string>;
