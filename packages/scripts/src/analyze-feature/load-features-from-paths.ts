@@ -121,7 +121,7 @@ function setEnvPath(
 async function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): Promise<AnalyzedFeatureModule> {
     const moduleExports = await import(filePath);
     const module = analyzeFeatureModule(filePath, moduleExports);
-    const scopedName = scopeToPackage(featurePackage.simplifiedName, module.name)!;
+    const scopedName = scopeToPackage(featurePackage.simplifiedName, module.name);
     return {
         scopedName,
         module,
