@@ -36,6 +36,7 @@ import type {
     ListenMessage,
     Message,
     ReadyMessage,
+    StatusMessage,
     UnListenMessage,
 } from './message-types.js';
 import { isMessage } from './message-types.js';
@@ -88,7 +89,7 @@ export class Communication {
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposeListeners = new Set<(envId: string) => void>();
-    private callbackToEnvMapping = new Map<string, string>();
+    private pendingCallbacks = new Map<string, string>();
     private messageIdPrefix: string;
     // manual DEBUG_MODE
     private DEBUG = false;
@@ -111,7 +112,7 @@ export class Communication {
         this.registerMessageHandler(host);
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
-        this.messageIdPrefix = `c_${this.getEnvironmentId()}_${Math.random().toString(36).slice(2)}`;
+        this.messageIdPrefix = `c_${this.rootEnvId}_${Math.random().toString(36).slice(2)}`;
 
         for (const [id, envEntry] of Object.entries(this.options.connectedEnvironments)) {
             if (envEntry.registerMessageHandler) {
@@ -267,7 +268,7 @@ export class Communication {
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
     ): Promise<unknown> {
-        return new Promise<void>((res, rej) => {
+        return new Promise<unknown>((res, rej) => {
             const callbackId = !serviceComConfig[method]?.emitOnly
                 ? this.idsCounter.next(this.messageIdPrefix)
                 : undefined;
@@ -348,9 +349,106 @@ export class Communication {
                     this.clearEnvironment(message.origin, message.from);
                 }
                 break;
+            case 'status':
+                this.handleStatus(message);
+                break;
             default:
                 break;
         }
+    }
+
+    public async getAllEnvironmentsStatus() {
+        const pending: Promise<ReturnType<Communication['getComStatus']>>[] = [];
+        const localStats = this.getComStatus();
+        // not us
+        const envs = Object.keys(this.environments).filter((envId) => envId !== '*' && envId !== this.rootEnvId);
+        for (const envId of envs) {
+            const { promise, resolve, reject } = deferred<ReturnType<Communication['getComStatus']>>();
+            const callbackId = this.idsCounter.next(this.messageIdPrefix);
+            this.callWithCallback(
+                envId,
+                {
+                    from: this.rootEnvId,
+                    to: envId,
+                    type: 'status',
+                    origin: this.rootEnvId,
+                    callbackId,
+                },
+                callbackId,
+                resolve,
+                reject,
+            );
+            pending.push(promise);
+        }
+        return Promise.allSettled(pending).then((results) => {
+            const statuses: Record<string, ReturnType<Communication['getComStatus']> | PromiseRejectedResult> = {};
+            for (let i = 0; i < results.length; i++) {
+                const result = results[i]!;
+                const key = envs[i]!;
+                if (result.status === 'fulfilled') {
+                    if (key !== result.value.rootEnvId) {
+                        statuses[key + ' -> ' + result.value.rootEnvId] = result.value;
+                    } else {
+                        statuses[result.value.rootEnvId] = result.value;
+                    }
+                } else {
+                    statuses[key] = result;
+                }
+            }
+            statuses[this.rootEnvId] = localStats;
+            return statuses;
+        });
+    }
+    private getComStatus() {
+        return {
+            rootEnvId: this.rootEnvId,
+            callbacks: Object.keys(this.callbacks),
+            pendingEnvs: countValues(this.pendingEnvs),
+            pendingMessages: countValues(this.pendingMessages),
+            handlers: Array.from(this.handlers).reduce<Record<string, number>>((acc, [key, value]) => {
+                acc[key] = value.size;
+                return acc;
+            }, {}),
+            eventDispatchers: Object.keys(this.eventDispatchers),
+            apis: Object.keys(this.apis),
+            readyEnvs: Array.from(this.readyEnvs),
+            environments: Object.entries(this.environments).reduce<Record<string, Record<string, string>>>(
+                (acc, [key, value]) => {
+                    const info: Record<string, string> = {};
+                    try {
+                        info.typeName = value.host.constructor.name;
+                    } catch (e) {
+                        info.typeName = String(e);
+                    }
+                    try {
+                        info.name = value.host.name || 'unknown';
+                    } catch (e) {
+                        info.name = String(e);
+                    }
+                    acc[key] = info;
+                    return acc;
+                },
+                {},
+            ),
+            pendingCallbacks: Array.from(this.pendingCallbacks.entries()).reduce<Record<string, string>>(
+                (acc, [key, value]) => {
+                    acc[key] = value;
+                    return acc;
+                },
+                {},
+            ),
+            messageIdPrefix: this.messageIdPrefix,
+        };
+    }
+    private handleStatus(message: StatusMessage) {
+        this.sendTo(message.from, {
+            to: message.from,
+            from: this.rootEnvId,
+            type: 'callback',
+            data: this.getComStatus(),
+            callbackId: message.callbackId,
+            origin: this.rootEnvId,
+        });
     }
 
     private validateRegistration(envTarget: Target, message: Message) {
@@ -480,7 +578,7 @@ export class Communication {
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
         delete this.environments[instanceId];
-        for (const [callbackId, env] of this.callbackToEnvMapping.entries() ?? []) {
+        for (const [callbackId, env] of this.pendingCallbacks.entries() ?? []) {
             const callbackRecord = this.callbacks[callbackId];
             if (env === instanceId && callbackRecord) {
                 callbackRecord.reject(new Error(ENV_DISCONNECTED(instanceId, this.rootEnvId)));
@@ -538,8 +636,8 @@ export class Communication {
         origin: string,
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
         fn: UnknownFunction,
-        res: () => void,
-        rej: () => void,
+        res: (value?: any) => void,
+        rej: (reason: unknown) => void,
     ) {
         const removeListenerRef =
             serviceComConfig[method]?.removeAllListeners || serviceComConfig[method]?.removeListener;
@@ -611,8 +709,8 @@ export class Communication {
         envId: string,
         message: Message,
         callbackId: string | undefined,
-        res: () => void,
-        rej: () => void,
+        res: (value?: any) => void,
+        rej: (reason: unknown) => void,
     ) {
         if (callbackId) {
             this.createCallbackRecord(message, callbackId, res, rej);
@@ -829,18 +927,18 @@ export class Communication {
         message: Message,
         callbackId: string,
         res: (value: unknown) => void,
-        rej: (reason: Error) => void,
+        rej: (reason: unknown) => void,
     ) {
         if (!this.disposing) {
-            this.callbackToEnvMapping.set(callbackId, message.to);
+            this.pendingCallbacks.set(callbackId, message.to);
             const resolve = (value: unknown) => {
-                this.callbackToEnvMapping.delete(callbackId);
+                this.pendingCallbacks.delete(callbackId);
                 delete this.callbacks[callbackId];
                 clearTimeout(timerId);
                 res(value);
             };
             const reject = (error: Error) => {
-                this.callbackToEnvMapping.delete(callbackId);
+                this.pendingCallbacks.delete(callbackId);
                 delete this.callbacks[callbackId];
                 clearTimeout(timerId);
                 rej(error);
@@ -887,4 +985,14 @@ export function declareComEmitter<T>(
         [offMethod]: { removeListener: onMethod },
         ...(removeAll ? { [removeAll]: { removeAllListeners: onMethod } } : undefined),
     };
+}
+
+function countValues(set: SetMultiMap<string, unknown>) {
+    const result: Record<string, number> = {};
+    // SetMultiMap iterator is [key, value] and not [key, Set<value>]
+    for (const [key] of set) {
+        result[key] ??= 0;
+        result[key]++;
+    }
+    return result;
 }
