@@ -497,6 +497,15 @@ describe('Communication', () => {
 
         await expect(apiProxy.test()).to.be.rejected;
     });
+
+    it('clearEnvironment', () => {
+        const host = new BaseHost();
+        const com = new Communication(host, 'com');
+        const spyFn = spy();
+        com.subscribeToEnvironmentDispose(spyFn);
+        com.clearEnvironment('env');
+        expect(spyFn).to.have.been.calledWith('env');
+    });
 });
 
 describe('environment-dependencies communication', () => {
