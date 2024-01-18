@@ -52,6 +52,10 @@ export interface DisposeMessage extends BaseMessage {
     type: 'dispose';
 }
 
+export interface StatusMessage extends BaseMessage {
+    type: 'status';
+}
+
 export type Message =
     | CallMessage
     | CallbackMessage
@@ -59,7 +63,8 @@ export type Message =
     | UnListenMessage
     | EventMessage
     | ReadyMessage
-    | DisposeMessage;
+    | DisposeMessage
+    | StatusMessage;
 
 export function isMessage(arg: any): arg is Message {
     return typeof arg === 'object' && arg !== null && 'to' in arg && 'from' in arg && 'type' in arg;
