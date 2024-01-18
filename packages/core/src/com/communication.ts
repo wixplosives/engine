@@ -101,10 +101,6 @@ export class Communication {
         public isServer = false,
         options?: CommunicationOptions,
     ) {
-        if (this.DEBUG) {
-            (globalThis as any)['com____'] ??= {};
-            (globalThis as any)['com____'][id] = this;
-        }
         this.options = {
             warnOnSlow: this.DEBUG,
             publicPath: '',
