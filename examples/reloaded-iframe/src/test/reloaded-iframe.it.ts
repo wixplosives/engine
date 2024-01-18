@@ -16,12 +16,12 @@ describe('managed iframe environment', () => {
         await refreshBtn!.click();
         await waitFor(async () => {
             const timesRefreshed = await page.$(`#${timesRefreshedId}`);
-            expect(await (await timesRefreshed!.getProperty('textContent')!).jsonValue()).to.contain('1');
+            expect(await (await timesRefreshed!.getProperty('textContent')).jsonValue()).to.contain('1');
         });
         await echoBtn!.click();
 
         await waitFor(async () => {
-            expect(await (await content!.getProperty('textContent')!).jsonValue()).to.contain('1');
+            expect(await (await content!.getProperty('textContent')).jsonValue()).to.contain('1');
         });
     });
 });
