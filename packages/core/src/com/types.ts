@@ -24,7 +24,7 @@ export interface ActiveEnvironment {
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
 export interface Target {
     name?: string;
-    addEventListener(type: 'message', handler: (event: { data: any, source: Target }) => void, capture?: boolean): void;
+    addEventListener(type: 'message', handler: (event: { data: any; source: Target }) => void, capture?: boolean): void;
     removeEventListener(type: 'message', handler: (event: { data: any }) => void, capture?: boolean): void;
     postMessage(data: any, origin?: any): void;
     parent?: Target;
@@ -56,10 +56,12 @@ export type AsyncApi<T extends object> = {
     [P in keyof T]: P extends keyof ServiceConfig<T>
         ? MultiTanentProxyFunction<T, P extends string ? P : never>
         : T[P] extends (...args: any[]) => PromiseLike<any>
-        ? T[P]
-        : T[P] extends (...args: infer Args) => infer R
-        ? (...args: Args) => Promise<R>
-        : never;
+          ? T[P]
+          : T[P] extends (...args: infer Args) => infer R
+            ? (...args: Args) => Promise<R>
+            : never;
+} & {
+    [K in Extract<keyof T, keyof Object>]: never;
 };
 
 export type MultiEnvAsyncApi<T extends object> = {

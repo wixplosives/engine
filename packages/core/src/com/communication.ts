@@ -193,15 +193,15 @@ export class Communication {
                 if (method === 'then') {
                     return undefined;
                 }
-                // NOTICE!
-                // WHEN DEBUGGING, UNCOMMENT to prevent debug only calls to `toString` `valueOf` etc.
-                // if (Object.hasOwn(Object.prototype, method)) {
-                //     const thing = Reflect.get(Object.prototype, method);
-                //     if (typeof thing === 'function') {
-                //         return thing.bind(obj);
-                //     }
-                //     return thing;
-                // }
+
+                /*
+                 * Don't allow native Object methods to be proxied.
+                 * they used by the debugger and cause messages to be sent everywhere
+                 * this behavior made debugging very hard and can cause errors and infinite loops
+                 */
+                if (Object.hasOwn(Object.prototype, method)) {
+                    return Reflect.get(Object.prototype, method);
+                }
                 if (typeof method === 'string') {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     let runtimeMethod = obj[method];
