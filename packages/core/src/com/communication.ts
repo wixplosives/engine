@@ -641,7 +641,7 @@ export class Communication {
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
         fn: UnknownFunction,
         res: (value?: any) => void,
-        rej: (reason: Error) => void,
+        rej: (reason: unknown) => void,
     ) {
         const removeListenerRef =
             serviceComConfig[method]?.removeAllListeners || serviceComConfig[method]?.removeListener;
@@ -714,7 +714,7 @@ export class Communication {
         message: Message,
         callbackId: string | undefined,
         res: (value?: any) => void,
-        rej: (reason: Error) => void,
+        rej: (reason: unknown) => void,
     ) {
         if (callbackId) {
             this.createCallbackRecord(message, callbackId, res, rej);
@@ -931,7 +931,7 @@ export class Communication {
         message: Message,
         callbackId: string,
         res: (value: unknown) => void,
-        rej: (reason: Error) => void,
+        rej: (reason: unknown) => void,
     ) {
         if (!this.disposing) {
             this.pendingCallbacks.set(callbackId, message.to);
