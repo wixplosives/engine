@@ -22,7 +22,7 @@
   "devDependencies": {
     "@file-services/memory": "^8.3.3",
     "@file-services/types": "^8.3.3",
-    "@playwright/browser-chromium": "^1.41.0",
+    "@playwright/browser-chromium": "^1.41.1",
     "@stylable/cli": "^5.18.0",
     "@stylable/webpack-plugin": "^5.18.0",
     "@types/chai": "^4.3.11",
@@ -66,7 +66,7 @@
     "lerna": "^8.0.2",
     "mocha": "^10.2.0",
     "mocha-play": "^7.0.3",
-    "playwright-core": "^1.41.0",
+    "playwright-core": "^1.41.1",
     "prettier": "^3.2.4",
     "promise-assist": "^2.0.1",
     "react": "^18.2.0",
