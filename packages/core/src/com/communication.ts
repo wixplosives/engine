@@ -938,7 +938,7 @@ export class Communication {
                 this.pendingCallbacks.delete(callbackId);
                 delete this.callbacks[callbackId];
                 clearTimeout(timerId);
-                error.stack += `\nCaused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
+                error.message += `\nCaused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
                 rej(error);
             };
             if (this.options.warnOnSlow) {
