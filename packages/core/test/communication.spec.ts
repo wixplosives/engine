@@ -80,10 +80,13 @@ describe('Communication API', function () {
         const env = await iframeInitializer({ communication: com, env: iframeEnv, iframeElement: createIframe() });
 
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
-        const error = await api.failWithError().catch((e: unknown) => e);
+        const error = (await api.failWithError().catch((e) => e)) as typeof testServiceError;
 
         expect(error).to.be.instanceOf(Error);
-        expect(error).to.deep.include(testServiceError);
+
+        expect(error.code).to.deep.equal(testServiceError.code);
+        expect(error.message).to.string(testServiceError.message);
+        expect(error.name).to.string(testServiceError.name);
     });
 
     it('should listen to remote api callbacks', async () => {
