@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "43.0.1",
+  "version": "43.0.2",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
