@@ -55,6 +55,7 @@ import {
     type Target,
     type UnknownFunction,
 } from './types.js';
+import { EnvironmentDisconnectedError } from './environment-disconnected-error.js';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;
@@ -78,7 +79,7 @@ export class Communication {
     private readonly callbackTimeout = 60_000 * 5; // 5 minutes
     private readonly slowThreshold = 5_000; // 5 seconds
     private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
-    private pendingEnvs: SetMultiMap<string, UnknownFunction> = new SetMultiMap();
+    private pendingEnvs: SetMultiMap<string, () => void> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
     private handlers = new Map<string, Set<UnknownFunction>>();
     private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
@@ -544,15 +545,11 @@ export class Communication {
     }
 
     public envReady(instanceId: string): Promise<void> {
-        const { promise, resolve } = deferred();
         if (this.readyEnvs.has(instanceId)) {
-            // the only way an environment can be in readyEnvs is if handleReady was called (why do we need to call it again?)
-            this.handleReady({ from: instanceId } as ReadyMessage);
-            resolve();
-        } else {
-            this.pendingEnvs.add(instanceId, () => resolve());
+            return Promise.resolve();
         }
-
+        const { promise, resolve } = deferred();
+        this.pendingEnvs.add(instanceId, resolve);
         return promise;
     }
 
@@ -581,7 +578,7 @@ export class Communication {
         for (const [callbackId, env] of this.pendingCallbacks.entries() ?? []) {
             const callbackRecord = this.callbacks[callbackId];
             if (env === instanceId && callbackRecord) {
-                callbackRecord.reject(new Error(ENV_DISCONNECTED(instanceId, this.rootEnvId)));
+                callbackRecord.reject(new EnvironmentDisconnectedError(ENV_DISCONNECTED(instanceId, this.rootEnvId)));
             }
         }
         for (const dispose of this.disposeListeners) {
@@ -941,6 +938,7 @@ export class Communication {
                 this.pendingCallbacks.delete(callbackId);
                 delete this.callbacks[callbackId];
                 clearTimeout(timerId);
+                error.message += `\nCaused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
                 rej(error);
             };
             if (this.options.warnOnSlow) {

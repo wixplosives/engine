@@ -328,7 +328,7 @@ describe('IPC communication', () => {
         const { waitForCall, spy } = createWaitForCall<(e: Error) => void>();
         proxy.echo().catch(spy);
         await waitForCall((args) => {
-            expect(args[0].message).to.eq('Remote call failed in "process" - environment disconnected at "main"');
+            expect(args[0].message).to.have.string('Remote call failed in "process" - environment disconnected at "main"');
         });
     });
 });

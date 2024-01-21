@@ -10,3 +10,4 @@ export * from './types.js';
 export * from './hosts/ws-client-host.js';
 export * from './initializers/index.js';
 export * from './hosts/index.js';
+export * from './environment-disconnected-error.js';
