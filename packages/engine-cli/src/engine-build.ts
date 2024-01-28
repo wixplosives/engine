@@ -356,7 +356,6 @@ async function launchDevServer(
 export async function runLocalNodeManager(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
-    configName: string,
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
 ) {
