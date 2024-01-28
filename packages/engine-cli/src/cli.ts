@@ -43,11 +43,21 @@ async function engine() {
     });
 }
 
-function strParam(param?: string | boolean) {
+function strParam(param?: string | boolean | undefined) {
     return param !== undefined ? String(param) : undefined;
 }
-function boolParam(param?: string | boolean) {
-    return param !== undefined ? Boolean(param) : undefined;
+
+function boolParam(param?: string | boolean | undefined) {
+    if (param === undefined || typeof param === 'boolean') {
+        return param;
+    }
+    if (param === 'true') {
+        return true;
+    }
+    if (param === 'false') {
+        return false;
+    }
+    throw new Error(`Invalid boolean parameter: ${param}`);
 }
 
 engine().catch((e) => {
