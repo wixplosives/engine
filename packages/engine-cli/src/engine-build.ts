@@ -320,7 +320,6 @@ export function runNodeManager({
         {
             cwd: cwd ? resolve(cwd) : process.cwd(),
             execArgv: watch ? process.execArgv.concat(['--watch']) : process.execArgv,
-            // execArgv: process.execArgv,
         },
     );
     return { managerProcess };
