@@ -19,6 +19,7 @@ import {
 } from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
 import express from 'express';
+import { json } from 'body-parser';
 import { fork } from 'node:child_process';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
@@ -176,17 +177,33 @@ export async function runEngine({
             console.log(`Runtime options: ${JSON.stringify(Object.fromEntries(runtimeOptions.entries()), null, 2)}`);
         }
 
-        runManagerContext = runNodeManager({
-            cwd: rootDir,
-            watch,
-            outputPath,
-            runtimeOptions,
-        });
+        const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
+        const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
 
-        devServer = await launchDevServer(serveStatic, httpServerPort, socketServerOptions);
-        if (verbose) {
-            console.log(`Dev server is running. listening on http://localhost:${devServer.port}`);
+        if (featureName) {
+            const { port } = await runLocalNodeManager(
+                featureEnvironmentsMapping,
+                configMapping,
+                runtimeOptions,
+                outputPath,
+            );
+
+            // TODO: get the names of main entry points from the build configurations
+            console.log(`Engine application in running at http://localhost:${port}/main.html`);
+        } else {
+            console.log('No explicit feature name provided skipping auto launch use the dashboard to run features');
         }
+
+        devServer = await launchDevServer(
+            serveStatic,
+            httpServerPort,
+            socketServerOptions,
+            featureEnvironmentsMapping,
+            configMapping,
+            runtimeOptions,
+            outputPath,
+        );
+        console.log(`Engine dev server is running at http://localhost:${devServer.port}/dashboard`);
     }
     return {
         features,
@@ -330,6 +347,10 @@ async function launchDevServer(
     serveStatic: StaticConfig[],
     httpServerPort: number,
     socketServerOptions: LaunchOptions['socketServerOptions'],
+    featureEnvironmentsMapping: FeatureEnvironmentMapping,
+    configMapping: ConfigurationEnvironmentMapping,
+    runtimeOptions: Map<string, string | boolean | undefined>,
+    outputPath: string,
 ) {
     // start dev server
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
@@ -340,9 +361,25 @@ async function launchDevServer(
     const devMiddlewares: RouteMiddleware[] = [
         {
             path: '/dashboard',
+            handlers: express.static(join(__dirname, 'dashboard')),
+        },
+        {
+            path: '/api/engine/metadata',
             handlers: (req, res) => {
-                res.sendFile(fs.join(__dirname, '../dashboard/index.html'));
+                res.json({
+                    featureEnvironmentsMapping,
+                    configMapping,
+                    runtimeOptions: Object.fromEntries(runtimeOptions.entries()),
+                    outputPath,
+                });
             },
+        },
+        {
+            path: '/api/engine/run',
+            handlers: [
+                json(),
+                runOnDemandSingleEnvironment(runtimeOptions, featureEnvironmentsMapping, configMapping, outputPath),
+            ],
         },
     ];
 
@@ -353,10 +390,49 @@ async function launchDevServer(
     });
 }
 
+function runOnDemandSingleEnvironment(
+    runtimeOptions: Map<string, string | boolean | undefined>,
+    featureEnvironmentsMapping: FeatureEnvironmentMapping,
+    configMapping: ConfigurationEnvironmentMapping,
+    outputPath: string,
+) {
+    let runningNodeManager: Awaited<ReturnType<typeof runLocalNodeManager>> | undefined;
+
+    async function run(featureName: string, configName: string) {
+        if (runningNodeManager) {
+            void runningNodeManager.manager.dispose();
+            runningNodeManager = undefined;
+        }
+
+        const runOptions = new Map(runtimeOptions.entries());
+        runOptions.set('feature', featureName);
+        runOptions.set('config', configName);
+        runningNodeManager = await runLocalNodeManager(
+            featureEnvironmentsMapping,
+            configMapping,
+            runOptions,
+            outputPath,
+        );
+        return runningNodeManager.port;
+    }
+
+    return (req: express.Request, res: express.Response) => {
+        console.log(`running on demand feature: "${req.body.featureName}" config: "${req.body.configName}"`);
+        run(req.body.featureName, req.body.configName)
+            .then((port) => {
+                res.json({
+                    url: `http://localhost:${port}/main.html?feature=${encodeURIComponent(req.body.featureName)}&config=${encodeURIComponent(req.body.configName)}`,
+                });
+            })
+            .catch((e) => {
+                res.status(500).json({ message: e.message });
+            });
+    };
+}
+
 export async function runLocalNodeManager(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
-    configName: string,
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
 ) {

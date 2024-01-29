@@ -77,7 +77,6 @@ export class ManagedRunEngine implements IExecutableApplication {
         const { port, manager } = await runLocalNodeManager(
             this.runMetadata.featureEnvironmentsMapping,
             this.runMetadata.configMapping,
-            configName,
             execRuntimeOptions,
             OUTPUT_PATH,
         );

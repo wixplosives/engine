@@ -4,8 +4,63 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Engine Dashboard</title>
+    <style>
+      html {
+        font-family: sans-serif;
+        font-size: 16px;
+      }
+
+      input[type='search'] {
+        padding: 4px;
+        margin-bottom: 4px;
+      }
+
+      input {
+        font-size: inherit;
+      }
+
+      table {
+        border-collapse: collapse;
+      }
+
+      tr:nth-of-type(odd) {
+        background: #eee;
+      }
+
+      th {
+        background: #536cd0;
+        color: white;
+        font-weight: bold;
+      }
+
+      td,
+      th {
+        padding: 10px;
+        border: 1px solid #ccc;
+        text-align: left;
+      }
+    </style>
   </head>
   <body>
-    <h1>Welcome to the NEW and IMPROVED Engine Dashboard</h1>
+    <h1>Welcome to the Engine Dashboard</h1>
+    <div id="error"></div>
+    <details id="raw-data">
+      <summary>Raw data</summary>
+      <pre id="raw-data-content"></pre>
+    </details>
+    <h1>Available Features</h1>
+    <input type="search" id="feature-search" placeholder="Search features" />
+    <table>
+      <thead>
+        <tr>
+          <th>Feature Name</th>
+          <th>Config Name</th>
+          <th>Run</th>
+        </tr>
+      </thead>
+      <tbody id="feature-table"></tbody>
+    </table>
+    <datalist id="config-name-list"></datalist>
+    <script type="module" src="dashboard.js"></script>
   </body>
 </html>
