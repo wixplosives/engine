@@ -3,6 +3,7 @@ import { once } from 'node:events';
 import type { ServerOptions } from 'socket.io';
 import { ForkedProcess } from './forked-process.js';
 import { isEnvironmentPortMessage, type ICommunicationMessage, type RemoteProcess } from './types.js';
+import { IDisposable, SafeDisposable } from '@wixc3/patterns';
 
 export interface IStartRemoteNodeEnvironmentOptions {
     port: number;
@@ -39,10 +40,21 @@ export async function startRemoteNodeEnvironment(
     };
 }
 
-export class RemoteNodeEnvironment {
+export class RemoteNodeEnvironment implements IDisposable {
+    private disposables = new SafeDisposable(RemoteNodeEnvironment.name);
+    dispose = this.disposables.dispose;
+    isDisposed = this.disposables.isDisposed;
     private messageHandlers = new Set<(message: ICommunicationMessage) => void>();
 
-    constructor(private childEnv: RemoteProcess) {}
+    constructor(private childEnv: RemoteProcess) {
+        this.disposables.add('child environment', () => {
+            for (const handler of this.messageHandlers) {
+                this.childEnv.off('message', handler);
+            }
+            this.messageHandlers.clear();
+            this.childEnv?.terminate?.();
+        });
+    }
 
     public async getRemotePort(): Promise<number> {
         return new Promise((resolve) => {
@@ -68,15 +80,5 @@ export class RemoteNodeEnvironment {
 
     public postMessage(message: ICommunicationMessage) {
         this.childEnv.postMessage(message);
-    }
-
-    public dispose() {
-        for (const handler of this.messageHandlers) {
-            this.childEnv.off('message', handler);
-        }
-        this.messageHandlers.clear();
-        if (this.childEnv && this.childEnv.terminate) {
-            this.childEnv.terminate();
-        }
     }
 }

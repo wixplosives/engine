@@ -1,9 +1,9 @@
-import { SetMultiMap } from '@wixc3/patterns';
+import { SetMultiMap, isDisposable } from '@wixc3/patterns';
 import { deferred } from 'promise-assist';
 import type { ContextualEnvironment, Environment, EnvironmentMode } from '../entities/env.js';
 import { serializeError } from '../helpers/index.js';
 import { SERVICE_CONFIG } from '../symbols.js';
-import { isDisposable, type IDTag } from '../types.js';
+import { type IDTag } from '../types.js';
 import {
     CALLBACK_TIMEOUT,
     DUPLICATE_REGISTER,
@@ -485,14 +485,14 @@ export class Communication {
     /**
      * Dispose the Communication and stop listening to messages.
      */
-    public dispose(): void {
+    public async dispose(): Promise<void> {
         this.disposing = true;
         for (const { host, id } of Object.values(this.environments)) {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
             }
             if (isDisposable(host)) {
-                host.dispose();
+                await host.dispose();
             }
             this.removeMessageHandler(host);
             this.locallyClear(id);

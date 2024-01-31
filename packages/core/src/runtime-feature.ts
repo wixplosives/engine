@@ -7,41 +7,38 @@ import {
     instantiateFeature,
 } from './entities/feature.js';
 import { CREATE_RUNTIME, ENGINE, REGISTER_VALUE, RUN, RUN_OPTIONS } from './symbols.js';
-import { SetMultiMap } from '@wixc3/patterns';
+import { IDisposable, SafeDisposable, SetMultiMap } from '@wixc3/patterns';
 import type { Context, DisposeFunction, Running } from './types.js';
-import { deferred, type IDeferredPromise } from 'promise-assist';
 
 /**
  * Represents a currently running feature instance.
  **/
-export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> {
+export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> implements IDisposable {
+    private disposables = new SafeDisposable(RuntimeFeature.name);
+    public dispose = this.disposables.dispose;
+    public isDisposed = this.disposables.isDisposed;
     private running = false;
     private runHandlers = new SetMultiMap<string, () => unknown>();
     private disposeHandlers = new SetMultiMap<string, DisposeFunction>();
-    private disposing: IDeferredPromise<void> | undefined;
     constructor(
         public feature: InstanceType<T>,
         public api: Running<T, ENV>,
         public dependencies: RunningFeatures<InstanceType<T>['dependencies'], ENV>,
         public environment: ENV,
-    ) {}
+    ) {
+        this.disposables.add('disposal handlers', async () => {
+            const featureDisposeHandlers = this.disposeHandlers.get(this.environment.env) || new Set();
+            for (const handler of featureDisposeHandlers) {
+                await handler();
+            }
+        });
+    }
     public addRunHandler = (fn: () => unknown) => {
         this.runHandlers.add(this.environment.env, fn);
     };
     public addOnDisposeHandler = (fn: DisposeFunction) => {
         this.disposeHandlers.add(this.environment.env, fn);
     };
-    public async dispose() {
-        if (this.disposing) {
-            return this.disposing.promise;
-        }
-        this.disposing = deferred();
-        const featureDisposeHandlers = this.disposeHandlers.get(this.environment.env) || new Set();
-        for (const handler of featureDisposeHandlers) {
-            await handler();
-        }
-        this.disposing.resolve();
-    }
     public async [RUN](engine: RuntimeEngine): Promise<void> {
         if (this.running) {
             return;

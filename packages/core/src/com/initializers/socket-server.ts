@@ -22,7 +22,7 @@ export const socketClientInitializer = async ({
         await host.connected;
     } catch (e) {
         communication.clearEnvironment(instanceId, undefined, false);
-        host.dispose();
+        void host.dispose();
         throw e;
     }
 
@@ -38,7 +38,7 @@ export const socketClientInitializer = async ({
         },
         dispose: () => {
             communication.clearEnvironment(instanceId, undefined, false);
-            host.dispose();
+            return host.dispose();
         },
     };
 };

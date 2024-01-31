@@ -1,16 +1,21 @@
 import { io, Socket, type SocketOptions } from 'socket.io-client';
 import type { Message } from '../message-types.js';
 import { BaseHost } from './base-host.js';
-import { EventEmitter } from '@wixc3/patterns';
+import { EventEmitter, IDisposable, SafeDisposable } from '@wixc3/patterns';
 import { deferred } from 'promise-assist';
 
-export class WsClientHost extends BaseHost {
+export class WsClientHost extends BaseHost implements IDisposable {
+    private disposables = new SafeDisposable(WsClientHost.name);
+    dispose = this.disposables.dispose;
+    isDisposed = this.disposables.isDisposed;
     public connected: Promise<void>;
     private socketClient: Socket;
     public subscribers = new EventEmitter<{ disconnect: void; reconnect: void }>();
 
     constructor(url: string, options?: Partial<SocketOptions>) {
         super();
+        this.disposables.add('close socket', () => this.socketClient.close());
+        this.disposables.add('clear subscribers', () => this.subscribers.clear());
 
         const { path, ...query } = Object.fromEntries(new URL(url).searchParams);
 
@@ -51,10 +56,5 @@ export class WsClientHost extends BaseHost {
 
     public postMessage(data: any) {
         this.socketClient.emit('message', data);
-    }
-
-    public dispose() {
-        this.subscribers.clear();
-        this.socketClient.close();
     }
 }

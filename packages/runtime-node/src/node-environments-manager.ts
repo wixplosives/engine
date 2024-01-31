@@ -338,7 +338,7 @@ export class NodeEnvironmentsManager {
         if (!runningEnvironments || !com) {
             throw new Error(`there are no node environments running for ${featureName} and config ${configName!}`);
         }
-        com.dispose();
+        await com.dispose();
         for (const env of Object.values(runningEnvironments)) {
             await env.close();
         }
@@ -360,7 +360,7 @@ export class NodeEnvironmentsManager {
     public async closeAll() {
         const allClosed: Promise<void>[] = [];
         for (const runningEnvironmentForFeature of this.runningFeatures.values()) {
-            runningEnvironmentForFeature.com.dispose();
+            await runningEnvironmentForFeature.com.dispose();
             for (const env of Object.values(runningEnvironmentForFeature.runningEnvironments)) {
                 allClosed.push(env.close());
             }
