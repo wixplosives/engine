@@ -102,9 +102,19 @@ export async function runEngine({
         publicConfigsRoute,
     };
 
+    const { buildConfigurations, featureEnvironmentsMapping, configMapping } =
+        resolveBuildConfigurations(buildConfigurationsOptions);
+    if (writeMetadataFiles) {
+        fs.writeFileSync(
+            join(buildConfigurations.nodeConfig.outdir, 'engine-feature-environments-mapping.json'),
+            JSON.stringify(featureEnvironmentsMapping, null, 2),
+        );
+        fs.writeFileSync(
+            join(buildConfigurations.nodeConfig.outdir, 'engine-config-mapping.json'),
+            JSON.stringify(configMapping, null, 2),
+        );
+    }
     if (watch) {
-        const { buildConfigurations } = resolveBuildConfigurations(buildConfigurationsOptions);
-
         if (buildTargets === 'web' || buildTargets === 'both') {
             if (verbose) {
                 console.log('Starting web compilation in watch mode');
@@ -133,9 +143,6 @@ export async function runEngine({
             await waitForBuildEnd();
         }
     } else if (build) {
-        const { buildConfigurations, featureEnvironmentsMapping, configMapping } =
-            resolveBuildConfigurations(buildConfigurationsOptions);
-
         const start = performance.now();
         await Promise.all([
             buildTargets === 'node' || buildTargets === 'both'
@@ -145,16 +152,6 @@ export async function runEngine({
                 ? esbuild.build(buildConfigurations.webConfig)
                 : Promise.resolve(),
         ]);
-        if (writeMetadataFiles) {
-            fs.writeFileSync(
-                join(buildConfigurations.nodeConfig.outdir, 'engine-feature-environments-mapping.json'),
-                JSON.stringify(featureEnvironmentsMapping, null, 2),
-            );
-            fs.writeFileSync(
-                join(buildConfigurations.nodeConfig.outdir, 'engine-config-mapping.json'),
-                JSON.stringify(configMapping, null, 2),
-            );
-        }
         const end = performance.now();
         console.log(`Build time ${Math.round(end - start)}ms`);
     }
@@ -174,9 +171,6 @@ export async function runEngine({
         if (verbose) {
             console.log(`Runtime options: ${JSON.stringify(Object.fromEntries(runtimeOptions.entries()), null, 2)}`);
         }
-
-        const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
-        const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
 
         devServer = await launchDevServer(
             serveStatic,

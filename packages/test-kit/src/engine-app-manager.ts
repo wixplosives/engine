@@ -11,7 +11,7 @@ import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
 import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
 
-const OUTPUT_PATH = join(process.cwd(), 'dist-test-engine');
+const OUTPUT_PATH = join(process.cwd(), 'dist-engine');
 
 export class ManagedRunEngine implements IExecutableApplication {
     private ready!: Promise<void>;
