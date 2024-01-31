@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@file-services/node": "^8.3.3",
-    "@wixc3/common": "^15.1.1",
+    "@wixc3/common": "^16.0.0",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/engine-core": "^43.0.2",
     "@wixc3/engine-electron": "^43.0.2",
@@ -25,7 +25,7 @@
     "@wixc3/engine-runtime-node": "^43.0.2",
     "@wixc3/engine-scripts": "^43.0.2",
     "@wixc3/engineer": "^43.0.2",
-    "@wixc3/patterns": "^15.3.1",
+    "@wixc3/patterns": "^16.0.0",
     "@wixc3/resolve-directory-context": "^4.0.0",
     "commander": "^11.1.0"
   },
