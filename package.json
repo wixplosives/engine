@@ -8,9 +8,10 @@
   ],
   "scripts": {
     "clean": "rimraf -g \"./packages/*/dist\" \"./examples/*/dist\" \"./test-fixtures/*/dist\" \"./test-fixtures/workspace/packages/*/dist\"",
-    "build": "yarn build:typescript && yarn build:stylable",
+    "build": "yarn build:typescript && yarn build:stylable && yarn build:dashboard",
     "build:typescript": "tsc --build",
     "build:stylable": "stc",
+    "build:dashboard": "node build-dashboard.mjs",
     "lint": "eslint .",
     "prestart": "yarn build",
     "start": "engineer start",

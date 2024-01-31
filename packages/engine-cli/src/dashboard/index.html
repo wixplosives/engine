@@ -3,9 +3,112 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Engine Dashboard</title>
+    <title>⚡Engine Dashboard⚡</title>
+    <style>
+      html {
+        font-family: sans-serif;
+        font-size: 16px;
+      }
+
+      .layout {
+        display: flex;
+        gap: 2rem;
+      }
+
+      .layout > * {
+        flex: 1;
+      }
+
+      input[type='search'] {
+        padding: 4px;
+        margin-bottom: 4px;
+      }
+
+      input {
+        font-size: inherit;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      tr:nth-of-type(odd) {
+        background: #eee;
+      }
+
+      th {
+        background: #536cd0;
+        color: white;
+        font-weight: bold;
+      }
+
+      td,
+      th {
+        padding: 10px;
+        border: 1px solid #ccc;
+        text-align: left;
+      }
+    </style>
   </head>
   <body>
-    <h1>Welcome to the NEW and IMPROVED Engine Dashboard</h1>
+    <h1>Welcome to the Engine Dashboard</h1>
+    <div id="error"></div>
+    <main>
+      <section>
+        <h2>Open Environments</h2>
+        <table id="open-environments">
+          <thead>
+            <tr>
+              <th>Feature Name</th>
+              <th>Config Name</th>
+              <th>Runtime Args</th>
+              <th>Url</th>
+              <th>Restart</th>
+            </tr>
+          </thead>
+          <tbody id="open-environments-content"></tbody>
+        </table>
+      </section>
+      <section class="layout">
+        <section>
+          <h2>Available Features</h2>
+          <input type="search" id="feature-search" placeholder="Search features" />
+          <table id="feature-table">
+            <thead>
+              <tr>
+                <th>Feature Name</th>
+                <th>Config Name</th>
+                <th>Runtime Args</th>
+                <th>Run</th>
+              </tr>
+            </thead>
+            <tbody id="feature-table-content"></tbody>
+          </table>
+        </section>
+        <section>
+          <h2>Previous runs</h2>
+          <input type="search" style="visibility: hidden" />
+          <table id="previous-runs">
+            <thead>
+              <tr>
+                <th>Feature Name</th>
+                <th>Config Name</th>
+                <th>Runtime Args</th>
+                <th>Run</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody id="previous-runs-content"></tbody>
+          </table>
+        </section>
+      </section>
+      <details id="raw-data">
+        <summary>Raw data</summary>
+        <pre id="raw-data-content"></pre>
+      </details>
+    </main>
+    <datalist id="config-name-list"></datalist>
+    <script type="module" src="dashboard.js"></script>
   </body>
 </html>
