@@ -422,7 +422,6 @@ export async function runLocalNodeManager(
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
 ) {
-    console.log({ execRuntimeOptions });
     const meta = { url: pathToFileURL(join(outputPath, 'node/')).href };
     const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
     const { port } = await manager.autoLaunch(execRuntimeOptions);
