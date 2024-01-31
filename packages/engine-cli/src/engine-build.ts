@@ -20,13 +20,12 @@ import {
 import esbuild from 'esbuild';
 import express from 'express';
 import { json } from 'body-parser';
-import { fork } from 'node:child_process';
 import { createEnvironmentsBuildConfiguration } from './create-environments-build-configuration';
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { loadConfigFile } from './load-config-file';
 import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server';
 import { parseArgs } from 'node:util';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { TopLevelConfig } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
 import { pathToFileURL } from 'node:url';
@@ -55,7 +54,6 @@ export async function runEngine({
     const mode: '' | 'development' | 'production' = dev ? 'development' : 'production';
     let esbuildContextWeb: esbuild.BuildContext | undefined;
     let esbuildContextNode: esbuild.BuildContext | undefined;
-    let runManagerContext: Awaited<ReturnType<typeof runNodeManager>> | undefined;
     let devServer: Awaited<ReturnType<typeof launchDevServer>> | undefined;
 
     rootDir = fs.resolve(rootDir);
@@ -180,20 +178,6 @@ export async function runEngine({
         const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
         const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
 
-        if (featureName) {
-            const { port } = await runLocalNodeManager(
-                featureEnvironmentsMapping,
-                configMapping,
-                runtimeOptions,
-                outputPath,
-            );
-
-            // TODO: get the names of main entry points from the build configurations
-            console.log(`Engine application in running at http://localhost:${port}/main.html`);
-        } else {
-            console.log('No explicit feature name provided skipping auto launch use the dashboard to run features');
-        }
-
         devServer = await launchDevServer(
             serveStatic,
             httpServerPort,
@@ -211,7 +195,6 @@ export async function runEngine({
         devServer,
         esbuildContextWeb,
         esbuildContextNode,
-        runManagerContext,
     };
 }
 
@@ -281,17 +264,6 @@ function resolveBuildConfigurations({
     return { buildConfigurations, featureEnvironmentsMapping, configMapping, environments };
 }
 
-function findNodeEnvManagerEntrypoint(outputPath: any) {
-    const managerPath = ['.js', '.mjs']
-        .map((ext) => fs.join(outputPath, 'node', `engine-environment-manager${ext}`))
-        .find(fs.existsSync);
-
-    if (!managerPath) {
-        throw new Error(`Could not find "engine-environment-manager" entrypoint in ${fs.join(outputPath, 'node')}`);
-    }
-    return managerPath;
-}
-
 export function resolveRuntimeOptions({
     outputPath,
     featureName,
@@ -320,29 +292,6 @@ export function resolveRuntimeOptions({
     return runtimeOptions;
 }
 
-export function runNodeManager({
-    outputPath,
-    runtimeOptions,
-    cwd,
-    watch,
-}: {
-    outputPath: string;
-    runtimeOptions: Map<string, string | boolean | undefined>;
-    cwd?: string;
-    watch?: boolean;
-}) {
-    const managerProcess = fork(
-        findNodeEnvManagerEntrypoint(outputPath),
-        Array.from(runtimeOptions.entries()).map(([key, value]) => `--${key}=${value}`),
-        {
-            cwd: cwd ? resolve(cwd) : process.cwd(),
-            execArgv: watch ? process.execArgv.concat(['--watch']) : process.execArgv,
-            // execArgv: process.execArgv,
-        },
-    );
-    return { managerProcess };
-}
-
 async function launchDevServer(
     serveStatic: StaticConfig[],
     httpServerPort: number,
@@ -352,11 +301,25 @@ async function launchDevServer(
     runtimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string,
 ) {
-    // start dev server
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
         path: route,
         handlers: express.static(directoryPath),
     }));
+
+    const { middleware, run, listOpenManagers } = runOnDemandSingleEnvironment(
+        runtimeOptions,
+        featureEnvironmentsMapping,
+        configMapping,
+        outputPath,
+    );
+    const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
+    if (autoRunFeatureName) {
+        const port = await run(autoRunFeatureName, runtimeOptions.get('config') as string);
+        // TODO: get the names of main entry points from the build configurations
+        console.log(`Engine application in running at http://localhost:${port}/main.html`);
+    } else {
+        console.log('No explicit feature name provided skipping auto launch use the dashboard to run features');
+    }
 
     const devMiddlewares: RouteMiddleware[] = [
         {
@@ -371,15 +334,13 @@ async function launchDevServer(
                     configMapping,
                     runtimeOptions: Object.fromEntries(runtimeOptions.entries()),
                     outputPath,
+                    openManagers: listOpenManagers(),
                 });
             },
         },
         {
             path: '/api/engine/run',
-            handlers: [
-                json(),
-                runOnDemandSingleEnvironment(runtimeOptions, featureEnvironmentsMapping, configMapping, outputPath),
-            ],
+            handlers: [json(), middleware],
         },
     ];
 
@@ -396,38 +357,55 @@ function runOnDemandSingleEnvironment(
     configMapping: ConfigurationEnvironmentMapping,
     outputPath: string,
 ) {
-    let runningNodeManager: Awaited<ReturnType<typeof runLocalNodeManager>> | undefined;
-
+    const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
     async function run(featureName: string, configName: string) {
-        if (runningNodeManager) {
-            void runningNodeManager.manager.dispose();
-            runningNodeManager = undefined;
+        if (openManagers.size > 0) {
+            openManagers.forEach((manager) => void manager.manager.dispose());
+            openManagers.clear();
         }
 
         const runOptions = new Map(runtimeOptions.entries());
         runOptions.set('feature', featureName);
         runOptions.set('config', configName);
-        runningNodeManager = await runLocalNodeManager(
+        const runningNodeManager = await runLocalNodeManager(
             featureEnvironmentsMapping,
             configMapping,
             runOptions,
             outputPath,
         );
+        openManagers.set(`${featureName}(+)${configName}`, runningNodeManager);
         return runningNodeManager.port;
     }
-
-    return (req: express.Request, res: express.Response) => {
+    function middleware(req: express.Request, res: express.Response) {
         console.log(`running on demand feature: "${req.body.featureName}" config: "${req.body.configName}"`);
         run(req.body.featureName, req.body.configName)
             .then((port) => {
                 res.json({
-                    url: `http://localhost:${port}/main.html?feature=${encodeURIComponent(req.body.featureName)}&config=${encodeURIComponent(req.body.configName)}`,
+                    url: genUrl(port, req.body.featureName, req.body.configName),
+                    openManagers: listOpenManagers(),
                 });
             })
             .catch((e) => {
                 res.status(500).json({ message: e.message });
             });
-    };
+    }
+
+    function listOpenManagers() {
+        return Array.from(openManagers.entries(), ([key, { port }]) => {
+            const [featureName, configName] = key.split('(+)') as [string, string];
+            return {
+                featureName,
+                configName,
+                port,
+                url: genUrl(port, featureName, configName),
+            };
+        });
+    }
+
+    function genUrl(port: number, featureName: string, configName: string): string {
+        return `http://localhost:${port}/main.html?feature=${encodeURIComponent(featureName)}&config=${encodeURIComponent(configName)}`;
+    }
+    return { middleware, run, listOpenManagers };
 }
 
 export async function runLocalNodeManager(
