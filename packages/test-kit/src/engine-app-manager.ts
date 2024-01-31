@@ -32,7 +32,7 @@ export class ManagedRunEngine implements IExecutableApplication {
             return;
         }
         const engineConfig = await loadEngineConfig(process.cwd());
-        
+
         const buildOnlyInDevModeOptions: RunEngineOptions = {
             build: true,
             clean: true,
@@ -77,7 +77,6 @@ export class ManagedRunEngine implements IExecutableApplication {
         const { port, manager } = await runLocalNodeManager(
             this.runMetadata.featureEnvironmentsMapping,
             this.runMetadata.configMapping,
-            configName,
             execRuntimeOptions,
             OUTPUT_PATH,
         );

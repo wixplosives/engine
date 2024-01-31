@@ -320,7 +320,6 @@ export function runNodeManager({
         {
             cwd: cwd ? resolve(cwd) : process.cwd(),
             execArgv: watch ? process.execArgv.concat(['--watch']) : process.execArgv,
-            // execArgv: process.execArgv,
         },
     );
     return { managerProcess };
@@ -356,7 +355,6 @@ async function launchDevServer(
 export async function runLocalNodeManager(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
-    configName: string,
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
 ) {
