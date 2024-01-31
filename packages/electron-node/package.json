@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron-node",
-  "version": "43.0.2",
+  "version": "43.0.3",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -8,9 +8,9 @@
   },
   "dependencies": {
     "@wixc3/common": "^16.1.0",
-    "@wixc3/engine-core": "^43.0.2",
-    "@wixc3/engine-electron-commons": "^43.0.2",
-    "@wixc3/engine-runtime-node": "^43.0.2",
+    "@wixc3/engine-core": "^43.0.3",
+    "@wixc3/engine-electron-commons": "^43.0.3",
+    "@wixc3/engine-runtime-node": "^43.0.3",
     "@wixc3/patterns": "^16.1.0"
   },
   "peerDependencies": {
