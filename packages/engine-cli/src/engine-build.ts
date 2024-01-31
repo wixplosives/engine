@@ -314,7 +314,7 @@ async function launchDevServer(
     );
     const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
     if (autoRunFeatureName) {
-        const port = await run(autoRunFeatureName, runtimeOptions.get('config') as string);
+        const port = await run(autoRunFeatureName, runtimeOptions.get('config') as string, '');
         // TODO: get the names of main entry points from the build configurations
         console.log(`Engine application in running at http://localhost:${port}/main.html`);
     } else {
@@ -358,7 +358,7 @@ function runOnDemandSingleEnvironment(
     outputPath: string,
 ) {
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
-    async function run(featureName: string, configName: string) {
+    async function run(featureName: string, configName: string, runtimeArgs: string) {
         if (openManagers.size > 0) {
             openManagers.forEach((manager) => void manager.manager.dispose());
             openManagers.clear();
@@ -367,18 +367,25 @@ function runOnDemandSingleEnvironment(
         const runOptions = new Map(runtimeOptions.entries());
         runOptions.set('feature', featureName);
         runOptions.set('config', configName);
+        if (runtimeArgs) {
+            for (const [key, value] of Object.entries(JSON.parse(runtimeArgs))) {
+                runOptions.set(key, String(value));
+            }
+        }
         const runningNodeManager = await runLocalNodeManager(
             featureEnvironmentsMapping,
             configMapping,
             runOptions,
             outputPath,
         );
-        openManagers.set(`${featureName}(+)${configName}`, runningNodeManager);
+        openManagers.set(`${featureName}(+)${configName}(+)${runtimeArgs}`, runningNodeManager);
         return runningNodeManager.port;
     }
     function middleware(req: express.Request, res: express.Response) {
-        console.log(`running on demand feature: "${req.body.featureName}" config: "${req.body.configName}"`);
-        run(req.body.featureName, req.body.configName)
+        console.log(
+            `running on demand feature: "${req.body.featureName}" config: "${req.body.configName}" runtimeArgs: "${req.body.runtimeArgs}"`,
+        );
+        run(req.body.featureName, req.body.configName, req.body.runtimeArgs)
             .then((port) => {
                 res.json({
                     url: genUrl(port, req.body.featureName, req.body.configName),
@@ -386,16 +393,17 @@ function runOnDemandSingleEnvironment(
                 });
             })
             .catch((e) => {
-                res.status(500).json({ message: e.message });
+                res.status(500).json({ error: e.message });
             });
     }
 
     function listOpenManagers() {
         return Array.from(openManagers.entries(), ([key, { port }]) => {
-            const [featureName, configName] = key.split('(+)') as [string, string];
+            const [featureName, configName, runtimeArgs] = key.split('(+)') as [string, string, string];
             return {
                 featureName,
                 configName,
+                runtimeArgs,
                 port,
                 url: genUrl(port, featureName, configName),
             };
@@ -414,6 +422,7 @@ export async function runLocalNodeManager(
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
 ) {
+    console.log({ execRuntimeOptions });
     const meta = { url: pathToFileURL(join(outputPath, 'node/')).href };
     const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
     const { port } = await manager.autoLaunch(execRuntimeOptions);

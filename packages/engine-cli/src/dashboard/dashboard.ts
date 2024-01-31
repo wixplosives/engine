@@ -23,6 +23,7 @@ function updateUI(data: any) {
     populateDatalistOptions(configs, 'config-name-list');
     populateFeatureTable(features);
     populateOpenEnvs(openManagers);
+    populatePreviousRuns();
     setupSearch();
 }
 
@@ -43,15 +44,21 @@ function setupSearch() {
     onInput();
 }
 
-function populateOpenEnvs(openManagers: { featureName: string; configName: string; port: number; url: string }[]) {
+function populateOpenEnvs(
+    openManagers: { featureName: string; configName: string; runtimeArgs: string; port: number; url: string }[],
+) {
     const content = byId('open-environments-content');
     content.innerHTML = '';
-    openManagers.forEach(({ featureName, configName, url }) => {
+    openManagers.forEach(({ featureName, configName, runtimeArgs, url }) => {
         const tr = document.createElement('tr');
         const feature = document.createElement('td');
         feature.textContent = featureName;
         const config = document.createElement('td');
         config.textContent = configName;
+
+        const runtimeArgsEl = document.createElement('td');
+        runtimeArgsEl.textContent = runtimeArgs;
+
         const urlEl = document.createElement('td');
         const link = document.createElement('a');
         link.href = url;
@@ -61,14 +68,85 @@ function populateOpenEnvs(openManagers: { featureName: string; configName: strin
         const restartBtn = document.createElement('button');
         restartBtn.textContent = 'Restart';
         restartBtn.onclick = () => {
-            runEnvironment(restartBtn, featureName, configName);
+            runEnvironment(restartBtn, featureName, configName, runtimeArgs);
         };
         restart.appendChild(restartBtn);
         urlEl.appendChild(link);
         tr.appendChild(feature);
         tr.appendChild(config);
+        tr.appendChild(runtimeArgsEl);
         tr.appendChild(urlEl);
         tr.appendChild(restart);
+        content.appendChild(tr);
+    });
+}
+
+type PreviousRuns = {
+    featureName: string;
+    configName: string;
+    runtimeArgs: string;
+}[];
+
+function getFavorites() {
+    return JSON.parse(localStorage.getItem('favorites') || '[]') as PreviousRuns;
+}
+
+function saveFavorite(featureName: string, configName: string, runtimeArgs: string) {
+    const fav = getFavorites();
+    const exists = fav.find(
+        (f) => f.featureName === featureName && f.configName === configName && f.runtimeArgs === runtimeArgs,
+    );
+    if (!exists) {
+        fav.unshift({ featureName, configName, runtimeArgs });
+        localStorage.setItem('favorites', JSON.stringify(fav));
+        populatePreviousRuns();
+    }
+}
+
+function deleteFavorite(featureName: string, configName: string, runtimeArgs: string) {
+    const favorites = getFavorites();
+    const index = favorites.findIndex(
+        (f) => f.featureName === featureName && f.configName === configName && f.runtimeArgs === runtimeArgs,
+    );
+    if (index >= 0) {
+        favorites.splice(index, 1);
+        localStorage.setItem('favorites', JSON.stringify(favorites));
+        populatePreviousRuns();
+    }
+}
+
+function populatePreviousRuns() {
+    const previousRuns = getFavorites();
+    const content = byId('previous-runs-content');
+    content.innerHTML = '';
+    previousRuns.forEach(({ featureName, configName, runtimeArgs }) => {
+        const tr = document.createElement('tr');
+        const feature = document.createElement('td');
+        feature.textContent = featureName;
+        const config = document.createElement('td');
+        config.textContent = configName;
+        const runtimeArgsEl = document.createElement('td');
+        runtimeArgsEl.textContent = runtimeArgs;
+        const run = document.createElement('td');
+        const runBtn = document.createElement('button');
+        runBtn.textContent = 'Run';
+        runBtn.onclick = () => {
+            runEnvironment(runBtn, featureName, configName, runtimeArgs);
+        };
+        run.appendChild(runBtn);
+        const deleteEl = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.onclick = () => {
+            deleteFavorite(featureName, configName, runtimeArgs);
+        };
+        deleteEl.appendChild(deleteBtn);
+
+        tr.appendChild(feature);
+        tr.appendChild(config);
+        tr.appendChild(runtimeArgsEl);
+        tr.appendChild(run);
+        tr.appendChild(deleteEl);
         content.appendChild(tr);
     });
 }
@@ -81,33 +159,47 @@ function populateFeatureTable(features: string[]) {
         tr.dataset.featureName = featureName;
         const btn = document.createElement('button');
         const configNameInput = document.createElement('input');
+        configNameInput.placeholder = 'Config name';
         configNameInput.setAttribute('list', 'config-name-list');
         configNameInput.value = getSavedConfigName(featureName);
         configNameInput.onchange = () => {
             saveConfigName(featureName, configNameInput.value);
         };
 
+        const runtimeArgsInput = document.createElement('input');
+        runtimeArgsInput.placeholder = 'Runtime args';
+        runtimeArgsInput.value = localStorage.getItem(featureName + ':runtimeArgs') ?? '';
+        runtimeArgsInput.onchange = () => {
+            localStorage.setItem(featureName + ':runtimeArgs', runtimeArgsInput.value);
+        };
+
         btn.textContent = 'Run';
         btn.onclick = () => {
-            runEnvironment(btn, featureName, configNameInput.value);
+            runEnvironment(btn, featureName, configNameInput.value, runtimeArgsInput.value);
         };
         const name = document.createElement('td');
         name.textContent = featureName;
         const configName = document.createElement('td');
         configName.appendChild(configNameInput);
+
+        const runtimeArgs = document.createElement('td');
+        runtimeArgs.appendChild(runtimeArgsInput);
+
         const run = document.createElement('td');
         run.appendChild(btn);
 
         tr.appendChild(name);
         tr.appendChild(configName);
+        tr.appendChild(runtimeArgs);
         tr.appendChild(run);
 
         featureTable.appendChild(tr);
     });
 }
 
-function runEnvironment(btn: HTMLButtonElement, featureName: string, configName: string) {
+function runEnvironment(btn: HTMLButtonElement, featureName: string, configName: string, runtimeArgs: string) {
     btn.disabled = true;
+    saveFavorite(featureName, configName, runtimeArgs);
     fetch('/api/engine/run', {
         method: 'POST',
         headers: {
@@ -116,10 +208,14 @@ function runEnvironment(btn: HTMLButtonElement, featureName: string, configName:
         body: JSON.stringify({
             featureName,
             configName,
+            runtimeArgs,
         }),
     })
         .then((response) => response.json())
         .then((data) => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
             populateOpenEnvs(data.openManagers);
             window.open(data.url, '_blank');
         })
