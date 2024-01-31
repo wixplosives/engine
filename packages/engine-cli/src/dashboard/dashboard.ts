@@ -57,7 +57,9 @@ function populateOpenEnvs(
         config.textContent = configName;
 
         const runtimeArgsEl = document.createElement('td');
-        runtimeArgsEl.textContent = runtimeArgs;
+        const runtimeArgsPreEl = document.createElement('pre');
+        runtimeArgsEl.appendChild(runtimeArgsPreEl);
+        runtimeArgsPreEl.textContent = JSON.stringify(JSON.parse(runtimeArgs), null, 2);
 
         const urlEl = document.createElement('td');
         const link = document.createElement('a');
@@ -126,7 +128,9 @@ function populatePreviousRuns() {
         const config = document.createElement('td');
         config.textContent = configName;
         const runtimeArgsEl = document.createElement('td');
-        runtimeArgsEl.textContent = runtimeArgs;
+        const runtimeArgsPreEl = document.createElement('pre');
+        runtimeArgsEl.appendChild(runtimeArgsPreEl);
+        runtimeArgsPreEl.textContent = JSON.stringify(JSON.parse(runtimeArgs), null, 2);
         const run = document.createElement('td');
         const runBtn = document.createElement('button');
         runBtn.textContent = 'Run';
