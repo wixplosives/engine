@@ -9,7 +9,7 @@ async function engine() {
     const dev = boolParam(args.get('dev')) ?? watch;
     const run = boolParam(args.get('run')) ?? dev;
     const verbose = boolParam(args.get('verbose')) ?? false;
-    const writeMetadataFiles = boolParam(args.get('writeMetadataFiles')) ?? !watch;
+    const writeMetadataFiles = boolParam(args.get('writeMetadataFiles')) ?? true;
 
     const runtimeArgs = JSON.parse(strParam(args.get('runtimeArgs')) ?? '{}');
     const feature = strParam(args.get('feature'));

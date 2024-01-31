@@ -8,6 +8,28 @@ function init() {
         .catch(uiError);
 }
 
+function el(
+    tag: string,
+    attributes: Record<string, string | ((this: HTMLElement, e: unknown) => void)> = {},
+    children: (HTMLElement | Text)[] = [],
+) {
+    const element = document.createElement(tag);
+    for (const [key, value] of Object.entries(attributes)) {
+        if (typeof value === 'function') {
+            (element as any)[key] = value;
+            continue;
+        }
+        element.setAttribute(key, String(value));
+    }
+    for (const child of children) {
+        element.appendChild(child);
+    }
+    return element;
+}
+function text(text: string) {
+    return document.createTextNode(text);
+}
+
 function byId(id: string) {
     const el = document.getElementById(id);
     if (!el) {
@@ -50,36 +72,24 @@ function populateOpenEnvs(
     const content = byId('open-environments-content');
     content.innerHTML = '';
     openManagers.forEach(({ featureName, configName, runtimeArgs, url }) => {
-        const tr = document.createElement('tr');
-        const feature = document.createElement('td');
-        feature.textContent = featureName;
-        const config = document.createElement('td');
-        config.textContent = configName;
-
-        const runtimeArgsEl = document.createElement('td');
-        const runtimeArgsPreEl = document.createElement('pre');
-        runtimeArgsEl.appendChild(runtimeArgsPreEl);
-        runtimeArgsPreEl.textContent = JSON.stringify(JSON.parse(runtimeArgs), null, 2);
-
-        const urlEl = document.createElement('td');
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.textContent = url;
-        const restart = document.createElement('td');
-        const restartBtn = document.createElement('button');
-        restartBtn.textContent = 'Restart';
-        restartBtn.onclick = () => {
-            runEnvironment(restartBtn, featureName, configName, runtimeArgs);
-        };
-        restart.appendChild(restartBtn);
-        urlEl.appendChild(link);
-        tr.appendChild(feature);
-        tr.appendChild(config);
-        tr.appendChild(runtimeArgsEl);
-        tr.appendChild(urlEl);
-        tr.appendChild(restart);
-        content.appendChild(tr);
+        const row = el('tr', {}, [
+            el('td', {}, [text(featureName)]),
+            el('td', {}, [text(configName)]),
+            el('td', {}, [el('pre', {}, [text(JSON.stringify(JSON.parse(runtimeArgs), null, 2))])]),
+            el('td', {}, [el('a', { href: url, target: '_blank' }, [text(url)])]),
+            el('td', {}, [
+                el(
+                    'button',
+                    {
+                        onclick() {
+                            runEnvironment(this as HTMLButtonElement, featureName, configName, runtimeArgs);
+                        },
+                    },
+                    [text('Restart')],
+                ),
+            ]),
+        ]);
+        content.appendChild(row);
     });
 }
 
@@ -122,36 +132,34 @@ function populatePreviousRuns() {
     const content = byId('previous-runs-content');
     content.innerHTML = '';
     previousRuns.forEach(({ featureName, configName, runtimeArgs }) => {
-        const tr = document.createElement('tr');
-        const feature = document.createElement('td');
-        feature.textContent = featureName;
-        const config = document.createElement('td');
-        config.textContent = configName;
-        const runtimeArgsEl = document.createElement('td');
-        const runtimeArgsPreEl = document.createElement('pre');
-        runtimeArgsEl.appendChild(runtimeArgsPreEl);
-        runtimeArgsPreEl.textContent = JSON.stringify(JSON.parse(runtimeArgs), null, 2);
-        const run = document.createElement('td');
-        const runBtn = document.createElement('button');
-        runBtn.textContent = 'Run';
-        runBtn.onclick = () => {
-            runEnvironment(runBtn, featureName, configName, runtimeArgs);
-        };
-        run.appendChild(runBtn);
-        const deleteEl = document.createElement('td');
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => {
-            deleteFavorite(featureName, configName, runtimeArgs);
-        };
-        deleteEl.appendChild(deleteBtn);
-
-        tr.appendChild(feature);
-        tr.appendChild(config);
-        tr.appendChild(runtimeArgsEl);
-        tr.appendChild(run);
-        tr.appendChild(deleteEl);
-        content.appendChild(tr);
+        const row = el('tr', {}, [
+            el('td', {}, [text(featureName)]),
+            el('td', {}, [text(configName)]),
+            el('td', {}, [el('pre', {}, [text(JSON.stringify(JSON.parse(runtimeArgs), null, 2))])]),
+            el('td', {}, [
+                el(
+                    'button',
+                    {
+                        onclick() {
+                            runEnvironment(this as HTMLButtonElement, featureName, configName, runtimeArgs);
+                        },
+                    },
+                    [text('Run')],
+                ),
+            ]),
+            el('td', {}, [
+                el(
+                    'button',
+                    {
+                        onclick() {
+                            deleteFavorite(featureName, configName, runtimeArgs);
+                        },
+                    },
+                    [text('Delete')],
+                ),
+            ]),
+        ]);
+        content.appendChild(row);
     });
 }
 
@@ -159,45 +167,40 @@ function populateFeatureTable(features: string[]) {
     const featureTable = byId('feature-table-content');
     featureTable.innerHTML = '';
     features.sort().forEach((featureName) => {
-        const tr = document.createElement('tr');
-        tr.dataset.featureName = featureName;
-        const btn = document.createElement('button');
-        const configNameInput = document.createElement('input');
-        configNameInput.placeholder = 'Config name';
-        configNameInput.setAttribute('list', 'config-name-list');
-        configNameInput.value = getSavedConfigName(featureName);
-        configNameInput.onchange = () => {
-            saveConfigName(featureName, configNameInput.value);
-        };
-
-        const runtimeArgsInput = document.createElement('input');
-        runtimeArgsInput.placeholder = 'Runtime args';
-        runtimeArgsInput.value = localStorage.getItem(featureName + ':runtimeArgs') ?? '';
-        runtimeArgsInput.onchange = () => {
-            localStorage.setItem(featureName + ':runtimeArgs', runtimeArgsInput.value);
-        };
-
-        btn.textContent = 'Run';
-        btn.onclick = () => {
-            runEnvironment(btn, featureName, configNameInput.value, runtimeArgsInput.value);
-        };
-        const name = document.createElement('td');
-        name.textContent = featureName;
-        const configName = document.createElement('td');
-        configName.appendChild(configNameInput);
-
-        const runtimeArgs = document.createElement('td');
-        runtimeArgs.appendChild(runtimeArgsInput);
-
-        const run = document.createElement('td');
-        run.appendChild(btn);
-
-        tr.appendChild(name);
-        tr.appendChild(configName);
-        tr.appendChild(runtimeArgs);
-        tr.appendChild(run);
-
-        featureTable.appendChild(tr);
+        const row = el('tr', { 'data-feature-name': featureName }, [
+            el('td', {}, [text(featureName)]),
+            el('td', {}, [
+                el('input', {
+                    placeholder: 'Config name',
+                    list: 'config-name-list',
+                    value: getSavedConfigName(featureName),
+                    onchange() {
+                        saveConfigName(featureName, (this as HTMLInputElement).value);
+                    },
+                }),
+            ]),
+            el('td', {}, [
+                el('input', {
+                    placeholder: 'Runtime args',
+                    value: localStorage.getItem(featureName + ':runtimeArgs') ?? '',
+                    onchange() {
+                        localStorage.setItem(featureName + ':runtimeArgs', (this as HTMLInputElement).value);
+                    },
+                }),
+            ]),
+            el('td', {}, [
+                el(
+                    'button',
+                    {
+                        onclick() {
+                            runEnvironment(this as HTMLButtonElement, featureName, getSavedConfigName(featureName), '');
+                        },
+                    },
+                    [text('Run')],
+                ),
+            ]),
+        ]);
+        featureTable.appendChild(row);
     });
 }
 
