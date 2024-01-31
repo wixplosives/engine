@@ -94,10 +94,10 @@ export type EnvType<T extends EnvVisibility> = T extends Array<{ env: infer U }>
         ? U
         : never
     : T extends { env: infer U1 }
-    ? U1 extends string
-        ? U1
-        : never
-    : never;
+      ? U1 extends string
+          ? U1
+          : never
+      : never;
 
 type FilterENVKeys<T extends EntityRecord, ENV extends AnyEnvironment, Key extends 'visibleAt' | 'providedFrom'> = {
     [P in keyof T]: EnvType<T[P][Key]> & ReferencedEnvironments<ENV> extends never ? never : P;
@@ -185,26 +185,6 @@ export type RegisteringFeature<
 
 export interface Context<T> {
     type: T & { dispose?: DisposeFunction };
-}
-
-export interface IDisposable {
-    /**
-     * disposes the instance removing all event listeners
-     */
-    dispose(): void;
-
-    /**
-     * is the instance disposed
-     */
-    isDisposed(): boolean;
-}
-export function isDisposable(value: any): value is IDisposable {
-    return (
-        'dispose' in value &&
-        typeof value.dispose === 'function' &&
-        'isDisposed' in value &&
-        typeof value.isDisposed === 'function'
-    );
 }
 
 export type OmitCompositeEnvironment<T extends AnyEnvironment> = Environment<

@@ -7,11 +7,11 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@wixc3/common": "^15.1.1",
+    "@wixc3/common": "^16.0.0",
     "@wixc3/engine-core": "^43.0.2",
     "@wixc3/engine-electron-commons": "^43.0.2",
     "@wixc3/engine-runtime-node": "^43.0.2",
-    "@wixc3/patterns": "^15.3.1"
+    "@wixc3/patterns": "^16.0.0"
   },
   "peerDependencies": {
     "electron": ">=9"

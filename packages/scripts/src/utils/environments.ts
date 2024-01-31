@@ -17,7 +17,7 @@ export interface IResolvedEnvironment {
 }
 
 export function* getExportedEnvironments(
-    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>
+    features: Map<string, { exportedEnvs: IEnvironmentDescriptor<AnyEnvironment>[] }>,
 ) {
     for (const { exportedEnvs } of features.values()) {
         for (const exportedEnv of exportedEnvs) {
@@ -43,8 +43,9 @@ export function getResolvedEnvironments({
     const resolvedContexts = findAllEnvironments
         ? getPossibleContexts(features)
         : featureName && filterContexts
-        ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
-        : getAllResolvedContexts(features);
+          ? convertEnvRecordToSetMultiMap(features.get(featureName)?.resolvedContexts ?? {})
+          : getAllResolvedContexts(features);
+
     for (const env of environments) {
         const { name, childEnvName, type } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName))) {
@@ -69,6 +70,7 @@ export function getResolvedEnvironments({
         webEnvs,
         workerEnvs,
         electronRendererEnvs,
+        electronMainEnvs,
         nodeEnvs,
         workerThreadEnvs,
     };
