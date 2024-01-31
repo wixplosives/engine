@@ -105,6 +105,7 @@ export async function runEngine({
     const { buildConfigurations, featureEnvironmentsMapping, configMapping } =
         resolveBuildConfigurations(buildConfigurationsOptions);
     if (writeMetadataFiles) {
+        fs.mkdirSync(join(buildConfigurations.nodeConfig.outdir), { recursive: true });
         fs.writeFileSync(
             join(buildConfigurations.nodeConfig.outdir, 'engine-feature-environments-mapping.json'),
             JSON.stringify(featureEnvironmentsMapping, null, 2),
