@@ -257,7 +257,6 @@ function runEnvironment(
             featureName,
             configName,
             runtimeArgs,
-            restart,
         }),
     })
         .then((response) => response.json())

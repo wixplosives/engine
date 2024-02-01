@@ -309,7 +309,7 @@ async function launchDevServer(
     );
     const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
     if (autoRunFeatureName) {
-        const port = await run(autoRunFeatureName, runtimeOptions.get('config') as string, '', false);
+        const port = await run(autoRunFeatureName, runtimeOptions.get('config') as string, '');
         // TODO: get the names of main entry points from the build configurations
         console.log(`Engine application in running at http://localhost:${port}/main.html`);
     } else {
@@ -353,22 +353,20 @@ function runOnDemandSingleEnvironment(
     outputPath: string,
 ) {
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
-    async function run(featureName: string, configName: string, runtimeArgs: string, restart: boolean) {
+    async function run(featureName: string, configName: string, runtimeArgs: string) {
         if (openManagers.size > 0) {
             const toDispose = [];
             for (const { manager } of openManagers.values()) {
                 toDispose.push(manager.dispose());
             }
-            if (restart) {
-                await Promise.all(toDispose);
-            }
+            await Promise.all(toDispose);
             openManagers.clear();
         }
 
         const runOptions = new Map(runtimeOptions.entries());
         runOptions.set('feature', featureName);
         runOptions.set('config', configName);
-        if (runtimeArgs) {
+        if (runtimeArgs.trim()) {
             for (const [key, value] of Object.entries(JSON.parse(runtimeArgs))) {
                 runOptions.set(key, String(value));
             }
@@ -391,7 +389,7 @@ function runOnDemandSingleEnvironment(
             message += ' with restart';
         }
         console.log(message);
-        run(req.body.featureName, req.body.configName, req.body.runtimeArgs, req.body.restart)
+        run(req.body.featureName, req.body.configName, req.body.runtimeArgs)
             .then((port) => {
                 res.json({
                     url: genUrl(port, req.body.featureName, req.body.configName),
