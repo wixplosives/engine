@@ -43,7 +43,7 @@ function updateUI(data: any) {
     const configs = Object.keys(data.configMapping);
     const openManagers = data.openManagers;
     populateDatalistOptions(configs, 'config-name-list');
-    populateFeatureTable(features);
+    populateFeatureTable(features, data.configMapping);
     populateOpenEnvs(openManagers);
     populatePreviousRuns();
     setupSearch();
@@ -75,14 +75,14 @@ function populateOpenEnvs(
         const row = el('tr', {}, [
             el('td', {}, [text(featureName)]),
             el('td', {}, [text(configName)]),
-            el('td', {}, [el('pre', {}, [text(JSON.stringify(JSON.parse(runtimeArgs), null, 2))])]),
+            el('td', {}, [el('pre', {}, [text(niceRuntimeArgs(runtimeArgs))])]),
             el('td', {}, [el('a', { href: url, target: '_blank' }, [text(url)])]),
             el('td', {}, [
                 el(
                     'button',
                     {
                         onclick() {
-                            runEnvironment(this as HTMLButtonElement, featureName, configName, runtimeArgs);
+                            runEnvironment(this as HTMLButtonElement, featureName, configName, runtimeArgs, true);
                         },
                     },
                     [text('Restart')],
@@ -135,13 +135,13 @@ function populatePreviousRuns() {
         const row = el('tr', {}, [
             el('td', {}, [text(featureName)]),
             el('td', {}, [text(configName)]),
-            el('td', {}, [el('pre', {}, [text(JSON.stringify(JSON.parse(runtimeArgs), null, 2))])]),
+            el('td', {}, [el('pre', {}, [text(niceRuntimeArgs(runtimeArgs))])]),
             el('td', {}, [
                 el(
                     'button',
                     {
                         onclick() {
-                            runEnvironment(this as HTMLButtonElement, featureName, configName, runtimeArgs);
+                            runEnvironment(this as HTMLButtonElement, featureName, configName, runtimeArgs, false);
                         },
                     },
                     [text('Run')],
@@ -163,7 +163,18 @@ function populatePreviousRuns() {
     });
 }
 
-function populateFeatureTable(features: string[]) {
+function niceRuntimeArgs(runtimeArgs: string): string {
+    if (runtimeArgs.trim() === '') {
+        return 'None';
+    }
+    try {
+        return JSON.stringify(JSON.parse(runtimeArgs.trim()), null, 2);
+    } catch (e) {
+        return runtimeArgs + '\n' + String(e);
+    }
+}
+
+function populateFeatureTable(features: string[], configs: Record<string, string[]>) {
     const featureTable = byId('feature-table-content');
     featureTable.innerHTML = '';
     features.sort().forEach((featureName) => {
@@ -173,7 +184,7 @@ function populateFeatureTable(features: string[]) {
                 el('input', {
                     placeholder: 'Config name',
                     list: 'config-name-list',
-                    value: getSavedConfigName(featureName),
+                    value: getSavedConfigName(featureName) || (featureName in configs ? featureName : ''),
                     onchange() {
                         saveConfigName(featureName, (this as HTMLInputElement).value);
                     },
@@ -181,10 +192,11 @@ function populateFeatureTable(features: string[]) {
             ]),
             el('td', {}, [
                 el('input', {
-                    placeholder: 'Runtime args',
+                    placeholder: 'Runtime args (JSON)',
                     value: localStorage.getItem(featureName + ':runtimeArgs') ?? '',
                     onchange() {
-                        localStorage.setItem(featureName + ':runtimeArgs', (this as HTMLInputElement).value);
+                        const value = (this as HTMLInputElement).value.trim();
+                        localStorage.setItem(featureName + ':runtimeArgs', value);
                     },
                 }),
             ]),
@@ -193,7 +205,13 @@ function populateFeatureTable(features: string[]) {
                     'button',
                     {
                         onclick() {
-                            runEnvironment(this as HTMLButtonElement, featureName, getSavedConfigName(featureName), '');
+                            runEnvironment(
+                                this as HTMLButtonElement,
+                                featureName,
+                                getSavedConfigName(featureName),
+                                localStorage.getItem(featureName + ':runtimeArgs') ?? '',
+                                false,
+                            );
                         },
                     },
                     [text('Run')],
@@ -204,7 +222,30 @@ function populateFeatureTable(features: string[]) {
     });
 }
 
-function runEnvironment(btn: HTMLButtonElement, featureName: string, configName: string, runtimeArgs: string) {
+function validateRuntimeArgs(runtimeArgs: string) {
+    if (runtimeArgs === '') {
+        return;
+    }
+    try {
+        JSON.parse(runtimeArgs);
+    } catch (e) {
+        throw new Error(`Invalid runtime args: ${e}`);
+    }
+}
+
+function runEnvironment(
+    btn: HTMLButtonElement,
+    featureName: string,
+    configName: string,
+    runtimeArgs: string,
+    restart: boolean,
+) {
+    try {
+        validateRuntimeArgs(runtimeArgs);
+    } catch (e) {
+        uiError(e);
+        return;
+    }
     btn.disabled = true;
     saveFavorite(featureName, configName, runtimeArgs);
     fetch('/api/engine/run', {
@@ -216,6 +257,7 @@ function runEnvironment(btn: HTMLButtonElement, featureName: string, configName:
             featureName,
             configName,
             runtimeArgs,
+            restart,
         }),
     })
         .then((response) => response.json())
@@ -224,7 +266,9 @@ function runEnvironment(btn: HTMLButtonElement, featureName: string, configName:
                 throw new Error(data.error);
             }
             populateOpenEnvs(data.openManagers);
-            window.open(data.url, '_blank');
+            if (!restart) {
+                window.open(data.url, '_blank');
+            }
         })
         .catch(uiError)
         .finally(() => {
@@ -242,8 +286,17 @@ function populateDatalistOptions(options: string[], id: string) {
     });
 }
 
+function clearError() {
+    byId('error').innerHTML = '';
+}
+
 function uiError(error: any) {
-    byId('error').textContent = error.stack || error.message || error;
+    clearError();
+    byId('error').append(
+        el('pre', {}, [text(error.stack || error.message || error)]),
+        el('br'),
+        el('button', { onclick: clearError }, [text('Clear')]),
+    );
 }
 
 function getSavedConfigName(featureName: string) {

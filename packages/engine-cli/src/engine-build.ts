@@ -309,7 +309,7 @@ async function launchDevServer(
     );
     const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
     if (autoRunFeatureName) {
-        const port = await run(autoRunFeatureName, runtimeOptions.get('config') as string, '');
+        const port = await run(autoRunFeatureName, runtimeOptions.get('config') as string, '', false);
         // TODO: get the names of main entry points from the build configurations
         console.log(`Engine application in running at http://localhost:${port}/main.html`);
     } else {
@@ -353,9 +353,15 @@ function runOnDemandSingleEnvironment(
     outputPath: string,
 ) {
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
-    async function run(featureName: string, configName: string, runtimeArgs: string) {
+    async function run(featureName: string, configName: string, runtimeArgs: string, restart: boolean) {
         if (openManagers.size > 0) {
-            openManagers.forEach((manager) => void manager.manager.dispose());
+            const toDispose = [];
+            for (const { manager } of openManagers.values()) {
+                toDispose.push(manager.dispose());
+            }
+            if (restart) {
+                await Promise.all(toDispose);
+            }
             openManagers.clear();
         }
 
@@ -377,10 +383,15 @@ function runOnDemandSingleEnvironment(
         return runningNodeManager.port;
     }
     function middleware(req: express.Request, res: express.Response) {
-        console.log(
-            `running on demand feature: "${req.body.featureName}" config: "${req.body.configName}" runtimeArgs: "${req.body.runtimeArgs}"`,
-        );
-        run(req.body.featureName, req.body.configName, req.body.runtimeArgs)
+        let message = `running on demand feature: "${req.body.featureName}" config: "${req.body.configName}"`;
+        if (req.body.runtimeArgs) {
+            message += ` runtimeArgs: "${req.body.runtimeArgs}"`;
+        }
+        if (req.body.restart) {
+            message += ' with restart';
+        }
+        console.log(message);
+        run(req.body.featureName, req.body.configName, req.body.runtimeArgs, req.body.restart)
             .then((port) => {
                 res.json({
                     url: genUrl(port, req.body.featureName, req.body.configName),
