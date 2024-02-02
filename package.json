@@ -23,7 +23,7 @@
   "devDependencies": {
     "@file-services/memory": "^8.3.3",
     "@file-services/types": "^8.3.3",
-    "@playwright/browser-chromium": "^1.41.1",
+    "@playwright/browser-chromium": "^1.41.2",
     "@stylable/cli": "^5.18.0",
     "@stylable/webpack-plugin": "^5.18.0",
     "@types/chai": "^4.3.11",
