@@ -1797,10 +1797,10 @@
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^16.1.0":
-  version "16.1.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-16.1.0.tgz#d46a2d25957d0107251aca817bfe4a5a2fa68f83"
-  integrity sha512-TGHf1Bt4a0id8MNO62GNRXVUUCBT7MZKq742Lm974FS07GNMAbiubevNtcSDZUTLaFFktRkIOYnU9J5qkVQQpw==
+"@wixc3/testing@^16.1.1":
+  version "16.1.1"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-16.1.1.tgz#43fa0960a5bfdfbf44df35f0155f73e9657e91fb"
+  integrity sha512-dRT/+yEPj8kIjjJ7L9OA6D2QLPRmCtvcJHb7Xi+LZuKkZ9C5TQ3UYKzHoN7WtoF7PBdVg447tME5gonIifBe8w==
   dependencies:
     "@file-services/types" "^8.3.3"
     "@wixc3/common" "^16.1.0"

@@ -50,7 +50,7 @@
     "@typescript-eslint/parser": "^6.20.0",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/docs": "^16.1.0",
-    "@wixc3/testing": "^16.1.0",
+    "@wixc3/testing": "^16.1.1",
     "@wixc3/testing-node": "^16.1.0",
     "@wixc3/wait-for-call": "^16.1.0",
     "chai": "^4.4.1",
