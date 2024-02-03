@@ -8,35 +8,7 @@ function init() {
         .catch(uiError);
 }
 
-function el(
-    tag: string,
-    attributes: Record<string, string | ((this: HTMLElement, e: unknown) => void)> = {},
-    children: (HTMLElement | Text)[] = [],
-) {
-    const element = document.createElement(tag);
-    for (const [key, value] of Object.entries(attributes)) {
-        if (typeof value === 'function') {
-            (element as any)[key] = value;
-            continue;
-        }
-        element.setAttribute(key, String(value));
-    }
-    for (const child of children) {
-        element.appendChild(child);
-    }
-    return element;
-}
-function text(text: string) {
-    return document.createTextNode(text);
-}
-
-function byId(id: string) {
-    const el = document.getElementById(id);
-    if (!el) {
-        throw new Error(`Element with id ${id} not found`);
-    }
-    return el;
-}
+init();
 
 function updateUI(data: any) {
     const features = Object.keys(data.featureEnvironmentsMapping.featureToEnvironments);
@@ -174,6 +146,13 @@ function niceRuntimeArgs(runtimeArgs: string): string {
     }
 }
 
+function findMatchingConfigs(configs: Record<string, string[]>, featureName: string) {
+    if (featureName in configs) {
+        return featureName;
+    }
+    return '';
+}
+
 function populateFeatureTable(features: string[], configs: Record<string, string[]>) {
     const featureTable = byId('feature-table-content');
     featureTable.innerHTML = '';
@@ -184,7 +163,7 @@ function populateFeatureTable(features: string[], configs: Record<string, string
                 el('input', {
                     placeholder: 'Config name',
                     list: 'config-name-list',
-                    value: getSavedConfigName(featureName) || (featureName in configs ? featureName : ''),
+                    value: getSavedConfigName(featureName) || findMatchingConfigs(configs, featureName),
                     onchange() {
                         saveConfigName(featureName, (this as HTMLInputElement).value);
                     },
@@ -193,7 +172,7 @@ function populateFeatureTable(features: string[], configs: Record<string, string
             el('td', {}, [
                 el('input', {
                     placeholder: 'Runtime args (JSON)',
-                    value: localStorage.getItem(featureName + ':runtimeArgs') ?? '',
+                    value: localStorage.getItem(featureName + ':runtimeArgs') || '',
                     onchange() {
                         const value = (this as HTMLInputElement).value.trim();
                         localStorage.setItem(featureName + ':runtimeArgs', value);
@@ -209,7 +188,7 @@ function populateFeatureTable(features: string[], configs: Record<string, string
                                 this as HTMLButtonElement,
                                 featureName,
                                 getSavedConfigName(featureName),
-                                localStorage.getItem(featureName + ':runtimeArgs') ?? '',
+                                localStorage.getItem(featureName + ':runtimeArgs') || '',
                                 false,
                             );
                         },
@@ -306,4 +285,35 @@ function saveConfigName(featureName: string, configName: string) {
     localStorage.setItem(featureName + ':configName', configName);
 }
 
-init();
+/******************* FRAMEWORK *******************/
+function el(
+    tag: string,
+    attributes: Record<string, string | ((this: HTMLElement, e: unknown) => void)> = {},
+    children: (HTMLElement | Text)[] = [],
+) {
+    const element = document.createElement(tag);
+    for (const [key, value] of Object.entries(attributes)) {
+        if (typeof value === 'function') {
+            (element as any)[key] = value;
+            continue;
+        }
+        element.setAttribute(key, String(value));
+    }
+    for (const child of children) {
+        element.appendChild(child);
+    }
+    return element;
+}
+
+function text(text: string) {
+    return document.createTextNode(text);
+}
+
+function byId(id: string) {
+    const el = document.getElementById(id);
+    if (!el) {
+        throw new Error(`Element with id ${id} not found`);
+    }
+    return el;
+}
+/******************* ^FRAMEWORK^ *******************/
