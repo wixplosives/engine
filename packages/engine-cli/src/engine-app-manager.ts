@@ -7,6 +7,7 @@ import {
     RunEngineOptions,
     runLocalNodeManager,
 } from './engine-build';
+import isCI from 'is-ci';
 import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
 import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
@@ -20,7 +21,7 @@ export class ManagedRunEngine implements IExecutableApplication {
         featureEnvironmentsMapping: ReturnType<typeof createFeatureEnvironmentsMapping>;
         configMapping: ReturnType<typeof createAllValidConfigurationsEnvironmentMapping>;
     };
-    constructor(private options: { skipBuild: boolean }) {}
+    constructor(private options: { skipBuild: boolean; allowStale: boolean }) {}
     init() {
         if (this.ready === undefined) {
             this.ready = this.build();
@@ -35,9 +36,11 @@ export class ManagedRunEngine implements IExecutableApplication {
                 if (hasWatcherActive) {
                     console.log('[Engine]: Running with prebuilt application and active watcher.');
                     return;
-                } else {
-                    console.warn('[Engine]: No active watcher detected, running with stale cache');
+                } else if (isCI || this.options.allowStale) {
+                    console.log('[Engine]: Running with cache and without active watcher.');
                     return;
+                } else {
+                    console.warn(`[Engine]: Running without active watcher. Rebuilding application.`);
                 }
             } catch (e) {
                 console.warn(

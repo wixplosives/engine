@@ -140,6 +140,10 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
      */
     buildFlow?: 'prebuilt' | 'lazy' | 'legacy';
     /**
+     * If true, the run will be allowed to use stale build artifacts
+     */
+    allowStale?: boolean;
+    /**
      * resets the browser context before each test
      */
     resetContextBetweenTests?: boolean;
@@ -261,6 +265,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         slowMo,
         persist,
         takeScreenshotsOfFailed = true,
+        allowStale = false,
         buildFlow = (process.env.WITH_FEATURE_BUILD_FLOW || 'prebuilt') as 'prebuilt' | 'lazy' | 'legacy',
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
@@ -303,7 +308,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     }
 
     if (buildFlow) {
-        executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuilt' });
+        executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuilt', allowStale });
         before('build test artifacts', function () {
             this.timeout(60_000 * 4);
             return executableApp.init?.();
