@@ -30,6 +30,7 @@ import { join } from 'node:path';
 import { TopLevelConfig } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
 import { pathToFileURL } from 'node:url';
+import { writeWatchSignal } from './watch-signal';
 
 export type RunEngineOptions = Parameters<typeof runEngine>[0];
 
@@ -183,6 +184,9 @@ export async function runEngine({
             runtimeOptions,
             outputPath,
         );
+        if (watch) {
+            writeWatchSignal(outputPath, { isAliveUrl: `http://localhost:${devServer.port}/is_alive` });
+        }
         console.log(`Engine dev server is running at http://localhost:${devServer.port}/dashboard`);
     }
     return {
@@ -318,6 +322,12 @@ async function launchDevServer(
     }
 
     const devMiddlewares: RouteMiddleware[] = [
+        {
+            path: '/is_alive',
+            handlers: (_req, res) => {
+                res.json({ alive: true });
+            },
+        },
         {
             path: '/dashboard',
             handlers: express.static(join(__dirname, 'dashboard')),

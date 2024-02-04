@@ -2,7 +2,7 @@ import type { IProcessMessage, PerformanceMetrics } from '@wixc3/engine-runtime-
 import type { IFeatureMessagePayload, IFeatureTarget } from '@wixc3/engine-scripts';
 import { request } from 'node:http';
 import { posix } from 'node:path';
-import type { IExecutableApplication } from './types.js';
+import type { IExecutableApplication } from '@wixc3/engine-cli';
 
 const { join } = posix;
 

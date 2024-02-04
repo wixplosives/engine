@@ -6,12 +6,13 @@ import {
     runEngine,
     RunEngineOptions,
     runLocalNodeManager,
-} from '@wixc3/engine-cli';
+} from './engine-build';
 import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
 import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
+import { checkWatchSignal } from './watch-signal';
 
-const OUTPUT_PATH = join(process.cwd(), 'dist-engine');
+const OUTPUT_PATH = process.env.ENGINE_OUTPUT_PATH || join(process.cwd(), 'dist-engine');
 
 export class ManagedRunEngine implements IExecutableApplication {
     private ready!: Promise<void>;
@@ -30,12 +31,19 @@ export class ManagedRunEngine implements IExecutableApplication {
         if (this.options.skipBuild) {
             try {
                 this.runMetadata = readMetadataFiles(OUTPUT_PATH);
-                return;
+                const hasWatcherActive = await checkWatchSignal(OUTPUT_PATH);
+                if (hasWatcherActive) {
+                    console.log('[Engine]: Running with prebuilt application and active watcher.');
+                    return;
+                } else {
+                    console.warn('[Engine]: No active watcher detected, running with stale cache');
+                    return;
+                }
             } catch (e) {
                 console.warn(
-                    `Could not read prebuilt metadata files, building a fresh application to:`,
-                    OUTPUT_PATH,
-                    'In order fully take advantage of the prebuilt, run `engine --watch` before running this flow.',
+                    `[Engine]: Could not read prebuilt metadata files at ${OUTPUT_PATH}`,
+                    '[Engine]: Building fresh engine application',
+                    '[Engine]: (in order fully take advantage of the prebuilt, run `engine --watch` before running this flow.)',
                 );
             }
         }

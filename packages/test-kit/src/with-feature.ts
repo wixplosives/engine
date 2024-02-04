@@ -12,13 +12,12 @@ import { hookPageConsole } from './hook-page-console.js';
 import { normalizeTestName } from './normalize-test-name.js';
 import { RemoteHttpApplication } from './remote-http-application.js';
 import { validateBrowser } from './supported-browsers.js';
-import type { IExecutableApplication, RunningTestFeature } from './types.js';
 import { ensureTracePath } from './utils/index.js';
-import { ManagedRunEngine } from './engine-app-manager.js';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import { createTempDirectorySync } from 'create-temp-directory';
 import { linkNodeModules } from './link-test-dir.js';
 import { retry } from 'promise-assist';
+import { IExecutableApplication, ManagedRunEngine, RunningFeature } from '@wixc3/engine-cli';
 
 const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
@@ -262,7 +261,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         slowMo,
         persist,
         takeScreenshotsOfFailed = true,
-        buildFlow = process.env.WITH_FEATURE_BUILD_FLOW,
+        buildFlow = 'prebuild', //process.env.WITH_FEATURE_BUILD_FLOW,
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
@@ -592,7 +591,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     };
 }
 
-async function getMetrics(runningFeature: RunningTestFeature, featurePage: playwright.Page) {
+async function getMetrics(runningFeature: RunningFeature, featurePage: playwright.Page) {
     try {
         const measures = await runningFeature.getMetrics();
         for (const webWorker of featurePage.workers()) {
