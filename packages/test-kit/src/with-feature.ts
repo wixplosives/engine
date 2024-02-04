@@ -261,7 +261,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         slowMo,
         persist,
         takeScreenshotsOfFailed = true,
-        buildFlow = 'prebuild',
+        buildFlow = process.env.WITH_FEATURE_BUILD_FLOW || 'prebuild',
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
@@ -302,7 +302,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         });
     }
 
-    if (buildFlow !== 'legacy') {
+    if (buildFlow) {
         executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuild' });
         before('build test artifacts', function () {
             this.timeout(60_000 * 4);
@@ -577,7 +577,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 },
             });
 
-            const fullFeatureUrl = (buildFlow !== 'legacy' ? runningFeature.url : featureUrl) + search;
+            const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
             return {
