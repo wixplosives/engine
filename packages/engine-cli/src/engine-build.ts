@@ -355,14 +355,18 @@ function runOnDemandSingleEnvironment(
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
     async function run(featureName: string, configName: string, runtimeArgs: string) {
         if (openManagers.size > 0) {
-            openManagers.forEach((manager) => void manager.manager.dispose());
+            const toDispose = [];
+            for (const { manager } of openManagers.values()) {
+                toDispose.push(manager.dispose());
+            }
+            await Promise.all(toDispose);
             openManagers.clear();
         }
 
         const runOptions = new Map(runtimeOptions.entries());
         runOptions.set('feature', featureName);
         runOptions.set('config', configName);
-        if (runtimeArgs) {
+        if (runtimeArgs.trim()) {
             for (const [key, value] of Object.entries(JSON.parse(runtimeArgs))) {
                 runOptions.set(key, String(value));
             }
@@ -377,9 +381,14 @@ function runOnDemandSingleEnvironment(
         return runningNodeManager.port;
     }
     function middleware(req: express.Request, res: express.Response) {
-        console.log(
-            `running on demand feature: "${req.body.featureName}" config: "${req.body.configName}" runtimeArgs: "${req.body.runtimeArgs}"`,
-        );
+        let message = `running on demand feature: "${req.body.featureName}" config: "${req.body.configName}"`;
+        if (req.body.runtimeArgs) {
+            message += ` runtimeArgs: "${req.body.runtimeArgs}"`;
+        }
+        if (req.body.restart) {
+            message += ' with restart';
+        }
+        console.log(message);
         run(req.body.featureName, req.body.configName, req.body.runtimeArgs)
             .then((port) => {
                 res.json({

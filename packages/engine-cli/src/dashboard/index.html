@@ -32,6 +32,10 @@
         border-collapse: collapse;
         width: 100%;
       }
+      thead {
+        position: sticky;
+        top: 0px;
+      }
 
       tr:nth-of-type(odd) {
         background: #eee;
@@ -48,6 +52,14 @@
         padding: 10px;
         border: 1px solid #ccc;
         text-align: left;
+      }
+      #error:not(:empty) {
+        border: 1px solid red;
+        padding: 1rem;
+        position: sticky;
+        top: 4px;
+        background: #ffdada;
+        z-index: 1;
       }
     </style>
   </head>
