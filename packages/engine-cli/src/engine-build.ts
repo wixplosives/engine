@@ -16,6 +16,7 @@ import {
     analyzeFeatures,
     createAllValidConfigurationsEnvironmentMapping,
     getResolvedEnvironments,
+    importFresh,
 } from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
 import express from 'express';
@@ -376,6 +377,7 @@ function runOnDemandSingleEnvironment(
             configMapping,
             runOptions,
             outputPath,
+            true,
         );
         openManagers.set(`${featureName}(+)${configName}(+)${runtimeArgs}`, runningNodeManager);
         return runningNodeManager.port;
@@ -425,9 +427,16 @@ export async function runLocalNodeManager(
     configMapping: ConfigurationEnvironmentMapping,
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
+    freshConfigLoading = false,
 ) {
     const meta = { url: pathToFileURL(join(outputPath, 'node/')).href };
-    const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
+
+    const manager = new NodeEnvManager(
+        meta,
+        featureEnvironmentsMapping,
+        configMapping,
+        freshConfigLoading ? importFresh : undefined,
+    );
     const { port } = await manager.autoLaunch(execRuntimeOptions);
     return { port, manager };
 }
