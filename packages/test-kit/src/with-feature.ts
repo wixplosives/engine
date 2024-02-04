@@ -138,7 +138,7 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     /**
      * Prebuild the engine before running the tests
      */
-    buildFlow?: 'prebuild' | 'lazy';
+    buildFlow?: 'prebuild' | 'lazy' | 'legacy';
     /**
      * resets the browser context before each test
      */
@@ -261,7 +261,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         slowMo,
         persist,
         takeScreenshotsOfFailed = true,
-        buildFlow = 'prebuild', //process.env.WITH_FEATURE_BUILD_FLOW,
+        buildFlow = 'prebuild',
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
@@ -302,7 +302,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         });
     }
 
-    if (buildFlow) {
+    if (buildFlow !== 'legacy') {
         executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuild' });
         before('build test artifacts', function () {
             this.timeout(60_000 * 4);
@@ -577,7 +577,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 },
             });
 
-            const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
+            const fullFeatureUrl = (buildFlow !== 'legacy' ? runningFeature.url : featureUrl) + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
             return {
