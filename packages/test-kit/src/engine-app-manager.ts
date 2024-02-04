@@ -28,8 +28,16 @@ export class ManagedRunEngine implements IExecutableApplication {
     }
     private async build() {
         if (this.options.skipBuild) {
-            this.runMetadata = readMetadataFiles(OUTPUT_PATH);
-            return;
+            try {
+                this.runMetadata = readMetadataFiles(OUTPUT_PATH);
+                return;
+            } catch (e) {
+                console.warn(
+                    `Could not read prebuilt metadata files, building a fresh application to:`,
+                    OUTPUT_PATH,
+                    'In order fully take advantage of the prebuilt, run `engine --watch` before running this flow.',
+                );
+            }
         }
         const engineConfig = await loadEngineConfig(process.cwd());
 
