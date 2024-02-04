@@ -138,7 +138,7 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     /**
      * Prebuild the engine before running the tests
      */
-    buildFlow?: 'prebuild' | 'lazy' | 'legacy';
+    buildFlow?: 'prebuilt' | 'lazy' | 'legacy';
     /**
      * resets the browser context before each test
      */
@@ -261,7 +261,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         slowMo,
         persist,
         takeScreenshotsOfFailed = true,
-        buildFlow = process.env.WITH_FEATURE_BUILD_FLOW || 'prebuild',
+        buildFlow = (process.env.WITH_FEATURE_BUILD_FLOW || 'prebuilt') as 'prebuilt' | 'lazy' | 'legacy',
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
@@ -303,7 +303,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     }
 
     if (buildFlow) {
-        executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuild' });
+        executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuilt' });
         before('build test artifacts', function () {
             this.timeout(60_000 * 4);
             return executableApp.init?.();
