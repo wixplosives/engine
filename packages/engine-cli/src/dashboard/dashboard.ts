@@ -148,6 +148,7 @@ function niceRuntimeArgs(runtimeArgs: string): string {
 
 function findMatchingConfigs(configs: Record<string, string[]>, featureName: string) {
     if (featureName in configs) {
+        saveConfigName(featureName, featureName);
         return featureName;
     }
     return '';
