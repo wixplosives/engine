@@ -307,7 +307,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         });
     }
 
-    if (buildFlow) {
+    if (buildFlow !== 'legacy') {
         executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuilt', allowStale });
         before('build test artifacts', function () {
             this.timeout(60_000 * 4);
@@ -582,7 +582,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 },
             });
 
-            const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
+            const fullFeatureUrl = (buildFlow !== 'legacy' ? runningFeature.url : featureUrl) + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
             return {
