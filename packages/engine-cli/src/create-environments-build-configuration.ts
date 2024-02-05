@@ -1,116 +1,39 @@
-import { TopLevelConfig } from '@wixc3/engine-core';
-import {
-    ConfigurationEnvironmentMapping,
-    FeatureEnvironmentMapping,
-    IConfigDefinition,
-} from '@wixc3/engine-runtime-node';
-import {
-    IFeatureDefinition,
-    OverrideConfigHook,
-    createMainEntrypoint,
-    createNodeEntrypoint,
-    createNodeEnvironmentManagerEntrypoint,
-    getResolvedEnvironments,
-} from '@wixc3/engine-scripts';
-import { SetMultiMap } from '@wixc3/patterns';
+import { OverrideConfigHook } from '@wixc3/engine-scripts';
 import { BuildOptions, Plugin } from 'esbuild';
 import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 import { join } from 'node:path';
 import { htmlPlugin } from './esbuild-html-plugin';
 import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin';
+import { CreateEntryPointOptions, createEntryPoints, EntryPoints } from './create-entrypoints';
 
-export interface CreateEnvBuildConfigOptions {
+export type CreateEnvBuildConfigOptions = CreateBuildConfigOptions & CreateEntryPointOptions;
+
+export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConfigOptions & CreateEntryPointOptions) {
+    const jsOutExtension = '.js' as '.js' | '.mjs';
+    const nodeFormat = jsOutExtension === '.mjs' ? 'esm' : 'cjs';
+    const entryPoints = createEntryPoints(options, jsOutExtension, nodeFormat);
+    const buildConfig = createBuildConfiguration(options, entryPoints, jsOutExtension, nodeFormat);
+    return buildConfig;
+}
+
+export interface CreateBuildConfigOptions {
     dev: boolean;
     buildPlugins: Plugin[] | OverrideConfigHook;
-    featureEnvironmentsMapping: FeatureEnvironmentMapping;
-    configMapping: ConfigurationEnvironmentMapping;
-    configurations: SetMultiMap<string, IConfigDefinition>;
-    features: Map<string, IFeatureDefinition>;
     publicPath: string;
-    environments: ReturnType<typeof getResolvedEnvironments>;
-    config: TopLevelConfig;
     outputPath: string;
-    publicConfigsRoute: string;
-    featureName?: string;
-    configName?: string;
     buildConditions?: string[];
     extensions?: string[];
 }
 
-export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConfigOptions) {
-    const {
-        dev,
-        featureName,
-        configName,
-        outputPath,
-        environments,
-        publicPath,
-        features,
-        configurations,
-        config,
-        buildPlugins,
-        buildConditions,
-        extensions,
-        featureEnvironmentsMapping,
-        configMapping,
-        publicConfigsRoute,
-    } = options;
+export function createBuildConfiguration(
+    options: CreateBuildConfigOptions,
+    { nodeEntryPoints, webEntryPoints }: EntryPoints,
+    jsOutExtension: '.js' | '.mjs',
+    nodeFormat: 'esm' | 'cjs',
+) {
+    const { dev, outputPath, publicPath, buildPlugins, buildConditions, extensions } = options;
 
-    const mode = dev ? 'development' : 'production';
-    const jsOutExtension = '.js' as '.js' | '.mjs';
-    const nodeFormat = jsOutExtension === '.mjs' ? 'esm' : 'cjs';
-    const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
-    const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
-
-    const webEntryPoints = new Map<string, string>();
-    const nodeEntryPoints = new Map<string, string>();
     const commonPlugins = Array.isArray(buildPlugins) ? buildPlugins : [];
-
-    const entrypointContent = createNodeEnvironmentManagerEntrypoint({
-        featureEnvironmentsMapping,
-        configMapping,
-        moduleType: nodeFormat,
-    });
-
-    nodeEntryPoints.set(`engine-environment-manager${jsOutExtension}`, entrypointContent);
-
-    for (const { env, childEnvs } of browserTargets) {
-        const entrypointContent = createMainEntrypoint({
-            features,
-            childEnvs,
-            env,
-            featureName,
-            configName,
-            publicPath,
-            publicPathVariableName: 'PUBLIC_PATH',
-            configurations,
-            mode,
-            staticBuild: false,
-            publicConfigsRoute,
-            config,
-        });
-
-        webEntryPoints.set(
-            `${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}${jsOutExtension}`,
-            entrypointContent,
-        );
-    }
-
-    for (const { env, childEnvs } of nodeTargets) {
-        const entrypointContent = createNodeEntrypoint({
-            features,
-            childEnvs,
-            env,
-            featureName,
-            configName,
-            configurations,
-            mode,
-            staticBuild: false,
-            publicConfigsRoute: '/configs',
-            config,
-        });
-        nodeEntryPoints.set(`${env.name}.${env.type}${jsOutExtension}`, entrypointContent);
-    }
 
     const commonConfig = {
         target: 'es2020',
@@ -177,10 +100,4 @@ export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConf
         webConfig,
         nodeConfig,
     };
-}
-
-function* concatIterables<T>(...iterables: Iterable<T>[]) {
-    for (const iterable of iterables) {
-        yield* iterable;
-    }
 }
