@@ -12,13 +12,12 @@ import { hookPageConsole } from './hook-page-console.js';
 import { normalizeTestName } from './normalize-test-name.js';
 import { RemoteHttpApplication } from './remote-http-application.js';
 import { validateBrowser } from './supported-browsers.js';
-import type { IExecutableApplication, RunningTestFeature } from './types.js';
 import { ensureTracePath } from './utils/index.js';
-import { ManagedRunEngine } from './engine-app-manager.js';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import { createTempDirectorySync } from 'create-temp-directory';
 import { linkNodeModules } from './link-test-dir.js';
 import { retry } from 'promise-assist';
+import { IExecutableApplication, ManagedRunEngine, RunningFeature } from '@wixc3/engine-cli';
 
 const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
@@ -139,7 +138,11 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     /**
      * Prebuild the engine before running the tests
      */
-    buildFlow?: 'prebuild' | 'lazy';
+    buildFlow?: 'prebuilt' | 'lazy' | 'legacy';
+    /**
+     * If true, the run will be allowed to use stale build artifacts
+     */
+    allowStale?: boolean;
     /**
      * resets the browser context before each test
      */
@@ -262,7 +265,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         slowMo,
         persist,
         takeScreenshotsOfFailed = true,
-        buildFlow = process.env.WITH_FEATURE_BUILD_FLOW,
+        allowStale = false,
+        buildFlow = (process.env.WITH_FEATURE_BUILD_FLOW || 'legacy') as 'prebuilt' | 'lazy' | 'legacy',
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
@@ -303,8 +307,8 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         });
     }
 
-    if (buildFlow) {
-        executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuild' });
+    if (buildFlow !== 'legacy') {
+        executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuilt', allowStale });
         before('build test artifacts', function () {
             this.timeout(60_000 * 4);
             return executableApp.init?.();
@@ -578,7 +582,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 },
             });
 
-            const fullFeatureUrl = (buildFlow ? runningFeature.url : featureUrl) + search;
+            const fullFeatureUrl = (buildFlow !== 'legacy' ? runningFeature.url : featureUrl) + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
             return {
@@ -592,7 +596,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
     };
 }
 
-async function getMetrics(runningFeature: RunningTestFeature, featurePage: playwright.Page) {
+async function getMetrics(runningFeature: RunningFeature, featurePage: playwright.Page) {
     try {
         const measures = await runningFeature.getMetrics();
         for (const webWorker of featurePage.workers()) {

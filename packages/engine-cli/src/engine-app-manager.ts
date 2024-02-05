@@ -6,12 +6,14 @@ import {
     runEngine,
     RunEngineOptions,
     runLocalNodeManager,
-} from '@wixc3/engine-cli';
+} from './engine-build';
+import isCI from 'is-ci';
 import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
 import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
+import { checkWatchSignal } from './watch-signal';
 
-const OUTPUT_PATH = join(process.cwd(), 'dist-engine');
+const OUTPUT_PATH = process.env.ENGINE_OUTPUT_PATH || join(process.cwd(), 'dist-engine');
 
 export class ManagedRunEngine implements IExecutableApplication {
     private ready!: Promise<void>;
@@ -19,7 +21,7 @@ export class ManagedRunEngine implements IExecutableApplication {
         featureEnvironmentsMapping: ReturnType<typeof createFeatureEnvironmentsMapping>;
         configMapping: ReturnType<typeof createAllValidConfigurationsEnvironmentMapping>;
     };
-    constructor(private options: { skipBuild: boolean }) {}
+    constructor(private options: { skipBuild: boolean; allowStale: boolean }) {}
     init() {
         if (this.ready === undefined) {
             this.ready = this.build();
@@ -28,8 +30,25 @@ export class ManagedRunEngine implements IExecutableApplication {
     }
     private async build() {
         if (this.options.skipBuild) {
-            this.runMetadata = readMetadataFiles(OUTPUT_PATH);
-            return;
+            try {
+                this.runMetadata = readMetadataFiles(OUTPUT_PATH);
+                const hasWatcherActive = await checkWatchSignal(OUTPUT_PATH);
+                if (hasWatcherActive) {
+                    console.log('[Engine]: Running with prebuilt application and active watcher.');
+                    return;
+                } else if (isCI || this.options.allowStale) {
+                    console.log('[Engine]: Running with cache and without active watcher.');
+                    return;
+                } else {
+                    console.warn(`[Engine]: Running without active watcher. Rebuilding application.`);
+                }
+            } catch (e) {
+                console.warn(
+                    `[Engine]: Could not read prebuilt metadata files at ${OUTPUT_PATH}`,
+                    '[Engine]: Building fresh engine application',
+                    '[Engine]: (in order fully take advantage of the prebuilt, run `engine --watch` before running this flow.)',
+                );
+            }
         }
         const engineConfig = await loadEngineConfig(process.cwd());
 

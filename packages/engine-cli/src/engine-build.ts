@@ -16,6 +16,7 @@ import {
     analyzeFeatures,
     createAllValidConfigurationsEnvironmentMapping,
     getResolvedEnvironments,
+    importFresh,
 } from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
 import express from 'express';
@@ -29,6 +30,7 @@ import { join } from 'node:path';
 import { TopLevelConfig } from '@wixc3/engine-core';
 import { SetMultiMap } from '@wixc3/patterns';
 import { pathToFileURL } from 'node:url';
+import { writeWatchSignal } from './watch-signal';
 
 export type RunEngineOptions = Parameters<typeof runEngine>[0];
 
@@ -182,6 +184,9 @@ export async function runEngine({
             runtimeOptions,
             outputPath,
         );
+        if (watch) {
+            writeWatchSignal(outputPath, { isAliveUrl: `http://localhost:${devServer.port}/is_alive` });
+        }
         console.log(`Engine dev server is running at http://localhost:${devServer.port}/dashboard`);
     }
     return {
@@ -318,6 +323,12 @@ async function launchDevServer(
 
     const devMiddlewares: RouteMiddleware[] = [
         {
+            path: '/is_alive',
+            handlers: (_req, res) => {
+                res.json({ alive: true });
+            },
+        },
+        {
             path: '/dashboard',
             handlers: express.static(join(__dirname, 'dashboard')),
         },
@@ -376,6 +387,7 @@ function runOnDemandSingleEnvironment(
             configMapping,
             runOptions,
             outputPath,
+            true,
         );
         openManagers.set(`${featureName}(+)${configName}(+)${runtimeArgs}`, runningNodeManager);
         return runningNodeManager.port;
@@ -425,9 +437,16 @@ export async function runLocalNodeManager(
     configMapping: ConfigurationEnvironmentMapping,
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
+    freshConfigLoading = false,
 ) {
     const meta = { url: pathToFileURL(join(outputPath, 'node/')).href };
-    const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
+
+    const manager = new NodeEnvManager(
+        meta,
+        featureEnvironmentsMapping,
+        configMapping,
+        freshConfigLoading ? importFresh : undefined,
+    );
     const { port } = await manager.autoLaunch(execRuntimeOptions);
     return { port, manager };
 }

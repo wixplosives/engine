@@ -6,7 +6,7 @@ import {
     type IPortMessage,
 } from '@wixc3/engine-scripts';
 import { ChildProcess, fork } from 'node:child_process';
-import type { IExecutableApplication } from './types.js';
+import type { IExecutableApplication } from '@wixc3/engine-cli';
 
 export class ForkedProcessApplication implements IExecutableApplication {
     private engineStartProcess: ChildProcess | undefined;

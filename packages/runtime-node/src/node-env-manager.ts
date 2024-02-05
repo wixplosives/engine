@@ -41,6 +41,8 @@ export class NodeEnvManager implements IDisposable {
         private importMeta: { url: string },
         private featureEnvironmentsMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
+        private loadModule: (modulePath: string) => Promise<unknown> = async (modulePath) =>
+            (await require(modulePath)).default,
     ) {
         this.disposables.add('open environments', () =>
             Promise.all([...this.openEnvironments.values()].map((env) => env.dispose())),
@@ -136,7 +138,7 @@ export class NodeEnvManager implements IDisposable {
             configFiles.map(async (filePath) => {
                 try {
                     // TODO: make it work in esm via injection
-                    const configModule = (await require(filePath)).default as ConfigModule;
+                    const configModule = (await this.loadModule(filePath)) as ConfigModule;
                     if (verbose) {
                         console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
                     }
