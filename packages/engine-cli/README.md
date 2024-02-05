@@ -20,47 +20,21 @@ This will start the engine in watch mode, and open the dev server for the engine
 
 ## Options
 
-```ts
-async function engine() {
-  const args = parseCliArgs();
-  const buildTargets = (args.get('buildTargets') as 'node' | 'web' | 'both') ?? 'both';
-  const help = boolParam(args.has('help')) ?? false;
-  const clean = boolParam(args.get('clean')) ?? true;
-  const watch = boolParam(args.get('watch')) ?? false;
-  const dev = boolParam(args.get('dev')) ?? watch;
-  const run = boolParam(args.get('run')) ?? dev;
-  const verbose = boolParam(args.get('verbose')) ?? false;
-  const writeMetadataFiles = boolParam(args.get('writeMetadataFiles')) ?? true;
+```md
+| Option                | Type            | Default Value | Description                                                                                       |
+|-----------------------|-----------------|---------------|---------------------------------------------------------------------------------------------------|
+| `buildTargets`        | `'node'`, `'web'`, `'both'` | `'both'`      | Target platforms for the build. Can be one of 'node', 'web', or 'both'.                          |
+| `help`                | boolean         | `false`       | Displays help information if true.                                                               |
+| `clean`               | boolean         | `true`        | Whether to clean the build directory before building.                                            |
+| `watch`               | boolean         | `false`       | Rebuilds on file changes if true.                                                                |
+| `dev`                 | boolean         | `watch` value | Enables development mode. Defaults to the value of `watch`.                                      |
+| `run`                 | boolean         | `dev` value   | Runs the built application if true. Defaults to the value of `dev`.                              |
+| `verbose`             | boolean         | `false`       | Enables verbose logging if true.                                                                 |
+| `writeMetadataFiles`  | boolean         | `true`        | Whether to write metadata files during the build process.                                        |
+| `runtimeArgs`         | JSON object     | `{}`          | Arbitrary arguments to pass at runtime, specified as a JSON string.                              |
+| `feature`             | string          |               | Specifies a particular feature to build or run.                                                  |
+| `config`              | string          |               | Path to a specific configuration file to use.                                                    |
+| `publicPath`          | string          | `''` (empty string) | Base path for serving static files. Defaults to an empty string.                                 |
+| `engineConfigFilePath`| string          |               | Path to the engine configuration file.                                                           |
+| `publicConfigsRoute`  | string          | `'configs'`   | Route under which public configurations are served. Defaults to 'configs'.                       |
 
-  const runtimeArgs = JSON.parse(strParam(args.get('runtimeArgs')) ?? '{}');
-  const feature = strParam(args.get('feature'));
-  const config = strParam(args.get('config'));
-  const publicPath = strParam(args.get('publicPath')) ?? '';
-  const engineConfigFilePath = strParam(args.get('engineConfigFilePath'));
-  const publicConfigsRoute = strParam(args.get('publicConfigsRoute')) ?? 'configs';
-
-  if (help) {
-    console.log(engine.toString());
-    console.log('🤷‍♂️');
-    return;
-  }
-
-  const engineConfig = await loadEngineConfig(process.cwd(), engineConfigFilePath);
-
-  await runEngine({
-    runtimeArgs,
-    engineConfig,
-    verbose,
-    clean,
-    dev,
-    watch,
-    publicPath,
-    buildTargets,
-    feature,
-    config,
-    run,
-    writeMetadataFiles,
-    publicConfigsRoute,
-  });
-}
-```

@@ -73,6 +73,13 @@ export async function runEngine({
 
     await importModules(rootDir, requiredPaths);
 
+    if (clean) {
+        if (verbose) {
+            console.log(`Cleaning ${outputPath}`);
+        }
+        await fs.promises.rm(outputPath, { recursive: true, force: true });
+    }
+
     const { features, configurations } = await analyzeFeatures(
         fs,
         rootDir,
@@ -81,13 +88,6 @@ export async function runEngine({
         extensions,
         buildConditions,
     );
-
-    if (clean) {
-        if (verbose) {
-            console.log(`Cleaning ${outputPath}`);
-        }
-        await fs.promises.rm(outputPath, { recursive: true, force: true });
-    }
 
     const buildConfigurationsOptions = {
         features,
