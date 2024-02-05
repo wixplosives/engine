@@ -63,7 +63,6 @@ const engineCommandBuilder = (program: Command, command: string): Command => {
 export const startCommand: CliCommand = (program) =>
     engineCommandBuilder(program, 'start [path]')
         .option('--mode <production|development>', 'mode passed to webpack', 'development')
-        .option('--inspect')
         .option('-p ,--port <port>')
         .option('--open <open>')
         .option(

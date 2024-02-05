@@ -16,7 +16,7 @@ export async function startRemoteNodeEnvironment(
     entryFilePath: string,
     { inspect, port, socketServerOptions = {}, requiredPaths = [] }: IStartRemoteNodeEnvironmentOptions,
 ) {
-    const execArgv = inspect ? ['--inspect'] : [];
+    const execArgv = inspect && !process.execArgv.includes('--inspect') ? ['--inspect'] : [];
 
     const childProccess = fork(
         entryFilePath,
