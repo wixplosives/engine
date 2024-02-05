@@ -266,7 +266,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         persist,
         takeScreenshotsOfFailed = true,
         allowStale = false,
-        buildFlow = (process.env.WITH_FEATURE_BUILD_FLOW || 'legacy') as 'prebuilt' | 'lazy' | 'legacy',
+        buildFlow = (process.env.WITH_FEATURE_BUILD_FLOW || 'prebuilt') as 'prebuilt' | 'lazy' | 'legacy',
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
