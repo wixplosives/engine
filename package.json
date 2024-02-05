@@ -68,7 +68,7 @@
     "mocha": "^10.2.0",
     "mocha-play": "^7.0.3",
     "playwright-core": "^1.41.2",
-    "prettier": "^3.2.4",
+    "prettier": "^3.2.5",
     "promise-assist": "^2.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
