@@ -11,7 +11,7 @@ import { resolveBuildEntryPoints } from './resolve-build-configurations';
 import { launchDevServer } from './launch-dashboard-server';
 import { createBuildConfiguration } from './create-environments-build-configuration';
 import { readEntryPoints, readMetadataFiles, writeEntryPoints, writeMetaFiles } from './metadata-files';
-import { EntryPoints } from './create-entrypoints';
+import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
 
 export type RunEngineOptions = Parameters<typeof runEngine>[0];
 
@@ -42,6 +42,7 @@ export async function runEngine({
     let featureEnvironmentsMapping: FeatureEnvironmentMapping;
     let configMapping: ConfigurationEnvironmentMapping;
     let entryPoints: EntryPoints;
+    let entryPointsPaths: EntryPointsPaths | undefined;
     let _waitForBuildReady: ((cb: () => void) => boolean) | undefined;
     rootDir = fs.resolve(rootDir);
     outputPath = fs.resolve(rootDir, outputPath);
@@ -60,10 +61,8 @@ export async function runEngine({
     } = engineConfig;
 
     await importModules(rootDir, requiredPaths);
-
     const cachedMetadata = forceAnalyze ? undefined : readMetadataFiles(outputPath);
     const cachedEntryPoints = forceAnalyze ? undefined : readEntryPoints(outputPath);
-
     if (clean) {
         if (verbose) {
             console.log(`Cleaning ${outputPath}`);
@@ -94,30 +93,31 @@ export async function runEngine({
         featureEnvironmentsMapping = result.featureEnvironmentsMapping;
         configMapping = result.configMapping;
         entryPoints = result.entryPoints;
+        entryPointsPaths = 'entryPointsPaths' in result ? result.entryPointsPaths : undefined;
     } else {
         console.log('Skip analyze. Using cached metadata and entrypoints');
         featureEnvironmentsMapping = cachedMetadata.featureEnvironmentsMapping;
         configMapping = cachedMetadata.configMapping;
         entryPoints = cachedEntryPoints;
+        entryPointsPaths = cachedEntryPoints;
         if (clean) {
             writeMetaFiles(outputPath, featureEnvironmentsMapping, configMapping);
             writeEntryPoints(outputPath, entryPoints);
         }
     }
 
-    const buildConfigurations = createBuildConfiguration(
-        {
-            buildPlugins,
-            dev,
-            outputPath,
-            publicPath,
-            buildConditions,
-            extensions,
-        },
+    const buildConfigurations = createBuildConfiguration({
+        buildPlugins,
+        dev,
+        outputPath,
+        publicPath,
+        buildConditions,
+        extensions,
         entryPoints,
         jsOutExtension,
         nodeFormat,
-    );
+        entryPointsPaths,
+    });
 
     if (watch) {
         if (buildTargets === 'web' || buildTargets === 'both') {
@@ -267,14 +267,14 @@ async function analyzeForBuild({
     });
 
     if (writeMetadataFiles) {
-        writeBuildCache(outputPath, resolved);
+        writeMetaFiles(outputPath, resolved.featureEnvironmentsMapping, resolved.configMapping);
+        const entryPointsPaths = writeEntryPoints(outputPath, resolved.entryPoints);
+        return {
+            ...resolved,
+            entryPointsPaths,
+        };
     }
     return resolved;
-}
-
-function writeBuildCache(outputPath: string, resolved: ReturnType<typeof resolveBuildEntryPoints>) {
-    writeMetaFiles(outputPath, resolved.featureEnvironmentsMapping, resolved.configMapping);
-    writeEntryPoints(outputPath, resolved.entryPoints);
 }
 
 export function resolveRuntimeOptions({

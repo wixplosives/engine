@@ -6,7 +6,7 @@ import {
 } from '@wixc3/engine-runtime-node';
 import { createAllValidConfigurationsEnvironmentMapping } from '@wixc3/engine-scripts';
 import { join } from 'node:path';
-import { EntryPoints } from './create-entrypoints';
+import { EntryPointsPaths, EntryPoints } from './create-entrypoints';
 
 export function readMetadataFiles(dir: string) {
     try {
@@ -36,24 +36,35 @@ export function writeMetaFiles(
     fs.writeFileSync(join(outDir, 'engine-config-mapping.json'), JSON.stringify(configMapping, null, 2));
 }
 
-export function writeEntryPoints(dir: string, { nodeEntryPoints, webEntryPoints }: EntryPoints) {
-    const outDirWeb = join(dir, 'entrypoints-cache', 'web');
-    const outDirNode = join(dir, 'entrypoints-cache', 'node');
+export function writeEntryPoints(dir: string, { nodeEntryPoints, webEntryPoints }: EntryPoints): EntryPointsPaths {
+    const outDirWeb = join(dir, 'entrypoints', 'web');
+    const outDirNode = join(dir, 'entrypoints', 'node');
     fs.mkdirSync(outDirWeb, { recursive: true });
     fs.mkdirSync(outDirNode, { recursive: true });
+    const webEntryPointsPaths = [];
+    const nodeEntryPointsPaths = [];
     for (const [name, content] of webEntryPoints) {
-        fs.writeFileSync(join(outDirWeb, name), content);
+        const path = join(outDirWeb, name);
+        webEntryPointsPaths.push(path);
+        fs.writeFileSync(path, content);
     }
     for (const [name, content] of nodeEntryPoints) {
-        fs.writeFileSync(join(outDirNode, name), content);
+        const path = join(outDirNode, name);
+        nodeEntryPointsPaths.push(path);
+        fs.writeFileSync(path, content);
     }
+    return { webEntryPointsPaths, nodeEntryPointsPaths };
 }
 
-export function readEntryPoints(dir: string): EntryPoints | undefined {
+export function readEntryPoints(dir: string): (EntryPoints & EntryPointsPaths) | undefined {
     try {
-        const webEntryPoints = readDirShallowIntoMap(join(dir, 'entrypoints-cache', 'web'));
-        const nodeEntryPoints = readDirShallowIntoMap(join(dir, 'entrypoints-cache', 'node'));
-        return { webEntryPoints, nodeEntryPoints };
+        const webDir = join(dir, 'entrypoints', 'web');
+        const nodeDir = join(dir, 'entrypoints', 'node');
+        const webEntryPoints = readDirShallowIntoMap(webDir);
+        const nodeEntryPoints = readDirShallowIntoMap(nodeDir);
+        const webEntryPointsPaths = Array.from(webEntryPoints.keys()).map((name) => join(webDir, name));
+        const nodeEntryPointsPaths = Array.from(nodeEntryPoints.keys()).map((name) => join(nodeDir, name));
+        return { webEntryPoints, nodeEntryPoints, webEntryPointsPaths, nodeEntryPointsPaths };
     } catch (e) {
         return undefined;
     }

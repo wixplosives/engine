@@ -4,7 +4,7 @@ import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 import { join } from 'node:path';
 import { htmlPlugin } from './esbuild-html-plugin';
 import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin';
-import { EntryPoints } from './create-entrypoints';
+import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
 
 export interface CreateBuildConfigOptions {
     dev: boolean;
@@ -13,15 +13,27 @@ export interface CreateBuildConfigOptions {
     outputPath: string;
     buildConditions?: string[];
     extensions?: string[];
+    entryPoints: EntryPoints;
+    jsOutExtension: '.js' | '.mjs';
+    nodeFormat: 'esm' | 'cjs';
+    entryPointsPaths?: EntryPointsPaths;
 }
 
-export function createBuildConfiguration(
-    options: CreateBuildConfigOptions,
-    { nodeEntryPoints, webEntryPoints }: EntryPoints,
-    jsOutExtension: '.js' | '.mjs',
-    nodeFormat: 'esm' | 'cjs',
-) {
-    const { dev, outputPath, publicPath, buildPlugins, buildConditions, extensions } = options;
+export function createBuildConfiguration(options: CreateBuildConfigOptions) {
+    const {
+        dev,
+        outputPath,
+        publicPath,
+        buildPlugins,
+        buildConditions,
+        extensions,
+        entryPoints,
+        jsOutExtension,
+        nodeFormat,
+        entryPointsPaths,
+    } = options;
+    const { webEntryPoints, nodeEntryPoints } = entryPoints;
+    const { webEntryPointsPaths, nodeEntryPointsPaths } = entryPointsPaths || {};
 
     const commonPlugins = Array.isArray(buildPlugins) ? buildPlugins : [];
 
@@ -60,7 +72,11 @@ export function createBuildConfiguration(
         },
         plugins: [
             ...commonConfig.plugins,
-            dynamicEntryPlugin({ entryPoints: webEntryPoints, loader: 'js' }),
+            dynamicEntryPlugin({
+                virtualEntryPoints: webEntryPoints,
+                loader: 'js',
+                entryPointsOnDisk: webEntryPointsPaths,
+            }),
             htmlPlugin({
                 toHtmlPath(key) {
                     const entry = webEntryPoints.get(key);
@@ -79,7 +95,14 @@ export function createBuildConfiguration(
         platform: 'node',
         format: nodeFormat,
         outdir: join(outputPath, 'node'),
-        plugins: [...commonConfig.plugins, dynamicEntryPlugin({ entryPoints: nodeEntryPoints, loader: 'js' })],
+        plugins: [
+            ...commonConfig.plugins,
+            dynamicEntryPlugin({
+                virtualEntryPoints: nodeEntryPoints,
+                loader: 'js',
+                entryPointsOnDisk: nodeEntryPointsPaths,
+            }),
+        ],
     } satisfies BuildOptions;
 
     if (typeof buildPlugins === 'function') {
