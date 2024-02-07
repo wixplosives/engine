@@ -1,16 +1,11 @@
-import { createAllValidConfigurationsEnvironmentMapping, type IFeatureTarget } from '@wixc3/engine-scripts';
-import {
-    loadEngineConfig,
-    resolveRuntimeOptions,
-    runEngine,
-    RunEngineOptions,
-} from './engine-build';
+import { type IFeatureTarget } from '@wixc3/engine-scripts';
+import { loadEngineConfig, resolveRuntimeOptions, runEngine } from './engine-build';
 import { runLocalNodeManager } from './run-local-mode-manager';
-import { readMetadataFiles } from './read-metadata-files';
+import { readMetadataFiles } from './metadata-files';
 import isCI from 'is-ci';
 import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
-import { createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
+import type { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
 import { checkWatchSignal } from './watch-signal';
 
 const OUTPUT_PATH = process.env.ENGINE_OUTPUT_PATH || join(process.cwd(), 'dist-engine');
@@ -18,8 +13,8 @@ const OUTPUT_PATH = process.env.ENGINE_OUTPUT_PATH || join(process.cwd(), 'dist-
 export class ManagedRunEngine implements IExecutableApplication {
     private ready!: Promise<void>;
     private runMetadata!: {
-        featureEnvironmentsMapping: ReturnType<typeof createFeatureEnvironmentsMapping>;
-        configMapping: ReturnType<typeof createAllValidConfigurationsEnvironmentMapping>;
+        featureEnvironmentsMapping: FeatureEnvironmentMapping;
+        configMapping: ConfigurationEnvironmentMapping;
     };
     constructor(private options: { skipBuild: boolean; allowStale: boolean }) {}
     init() {
@@ -31,7 +26,11 @@ export class ManagedRunEngine implements IExecutableApplication {
     private async build() {
         if (this.options.skipBuild) {
             try {
-                this.runMetadata = readMetadataFiles(OUTPUT_PATH);
+                const runMetadata = readMetadataFiles(OUTPUT_PATH);
+                if (!runMetadata) {
+                    throw new Error('Metadata files not found');
+                }
+                this.runMetadata = runMetadata;
                 const hasWatcherActive = await checkWatchSignal(OUTPUT_PATH);
                 if (hasWatcherActive) {
                     console.log('[Engine]: Running with prebuilt application and active watcher.');
@@ -52,7 +51,7 @@ export class ManagedRunEngine implements IExecutableApplication {
         }
         const engineConfig = await loadEngineConfig(process.cwd());
 
-        const buildOnlyInDevModeOptions: RunEngineOptions = {
+        this.runMetadata = await runEngine({
             build: true,
             clean: true,
             dev: true,
@@ -61,15 +60,7 @@ export class ManagedRunEngine implements IExecutableApplication {
             outputPath: OUTPUT_PATH,
             engineConfig,
             writeMetadataFiles: true,
-        };
-        const res = await runEngine(buildOnlyInDevModeOptions);
-
-        const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(res.features);
-        const configMapping = createAllValidConfigurationsEnvironmentMapping(res.configurations, 'development');
-        this.runMetadata = {
-            featureEnvironmentsMapping,
-            configMapping,
-        };
+        });
     }
     public getServerPort(): Promise<number> {
         throw new Error('not implemented');

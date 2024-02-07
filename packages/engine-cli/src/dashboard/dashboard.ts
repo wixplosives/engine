@@ -19,6 +19,25 @@ function updateUI(data: any) {
     populateOpenEnvs(openManagers);
     populatePreviousRuns();
     setupSearch();
+    bindActions();
+}
+
+function bindActions() {
+    const button = byId('analyze-features-btn') as HTMLButtonElement;
+    button.onclick = () => {
+        button.disabled = true;
+        fetch('/api/engine/analyze', { method: 'POST' })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.error) {
+                    uiError(data.error);
+                }
+            })
+            .catch(uiError)
+            .finally(() => {
+                button.disabled = false;
+            });
+    };
 }
 
 function setupSearch() {

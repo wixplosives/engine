@@ -4,17 +4,7 @@ import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 import { join } from 'node:path';
 import { htmlPlugin } from './esbuild-html-plugin';
 import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin';
-import { CreateEntryPointOptions, createEntryPoints, EntryPoints } from './create-entrypoints';
-
-export type CreateEnvBuildConfigOptions = CreateBuildConfigOptions & CreateEntryPointOptions;
-
-export function createEnvironmentsBuildConfiguration(options: CreateEnvBuildConfigOptions & CreateEntryPointOptions) {
-    const jsOutExtension = '.js' as '.js' | '.mjs';
-    const nodeFormat = jsOutExtension === '.mjs' ? 'esm' : 'cjs';
-    const entryPoints = createEntryPoints(options, jsOutExtension, nodeFormat);
-    const buildConfig = createBuildConfiguration(options, entryPoints, jsOutExtension, nodeFormat);
-    return buildConfig;
-}
+import { EntryPoints } from './create-entrypoints';
 
 export interface CreateBuildConfigOptions {
     dev: boolean;
