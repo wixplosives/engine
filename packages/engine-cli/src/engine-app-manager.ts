@@ -1,12 +1,12 @@
 import { createAllValidConfigurationsEnvironmentMapping, type IFeatureTarget } from '@wixc3/engine-scripts';
 import {
     loadEngineConfig,
-    readMetadataFiles,
     resolveRuntimeOptions,
     runEngine,
     RunEngineOptions,
-    runLocalNodeManager,
 } from './engine-build';
+import { runLocalNodeManager } from './run-local-mode-manager';
+import { readMetadataFiles } from './read-metadata-files';
 import isCI from 'is-ci';
 import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
