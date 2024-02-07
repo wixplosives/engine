@@ -71,22 +71,23 @@ export async function runEngine({
         await fs.promises.rm(outputPath, { recursive: true, force: true });
     }
 
-    const _analyzeForBuild = analyzeForBuild.bind(null, {
-        rootDir,
-        featureDiscoveryRoot,
-        featureName,
-        extensions,
-        buildConditions,
-        mode,
-        configName,
-        dev,
-        publicPath,
-        publicConfigsRoute,
-        jsOutExtension,
-        nodeFormat,
-        writeMetadataFiles,
-        outputPath,
-    });
+    const _analyzeForBuild = () =>
+        analyzeForBuild({
+            rootDir,
+            featureDiscoveryRoot,
+            featureName,
+            extensions,
+            buildConditions,
+            mode,
+            configName,
+            dev,
+            publicPath,
+            publicConfigsRoute,
+            jsOutExtension,
+            nodeFormat,
+            writeMetadataFiles,
+            outputPath,
+        });
 
     if (!cachedMetadata || !cachedEntryPoints) {
         const result = await _analyzeForBuild();
@@ -98,6 +99,10 @@ export async function runEngine({
         featureEnvironmentsMapping = cachedMetadata.featureEnvironmentsMapping;
         configMapping = cachedMetadata.configMapping;
         entryPoints = cachedEntryPoints;
+        if (clean) {
+            writeMetaFiles(outputPath, featureEnvironmentsMapping, configMapping);
+            writeEntryPoints(outputPath, entryPoints);
+        }
     }
 
     const buildConfigurations = createBuildConfiguration(
@@ -156,6 +161,7 @@ export async function runEngine({
         const end = performance.now();
         console.log(`Build time ${Math.round(end - start)}ms`);
     }
+
     if (run) {
         if (verbose) {
             console.log('Running engine node environment manager');
