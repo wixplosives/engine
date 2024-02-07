@@ -1,0 +1,209 @@
+import fs from '@file-services/node';
+import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
+import { StaticConfig } from '@wixc3/engine-scripts';
+import express from 'express';
+import { json } from 'body-parser';
+import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server';
+import { join } from 'node:path';
+import { runLocalNodeManager } from './run-local-mode-manager';
+
+export async function launchDevServer(
+    serveStatic: StaticConfig[],
+    httpServerPort: number,
+    socketServerOptions: LaunchOptions['socketServerOptions'],
+    featureEnvironmentsMapping: FeatureEnvironmentMapping,
+    configMapping: ConfigurationEnvironmentMapping,
+    runtimeOptions: Map<string, string | boolean | undefined>,
+    outputPath: string,
+    waitForBuildReady?: (cb: () => void) => boolean,
+) {
+    const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
+        path: route,
+        handlers: express.static(directoryPath),
+    }));
+
+    const { middleware, run, listOpenManagers } = runOnDemandSingleEnvironment(
+        runtimeOptions,
+        featureEnvironmentsMapping,
+        configMapping,
+        outputPath,
+        waitForBuildReady,
+    );
+    const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
+    if (autoRunFeatureName) {
+        const port = await run(autoRunFeatureName, runtimeOptions.get('config') as string, '');
+        // TODO: get the names of main entry points from the build configurations
+        console.log(`Engine application in running at http://localhost:${port}/main.html`);
+    } else {
+        console.log('No explicit feature name provided skipping auto launch use the dashboard to run features');
+    }
+
+    const devMiddlewares: RouteMiddleware[] = [
+        {
+            path: '/is_alive',
+            handlers: (_req, res) => {
+                res.json({ alive: true });
+            },
+        },
+        {
+            path: '/dashboard',
+            handlers: express.static(join(__dirname, 'dashboard')),
+        },
+        {
+            path: '/api/engine/metadata',
+            handlers: (req, res) => {
+                res.json({
+                    featureEnvironmentsMapping,
+                    configMapping,
+                    runtimeOptions: Object.fromEntries(runtimeOptions.entries()),
+                    outputPath,
+                    openManagers: listOpenManagers(),
+                });
+            },
+        },
+        {
+            path: '/api/engine/run',
+            handlers: [json(), middleware],
+        },
+    ];
+
+    return await launchServer({
+        httpServerPort,
+        socketServerOptions,
+        middlewares: [...devMiddlewares, ...staticMiddlewares],
+    });
+}
+function runOnDemandSingleEnvironment(
+    runtimeOptions: Map<string, string | boolean | undefined>,
+    featureEnvironmentsMapping: FeatureEnvironmentMapping,
+    configMapping: ConfigurationEnvironmentMapping,
+    outputPath: string,
+    waitForBuildReady?: (cb: () => void) => boolean,
+) {
+    const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
+    async function run(featureName: string, configName: string, runtimeArgs: string) {
+        if (openManagers.size > 0) {
+            const toDispose = [];
+            for (const { manager } of openManagers.values()) {
+                toDispose.push(manager.dispose());
+            }
+            await Promise.all(toDispose);
+            openManagers.clear();
+        }
+
+        const runOptions = new Map(runtimeOptions.entries());
+        runOptions.set('feature', featureName);
+        runOptions.set('config', configName);
+        if (runtimeArgs.trim()) {
+            for (const [key, value] of Object.entries(JSON.parse(runtimeArgs))) {
+                runOptions.set(key, String(value));
+            }
+        }
+        const runningNodeManager = await runLocalNodeManager(
+            featureEnvironmentsMapping,
+            configMapping,
+            runOptions,
+            outputPath,
+            true,
+            {
+                routeMiddlewares: [
+                    {
+                        path: '*',
+                        handlers: (_req, res, next) => {
+                            const building = waitForBuildReady?.(() => {
+                                res.end('<script>location.reload()</script></html>');
+                            });
+                            if (building) {
+                                const engineImage = fs.readFileSync(
+                                    join(__dirname, 'dashboard', 'engine.jpeg'),
+                                    'base64',
+                                );
+                                res.write(
+                                    `<!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                      <meta charset="utf-8">
+                                      <meta name="viewport" content="width=device-width">
+                                      <title>Fast Refresh</title>
+                                      <style>
+                                    html {
+                                        background: url('data:image/jpeg;base64,${engineImage}');
+                                        background-size: cover;
+                                        background-position: center;
+                                        background-repeat: no-repeat;
+                                        height: 100%;
+                                        padding: 0;
+                                        margin: 0;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center; 
+                                      }
+                                      body {
+                                        height: 100%;
+                                        width: 100%;
+                                        margin: 0;
+                                      }
+                                      h1 {
+                                        text-align: center; 
+                                        color: white;
+                                        font-size: 16vw;
+                                        background: radial-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.9));
+                                        width: 100%;
+                                        display: block;
+                                      }
+                                    </style>
+                                    </head>
+                                    <body>
+                                    <h1>Building...</h1>
+                                    </body>`,
+                                );
+                            } else {
+                                next();
+                            }
+                        },
+                    },
+                ],
+            },
+        );
+        openManagers.set(`${featureName}(+)${configName}(+)${runtimeArgs}`, runningNodeManager);
+        return runningNodeManager.port;
+    }
+    function middleware(req: express.Request, res: express.Response) {
+        let message = `running on demand feature: "${req.body.featureName}" config: "${req.body.configName}"`;
+        if (req.body.runtimeArgs) {
+            message += ` runtimeArgs: "${req.body.runtimeArgs}"`;
+        }
+        if (req.body.restart) {
+            message += ' with restart';
+        }
+        console.log(message);
+        run(req.body.featureName, req.body.configName, req.body.runtimeArgs)
+            .then((port) => {
+                res.json({
+                    url: genUrl(port, req.body.featureName, req.body.configName),
+                    openManagers: listOpenManagers(),
+                });
+            })
+            .catch((e) => {
+                res.status(500).json({ error: e.message });
+            });
+    }
+
+    function listOpenManagers() {
+        return Array.from(openManagers.entries(), ([key, { port }]) => {
+            const [featureName, configName, runtimeArgs] = key.split('(+)') as [string, string, string];
+            return {
+                featureName,
+                configName,
+                runtimeArgs,
+                port,
+                url: genUrl(port, featureName, configName),
+            };
+        });
+    }
+
+    function genUrl(port: number, featureName: string, configName: string): string {
+        return `http://localhost:${port}/main.html?feature=${encodeURIComponent(featureName)}&config=${encodeURIComponent(configName)}`;
+    }
+    return { middleware, run, listOpenManagers };
+}
