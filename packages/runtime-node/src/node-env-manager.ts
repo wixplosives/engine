@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { WsServerHost } from './core-node/ws-node-host';
 import { resolveEnvironments } from './environments';
-import { launchEngineHttpServer } from './launch-http-server';
+import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server';
 import { IStaticFeatureDefinition, PerformanceMetrics } from './types';
 import { runWorker } from './worker-thread-initializer2';
 import { bindMetricsListener, getMetricsFromWorker } from './metrics-utils';
@@ -48,14 +48,14 @@ export class NodeEnvManager implements IDisposable {
             Promise.all([...this.openEnvironments.values()].map((env) => env.dispose())),
         );
     }
-    public async autoLaunch(runtimeOptions = parseRuntimeOptions()) {
+    public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
         const disposeListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
         const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
-        const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath });
+        const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath, ...serverOptions });
 
         app.get<[string]>('/configs/*', (req, res) => {
             const reqEnv = req.query.env as string;

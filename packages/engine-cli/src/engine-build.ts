@@ -3,6 +3,7 @@ import {
     ConfigurationEnvironmentMapping,
     FeatureEnvironmentMapping,
     IConfigDefinition,
+    ILaunchHttpServerOptions,
     NodeEnvManager,
     createFeatureEnvironmentsMapping,
     importModules,
@@ -117,12 +118,14 @@ export async function runEngine({
             JSON.stringify(configMapping, null, 2),
         );
     }
+    let _waitForBuildReady: ((cb: () => void) => boolean) | undefined;
     if (watch) {
         if (buildTargets === 'web' || buildTargets === 'both') {
             if (verbose) {
                 console.log('Starting web compilation in watch mode');
             }
-            const { buildEndPlugin, waitForBuildEnd } = createBuildEndPluginHook();
+            const { buildEndPlugin, waitForBuildEnd, waitForBuildReady } = createBuildEndPluginHook();
+            _waitForBuildReady = waitForBuildReady;
             buildConfigurations.webConfig.plugins.push(buildEndPlugin);
             esbuildContextWeb = await esbuild.context(buildConfigurations.webConfig);
             await esbuildContextWeb.watch();
@@ -183,6 +186,7 @@ export async function runEngine({
             configMapping,
             runtimeOptions,
             outputPath,
+            _waitForBuildReady,
         );
         if (watch) {
             writeWatchSignal(outputPath, { isAliveUrl: `http://localhost:${devServer.port}/is_alive` });
@@ -300,6 +304,7 @@ async function launchDevServer(
     configMapping: ConfigurationEnvironmentMapping,
     runtimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string,
+    waitForBuildReady?: (cb: () => void) => boolean,
 ) {
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
         path: route,
@@ -311,6 +316,7 @@ async function launchDevServer(
         featureEnvironmentsMapping,
         configMapping,
         outputPath,
+        waitForBuildReady,
     );
     const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
     if (autoRunFeatureName) {
@@ -362,6 +368,7 @@ function runOnDemandSingleEnvironment(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
     outputPath: string,
+    waitForBuildReady?: (cb: () => void) => boolean,
 ) {
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
     async function run(featureName: string, configName: string, runtimeArgs: string) {
@@ -388,6 +395,65 @@ function runOnDemandSingleEnvironment(
             runOptions,
             outputPath,
             true,
+            {
+                routeMiddlewares: [
+                    {
+                        path: '*',
+                        handlers: (_req, res, next) => {
+                            const building = waitForBuildReady?.(() => {
+                                res.end('<script>location.reload()</script></html>');
+                            });
+                            if (building) {
+                                const engineImage = fs.readFileSync(
+                                    join(__dirname, 'dashboard', 'engine.jpeg'),
+                                    'base64',
+                                );
+                                res.write(
+                                    `<!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                      <meta charset="utf-8">
+                                      <meta name="viewport" content="width=device-width">
+                                      <title>Fast Refresh</title>
+                                      <style>
+                                    html {
+                                        background: url('data:image/jpeg;base64,${engineImage}');
+                                        background-size: cover;
+                                        background-position: center;
+                                        background-repeat: no-repeat;
+                                        height: 100%;
+                                        padding: 0;
+                                        margin: 0;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center; 
+                                      }
+                                      body {
+                                        height: 100%;
+                                        width: 100%;
+                                        margin: 0;
+                                      }
+                                      h1 {
+                                        text-align: center; 
+                                        color: white;
+                                        font-size: 16vw;
+                                        background: radial-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.9));
+                                        width: 100%;
+                                        display: block;
+                                      }
+                                    </style>
+                                    </head>
+                                    <body>
+                                    <h1>Building...</h1>
+                                    </body>`,
+                                );
+                            } else {
+                                next();
+                            }
+                        },
+                    },
+                ],
+            },
         );
         openManagers.set(`${featureName}(+)${configName}(+)${runtimeArgs}`, runningNodeManager);
         return runningNodeManager.port;
@@ -438,6 +504,7 @@ export async function runLocalNodeManager(
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
     freshConfigLoading = false,
+    serverOptions?: ILaunchHttpServerOptions,
 ) {
     const meta = { url: pathToFileURL(join(outputPath, 'node/')).href };
 
@@ -447,7 +514,7 @@ export async function runLocalNodeManager(
         configMapping,
         freshConfigLoading ? importFresh : undefined,
     );
-    const { port } = await manager.autoLaunch(execRuntimeOptions);
+    const { port } = await manager.autoLaunch(execRuntimeOptions, serverOptions);
     return { port, manager };
 }
 
