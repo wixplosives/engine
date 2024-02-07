@@ -120,7 +120,7 @@ function loadEnvAndContextFiles({
                     packageName,
                     eagerEntrypoint,
                     absImports,
-                })};
+                })}
             }`);
         }
         const preloadFilePath = preloadFilePaths?.[`${env.name}/${childEnvName}`];
@@ -135,7 +135,7 @@ function loadEnvAndContextFiles({
                     packageName,
                     eagerEntrypoint,
                     absImports,
-                })};
+                })}
             }`);
         }
     }
@@ -184,7 +184,7 @@ function createLoaderInterface(args: FeatureLoaderArguments) {
     const { loadStatements, usesResolvedContexts, preloadStatements } = loadEnvAndContextFiles(args);
     return `{
                 async load(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
-                    ${loadStatements.length ? loadStatements.join(';\n') : ''}
+                    ${loadStatements.length ? loadStatements.join('\n') : ''}
                     const featureModule = ${loadStatement({
                         moduleIdentifier: featuresBundleName,
                         filePath,
@@ -192,12 +192,8 @@ function createLoaderInterface(args: FeatureLoaderArguments) {
                         packageName,
                         eagerEntrypoint,
                         absImports,
-                    })};
-                    // dynamic import esm
-                    let featureClass = featureModule.default;
-                    // dynamic import cjs from esm
-                    featureClass = featureClass.__esModule ? featureClass.default : featureClass;
-                    return featureClass;
+                    })}
+                    return featureModule.default;
                 },${
                     preloadStatements.length
                         ? `
