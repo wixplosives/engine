@@ -198,10 +198,14 @@ function createLoaderInterface(args: FeatureLoaderArguments) {
                     // dynamic import cjs from esm
                     featureClass = featureClass.__esModule ? featureClass.default : featureClass;
                     return featureClass;
-                },
+                },${
+                    preloadStatements.length
+                        ? `
                 async preload(${usesResolvedContexts ? 'resolvedContexts' : ''}) {
                     ${preloadStatements.join('\n')}
-                },
+                },`
+                        : ''
+                }
                 depFeatures: ${stringify(dependencies)},
                 resolvedContexts: ${stringify(resolvedContexts)},
             }`;
