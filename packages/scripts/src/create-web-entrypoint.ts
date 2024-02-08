@@ -79,7 +79,7 @@ main({
 
 function handlePublicPathTemplate(publicPath: string | undefined, publicPathVariableName: string | undefined) {
     return `(() => {
-let publicPath = ${typeof publicPath === 'string' ? stringify(publicPath) : '__webpack_public_path__'}
+let publicPath = ${typeof publicPath === 'string' ? stringify(publicPath) : '__webpack_public_path__'};
 if (options.has('publicPath')) {
     publicPath = options.get('publicPath');
 } else if (${typeof publicPathVariableName === 'string'}) {

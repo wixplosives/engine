@@ -8,6 +8,7 @@ async function engine() {
     const watch = boolParam(args.get('watch')) ?? false;
     const dev = boolParam(args.get('dev')) ?? watch;
     const run = boolParam(args.get('run')) ?? dev;
+    const forceAnalyze = boolParam(args.get('forceAnalyze')) ?? !dev;
     const verbose = boolParam(args.get('verbose')) ?? false;
     const writeMetadataFiles = boolParam(args.get('writeMetadataFiles')) ?? true;
 
@@ -33,6 +34,7 @@ async function engine() {
         clean,
         dev,
         watch,
+        forceAnalyze,
         publicPath,
         buildTargets,
         feature,

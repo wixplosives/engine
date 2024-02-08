@@ -15,6 +15,7 @@ export async function launchDevServer(
     configMapping: ConfigurationEnvironmentMapping,
     runtimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string,
+    analyzeForBuild: () => Promise<unknown>,
     waitForBuildReady?: (cb: () => void) => boolean,
 ) {
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
@@ -64,6 +65,20 @@ export async function launchDevServer(
         {
             path: '/api/engine/run',
             handlers: [json(), middleware],
+        },
+        {
+            path: '/api/engine/analyze',
+            handlers: (_req, res) => {
+                analyzeForBuild()
+                    .then(() => {
+                        res.json({
+                            status: 'done-analyzing',
+                        });
+                    })
+                    .catch((e) => {
+                        res.status(500).json({ error: e.message });
+                    });
+            },
         },
     ];
 

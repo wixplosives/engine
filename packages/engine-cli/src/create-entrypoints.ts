@@ -32,6 +32,11 @@ export type EntryPoints = {
     nodeEntryPoints: Map<string, string>;
 };
 
+export type EntryPointsPaths = {
+    webEntryPointsPaths: string[];
+    nodeEntryPointsPaths: string[];
+};
+
 export function createEntryPoints(
     options: CreateEntryPointOptions,
     jsOutExtension: '.js' | '.mjs',

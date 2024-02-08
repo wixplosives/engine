@@ -100,7 +100,7 @@ export class FeatureLoadersRegistry {
         for (const initFunction of allPreloadInitFunctions) {
             await initFunction(runtimeOptions);
         }
-        return Promise.all(featureLoaders.map(({ load }) => load(resolvedContexts)));
+        return Promise.all(featureLoaders.map(async ({ load }) => cjsEsmInterop(await load(resolvedContexts))));
     }
     /**
      * loads the entry feature and all its dependencies
@@ -111,7 +111,7 @@ export class FeatureLoadersRegistry {
             throw new Error(
                 `cannot find feature '${rootFeatureName}'. available features:\n${Array.from(this.featureMapping.keys())
                     .sort()
-                    .join('\n')}`
+                    .join('\n')}`,
             );
         }
         const resolvedContexts = { ...rootFeatureLoader.resolvedContexts };
@@ -145,4 +145,7 @@ export class FeatureLoadersRegistry {
         }
         return dependencies;
     }
+}
+function cjsEsmInterop(featureClass: FeatureClass): FeatureClass | PromiseLike<FeatureClass> {
+    return (featureClass as any).__esModule ? (featureClass as any as { default: FeatureClass }).default : featureClass;
 }

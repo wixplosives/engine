@@ -2,11 +2,13 @@ import { Loader, Plugin } from 'esbuild';
 
 /** create virtual dynamic entry points for esbuild to bundle */
 export function dynamicEntryPlugin({
-    entryPoints,
-    loader = undefined,
+    virtualEntryPoints,
+    loader = 'tsx',
+    entryPointsOnDisk,
 }: {
-    entryPoints: Map<string, string>;
+    virtualEntryPoints: Map<string, string>;
     loader?: Loader;
+    entryPointsOnDisk?: string[];
 }) {
     const plugin: Plugin = {
         name: 'dynamic-entry',
@@ -15,7 +17,12 @@ export function dynamicEntryPlugin({
                 throw new Error(`dynamicEntryPlugin: entryPoints must not be set when using dynamicEntryPlugin`);
             }
 
-            build.initialOptions.entryPoints = Array.from(entryPoints.keys()).map((key) => `@@entry/${key}`);
+            if (entryPointsOnDisk) {
+                build.initialOptions.entryPoints = entryPointsOnDisk;
+                return;
+            }
+
+            build.initialOptions.entryPoints = Array.from(virtualEntryPoints.keys()).map((key) => `@@entry/${key}`);
 
             build.onResolve({ filter: /^@@entry/ }, (args) => {
                 return {
@@ -27,8 +34,8 @@ export function dynamicEntryPlugin({
             build.onLoad({ filter: /.*/, namespace: 'dynamic-entry-ns' }, (args) => {
                 return {
                     resolveDir: '.',
-                    loader: loader || 'tsx',
-                    contents: entryPoints.get(args.path),
+                    loader,
+                    contents: virtualEntryPoints.get(args.path),
                 };
             });
         },
