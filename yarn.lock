@@ -1720,10 +1720,10 @@
     "@webassemblyjs/ast" "1.11.6"
     "@xtuc/long" "4.2.2"
 
-"@wixc3/common@^16.1.3":
-  version "16.1.3"
-  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-16.1.3.tgz#2e5597831ba6a056d826e4ad024bca2dd278246e"
-  integrity sha512-oA2lk95CRdwkygseOQxJpCP0ZOVITo8lj3U9J1ilr5ANcWSK1UH5LAw6dVU4pXCB+vWIDTLd28uf+DCZf9Yy3g==
+"@wixc3/common@^16.1.3", "@wixc3/common@^16.2.0":
+  version "16.2.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-16.2.0.tgz#c083ba114d6c1ff4da710958a0a5c2505a0925f2"
+  integrity sha512-8fQ3K3rGFsqfxrSTzKnI79cFaXCwUxRHEHDb7U1pCzWagf3TJbnDxq0KVpHsBy9f0JPJDnpVxsWbk1QhJrP30w==
   dependencies:
     "@file-services/path" "^8.3.3"
     "@file-services/types" "^8.3.3"
