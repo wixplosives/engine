@@ -2,7 +2,6 @@
 _docs
 temp
 tsdoc-metadata.json
-
 cjs
 esm
 umd
@@ -13,6 +12,7 @@ _wcs
 dist-app
 dist-external
 dist-test-engine
+dist-engine
 
 # Logs
 logs
