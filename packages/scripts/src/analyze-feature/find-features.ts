@@ -29,7 +29,9 @@ export async function analyzeFeatures(
 function filterByFeatureName(features: Map<string, IFeatureDefinition>, featureName: string) {
     const foundFeature = features.get(featureName);
     if (!foundFeature) {
-        throw new Error(`cannot find feature: ${featureName}`);
+        throw new Error(
+            `cannot find feature: ${featureName} available features:\n${Array.from(features.keys()).sort().join('\n')}`,
+        );
     }
     const missingFeatureDeps = new Set<string>();
     const filteredFeatures = [
