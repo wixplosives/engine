@@ -5,13 +5,13 @@ import {
     MultiCounter,
     parseInjectRuntimeConfigConfig,
 } from '@wixc3/engine-core';
-import { IDisposable, SafeDisposable, SetMultiMap } from '@wixc3/patterns';
+import { IDisposable, SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { WsServerHost } from './core-node/ws-node-host';
 import { resolveEnvironments } from './environments';
 import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server';
-import { IStaticFeatureDefinition, PerformanceMetrics } from './types';
+import type { IStaticFeatureDefinition, PerformanceMetrics } from './types';
 import { runWorker } from './worker-thread-initializer2';
 import { bindMetricsListener, getMetricsFromWorker } from './metrics-utils';
 
@@ -31,9 +31,14 @@ export interface RunningNodeEnvironment {
 }
 
 export class NodeEnvManager implements IDisposable {
-    disposables = new SafeDisposable(NodeEnvManager.name);
-    dispose = this.disposables.dispose;
-    isDisposed = this.disposables.isDisposed;
+    private disposables = new Set<() => Promise<void>>();
+    isDisposed = () => false;
+    dispose = async () => {
+        this.isDisposed = () => true;
+        for (const disposable of this.disposables) {
+            await disposable();
+        }
+    };
     envInstanceIdCounter = new MultiCounter();
     id = 'node-environment-manager';
     openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
@@ -43,11 +48,7 @@ export class NodeEnvManager implements IDisposable {
         private configMapping: ConfigurationEnvironmentMapping,
         private loadModule: (modulePath: string) => Promise<unknown> = async (modulePath) =>
             (await require(modulePath)).default,
-    ) {
-        this.disposables.add('open environments', () =>
-            Promise.all([...this.openEnvironments.values()].map((env) => env.dispose())),
-        );
-    }
+    ) {}
     public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
         const disposeListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
@@ -86,12 +87,20 @@ export class NodeEnvManager implements IDisposable {
 
         const host = new WsServerHost(socketServer);
 
-        this.disposables.add('auto launch', async () => {
-            await host.dispose();
-            disposeListener();
-            await close();
-        });
         await this.runFeatureEnvironments(verbose, runtimeOptions, host);
+
+        const disposeAutoLaunch = async () => {
+            disposeListener();
+            await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
+            await host.dispose();
+            await close();
+        };
+
+        if (this.isDisposed()) {
+            await disposeAutoLaunch();
+        } else {
+            this.disposables.add(disposeAutoLaunch);
+        }
 
         if (process.send) {
             process.send({ port });

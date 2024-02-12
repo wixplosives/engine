@@ -95,16 +95,10 @@ function runOnDemandSingleEnvironment(
     outputPath: string,
     waitForBuildReady?: (cb: () => void) => boolean,
 ) {
+    let currentlyDisposing: Promise<unknown> | undefined;
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
     async function run(featureName: string, configName: string, runtimeArgs: string) {
-        if (openManagers.size > 0) {
-            const toDispose = [];
-            for (const { manager } of openManagers.values()) {
-                toDispose.push(manager.dispose());
-            }
-            await Promise.all(toDispose);
-            openManagers.clear();
-        }
+        await disposeOpenManagers();
 
         const runOptions = new Map(runtimeOptions.entries());
         runOptions.set('feature', featureName);
@@ -183,6 +177,21 @@ function runOnDemandSingleEnvironment(
         openManagers.set(`${featureName}(+)${configName}(+)${runtimeArgs}`, runningNodeManager);
         return runningNodeManager.port;
     }
+
+    async function disposeOpenManagers() {
+        await currentlyDisposing;
+        if (openManagers.size > 0) {
+            const toDispose = [];
+            for (const { manager } of openManagers.values()) {
+                toDispose.push(manager.dispose());
+            }
+            currentlyDisposing = Promise.all(toDispose);
+            await currentlyDisposing;
+            openManagers.clear();
+            currentlyDisposing = undefined;
+        }
+    }
+
     function middleware(req: express.Request, res: express.Response) {
         let message = `running on demand feature: "${req.body.featureName}" config: "${req.body.configName}"`;
         if (req.body.runtimeArgs) {
