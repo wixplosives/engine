@@ -19,7 +19,7 @@ export function htmlPlugin({
                     return {
                         errors: [
                             {
-                                text: "html-plugin: build failed, can't generate html files.",
+                                text: 'html-plugin: failed to generate HTML because there were errors in the build.',
                             },
                         ],
                     };
