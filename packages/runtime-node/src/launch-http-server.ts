@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { safeListeningHttpServer } from 'create-listening-server';
 import * as io from 'socket.io';
-import type { Socket } from 'net';
 
 export const DEFAULT_PORT = 3000;
 
