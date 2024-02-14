@@ -2,15 +2,14 @@ import type { PerformanceMetrics } from './types';
 import { parentPort } from 'node:worker_threads';
 import type { ChildProcess } from 'node:child_process';
 import { Worker } from '@wixc3/isomorphic-worker/worker';
+import { isValidRpcMessage, isValidRpcResponse, rpcCall, getNextMessageId } from './micro-rpc';
 
-export function bindMetricsListener(
-    customFetcher: () => Promise<PerformanceMetrics> | PerformanceMetrics = localPerformanceFetcher,
-) {
+export function bindUniversalListener<T>(type: string, customFetcher: () => Promise<T> | T) {
     const handler = async (message: unknown) => {
-        if (isValidGetMetricsMessage(message)) {
+        if (isValidRpcMessage(message) && message.type === type) {
             const outgoingMessage = {
                 id: message.id,
-                metrics: await customFetcher(),
+                value: await customFetcher(),
             };
             if (parentPort) {
                 parentPort.postMessage(outgoingMessage);
@@ -30,6 +29,11 @@ export function bindMetricsListener(
     };
 }
 
+export function bindMetricsListener(
+    customFetcher: () => Promise<PerformanceMetrics> | PerformanceMetrics = localPerformanceFetcher,
+) {
+    return bindUniversalListener('getMetrics', customFetcher);
+}
 function localPerformanceFetcher() {
     return {
         marks: performance.getEntriesByType('mark').map((_) => _.toJSON()),
@@ -37,23 +41,24 @@ function localPerformanceFetcher() {
     };
 }
 
-let nextMessageId = 0;
+//TODO: generalize
 export async function getMetricsFromProcess(
     managerProcess: ChildProcess,
     timeout = 10000,
 ): Promise<PerformanceMetrics> {
     return await new Promise((resolve, reject) => {
-        const outgoingMessage = { type: 'getMetrics', id: nextMessageId++ };
+        const outgoingMessage = { type: 'getMetrics', id: getNextMessageId() };
         const tm = setTimeout(() => {
+            managerProcess.off('message', handler);
             reject(new Error(`Timeout after ${timeout / 1000} sec, waiting for getMetrics message.`));
         }, timeout);
-        managerProcess.on('message', (responseMessage) => {
-            if (isValidMetricsResponse(responseMessage, outgoingMessage.id)) {
+        const handler = (responseMessage: unknown) => {
+            if (isValidRpcResponse(responseMessage, outgoingMessage.id)) {
                 clearTimeout(tm);
-                resolve(responseMessage.metrics);
+                resolve(responseMessage.value as PerformanceMetrics);
             }
-        });
-
+        };
+        managerProcess.on('message', handler);
         if (!managerProcess.send) {
             throw new Error('managerProcess.send is not defined');
         }
@@ -61,42 +66,6 @@ export async function getMetricsFromProcess(
     });
 }
 
-export function getMetricsFromWorker(worker: Worker): Promise<PerformanceMetrics> {
-    const outgoingMessage = { type: 'getMetrics', id: nextMessageId++ };
-    const result = new Promise<PerformanceMetrics>((resolve) => {
-        const handler = (event: any) => {
-            const responseMessage = event.data;
-            if (isValidMetricsResponse(responseMessage, outgoingMessage.id)) {
-                worker.removeEventListener('message', handler);
-                resolve(responseMessage.metrics);
-            }
-        };
-        worker.addEventListener('message', handler);
-    });
-    worker.postMessage(outgoingMessage);
-    return result;
-}
-
-function isValidGetMetricsMessage(message: unknown): message is { type: 'getMetrics'; id: number } {
-    return !!(
-        message &&
-        typeof message === 'object' &&
-        'type' in message &&
-        'id' in message &&
-        message.type === 'getMetrics' &&
-        typeof message.id === 'number'
-    );
-}
-
-function isValidMetricsResponse(
-    responseMessage: unknown,
-    id: number,
-): responseMessage is { id: number; metrics: PerformanceMetrics } {
-    return !!(
-        responseMessage &&
-        typeof responseMessage === 'object' &&
-        'id' in responseMessage &&
-        'metrics' in responseMessage &&
-        id === responseMessage.id
-    );
+export function getMetricsFromWorker(worker: Worker) {
+    return rpcCall<PerformanceMetrics>(worker, 'getMetrics', 5000);
 }
