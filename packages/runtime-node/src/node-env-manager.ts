@@ -220,7 +220,11 @@ function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorke
                 worker.removeEventListener('message', handleWorkerMessage);
                 worker.removeEventListener('error', handleInitializeError);
                 host.removeEventListener('message', handleClientMessage);
-                await rpcCall(worker, 'terminate', 5000);
+                try {
+                    await rpcCall(worker, 'terminate', 15000);
+                } catch (e) {
+                    console.error(`failed terminating environment gracefully ${envName}, terminating worker.`, e);
+                }
                 await worker.terminate();
             },
             getMetrics: async () => {
