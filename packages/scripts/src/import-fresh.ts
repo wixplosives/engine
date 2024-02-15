@@ -6,11 +6,11 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
  * The module is executed in a new worker thread, which ensures that the module and
  * its dependencies are completely reloaded.
  *
- * @param filePath - The path to the module to import.
+ * @param filePath - The path or multiple paths to the module to import.
  * @param exportSymbolName - name of the exported symbol to get the value of. defaults to `"default"`.
  * @returns A Promise that resolves to the exports of the imported module.
  */
-export async function importFresh(filePath: string, exportSymbolName = 'default'): Promise<unknown> {
+export async function importFresh(filePath: string | string[], exportSymbolName = 'default'): Promise<unknown> {
     const worker = new Worker(__filename, {
         workerData: { filePath, exportSymbolName } satisfies ImportFreshWorkerData,
         // doesn't seem to inherit two levels deep (Worker from Worker)
@@ -23,15 +23,33 @@ export async function importFresh(filePath: string, exportSymbolName = 'default'
 
 if (!isMainThread && isImportWorkerData(workerData)) {
     const { filePath, exportSymbolName } = workerData;
-    import(filePath)
-        .then((moduleExports) => parentPort?.postMessage(moduleExports[exportSymbolName]))
-        .catch((e) => {
-            throw e;
-        });
+    if (Array.isArray(filePath)) {
+        const imported: Promise<any>[] = [];
+        for (const path of filePath) {
+            imported.push(import(path));
+        }
+        Promise.all(imported)
+            .then((moduleExports) => {
+                const result = [];
+                for (const moduleExport of moduleExports) {
+                    result.push(moduleExport[exportSymbolName]);
+                }
+                parentPort?.postMessage(result);
+            })
+            .catch((e) => {
+                throw e;
+            });
+    } else {
+        import(filePath)
+            .then((moduleExports) => parentPort?.postMessage(moduleExports[exportSymbolName]))
+            .catch((e) => {
+                throw e;
+            });
+    }
 }
 
-interface ImportFreshWorkerData {
-    filePath: string;
+export interface ImportFreshWorkerData {
+    filePath: string | string[];
     exportSymbolName: string;
 }
 
@@ -39,7 +57,8 @@ function isImportWorkerData(value: unknown): value is ImportFreshWorkerData {
     return (
         typeof value === 'object' &&
         value !== null &&
-        typeof (value as ImportFreshWorkerData).filePath === 'string' &&
+        (typeof (value as ImportFreshWorkerData).filePath === 'string' ||
+            Array.isArray((value as ImportFreshWorkerData).filePath)) &&
         typeof (value as ImportFreshWorkerData).exportSymbolName === 'string'
     );
 }

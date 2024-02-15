@@ -47,8 +47,15 @@ export class NodeEnvManager implements IDisposable {
         private importMeta: { url: string },
         private featureEnvironmentsMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
-        private loadModule: (modulePath: string) => Promise<unknown> = async (modulePath) =>
-            (await require(modulePath)).default,
+        private loadModules: (modulePaths: string[]) => Promise<unknown> = async (modulePaths) => {
+            const load = [];
+            for (const modulePath of modulePaths) {
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                load.push(require(modulePath));
+            }
+            const res = await Promise.all(load);
+            return res.map((m) => m.default ?? m);
+        },
     ) {}
     public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
@@ -144,22 +151,15 @@ export class NodeEnvManager implements IDisposable {
         }
         const { common, byEnv } = mappingEntry;
         const configFiles = [...common, ...(byEnv[envName] ?? [])];
-        const loadedConfigs = await Promise.all(
-            configFiles.map(async (filePath) => {
-                try {
-                    // TODO: make it work in esm via injection
-                    const configModule = (await this.loadModule(filePath)) as ConfigModule;
-                    if (verbose) {
-                        console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
-                    }
-                    return configModule.default ?? configModule;
-                } catch (e) {
-                    throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
-                }
-            }),
-        );
 
-        return loadedConfigs;
+        try {
+            if (verbose) {
+                console.log(`[ENGINE]: loading config file for env ${envName} ${configFiles}`);
+            }
+            return (await this.loadModules(configFiles)) as ConfigModule[];
+        } catch (e) {
+            throw new Error(`Failed evaluating config file: ${configFiles}`, { cause: e });
+        }
     }
 
     private createEnvironmentFileUrl(envName: string) {
