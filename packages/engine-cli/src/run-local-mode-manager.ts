@@ -16,10 +16,8 @@ export async function runLocalNodeManager(
     freshConfigLoading = false,
     serverOptions?: ILaunchHttpServerOptions,
 ) {
-    const meta = { url: pathToFileURL(join(outputPath, 'node/')).href };
-
     const manager = new NodeEnvManager(
-        meta,
+        { url: pathToFileURL(join(outputPath, 'node/')).href },
         featureEnvironmentsMapping,
         configMapping,
         freshConfigLoading ? importFresh : undefined,
