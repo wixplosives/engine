@@ -1,4 +1,5 @@
 import { Worker } from '@wixc3/isomorphic-worker/worker';
+import { parentPort } from 'node:worker_threads';
 
 const prefix = 'rpcCall';
 let nextMessageId = 0;
@@ -27,6 +28,31 @@ export function rpcCall<T>(worker: Worker, type: string, timeout = 10000): Promi
     });
     worker.postMessage(outgoingMessage);
     return result;
+}
+
+export function bindRpcListener<T>(type: string, customFetcher: () => Promise<T> | T) {
+    const handler = async (message: unknown) => {
+        if (isValidRpcMessage(message) && message.type === type) {
+            const outgoingMessage = {
+                id: message.id,
+                value: await customFetcher(),
+            };
+            if (parentPort) {
+                parentPort.postMessage(outgoingMessage);
+            } else if (process.send) {
+                process.send(outgoingMessage);
+            } else {
+                throw new Error('No parentPort or process.send');
+            }
+        }
+    };
+    const wrapped = (message: unknown) => {
+        handler(message).catch(console.error);
+    };
+    (parentPort ?? process).on('message', wrapped);
+    return () => {
+        (parentPort ?? process).off('message', wrapped);
+    };
 }
 
 export function isValidRpcMessage(message: unknown): message is { type: string; id: string } {

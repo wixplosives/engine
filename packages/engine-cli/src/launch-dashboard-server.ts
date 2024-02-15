@@ -98,7 +98,13 @@ function runOnDemandSingleEnvironment(
     let currentlyDisposing: Promise<unknown> | undefined;
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
     async function run(featureName: string, configName: string, runtimeArgs: string) {
-        await disposeOpenManagers();
+        try {
+            await disposeOpenManagers();
+        } catch (e) {
+            openManagers.clear();
+            currentlyDisposing = undefined;
+            console.warn('[Engine]: Error disposing open environments, disposing in background...', e);
+        }
 
         const runOptions = new Map(runtimeOptions.entries());
         runOptions.set('feature', featureName);

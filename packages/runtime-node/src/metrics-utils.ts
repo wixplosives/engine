@@ -1,40 +1,14 @@
 import type { PerformanceMetrics } from './types';
-import { parentPort } from 'node:worker_threads';
 import type { ChildProcess } from 'node:child_process';
 import { Worker } from '@wixc3/isomorphic-worker/worker';
-import { isValidRpcMessage, isValidRpcResponse, rpcCall, getNextMessageId } from './micro-rpc';
-
-export function bindUniversalListener<T>(type: string, customFetcher: () => Promise<T> | T) {
-    const handler = async (message: unknown) => {
-        if (isValidRpcMessage(message) && message.type === type) {
-            const outgoingMessage = {
-                id: message.id,
-                value: await customFetcher(),
-            };
-            if (parentPort) {
-                parentPort.postMessage(outgoingMessage);
-            } else if (process.send) {
-                process.send(outgoingMessage);
-            } else {
-                throw new Error('No parentPort or process.send');
-            }
-        }
-    };
-    const wrapped = (message: unknown) => {
-        handler(message).catch(console.error);
-    };
-    (parentPort ?? process).on('message', wrapped);
-    return () => {
-        (parentPort ?? process).off('message', wrapped);
-    };
-}
+import { isValidRpcResponse, rpcCall, getNextMessageId, bindRpcListener } from './micro-rpc';
 
 export function bindMetricsListener(
     customFetcher: () => Promise<PerformanceMetrics> | PerformanceMetrics = localPerformanceFetcher,
 ) {
-    return bindUniversalListener('getMetrics', customFetcher);
+    return bindRpcListener('getMetrics', customFetcher);
 }
-function localPerformanceFetcher() {
+export function localPerformanceFetcher() {
     return {
         marks: performance.getEntriesByType('mark').map((_) => _.toJSON()),
         measures: performance.getEntriesByType('measure').map((_) => _.toJSON()),

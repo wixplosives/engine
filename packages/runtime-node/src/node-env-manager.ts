@@ -13,7 +13,8 @@ import { resolveEnvironments } from './environments';
 import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server';
 import type { IStaticFeatureDefinition, PerformanceMetrics } from './types';
 import { runWorker } from './worker-thread-initializer2';
-import { bindMetricsListener, getMetricsFromWorker } from './metrics-utils';
+import { getMetricsFromWorker, bindMetricsListener } from './metrics-utils';
+import { rpcCall } from './micro-rpc';
 
 export type ConfigFilePath = string;
 
@@ -51,7 +52,7 @@ export class NodeEnvManager implements IDisposable {
     ) {}
     public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
-        const disposeListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
+        const disposeMetricsListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
         const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
 
@@ -90,7 +91,7 @@ export class NodeEnvManager implements IDisposable {
         await this.runFeatureEnvironments(verbose, runtimeOptions, host);
 
         const disposeAutoLaunch = async () => {
-            disposeListener();
+            disposeMetricsListener();
             await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
             await host.dispose();
             await close();
@@ -219,6 +220,7 @@ function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorke
                 worker.removeEventListener('message', handleWorkerMessage);
                 worker.removeEventListener('error', handleInitializeError);
                 host.removeEventListener('message', handleClientMessage);
+                await rpcCall(worker, 'terminate', 5000);
                 await worker.terminate();
             },
             getMetrics: async () => {
