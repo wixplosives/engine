@@ -79,7 +79,7 @@ if (verbose) {
 
 const unbindMetricsListener = bindMetricsListener();
 
-main({
+export default main({
     featureName: ${stringify(featureName)}, 
     configName: ${stringify(configName)},
     env: ${stringify(runningEnv, null, 2)},
@@ -99,10 +99,11 @@ main({
             ...${stringify(config, null, 2)}
         ];
     },
-}).then(()=>{
+}).then((engine)=>{
     if (verbose) {
         console.log('[${env.name}]: Running')
     }
+    return engine;
 }).catch(e => {
     unbindMetricsListener();
     process.exitCode = 1;
