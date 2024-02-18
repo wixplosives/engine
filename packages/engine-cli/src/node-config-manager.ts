@@ -101,21 +101,16 @@ export class NodeConfigManager {
                     name: 'on-build',
                     setup(build) {
                         build.onStart(() => {
-                            console.log('Building configs...');
                             hooks.onStart();
                             deferredStart.resolve();
                         });
                         build.onEnd(({ outputFiles }) => {
-                            if (!outputFiles) {
-                                throw new Error('No output files');
-                            }
-                            if (outputFiles.length === 0) {
+                            if (!outputFiles || outputFiles.length === 0) {
                                 throw new Error('No output files');
                             }
                             const text = outputFiles[0]!.text;
                             const module = { exports: {} };
-                            const r = runInContext(text, createContext({ module, exports: module.exports })).default;
-                            hooks.onEnd(r);
+                            hooks.onEnd(runInContext(text, createContext({ module, exports: module.exports })).default);
                         });
                     },
                 },
