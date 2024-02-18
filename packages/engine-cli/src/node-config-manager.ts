@@ -59,10 +59,22 @@ export class NodeConfigManager {
             return currentBuild.currentValue;
         }
     }
-    async dispose() {
+    disposeBuild(entryPoints: string[]): Promise<void> | void {
+        const key = this.hashConfig(entryPoints);
+        const build = this.runningBuilds.get(key);
+        if (build) {
+            this.runningBuilds.delete(key);
+            return build.dispose();
+        }
+    }
+    async disposeAll() {
         for (const build of this.runningBuilds.values()) {
             await build.dispose();
         }
+        this.runningBuilds.clear();
+    }
+    async dispose() {
+        await this.disposeAll();
     }
     private async createBuildTask(
         entryPoints: string[],

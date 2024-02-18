@@ -72,4 +72,14 @@ describe('NodeConfigManager', function () {
             },
         ]);
     });
+
+    it('dispose build', async () => {
+        write('config1.js', 'export default {file: "@test/config1.js"}');
+        write('config2.js', 'export default {file: "@test/config2.js"}');
+        const configsPaths = ['./config1.js', './config2.js'];
+        await cm.loadConfigs(configsPaths);
+        await cm.disposeBuild(configsPaths);
+        const buildStats = cm.runningBuilds.get(cm.hashConfig(configsPaths));
+        expect(buildStats, 'build stats should be undefined').to.equal(undefined);
+    });
 });
