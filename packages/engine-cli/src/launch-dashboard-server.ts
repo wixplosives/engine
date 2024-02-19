@@ -147,6 +147,7 @@ function runOnDemandSingleEnvironment(
     async function disposeOpenManagers() {
         await currentlyDisposing;
         if (openManagers.size > 0) {
+            await configManager?.disposeAll();
             const toDispose = [];
             for (const { manager } of openManagers.values()) {
                 toDispose.push(manager.dispose());
