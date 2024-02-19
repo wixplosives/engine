@@ -66,7 +66,7 @@ export function createNodeEntrypoint({
     });
     return `
 import { main, COM } from "@wixc3/engine-core";
-import { bindMetricsListener, parseRuntimeOptions, ParentPortHost } from "@wixc3/engine-runtime-node";
+import { bindRpcListener, bindMetricsListener, parseRuntimeOptions, ParentPortHost } from "@wixc3/engine-runtime-node";
 import { parseArgs } from "node:util";
 import { workerData } from "node:worker_threads";
 
@@ -99,10 +99,15 @@ main({
             ...${stringify(config, null, 2)}
         ];
     },
-}).then(()=>{
+}).then((engine)=>{
     if (verbose) {
         console.log('[${env.name}]: Running')
     }
+    const unbindTerminationListener = bindRpcListener('terminate', () => {
+        unbindTerminationListener();
+        console.log('[${env.name}]: Terminating');
+        return engine.shutdown();
+    });
 }).catch(e => {
     unbindMetricsListener();
     process.exitCode = 1;

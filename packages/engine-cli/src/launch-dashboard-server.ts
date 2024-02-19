@@ -95,15 +95,15 @@ function runOnDemandSingleEnvironment(
     outputPath: string,
     waitForBuildReady?: (cb: () => void) => boolean,
 ) {
+    let currentlyDisposing: Promise<unknown> | undefined;
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
     async function run(featureName: string, configName: string, runtimeArgs: string) {
-        if (openManagers.size > 0) {
-            const toDispose = [];
-            for (const { manager } of openManagers.values()) {
-                toDispose.push(manager.dispose());
-            }
-            await Promise.all(toDispose);
+        try {
+            await disposeOpenManagers();
+        } catch (e) {
             openManagers.clear();
+            currentlyDisposing = undefined;
+            console.warn('[Engine]: Error disposing open environments, disposing in background...', e);
         }
 
         const runOptions = new Map(runtimeOptions.entries());
@@ -124,58 +124,7 @@ function runOnDemandSingleEnvironment(
                 routeMiddlewares: [
                     {
                         path: '*',
-                        handlers: (_req, res, next) => {
-                            const building = waitForBuildReady?.(() => {
-                                res.end('<script>location.reload()</script></html>');
-                            });
-                            if (building) {
-                                const engineImage = fs.readFileSync(
-                                    join(__dirname, 'dashboard', 'engine.jpeg'),
-                                    'base64',
-                                );
-                                res.write(
-                                    `<!DOCTYPE html>
-                                    <html>
-                                    <head>
-                                      <meta charset="utf-8">
-                                      <meta name="viewport" content="width=device-width">
-                                      <title>Fast Refresh</title>
-                                      <style>
-                                    html {
-                                        background: url('data:image/jpeg;base64,${engineImage}');
-                                        background-size: cover;
-                                        background-position: center;
-                                        background-repeat: no-repeat;
-                                        height: 100%;
-                                        padding: 0;
-                                        margin: 0;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center; 
-                                      }
-                                      body {
-                                        height: 100%;
-                                        width: 100%;
-                                        margin: 0;
-                                      }
-                                      h1 {
-                                        text-align: center; 
-                                        color: white;
-                                        font-size: 16vw;
-                                        background: radial-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.9));
-                                        width: 100%;
-                                        display: block;
-                                      }
-                                    </style>
-                                    </head>
-                                    <body>
-                                    <h1>Building...</h1>
-                                    </body>`,
-                                );
-                            } else {
-                                next();
-                            }
-                        },
+                        handlers: blockDuringBuild(waitForBuildReady),
                     },
                 ],
             },
@@ -183,6 +132,21 @@ function runOnDemandSingleEnvironment(
         openManagers.set(`${featureName}(+)${configName}(+)${runtimeArgs}`, runningNodeManager);
         return runningNodeManager.port;
     }
+
+    async function disposeOpenManagers() {
+        await currentlyDisposing;
+        if (openManagers.size > 0) {
+            const toDispose = [];
+            for (const { manager } of openManagers.values()) {
+                toDispose.push(manager.dispose());
+            }
+            currentlyDisposing = Promise.all(toDispose);
+            await currentlyDisposing;
+            openManagers.clear();
+            currentlyDisposing = undefined;
+        }
+    }
+
     function middleware(req: express.Request, res: express.Response) {
         let message = `running on demand feature: "${req.body.featureName}" config: "${req.body.configName}"`;
         if (req.body.runtimeArgs) {
@@ -221,4 +185,55 @@ function runOnDemandSingleEnvironment(
         return `http://localhost:${port}/main.html?feature=${encodeURIComponent(featureName)}&config=${encodeURIComponent(configName)}`;
     }
     return { middleware, run, listOpenManagers };
+}
+
+function blockDuringBuild(waitForBuildReady: ((cb: () => void) => boolean) | undefined) {
+    return (_req: express.Request, res: express.Response, next: express.NextFunction) => {
+        const building = waitForBuildReady?.(() => {
+            res.end('<script>location.reload()</script></html>');
+        });
+        if (building) {
+            const engineImage = fs.readFileSync(join(__dirname, 'dashboard', 'engine.jpeg'), 'base64');
+            res.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width">
+                    <title>Fast Refresh</title>
+                    <style>
+                        html {
+                            background: url('data:image/jpeg;base64,${engineImage}');
+                            background-size: cover;
+                            background-position: center;
+                            background-repeat: no-repeat;
+                            height: 100%;
+                            padding: 0;
+                            margin: 0;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center; 
+                        }
+                        body {
+                            height: 100%;
+                            width: 100%;
+                            margin: 0;
+                        }
+                        h1 {
+                            text-align: center; 
+                            color: white;
+                            font-size: 16vw;
+                            background: radial-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.9));
+                            width: 100%;
+                            display: block;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Building...</h1>
+                </body>`);
+        } else {
+            next();
+        }
+    };
 }
