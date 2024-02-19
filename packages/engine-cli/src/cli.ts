@@ -18,6 +18,9 @@ async function engine() {
     const publicPath = strParam(args.get('publicPath')) ?? '';
     const engineConfigFilePath = strParam(args.get('engineConfigFilePath'));
     const publicConfigsRoute = strParam(args.get('publicConfigsRoute')) ?? 'configs';
+    const configLoadingMode =
+        enumParam<'fresh' | 'watch' | 'require'>(args.get('configLoadingMode'), ['fresh', 'watch', 'require']) ??
+        (watch ? 'watch' : 'require');
 
     if (help) {
         console.log(engine.toString());
@@ -42,14 +45,23 @@ async function engine() {
         run,
         writeMetadataFiles,
         publicConfigsRoute,
+        configLoadingMode,
     });
 }
 
-function strParam(param?: string | boolean | undefined) {
+function strParam(param: string | boolean | undefined) {
     return param !== undefined ? String(param) : undefined;
 }
 
-function boolParam(param?: string | boolean | undefined) {
+function enumParam<T>(param: string | boolean | undefined, options: string[]): T | undefined {
+    const sParam = param !== undefined ? (String(param) as T) : undefined;
+    if (typeof sParam === 'string' && !options.includes(sParam)) {
+        throw new Error(`Invalid option: ${sParam}. Options are: ${options.join(', ')}`);
+    }
+    return sParam;
+}
+
+function boolParam(param: string | boolean | undefined) {
     if (param === undefined || typeof param === 'boolean') {
         return param;
     }

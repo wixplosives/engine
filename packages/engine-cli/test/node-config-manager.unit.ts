@@ -10,7 +10,7 @@ describe('NodeConfigManager', function () {
     const write = (path: string, content: string) => writeFileSync(join(tmp.path, path), content);
     beforeEach(() => {
         tmp = createTempDirectorySync();
-        cm = new NodeConfigManager({ absWorkingDir: tmp.path });
+        cm = new NodeConfigManager('watch', { absWorkingDir: tmp.path });
     });
     afterEach(async () => {
         await cm.dispose();

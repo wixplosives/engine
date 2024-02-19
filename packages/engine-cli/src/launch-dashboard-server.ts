@@ -6,8 +6,11 @@ import { json } from 'body-parser';
 import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server';
 import { join } from 'node:path';
 import { runLocalNodeManager } from './run-local-mode-manager';
+import { NodeConfigManager } from './node-config-manager';
 
-export async function launchDevServer(
+export type ConfigLoadingMode = 'fresh' | 'watch' | 'require';
+
+export async function launchDashboardServer(
     serveStatic: StaticConfig[],
     httpServerPort: number,
     socketServerOptions: LaunchOptions['socketServerOptions'],
@@ -15,6 +18,7 @@ export async function launchDevServer(
     configMapping: ConfigurationEnvironmentMapping,
     runtimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string,
+    configLoadingMode: ConfigLoadingMode,
     analyzeForBuild: () => Promise<unknown>,
     waitForBuildReady?: (cb: () => void) => boolean,
 ) {
@@ -28,6 +32,7 @@ export async function launchDevServer(
         featureEnvironmentsMapping,
         configMapping,
         outputPath,
+        configLoadingMode,
         waitForBuildReady,
     );
     const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
@@ -93,10 +98,16 @@ function runOnDemandSingleEnvironment(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
     outputPath: string,
+    configLoadingMode: 'fresh' | 'watch' | 'require',
     waitForBuildReady?: (cb: () => void) => boolean,
 ) {
     let currentlyDisposing: Promise<unknown> | undefined;
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
+    const configManager =
+        configLoadingMode === 'fresh' || configLoadingMode === 'watch'
+            ? new NodeConfigManager(configLoadingMode, {})
+            : undefined;
+
     async function run(featureName: string, configName: string, runtimeArgs: string) {
         try {
             await disposeOpenManagers();
@@ -119,7 +130,7 @@ function runOnDemandSingleEnvironment(
             configMapping,
             runOptions,
             outputPath,
-            true,
+            configManager,
             {
                 routeMiddlewares: [
                     {

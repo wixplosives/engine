@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import esbuild from 'esbuild';
 import { runInContext, createContext } from 'node:vm';
 import { deferred } from 'promise-assist';
+import { importFresh } from '@wixc3/engine-scripts';
 
 type BuildStats = {
     error: unknown;
@@ -11,12 +12,22 @@ type BuildStats = {
 };
 
 export class NodeConfigManager {
-    constructor(private config: esbuild.BuildOptions) {}
+    constructor(
+        mode: 'watch' | 'fresh' = 'watch',
+        private config: esbuild.BuildOptions,
+    ) {
+        if (mode === 'watch') {
+            this.loadConfigs = (entryPoints: string[]) => this.watchConfigs(entryPoints);
+        } else {
+            this.loadConfigs = (entryPoints: string[]) => importFresh(entryPoints, 'default');
+        }
+    }
     runningBuilds = new Map<string, BuildStats>();
     hashConfig(entryPoints: string[]) {
         return crypto.createHash('sha256').update(entryPoints.join(',')).digest('hex');
     }
-    async loadConfigs(entryPoints: string[]) {
+    loadConfigs: (_entryPoints: string[]) => Promise<unknown[]>;
+    async watchConfigs(entryPoints: string[]) {
         const key = this.hashConfig(entryPoints);
         const currentBuild = this.runningBuilds.get(key);
         if (!currentBuild) {
