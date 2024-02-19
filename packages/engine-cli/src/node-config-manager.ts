@@ -1,9 +1,10 @@
 import crypto from 'node:crypto';
 import esbuild from 'esbuild';
 import { runInContext, createContext } from 'node:vm';
+import { deferred } from 'promise-assist';
 
 type BuildStats = {
-    error: Error | undefined;
+    error: unknown;
     currentValue: Promise<unknown[]> | unknown[];
     dispose(): Promise<void>;
     build?: ReturnType<typeof deferred<unknown[]>>;
@@ -13,7 +14,7 @@ export class NodeConfigManager {
     constructor(private config: esbuild.BuildOptions) {}
     runningBuilds = new Map<string, BuildStats>();
     hashConfig(entryPoints: string[]) {
-        return hash(entryPoints.join(','));
+        return crypto.createHash('sha256').update(entryPoints.join(',')).digest('hex');
     }
     async loadConfigs(entryPoints: string[]) {
         const key = this.hashConfig(entryPoints);
@@ -81,7 +82,7 @@ export class NodeConfigManager {
         hooks: {
             onStart(): void;
             onEnd(files: undefined[]): void;
-            onError(err: Error): void;
+            onError(err: unknown): void;
         },
     ) {
         const deferredStart = deferred<void>();
@@ -106,16 +107,27 @@ export class NodeConfigManager {
                         });
                         build.onEnd(({ outputFiles }) => {
                             if (!outputFiles || outputFiles.length === 0) {
-                                throw new Error('No output files');
+                                hooks.onError(new Error('No output files'));
+                                return;
                             }
-                            const text = outputFiles[0]!.text;
-                            const module = { exports: {} };
-                            hooks.onEnd(runInContext(text, createContext({ module, exports: module.exports })).default);
+                            try {
+                                const text = outputFiles[0]!.text;
+                                const module = { exports: {} };
+                                const entryExports = runInContext(
+                                    text,
+                                    createContext({ module, exports: module.exports }),
+                                ).default;
+                                hooks.onEnd(entryExports);
+                            } catch (err) {
+                                hooks.onError(err);
+                                return;
+                            }
                         });
                     },
                 },
                 ...(this.config.plugins || []),
             ],
+            treeShaking: true,
             format: 'cjs',
             bundle: true,
             write: false,
@@ -124,17 +136,4 @@ export class NodeConfigManager {
         await Promise.all([ctx.watch(), deferredStart.promise]);
         return ctx;
     }
-}
-function deferred<T>() {
-    let resolve!: (value: T) => void;
-    let reject!: (err: Error) => void;
-    const promise = new Promise<T>((res, rej) => {
-        resolve = res;
-        reject = rej;
-    });
-    return { promise, resolve, reject };
-}
-
-function hash(str: string) {
-    return crypto.createHash('sha256').update(str).digest('hex');
 }
