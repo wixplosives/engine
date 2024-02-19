@@ -10,8 +10,8 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
  * @param exportSymbolName - name of the exported symbol to get the value of. defaults to `"default"`.
  * @returns A Promise that resolves to the exports of the imported module.
  */
-export async function importFresh(filePath: string[], exportSymbolName: string): Promise<unknown[]>;
-export async function importFresh(filePath: string, exportSymbolName: string): Promise<unknown>;
+export async function importFresh(filePath: string[], exportSymbolName?: string): Promise<unknown[]>;
+export async function importFresh(filePath: string, exportSymbolName?: string): Promise<unknown>;
 export async function importFresh(filePath: string | string[], exportSymbolName = 'default'): Promise<unknown> {
     const worker = new Worker(__filename, {
         workerData: { filePath, exportSymbolName } satisfies ImportFreshWorkerData,
