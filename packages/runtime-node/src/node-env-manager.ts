@@ -5,15 +5,16 @@ import {
     MultiCounter,
     parseInjectRuntimeConfigConfig,
 } from '@wixc3/engine-core';
-import { IDisposable, SafeDisposable, SetMultiMap } from '@wixc3/patterns';
+import { IDisposable, SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { WsServerHost } from './core-node/ws-node-host';
 import { resolveEnvironments } from './environments';
 import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server';
-import { IStaticFeatureDefinition, PerformanceMetrics } from './types';
+import type { IStaticFeatureDefinition, PerformanceMetrics } from './types';
 import { runWorker } from './worker-thread-initializer2';
-import { bindMetricsListener, getMetricsFromWorker } from './metrics-utils';
+import { getMetricsFromWorker, bindMetricsListener } from './metrics-utils';
+import { rpcCall } from './micro-rpc';
 
 export type ConfigFilePath = string;
 
@@ -31,9 +32,14 @@ export interface RunningNodeEnvironment {
 }
 
 export class NodeEnvManager implements IDisposable {
-    disposables = new SafeDisposable(NodeEnvManager.name);
-    dispose = this.disposables.dispose;
-    isDisposed = this.disposables.isDisposed;
+    private disposables = new Set<() => Promise<void>>();
+    isDisposed = () => false;
+    dispose = async () => {
+        this.isDisposed = () => true;
+        for (const disposable of this.disposables) {
+            await disposable();
+        }
+    };
     envInstanceIdCounter = new MultiCounter();
     id = 'node-environment-manager';
     openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
@@ -41,16 +47,19 @@ export class NodeEnvManager implements IDisposable {
         private importMeta: { url: string },
         private featureEnvironmentsMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
-        private loadModule: (modulePath: string) => Promise<unknown> = async (modulePath) =>
-            (await require(modulePath)).default,
-    ) {
-        this.disposables.add('open environments', () =>
-            Promise.all([...this.openEnvironments.values()].map((env) => env.dispose())),
-        );
-    }
+        private loadModules: (modulePaths: string[]) => Promise<unknown> = async (modulePaths) => {
+            const load = [];
+            for (const modulePath of modulePaths) {
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                load.push(require(modulePath));
+            }
+            const res = await Promise.all(load);
+            return res.map((m) => m.default ?? m);
+        },
+    ) {}
     public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
-        const disposeListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
+        const disposeMetricsListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
         const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
 
@@ -86,12 +95,20 @@ export class NodeEnvManager implements IDisposable {
 
         const host = new WsServerHost(socketServer);
 
-        this.disposables.add('auto launch', async () => {
-            await host.dispose();
-            disposeListener();
-            await close();
-        });
         await this.runFeatureEnvironments(verbose, runtimeOptions, host);
+
+        const disposeAutoLaunch = async () => {
+            disposeMetricsListener();
+            await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
+            await host.dispose();
+            await close();
+        };
+
+        if (this.isDisposed()) {
+            await disposeAutoLaunch();
+        } else {
+            this.disposables.add(disposeAutoLaunch);
+        }
 
         if (process.send) {
             process.send({ port });
@@ -134,22 +151,15 @@ export class NodeEnvManager implements IDisposable {
         }
         const { common, byEnv } = mappingEntry;
         const configFiles = [...common, ...(byEnv[envName] ?? [])];
-        const loadedConfigs = await Promise.all(
-            configFiles.map(async (filePath) => {
-                try {
-                    // TODO: make it work in esm via injection
-                    const configModule = (await this.loadModule(filePath)) as ConfigModule;
-                    if (verbose) {
-                        console.log(`[ENGINE]: loaded config file ${filePath} for env ${envName} successfully`);
-                    }
-                    return configModule.default ?? configModule;
-                } catch (e) {
-                    throw new Error(`Failed evaluating config file: ${filePath}`, { cause: e });
-                }
-            }),
-        );
 
-        return loadedConfigs;
+        try {
+            if (verbose) {
+                console.log(`[ENGINE]: loading config file for env ${envName} ${configFiles}`);
+            }
+            return (await this.loadModules(configFiles)) as ConfigModule[];
+        } catch (e) {
+            throw new Error(`Failed evaluating config file: ${configFiles}`, { cause: e });
+        }
     }
 
     private createEnvironmentFileUrl(envName: string) {
@@ -210,6 +220,11 @@ function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorke
                 worker.removeEventListener('message', handleWorkerMessage);
                 worker.removeEventListener('error', handleInitializeError);
                 host.removeEventListener('message', handleClientMessage);
+                try {
+                    await rpcCall(worker, 'terminate', 15000);
+                } catch (e) {
+                    console.error(`failed terminating environment gracefully ${envName}, terminating worker.`, e);
+                }
                 await worker.terminate();
             },
             getMetrics: async () => {

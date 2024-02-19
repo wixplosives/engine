@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { safeListeningHttpServer } from 'create-listening-server';
 import * as io from 'socket.io';
-import type { Socket } from 'net';
 
 export const DEFAULT_PORT = 3000;
 
@@ -49,20 +48,12 @@ export async function launchEngineHttpServer({
 
     app.use('/favicon.ico', noContentHandler);
 
-    const openSockets = new Set<Socket>();
-    httpServer.on('connection', (socket) => {
-        openSockets.add(socket);
-        socket.once('close', () => openSockets.delete(socket));
-    });
     const socketServer = new io.Server(httpServer, { cors: {}, ...socketServerOptions, transports: ['websocket'] });
 
     return {
         close: async () => {
             await new Promise<void>((res, rej) => {
-                for (const connection of openSockets) {
-                    connection.destroy();
-                }
-                openSockets.clear();
+                httpServer.closeAllConnections();
                 socketServer.close((e) => (e ? rej(e) : res()));
             });
         },
