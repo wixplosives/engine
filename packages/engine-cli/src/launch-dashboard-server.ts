@@ -22,6 +22,8 @@ export async function launchDashboardServer(
     configLoadingMode: ConfigLoadingMode,
     analyzeForBuild: () => Promise<unknown>,
     waitForBuildReady?: (cb: () => void) => boolean,
+    buildConditions?: string[],
+    extensions?: string[],
 ) {
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
         path: route,
@@ -36,6 +38,8 @@ export async function launchDashboardServer(
         outputPath,
         configLoadingMode,
         waitForBuildReady,
+        buildConditions,
+        extensions,
     );
     const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
     if (autoRunFeatureName) {
@@ -103,12 +107,18 @@ function runOnDemandSingleEnvironment(
     outputPath: string,
     configLoadingMode: 'fresh' | 'watch' | 'require',
     waitForBuildReady?: (cb: () => void) => boolean,
+    buildConditions?: string[],
+    extensions?: string[],
 ) {
     let currentlyDisposing: Promise<unknown> | undefined;
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
     const configManager =
         configLoadingMode === 'fresh' || configLoadingMode === 'watch'
-            ? new NodeConfigManager(configLoadingMode, { absWorkingDir: rootDir })
+            ? new NodeConfigManager(configLoadingMode, {
+                  absWorkingDir: rootDir,
+                  conditions: buildConditions,
+                  resolveExtensions: extensions,
+              })
             : undefined;
 
     async function run(featureName: string, configName: string, runtimeArgs: string) {

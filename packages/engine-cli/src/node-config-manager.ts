@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import esbuild from 'esbuild';
-import { runInContext, createContext } from 'node:vm';
+import { createRequire } from 'node:module';
 import { deferred } from 'promise-assist';
 import { importFresh } from '@wixc3/engine-scripts';
 
@@ -98,6 +98,7 @@ export class NodeConfigManager {
         },
     ) {
         const deferredStart = deferred<void>();
+        const absWorkingDir = this.config.absWorkingDir || process.cwd();
         const ctx = await esbuild.context({
             ...this.config,
             stdin: {
@@ -107,7 +108,7 @@ export class NodeConfigManager {
                 `,
                 loader: 'js',
                 sourcefile: 'generated-configs-entry.js',
-                resolveDir: this.config.absWorkingDir,
+                resolveDir: absWorkingDir,
             },
             plugins: [
                 {
@@ -124,12 +125,17 @@ export class NodeConfigManager {
                             }
                             try {
                                 const text = outputFiles[0]!.text;
-                                const module = { exports: {} };
-                                const entryExports = runInContext(
-                                    text,
-                                    createContext({ module, exports: module.exports }),
-                                ).default;
-                                hooks.onEnd(entryExports);
+                                const module = { exports: { default: undefined as any } };
+                                // eslint-disable-next-line @typescript-eslint/no-implied-eval
+                                new Function('module', 'exports', 'require', text)(
+                                    module,
+                                    module.exports,
+                                    createRequire(absWorkingDir),
+                                );
+                                if (!Array.isArray(module.exports.default)) {
+                                    throw new Error('Expected default export to be an array');
+                                }
+                                hooks.onEnd(module.exports.default as unknown[]);
                             } catch (err) {
                                 hooks.onError(err);
                                 return;
@@ -139,6 +145,7 @@ export class NodeConfigManager {
                 },
                 ...(this.config.plugins || []),
             ],
+            platform: 'node',
             treeShaking: true,
             format: 'cjs',
             bundle: true,

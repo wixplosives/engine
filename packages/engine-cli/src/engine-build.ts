@@ -192,6 +192,8 @@ export async function runEngine({
             configLoadingMode,
             _analyzeForBuild,
             _waitForBuildReady,
+            buildConditions,
+            extensions,
         );
         if (watch) {
             writeWatchSignal(outputPath, { isAliveUrl: `http://localhost:${devServer.port}/is_alive` });
