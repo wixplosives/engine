@@ -33,7 +33,8 @@ export class NodeConfigManager {
         if (!currentBuild) {
             const buildStats: BuildStats = {
                 error: undefined,
-                currentValue: Promise.reject(new Error('No build')),
+                // this is cannot be undefined after build
+                currentValue: undefined as any,
                 build: undefined,
                 dispose() {
                     return ctx.dispose();
@@ -92,7 +93,7 @@ export class NodeConfigManager {
         entryPoints: string[],
         hooks: {
             onStart(): void;
-            onEnd(files: undefined[]): void;
+            onEnd(files: unknown[]): void;
             onError(err: unknown): void;
         },
     ) {
@@ -101,7 +102,7 @@ export class NodeConfigManager {
             ...this.config,
             stdin: {
                 contents: `
-                    ${entryPoints.map((entry, i) => `import config_${i} from '${entry}';`).join('\n')}
+                    ${entryPoints.map((entry, i) => `import config_${i} from ${JSON.stringify(entry)};`).join('\n')}
                     export default [${entryPoints.map((_, i) => `config_${i}`).join(',')}];
                 `,
                 loader: 'js',

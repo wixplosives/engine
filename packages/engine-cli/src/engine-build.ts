@@ -181,6 +181,7 @@ export async function runEngine({
         }
 
         devServer = await launchDashboardServer(
+            rootDir,
             serveStatic,
             httpServerPort,
             socketServerOptions,

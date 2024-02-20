@@ -11,6 +11,7 @@ import { NodeConfigManager } from './node-config-manager';
 export type ConfigLoadingMode = 'fresh' | 'watch' | 'require';
 
 export async function launchDashboardServer(
+    rootDir: string,
     serveStatic: StaticConfig[],
     httpServerPort: number,
     socketServerOptions: LaunchOptions['socketServerOptions'],
@@ -28,6 +29,7 @@ export async function launchDashboardServer(
     }));
 
     const { middleware, run, listOpenManagers } = runOnDemandSingleEnvironment(
+        rootDir,
         runtimeOptions,
         featureEnvironmentsMapping,
         configMapping,
@@ -94,6 +96,7 @@ export async function launchDashboardServer(
     });
 }
 function runOnDemandSingleEnvironment(
+    rootDir: string,
     runtimeOptions: Map<string, string | boolean | undefined>,
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
@@ -105,7 +108,7 @@ function runOnDemandSingleEnvironment(
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
     const configManager =
         configLoadingMode === 'fresh' || configLoadingMode === 'watch'
-            ? new NodeConfigManager(configLoadingMode, {})
+            ? new NodeConfigManager(configLoadingMode, { absWorkingDir: rootDir })
             : undefined;
 
     async function run(featureName: string, configName: string, runtimeArgs: string) {
