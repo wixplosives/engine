@@ -132,7 +132,7 @@ export async function runEngine({
             if (verbose) {
                 console.log('Waiting for web build end.');
             }
-            await waitForBuildEnd();
+            await Promise.allSettled([waitForBuildEnd()]);
         }
 
         if (buildTargets === 'node' || buildTargets === 'both') {
@@ -146,7 +146,7 @@ export async function runEngine({
             if (verbose) {
                 console.log('Waiting for node build end.');
             }
-            await waitForBuildEnd();
+            await Promise.allSettled([waitForBuildEnd()]);
         }
     } else if (build) {
         const start = performance.now();
