@@ -2,8 +2,8 @@
 
 Any engine application consists of two things.
 
-- [environment](environment/index.md)
-- [feature](feature/index.md)
+- [environment](environment)
+- [feature](feature)
 
 The `RuntimeEngine` entity is the engine instance running all the features in every environment of the application.
 
