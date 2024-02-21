@@ -4,23 +4,23 @@ import {
     ILaunchHttpServerOptions,
     NodeEnvManager,
 } from '@wixc3/engine-runtime-node';
-import { importFresh } from '@wixc3/engine-scripts';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { NodeConfigManager } from './node-config-manager';
 
 export async function runLocalNodeManager(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
-    freshConfigLoading = false,
+    configManager?: NodeConfigManager | undefined,
     serverOptions?: ILaunchHttpServerOptions,
 ) {
     const manager = new NodeEnvManager(
         { url: pathToFileURL(join(outputPath, 'node/')).href },
         featureEnvironmentsMapping,
         configMapping,
-        freshConfigLoading ? importFresh : undefined,
+        configManager?.loadConfigs,
     );
     const { port } = await manager.autoLaunch(execRuntimeOptions, serverOptions);
     return { port, manager };

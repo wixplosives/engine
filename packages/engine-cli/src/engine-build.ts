@@ -8,7 +8,7 @@ import { parseArgs } from 'node:util';
 import { TopLevelConfig } from '@wixc3/engine-core';
 import { writeWatchSignal } from './watch-signal';
 import { resolveBuildEntryPoints } from './resolve-build-configurations';
-import { launchDevServer } from './launch-dashboard-server';
+import { ConfigLoadingMode, launchDashboardServer } from './launch-dashboard-server';
 import { createBuildConfiguration } from './create-environments-build-configuration';
 import { readEntryPoints, readMetadataFiles, writeEntryPoints, writeMetaFiles } from './metadata-files';
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
@@ -34,11 +34,12 @@ export async function runEngine({
     runtimeArgs = {} as Record<string, string | boolean>,
     writeMetadataFiles = !watch as boolean,
     publicConfigsRoute = 'configs',
+    configLoadingMode = 'require' as ConfigLoadingMode,
 } = {}) {
     const mode: '' | 'development' | 'production' = dev ? 'development' : 'production';
     let esbuildContextWeb: esbuild.BuildContext | undefined;
     let esbuildContextNode: esbuild.BuildContext | undefined;
-    let devServer: Awaited<ReturnType<typeof launchDevServer>> | undefined;
+    let devServer: Awaited<ReturnType<typeof launchDashboardServer>> | undefined;
     let featureEnvironmentsMapping: FeatureEnvironmentMapping;
     let configMapping: ConfigurationEnvironmentMapping;
     let entryPoints: EntryPoints;
@@ -179,7 +180,8 @@ export async function runEngine({
             console.log(`Runtime options: ${JSON.stringify(Object.fromEntries(runtimeOptions.entries()), null, 2)}`);
         }
 
-        devServer = await launchDevServer(
+        devServer = await launchDashboardServer(
+            rootDir,
             serveStatic,
             httpServerPort,
             socketServerOptions,
@@ -187,8 +189,11 @@ export async function runEngine({
             configMapping,
             runtimeOptions,
             outputPath,
+            configLoadingMode,
             _analyzeForBuild,
             _waitForBuildReady,
+            buildConditions,
+            extensions,
         );
         if (watch) {
             writeWatchSignal(outputPath, { isAliveUrl: `http://localhost:${devServer.port}/is_alive` });

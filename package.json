@@ -55,6 +55,7 @@
     "@wixc3/wait-for-call": "^16.2.0",
     "chai": "^4.4.1",
     "chai-as-promised": "^7.1.1",
+    "create-temp-directory": "^2.4.0",
     "electron": "^28.2.3",
     "electron-builder": "^24.12.0",
     "esbuild": "^0.20.1",

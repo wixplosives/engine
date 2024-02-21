@@ -47,15 +47,7 @@ export class NodeEnvManager implements IDisposable {
         private importMeta: { url: string },
         private featureEnvironmentsMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
-        private loadModules: (modulePaths: string[]) => Promise<unknown> = async (modulePaths) => {
-            const load = [];
-            for (const modulePath of modulePaths) {
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
-                load.push(require(modulePath));
-            }
-            const res = await Promise.all(load);
-            return res.map((m) => m.default ?? m);
-        },
+        private loadModules: (modulePaths: string[]) => Promise<unknown> = requireModules,
     ) {}
     public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
@@ -209,6 +201,16 @@ export class NodeEnvManager implements IDisposable {
         }
         return metrics;
     }
+}
+
+async function requireModules(modulePaths: string[]) {
+    const load = [];
+    for (const modulePath of modulePaths) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        load.push(require(modulePath));
+    }
+    const res = await Promise.all(load);
+    return res.map((m) => m.default ?? m);
 }
 
 function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorker>, host: WsServerHost) {
