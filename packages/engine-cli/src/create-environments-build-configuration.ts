@@ -49,7 +49,6 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
         metafile: true,
         sourcemap: true,
         keepNames: true,
-        treeShaking: true,
         conditions: buildConditions,
         resolveExtensions: extensions,
         outExtension: { '.js': jsOutExtension },
