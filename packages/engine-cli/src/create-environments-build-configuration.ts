@@ -40,7 +40,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
     const commonConfig = {
         target: 'es2020',
         bundle: true,
-        format: 'esm',
+        format: 'iife',
         publicPath,
         metafile: true,
         sourcemap: true,
