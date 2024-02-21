@@ -40,11 +40,16 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
     const commonConfig = {
         target: 'es2020',
         bundle: true,
+        /*
+            using iife here because esm makes debugging very slow to pickup variables in scope.
+            if one want to change this to esm, make sure that some bundle splitting is happening.
+        */
         format: 'iife',
         publicPath,
         metafile: true,
         sourcemap: true,
         keepNames: true,
+        treeShaking: true,
         conditions: buildConditions,
         resolveExtensions: extensions,
         outExtension: { '.js': jsOutExtension },
