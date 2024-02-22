@@ -13,7 +13,7 @@ launched at runtime, these setups will happen.
 
 Creating a new environment is as simple as
 
-```ts title=my-environment.ts
+```ts title="my-feature.feature.ts"
 const myEnvironment = new Environment('my-environment', 'node', 'single');
 ```
 
@@ -64,19 +64,20 @@ At that point, features will be able to set themselves up in that new environmen
 Once an environment is declared, any feature in the application can set itself up in the environment by calling
 the `.setup` method on the feature instance, and providing a setup handler.
 
-```ts title=feature1.feature.ts
+```ts title="feature1.feature.ts"
+
 export default class Feature1 extends Feature<'feature1'> {
-    id: 'feature1' as const;
-    api: {};
+  id = 'feature1' as const;
+  api = {};
 }
 ```
 
-```ts title=feature1.my-environment.ts
-import {myEnvironment} from './my-environment.ts'
-import Feature1 from './feature1.feature.ts'
+```ts title="feature1.my-environment.ts"
+import { myEnvironment } from './my-environment.ts';
+import Feature1 from './feature1.feature.ts';
 
 Feature1.setup(myEnvironment, () => {
-    console.log(`I am running in ${myEnvironment.env}`);
+  console.log(`I am running in ${myEnvironment.env}`);
 });
 ```
 
@@ -89,68 +90,68 @@ which will be available/exported from that environment.
 
 For example, the following feature declaration
 
-```ts title=feature1.feature.ts
+```ts title="feature1.feature.ts"
 type SlotType = string;
 
 type ServiceType = {
-    echo(): string;
+  echo(): string;
 }
 
 export default class Feature1 extends Feature<'feature1'> {
-    id: 'feature1' as const;
-    api: {
-        valueSlot: Slot.withType<SlotType>().defineEntity(myEnvironment),
-        echoService: Service.withType<ServiceType>().defineEntity(myEnvironment),
-    };
+  id = 'feature1' as const;
+  api = {
+    valueSlot: Slot.withType<SlotType>().defineEntity(myEnvironment),
+    echoService: Service.withType<ServiceType>().defineEntity(myEnvironment)
+  };
 }
 ```
 
 May be setup as such in the `myEnvironment` environment
 
-```ts title=feature1.my-environment.ts
+```ts title="feature1.my-environment.ts"
 import Feature1 from './feature1.feature.ts'
 
-Feature1.setup(myEnv, ({valueSlot, run}) => {
-    valueSlot.register('Hello world');
+Feature1.setup(myEnv, ({ valueSlot, run }) => {
+  valueSlot.register('Hello world');
 
-    return {
-        echoService: {
-            echo() {
-                return [...valueSlot].join('\n');
-            },
-        },
-    };
+  return {
+    echoService: {
+      echo() {
+        return [...valueSlot].join('\n');
+      },
+    },
+  };
 });
 ```
 
 Now, if a new feature `Feature2` declares a dependency on `Feature1`, it can set itself up in `myEnvironment`
 environment and use the APIs exposed from `Feature1`.
 
-```ts title=feature2.feature.ts
-import {Feature1} from "./feature1.feature.ts"
+```ts title="feature2.feature.ts"
+import { Feature1 } from './feature1.feature.ts';
 
 export default class Feature2 extends Feature<'feature2'> {
-    id: 'feature2' as const;
-    api: {};
-    // highlight-next-line
-    dependencies: [Feature1];
+  id = 'feature2' as const;
+  api = {};
+  // highlight-next-line
+  dependencies = [Feature1];
 }
 ```
 
-```ts title=feature2.my-environment.ts
+```ts title="feature2.my-environment.ts"
 import Feature2 from './feature2.feature.ts'
 
 // highlight-next-line
-Feature2.setup(myEnvironment, ({run}, {feature1: {echoService, valueSlot}}) => {
-    // highlight-next-line
-    valueSlot.register('Hello from Feature2');
+Feature2.setup(myEnvironment, ({ run }, { feature1: { echoService, valueSlot } }) => {
+  // highlight-next-line
+  valueSlot.register('Hello from Feature2');
 
-    run(() => {
-        // highlight-next-line
-        const echoeServiceOutput = echoService.echo();
-         
-        console.log(echoeServiceOutput);
-    });
+  run(() => {
+    // highlight-next-line
+    const echoeServiceOutput = echoService.echo();
+
+    console.log(echoeServiceOutput);
+  });
 });
 ```
 
@@ -169,7 +170,7 @@ For cross-environment communication and further reading, go to the [communicatio
 But, for example, a file-server feature which should provide Node `readDir` and `readFile` can run on two (or more)
 different environments: `node` or `window`, Then we will define them as follows:
 
-```typescript
+```ts
 /**
  * defining that this feature uses 2 environments - 'main' (browser) and LiveServer environment with the semantic name 'server'
  */
@@ -180,6 +181,6 @@ export const server = new Environment('server', 'node', 'single');
 If the feature API requires a specific entity which natively provides this functionality, we will use
 the `.defineEntity(<entity_name>)`
 
-```typescript
+```ts
 Service.withType<FileSystemAPI>().defineEntity(server).allowRemoteAccess();
 ```

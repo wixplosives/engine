@@ -73,23 +73,20 @@ Api implements three types of interfaces:
 
 Service is a method within an API. When we need to declare API methods we will call the `Service.withType` static.
 
-```typescript
-const myFeature = new Feature({
-  id: 'myFeature',
-  api: {
-    echoService: Service.withType < echo()
-:
-string > ().defineEntity(env1)
-},
-// etc..
-})
+```ts my-feature.feature.ts
+export default class MyFeature extends Feature<'myFeature'> {
+  id = 'myFeature' as const;
+  api = {
+    echoService: Service.withType<() => string>().defineEntity(env1)
+  };
+}
 ```
 
 ## `Feature` instance
 
 ### setup(env, handler)
 
-This is the method of a feature to set itself up in an [environment](../environment/index.md)
+This is the method of a feature to set itself up in an [environment](../environment)
 
 #### arguments
 
@@ -103,7 +100,9 @@ This is the method of a feature to set itself up in an [environment](../environm
 The setup handler is a method being called with 3 arguments.
 
 ```ts
-myFeature.setup(myEnv, (settingUpFeature, dependencies, contexts) => { ... });
+myFeature.setup(myEnv, (settingUpFeature, dependencies, contexts) => {
+  // setup logic
+});
 ```
 
 - **_settingUpFeature_** - an object containing all the entities related to the feature:
