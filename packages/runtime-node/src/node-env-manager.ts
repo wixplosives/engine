@@ -222,10 +222,12 @@ function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorke
                 worker.removeEventListener('message', handleWorkerMessage);
                 worker.removeEventListener('error', handleInitializeError);
                 host.removeEventListener('message', handleClientMessage);
-                try {
-                    await rpcCall(worker, 'terminate', 15000);
-                } catch (e) {
-                    console.error(`failed terminating environment gracefully ${envName}, terminating worker.`, e);
+                if (process.env.NODE_ENV_MANAGER_GRACEFUL_TERMINATION !== 'false') {
+                    try {
+                        await rpcCall(worker, 'terminate', 15000);
+                    } catch (e) {
+                        console.error(`failed terminating environment gracefully ${envName}, terminating worker.`, e);
+                    }
                 }
                 await worker.terminate();
             },
