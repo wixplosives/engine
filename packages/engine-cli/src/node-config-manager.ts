@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import esbuild from 'esbuild';
-import { createRequire } from 'node:module';
+import { join } from 'node:path';
 import { deferred } from 'promise-assist';
 import { importFresh } from '@wixc3/engine-scripts';
 
@@ -127,10 +127,12 @@ export class NodeConfigManager {
                                 const text = outputFiles[0]!.text;
                                 const module = { exports: { default: undefined as any } };
                                 // eslint-disable-next-line @typescript-eslint/no-implied-eval
-                                new Function('module', 'exports', 'require', text)(
+                                new Function('module', 'exports', 'require', '__dirname', '__filename', text)(
                                     module,
                                     module.exports,
-                                    createRequire(absWorkingDir),
+                                    require,
+                                    absWorkingDir,
+                                    join(absWorkingDir, 'generated-configs-entry.js'),
                                 );
                                 if (!Array.isArray(module.exports.default)) {
                                     throw new Error('Expected default export to be an array');
