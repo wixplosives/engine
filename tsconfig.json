@@ -17,8 +17,6 @@
     { "path": "./packages/electron/src" },
     { "path": "./packages/electron-commons/src" },
     { "path": "./packages/electron-commons/test" },
-    { "path": "./packages/electron-node/src" },
-    { "path": "./packages/electron-scripts/src" },
     { "path": "./packages/electron-host/src" },
 
     { "path": "./packages/engineer/src" },
@@ -30,7 +28,6 @@
     { "path": "./packages/test-kit/src" },
     { "path": "./packages/test-kit/test" },
 
-    { "path": "./examples/electron-app/src" },
     { "path": "./examples/file-server/src" },
     { "path": "./examples/multi-env/src" },
     { "path": "./examples/cross-iframe/src" },
