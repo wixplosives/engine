@@ -8,6 +8,5 @@
     { "path": "../../runtime-node/src" },
     { "path": "../../electron/src" },
     { "path": "../../electron-commons/src" },
-    { "path": "../../electron-node/src" }
   ]
 }
