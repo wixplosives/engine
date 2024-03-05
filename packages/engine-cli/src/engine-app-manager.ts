@@ -1,5 +1,6 @@
 import { type IFeatureTarget } from '@wixc3/engine-scripts';
-import { loadEngineConfig, resolveRuntimeOptions, runEngine } from './engine-build';
+import { loadEngineConfig, runEngine } from './engine-build';
+import { resolveRuntimeOptions } from './resolve-runtime-options';
 import { runLocalNodeManager } from './run-local-mode-manager';
 import { readMetadataFiles } from './metadata-files';
 import isCI from 'is-ci';

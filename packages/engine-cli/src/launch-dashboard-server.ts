@@ -213,12 +213,13 @@ function runOnDemandSingleEnvironment(
 }
 
 function blockDuringBuild(waitForBuildReady: ((cb: () => void) => boolean) | undefined) {
+    let engineImage;
     return (_req: express.Request, res: express.Response, next: express.NextFunction) => {
         const building = waitForBuildReady?.(() => {
             res.end('<script>location.reload()</script></html>');
         });
         if (building) {
-            const engineImage = fs.readFileSync(join(__dirname, 'dashboard', 'engine.jpeg'), 'base64');
+            engineImage ??= fs.readFileSync(join(__dirname, 'dashboard', 'engine.jpeg'), 'base64');
             res.write(`
                 <!DOCTYPE html>
                 <html>
@@ -247,7 +248,7 @@ function blockDuringBuild(waitForBuildReady: ((cb: () => void) => boolean) | und
                         h1 {
                             text-align: center; 
                             color: white;
-                            font-size: 16vw;
+                            font-size: 14vw;
                             background: radial-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.9));
                             width: 100%;
                             display: block;
