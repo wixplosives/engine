@@ -48,7 +48,16 @@ export async function launchEngineHttpServer({
 
     app.use('/favicon.ico', noContentHandler);
 
-    const socketServer = new io.Server(httpServer, { cors: {}, ...socketServerOptions, transports: ['websocket'] });
+    const socketServer = new io.Server(httpServer, {
+        cors: {},
+        pingTimeout: 30 * 1000 * 60, // 30 minutes. our sockets does not run over network.
+        pingInterval: 10 * 1000 * 60, // 10 minutes. our sockets does not run over network.
+        httpCompression: false,
+        serveClient: false,
+        maxHttpBufferSize: 1e8, // 100 MB
+        ...socketServerOptions,
+        transports: ['websocket'],
+    });
 
     return {
         close: async () => {
