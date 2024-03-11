@@ -271,12 +271,12 @@
   dependencies:
     "@file-services/types" "^8.3.3"
 
-"@file-services/resolve@^8.3.3":
-  version "8.3.3"
-  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-8.3.3.tgz#cdbdfe71156b04c1fda8bf58474764dd5701cbb2"
-  integrity sha512-YgZBnfIsUYE1IqJdy5P2i0zWCzoemiZ2ZH9G4W8SfO1MIfTPD9pHaI3WnI8Xssf8dOTg+xD56DL4jef6aGlNuA==
+"@file-services/resolve@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@file-services/resolve/-/resolve-9.0.0.tgz#285a70cde2bcd935ee1a3cc6a4cf66ca49d621ab"
+  integrity sha512-ULPzbZHzdEUA9xawomdDOvOhEiGKdKxnCDnCthS3OSO3eYzenlG0Lqh+yMd3gXdrwGVtg5xgWsJzInkemtnaZw==
   dependencies:
-    type-fest "^4.6.0"
+    type-fest "^4.12.0"
 
 "@file-services/types@^8.3.3":
   version "8.3.3"
@@ -8256,7 +8256,7 @@ type-fest@^3.8.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.13.1.tgz#bb744c1f0678bea7543a2d1ec24e83e68e8c8706"
   integrity sha512-tLq3bSNx+xSpwvAJnzrK0Ep5CLNWjvFTOp71URMaAEWBfRb9nnJiBoUe0tF8bI4ZFO3omgBR6NvnbzVUT3Ly4g==
 
-type-fest@^4.0.0, type-fest@^4.12.0, type-fest@^4.6.0:
+type-fest@^4.0.0, type-fest@^4.12.0:
   version "4.12.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.12.0.tgz#00ae70d02161b81ecd095158143c4bb8c879760d"
   integrity sha512-5Y2/pp2wtJk8o08G0CMkuFPCO354FGwk/vbidxrdhRGZfd0tFnb4Qb8anp9XxXriwBgVPjdWbKpGl4J9lJY2jQ==

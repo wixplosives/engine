@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@file-services/node": "^8.3.3",
-    "@file-services/resolve": "^8.3.3",
+    "@file-services/resolve": "^9.0.0",
     "@wixc3/common": "^16.2.0",
     "@wixc3/engine-core": "^44.0.6",
     "@wixc3/engine-dashboard": "^44.0.6",
