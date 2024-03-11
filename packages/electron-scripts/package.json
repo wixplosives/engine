@@ -15,7 +15,7 @@
     "electron-builder": ">=23"
   },
   "dependencies": {
-    "@file-services/node": "^8.3.3",
+    "@file-services/node": "^9.0.0",
     "@wixc3/common": "^16.2.0",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/engine-core": "^44.0.6",
