@@ -14,7 +14,7 @@
     "electron": ">=9"
   },
   "dependencies": {
-    "@file-services/node": "^8.3.3",
+    "@file-services/node": "^9.0.0",
     "@wixc3/engine-core": "^44.0.6",
     "@wixc3/engine-runtime-node": "^44.0.6",
     "@wixc3/resolve-directory-context": "^4.0.0",
