@@ -5,13 +5,13 @@ import esbuild from 'esbuild';
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { loadConfigFile } from './load-config-file';
 import { parseArgs } from 'node:util';
-import { TopLevelConfig } from '@wixc3/engine-core';
 import { writeWatchSignal } from './watch-signal';
 import { resolveBuildEntryPoints } from './resolve-build-configurations';
 import { ConfigLoadingMode, launchDashboardServer } from './launch-dashboard-server';
 import { createBuildConfiguration } from './create-environments-build-configuration';
 import { readEntryPoints, readMetadataFiles, writeEntryPoints, writeMetaFiles } from './metadata-files';
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
+import { resolveRuntimeOptions } from './resolve-runtime-options';
 
 export type RunEngineOptions = Parameters<typeof runEngine>[0];
 
@@ -44,7 +44,7 @@ export async function runEngine({
     let configMapping: ConfigurationEnvironmentMapping;
     let entryPoints: EntryPoints;
     let entryPointsPaths: EntryPointsPaths | undefined;
-    let _waitForBuildReady: ((cb: () => void) => boolean) | undefined;
+    let waitForWebRebuild: ((cb: () => void) => boolean) | undefined;
     rootDir = fs.resolve(rootDir);
     outputPath = fs.resolve(rootDir, outputPath);
 
@@ -71,26 +71,42 @@ export async function runEngine({
         await fs.promises.rm(outputPath, { recursive: true, force: true });
     }
 
-    const _analyzeForBuild = () =>
-        analyzeForBuild({
+    const analyze = async () => {
+        const { features, configurations } = await analyzeFeatures(
+            fs,
             rootDir,
             featureDiscoveryRoot,
             featureName,
             extensions,
             buildConditions,
+        );
+
+        const resolved = resolveBuildEntryPoints({
+            features,
+            configurations,
             mode,
             configName,
+            featureName,
             dev,
             publicPath,
             publicConfigsRoute,
             jsOutExtension,
             nodeFormat,
-            writeMetadataFiles,
-            outputPath,
         });
 
+        if (writeMetadataFiles) {
+            writeMetaFiles(outputPath, resolved.featureEnvironmentsMapping, resolved.configMapping);
+            const entryPointsPaths = writeEntryPoints(outputPath, resolved.entryPoints);
+            return {
+                ...resolved,
+                entryPointsPaths,
+            };
+        }
+        return resolved;
+    };
+
     if (!cachedMetadata || !cachedEntryPoints) {
-        const result = await _analyzeForBuild();
+        const result = await analyze();
         featureEnvironmentsMapping = result.featureEnvironmentsMapping;
         configMapping = result.configMapping;
         entryPoints = result.entryPoints;
@@ -125,10 +141,11 @@ export async function runEngine({
             if (verbose) {
                 console.log('Starting web compilation in watch mode');
             }
-            const { buildEndPlugin, waitForBuildEnd, waitForBuildReady } = createBuildEndPluginHook();
-            _waitForBuildReady = waitForBuildReady;
+            const { buildEndPlugin, waitForBuildEnd, waitForRebuild } = createBuildEndPluginHook();
+            waitForWebRebuild = waitForRebuild;
             buildConfigurations.webConfig.plugins.push(buildEndPlugin);
             esbuildContextWeb = await esbuild.context(buildConfigurations.webConfig);
+            // TODO: use our own watch system to avoid duplicate watchers
             await esbuildContextWeb.watch();
             if (verbose) {
                 console.log('Waiting for web build end.');
@@ -143,6 +160,7 @@ export async function runEngine({
             const { buildEndPlugin, waitForBuildEnd } = createBuildEndPluginHook();
             buildConfigurations.nodeConfig.plugins.push(buildEndPlugin);
             esbuildContextNode = await esbuild.context(buildConfigurations.nodeConfig);
+            // TODO: use our own watch system to avoid duplicate watchers
             await esbuildContextNode.watch();
             if (verbose) {
                 console.log('Waiting for node build end.');
@@ -190,8 +208,8 @@ export async function runEngine({
             runtimeOptions,
             outputPath,
             configLoadingMode,
-            _analyzeForBuild,
-            _waitForBuildReady,
+            analyze,
+            waitForWebRebuild,
             buildConditions,
             extensions,
         );
@@ -207,107 +225,6 @@ export async function runEngine({
         esbuildContextWeb,
         esbuildContextNode,
     };
-}
-
-export interface RunNodeManagerOptions {
-    outputPath: string;
-    featureName?: string;
-    configName?: string;
-    verbose?: boolean;
-    runtimeArgs?: Record<string, string | boolean>;
-    topLevelConfig?: TopLevelConfig;
-}
-
-async function analyzeForBuild({
-    rootDir,
-    featureDiscoveryRoot,
-    featureName,
-    extensions,
-    buildConditions,
-    mode,
-    configName,
-    dev,
-    publicPath,
-    publicConfigsRoute,
-    jsOutExtension,
-    nodeFormat,
-    writeMetadataFiles,
-    outputPath,
-}: {
-    rootDir: string;
-    featureDiscoveryRoot: string;
-    featureName: string | undefined;
-    extensions: string[] | undefined;
-    buildConditions: string[] | undefined;
-    mode: 'development' | 'production';
-    configName: string | undefined;
-    dev: boolean;
-    publicPath: string;
-    publicConfigsRoute: string;
-    jsOutExtension: '.js' | '.mjs';
-    nodeFormat: 'esm' | 'cjs';
-    writeMetadataFiles: boolean;
-    outputPath: string;
-}) {
-    const { features, configurations } = await analyzeFeatures(
-        fs,
-        rootDir,
-        featureDiscoveryRoot,
-        featureName,
-        extensions,
-        buildConditions,
-    );
-
-    const resolved = resolveBuildEntryPoints({
-        features,
-        configurations,
-        mode,
-        configName,
-        featureName,
-        dev,
-        publicPath,
-        publicConfigsRoute,
-        jsOutExtension,
-        nodeFormat,
-    });
-
-    if (writeMetadataFiles) {
-        writeMetaFiles(outputPath, resolved.featureEnvironmentsMapping, resolved.configMapping);
-        const entryPointsPaths = writeEntryPoints(outputPath, resolved.entryPoints);
-        return {
-            ...resolved,
-            entryPointsPaths,
-        };
-    }
-    return resolved;
-}
-
-export function resolveRuntimeOptions({
-    outputPath,
-    featureName,
-    configName,
-    verbose,
-    runtimeArgs,
-    topLevelConfig,
-}: RunNodeManagerOptions) {
-    const runtimeOptions = new Map<string, string | boolean | undefined>();
-    runtimeOptions.set('applicationPath', fs.join(outputPath, 'web'));
-    runtimeOptions.set('feature', featureName);
-    if (verbose) {
-        runtimeOptions.set('verbose', 'true');
-    }
-    if (configName) {
-        runtimeOptions.set('config', configName);
-    }
-    if (runtimeArgs) {
-        for (const [key, value] of Object.entries(runtimeArgs)) {
-            runtimeOptions.set(key, value);
-        }
-    }
-    if (topLevelConfig) {
-        runtimeOptions.set('topLevelConfig', JSON.stringify(topLevelConfig));
-    }
-    return runtimeOptions;
 }
 
 export async function loadEngineConfig(rootDir: string, engineConfigFilePath?: string) {
