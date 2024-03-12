@@ -25,6 +25,6 @@
     "access": "public"
   },
   "author": "Wix.com",
-  "repository": "https://github.com/wixplosives/engine/tree/master/packages/electron-scripts",
+  "repository": "https://github.com/wixplosives/engine/tree/master/packages/electron-host",
   "homepage": "https://github.com/wixplosives/engine"
 }
