@@ -1823,10 +1823,10 @@
     create-temp-directory "^2.4.0"
     promise-assist "^2.0.1"
 
-"@wixc3/testing@^16.3.0":
-  version "16.3.0"
-  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-16.3.0.tgz#34365825cb05e9d54c038af9b7762381c12fb65f"
-  integrity sha512-t4sjkgMYgrgfxDoJ0A26T+5jIhPOUoRtqemNuXTV8HaDQhPcpS6VwY6k8E3ARNui+aJjBY746BtjfJbOgzfrgQ==
+"@wixc3/testing@^16.4.0":
+  version "16.4.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/testing/-/testing-16.4.0.tgz#1f7da83a2639d5dbdd1f5dc3b60f585c1843dd93"
+  integrity sha512-lHNpILaI73gtC7+X7+PdRb7rmtZKDUzk6SN618CiJQInBXtIMeAB2Ys+PQZedTNCCGlbcYtJQ1Hr8zvqZpFVXQ==
   dependencies:
     "@wixc3/common" "^16.3.0"
     "@wixc3/patterns" "^16.3.0"
