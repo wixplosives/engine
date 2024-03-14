@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron-host",
-  "version": "44.1.0",
+  "version": "45.0.0",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@file-services/node": "^9.0.0",
-    "@wixc3/engine-core": "^44.1.0",
-    "@wixc3/engine-electron-commons": "^44.1.0",
-    "@wixc3/engine-runtime-node": "^44.1.0"
+    "@wixc3/engine-core": "^45.0.0",
+    "@wixc3/engine-electron-commons": "^45.0.0",
+    "@wixc3/engine-runtime-node": "^45.0.0"
   },
   "files": [
     "dist",
@@ -25,6 +25,6 @@
     "access": "public"
   },
   "author": "Wix.com",
-  "repository": "https://github.com/wixplosives/engine/tree/master/packages/electron-scripts",
+  "repository": "https://github.com/wixplosives/engine/tree/master/packages/electron-host",
   "homepage": "https://github.com/wixplosives/engine"
 }
