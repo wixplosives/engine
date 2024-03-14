@@ -1753,6 +1753,13 @@
   dependencies:
     promise-assist "^2.0.1"
 
+"@wixc3/common@^17.0.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-17.0.0.tgz#2d4683e1276cbc3b69c955e9efceda7790b1dd18"
+  integrity sha512-2uXQMlMywRznVQknSfvqo8bP3MeijlfbHDuU/w7qliGmBkAqDMgEuylRM66BmKhO8b6dxGss9qxlMzUuYF40SQ==
+  dependencies:
+    promise-assist "^2.0.1"
+
 "@wixc3/create-disposables@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
