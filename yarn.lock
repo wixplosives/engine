@@ -1753,6 +1753,13 @@
   dependencies:
     promise-assist "^2.0.1"
 
+"@wixc3/common@^17.0.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/common/-/common-17.0.0.tgz#2d4683e1276cbc3b69c955e9efceda7790b1dd18"
+  integrity sha512-2uXQMlMywRznVQknSfvqo8bP3MeijlfbHDuU/w7qliGmBkAqDMgEuylRM66BmKhO8b6dxGss9qxlMzUuYF40SQ==
+  dependencies:
+    promise-assist "^2.0.1"
+
 "@wixc3/create-disposables@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@wixc3/create-disposables/-/create-disposables-2.2.0.tgz#848b730751121ceceaab0ab0c28ebf550f1eb1ef"
@@ -1793,6 +1800,14 @@
   integrity sha512-Rd5758jn/TAUNbds8C6/DFckxcVFM0xrEFBZtexR33mjNTnxpY7q9jAiIhGc2kbOn5cPV/yJFF58jfXO6ZA/rg==
   dependencies:
     "@wixc3/common" "^16.3.0"
+    promise-assist "^2.0.1"
+
+"@wixc3/patterns@^17.0.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@wixc3/patterns/-/patterns-17.0.0.tgz#67e955cc0240a3847bc4c228a7860952a7e7bd17"
+  integrity sha512-/235SFIZvBa8+exRZSWhKD4mXWF29YoqSlmOQg0PZZNNtnX4MV41EuaObBG5h5KimMzCjt6omg+IuBcs1Wt2lw==
+  dependencies:
+    "@wixc3/common" "^17.0.0"
     promise-assist "^2.0.1"
 
 "@wixc3/resolve-directory-context@^3.0.5":
