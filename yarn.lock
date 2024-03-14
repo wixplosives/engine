@@ -1025,6 +1025,14 @@
     "@stylable/core" "^5.19.0"
     find-config "^1.0.0"
 
+"@stylable/build-tools@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/build-tools/-/build-tools-6.0.0.tgz#027d20017ba5b4219674d12168500be7ffcb9f9b"
+  integrity sha512-HUMchQkGm6PCICIQZem5AdtQ/DsHt4PQKCd+WWWJprKN7QXhohyNDRYNy+yN03G4kuHcoFNu0XmYtf9Ivcbd/g==
+  dependencies:
+    "@stylable/core" "^6.0.0"
+    find-config "^1.0.0"
+
 "@stylable/cli@^5.19.0":
   version "5.19.0"
   resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-5.19.0.tgz#0c22eb8885a30da271fd3142f5298ff30979ae81"
@@ -1045,12 +1053,43 @@
     mime "^3.0.0"
     yargs "^17.7.2"
 
+"@stylable/cli@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/cli/-/cli-6.0.0.tgz#39b62d0d2a0fa6fadb00d0488b3eec9a3877333a"
+  integrity sha512-4I+KfIW/Jqt8DWw+tVeUv329TfJPabGBW9adkaPmaMrJWwUV7gjzKb4r8BHrGT9zY8CsvQIVyZWWwb4HgMW4gQ==
+  dependencies:
+    "@file-services/node" "^9.0.0"
+    "@file-services/types" "^9.0.0"
+    "@stylable/build-tools" "^6.0.0"
+    "@stylable/code-formatter" "^6.0.0"
+    "@stylable/core" "^6.0.0"
+    "@stylable/module-utils" "^6.0.0"
+    "@stylable/node" "^6.0.0"
+    "@stylable/optimizer" "^6.0.0"
+    "@wixc3/resolve-directory-context" "^4.0.0"
+    decache "^4.6.2"
+    js-base64 "^3.7.7"
+    lodash.camelcase "^4.3.0"
+    lodash.upperfirst "^4.3.1"
+    mime "^3.0.0"
+    yargs "^17.7.2"
+
 "@stylable/code-formatter@^5.19.0":
   version "5.19.0"
   resolved "https://registry.yarnpkg.com/@stylable/code-formatter/-/code-formatter-5.19.0.tgz#6227f6f673ffb9a9d3418111906eef19420a2148"
   integrity sha512-auWEfzRfENVNvyWGbf124+CgqwCh/wu8k4KJRFgif6o+RiJaJFe12XN4SmAtY2CNtA3Mm0ynNs27NdLRFZNxpA==
   dependencies:
     "@stylable/core" "^5.19.0"
+    "@tokey/css-value-parser" "^0.1.4"
+    js-beautify "^1.15.1"
+    postcss "^8.4.35"
+
+"@stylable/code-formatter@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/code-formatter/-/code-formatter-6.0.0.tgz#a55c49a2720038f3a23dd34f0d88b97ba06f30d2"
+  integrity sha512-/v3GZhvsd+wIS3YfYb0Oh+rEcMUULsjN85ZC5pMkgn8YleCSOJlmRXzwGbTUS+UkVztKUeNy7lh/3Tq2t4Cgdw==
+  dependencies:
+    "@stylable/core" "^6.0.0"
     "@tokey/css-value-parser" "^0.1.4"
     js-beautify "^1.15.1"
     postcss "^8.4.35"
@@ -1076,12 +1115,41 @@
     postcss-safe-parser "^6.0.0"
     postcss-value-parser "^4.2.0"
 
+"@stylable/core@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/core/-/core-6.0.0.tgz#253c4a8c26885c9800fab9ecf7f0a99bd504c7c2"
+  integrity sha512-vC93i/ttZ1bnYbWVlR8AetCraXwZlYREKg2FooRWmfxVXbcz9z+bK1AtFpsRYTITr1fbQniGP/9OgIK0oPaBBA==
+  dependencies:
+    "@file-services/resolve" "^9.0.0"
+    "@tokey/css-selector-parser" "^0.6.2"
+    "@tokey/css-value-parser" "^0.1.4"
+    "@tokey/imports-parser" "^1.0.0"
+    css-selector-tokenizer "^0.8.0"
+    cssesc "^3.0.0"
+    is-vendor-prefixed "^4.0.0"
+    lodash.clonedeep "^4.5.0"
+    lodash.clonedeepwith "^4.5.0"
+    postcss "^8.4.35"
+    postcss-js "^4.0.1"
+    postcss-nested "^6.0.1"
+    postcss-safe-parser "^7.0.0"
+    postcss-value-parser "^4.2.0"
+
 "@stylable/module-utils@^5.19.0":
   version "5.19.0"
   resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-5.19.0.tgz#3c1c4a79c94a8cdd5ba21fcf86870f0f9db513b5"
   integrity sha512-1JVZM/5qT6OLLiLD8PHLmiuephYj8SuR+sMHfXHna90xhZ7y7JCPV3uwa/WQa1dBRtdqaxAYUhlc6AyXJc7DpA==
   dependencies:
     "@stylable/core" "^5.19.0"
+    "@tokey/core" "^1.4.0"
+    vlq "^2.0.4"
+
+"@stylable/module-utils@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/module-utils/-/module-utils-6.0.0.tgz#8f6a65567fba44644fc51f9be8407a40e2133868"
+  integrity sha512-jhMRcnaoYMji9iq50I5mGF0iJq9ANSvWJbnOeUB+ickcrP8M7wHmm7B+nHbXfhb5aj4mFCuqja6yOoMgWqWFrQ==
+  dependencies:
+    "@stylable/core" "^6.0.0"
     "@tokey/core" "^1.4.0"
     vlq "^2.0.4"
 
@@ -1095,6 +1163,17 @@
     "@stylable/module-utils" "^5.19.0"
     find-config "^1.0.0"
 
+"@stylable/node@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/node/-/node-6.0.0.tgz#c8167a292fb76acfd6b5a2a6d9c0fa04efe4f725"
+  integrity sha512-bKZPRLEghAJ/D0HebcvvB0Zh4izfYBzMgGTjJzHr2+OwcgbxhlIcXaHlem76dawCcjWFPHi1B9gE6keQnzfXHw==
+  dependencies:
+    "@file-services/node" "^9.0.0"
+    "@stylable/build-tools" "^6.0.0"
+    "@stylable/core" "^6.0.0"
+    "@stylable/module-utils" "^6.0.0"
+    find-config "^1.0.0"
+
 "@stylable/optimizer@^5.19.0":
   version "5.19.0"
   resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-5.19.0.tgz#9355cb18c1404e6e282aef7fa49e1309d3d5f955"
@@ -1105,24 +1184,40 @@
     csso "^5.0.5"
     postcss "^8.4.35"
 
+"@stylable/optimizer@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/optimizer/-/optimizer-6.0.0.tgz#494a4a9dd497cd1a781e8716bf4aa5b5d3ce033e"
+  integrity sha512-pDvfrhjtT4+i08+ZRhCSMEUwZxJycGK+uidBeb3qSLfojRjrI5zNq60tVldQI6aUtrth/KTYTBuSwDIfbwREVg==
+  dependencies:
+    "@stylable/core" "^6.0.0"
+    "@tokey/css-selector-parser" "^0.6.2"
+    lightningcss "^1.24.0"
+    postcss "^8.4.35"
+
 "@stylable/runtime@^5.19.0":
   version "5.19.0"
   resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-5.19.0.tgz#00420b40cb9b4e9bf12ae127486167903c3f5fb1"
   integrity sha512-hQSqboj7pbcU5gEfYUXqSXZLTTGW/vf55ZKkAo9mfiZ42igkq77vG9hAI5DTgssQ5m5xyoNruxDerv88PIMuAw==
 
-"@stylable/webpack-plugin@^5.19.0":
-  version "5.19.0"
-  resolved "https://registry.yarnpkg.com/@stylable/webpack-plugin/-/webpack-plugin-5.19.0.tgz#ac0195ff8e13d05f4dfeb02ad071fcac1eb7537f"
-  integrity sha512-mOqEfqGVeHC75fjIeqIBWVyOLr9NbRiXSSZXvsvKqRQYsAqScEjpWrQ0UTx36b1KlyOK+18DKl74zeCEEHx8cg==
+"@stylable/runtime@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/runtime/-/runtime-6.0.0.tgz#bde9f85e1096fe339a0ea5344d83bf550ebb21f1"
+  integrity sha512-9oFYby6kwC2TjkA5p3w9ZEHGJhG5dt777VXZjnX8mxFNGmzJOhlLNzFyVXYO8Q6Z+h34cO0QcCcf3Jj6V/8jVQ==
+
+"@stylable/webpack-plugin@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@stylable/webpack-plugin/-/webpack-plugin-6.0.0.tgz#21f5167be78ed1a8463738ae1b80c529ae3b89b4"
+  integrity sha512-6L9mgWuDEjaD2aYSCdbA9kSi3CweBtMUDQz1zp6OQlujKe2iAbQwgVjoaB/dvr9nmyPuheUNHTnDEs7tRpRjHQ==
   dependencies:
-    "@stylable/build-tools" "^5.19.0"
-    "@stylable/cli" "^5.19.0"
-    "@stylable/core" "^5.19.0"
-    "@stylable/module-utils" "^5.19.0"
-    "@stylable/node" "^5.19.0"
-    "@stylable/optimizer" "^5.19.0"
-    "@stylable/runtime" "^5.19.0"
+    "@stylable/build-tools" "^6.0.0"
+    "@stylable/cli" "^6.0.0"
+    "@stylable/core" "^6.0.0"
+    "@stylable/module-utils" "^6.0.0"
+    "@stylable/node" "^6.0.0"
+    "@stylable/optimizer" "^6.0.0"
+    "@stylable/runtime" "^6.0.0"
     decache "^4.6.2"
+    enhanced-resolve "^5.15.1"
     lodash.clonedeep "^4.5.0"
     postcss "^8.4.35"
 
@@ -3253,6 +3348,11 @@ detect-indent@^5.0.0:
   resolved "https://registry.yarnpkg.com/detect-indent/-/detect-indent-5.0.0.tgz#3871cc0a6a002e8c3e5b3cf7f336264675f06b9d"
   integrity sha512-rlpvsxUtM0PQvy9iZe640/IWwWYyBsTApREbA1pHOpmOUIl9MkP/U4z7vTtg4Oaojvqhxt7sdufnT0EzGaR31g==
 
+detect-libc@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/detect-libc/-/detect-libc-1.0.3.tgz#fa137c4bd698edf55cd5cd02ac559f91a4c4ba9b"
+  integrity sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg==
+
 detect-node@^2.0.4:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/detect-node/-/detect-node-2.1.0.tgz#c9c70775a49c3d03bc2c06d9a73be550f978f8b1"
@@ -5251,6 +5351,11 @@ jju@~1.4.0:
   resolved "https://registry.yarnpkg.com/jju/-/jju-1.4.0.tgz#a3abe2718af241a2b2904f84a625970f389ae32a"
   integrity sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==
 
+js-base64@^3.7.7:
+  version "3.7.7"
+  resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-3.7.7.tgz#e51b84bf78fbf5702b9541e2cb7bfcb893b43e79"
+  integrity sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==
+
 js-beautify@^1.15.1:
   version "1.15.1"
   resolved "https://registry.yarnpkg.com/js-beautify/-/js-beautify-1.15.1.tgz#4695afb508c324e1084ee0b952a102023fc65b64"
@@ -5512,6 +5617,68 @@ libnpmpublish@7.3.0:
     semver "^7.3.7"
     sigstore "^1.4.0"
     ssri "^10.0.1"
+
+lightningcss-darwin-arm64@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.24.0.tgz#3d2450fe6881ed84c825f91510415dfa35dc3237"
+  integrity sha512-rTNPkEiynOu4CfGdd5ZfVOQe2gd2idfQd4EfX1l2ZUUwd+2SwSdbb7cG4rlwfnZckbzCAygm85xkpekRE5/wFw==
+
+lightningcss-darwin-x64@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.24.0.tgz#98cb96ad7ea78990ee24cd7741b9983696c1adab"
+  integrity sha512-4KCeF2RJjzp9xdGY8zIH68CUtptEg8uz8PfkHvsIdrP4t9t5CIgfDBhiB8AmuO75N6SofdmZexDZIKdy9vA7Ww==
+
+lightningcss-freebsd-x64@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-freebsd-x64/-/lightningcss-freebsd-x64-1.24.0.tgz#d8c94574f8e12b09cb8dcdd05333d9e2288cd906"
+  integrity sha512-FJAYlek1wXuVTsncNU0C6YD41q126dXcIUm97KAccMn9C4s/JfLSqGWT2gIzAblavPFkyGG2gIADTWp3uWfN1g==
+
+lightningcss-linux-arm-gnueabihf@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-linux-arm-gnueabihf/-/lightningcss-linux-arm-gnueabihf-1.24.0.tgz#b59678c2f9e29176740193a54b62cd2c28112e13"
+  integrity sha512-N55K6JqzMx7C0hYUu1YmWqhkHwzEJlkQRMA6phY65noO0I1LOAvP4wBIoFWrzRE+O6zL0RmXJ2xppqyTbk3sYw==
+
+lightningcss-linux-arm64-gnu@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.24.0.tgz#20af7648d894253c97afe3b58c91dc224243985c"
+  integrity sha512-MqqUB2TpYtFWeBvvf5KExDdClU3YGLW5bHKs50uKKootcvG9KoS7wYwd5UichS+W3mYLc5yXUPGD1DNWbLiYKw==
+
+lightningcss-linux-arm64-musl@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-linux-arm64-musl/-/lightningcss-linux-arm64-musl-1.24.0.tgz#be696ac45e7d211accc812750bfe6d61ef37b480"
+  integrity sha512-5wn4d9tFwa5bS1ao9mLexYVJdh3nn09HNIipsII6ZF7z9ZA5J4dOEhMgKoeCl891axTGTUYd8Kxn+Hn3XUSYRQ==
+
+lightningcss-linux-x64-gnu@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.24.0.tgz#1990787be06a75e396f03ee86f8fe7b90d34f945"
+  integrity sha512-3j5MdTh+LSDF3o6uDwRjRUgw4J+IfDCVtdkUrJvKxL79qBLUujXY7CTe5X3IQDDLKEe/3wu49r8JKgxr0MfjbQ==
+
+lightningcss-linux-x64-musl@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-linux-x64-musl/-/lightningcss-linux-x64-musl-1.24.0.tgz#26edd10bcbd95833c602d3c4b71b628b26603d62"
+  integrity sha512-HI+rNnvaLz0o36z6Ki0gyG5igVGrJmzczxA5fznr6eFTj3cHORoR/j2q8ivMzNFR4UKJDkTWUH5LMhacwOHWBA==
+
+lightningcss-win32-x64-msvc@1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.24.0.tgz#268a4a6ad2ef25703a7f0d9edec60c409f80dd09"
+  integrity sha512-oeije/t7OZ5N9vSs6amyW/34wIYoBCpE6HUlsSKcP2SR1CVgx9oKEM00GtQmtqNnYiMIfsSm7+ppMb4NLtD5vg==
+
+lightningcss@^1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/lightningcss/-/lightningcss-1.24.0.tgz#41bcdf5de381ae5fe1e7f9a2bf6bcaded556082c"
+  integrity sha512-y36QEEDVx4IM7/yIZNsZJMRREIu26WzTsauIysf5s76YeCmlSbRZS7aC97IGPuoFRnyZ5Wx43OBsQBFB5Ne7ng==
+  dependencies:
+    detect-libc "^1.0.3"
+  optionalDependencies:
+    lightningcss-darwin-arm64 "1.24.0"
+    lightningcss-darwin-x64 "1.24.0"
+    lightningcss-freebsd-x64 "1.24.0"
+    lightningcss-linux-arm-gnueabihf "1.24.0"
+    lightningcss-linux-arm64-gnu "1.24.0"
+    lightningcss-linux-arm64-musl "1.24.0"
+    lightningcss-linux-x64-gnu "1.24.0"
+    lightningcss-linux-x64-musl "1.24.0"
+    lightningcss-win32-x64-msvc "1.24.0"
 
 lines-and-columns@^1.1.6:
   version "1.2.4"
@@ -6910,6 +7077,11 @@ postcss-safe-parser@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/postcss-safe-parser/-/postcss-safe-parser-6.0.0.tgz#bb4c29894171a94bc5c996b9a30317ef402adaa1"
   integrity sha512-FARHN8pwH+WiS2OPCxJI8FuRJpTVnn6ZNFiqAM2aeW2LwTHWWmWgIyKC6cUo0L8aeKiF/14MNvnpls6R2PBeMQ==
+
+postcss-safe-parser@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/postcss-safe-parser/-/postcss-safe-parser-7.0.0.tgz#6273d4e5149e286db5a45bc6cf6eafcad464014a"
+  integrity sha512-ovehqRNVCpuFzbXoTb4qLtyzK3xn3t/CUBxOs8LsnQjQrShaB4lKiHoVqY8ANaC0hBMHq5QVWk77rwGklFUDrg==
 
 postcss-selector-parser@^6.0.11:
   version "6.0.15"
