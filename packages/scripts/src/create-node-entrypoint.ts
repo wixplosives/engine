@@ -1,6 +1,6 @@
 import { Environment } from '@wixc3/engine-core';
 import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
-import { ICreateEntrypointsOptions, createConfigLoaders, createFeatureLoadersSourceCode } from './create-entrypoint';
+import { createConfigLoaders, createFeatureLoadersSourceCode, ICreateEntrypointsOptions } from './create-entrypoint';
 
 const { stringify } = JSON;
 
@@ -89,13 +89,13 @@ main({
     options,
     contextualConfig: ({ resolvedContexts }) => {
         return [
-            COM.use({
+            ...(workerData ? [COM.use({
                 config: {
                     resolvedContexts,
                     host: new ParentPortHost(),
                     id: envId,
                 },
-            }),
+            })] : []),
             ...${stringify(config, null, 2)}
         ];
     },
