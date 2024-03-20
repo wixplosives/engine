@@ -26,7 +26,7 @@
     "@playwright/browser-chromium": "^1.42.1",
     "@stylable/cli": "^6.0.1",
     "@stylable/webpack-plugin": "^6.0.1",
-    "@types/chai": "^4.3.13",
+    "@types/chai": "^4.3.14",
     "@types/chai-as-promised": "^7.1.8",
     "@types/cors": "^2.8.17",
     "@types/d3-hierarchy": "^3.1.7",
@@ -56,7 +56,7 @@
     "chai": "^4.4.1",
     "chai-as-promised": "^7.1.1",
     "create-temp-directory": "^2.4.0",
-    "electron": "^29.1.4",
+    "electron": "^29.1.5",
     "electron-builder": "^24.13.3",
     "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
@@ -77,8 +77,8 @@
     "sinon": "^17.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-loader": "^5.0.0",
-    "typescript": "~5.4.2",
-    "webpack": "^5.90.3"
+    "typescript": "~5.4.3",
+    "webpack": "^5.91.0"
   },
   "license": "MIT",
   "private": true
