@@ -71,7 +71,13 @@ async function engine() {
                 default: true,
             },
             buildTargets: {
-                type: (value) => value as 'node' | 'web' | 'both',
+                type: (value) => {
+                    if (value === 'node' || value === 'web' || value === 'both') {
+                        return value as 'node' | 'web' | 'both';
+                    } else {
+                        throw new Error(`Invalid build targets: ${value} (expected node, web, both)`);
+                    }
+                },
                 description: 'Build targets (node, web, both)',
                 default: 'both',
             },
