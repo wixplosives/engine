@@ -13,6 +13,7 @@
   "dependencies": {
     "@wixc3/common": "^17.1.1",
     "@wixc3/engine-core": "^45.0.1",
+    "@wixc3/isomorphic-worker": "^1.2.5",
     "@wixc3/patterns": "^17.1.1",
     "create-listening-server": "^2.1.0",
     "express": "^4.19.1",
