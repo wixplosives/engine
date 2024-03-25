@@ -1,13 +1,8 @@
 import { Feature } from '@wixc3/engine-core';
 import FileServer from '../feature/file-server.feature.js';
 
-/**
- * exporting the feature name
- */
-export const EXAMPLE_FEATURE_NAME = 'file-server-sample-feature' as const;
-
 export default class FileServerSample extends Feature<'file-server-sample-feature'> {
-    id = EXAMPLE_FEATURE_NAME;
+    id = 'file-server-sample-feature' as const;
     api = {};
     dependencies = [FileServer];
 }

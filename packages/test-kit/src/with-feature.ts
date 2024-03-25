@@ -108,7 +108,7 @@ export interface IFeatureExecutionOptions {
     /**
      * link node_modules for the fixture to the project
      */
-    dependencies?: { type: 'link'; path: string } | { type: 'yarn' };
+    dependencies?: { type: 'link'; path: string } | { type: 'yarn' } | { type: 'npm' };
     /**
      * hook to manage initial fixture creation each hook is inherited from the suite level individually
      */
@@ -445,6 +445,12 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         linkNodeModules(projectPath, dependencies.path);
                     } else if (dependencies.type === 'yarn') {
                         spawnSyncSafe('yarn', ['install'], {
+                            cwd: projectPath,
+                            shell: true,
+                            stdio: debugMode ? 'inherit' : 'ignore',
+                        });
+                    } else if (dependencies.type === 'npm') {
+                        spawnSyncSafe('npm', ['install'], {
                             cwd: projectPath,
                             shell: true,
                             stdio: debugMode ? 'inherit' : 'ignore',

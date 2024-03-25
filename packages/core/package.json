@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "44.0.6",
+  "version": "45.0.1",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -19,9 +19,9 @@
   },
   "dependencies": {
     "@wixc3/isomorphic-worker": "^1.2.5",
-    "@wixc3/patterns": "^16.2.0",
+    "@wixc3/patterns": "^17.1.1",
     "promise-assist": "^2.0.1",
-    "socket.io-client": "^4.7.4",
+    "socket.io-client": "^4.7.5",
     "typescript-type-utils": "^0.1.0"
   },
   "files": [

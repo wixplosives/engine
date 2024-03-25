@@ -13,8 +13,27 @@ import { readEntryPoints, readMetadataFiles, writeEntryPoints, writeMetaFiles } 
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
 import { resolveRuntimeOptions } from './resolve-runtime-options';
 
-export type RunEngineOptions = Parameters<typeof runEngine>[0];
-
+export interface RunEngineOptions {
+    verbose?: boolean;
+    clean?: boolean;
+    watch?: boolean;
+    dev?: boolean;
+    run?: boolean;
+    build?: boolean;
+    forceAnalyze?: boolean;
+    rootDir?: string;
+    outputPath?: string;
+    feature?: string;
+    config?: string;
+    httpServerPort?: number;
+    buildTargets?: 'node' | 'web' | 'both';
+    engineConfig?: EngineConfig;
+    runtimeArgs?: Record<string, string | boolean>;
+    writeMetadataFiles?: boolean;
+    publicPath?: string;
+    publicConfigsRoute?: string;
+    configLoadingMode?: ConfigLoadingMode;
+}
 export async function runEngine({
     verbose = false,
     clean = true,
@@ -26,16 +45,16 @@ export async function runEngine({
     rootDir = process.cwd(),
     outputPath = 'dist-engine',
     publicPath = '',
-    feature: featureName = undefined as string | undefined,
-    config: configName = undefined as string | undefined,
+    feature: featureName,
+    config: configName,
     httpServerPort = 5555,
-    buildTargets = 'both' as 'node' | 'web' | 'both',
-    engineConfig = {} as EngineConfig,
-    runtimeArgs = {} as Record<string, string | boolean>,
-    writeMetadataFiles = !watch as boolean,
+    buildTargets = 'both',
+    engineConfig = {},
+    runtimeArgs = {},
+    writeMetadataFiles = !watch,
     publicConfigsRoute = 'configs',
-    configLoadingMode = 'require' as ConfigLoadingMode,
-} = {}) {
+    configLoadingMode = 'require',
+}: RunEngineOptions = {}) {
     const mode: '' | 'development' | 'production' = dev ? 'development' : 'production';
     let esbuildContextWeb: esbuild.BuildContext | undefined;
     let esbuildContextNode: esbuild.BuildContext | undefined;
