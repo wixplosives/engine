@@ -1,77 +1,123 @@
-import { loadEngineConfig, runEngine, parseCliArgs } from './engine-build';
+import { cli } from 'cleye';
 
 async function engine() {
-    const args = parseCliArgs();
-    const buildTargets = (args.get('buildTargets') as 'node' | 'web' | 'both') ?? 'both';
-    const help = boolParam(args.has('help')) ?? false;
-    const clean = boolParam(args.get('clean')) ?? true;
-    const watch = boolParam(args.get('watch')) ?? false;
-    const dev = boolParam(args.get('dev')) ?? watch;
-    const run = boolParam(args.get('run')) ?? dev;
-    const forceAnalyze = boolParam(args.get('forceAnalyze')) ?? !dev;
-    const verbose = boolParam(args.get('verbose')) ?? false;
-    const writeMetadataFiles = boolParam(args.get('writeMetadataFiles')) ?? true;
+    const argv = cli({
+        name: 'engine',
+        help: {
+            usage: false,
+            description: 'Run and build engine applications',
+        },
+        flags: {
+            feature: {
+                type: String,
+                description: 'Feature name',
+                default: undefined,
+            },
+            config: {
+                type: String,
+                description: 'Config name',
+                default: undefined,
+            },
+            runtimeArgs: {
+                type: (value) => {
+                    const args = JSON.parse(value);
+                    if (typeof args === 'object' && args !== null && !Array.isArray(args)) {
+                        return args as Record<string, string | boolean>;
+                    } else {
+                        throw new Error(`Invalid runtime arguments: ${value} (expected JSON object)`);
+                    }
+                },
+                description: `Runtime arguments E.g. '{"projectPath": "..."}'`,
+                default: {},
+            },
+            clean: {
+                type: Boolean,
+                description: 'Clean output directory',
+                default: true,
+            },
+            dev: {
+                type: Boolean,
+                description: 'Development mode',
+                default: undefined,
+            },
+            watch: {
+                type: Boolean,
+                description: 'Watch for changes',
+                default: false,
+            },
+            run: {
+                type: Boolean,
+                description: 'Run the application',
+                default: undefined,
+            },
+            forceAnalyze: {
+                type: Boolean,
+                description: 'Force analyze features',
+                default: true,
+            },
+            engineConfigFilePath: {
+                type: String,
+                description: 'Engine config file path',
+                default: undefined,
+            },
+            publicConfigsRoute: {
+                type: String,
+                description: 'Public configs route',
+                default: 'configs',
+            },
+            writeMetadataFiles: {
+                type: Boolean,
+                description: 'Write metadata files',
+                default: true,
+            },
+            buildTargets: {
+                type: (value) => {
+                    if (value === 'node' || value === 'web' || value === 'both') {
+                        return value as 'node' | 'web' | 'both';
+                    } else {
+                        throw new Error(`Invalid build targets: ${value} (expected node, web, both)`);
+                    }
+                },
+                description: 'Build targets (node, web, both)',
+                default: 'both',
+            },
+            publicPath: {
+                type: String,
+                description: 'Public path',
+                default: '',
+            },
+            configLoadingMode: {
+                type: (value) => {
+                    if (value === 'fresh' || value === 'watch' || value === 'require') {
+                        return value as 'fresh' | 'watch' | 'require';
+                    } else {
+                        throw new Error(`Invalid config loading mode: ${value}`);
+                    }
+                },
+                description: 'Config loading mode (fresh, watch, require)',
+                default: undefined,
+            },
+            verbose: {
+                type: Boolean,
+                description: 'Verbose output',
+                default: false,
+            },
+        },
+    } as const);
 
-    const runtimeArgs = JSON.parse(strParam(args.get('runtimeArgs')) ?? '{}');
-    const feature = strParam(args.get('feature'));
-    const config = strParam(args.get('config'));
-    const publicPath = strParam(args.get('publicPath')) ?? '';
-    const engineConfigFilePath = strParam(args.get('engineConfigFilePath'));
-    const publicConfigsRoute = strParam(args.get('publicConfigsRoute')) ?? 'configs';
-    const configLoadingMode =
-        enumParam<'fresh' | 'watch' | 'require'>(args.get('configLoadingMode'), ['fresh', 'watch', 'require']) ??
-        (watch ? 'watch' : 'require');
+    const dev = argv.flags.dev ?? argv.flags.watch;
+    const run = argv.flags.run ?? dev;
+    const configLoadingMode = argv.flags.configLoadingMode ?? (argv.flags.watch ? 'watch' : 'require');
 
-    if (help) {
-        console.log(engine.toString());
-        console.log('🤷‍♂️');
-        return;
-    }
-
-    const engineConfig = await loadEngineConfig(process.cwd(), engineConfigFilePath);
+    const { loadEngineConfig, runEngine } = await import('./engine-build');
 
     await runEngine({
-        runtimeArgs,
-        engineConfig,
-        verbose,
-        clean,
+        ...argv.flags,
         dev,
-        watch,
-        forceAnalyze,
-        publicPath,
-        buildTargets,
-        feature,
-        config,
         run,
-        writeMetadataFiles,
-        publicConfigsRoute,
         configLoadingMode,
+        engineConfig: await loadEngineConfig(process.cwd(), argv.flags.engineConfigFilePath),
     });
-}
-
-function strParam(param: string | boolean | undefined) {
-    return param !== undefined ? String(param) : undefined;
-}
-
-function enumParam<T>(param: string | boolean | undefined, options: string[]): T | undefined {
-    const sParam = param !== undefined ? (String(param) as T) : undefined;
-    if (typeof sParam === 'string' && !options.includes(sParam)) {
-        throw new Error(`Invalid option: ${sParam}. Options are: ${options.join(', ')}`);
-    }
-    return sParam;
-}
-
-function boolParam(param: string | boolean | undefined) {
-    if (param === undefined || typeof param === 'boolean') {
-        return param;
-    }
-    if (param === 'true') {
-        return true;
-    }
-    if (param === 'false') {
-        return false;
-    }
-    throw new Error(`Invalid boolean parameter: ${param}`);
 }
 
 engine().catch((e) => {
