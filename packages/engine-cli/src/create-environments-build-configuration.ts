@@ -87,8 +87,9 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
                     if (!entry) {
                         throw new Error(`Could not find entrypoint for ${key} in ${[...webEntryPoints.keys()]}}`);
                     }
-                    const [envName] = key.split('.');
-                    return `${envName}.html`;
+                    const [envName, envType] = key.split('.');
+                    const htmlFileName = envType === 'electron-renderer' ? `${envName}.${envType}` : envName;
+                    return `${htmlFileName}.html`;
                 },
             }),
         ],

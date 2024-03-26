@@ -96,7 +96,7 @@ export function createEntryPoints(
         });
 
         webEntryPoints.set(
-            `${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}${jsOutExtension}`,
+            `${env.name}.${env.type === 'webworker' ? 'webworker' : env.type === 'electron-renderer' ? 'electron-renderer' : 'web'}${jsOutExtension}`,
             entrypointContent,
         );
     }
