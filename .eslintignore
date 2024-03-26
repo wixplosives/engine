@@ -6,4 +6,5 @@ dist
 dist-app
 dist-external
 dist-test-engine
+dist-engine
 examples/preload

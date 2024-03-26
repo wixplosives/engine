@@ -58,7 +58,11 @@ export function createEntryPoints(
 
     const mode = dev ? 'development' : 'production';
     const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
-    const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
+    const nodeTargets = concatIterables(
+        environments.nodeEnvs.values(),
+        environments.workerThreadEnvs.values(),
+        environments.electronMainEnvs.values(),
+    );
 
     const webEntryPoints = new Map<string, string>();
     const nodeEntryPoints = new Map<string, string>();
