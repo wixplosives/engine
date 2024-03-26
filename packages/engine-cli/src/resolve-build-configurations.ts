@@ -38,6 +38,7 @@ export function resolveBuildEntryPoints({
         features,
         filterContexts: !!featureName,
         findAllEnvironments: false, // ??
+        separateElectronRenderer: false,
     });
 
     const entryPoints = createEntryPoints(

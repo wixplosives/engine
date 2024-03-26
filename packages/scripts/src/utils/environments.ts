@@ -9,6 +9,7 @@ export interface GetResolveEnvironmentsParams {
     features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs' | 'resolvedContexts'>>;
     environments?: Iterable<IEnvironmentDescriptor>;
     findAllEnvironments?: boolean;
+    separateElectronRenderer?: boolean;
 }
 
 export interface IResolvedEnvironment {
@@ -32,6 +33,7 @@ export function getResolvedEnvironments({
     features,
     environments = getExportedEnvironments(features),
     findAllEnvironments,
+    separateElectronRenderer = true,
 }: GetResolveEnvironmentsParams) {
     const webEnvs = new Map<string, IResolvedEnvironment>();
     const workerEnvs = new Map<string, IResolvedEnvironment>();
@@ -49,7 +51,7 @@ export function getResolvedEnvironments({
     for (const env of environments) {
         const { name, childEnvName, type } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName))) {
-            if (type === 'window' || type === 'iframe') {
+            if (type === 'window' || type === 'iframe' || (!separateElectronRenderer && type === 'electron-renderer')) {
                 addEnv(webEnvs, env);
             } else if (type === 'webworker') {
                 addEnv(workerEnvs, env);
