@@ -57,7 +57,11 @@ export function createEntryPoints(
     } = options;
 
     const mode = dev ? 'development' : 'production';
-    const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
+    const browserTargets = concatIterables(
+        environments.webEnvs.values(),
+        environments.workerEnvs.values(),
+        environments.electronRendererEnvs.values(),
+    );
     const nodeTargets = concatIterables(
         environments.nodeEnvs.values(),
         environments.workerThreadEnvs.values(),
