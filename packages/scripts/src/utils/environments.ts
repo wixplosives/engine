@@ -49,12 +49,10 @@ export function getResolvedEnvironments({
     for (const env of environments) {
         const { name, childEnvName, type } = env;
         if (!resolvedContexts.hasKey(name) || (childEnvName && resolvedContexts.get(name)?.has(childEnvName))) {
-            if (type === 'window' || type === 'iframe') {
+            if (type === 'window' || type === 'iframe' || type === 'electron-renderer') {
                 addEnv(webEnvs, env);
             } else if (type === 'webworker') {
                 addEnv(workerEnvs, env);
-            } else if (type === 'electron-renderer') {
-                addEnv(electronRendererEnvs, env);
             } else if (type === 'node') {
                 addEnv(nodeEnvs, env);
             } else if (type === 'electron-main') {

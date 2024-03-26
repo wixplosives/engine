@@ -72,7 +72,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
         banner: {
             js: `globalThis.__webpack_public_path__ = ${JSON.stringify(
                 publicPath,
-            )};\nglobalThis.process={env:{}};globalThis.DEFAULT_WORKER_TYPE = 'module';`,
+            )};\nglobalThis.process={env:{}, contextId: Math.random().toString(36).slice(2), on: () => {}, argv: []};globalThis.DEFAULT_WORKER_TYPE = 'module';`,
         },
         plugins: [
             ...commonConfig.plugins,
