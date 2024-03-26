@@ -89,13 +89,13 @@ main({
     options,
     contextualConfig: ({ resolvedContexts }) => {
         return [
-            COM.use({
+            ...(workerData ? [COM.use({
                 config: {
                     resolvedContexts,
                     host: new ParentPortHost(),
                     id: envId,
                 },
-            }),
+            })] : []),
             ...${stringify(config, null, 2)}
         ];
     },
