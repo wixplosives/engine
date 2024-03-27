@@ -9,7 +9,7 @@ import { join } from 'path';
 import type { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
 import { checkWatchSignal } from './watch-signal';
 
-const OUTPUT_PATH = process.env.ENGINE_OUTPUT_PATH || join(process.cwd(), 'dist-engine');
+export const OUTPUT_PATH = process.env.ENGINE_OUTPUT_PATH || join(process.cwd(), 'dist-engine');
 
 export class ManagedRunEngine implements IExecutableApplication {
     private ready!: Promise<void>;
