@@ -9,6 +9,7 @@ export interface GetResolveEnvironmentsParams {
     features: Map<string, Pick<IFeatureDefinition, 'exportedEnvs' | 'resolvedContexts'>>;
     environments?: Iterable<IEnvironmentDescriptor>;
     findAllEnvironments?: boolean;
+    separateElectronRenderer?: boolean;
 }
 
 export interface IResolvedEnvironment {

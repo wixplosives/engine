@@ -72,7 +72,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
         banner: {
             js: `globalThis.__webpack_public_path__ = ${JSON.stringify(
                 publicPath,
-            )};\nglobalThis.process={env:{}};globalThis.DEFAULT_WORKER_TYPE = 'module';`,
+            )};\nglobalThis.DEFAULT_WORKER_TYPE = 'module';`,
         },
         plugins: [
             ...commonConfig.plugins,
@@ -87,8 +87,9 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
                     if (!entry) {
                         throw new Error(`Could not find entrypoint for ${key} in ${[...webEntryPoints.keys()]}}`);
                     }
-                    const [envName] = key.split('.');
-                    return `${envName}.html`;
+                    const [envName, envType] = key.split('.');
+                    const htmlFileName = envType === 'electron-renderer' ? `${envName}.${envType}` : envName;
+                    return `${htmlFileName}.html`;
                 },
             }),
         ],

@@ -57,8 +57,16 @@ export function createEntryPoints(
     } = options;
 
     const mode = dev ? 'development' : 'production';
-    const browserTargets = concatIterables(environments.webEnvs.values(), environments.workerEnvs.values());
-    const nodeTargets = concatIterables(environments.nodeEnvs.values(), environments.workerThreadEnvs.values());
+    const browserTargets = concatIterables(
+        environments.webEnvs.values(),
+        environments.workerEnvs.values(),
+        environments.electronRendererEnvs.values(),
+    );
+    const nodeTargets = concatIterables(
+        environments.nodeEnvs.values(),
+        environments.workerThreadEnvs.values(),
+        environments.electronMainEnvs.values(),
+    );
 
     const webEntryPoints = new Map<string, string>();
     const nodeEntryPoints = new Map<string, string>();
@@ -88,7 +96,7 @@ export function createEntryPoints(
         });
 
         webEntryPoints.set(
-            `${env.name}.${env.type === 'webworker' ? 'webworker' : 'web'}${jsOutExtension}`,
+            `${env.name}.${env.type === 'webworker' ? 'webworker' : env.type === 'electron-renderer' ? 'electron-renderer' : 'web'}${jsOutExtension}`,
             entrypointContent,
         );
     }
