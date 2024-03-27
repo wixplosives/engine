@@ -1,6 +1,6 @@
 {
   "name": "@example/preload",
-  "version": "45.1.1",
+  "version": "45.2.0",
   "scripts": {
     "start": "engineer start",
     "test": "yarn test:it",
