@@ -222,7 +222,7 @@ let executableApp: IExecutableApplication;
 
 if (typeof after !== 'undefined') {
     after('close browser, if open', async function () {
-        this.timeout(20_000);
+        this.timeout(50_000);
         if (browser && browser.isConnected()) {
             await browser.close();
         }
@@ -265,7 +265,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         slowMo,
         persist,
         takeScreenshotsOfFailed = true,
-        allowStale = false,
+        allowStale = !!process.env.DONT_BUILD,
         buildFlow = (process.env.WITH_FEATURE_BUILD_FLOW || 'prebuilt') as 'prebuilt' | 'lazy' | 'legacy',
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
@@ -741,9 +741,10 @@ async function enableTracing({
                     outPath,
                     fs,
                     name:
-                        process.env.TRACING && process.env.TRACING !== 'true'
+                        (process.env.TRACING && process.env.TRACING !== 'true'
                             ? process.env.TRACING
-                            : name ?? (testName ? normalizeTestName(testName) : 'nameless-test'),
+                            : name ?? (testName ? normalizeTestName(testName) : 'nameless-test')) +
+                        (process.env.TRACING_POSTFIX ?? ''),
                 }),
             });
         },
