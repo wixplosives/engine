@@ -25,6 +25,7 @@ export interface CreateEntryPointOptions {
     publicConfigsRoute: string;
     featureName?: string;
     configName?: string;
+    buildElectron?: boolean;
 }
 
 export type EntryPoints = {
@@ -54,18 +55,19 @@ export function createEntryPoints(
         featureEnvironmentsMapping,
         configMapping,
         publicConfigsRoute,
+        buildElectron,
     } = options;
 
     const mode = dev ? 'development' : 'production';
     const browserTargets = concatIterables(
         environments.webEnvs.values(),
         environments.workerEnvs.values(),
-        environments.electronRendererEnvs.values(),
+        buildElectron ? environments.electronRendererEnvs.values() : [],
     );
     const nodeTargets = concatIterables(
         environments.nodeEnvs.values(),
         environments.workerThreadEnvs.values(),
-        environments.electronMainEnvs.values(),
+        buildElectron ? environments.electronMainEnvs.values() : [],
     );
 
     const webEntryPoints = new Map<string, string>();

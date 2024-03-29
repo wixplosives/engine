@@ -26,7 +26,7 @@ export interface RunEngineOptions {
     feature?: string;
     config?: string;
     httpServerPort?: number;
-    buildTargets?: 'node' | 'web' | 'both';
+    buildTargets?: 'node' | 'web' | 'both' | 'electron';
     engineConfig?: EngineConfig;
     runtimeArgs?: Record<string, string | boolean>;
     writeMetadataFiles?: boolean;
@@ -111,6 +111,7 @@ export async function runEngine({
             publicConfigsRoute,
             jsOutExtension,
             nodeFormat,
+            buildElectron: buildTargets === 'electron',
         });
 
         if (writeMetadataFiles) {
@@ -156,7 +157,7 @@ export async function runEngine({
     });
 
     if (watch) {
-        if (buildTargets === 'web' || buildTargets === 'both') {
+        if (shouldBuildWeb(buildTargets)) {
             if (verbose) {
                 console.log('Starting web compilation in watch mode');
             }
@@ -172,7 +173,7 @@ export async function runEngine({
             await Promise.allSettled([waitForBuildEnd()]);
         }
 
-        if (buildTargets === 'node' || buildTargets === 'both') {
+        if (shouldBuildNode(buildTargets)) {
             if (verbose) {
                 console.log('Starting node compilation in watch mode');
             }
@@ -189,12 +190,8 @@ export async function runEngine({
     } else if (build) {
         const start = performance.now();
         await Promise.all([
-            buildTargets === 'node' || buildTargets === 'both'
-                ? esbuild.build(buildConfigurations.nodeConfig)
-                : Promise.resolve(),
-            buildTargets === 'web' || buildTargets === 'both'
-                ? esbuild.build(buildConfigurations.webConfig)
-                : Promise.resolve(),
+            shouldBuildNode(buildTargets) ? esbuild.build(buildConfigurations.nodeConfig) : Promise.resolve(),
+            shouldBuildWeb(buildTargets) ? esbuild.build(buildConfigurations.webConfig) : Promise.resolve(),
         ]);
         const end = performance.now();
         console.log(`Build time ${Math.round(end - start)}ms`);
@@ -244,6 +241,14 @@ export async function runEngine({
         esbuildContextWeb,
         esbuildContextNode,
     };
+}
+
+function shouldBuildWeb(buildTargets: 'node' | 'web' | 'both' | 'electron') {
+    return buildTargets === 'web' || buildTargets === 'both' || buildTargets === 'electron';
+}
+
+function shouldBuildNode(buildTargets: 'node' | 'web' | 'both' | 'electron') {
+    return buildTargets === 'node' || buildTargets === 'both' || buildTargets === 'electron';
 }
 
 export async function loadEngineConfig(rootDir: string, engineConfigFilePath?: string) {
