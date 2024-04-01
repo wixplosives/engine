@@ -1,5 +1,6 @@
 import {
     AnyEnvironment,
+    BaseHost,
     ConfigModule,
     IRunOptions,
     MultiCounter,
@@ -91,7 +92,7 @@ export class NodeEnvManager implements IDisposable {
 
         const disposeAutoLaunch = async () => {
             disposeMetricsListener();
-            await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
+            await this.closeAll();
             await host.dispose();
             await close();
         };
@@ -106,6 +107,10 @@ export class NodeEnvManager implements IDisposable {
             process.send({ port });
         }
         return { port };
+    }
+
+    async closeAll() {
+        await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
     }
 
     private async runFeatureEnvironments(
@@ -163,10 +168,10 @@ export class NodeEnvManager implements IDisposable {
         return new URL(`${env.env}.${env.envType}${jsOutExtension}`, this.importMeta.url);
     }
 
-    private async initializeWorkerEnvironment(
+    async initializeWorkerEnvironment(
         envName: string,
         runtimeOptions: IRunOptions,
-        host: WsServerHost,
+        host: BaseHost | MessagePort,
         verbose: boolean,
     ) {
         const env = this.featureEnvironmentsMapping.availableEnvironments[envName];
@@ -188,6 +193,7 @@ export class NodeEnvManager implements IDisposable {
             return runningEnv.dispose();
         };
     }
+
     async collectMetricsFromAllOpenEnvironments() {
         const metrics = {
             marks: [] as PerformanceEntry[],
@@ -213,7 +219,7 @@ async function requireModules(modulePaths: string[]) {
     return res.map((m) => m.default ?? m);
 }
 
-function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorker>, host: WsServerHost) {
+function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorker>, host: BaseHost | MessagePort) {
     type AnyMessage = { data?: any };
     return new Promise<RunningNodeEnvironment>((res, rej) => {
         const runningEnv: RunningNodeEnvironment = {
