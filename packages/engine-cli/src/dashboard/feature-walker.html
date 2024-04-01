@@ -168,10 +168,12 @@
                 }
               }
             }
-            return Array.from(this.reverseChildren.get(myId) || []).map((id) => [id, this.dataSet.get(id)]);
+            return Array.from(this.reverseChildren.get(myId) || [])
+              .toSorted()
+              .map((id) => [id, this.dataSet.get(id)]);
           }
 
-          return this.data[1].dependencies.map((id) => [id, this.dataSet.get(id)]);
+          return this.data[1].dependencies.toSorted().map((id) => [id, this.dataSet.get(id)]);
         }
         shouldShow() {
           if (this.filters.titleFilter) {
@@ -295,8 +297,7 @@
           }
         }
         renderNode(dataAdapter, parent, depth = 0, depthLimit = 0, visited = new Set()) {
-          if (!dataAdapter.shouldShow()) {
-            console.log('Filtering', dataAdapter.getTitle());
+          if (!dataAdapter.shouldShow() && parent === this.stage) {
             return;
           }
           const node = this.nodeTemplate.content.cloneNode(true);
@@ -321,7 +322,7 @@
               content.innerHTML = `<small>(${c.length} ${c.length > 1 ? 'connections' : 'connection'})</small>`;
               content.onclick = () => {
                 content.onclick = null;
-                this.renderNodeChildren(dataAdapter, content, depth + 1);
+                this.renderNodeChildren(dataAdapter, content, depth + 1, -Infinity);
               };
             }
           }
