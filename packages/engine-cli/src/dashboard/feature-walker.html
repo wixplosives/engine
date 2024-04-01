@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feature Walker</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        width: 100%;
+        height: 100%;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --grid-size: 500px;
+        --control-height: 50px;
+      }
+
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .hide-scrollbar {
+        overflow: auto;
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+
+      button {
+        background: #153f69;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #256db4;
+      }
+      button:active {
+        background: #0e2943;
+      }
+
+      #breadcrumbs {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 1.25rem;
+        color: #fff;
+        padding: 0.5rem 1rem;
+        background-color: rgb(23, 156, 179);
+        border-radius: 3px;
+      }
+      #breadcrumbs:empty {
+        display: none;
+      }
+
+      #controls {
+        height: var(--control-height);
+        background: linear-gradient(90deg, #1a1a1a, #333);
+        display: flex;
+        padding: 8px;
+        gap: 12px;
+      }
+
+      #stage {
+        overflow: auto;
+        width: 100%;
+        height: calc(100% - var(--control-height));
+        background-color: #1e1e1e;
+        background-image: linear-gradient(rgb(58, 58, 58) 1px, transparent 1px),
+          linear-gradient(90deg, rgb(57, 57, 57) 1px, transparent 1px);
+        background-size: 20px 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 500px), 1fr));
+      }
+
+      .node {
+        color: #c8c8c8;
+        border: 1px solid #1f618a;
+        border-radius: 3px;
+        margin: 4px;
+        vertical-align: top;
+        background-color: #1a1a1a;
+        display: inline-block;
+      }
+
+      .node__content:not(:empty) {
+        padding: 6px;
+        overflow: clip;
+      }
+
+      .node__header {
+        background: hsla(calc(var(--depth) * 40 + 190), 90%, 50%, 0.3);
+        padding: 5px;
+        font-size: 1.125rem;
+      }
+
+      .selected {
+        --hue: calc(var(--selected-index) * 40 + 200);
+        border: 2px solid hsl(var(--hue), 100%, 50%);
+      }
+
+      :where(#stage:has(.selected)) .node:not(.selected) {
+        display: none;
+      }
+
+      .selected .node {
+        display: inline-block;
+      }
+    </style>
+    <script>
+      globalThis.EMBEDDED_DATA = new Map();
+    </script>
+  </head>
+  <body>
+    <div id="controls">
+      <input type="search" id="filter" placeholder="Filter Includes" />
+      <button id="reverseDirection">Reverse Direction</button>
+      <input type="range" id="gridSize" min="100" max="1000" step="10" value="500" />
+      <div id="breadcrumbs"></div>
+    </div>
+    <div id="stage"></div>
+
+    <template id="node_template">
+      <div class="node">
+        <div class="node__header hide-scrollbar">
+          <span class="node__title"></span>
+        </div>
+        <div class="node__content"></div>
+      </div>
+    </template>
+    <script>
+      class DataAdapter {
+        constructor(dataEntry, dataSet, filters) {
+          this.data = dataEntry;
+          this.dataSet = dataSet;
+          this.reverseChildren = new Map();
+          this.filters = filters;
+        }
+        getId() {
+          return this.data[0];
+        }
+        getChildren() {
+          if (this.filters.reverseDirection) {
+            const myId = this.getId();
+            if (!this.reverseChildren.has(myId)) {
+              for (const [id, data] of this.dataSet) {
+                if (data.dependencies.includes(myId)) {
+                  if (!this.reverseChildren.has(myId)) {
+                    this.reverseChildren.set(myId, new Set([id]));
+                  } else {
+                    this.reverseChildren.get(myId).add(id);
+                  }
+                }
+              }
+            }
+            return Array.from(this.reverseChildren.get(myId) || []).map((id) => [id, this.dataSet.get(id)]);
+          }
+
+          return this.data[1].dependencies.map((id) => [id, this.dataSet.get(id)]);
+        }
+        shouldShow() {
+          if (this.filters.titleFilter) {
+            return this.getTitle().includes(this.filters.titleFilter);
+          }
+          return true;
+        }
+        getTitle() {
+          return this.data[0];
+        }
+        getContent(node) {
+          throw new Error('Not implemented');
+        }
+      }
+
+      function tryParseJsonData(jsonString, defaultValue = new Map(), DefaultClass = Map) {
+        try {
+          const o = JSON.parse(jsonString);
+          if (Array.isArray(o)) {
+            return new DefaultClass(o);
+          } else {
+            throw new Error('Invalid data');
+          }
+        } catch (e) {
+          return defaultValue;
+        }
+      }
+
+      class FW {
+        constructor() {
+          this.selectedIds = new Set(tryParseJsonData(localStorage.getItem('walker-selected-ids'), new Set(), Set));
+          this.data = tryParseJsonData(localStorage.getItem('walker-data'), globalThis.EMBEDDED_DATA);
+          this.stage = document.getElementById('stage');
+          this.breadcrumbs = document.getElementById('breadcrumbs');
+          this.nodeTemplate = document.getElementById('node_template');
+          this.reverseDirectionBtn = document.getElementById('reverseDirection');
+          this.gridSizeSlider = document.getElementById('gridSize');
+          this.filterInput = document.getElementById('filter');
+          this.filters = {
+            reverseDirection: false,
+            titleFilter: '',
+          };
+        }
+        bindEvents() {
+          //  drop event for the json data
+          this.stage.addEventListener('drop', this.handleDrop.bind(this));
+          this.stage.addEventListener('dragover', (e) => e.preventDefault());
+
+          // editing events
+          this.stage.addEventListener('click', this.handleClick.bind(this));
+
+          // reverse direction
+          this.reverseDirectionBtn.addEventListener('click', () => {
+            this.reverseDirectionBtn.classList.toggle('active');
+            this.filters.reverseDirection = !this.filters.reverseDirection;
+            this.render();
+          });
+
+          // grid size
+          this.gridSizeSlider.addEventListener('input', (e) => {
+            this.stage.style.setProperty('--grid-size', `${e.target.value}px`);
+          });
+
+          // filter
+          this.filterInput.addEventListener('input', (e) => {
+            this.filters.titleFilter = e.target.value;
+            this.render();
+          });
+        }
+
+        handleClick(e) {
+          const target = e.target;
+          if (target.matches('.node__header, .node__header *')) {
+            const node = target.closest('.node');
+            this.toggleSelectionForAllNodesWithSameId(node);
+          }
+        }
+        renderBreadcrumbs() {
+          const ids = Array.from(this.selectedIds);
+          this.breadcrumbs.innerHTML = ids.map((id) => `<span>${id}</span>`).join('~');
+        }
+        toggleSelectionForAllNodesWithSameId(node) {
+          const id = node.getAttribute('data-id');
+          if (this.selectedIds.has(id)) {
+            this.selectedIds.delete(id);
+          } else {
+            this.selectedIds.add(id);
+          }
+          this.renderBreadcrumbs();
+          localStorage.setItem('walker-selected-ids', JSON.stringify(Array.from(this.selectedIds)));
+          const idIndex = Array.from(this.selectedIds).indexOf(id);
+          const nodes = this.stage.querySelectorAll(`.node[data-id="${id}"]`);
+
+          for (const n of nodes) {
+            if (n.classList.contains('selected')) {
+              n.style.removeProperty('--selected-index');
+            } else {
+              n.style.setProperty('--selected-index', idIndex);
+            }
+            n.classList.toggle('selected');
+          }
+        }
+        render() {
+          this.stage.innerHTML = '';
+          this.renderBreadcrumbs();
+          for (const node of this.data) {
+            this.renderNode(new DataAdapter(node, this.data, this.filters), this.stage);
+          }
+        }
+        renderNodeChildren(dataAdapter, parent, depth = 0, depthLimit = 0, visited = new Set()) {
+          parent.innerHTML = '';
+          const children = dataAdapter.getChildren();
+          for (const child of children) {
+            this.renderNode(
+              new DataAdapter(child, this.data, this.filters),
+              parent,
+              depth,
+              depthLimit,
+              new Set(visited),
+            );
+          }
+        }
+        renderNode(dataAdapter, parent, depth = 0, depthLimit = 0, visited = new Set()) {
+          if (!dataAdapter.shouldShow()) {
+            console.log('Filtering', dataAdapter.getTitle());
+            return;
+          }
+          const node = this.nodeTemplate.content.cloneNode(true);
+          const root = node.querySelector('.node');
+          const title = node.querySelector('.node__title');
+          const content = node.querySelector('.node__content');
+          const id = dataAdapter.getId();
+
+          title.textContent = dataAdapter.getTitle();
+
+          root.style.setProperty('--depth', depth);
+          root.setAttribute('data-id', id);
+
+          if (visited.has(id)) {
+            content.innerHTML = '<small>(Included In Parent Node)</small>';
+          } else if (depthLimit < 1) {
+            visited.add(id);
+            this.renderNodeChildren(dataAdapter, content, depth + 1, depthLimit + 1, visited);
+          } else {
+            const c = dataAdapter.getChildren();
+            if (c.length) {
+              content.innerHTML = `<small>(${c.length} ${c.length > 1 ? 'connections' : 'connection'})</small>`;
+              content.onclick = () => {
+                content.onclick = null;
+                this.renderNodeChildren(dataAdapter, content, depth + 1);
+              };
+            }
+          }
+
+          if (this.selectedIds.has(id)) {
+            const idIndex = Array.from(this.selectedIds).indexOf(id);
+            root.classList.add('selected');
+            root.style.setProperty('--selected-index', idIndex);
+          }
+
+          parent.appendChild(node);
+        }
+        handleDrop(e) {
+          e.preventDefault();
+
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          const file = files[0];
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.data = tryParseJsonData(e.target.result);
+            localStorage.setItem('walker-data', e.target.result);
+            this.render();
+          };
+          reader.readAsText(file);
+        }
+      }
+
+      const fw = new FW();
+      fw.render();
+      fw.bindEvents();
+    </script>
+  </body>
+</html>
