@@ -451,7 +451,7 @@
               content.innerHTML = `<small>(${c.length} ${c.length > 1 ? 'connections' : 'connection'})</small>`;
               content.onclick = () => {
                 content.onclick = null;
-                this.renderNodeChildren(dataAdapter, content, depth + 1, -Infinity);
+                this.renderNodeChildren(dataAdapter, content, depth + 1);
               };
             }
           }
