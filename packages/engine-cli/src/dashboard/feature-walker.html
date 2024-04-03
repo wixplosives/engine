@@ -116,6 +116,10 @@
         font-size: 1.125rem;
       }
 
+      .shared {
+        outline: 2px solid #f39c12;
+      }
+
       .selected {
         --hue: calc(var(--selected-index) * 40 + 200);
         border: 2px solid hsl(var(--hue), 100%, 50%);
@@ -275,6 +279,7 @@
 
       class FW {
         constructor() {
+          this.sharedDependencies = new Set();
           this.selectedIds = new Set(tryParseJsonData(localStorage.getItem('walker-selected-ids'), new Set(), Set));
           this.data = tryParseJsonData(localStorage.getItem('walker-data'), globalThis.EMBEDDED_DATA);
           this.stage = document.getElementById('stage');
@@ -326,7 +331,9 @@
           this.clearAllBtn.addEventListener('click', () => {
             localStorage.removeItem('walker-selected-ids');
             localStorage.removeItem('walker-data');
-            this.selectedIds.clear();
+            this.updateSelection(() => {
+              this.selectedIds.clear();
+            });
             this.render();
           });
 
@@ -340,11 +347,13 @@
             const target = e.target;
             if (target.matches('input[type="checkbox"]')) {
               const id = target.value;
-              if (target.checked) {
-                this.selectedIds.add(id);
-              } else {
-                this.selectedIds.delete(id);
-              }
+              this.updateSelection(() => {
+                if (target.checked) {
+                  this.selectedIds.add(id);
+                } else {
+                  this.selectedIds.delete(id);
+                }
+              });
               localStorage.setItem('walker-selected-ids', JSON.stringify(Array.from(this.selectedIds)));
               this.render();
             }
@@ -380,17 +389,23 @@
             this.toggleSelectionForAllNodesWithSameId(node);
           }
         }
+        updateSelection(fn) {
+          fn();
+          this.calcAllSharedDependencies();
+        }
         renderBreadcrumbs() {
           const ids = Array.from(this.selectedIds);
           this.breadcrumbs.innerHTML = ids.map((id) => `<span class=" ">${id}</span>`).join('~');
         }
         toggleSelectionForAllNodesWithSameId(node) {
           const id = node.getAttribute('data-id');
-          if (this.selectedIds.has(id)) {
-            this.selectedIds.delete(id);
-          } else {
-            this.selectedIds.add(id);
-          }
+          this.updateSelection(() => {
+            if (this.selectedIds.has(id)) {
+              this.selectedIds.delete(id);
+            } else {
+              this.selectedIds.add(id);
+            }
+          });
           this.renderBreadcrumbs();
           localStorage.setItem('walker-selected-ids', JSON.stringify(Array.from(this.selectedIds)));
           const idIndex = Array.from(this.selectedIds).indexOf(id);
@@ -403,6 +418,36 @@
               n.style.setProperty('--selected-index', idIndex);
             }
             n.classList.toggle('selected');
+          }
+        }
+        getNodeElsByDataId(id) {
+          const nodes = this.stage.querySelectorAll(`.node[data-id="${id}"]`);
+          return nodes;
+        }
+        calcAllSharedDependencies() {
+          let sharedDependencies = [];
+          for (const id of this.selectedIds) {
+            const node = this.data.get(id);
+            const adapter = new DataAdapter([id, node], this.data, this.filters);
+            for (const [dep] of adapter.getChildren()) {
+              sharedDependencies.push(dep);
+            }
+          }
+
+          sharedDependencies = sharedDependencies.filter((id) => {
+            return sharedDependencies.filter((i) => i === id).length > 1;
+          });
+
+          for (const id of Array.from(this.sharedDependencies)) {
+            this.getNodeElsByDataId(id).forEach((node) => node.classList.remove('shared'));
+          }
+
+          this.sharedDependencies = new Set(sharedDependencies);
+
+          for (const id of sharedDependencies) {
+            this.getNodeElsByDataId(id).forEach((node) => {
+              node.classList.add('shared');
+            });
           }
         }
         render() {
@@ -426,7 +471,7 @@
           }
         }
         renderNode(dataAdapter, parent, depth = 0, depthLimit = 0, visited = new Set()) {
-          if (!dataAdapter.shouldShow() && parent === this.stage) {
+          if (!dataAdapter.shouldShow() && parent === this.stage && !this.selectedIds.has(dataAdapter.getId())) {
             return;
           }
           const node = this.nodeTemplate.content.cloneNode(true);
@@ -455,7 +500,9 @@
               };
             }
           }
-
+          if (this.sharedDependencies?.has(id)) {
+            root.classList.add('shared');
+          }
           if (this.selectedIds.has(id)) {
             const idIndex = Array.from(this.selectedIds).indexOf(id);
             root.classList.add('selected');
