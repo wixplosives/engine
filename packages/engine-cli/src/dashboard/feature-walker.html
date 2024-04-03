@@ -96,13 +96,18 @@
       }
 
       .node {
+        --node-display: inline-block;
         color: #eee;
         border: 1px solid #1f618a;
         border-radius: 3px;
         margin: 4px;
         vertical-align: top;
         background-color: #1a1a1a;
-        display: inline-block;
+        display: var(--node-display);
+      }
+
+      .list-mode .node {
+        --node-display: block;
       }
 
       .node__content:not(:empty) {
@@ -130,11 +135,7 @@
       }
 
       .selected .node {
-        display: inline-block;
-      }
-
-      #stage.list-mode .node {
-        display: block;
+        display: var(--node-display);
       }
 
       /**********************************************/
