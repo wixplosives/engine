@@ -18,6 +18,7 @@ export function resolveBuildEntryPoints({
     publicConfigsRoute,
     jsOutExtension,
     nodeFormat,
+    buildElectron,
 }: {
     features: Map<string, IFeatureDefinition>;
     configurations: SetMultiMap<string, IConfigDefinition>;
@@ -29,6 +30,7 @@ export function resolveBuildEntryPoints({
     publicConfigsRoute: string;
     jsOutExtension: '.js' | '.mjs';
     nodeFormat: 'esm' | 'cjs';
+    buildElectron?: boolean;
 }) {
     const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
     const configMapping = createAllValidConfigurationsEnvironmentMapping(configurations, mode, configName);
@@ -53,6 +55,7 @@ export function resolveBuildEntryPoints({
             publicPath,
             configName,
             featureName,
+            buildElectron,
         },
         jsOutExtension,
         nodeFormat,
