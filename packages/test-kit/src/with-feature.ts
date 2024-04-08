@@ -93,12 +93,12 @@ export interface IFeatureExecutionOptions {
      */
     consoleLogAllowedErrors?: boolean;
     /**
-     * @defaultValue 10_000
+     * @defaultValue 20_000
      */
     featureDisposeTimeout?: number;
     /**
      * tracing disposal timeout
-     * @defaultValue 10_000
+     * @defaultValue 20_000
      */
     saveTraceTimeout?: number;
     /**
@@ -541,7 +541,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
             disposables.add({
                 group: WITH_FEATURE_DISPOSABLES,
                 name: `close feature "${featureName}"`,
-                timeout: withFeatureOptions.featureDisposeTimeout ?? 10_000,
+                timeout: withFeatureOptions.featureDisposeTimeout ?? 20_000,
                 dispose: runningFeature,
             });
 
@@ -576,12 +576,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
 
                             await featurePage.screenshot({ path: sanitizedFilePath });
 
-                            console.log(
-                                reporters.Base.color(
-                                    'bright yellow',
-                                    `The screenshot has been saved at ${sanitizedFilePath}`,
-                                ),
-                            );
+                            console.log(reporters.Base.color('bright yellow', screenShotMessage(sanitizedFilePath)));
                         }
                     }
                     await featurePage.close();
@@ -600,6 +595,10 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         disposeAfter: onDispose,
         disposables,
     };
+}
+
+export function screenShotMessage(sanitizedFilePath: string): string {
+    return `The screenshot has been saved at ${sanitizedFilePath}`;
 }
 
 async function getMetrics(runningFeature: RunningFeature, featurePage: playwright.Page) {
@@ -733,7 +732,7 @@ async function enableTracing({
     disposables.add({
         group: TRACING_DISPOSABLES,
         name: 'stop tracing',
-        timeout: withFeatureOptions?.saveTraceTimeout ?? 10000,
+        timeout: withFeatureOptions?.saveTraceTimeout ?? 20_000,
         dispose: () => {
             const testName = mochaCtx()?.currentTest?.title;
             return browserContext.tracing.stop({
