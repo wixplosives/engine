@@ -28,7 +28,7 @@ export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> 
     ) {
         this.disposables.add({
             timeout: 5_000,
-            name: `environment disposal handlers [${this.environment.env}]`,
+            name: `[${this.environment.env}] environment disposal handlers`,
             dispose: async () => {
                 const featureDisposeHandlers = this.disposeHandlers.get(this.environment.env) || new Set();
                 for (const handler of featureDisposeHandlers) {
