@@ -26,11 +26,15 @@ export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> 
         public dependencies: RunningFeatures<InstanceType<T>['dependencies'], ENV>,
         public environment: ENV,
     ) {
-        this.disposables.add('disposal handlers', async () => {
-            const featureDisposeHandlers = this.disposeHandlers.get(this.environment.env) || new Set();
-            for (const handler of featureDisposeHandlers) {
-                await handler();
-            }
+        this.disposables.add({
+            timeout: 5_000,
+            name: `environment disposal handlers [${this.environment.env}]`,
+            dispose: async () => {
+                const featureDisposeHandlers = this.disposeHandlers.get(this.environment.env) || new Set();
+                for (const handler of featureDisposeHandlers) {
+                    await handler();
+                }
+            },
         });
     }
     public addRunHandler = (fn: () => unknown) => {
