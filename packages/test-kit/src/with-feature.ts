@@ -401,8 +401,9 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
             if (!spawnOptions.cwd && !projectPath) {
                 throw new Error('spawnSync cannot be called without providing a fixturePath or cwd');
             }
-            return spawnSyncSafe(command, args, {
-                stdio: 'inherit',
+
+            return spawnSync(command, args, {
+                stdio: 'pipe',
                 cwd: projectPath,
                 shell: true,
                 ...spawnOptions,
