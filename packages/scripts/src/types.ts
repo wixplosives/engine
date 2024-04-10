@@ -71,6 +71,15 @@ export type BuildConfiguration = {
 
 export type OverrideConfigHook = <const T extends BuildConfiguration>(config: T) => T;
 
+export type CliFlag<T> = {
+    /** e.g. String, Boolean, etc. */
+    type: (value: string) => T;
+    /** description to be used in help output */
+    description: string;
+    /** default value */
+    defaultValue: T;
+};
+
 export interface EngineConfig {
     require?: string[];
     featureDiscoveryRoot?: string;
@@ -93,4 +102,5 @@ export interface EngineConfig {
 
     /** @default [".js", ".json"] */
     extensions?: string[];
+    engineRuntimeArgsFlags?: Record<string, CliFlag<string | boolean>>;
 }
