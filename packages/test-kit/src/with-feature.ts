@@ -12,12 +12,13 @@ import { hookPageConsole } from './hook-page-console.js';
 import { normalizeTestName } from './normalize-test-name.js';
 import { RemoteHttpApplication } from './remote-http-application.js';
 import { validateBrowser } from './supported-browsers.js';
-import { ensureTracePath } from './utils/index.js';
-import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
+import { ensureTracePath } from './utils/';
+import { type ChildProcess, spawn, spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import { createTempDirectorySync } from 'create-temp-directory';
 import { linkNodeModules } from './link-test-dir.js';
-import { retry } from 'promise-assist';
+import { retry, timeout } from 'promise-assist';
 import { IExecutableApplication, ManagedRunEngine, RunningFeature } from '@wixc3/engine-cli';
+import { once } from 'node:events';
 
 const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
 
@@ -443,18 +444,32 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 if (dependencies) {
                     if (dependencies.type === 'link') {
                         linkNodeModules(projectPath, dependencies.path);
-                    } else if (dependencies.type === 'yarn') {
-                        spawnSyncSafe('yarn', ['install'], {
+                    } else if (dependencies.type === 'yarn' || dependencies.type === 'npm') {
+                        const installOptions = {
                             cwd: projectPath,
                             shell: true,
                             stdio: debugMode ? 'inherit' : 'ignore',
-                        });
-                    } else if (dependencies.type === 'npm') {
-                        spawnSyncSafe('npm', ['install'], {
-                            cwd: projectPath,
-                            shell: true,
-                            stdio: debugMode ? 'inherit' : 'ignore',
-                        });
+                        } satisfies SpawnSyncOptions;
+                        const shouldRetryInstall = !!process.env.NEW_FIXTURE_DEPENDENCIES_INSTALLATION;
+
+                        if (shouldRetryInstall) {
+                            const installTimeout = 10_000;
+
+                            await retry(
+                                () =>
+                                    timeout(
+                                        spawnSafe(dependencies.type, ['install'], installOptions),
+                                        installTimeout,
+                                        `Dependencies installation ("${dependencies.type} install") timed out after ${installTimeout}ms`,
+                                    ),
+                                {
+                                    retries: 2,
+                                    delay: 1_000,
+                                },
+                            );
+                        } else {
+                            spawnSyncSafe(dependencies.type, ['install'], installOptions);
+                        }
                     }
                     await hooks.afterInstall?.();
                 }
@@ -764,14 +779,28 @@ function isNonReactDevMessage(type: string, [firstArg]: unknown[]) {
     return type !== 'info' || typeof firstArg !== 'string' || !firstArg.startsWith('%cDownload the React DevTools');
 }
 
-export const spawnSyncSafe = ((...args: Parameters<typeof spawnSync>) => {
+const throwNonZeroExitCodeError = (
+    args: Parameters<typeof spawnSync | typeof spawn>,
+    status: ChildProcess['exitCode'],
+) => {
+    const command = args.filter((arg) => typeof arg === 'string').join(' ');
+    const exitCode = status ?? 'null';
+
+    throw new Error(`Command "${command}" failed with exit code ${exitCode}.`);
+};
+
+export const spawnSyncSafe = (...args: Parameters<typeof spawnSync>) => {
     const spawnResult = spawnSync(...args);
     if (spawnResult.status !== 0) {
-        throw new Error(
-            `Command "${args.filter((arg) => typeof arg === 'string').join(' ')}" failed with exit code ${
-                spawnResult.status ?? 'null'
-            }.`,
-        );
+        throwNonZeroExitCodeError(args, spawnResult.status);
     }
     return spawnResult;
-}) as typeof spawnSync;
+};
+
+const spawnSafe = async (...args: Parameters<typeof spawn>) => {
+    const childProcess = spawn(...args);
+    const [status] = (await once(childProcess, 'exit')) as [ChildProcess['exitCode']];
+    if (status !== 0) {
+        throwNonZeroExitCodeError(args, status);
+    }
+};
