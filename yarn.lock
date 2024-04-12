@@ -3922,7 +3922,7 @@ exponential-backoff@^3.1.1:
   resolved "https://registry.yarnpkg.com/exponential-backoff/-/exponential-backoff-3.1.1.tgz#64ac7526fe341ab18a39016cd22c787d01e00bf6"
   integrity sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==
 
-express@^4.18.2, express@^4.19.2:
+express@^4.19.2:
   version "4.19.2"
   resolved "https://registry.yarnpkg.com/express/-/express-4.19.2.tgz#e25437827a3aa7f2a827bc8171bbbb664a356465"
   integrity sha512-5T6nhjsT+EOMzuck8JjBHARTHfMht0POzlA60WV2pMD3gyXw2LZnZ+ueGdNxG+0calOJcWKbpFcuzLZ91YWq9Q==
@@ -4415,7 +4415,7 @@ glob@8.1.0, glob@^8.0.1:
     minimatch "^5.0.1"
     once "^1.3.0"
 
-glob@^10.2.2, glob@^10.3.10, glob@^10.3.3, glob@^10.3.7:
+glob@^10.2.2, glob@^10.3.10, glob@^10.3.12, glob@^10.3.3, glob@^10.3.7:
   version "10.3.12"
   resolved "https://registry.yarnpkg.com/glob/-/glob-10.3.12.tgz#3a65c363c2e9998d220338e88a5f6ac97302960b"
   integrity sha512-TCNv8vJ+xz4QiqTpfOJA7HvYv+tNIRHKfUWw/q+v2jdgN4ebz+KY9tGx5J4rHP0o84mNP+ApH66HRX8us3Khqg==
@@ -6082,19 +6082,19 @@ mkdirp@^1.0.3:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-mocha-play@^7.0.4:
-  version "7.0.4"
-  resolved "https://registry.yarnpkg.com/mocha-play/-/mocha-play-7.0.4.tgz#4a4fed44344ceaee1389c88511efce6035bda734"
-  integrity sha512-qTz9FUUhabgz8njDphs/h3BTMI1zLrbAcYgRnoEGCwy2zV3eEUV4IhSnLVGSzcEphChBz3qf0cMGahyUgqSfEw==
+mocha-play@^7.0.5:
+  version "7.0.5"
+  resolved "https://registry.yarnpkg.com/mocha-play/-/mocha-play-7.0.5.tgz#dcf5b5cca01f6dbc04451ac537bf9dee6ec407b1"
+  integrity sha512-hU+yh6XfHcCpBo4Hg49rZd04moI9SeBuZioCP06/+6piibKppL/rzbaHD8ZrjIO592LX5t3tqxhan3Niq32ejg==
   dependencies:
     commander "^12.0.0"
     create-listening-server "^2.1.0"
-    express "^4.18.2"
+    express "^4.19.2"
     find-up "^7.0.0"
-    glob "^10.3.10"
+    glob "^10.3.12"
     html-webpack-plugin "^5.6.0"
-    playwright-core "^1.41.2"
-    webpack-dev-middleware "^7.0.0"
+    playwright-core "^1.43.0"
+    webpack-dev-middleware "^7.2.1"
 
 mocha@^10.4.0:
   version "10.4.0"
@@ -6947,7 +6947,7 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-playwright-core@1.43.0, playwright-core@^1.41.2, playwright-core@^1.43.0:
+playwright-core@1.43.0, playwright-core@^1.43.0:
   version "1.43.0"
   resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.43.0.tgz#d8079acb653abebb0b63062e432479647a4e1271"
   integrity sha512-iWFjyBUH97+pUFiyTqSLd8cDMMOS0r2ZYz2qEsPjH8/bX++sbIJT35MSwKnp1r/OQBAqC5XO99xFbJ9XClhf4w==
@@ -8623,7 +8623,7 @@ webidl-conversions@^3.0.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-3.0.1.tgz#24534275e2a7bc6be7bc86611cc16ae0a5654871"
   integrity sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==
 
-webpack-dev-middleware@^7.0.0, webpack-dev-middleware@^7.2.1:
+webpack-dev-middleware@^7.2.1:
   version "7.2.1"
   resolved "https://registry.yarnpkg.com/webpack-dev-middleware/-/webpack-dev-middleware-7.2.1.tgz#2af00538b6e4eda05f5afdd5d711dbebc05958f7"
   integrity sha512-hRLz+jPQXo999Nx9fXVdKlg/aehsw1ajA9skAneGmT03xwmyuhvF93p6HUKKbWhXdcERtGTzUCtIQr+2IQegrA==
