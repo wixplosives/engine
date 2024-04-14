@@ -1,7 +1,7 @@
 import { nodeFs as fs } from '@file-services/node';
 import type { TopLevelConfig } from '@wixc3/engine-core';
-import { Disposables, type DisposableItem, type DisposableOptions } from '@wixc3/patterns';
-import { mochaCtx } from '@wixc3/testing';
+import { type DisposableItem, type DisposableOptions, Disposables } from '@wixc3/patterns';
+import { adjustCurrentTestTimeout, mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
 import { getRunningFeature, uniqueHash } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
@@ -456,12 +456,14 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                             const installTimeout = 10_000;
 
                             await retry(
-                                () =>
-                                    timeout(
+                                () => {
+                                    adjustCurrentTestTimeout(installTimeout);
+                                    return timeout(
                                         spawnSafe(dependencies.type, ['install'], installOptions),
                                         installTimeout,
                                         `Dependencies installation ("${dependencies.type} install") timed out after ${installTimeout}ms`,
-                                    ),
+                                    );
+                                },
                                 {
                                     retries: 2,
                                     delay: 1_000,
