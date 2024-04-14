@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "engineer start",
-    "test": "yarn test:it",
+    "test": "npm run test:it",
     "test:it": "mocha \"dist/test/**/*.it.js\""
   }
 }

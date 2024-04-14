@@ -3,8 +3,8 @@
   "version": "45.3.1",
   "main": "index.js",
   "scripts": {
-    "start": "yarn engineer start -f react/someplugin --singleFeature",
-    "test": "yarn test:it",
+    "start": "engineer start -f react/someplugin --singleFeature",
+    "test": "npm run test:it",
     "test:it": "mocha \"dist/test/**/*.it.js\""
   },
   "license": "UNLICENSED",

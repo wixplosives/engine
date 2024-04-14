@@ -4,12 +4,12 @@
   "main": "src/index",
   "scripts": {
     "clean": "rimraf dist",
-    "prebuild": "yarn clean",
+    "prebuild": "npm run clean",
     "build": "tsc --build src",
     "start": "engineer start",
-    "test": "yarn test:browser",
+    "test": "npm run test:browser",
     "test:browser": "mocha-play \"./dist/test/**/*.spec.js\"",
-    "prepack": "yarn build"
+    "prepack": "npm run build"
   },
   "peerDependencies": {
     "@wixc3/engine-core": ">=30"
