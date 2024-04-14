@@ -45,7 +45,7 @@ jobs:
         run: sudo mv ./.package.json ./package.json
         working-directory: ./guides
       - name: Install guides' dependencies
-        run: npm i && npm run build build
+        run: npm i && npm run build
         working-directory: ./guides
       - name: Move guides' output to Jekyll's `_site` in subdirectory
         # using `sudo` to avoid permissions errors
