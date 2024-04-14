@@ -6,7 +6,7 @@ sidebar_position: 1
 ## How to run it
 
 - Go to example react `Feature` (`examples/react`).
-- Type (in terminal): `yarn engineer start`
+- Type (in terminal): `npx engineer start`
 - Inside the dashboard, select `somePlugin` to see all plugins running.
 
 ```mermaid

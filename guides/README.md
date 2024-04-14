@@ -9,7 +9,7 @@ for publishing and without committing `package.json` into repository. You should
 before starting local development.
 
 ```
-yarn workspace engine-guides start
+npm run -w engine-guides start
 ```
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without
