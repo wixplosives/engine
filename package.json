@@ -17,7 +17,7 @@
     "start": "engineer start",
     "pretest": "npm run lint && npm run build",
     "test": "npm run test:unit",
-    "test:unit": "lerna run test --stream --concurrency=1",
+    "test:unit": "npm test -ws --if-present",
     "prettify": "npx prettier . --write"
   },
   "devDependencies": {
@@ -66,7 +66,6 @@
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "html-webpack-plugin": "^5.6.0",
-    "lerna": "^8.1.2",
     "mocha": "^10.4.0",
     "mocha-play": "^7.0.5",
     "playwright-core": "^1.43.1",
