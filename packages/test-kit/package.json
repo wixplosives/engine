@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "45.4.0",
+  "version": "45.4.1-alpha.0",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
