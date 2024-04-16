@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "45.3.1",
+  "version": "45.4.0",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -12,10 +12,10 @@
   },
   "scripts": {
     "build:umd": "node ./scripts/bundle",
-    "test": "yarn test:node && yarn test:browser",
+    "test": "npm run test:node && npm run test:browser",
     "test:node": "mocha \"dist/test/node/**/*.spec.js\"",
     "test:browser": "mocha-play \"dist/test/**/*.spec.js\" -c ./webpack.config.test.js",
-    "prepack": "yarn build:umd"
+    "prepack": "npm run build:umd"
   },
   "dependencies": {
     "@wixc3/isomorphic-worker": "^1.2.5",

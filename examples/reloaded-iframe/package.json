@@ -1,9 +1,9 @@
 {
   "name": "@example/reloaded-iframe",
-  "version": "45.3.1",
+  "version": "45.4.0",
   "scripts": {
     "start": "engineer start",
-    "test": "yarn test:it",
+    "test": "npm run test:it",
     "test:it": "mocha \"dist/test/**/*.it.js\""
   },
   "private": true

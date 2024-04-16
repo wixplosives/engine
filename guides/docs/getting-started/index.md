@@ -23,9 +23,9 @@ npm install --saveDev typescript stylable
 
 In your blank typescript repo:
 
-1. install engine-core package `yarn add @wixc3/engine-core`
-2. install dev-dependencies `yarn add -D typescript webpack html-webpack-plugin react stylable`
-3. install engineer as a dev dependency `yarn add @wixc3/engineer -D`
+1. install engine-core package `npm i @wixc3/engine-core`
+2. install dev-dependencies `npm i -D typescript webpack html-webpack-plugin react stylable`
+3. install engineer as a dev dependency `npm i -D @wixc3/engineer`
 4. if this is a typescript project, in the root of the project create an `engine.config.js` file, and inside we should
    add one of the following:
 
@@ -140,4 +140,4 @@ engineer would be `npx engineer start -f hello-world`
 
 We should see `hello` followed by `world` written in the console.
 
-For a live example, go to `examples/hello-world` and run `yarn start`
+For a live example, go to `examples/hello-world` and run `npm start`

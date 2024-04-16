@@ -1,9 +1,9 @@
 {
   "name": "@example/multi-env",
-  "version": "45.3.1",
+  "version": "45.4.0",
   "scripts": {
     "start": "engineer start",
-    "test": "yarn test:it && yarn test:unit",
+    "test": "npm run test:it && npm run test:unit",
     "test:it": "mocha \"dist/test/**/*.it.js\"",
     "test:unit": "mocha \"dist/test/**/*.unit.js\""
   },
