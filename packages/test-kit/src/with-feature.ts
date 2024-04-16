@@ -453,7 +453,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         const shouldRetryInstall = !!process.env.NEW_FIXTURE_DEPENDENCIES_INSTALLATION;
 
                         if (shouldRetryInstall) {
-                            const installTimeout = 10_000;
+                            const installTimeout = 60_000;
 
                             await retry(
                                 () => {
