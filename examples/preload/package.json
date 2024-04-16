@@ -1,6 +1,6 @@
 {
   "name": "@example/preload",
-  "version": "45.4.0",
+  "version": "45.4.1",
   "scripts": {
     "start": "engineer start",
     "test": "npm run test:it",
