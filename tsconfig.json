@@ -14,7 +14,6 @@
     { "path": "./packages/dashboard/src" },
     { "path": "./packages/dashboard/test" },
 
-    { "path": "./packages/electron/src" },
     { "path": "./packages/electron-commons/src" },
     { "path": "./packages/electron-commons/test" },
     { "path": "./packages/electron-host/src" },
