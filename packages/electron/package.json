@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-electron",
-  "version": "45.4.1",
+  "version": "45.5.0",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -11,9 +11,9 @@
     "electron": ">=9"
   },
   "dependencies": {
-    "@wixc3/engine-core": "^45.4.1",
-    "@wixc3/engine-electron-commons": "^45.4.1",
-    "@wixc3/engine-runtime-node": "^45.4.1"
+    "@wixc3/engine-core": "^45.5.0",
+    "@wixc3/engine-electron-commons": "^45.5.0",
+    "@wixc3/engine-runtime-node": "^45.5.0"
   },
   "files": [
     "dist",
