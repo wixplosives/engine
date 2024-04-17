@@ -22,3 +22,4 @@ export * from './worker-thread-initializer2.js';
 export * from './ws-environment.js';
 export * from './metrics-utils.js';
 export * from './micro-rpc.js';
+export * from './metadata-files.js';
