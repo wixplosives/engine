@@ -9,8 +9,7 @@
   },
   "main": "./dist/index.js",
   "exports": {
-    ".": "./dist/index.js",
-    "./metadata": "./dist/metadata-files.js"
+    ".": "./dist/index.js"
   },
   "dependencies": {
     "@file-services/node": "^9.2.0",

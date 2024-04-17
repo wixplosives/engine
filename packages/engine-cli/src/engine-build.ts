@@ -1,5 +1,11 @@
 import fs from '@file-services/node';
-import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping, importModules } from '@wixc3/engine-runtime-node';
+import {
+    ConfigurationEnvironmentMapping,
+    FeatureEnvironmentMapping,
+    importModules,
+    readMetadataFiles,
+    writeMetaFiles,
+} from '@wixc3/engine-runtime-node';
 import { ENGINE_CONFIG_FILE_NAME, EngineConfig, analyzeFeatures } from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
@@ -9,7 +15,7 @@ import { writeWatchSignal } from './watch-signal';
 import { resolveBuildEntryPoints } from './resolve-build-configurations';
 import { ConfigLoadingMode, launchDashboardServer } from './launch-dashboard-server';
 import { createBuildConfiguration } from './create-environments-build-configuration';
-import { readEntryPoints, readMetadataFiles, writeEntryPoints, writeMetaFiles } from './metadata-files';
+import { readEntryPoints, writeEntryPoints } from './entrypoint-files';
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
 import { resolveRuntimeOptions } from './resolve-runtime-options';
 

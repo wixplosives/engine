@@ -2,11 +2,14 @@ import { type IFeatureTarget } from '@wixc3/engine-scripts';
 import { loadEngineConfig, runEngine } from './engine-build';
 import { resolveRuntimeOptions } from './resolve-runtime-options';
 import { runLocalNodeManager } from './run-local-mode-manager';
-import { readMetadataFiles } from './metadata-files';
 import isCI from 'is-ci';
 import type { IExecutableApplication } from './types.js';
 import { join } from 'path';
-import type { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
+import {
+    type ConfigurationEnvironmentMapping,
+    type FeatureEnvironmentMapping,
+    readMetadataFiles,
+} from '@wixc3/engine-runtime-node';
 import { checkWatchSignal } from './watch-signal';
 
 export const OUTPUT_PATH = process.env.ENGINE_OUTPUT_PATH || join(process.cwd(), 'dist-engine');
