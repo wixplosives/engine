@@ -1,20 +1,19 @@
 import fs from '@file-services/node';
-import {
-    ConfigurationEnvironmentMapping,
-    FeatureEnvironmentMapping,
-    createFeatureEnvironmentsMapping,
-} from '@wixc3/engine-runtime-node';
-import { createAllValidConfigurationsEnvironmentMapping } from '@wixc3/engine-scripts';
 import { join } from 'node:path';
+import {
+    type ConfigurationEnvironmentMapping,
+    type FeatureEnvironmentMapping,
+    createFeatureEnvironmentsMapping,
+} from './node-env-manager';
 
 export function readMetadataFiles(dir: string) {
     try {
         const featureEnvironmentsMapping = fs.readJsonFileSync(
             join(dir, 'metadata', 'engine-feature-environments-mapping.json'),
         ) as ReturnType<typeof createFeatureEnvironmentsMapping>;
-        const configMapping = fs.readJsonFileSync(join(dir, 'metadata', 'engine-config-mapping.json')) as ReturnType<
-            typeof createAllValidConfigurationsEnvironmentMapping
-        >;
+        const configMapping = fs.readJsonFileSync(
+            join(dir, 'metadata', 'engine-config-mapping.json'),
+        ) as ConfigurationEnvironmentMapping;
         return { featureEnvironmentsMapping, configMapping };
     } catch (e) {
         return undefined;
