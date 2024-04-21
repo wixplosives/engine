@@ -57,8 +57,6 @@
     "chai": "^4.4.1",
     "chai-as-promised": "^7.1.1",
     "create-temp-directory": "^2.4.0",
-    "electron": "^30.0.1",
-    "electron-builder": "^24.13.3",
     "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
