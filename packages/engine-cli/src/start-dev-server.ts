@@ -23,7 +23,13 @@ export async function launchServer({
     httpServerPort = 3000,
     socketServerOptions,
     middlewares = [],
-}: LaunchOptions = {}) {
+}: LaunchOptions = {}): Promise<{
+    close: () => Promise<void>;
+    port: number;
+    app: express.Express;
+    httpServer: import('http').Server;
+    socketServer: io.Server;
+}> {
     const app = express();
     app.use(cors());
 

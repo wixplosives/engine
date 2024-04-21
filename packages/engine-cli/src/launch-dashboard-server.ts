@@ -24,7 +24,7 @@ export async function launchDashboardServer(
     waitForBuildReady?: (cb: () => void) => boolean,
     buildConditions?: string[],
     extensions?: string[],
-) {
+): Promise<ReturnType<typeof launchServer>> {
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
         path: route,
         handlers: express.static(directoryPath),
