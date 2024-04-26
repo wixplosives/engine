@@ -14,7 +14,7 @@
   "dependencies": {
     "@file-services/node": "^9.2.0",
     "@file-services/resolve": "^9.2.0",
-    "@file-services/types": "^9.2.0",
+    "@file-services/types": "^9.2.1",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/engine-core": "^45.5.0",
     "@wixc3/engine-runtime-node": "^45.5.0",
