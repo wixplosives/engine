@@ -14,7 +14,7 @@ async function engine() {
         },
     });
 
-    const { loadEngineConfig, runEngine } = await import('./engine-build');
+    const { loadEngineConfig, runEngine } = await import('./engine-build.js');
 
     const engineConfig = await loadEngineConfig(process.cwd(), engineConfigCli.flags.engineConfigFilePath);
 

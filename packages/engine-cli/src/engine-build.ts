@@ -40,6 +40,7 @@ export interface RunEngineOptions {
     publicConfigsRoute?: string;
     configLoadingMode?: ConfigLoadingMode;
 }
+
 export async function runEngine({
     verbose = false,
     clean = true,
@@ -60,7 +61,13 @@ export async function runEngine({
     writeMetadataFiles = !watch,
     publicConfigsRoute = 'configs',
     configLoadingMode = 'require',
-}: RunEngineOptions = {}) {
+}: RunEngineOptions = {}): Promise<{
+    featureEnvironmentsMapping: FeatureEnvironmentMapping;
+    configMapping: ConfigurationEnvironmentMapping;
+    devServer?: Awaited<ReturnType<typeof launchDashboardServer>>;
+    esbuildContextWeb?: esbuild.BuildContext;
+    esbuildContextNode?: esbuild.BuildContext;
+}> {
     const mode: '' | 'development' | 'production' = dev ? 'development' : 'production';
     let esbuildContextWeb: esbuild.BuildContext | undefined;
     let esbuildContextNode: esbuild.BuildContext | undefined;
