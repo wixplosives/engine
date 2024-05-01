@@ -45,6 +45,10 @@ export class NodeConfigManager {
             const ctx = await this.createBuildTask(entryPoints, {
                 onStart() {
                     const newBuild = deferred<unknown[]>();
+                    newBuild.promise.catch(() => {
+                        // we don't want to throw unhandled promise rejection when we reject the deferred promise we always wait for the promise
+                        // noop
+                    });
                     buildStats.error = undefined;
                     buildStats.currentValue = newBuild.promise;
                     buildStats.build = newBuild;
