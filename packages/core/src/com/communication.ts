@@ -35,7 +35,6 @@ import type {
     EventMessage,
     ListenMessage,
     Message,
-    ReadyMessage,
     StatusMessage,
     UnListenMessage,
 } from './message-types.js';
@@ -608,7 +607,10 @@ export class Communication {
         } else if (this.DEBUG) {
             console.debug(FORWARDING_MESSAGE(cleanMessageForLog(message), this.rootEnvId, env.id));
         }
-
+        if (this.pendingEnvs.get(env.id)) {
+            this.pendingMessages.add(env.id, () => this.post(this.resolveMessageTarget(env.id), message));
+            return;
+        }
         this.post(env.host, message);
     }
 
@@ -765,7 +767,7 @@ export class Communication {
         }
     }
 
-    public handleReady({ from }: ReadyMessage): void {
+    public handleReady({ from }: { from: string }): void {
         this.readyEnvs.add(from);
         const pendingEnvCb = this.pendingEnvs.get(from);
         if (pendingEnvCb) {

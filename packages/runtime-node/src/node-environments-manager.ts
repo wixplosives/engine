@@ -5,7 +5,6 @@ import {
     Communication,
     type ConfigEnvironmentRecord,
     type Message,
-    type ReadyMessage,
     type TopLevelConfig,
 } from '@wixc3/engine-core';
 import type { SetMultiMap } from '@wixc3/patterns';
@@ -297,8 +296,8 @@ export class NodeEnvironmentsManager {
         const overrideConfig = Array.isArray(overrideConfigProvider)
             ? overrideConfigProvider
             : envName
-            ? overrideConfigProvider(envName)
-            : [];
+              ? overrideConfigProvider(envName)
+              : [];
         const overrideConfigs = [...overrideConfig];
         if (configName) {
             const currentOverrideConfig = overrideConfigsMap.get(configName);
@@ -406,7 +405,7 @@ export class NodeEnvironmentsManager {
             com.clearEnvironment(nodeEnv.name);
             com.registerMessageHandler(ipcHost);
             com.registerEnv(nodeEnv.name, ipcHost);
-            com.handleReady({ from: nodeEnv.name } as ReadyMessage);
+            com.handleReady({ from: nodeEnv.name });
             return {
                 port,
                 start,

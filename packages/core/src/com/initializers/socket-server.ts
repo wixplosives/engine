@@ -1,6 +1,5 @@
 import type { SocketOptions } from 'socket.io-client';
 import { WsClientHost } from '../hosts/ws-client-host.js';
-import type { ReadyMessage } from '../message-types.js';
 import type { InitializerOptions } from './types.js';
 
 export interface SocketClientInitializerOptions extends InitializerOptions, Partial<SocketOptions> {}
@@ -26,7 +25,7 @@ export const socketClientInitializer = async ({
         throw e;
     }
 
-    communication.handleReady({ from: instanceId } as ReadyMessage);
+    communication.handleReady({ from: instanceId });
 
     return {
         id: instanceId,

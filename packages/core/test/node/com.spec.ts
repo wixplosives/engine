@@ -12,12 +12,11 @@ import {
     Slot,
     multiTenantMethod,
     type Message,
-    type ReadyMessage,
 } from '@wixc3/engine-core';
 import { EventEmitter } from '@wixc3/patterns';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { waitFor } from 'promise-assist';
+import { sleep, waitFor } from 'promise-assist';
 import { spy, stub } from 'sinon';
 import sinonChai from 'sinon-chai';
 
@@ -159,6 +158,45 @@ describe('Communication', () => {
         expect(handleMessageStub).to.have.not.been.called;
     });
 
+    it('forwards to pending envs wait until resolve', async () => {
+        const middlemanHost = new BaseHost();
+        const aHost = new BaseHost();
+        const bHost = new BaseHost();
+
+        const mainCom = new Communication(middlemanHost, 'middle');
+        const bCom = new Communication(bHost, 'bEnv');
+        const aCom = new Communication(aHost, 'aEnv');
+
+        disposables.add(mainCom);
+        disposables.add(bCom);
+        disposables.add(aCom);
+
+        aCom.registerEnv('bEnv', middlemanHost); // bEnv is registered with middlemanHost
+
+        mainCom.registerEnv('aEnv', aHost);
+        mainCom.registerEnv('bEnv', bHost);
+
+        // bEnv is not ready to receive messages yet
+        void mainCom.envReady('bEnv');
+
+        bCom.registerEnv('aEnv', middlemanHost); // aEnv is registered with middlemanHost
+
+        const api = {
+            spy: spy(),
+        };
+        bCom.registerAPI({ id: 'myApi' }, api);
+
+        const mockApiProxyFromAEnv = aCom.apiProxy<typeof api>({ id: 'bEnv' }, { id: 'myApi' });
+        const done = mockApiProxyFromAEnv.spy();
+        // calling the remote api takes several micro ticks, so we wait one tick.
+        await sleep(0);
+        expect(api.spy).to.have.callCount(0);
+        mainCom.handleReady({ from: 'bEnv' });
+        await sleep(0);
+        expect(api.spy).to.have.callCount(1);
+        await done;
+    });
+
     it('forwards listen calls', async () => {
         const middlemanHost = new BaseHost();
         const aHost = new BaseHost();
@@ -256,8 +294,8 @@ describe('Communication', () => {
         bCom.registerEnv('aEnv', middlemanHost);
         mainCom.registerEnv('aEnv', aHost);
         mainCom.registerEnv('bEnv', bHost);
-        aCom.handleReady({ from: 'bEnv' } as ReadyMessage);
-        bCom.handleReady({ from: 'anv' } as ReadyMessage);
+        aCom.handleReady({ from: 'bEnv' });
+        bCom.handleReady({ from: 'anv' });
 
         const echoService = {
             echo() {
