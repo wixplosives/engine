@@ -171,7 +171,6 @@ describe('Communication', () => {
         disposables.add(bCom);
         disposables.add(aCom);
 
-        aCom.registerEnv('middle', middlemanHost);
         aCom.registerEnv('bEnv', middlemanHost); // bEnv is registered with middlemanHost
 
         mainCom.registerEnv('aEnv', aHost);
