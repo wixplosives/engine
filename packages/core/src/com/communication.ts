@@ -608,7 +608,10 @@ export class Communication {
         } else if (this.DEBUG) {
             console.debug(FORWARDING_MESSAGE(cleanMessageForLog(message), this.rootEnvId, env.id));
         }
-
+        if (this.pendingEnvs.get(env.id)) {
+            this.pendingMessages.add(env.id, () => this.post(this.resolveMessageTarget(env.id), message));
+            return;
+        }
         this.post(env.host, message);
     }
 
