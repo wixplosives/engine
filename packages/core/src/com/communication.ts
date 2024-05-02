@@ -35,7 +35,6 @@ import type {
     EventMessage,
     ListenMessage,
     Message,
-    ReadyMessage,
     StatusMessage,
     UnListenMessage,
 } from './message-types.js';
@@ -768,7 +767,7 @@ export class Communication {
         }
     }
 
-    public handleReady({ from }: ReadyMessage): void {
+    public handleReady({ from }: { from: string }): void {
         this.readyEnvs.add(from);
         const pendingEnvCb = this.pendingEnvs.get(from);
         if (pendingEnvCb) {
