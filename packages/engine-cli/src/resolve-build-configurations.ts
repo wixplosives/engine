@@ -18,6 +18,7 @@ export function resolveBuildEntryPoints({
     publicConfigsRoute,
     jsOutExtension,
     nodeFormat,
+    staticBuild,
     buildElectron,
 }: {
     features: Map<string, IFeatureDefinition>;
@@ -30,6 +31,7 @@ export function resolveBuildEntryPoints({
     publicConfigsRoute: string;
     jsOutExtension: '.js' | '.mjs';
     nodeFormat: 'esm' | 'cjs';
+    staticBuild: boolean;
     buildElectron?: boolean;
 }) {
     const featureEnvironmentsMapping = createFeatureEnvironmentsMapping(features);
@@ -56,6 +58,7 @@ export function resolveBuildEntryPoints({
             configName,
             featureName,
             buildElectron,
+            staticBuild,
         },
         jsOutExtension,
         nodeFormat,
