@@ -17,6 +17,7 @@ export interface CreateBuildConfigOptions {
     jsOutExtension: '.js' | '.mjs';
     nodeFormat: 'esm' | 'cjs';
     entryPointsPaths?: EntryPointsPaths;
+    staticBuild: boolean;
 }
 
 export function createBuildConfiguration(options: CreateBuildConfigOptions) {
@@ -31,6 +32,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
         jsOutExtension,
         nodeFormat,
         entryPointsPaths,
+        staticBuild,
     } = options;
     const { webEntryPoints, nodeEntryPoints } = entryPoints;
     const { webEntryPointsPaths, nodeEntryPointsPaths } = entryPointsPaths || {};
@@ -62,7 +64,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
             '.woff2': 'file',
             '.ttf': 'file',
         },
-        plugins: [...commonPlugins, topLevelConfigPlugin({ emit: !dev })],
+        plugins: [...commonPlugins, topLevelConfigPlugin({ emit: staticBuild || !dev })],
     } satisfies BuildOptions;
 
     const webConfig = {

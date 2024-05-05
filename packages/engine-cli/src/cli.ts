@@ -99,6 +99,11 @@ async function engine() {
             description: 'Public path',
             default: '',
         },
+        staticBuild: {
+            type: Boolean,
+            description: 'Enable config build via config loaders',
+            default: false,
+        },
         configLoadingMode: {
             type: (value: string) => {
                 if (value === 'fresh' || value === 'watch' || value === 'require') {

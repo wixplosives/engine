@@ -39,6 +39,7 @@ export interface RunEngineOptions {
     publicPath?: string;
     publicConfigsRoute?: string;
     configLoadingMode?: ConfigLoadingMode;
+    staticBuild?: boolean;
 }
 
 export async function runEngine({
@@ -61,6 +62,7 @@ export async function runEngine({
     writeMetadataFiles = !watch,
     publicConfigsRoute = 'configs',
     configLoadingMode = 'require',
+    staticBuild = false,
 }: RunEngineOptions = {}): Promise<{
     featureEnvironmentsMapping: FeatureEnvironmentMapping;
     configMapping: ConfigurationEnvironmentMapping;
@@ -124,6 +126,7 @@ export async function runEngine({
             publicConfigsRoute,
             jsOutExtension,
             nodeFormat,
+            staticBuild,
             buildElectron: buildTargets === 'electron',
         });
 
@@ -167,6 +170,7 @@ export async function runEngine({
         jsOutExtension,
         nodeFormat,
         entryPointsPaths,
+        staticBuild
     });
 
     if (watch) {

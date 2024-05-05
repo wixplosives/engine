@@ -26,6 +26,7 @@ export interface CreateEntryPointOptions {
     featureName?: string;
     configName?: string;
     buildElectron?: boolean;
+    staticBuild: boolean;
 }
 
 export type EntryPoints = {
@@ -56,6 +57,7 @@ export function createEntryPoints(
         configMapping,
         publicConfigsRoute,
         buildElectron,
+        staticBuild,
     } = options;
 
     const mode = dev ? 'development' : 'production';
@@ -92,7 +94,7 @@ export function createEntryPoints(
             publicPathVariableName: 'PUBLIC_PATH',
             configurations,
             mode,
-            staticBuild: false,
+            staticBuild,
             publicConfigsRoute,
             config,
         });
