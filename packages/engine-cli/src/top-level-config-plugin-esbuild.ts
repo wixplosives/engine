@@ -1,6 +1,6 @@
 import { BuildOptions, Plugin } from 'esbuild';
 import fs from 'node:fs';
-import { dirname, isAbsolute, join } from 'node:path';
+import { dirname, resolve } from 'node:path';
 
 export interface PartialWebpackLoaderContext {
     query: string;
@@ -86,6 +86,5 @@ function emitConfigFile(
     const content = JSON.stringify(imported.default ?? imported);
     const configFileName = envName ? `${fileName!}.${envName}` : fileName;
     const configPath = `configs/${configFileName!}.json`;
-    const path = isAbsolute(outDir) ? join(outDir, configPath) : join(rootContext, outDir, configPath);
-    filesToEmit.set(configPath, { content, path });
+    filesToEmit.set(configPath, { content, path: resolve(rootContext, outDir, configPath) });
 }
