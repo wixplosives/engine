@@ -1,6 +1,6 @@
 {
   "name": "@examples/react",
-  "version": "45.7.0",
+  "version": "45.7.1",
   "main": "index.js",
   "scripts": {
     "start": "engineer start -f react/someplugin --singleFeature",

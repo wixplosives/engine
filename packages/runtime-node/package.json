@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-runtime-node",
-  "version": "45.7.0",
+  "version": "45.7.1",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@wixc3/common": "^17.1.1",
-    "@wixc3/engine-core": "^45.7.0",
+    "@wixc3/engine-core": "^45.7.1",
     "@wixc3/isomorphic-worker": "^1.2.5",
     "@wixc3/patterns": "^17.1.1",
     "create-listening-server": "^2.1.0",
