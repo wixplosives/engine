@@ -82,11 +82,12 @@ describe('Communication API', function () {
         const api = com.apiProxy<TestService>(env, { id: testServiceId });
         const error = (await api.failWithError().catch((e) => e)) as typeof testServiceError;
 
+        // The error name and message must be preserved intact because they can
+        // be used for error type detection, or can be displayed to users.
         expect(error).to.be.instanceOf(Error);
-
-        expect(error.code).to.deep.equal(testServiceError.code);
-        expect(error.message).to.string(testServiceError.message);
-        expect(error.name).to.string(testServiceError.name);
+        expect(error.name).to.equal(testServiceError.name);
+        expect(error.message).to.equal(testServiceError.message);
+        expect(error.code).to.equal(testServiceError.code);
     });
 
     it('should listen to remote api callbacks', async () => {

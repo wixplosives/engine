@@ -940,7 +940,9 @@ export class Communication {
                 this.pendingCallbacks.delete(callbackId);
                 delete this.callbacks[callbackId];
                 clearTimeout(timerId);
-                error.message += `\nCaused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
+                if (this.DEBUG) {
+                    error.cause = `Caused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
+                }
                 rej(error);
             };
             if (this.options.warnOnSlow) {
