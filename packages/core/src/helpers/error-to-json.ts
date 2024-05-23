@@ -5,24 +5,28 @@
  * WebSocket.
  */
 export function errorToJson(error: unknown): Error {
-    if (!(error instanceof Error)) {
-        return { name: 'Error', message: String(error ?? '') };
-    }
-
-    let errorProps: Record<string, unknown>;
     try {
-        errorProps = JSON.parse(JSON.stringify(error));
+        if (!(error instanceof Error)) {
+            return { name: 'Error', message: String(error ?? '') };
+        }
+
+        let errorProps: Record<string, unknown>;
+        try {
+            errorProps = JSON.parse(JSON.stringify(error));
+        } catch {
+            errorProps = {};
+        }
+
+        return {
+            ...errorProps,
+
+            // Non-enumerable properties
+            name: String(error.name),
+            message: String(error.message),
+            stack: error.stack ? String(error.stack) : undefined,
+            cause: error.cause ? errorToJson(error.cause) : undefined,
+        };
     } catch {
-        errorProps = {};
+        return { name: 'Error', message: 'Failed to convert error to plain object' };
     }
-
-    return {
-        ...errorProps,
-
-        // Non-enumerable properties
-        name: String(error.name),
-        message: String(error.message),
-        stack: error.stack ? String(error.stack) : undefined,
-        cause: error.cause ? errorToJson(error.cause) : undefined,
-    };
 }
