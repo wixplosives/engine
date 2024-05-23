@@ -1,7 +1,7 @@
 import { SetMultiMap, isDisposable } from '@wixc3/patterns';
 import { deferred } from 'promise-assist';
 import type { ContextualEnvironment, Environment, EnvironmentMode } from '../entities/env.js';
-import { serializeError } from '../helpers/index.js';
+import { errorToJson } from '../helpers/index.js';
 import { SERVICE_CONFIG } from '../symbols.js';
 import { type IDTag } from '../types.js';
 import {
@@ -826,7 +826,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                error: serializeError(error),
+                error: errorToJson(error),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
             });
@@ -854,7 +854,7 @@ export class Communication {
                 to: message.from,
                 from: this.rootEnvId,
                 type: 'callback',
-                error: serializeError(error),
+                error: errorToJson(error),
                 callbackId: message.callbackId,
                 origin: this.rootEnvId,
             });
