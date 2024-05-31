@@ -24,7 +24,7 @@
     "@file-services/memory": "^9.3.0",
     "@file-services/types": "^9.3.0",
     "@playwright/browser-chromium": "^1.44.1",
-    "@stylable/cli": "^6.1.0",
+    "@stylable/cli": "^6.1.1",
     "@stylable/webpack-plugin": "^6.1.0",
     "@types/chai": "^4.3.16",
     "@types/chai-as-promised": "^7.1.8",
