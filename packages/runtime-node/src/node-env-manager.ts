@@ -254,8 +254,8 @@ function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorke
         const handleClientMessage = (message: AnyMessage) => {
             worker.postMessage(message.data);
         };
-        const handleInitializeError = () => {
-            rej(new Error(`failed initializing environment ${envName}`));
+        const handleInitializeError = (e: AnyMessage) => {
+            rej(new Error(`failed initializing environment ${envName} with error message: ${JSON.stringify(e.data)}`));
         };
 
         worker.addEventListener('message', handleWorkerMessage);
