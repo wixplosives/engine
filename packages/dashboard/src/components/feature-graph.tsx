@@ -85,8 +85,8 @@ export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) 
                         return linkedNodes[0] === graphNode
                             ? linkedNodes[linkedNodes.length - 1]
                             : linkedNodes[linkedNodes.length - 1] === graphNode
-                            ? linkedNodes[0]
-                            : 0;
+                              ? linkedNodes[0]
+                              : 0;
                     })
                     .filter(function (d) {
                         return d;
@@ -99,9 +99,11 @@ export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) 
                 link.style('stroke-opacity', function (linkedNodes) {
                     return linkedNodes[0] === graphNode || linkedNodes[linkedNodes.length - 1] === graphNode ? 1 : null;
                 }).style('stroke', function (linkedNodes) {
-                    return linkedNodes[0] === graphNode || linkedNodes[linkedNodes.length - 1] === graphNode
-                        ? '#d62333'
-                        : null;
+                    // when current feature is using the linked feature
+                    if (linkedNodes[0] === graphNode) return '#d62333';
+                    // when linked feature is using the current feature
+                    if (linkedNodes[linkedNodes.length - 1] === graphNode) return '#9932a8';
+                    return null;
                 });
             })
             .on('mouseout', function () {
