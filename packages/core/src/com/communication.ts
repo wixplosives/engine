@@ -537,7 +537,7 @@ export class Communication {
             for (const methodName of Object.keys(serviceConfig)) {
                 const config = serviceConfig[methodName]!(api);
                 if (config.proxyFunction) {
-                    this.apisOverrides[id]![methodName] = config.proxyFunction;
+                    this.apisOverrides[id][methodName] = config.proxyFunction;
                 }
             }
         }
@@ -616,7 +616,7 @@ export class Communication {
 
     private apiCall(origin: string, api: string, method: string, args: unknown[]): unknown {
         if (this.apisOverrides[api]?.[method]) {
-            return this.apisOverrides[api]![method]!(...[origin, ...args]);
+            return this.apisOverrides[api][method](...[origin, ...args]);
         }
         return this.apis[api]![method]!(...args);
     }
