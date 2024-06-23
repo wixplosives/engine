@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "45.7.2",
+  "version": "45.7.3",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -17,10 +17,10 @@
   "dependencies": {
     "@file-services/node": "^9.3.1",
     "@wixc3/create-disposables": "^2.2.0",
-    "@wixc3/engine-cli": "^45.7.2",
-    "@wixc3/engine-core": "^45.7.2",
-    "@wixc3/engine-runtime-node": "^45.7.2",
-    "@wixc3/engine-scripts": "^45.7.2",
+    "@wixc3/engine-cli": "^45.7.3",
+    "@wixc3/engine-core": "^45.7.3",
+    "@wixc3/engine-runtime-node": "^45.7.3",
+    "@wixc3/engine-scripts": "^45.7.3",
     "@wixc3/patterns": "^17.1.1",
     "@wixc3/testing-node": "^17.1.1",
     "create-temp-directory": "^2.4.0",
