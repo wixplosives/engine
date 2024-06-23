@@ -19,7 +19,7 @@ const virtualModulesLoader: webpack.LoaderDefinition = function () {
     if (this._module) {
         this._module.context = this.rootContext;
     }
-    return options[fileName]!;
+    return options[fileName];
 };
 
 export default virtualModulesLoader;

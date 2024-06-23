@@ -11,10 +11,10 @@ export function translateNodeToHierarchy(nodes: Array<Node>) {
 
         if (!hierarchy[group]) {
             hierarchy[group] = { name: group, children: [], parent: hierarchy['root'], group: node.group };
-            hierarchy['root']!.children.push(hierarchy[group]!);
+            hierarchy['root']!.children.push(hierarchy[group]);
         }
 
-        hierarchy[group]!.children.push(node);
+        hierarchy[group].children.push(node);
     }
 
     return hierarchy['root']!;

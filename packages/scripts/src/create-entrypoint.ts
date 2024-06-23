@@ -214,7 +214,7 @@ const getAllValidConfigurations = (configurations: [string, IConfigDefinition][]
     for (const [configName, { filePath, envName: configEnvName }] of configurations) {
         configNameToFiles[configName] ??= [];
         if (!configEnvName || configEnvName === envName) {
-            configNameToFiles[configName]!.push({ filePath, configEnvName });
+            configNameToFiles[configName].push({ filePath, configEnvName });
         }
     }
     return configNameToFiles;
@@ -233,10 +233,10 @@ export const createAllValidConfigurationsEnvironmentMapping = (
             common: [],
         };
         if (!configEnvName) {
-            configurationMapping[name]!.common.push(filePath);
+            configurationMapping[name].common.push(filePath);
         } else {
-            configurationMapping[name]!.byEnv[configEnvName] ??= [];
-            configurationMapping[name]!.byEnv[configEnvName]!.push(filePath);
+            configurationMapping[name].byEnv[configEnvName] ??= [];
+            configurationMapping[name].byEnv[configEnvName].push(filePath);
         }
     }
     return configurationMapping;

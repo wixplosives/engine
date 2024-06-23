@@ -10,9 +10,6 @@
   "scripts": {
     "test": "mocha \"dist/test/**/*.unit.js\""
   },
-  "peerDependencies": {
-    "electron": ">=9"
-  },
   "dependencies": {
     "@file-services/node": "^9.3.1",
     "@wixc3/engine-core": "^45.7.2",
