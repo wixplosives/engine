@@ -9,7 +9,7 @@ export const socketClientInitializer = async ({
     env: { env },
     ...socketClientOptions
 }: SocketClientInitializerOptions) => {
-    const url = communication.topology[env] || location.host;
+    const url = communication.topology[env] || location.origin;
     const instanceId = env;
     const host = new WsClientHost(url, socketClientOptions);
     if (communication.getEnvironmentHost(instanceId)) {
