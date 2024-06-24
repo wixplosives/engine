@@ -83,7 +83,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
                     1000
                 ).toFixed(2)}s`,
             );
-        }, 15000);
+        }, 10_000);
         await featureInstance[RUN](this);
         clearInterval(intervalId);
     }
