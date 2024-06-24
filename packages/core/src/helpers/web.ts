@@ -1,3 +1,5 @@
+import { IRunOptions } from '../types';
+
 export function injectScript(win: Window, rootComId: string, scriptUrl: string) {
     return new Promise<Window>((res, rej) => {
         // This is the contract of the communication to get the root communication id
@@ -10,21 +12,19 @@ export function injectScript(win: Window, rootComId: string, scriptUrl: string) 
     });
 }
 
-export function getEngineEntryOptions(envName: string) {
-    const urlParams = new URLSearchParams(globalThis.location.search);
-    const currentScript = globalThis.document?.currentScript
-    const isHtmlScript = !!currentScript && 'src' in currentScript;
+interface EngineWebEntryGlobalObj {
+    document?: Document,
+    location?: Location
 
-    const scriptQueryString = isHtmlScript && currentScript.src?.split?.('?')?.[1] || ''
-    const scriptUrlParams = new URLSearchParams(scriptQueryString)
-    const injectedOptions = globalThis.engineEntryOptions?.({ urlParams, envName }) ?? new URLSearchParams('');
+    engineEntryOptions(options: { urlParams: URLSearchParams; envName: string }): IRunOptions;
+}
 
-    const definedParams = new Set<string>()
-    return new URLSearchParams([...injectedOptions, ...urlParams, ...scriptUrlParams].filter(([key]) => {
-        if (definedParams.has(key)) {
-            return false
-        }
-        definedParams.add(key)
-        return true
-    }))
+export function getEngineEntryOptions(envName: string, globalObj: EngineWebEntryGlobalObj): IRunOptions {
+    const urlParams = new URLSearchParams(globalObj?.location?.search);
+    const currentScript = globalObj?.document?.currentScript;
+
+    const optionsFromScript = new URLSearchParams(currentScript && currentScript.dataset.engineRunOptions || undefined);
+    const injectedOptions = globalObj?.engineEntryOptions?.({ urlParams, envName }) ?? new URLSearchParams('');
+
+    return new Map([...optionsFromScript, ...urlParams, ...injectedOptions]);
 }
