@@ -40,6 +40,7 @@ export interface RunEngineOptions {
     publicConfigsRoute?: string;
     configLoadingMode?: ConfigLoadingMode;
     staticBuild?: boolean;
+    title?: string;
 }
 
 export async function runEngine({
@@ -63,6 +64,7 @@ export async function runEngine({
     publicConfigsRoute = 'configs',
     configLoadingMode = 'require',
     staticBuild = false,
+    title,
 }: RunEngineOptions = {}): Promise<{
     featureEnvironmentsMapping: FeatureEnvironmentMapping;
     configMapping: ConfigurationEnvironmentMapping;
@@ -170,7 +172,8 @@ export async function runEngine({
         jsOutExtension,
         nodeFormat,
         entryPointsPaths,
-        staticBuild
+        staticBuild,
+        title,
     });
 
     if (watch) {

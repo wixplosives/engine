@@ -18,6 +18,7 @@ export interface CreateBuildConfigOptions {
     nodeFormat: 'esm' | 'cjs';
     entryPointsPaths?: EntryPointsPaths;
     staticBuild: boolean;
+    title?: string;
 }
 
 export function createBuildConfiguration(options: CreateBuildConfigOptions) {
@@ -33,6 +34,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
         nodeFormat,
         entryPointsPaths,
         staticBuild,
+        title,
     } = options;
     const { webEntryPoints, nodeEntryPoints } = entryPoints;
     const { webEntryPointsPaths, nodeEntryPointsPaths } = entryPointsPaths || {};
@@ -93,6 +95,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
                     const htmlFileName = envType === 'electron-renderer' ? `${envName}.${envType}` : envName;
                     return `${htmlFileName}.html`;
                 },
+                title,
             }),
         ],
     } satisfies BuildOptions;
