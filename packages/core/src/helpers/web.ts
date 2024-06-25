@@ -13,10 +13,10 @@ export function injectScript(win: Window, rootComId: string, scriptUrl: string) 
 }
 
 interface EngineWebEntryGlobalObj {
-    document?: Document,
-    location?: Location
+    document?: { currentScript: { dataset: { engineRunOptions?: string | null } } | null },
+    location?: { search?: string }
 
-    engineEntryOptions(options: { urlParams: URLSearchParams; envName: string }): IRunOptions;
+    engineEntryOptions?: (options: { currentRunOptions: IRunOptions; envName: string }) => IRunOptions;
 }
 
 export function getEngineEntryOptions(envName: string, globalObj: EngineWebEntryGlobalObj): IRunOptions {
@@ -24,7 +24,10 @@ export function getEngineEntryOptions(envName: string, globalObj: EngineWebEntry
     const currentScript = globalObj?.document?.currentScript;
 
     const optionsFromScript = new URLSearchParams(currentScript && currentScript.dataset.engineRunOptions || undefined);
-    const injectedOptions = globalObj?.engineEntryOptions?.({ urlParams, envName }) ?? new URLSearchParams('');
-
-    return new Map([...optionsFromScript, ...urlParams, ...injectedOptions]);
+    const optionsBeforeInject = new Map([...optionsFromScript, ...urlParams]);
+    const optionsAfterInject = globalObj?.engineEntryOptions?.({
+        currentRunOptions: optionsBeforeInject,
+        envName
+    });
+    return optionsAfterInject || optionsBeforeInject;
 }
