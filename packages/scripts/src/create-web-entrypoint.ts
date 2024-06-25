@@ -46,10 +46,9 @@ export function createMainEntrypoint({
     );
 
     return `
-import { main, COM } from '@wixc3/engine-core';
+import { main, COM, getEngineEntryOptions } from '@wixc3/engine-core';
 
-const urlParams = new URLSearchParams(globalThis.location.search);
-const options = globalThis.engineEntryOptions?.({ urlParams, envName: ${stringify(env.name)} }) ?? urlParams;
+const options = getEngineEntryOptions(${stringify(env.name)}, globalThis)
 const runtimePublicPath = ${runtimePublicPath};
 main({
     featureName: ${stringify(featureName)}, 

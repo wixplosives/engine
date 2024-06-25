@@ -171,6 +171,8 @@ export interface IRunOptions {
     has(key: string): boolean;
     get(key: string): string | string[] | boolean | null | undefined;
     entries(): IterableIterator<[string, string | string[] | boolean | null | undefined]>;
+
+    [Symbol.iterator](): IterableIterator<[string, string | string[] | boolean | null | undefined]>;
 }
 
 export type RegisteringFeature<
