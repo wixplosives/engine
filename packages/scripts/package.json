@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-scripts",
-  "version": "45.7.3",
+  "version": "45.8.0",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -22,8 +22,8 @@
     "@file-services/types": "^9.3.1",
     "@wixc3/common": "^17.1.1",
     "@wixc3/create-disposables": "^2.2.0",
-    "@wixc3/engine-core": "^45.7.3",
-    "@wixc3/engine-runtime-node": "^45.7.3",
+    "@wixc3/engine-core": "^45.8.0",
+    "@wixc3/engine-runtime-node": "^45.8.0",
     "@wixc3/patterns": "^17.1.1",
     "@wixc3/resolve-directory-context": "^4.0.0",
     "body-parser": "^1.20.2",
