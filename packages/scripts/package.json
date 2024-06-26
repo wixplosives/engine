@@ -13,8 +13,7 @@
   },
   "peerDependencies": {
     "html-webpack-plugin": "^4.0.0 || ^5.0.0",
-    "typescript": ">=5.0.0",
-    "webpack": "^4.0.0 || ^5.0.0"
+    "typescript": ">=5.0.0"
   },
   "dependencies": {
     "@file-services/node": "^9.3.1",
