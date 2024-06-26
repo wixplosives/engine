@@ -99,6 +99,11 @@ async function engine() {
             description: 'Public path',
             default: '',
         },
+        title: {
+            type: String,
+            description: 'Title to set on the generated html file',
+            default: undefined,
+        },
         staticBuild: {
             type: Boolean,
             description: 'Enable config build via config loaders',
