@@ -12,7 +12,6 @@
     "test": "mocha \"dist/test/**/*.unit.js\""
   },
   "peerDependencies": {
-    "html-webpack-plugin": "^4.0.0 || ^5.0.0",
     "typescript": ">=5.0.0"
   },
   "dependencies": {
