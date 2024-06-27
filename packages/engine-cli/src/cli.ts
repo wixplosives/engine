@@ -1,6 +1,6 @@
 import { cli, command } from 'cleye';
 import { analyzeCommand } from './analyze-command';
-import { EngineConfig } from '@wixc3/engine-scripts';
+import type { EngineConfig } from '@wixc3/engine-scripts';
 
 async function engine() {
     const engineConfigCli = cli({
