@@ -19,6 +19,7 @@ export interface CreateBuildConfigOptions {
     entryPointsPaths?: EntryPointsPaths;
     staticBuild: boolean;
     title?: string;
+    favicon?: string;
 }
 
 export function createBuildConfiguration(options: CreateBuildConfigOptions) {
@@ -35,6 +36,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
         entryPointsPaths,
         staticBuild,
         title,
+        favicon,
     } = options;
     const { webEntryPoints, nodeEntryPoints } = entryPoints;
     const { webEntryPointsPaths, nodeEntryPointsPaths } = entryPointsPaths || {};
@@ -96,6 +98,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
                     return `${htmlFileName}.html`;
                 },
                 title,
+                favicon,
             }),
         ],
     } satisfies BuildOptions;
