@@ -98,7 +98,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
                     return `${htmlFileName}.html`;
                 },
                 title,
-                favicon,
+                faviconFilePath: favicon,
             }),
         ],
     } satisfies BuildOptions;
