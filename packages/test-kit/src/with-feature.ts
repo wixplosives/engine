@@ -20,8 +20,6 @@ import { retry, timeout } from 'promise-assist';
 import { IExecutableApplication, ManagedRunEngine, RunningFeature } from '@wixc3/engine-cli';
 import { once } from 'node:events';
 
-const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
-
 export interface IFeatureExecutionOptions {
     /**
      * feature file name scoped to feature root directory.
@@ -315,6 +313,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
             return executableApp.init?.();
         });
     } else {
+        const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
         // THIS IS THE DEPRECATED FLOW //
         const resolvedPort =
             runningApplicationPort ??
