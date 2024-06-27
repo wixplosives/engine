@@ -1,10 +1,10 @@
 {
   "name": "@fixture/worker-thread",
-  "version": "45.9.0",
+  "version": "46.0.0",
   "private": true,
   "dependencies": {
-    "@wixc3/engine-core": "^45.9.0",
-    "@wixc3/engine-runtime-node": "^45.9.0"
+    "@wixc3/engine-core": "^46.0.0",
+    "@wixc3/engine-runtime-node": "^46.0.0"
   },
   "license": "unlicensed",
   "publishConfig": {
