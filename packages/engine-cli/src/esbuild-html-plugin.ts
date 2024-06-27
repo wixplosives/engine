@@ -45,7 +45,7 @@ export function htmlPlugin({
                         |    <head>
                         |        <meta charset="utf-8" />
                         |        <title>${title}</title>
-                        |        <meta name="favicon" content="${iconName}" />
+                        |        <link rel="icon" href="${iconName}">
                         |        <meta name="viewport" content="width=device-width, initial-scale=1" />
                         |        ${cssPath ? `<link rel="stylesheet" href="${cssPath}" />` : ''}
                         |    </head>
