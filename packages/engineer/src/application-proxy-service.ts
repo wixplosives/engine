@@ -2,15 +2,17 @@ import { nodeFs } from '@file-services/node';
 import type { IConfigDefinition, LaunchEnvironmentMode, NodeEnvironmentsManager } from '@wixc3/engine-runtime-node';
 import {
     analyzeFeatures,
-    Application,
     generateConfigName,
-    type IApplicationOptions,
-    type ICompilerOptions,
     type IFeatureDefinition,
     type IFeatureMessagePayload,
-    type IRunFeatureOptions,
     type OverrideConfig,
 } from '@wixc3/engine-scripts';
+import {
+    Application,
+    type IApplicationOptions,
+    type ICompilerOptions,
+    type IRunFeatureOptions,
+} from '@wixc3/engine-scripts/dist/application/index.js';
 import type { SetMultiMap } from '@wixc3/patterns';
 
 export class TargetApplication extends Application {

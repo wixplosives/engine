@@ -1,7 +1,7 @@
 import { nodeFs as fs } from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type { EngineerMetadataConfig, TopLevelConfig } from '@wixc3/engine-core';
-import { Application, type IBuildManifest } from '@wixc3/engine-scripts';
+import { Application, type IBuildManifest } from '@wixc3/engine-scripts/dist/application/index';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -24,7 +24,7 @@ describe('Application', function () {
         this.timeout(30_000);
         return disposables.dispose();
     });
-    after(()=>browserProvider.dispose());
+    after(() => browserProvider.dispose());
 
     const loadPage = async (url: string) => {
         const page = await browserProvider.loadPage(url);

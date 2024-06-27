@@ -8,7 +8,7 @@
 import { nodeFs as fs } from '@file-services/node';
 import { createRequestResolver } from '@file-services/resolve';
 import { parseCliArguments } from '@wixc3/engine-runtime-node';
-import { Application } from '@wixc3/engine-scripts';
+import { Application } from '@wixc3/engine-scripts/dist/application';
 import type { Command } from 'commander';
 import { resolve } from 'node:path';
 import open from 'open';
