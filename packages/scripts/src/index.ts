@@ -11,5 +11,5 @@ export * from './resolve-exec-argv.js';
 export * from './run-environment.js';
 export * from './types.js';
 export * from './utils/index.js';
-export { createVirtualEntries, type VirtualModulesLoaderOptions } from './virtual-modules-loader';
+export { createVirtualEntries, type VirtualModulesLoaderOptions } from './virtual-modules-loader.js';
 export { importFresh } from './import-fresh.js';

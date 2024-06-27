@@ -1,7 +1,7 @@
 import { nodeFs as fs } from '@file-services/node';
 import { createDisposables } from '@wixc3/create-disposables';
 import type { EngineerMetadataConfig, TopLevelConfig } from '@wixc3/engine-core';
-import { Application, type IBuildManifest } from '@wixc3/engine-scripts/dist/application/index';
+import { Application, type IBuildManifest } from '@wixc3/engine-scripts/dist/application/index.js';
 import { createBrowserProvider } from '@wixc3/engine-test-kit';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
