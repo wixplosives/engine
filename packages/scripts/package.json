@@ -4,6 +4,7 @@
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
+    "./dist/application/index.js": "./dist/application/index.js",
     "./dist/default-config-loader": "./dist/default-config-loader.js",
     "./dist/analyze-feature/merge": "./dist/analyze-feature/merge.js",
     "./package.json": "./package.json"
