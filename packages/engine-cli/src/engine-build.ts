@@ -95,6 +95,7 @@ export async function runEngine({
         require: requiredPaths = [],
         extensions,
         buildConditions,
+        favicon,
     } = engineConfig;
 
     await importModules(rootDir, requiredPaths);
@@ -174,6 +175,7 @@ export async function runEngine({
         entryPointsPaths,
         staticBuild,
         title,
+        favicon
     });
 
     if (watch) {

@@ -4,11 +4,13 @@ import { Plugin } from 'esbuild';
 export interface HTMLPluginOptions {
     toHtmlPath?: (fileName: string) => string;
     title?: string;
+    faviconFilePath?: string;
 }
 
 /** create html for each entrypoint */
 export function htmlPlugin({
     title = 'Application',
+    faviconFilePath,
     toHtmlPath = (fileName: string) => fileName.replace(/\.m?js$/, '.html'),
 }: HTMLPluginOptions = {}) {
     const plugin: Plugin = {
@@ -27,6 +29,7 @@ export function htmlPlugin({
                 if (!metafile) {
                     throw new Error('metafile must be set when using html-plugin');
                 }
+                const iconName = faviconFilePath ? fs.basename(faviconFilePath) : 'favicon.ico';
                 const cwd = build.initialOptions.absWorkingDir || process.cwd();
                 for (const [key, meta] of Object.entries(metafile.outputs)) {
                     if (!key.match(/\.m?js$/)) {
@@ -41,8 +44,9 @@ export function htmlPlugin({
                         |<html>
                         |    <head>
                         |        <meta charset="utf-8" />
-                        |        <meta name="viewport" content="width=device-width, initial-scale=1" />
                         |        <title>${title}</title>
+                        |        <link rel="icon" href="${iconName}">
+                        |        <meta name="viewport" content="width=device-width, initial-scale=1" />
                         |        ${cssPath ? `<link rel="stylesheet" href="${cssPath}" />` : ''}
                         |    </head>
                         |    <body>
@@ -50,6 +54,9 @@ export function htmlPlugin({
                         |    </body>
                         |</html>
                     `);
+                    if (faviconFilePath) {
+                        fs.copyFileSync(faviconFilePath, fs.join(cwd, jsDir, iconName));
+                    }
                     fs.writeFileSync(fs.join(cwd, htmlFile), htmlContent);
                 }
                 return null;
