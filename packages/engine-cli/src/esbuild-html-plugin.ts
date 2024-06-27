@@ -43,11 +43,11 @@ export function htmlPlugin({
                         |<!DOCTYPE html>
                         |<html>
                         |    <head>
-                        |        <meta charset="utf-8" />
+                        |        <meta charset="utf-8">
                         |        <title>${title}</title>
                         |        <link rel="icon" href="${iconName}">
-                        |        <meta name="viewport" content="width=device-width, initial-scale=1" />
-                        |        ${cssPath ? `<link rel="stylesheet" href="${cssPath}" />` : ''}
+                        |        <meta name="viewport" content="width=device-width, initial-scale=1">
+                        |        ${cssPath ? `<link rel="stylesheet" href="${cssPath}">` : ''}
                         |    </head>
                         |    <body>
                         |        <script type="module" src="${fileName}" crossorigin="anonymous"></script>
