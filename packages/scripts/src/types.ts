@@ -67,6 +67,7 @@ export interface StaticConfig {
 export type BuildConfiguration = {
     webConfig: BuildOptions;
     nodeConfig: BuildOptions;
+    dev: boolean;
 };
 
 export type OverrideConfigHook = <const T extends BuildConfiguration>(config: T) => T;

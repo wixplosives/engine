@@ -116,7 +116,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
     } satisfies BuildOptions;
 
     if (typeof buildPlugins === 'function') {
-        return buildPlugins({ webConfig, nodeConfig });
+        return buildPlugins({ webConfig, nodeConfig, dev });
     }
 
     return {
