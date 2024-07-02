@@ -53,6 +53,12 @@ export function reportError(e: unknown) {
     console.error(e);
 }
 
+/**
+ * Reports a non-environment disconnected error.
+ * If the error is not an instance of EnvironmentDisconnectedError, it will be reported.
+ *
+ * @param e - The error to be reported.
+ */
 export function reportNonEnvironmentDisconnectedError(e: unknown) {
     if (!(e instanceof EnvironmentDisconnectedError)) {
         reportError(e);
