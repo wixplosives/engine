@@ -1,4 +1,3 @@
-import { EnvironmentDisconnectedError } from './environment-disconnected-error.js';
 import type { Message } from './message-types.js';
 
 export const DUPLICATE_REGISTER = (id: string, type: 'RemoteService' | 'Environment') =>
@@ -53,17 +52,6 @@ export function reportError(e: unknown) {
     console.error(e);
 }
 
-/**
- * Reports a non-environment disconnected error.
- * If the error is not an instance of EnvironmentDisconnectedError, it will be reported.
- *
- * @param e - The error to be reported.
- */
-export function reportNonEnvironmentDisconnectedError(e: unknown) {
-    if (!(e instanceof EnvironmentDisconnectedError)) {
-        reportError(e);
-    }
-}
 
 export function UN_CONFIGURED_METHOD(api: string, method: string): string | undefined {
     return `cannot add listener to un-configured method ${api} ${method}`;
