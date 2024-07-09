@@ -110,7 +110,12 @@ export class NodeEnvManager implements IDisposable {
     }
 
     async closeAll() {
-        await Promise.all([...this.openEnvironments.values()].map((env) => env.dispose()));
+        await Promise.all([...this.openEnvironments.values()].map((env) => this.closeEnv(env)));
+    }
+
+    private closeEnv(env: RunningNodeEnvironment) {
+        this.openEnvironments.delete(env.id, env);
+        return env.dispose();
     }
 
     private async runFeatureEnvironments(
@@ -134,11 +139,9 @@ export class NodeEnvManager implements IDisposable {
             console.log(`[ENGINE]: found the following environments for feature ${featureName}:\n${envNames}`);
         }
 
-        const disposes = await Promise.all(
+        await Promise.all(
             envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, host, verbose)),
         );
-
-        return () => Promise.all(disposes.map((dispose) => dispose()));
     }
 
     private async loadEnvironmentConfigurations(envName: string, configName: string, verbose = false) {
@@ -187,11 +190,6 @@ export class NodeEnvManager implements IDisposable {
         if (verbose) {
             console.log(`[ENGINE]: Environment ${runningEnv.id} is ready`);
         }
-
-        return () => {
-            this.openEnvironments.delete(envName, runningEnv);
-            return runningEnv.dispose();
-        };
     }
 
     async collectMetricsFromAllOpenEnvironments() {
