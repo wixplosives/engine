@@ -111,12 +111,15 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
                         ).toFixed(2)}s`,
                     );
                 }, 50);
-                await timeout(
-                    feature.dispose(),
-                    this.featureShutdownTimeout,
-                    `Failed to dispose feature: ${feature.feature.id}`,
-                );
-                clearInterval(intervalId);
+                try {
+                    await timeout(
+                        feature.dispose(),
+                        this.featureShutdownTimeout,
+                        `Failed to dispose feature: ${feature.feature.id}`,
+                    );
+                } finally {
+                    clearInterval(intervalId);
+                }
             }
         } finally {
             this.shutingDown = false;
