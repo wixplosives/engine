@@ -1,5 +1,4 @@
 import { cli, command } from 'cleye';
-import { analyzeCommand } from './analyze-command';
 import type { EngineConfig } from '@wixc3/engine-scripts';
 
 async function engine() {
@@ -157,6 +156,7 @@ async function engine() {
 
     const rootDir = process.cwd();
     if (argv.command === 'analyze') {
+        const { analyzeCommand } = await import('./analyze-command.js');
         await analyzeCommand({ rootDir, feature: argv.flags.feature, engineConfig });
     } else {
         const dev = argv.flags.dev ?? argv.flags.watch;
