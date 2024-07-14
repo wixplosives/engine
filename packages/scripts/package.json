@@ -26,7 +26,6 @@
     "@wixc3/patterns": "^17.1.1",
     "@wixc3/resolve-directory-context": "^4.0.0",
     "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
     "express": "^4.19.2",
     "semver": "^7.6.2",
