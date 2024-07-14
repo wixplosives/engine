@@ -1,4 +1,6 @@
+import { getOriginalModule } from '@wixc3/engine-runtime-node';
 import { once } from 'node:events';
+import { pathToFileURL } from 'node:url';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
 /**
@@ -28,7 +30,7 @@ if (!isMainThread && isImportWorkerData(workerData)) {
     if (Array.isArray(filePath)) {
         const imported: Promise<any>[] = [];
         for (const path of filePath) {
-            imported.push(import(path));
+            imported.push(import(pathToFileURL(path).href).then(getOriginalModule));
         }
         Promise.all(imported)
             .then((moduleExports) => {
@@ -42,8 +44,9 @@ if (!isMainThread && isImportWorkerData(workerData)) {
                 throw e;
             });
     } else {
-        import(filePath)
-            .then((moduleExports) => parentPort?.postMessage(moduleExports[exportSymbolName]))
+        import(pathToFileURL(filePath).href)
+            .then(getOriginalModule)
+            .then((moduleExports: any) => parentPort?.postMessage(moduleExports[exportSymbolName]))
             .catch((e) => {
                 throw e;
             });

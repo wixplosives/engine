@@ -15,10 +15,12 @@ import {
     IStaticFeatureDefinition,
     METADATA_PROVIDER_ENV_ID,
     MetadataCollectionAPI,
+    getOriginalModule,
     loadTopLevelConfigs,
     metadataApiToken,
     runNodeEnvironment,
 } from '@wixc3/engine-runtime-node';
+import { pathToFileURL } from 'node:url';
 import { findFeatures } from './analyze-feature/index.js';
 import { ENGINE_CONFIG_FILE_NAME } from './build-constants.js';
 import { EngineConfig, IFeatureDefinition } from './types.js';
@@ -218,7 +220,7 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
 
 async function importWithProperError(filePath: string): Promise<unknown> {
     try {
-        return ((await import(filePath)) as { default: unknown }).default;
+        return (getOriginalModule(await import(pathToFileURL(filePath).href)) as { default: unknown }).default;
     } catch (ex) {
         throw new Error(`failed importing file: ${filePath}`, { cause: ex });
     }
