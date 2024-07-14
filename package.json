@@ -21,8 +21,8 @@
     "prettify": "npx prettier . --write"
   },
   "devDependencies": {
-    "@file-services/memory": "^9.3.1",
-    "@file-services/types": "^9.3.1",
+    "@file-services/memory": "^9.4.0",
+    "@file-services/types": "^9.4.0",
     "@playwright/browser-chromium": "^1.45.1",
     "@stylable/cli": "^6.1.1",
     "@stylable/webpack-plugin": "^6.1.1",

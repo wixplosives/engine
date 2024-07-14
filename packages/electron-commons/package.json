@@ -11,7 +11,7 @@
     "test": "mocha \"dist/test/**/*.unit.js\""
   },
   "dependencies": {
-    "@file-services/node": "^9.3.1",
+    "@file-services/node": "^9.4.0",
     "@wixc3/engine-core": "^46.0.3",
     "@wixc3/engine-runtime-node": "^46.0.3",
     "@wixc3/resolve-directory-context": "^4.0.0",
