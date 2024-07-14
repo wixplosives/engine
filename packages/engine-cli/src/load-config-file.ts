@@ -1,9 +1,9 @@
+import { getOriginalModule } from '@wixc3/engine-runtime-node';
 import { pathToFileURL } from 'node:url';
-import { dynamicImport } from '@wixc3/engine-runtime-node';
 
 export async function loadConfigFile(filePath: string): Promise<object> {
     try {
-        const configModuleValue = (await dynamicImport(pathToFileURL(filePath))).default;
+        const configModuleValue = getOriginalModule(await import(pathToFileURL(filePath).href));
         const config = (configModuleValue as { default: unknown }).default ?? configModuleValue;
         if (!config || typeof config !== 'object') {
             throw new Error(`config file: ${filePath} must export an object`);

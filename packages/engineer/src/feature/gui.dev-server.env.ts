@@ -1,8 +1,9 @@
 import { nodeFs as fs } from '@file-services/node';
-import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
+import { getOriginalModule, type IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { createMainEntrypoint, createVirtualEntries } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/patterns';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { pathToFileURL } from 'node:url';
 import type webpack from 'webpack';
 import { devServerEnv } from './dev-server.feature.js';
 import guiFeature, { mainDashboardEnv } from './gui.feature.js';
@@ -25,7 +26,11 @@ guiFeature.setup(
             const baseConfigPath = fs.findClosestFileSync(selfDirectoryPath, 'webpack.config.js');
             const baseConfig =
                 typeof baseConfigPath === 'string'
-                    ? ((await import(baseConfigPath)) as { default: webpack.Configuration }).default
+                    ? (
+                          getOriginalModule(await import(pathToFileURL(baseConfigPath).href)) as {
+                              default: webpack.Configuration;
+                          }
+                      ).default
                     : {};
             const virtualModules: Record<string, string> = {};
 

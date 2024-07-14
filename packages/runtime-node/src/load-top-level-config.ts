@@ -1,5 +1,7 @@
+import type { ConfigModule, TopLevelConfig } from '@wixc3/engine-core';
 import type { SetMultiMap } from '@wixc3/patterns';
-import type { TopLevelConfig } from '@wixc3/engine-core';
+import { pathToFileURL } from 'node:url';
+import { getOriginalModule } from './module-interop';
 import type { IConfigDefinition } from './types';
 
 export async function loadTopLevelConfigs(
@@ -24,11 +26,19 @@ export async function loadTopLevelConfigs(
                     if (envName) {
                         if (!definition.envName || definition.envName === envName) {
                             config.push(
-                                ...((await import(definition.filePath)) as { default: TopLevelConfig }).default,
+                                ...(
+                                    getOriginalModule(
+                                        await import(pathToFileURL(definition.filePath).href),
+                                    ) as ConfigModule
+                                ).default,
                             );
                         }
                     } else {
-                        config.push(...((await import(definition.filePath)) as { default: TopLevelConfig }).default);
+                        config.push(
+                            ...(
+                                getOriginalModule(await import(pathToFileURL(definition.filePath).href)) as ConfigModule
+                            ).default,
+                        );
                     }
                 } catch (e) {
                     throw new Error(`failed importing: ${definition.filePath}`, { cause: e });
