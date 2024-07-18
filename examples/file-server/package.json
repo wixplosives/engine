@@ -1,6 +1,6 @@
 {
   "name": "@example/file-server",
-  "version": "46.0.2",
+  "version": "46.0.3",
   "scripts": {
     "start": "engineer start",
     "test": "npm run test:it && npm run test:unit",
@@ -8,7 +8,7 @@
     "test:unit": "mocha \"dist/test/**/*.unit.js\""
   },
   "dependencies": {
-    "@file-services/node": "^9.3.1"
+    "@file-services/node": "^9.4.0"
   },
   "license": "UNLICENSED",
   "private": true

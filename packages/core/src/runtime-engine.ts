@@ -102,11 +102,24 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
             this.running = undefined;
             const toDispose = Array.from(this.features.values()).reverse();
             for (const feature of toDispose) {
-                await timeout(
-                    feature.dispose(),
-                    this.featureShutdownTimeout,
-                    `Failed to dispose feature: ${feature.feature.id}`,
-                );
+                const startTime = Date.now();
+                const intervalId = setInterval(() => {
+                    console.log(
+                        `[${this.entryEnvironment.env}]: Feature ${feature.feature.id} "dispose()" is taking ${(
+                            (Date.now() - startTime) /
+                            1000
+                        ).toFixed(2)}s`,
+                    );
+                }, 50);
+                try {
+                    await timeout(
+                        feature.dispose(),
+                        this.featureShutdownTimeout,
+                        `Failed to dispose feature: ${feature.feature.id}`,
+                    );
+                } finally {
+                    clearInterval(intervalId);
+                }
             }
         } finally {
             this.shutingDown = false;
