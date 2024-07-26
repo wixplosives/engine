@@ -53,7 +53,7 @@
     "@wixc3/testing": "^17.1.1",
     "@wixc3/testing-node": "^17.1.1",
     "@wixc3/wait-for-call": "^17.1.1",
-    "chai": "^4.4.1",
+    "chai": "^4.5.0",
     "chai-as-promised": "^7.1.2",
     "create-temp-directory": "^2.4.0",
     "esbuild": "^0.23.0",
