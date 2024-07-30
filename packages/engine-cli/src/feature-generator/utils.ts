@@ -2,16 +2,6 @@ import type { IDirectoryContents, IFileSystem } from '@file-services/types';
 import { capitalizeFirstLetter, toCamelCase, toKebabCase } from '@wixc3/common';
 import type { DirectoryContentMapper, IEnrichedTemplateContext, ITemplateContext } from './types.js';
 
-function walkRecordValues<T, U, K extends string>(obj: Record<K, T>, mappingMethod: (value: T) => U): Record<K, U> {
-    return (Object.entries<T>(obj) as Array<[K, T]>).reduce(
-        (acc, [key, value]) => {
-            acc[key] = mappingMethod(value);
-            return acc;
-        },
-        {} as Record<K, U>,
-    );
-}
-
 // adds display options to each context value
 export function enrichContext(context: ITemplateContext): IEnrichedTemplateContext {
     return walkRecordValues(context, (value) => {
@@ -66,6 +56,16 @@ export function writeDirectoryContentsSync(fs: IFileSystem, directoryContents: I
             writeDirectoryContentsSync(fs, subDirectory, currentPath);
         }
     });
+}
+
+function walkRecordValues<T, U, K extends string>(obj: Record<K, T>, mappingMethod: (value: T) => U): Record<K, U> {
+    return (Object.entries<T>(obj) as Array<[K, T]>).reduce(
+        (acc, [key, value]) => {
+            acc[key] = mappingMethod(value);
+            return acc;
+        },
+        {} as Record<K, U>,
+    );
 }
 
 /**
