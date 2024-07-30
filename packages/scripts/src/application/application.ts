@@ -193,6 +193,7 @@ export class Application {
         return analyzeFeatures(fs, this.basePath, featureDiscoveryRoot, undefined, extensions, buildConditions);
     }
 
+    /** @deprecated use engine-cli instead (`engine generate FeatureName`) */
     // eslint-disable-next-line @typescript-eslint/require-await
     public async create(..._: unknown[]) {
         throw new Error('Deprecated');
