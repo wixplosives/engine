@@ -84,10 +84,10 @@ export type CliFlag<T> = {
 export interface EngineConfig {
     require?: string[];
     featureDiscoveryRoot?: string;
-    /** relative path to the location where Application.create() initializes a new feature  */
+    /** relative path to the location of engine features (packages) */
     featuresDirectory?: string;
+    /** relative path to the location of templates for generating engine features (packages) */
     featureTemplatesFolder?: string;
-    featureFolderNameTemplate?: string;
     serveStatic?: StaticConfig[];
     socketServerOptions?: Partial<io.ServerOptions>;
     sourcesRoot?: string;

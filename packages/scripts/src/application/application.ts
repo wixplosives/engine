@@ -19,7 +19,6 @@ import {
     ensureTopLevelConfigMiddleware,
 } from '../config-middleware';
 import { createWebpackConfig, createWebpackConfigs } from '../create-webpack-configs';
-import { generateFeature, pathToFeaturesDirectory } from '../feature-generator';
 import type { EngineConfig, IFeatureDefinition } from '../types';
 import { getFilePathInPackage, getResolvedEnvironments, scopeFilePathsToPackage } from '../utils';
 import { buildDefaults } from './defaults';
@@ -28,15 +27,12 @@ import type {
     IBuildCommandOptions,
     IBuildManifest,
     ICompilerOptions,
-    ICreateOptions,
     IRunApplicationOptions,
     WebpackMultiStats,
 } from './types';
 import { compile, hookCompilerToConsole, toCompilerOptions } from './utils';
 
 const { basename, extname, join } = fs;
-
-const builtinTemplatesPath = fs.join(__dirname, '../templates');
 
 export class Application {
     public outputPath: string;
@@ -189,33 +185,17 @@ export class Application {
             close: () => disposables.dispose(),
         };
     }
+
     /**
      * @deprecated this is here for backwards compatibility with the old engine
      */
     protected analyzeFeatures(featureDiscoveryRoot: string, extensions: string[], buildConditions: string[]) {
         return analyzeFeatures(fs, this.basePath, featureDiscoveryRoot, undefined, extensions, buildConditions);
     }
-    public async create({ featureName, templatesDir, featuresDir }: ICreateOptions = {}) {
-        if (!featureName) {
-            throw new Error('Feature name is mandatory');
-        }
 
-        const { config } = await this.getEngineConfig();
-
-        const targetPath = pathToFeaturesDirectory(fs, this.basePath, config?.featuresDirectory || featuresDir);
-        const featureDirNameTemplate = config?.featureFolderNameTemplate;
-        const userTemplatesDirPath = config?.featureTemplatesFolder || templatesDir;
-        const templatesDirPath = userTemplatesDirPath
-            ? fs.join(this.basePath, userTemplatesDirPath)
-            : builtinTemplatesPath;
-
-        generateFeature({
-            fs,
-            featureName,
-            targetPath,
-            templatesDirPath,
-            featureDirNameTemplate,
-        });
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async create(..._: unknown[]) {
+        throw new Error('Deprecated');
     }
 
     private remapManifestFeaturePaths(manifestFeatures: [string, IFeatureDefinition][]) {

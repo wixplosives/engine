@@ -1,12 +1,13 @@
 import type { IDirectoryContents, IFileSystem } from '@file-services/types';
 import { capitalizeFirstLetter, toCamelCase, toKebabCase } from '@wixc3/common';
 import type { DirectoryContentMapper, IEnrichedTemplateContext, ITemplateContext } from './types.js';
+import { templateParser } from './feature-generator';
 
 // adds display options to each context value
 export function enrichContext(context: ITemplateContext): IEnrichedTemplateContext {
     return walkRecordValues(context, (value) => {
         const camel = toCamelCase(value);
-        return Object.assign(new String(value), {
+        return Object.assign(String(value), {
             camelCase: camel,
             dashCase: toKebabCase(value),
             pascalCase: capitalizeFirstLetter(camel),
@@ -67,3 +68,40 @@ function walkRecordValues<T, U, K extends string>(obj: Record<K, T>, mappingMeth
         {} as Record<K, U>,
     );
 }
+
+export const createFeatureMapper =
+    (templateCompiler: (template: string) => string) => (name: string, content?: string) =>
+        templateParser(name, content, templateCompiler);
+/**
+ * returns the path to features directory in the project
+ * @param fs IFileSystem
+ * @param path A general path in a project
+ * @param featuresDir The features directory name (optional, if not used, returns `path` normalized)
+ *
+ * @example
+ * ```
+ * pathToFeaturesDirectory(fs, '/proj', 'packages');
+ * // => '/proj/packages'
+ *
+ * pathToFeaturesDirectory(fs, '/proj/packages/some-feature', 'packages');
+ * // => '/proj/packages'
+ *
+ * pathToFeaturesDirectory(fs, '/proj');
+ * // => '/proj'
+ * ```
+ */
+export const pathToFeaturesDirectory = (fs: IFileSystem, path: string, featuresDir?: string) => {
+    if (!featuresDir) {
+        return fs.normalize(path);
+    }
+
+    const normalizedFeaturesDir = fs.normalize(featuresDir);
+    const normalizedPath = fs.normalize(path);
+
+    const featuresDirIndex = normalizedPath.indexOf(normalizedFeaturesDir);
+    if (featuresDirIndex !== -1) {
+        return normalizedPath.slice(0, featuresDirIndex + normalizedFeaturesDir.length);
+    } else {
+        return fs.join(path, normalizedFeaturesDir);
+    }
+};
