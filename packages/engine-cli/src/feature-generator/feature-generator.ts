@@ -1,5 +1,4 @@
 import {
-    createFeatureMapper,
     enrichContext,
     mapDirectory,
     pathToFeaturesDirectory,
@@ -14,6 +13,20 @@ import fs from '@file-services/node';
 const TEMPLATE_EXTENSION = '.tmpl';
 const defaultTemplatesPath = fs.join(__dirname, 'templates');
 
+const createFeatureMapper = (templateCompiler: (template: string) => string) => (name: string, content?: string) => {
+    if (!name.endsWith(TEMPLATE_EXTENSION)) {
+        return { name, content };
+    }
+
+    const fileName = name.slice(0, name.length - TEMPLATE_EXTENSION.length);
+    const mappedFileName = templateCompiler(fileName);
+
+    return {
+        name: mappedFileName,
+        content: content ? templateCompiler(content) : undefined,
+    };
+};
+
 export function generateFeature({
     fs,
     rootDir,
@@ -27,9 +40,7 @@ export function generateFeature({
     featuresPath: EngineConfig['featuresDirectory'];
     templatesPath: EngineConfig['featureTemplatesFolder'];
 }) {
-    // where to put newly created feature
     const featuresDir = pathToFeaturesDirectory(fs, rootDir, featuresPath);
-
     const templatesDirPath = templatesPath ? fs.join(rootDir, templatesPath) : defaultTemplatesPath;
     const templatesDir = readDirectoryContentsSync(fs, templatesDirPath);
 
@@ -43,21 +54,3 @@ export function generateFeature({
 
     writeDirectoryContentsSync(fs, featureDirContent, featureDirPath);
 }
-
-export const templateParser = (
-    name: string,
-    content: string | undefined,
-    templateCompiler: (template: string) => string,
-) => {
-    if (!name.endsWith(TEMPLATE_EXTENSION)) {
-        return { name, content };
-    }
-
-    const fileName = name.slice(0, name.length - TEMPLATE_EXTENSION.length);
-    const mappedFileName = templateCompiler(fileName);
-
-    return {
-        name: mappedFileName,
-        content: content ? templateCompiler(content) : undefined,
-    };
-};
