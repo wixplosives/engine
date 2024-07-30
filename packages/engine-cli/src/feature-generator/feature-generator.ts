@@ -1,4 +1,5 @@
 import {
+    createFeatureMapper,
     enrichContext,
     mapDirectory,
     pathToFeaturesDirectory,
@@ -8,24 +9,6 @@ import {
 import { templateCompilerProvider } from '@wixc3/common';
 import { IFileSystem } from '@file-services/types';
 import { EngineConfig } from '@wixc3/engine-scripts/src';
-import fs from '@file-services/node';
-
-const TEMPLATE_EXTENSION = '.tmpl';
-const defaultTemplatesPath = fs.join(__dirname, 'templates');
-
-const createFeatureMapper = (templateCompiler: (template: string) => string) => (name: string, content?: string) => {
-    if (!name.endsWith(TEMPLATE_EXTENSION)) {
-        return { name, content };
-    }
-
-    const fileName = name.slice(0, name.length - TEMPLATE_EXTENSION.length);
-    const mappedFileName = templateCompiler(fileName);
-
-    return {
-        name: mappedFileName,
-        content: content ? templateCompiler(content) : undefined,
-    };
-};
 
 export function generateFeature({
     fs,
@@ -41,6 +24,8 @@ export function generateFeature({
     templatesPath: EngineConfig['featureTemplatesFolder'];
 }) {
     const featuresDir = pathToFeaturesDirectory(fs, rootDir, featuresPath);
+
+    const defaultTemplatesPath = fs.join(__dirname, 'templates');
     const templatesDirPath = templatesPath ? fs.join(rootDir, templatesPath) : defaultTemplatesPath;
     const templatesDir = readDirectoryContentsSync(fs, templatesDirPath);
 

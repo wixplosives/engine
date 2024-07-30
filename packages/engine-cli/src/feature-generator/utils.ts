@@ -101,3 +101,20 @@ export const pathToFeaturesDirectory = (fs: IFileSystem, path: string, featuresD
         return fs.join(path, normalizedFeaturesDir);
     }
 };
+
+const TEMPLATE_EXTENSION = '.tmpl';
+
+export const createFeatureMapper =
+    (templateCompiler: (template: string) => string) => (name: string, content?: string) => {
+        if (!name.endsWith(TEMPLATE_EXTENSION)) {
+            return { name, content };
+        }
+
+        const fileName = name.slice(0, name.length - TEMPLATE_EXTENSION.length);
+        const mappedFileName = templateCompiler(fileName);
+
+        return {
+            name: mappedFileName,
+            content: content ? templateCompiler(content) : undefined,
+        };
+    };
