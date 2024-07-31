@@ -50,12 +50,6 @@ export interface IBuildManifest {
     entryPoints: Record<string, Record<string, string>>;
 }
 
-export interface ICreateOptions {
-    featureName?: string;
-    templatesDir?: string;
-    featuresDir?: string;
-}
-
 export interface IApplicationOptions {
     basePath?: string;
     outputPath?: string;

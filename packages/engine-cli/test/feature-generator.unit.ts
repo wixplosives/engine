@@ -1,6 +1,8 @@
 import { createMemoryFs } from '@file-services/memory';
 import { nodeFs as fs } from '@file-services/node';
 import { templateCompilerProvider } from '@wixc3/common';
+import { expect } from 'chai';
+import { expectedDirContents, FEATURE_NAME, templatesDirContents } from './mocks/feature-generator.mocks.js';
 import {
     enrichContext,
     generateFeature,
@@ -8,9 +10,7 @@ import {
     pathToFeaturesDirectory,
     readDirectoryContentsSync,
     writeDirectoryContentsSync,
-} from '@wixc3/engine-scripts';
-import { expect } from 'chai';
-import { FEATURE_NAME, expectedDirContents, templatesDirContents } from './mocks/feature-generator.mocks.js';
+} from '@wixc3/engine-cli/dist/feature-generator';
 
 describe('Feature Generator', () => {
     it('reads directory contents', () => {
@@ -55,9 +55,10 @@ describe('Feature Generator', () => {
 
         generateFeature({
             fs: memoryFs,
+            rootDir: memoryFs.cwd(),
             featureName: FEATURE_NAME,
-            targetPath: '/packages',
-            templatesDirPath: '/templates',
+            featuresPath: '/packages',
+            templatesPath: '/templates',
         });
 
         const featureDir = readDirectoryContentsSync(memoryFs, '/packages');

@@ -261,23 +261,6 @@ export function cleanCommand(program: Command) {
     });
 }
 
-export function createCommand(program: Command) {
-    program
-        .command('create [featureName]')
-        .option('--path <path>')
-        .option('--featuresDir <featuresDir>', 'path to the features directory in the project (optional)')
-        .option('--templatesDir <templatesDir>', 'path to a customized templates folder (optional)')
-        .action(async (featureName, { path = process.cwd(), templatesDir, featuresDir }) => {
-            try {
-                const basePath = resolve(path);
-                const app = new Application({ basePath });
-                await app.create({ featureName, templatesDir, featuresDir });
-            } catch (e) {
-                printErrorAndExit(e);
-            }
-        });
-}
-
 async function preRequire(pathsToRequire: string[], basePath: string) {
     for (const request of pathsToRequire) {
         const { resolvedFile } = resolveRequest(basePath, request);
