@@ -667,7 +667,7 @@ describe('feature disposal', () => {
             api = {};
         }
         const disposeFirst = spy(() => Promise.resolve());
-        const disposeSecond = spy(() => Promise.reject('err'));
+        const disposeSecond = spy(() => Promise.reject(new Error('err')));
 
         entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(disposeFirst);
@@ -785,7 +785,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
             slot.register({ name: 'test' });
         });
         EchoFeature.setup(processing, (feature) => {
-            const engine = feature[ENGINE];
+            const _engine = feature[ENGINE];
 
             typeCheck(
                 (
@@ -794,7 +794,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                         {
                             id: 'echoFeature';
                             [RUN_OPTIONS]: IRunOptions;
-                            [ENGINE]: typeof engine;
+                            [ENGINE]: typeof _engine;
                             run(fn: () => unknown): unknown;
                             onDispose(fn: DisposeFunction): unknown;
                         }

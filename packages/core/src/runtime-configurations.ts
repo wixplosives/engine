@@ -123,7 +123,7 @@ export class RuntimeConfigurations {
                 }) => {
                     if (id === this.publicConfigsRoute) {
                         window.removeEventListener('message', configsHandler);
-                        error ? rej(error) : res(config);
+                        error ? rej(new Error(error)) : res(config);
                     }
                 };
                 window.addEventListener('message', configsHandler);

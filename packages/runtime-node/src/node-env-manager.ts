@@ -210,7 +210,7 @@ export class NodeEnvManager implements IDisposable {
 async function requireModules(modulePaths: string[]) {
     const load = [];
     for (const modulePath of modulePaths) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         load.push(require(modulePath));
     }
     const res = await Promise.all(load);

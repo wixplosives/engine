@@ -71,7 +71,7 @@ export class NodeConfigManager {
             return buildStats.build.promise;
         } else {
             if (currentBuild.error) {
-                throw currentBuild.error;
+                throw currentBuild.error as Error;
             }
             return currentBuild.currentValue;
         }

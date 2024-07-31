@@ -81,7 +81,7 @@ function emitConfigFile(
     }
     const rootContext = initialOptions.absWorkingDir || process.cwd();
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const imported = require(resourcePath);
     const content = JSON.stringify(imported.default ?? imported);
     const configFileName = envName ? `${fileName!}.${envName}` : fileName;

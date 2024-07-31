@@ -980,7 +980,7 @@ export function declareComEmitter<T>(
     removeAll?: keyof T,
 ): Record<string, AnyServiceMethodOptions> {
     if (typeof onMethod !== 'string') {
-        throw 'onMethod ref must be a string';
+        throw new Error('onMethod ref must be a string');
     }
     return {
         [onMethod]: { listener: true },

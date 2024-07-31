@@ -9,7 +9,7 @@ import {
     createMainEntrypoint,
     createNodeEntrypoint,
     createNodeEnvironmentManagerEntrypoint,
-    getResolvedEnvironments,
+    type getResolvedEnvironments,
 } from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/patterns';
 

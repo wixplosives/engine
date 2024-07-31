@@ -15,7 +15,7 @@ testFeature.setup(serverEnv, ({ run, errorsConfig: { throwError, handleUncaught 
             process.exit(1);
         }
         if (throwError === 'promise-reject') {
-            void Promise.reject('promise reject');
+            void Promise.reject(new Error('promise reject'));
         }
     });
 });

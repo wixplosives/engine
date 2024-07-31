@@ -21,7 +21,7 @@ import { typeCheck } from '../type-check.js';
 /*************** EXAMPLE FEATURE FILES ***************/
 
 const MAIN = new Environment('main', 'window', 'single');
-const ZAG = new Environment('zag', 'window', 'single');
+const _ZAG = new Environment('zag', 'window', 'single');
 const MAIN_1 = new Environment('main1', 'window', 'single');
 
 // show case both the old and new way of defining features working together
@@ -55,7 +55,7 @@ typeCheck(
 typeCheck(
     (
         _runningFeature: EQUAL<
-            Running<typeof Logger, typeof ZAG>,
+            Running<typeof Logger, typeof _ZAG>,
             {
                 config: { time: number };
 
@@ -165,7 +165,7 @@ export async function dontRun() {
             service1.setData(await dataPromise);
         });
 
-        const engine = feature[ENGINE];
+        const _engine = feature[ENGINE];
 
         typeCheck(
             (
@@ -177,7 +177,7 @@ export async function dontRun() {
                             run: (fn: () => unknown) => void;
                             onDispose: (fn: DisposeFunction) => void;
                             [RUN_OPTIONS]: IRunOptions;
-                            [ENGINE]: typeof engine;
+                            [ENGINE]: typeof _engine;
                             componentDescription: Registry<ComponentDescription>;
                             service3: DataService;
                         }

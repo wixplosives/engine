@@ -31,7 +31,7 @@ export function hookPageConsole(
             if (filterMessage(messageType, msgArgs)) {
                 consoleFn.apply(console, msgArgs);
             }
-        } catch (e) {
+        } catch {
             console.log(rawMessageText);
         } finally {
             resolve();
