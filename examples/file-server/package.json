@@ -1,6 +1,6 @@
 {
   "name": "@example/file-server",
-  "version": "46.0.3",
+  "version": "47.0.0",
   "scripts": {
     "start": "engineer start",
     "test": "npm run test:it && npm run test:unit",
