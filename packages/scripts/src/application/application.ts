@@ -2,6 +2,7 @@ import { nodeFs as fs } from '@file-services/node';
 import { defaults } from '@wixc3/common';
 import { type TopLevelConfig } from '@wixc3/engine-core';
 import {
+    getOriginalModule,
     launchEngineHttpServer,
     NodeEnvironmentsManager,
     resolveEnvironments,
@@ -10,6 +11,7 @@ import {
 } from '@wixc3/engine-runtime-node';
 import { createDisposables, SetMultiMap } from '@wixc3/patterns';
 import express from 'express';
+import { pathToFileURL } from 'node:url';
 import webpack from 'webpack';
 import { analyzeFeatures } from '../analyze-feature';
 import { ENGINE_CONFIG_FILE_NAME } from '../build-constants';
@@ -222,7 +224,11 @@ export class Application {
         if (engineConfigFilePath) {
             try {
                 return {
-                    config: ((await import(engineConfigFilePath)) as { default: EngineConfig }).default,
+                    config: (
+                        getOriginalModule(await import(pathToFileURL(engineConfigFilePath).href)) as {
+                            default: EngineConfig;
+                        }
+                    ).default,
                     path: engineConfigFilePath,
                 };
             } catch (ex) {
@@ -239,7 +245,7 @@ export class Application {
     protected async importModules(requiredModules: string[]) {
         for (const requiredModule of requiredModules) {
             try {
-                await import(require.resolve(requiredModule, { paths: [this.basePath] }));
+                await import(pathToFileURL(require.resolve(requiredModule, { paths: [this.basePath] })).href);
             } catch (ex) {
                 throw new Error(`failed importing: ${requiredModule}`, { cause: ex });
             }
@@ -409,7 +415,11 @@ export class Application {
             : fs.findClosestFileSync(basePath, 'webpack.config.js');
         const baseConfig =
             typeof baseConfigPath === 'string'
-                ? ((await import(baseConfigPath)) as { default: webpack.Configuration }).default
+                ? (
+                      getOriginalModule(await import(pathToFileURL(baseConfigPath).href)) as {
+                          default: webpack.Configuration;
+                      }
+                  ).default
                 : {};
         const webpackConfigs = createWebpackConfigs({
             baseConfig,

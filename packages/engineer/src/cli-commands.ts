@@ -11,6 +11,7 @@ import { parseCliArguments } from '@wixc3/engine-runtime-node';
 import { Application } from '@wixc3/engine-scripts/dist/application/index.js';
 import type { Command } from 'commander';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import open from 'open';
 import type { ServerListeningHandler } from './feature/dev-server.types.js';
 import { startDevServer } from './utils.js';
@@ -267,7 +268,7 @@ async function preRequire(pathsToRequire: string[], basePath: string) {
         if (!resolvedFile) {
             throw new Error(`Cannot resolve "${request}"`);
         }
-        await import(resolvedFile);
+        await import(pathToFileURL(resolvedFile).href);
     }
 }
 

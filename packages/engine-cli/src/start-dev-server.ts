@@ -1,6 +1,7 @@
 import cors from 'cors';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
+import type http from 'node:http';
 import io from 'socket.io';
 
 const noContentHandler: express.RequestHandler = (_req, res) => {
@@ -27,7 +28,7 @@ export async function launchServer({
     close: () => Promise<void>;
     port: number;
     app: express.Express;
-    httpServer: import('http').Server;
+    httpServer: http.Server;
     socketServer: io.Server;
 }> {
     const app = express();
