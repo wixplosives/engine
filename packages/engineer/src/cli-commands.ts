@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 /**
  * We use Node's native module system to directly load configuration file.
  * This configuration can (and should) be written as a `.ts` file.

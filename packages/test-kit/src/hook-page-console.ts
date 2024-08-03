@@ -11,7 +11,6 @@ export function hookPageConsole(
 ): () => void {
     let currentMessage: Promise<void> = Promise.resolve();
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     page.on('console', listenToPageMessage);
 
     async function listenToPageMessage(msg: playwright.ConsoleMessage) {
@@ -39,12 +38,10 @@ export function hookPageConsole(
     }
 
     return () => {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         page.off('console', listenToPageMessage);
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const messageTypeToConsoleFn: { [key: string]: (...args: any[]) => void } = {
     log: console.log,
     warning: console.warn,

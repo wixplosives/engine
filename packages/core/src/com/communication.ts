@@ -187,7 +187,6 @@ export class Communication {
         { id: api }: IDTag,
         serviceComConfig: ServiceComConfig<T> = {},
     ): AsyncApi<T> {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return new Proxy(Object.create(null), {
             get: (obj, method) => {
                 // let js runtime know that this is not thenable object
@@ -204,7 +203,6 @@ export class Communication {
                     return Reflect.get(Object.prototype, method);
                 }
                 if (typeof method === 'string') {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     let runtimeMethod = obj[method];
                     if (!runtimeMethod) {
                         runtimeMethod = async (...args: unknown[]) =>
@@ -216,10 +214,8 @@ export class Communication {
                                 this.rootEnvId,
                                 serviceComConfig as Record<string, AnyServiceMethodOptions>,
                             );
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         obj[method] = runtimeMethod;
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return runtimeMethod;
                 }
             },
