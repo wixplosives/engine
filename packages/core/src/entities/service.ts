@@ -12,15 +12,12 @@ import type { EnvVisibility } from '../types.js';
 import { AllEnvironments, Environment, normEnvVisibility, Universal } from './env.js';
 import { FeatureOutput } from './output.js';
 
-export type ServiceRuntime<T extends object, ProvidedFrom> = ProvidedFrom extends Environment<
-    string,
-    EnvironmentTypes,
-    'single'
->
-    ? AsyncApi<T>
-    : ProvidedFrom extends Environment<string, EnvironmentTypes, 'multi', any>
-    ? MultiEnvAsyncApi<T>
-    : AsyncApi<T>;
+export type ServiceRuntime<T extends object, ProvidedFrom> =
+    ProvidedFrom extends Environment<string, EnvironmentTypes, 'single'>
+        ? AsyncApi<T>
+        : ProvidedFrom extends Environment<string, EnvironmentTypes, 'multi', any>
+          ? MultiEnvAsyncApi<T>
+          : AsyncApi<T>;
 
 export class Service<
     T extends object,
@@ -82,7 +79,6 @@ Environment: ${runtimeEngine.entryEnvironment.env}
                 return providedValue;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return inputValue || this.getApiProxy(runtimeEngine, serviceKey);
         }
         return providedValue;
@@ -90,7 +86,6 @@ Environment: ${runtimeEngine.entryEnvironment.env}
 
     public [CREATE_RUNTIME](context: RuntimeEngine, featureID: string, entityKey: string) {
         if (this.remoteAccess) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.getApiProxy(context, context.entityID(featureID, entityKey));
         }
     }
