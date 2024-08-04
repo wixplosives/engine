@@ -1,4 +1,5 @@
 import { SERVICE_CONFIG } from '../symbols.js';
+import { Message } from './message-types.js';
 
 export type SerializableArguments = unknown[];
 export type SerializableMethod = (...args: SerializableArguments) => void;
@@ -40,9 +41,12 @@ export const HOST_REMOVED: Target = {
 export type WindowHost = HTMLIFrameElement | Window;
 
 export interface CallbackRecord<T> {
+    message: Message;
     resolve: (value: T) => void;
     reject: (error: Error) => void;
-    timerId: ReturnType<typeof setTimeout>;
+    timerId?: ReturnType<typeof setTimeout>;
+    scheduleOnSlow(): void;
+    scheduleOnTimeout(): void;
 }
 
 export interface EnvironmentRecord {
