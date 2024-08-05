@@ -89,7 +89,7 @@ main({
     options,
     contextualConfig: ({ resolvedContexts }) => {
         return [
-            ...(workerData ? [COM.use({
+            ...(workerData ? [COM.configure({
                 config: {
                     resolvedContexts,
                     host: new ParentPortHost(),

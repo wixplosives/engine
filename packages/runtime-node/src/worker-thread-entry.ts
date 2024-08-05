@@ -27,7 +27,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
     const host = new UniversalWorkerHost(worker, worker.workerData.name);
 
     config.push(
-        COM.use({
+        COM.configure({
             config: {
                 connectedEnvironments: {
                     [parentEnvName]: {

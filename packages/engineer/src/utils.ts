@@ -54,13 +54,13 @@ export async function startDevServer(options: IStartOptions): Promise<{
         type: 'node',
         host: new BaseHost(),
         config: [
-            devServerFeature.use({
+            devServerFeature.configure({
                 devServerConfig: asDevConfig(serverOpts, engineCnf),
             }),
             ...(options.devServerOnly
                 ? []
                 : [
-                      guiFeature.use({
+                      guiFeature.configure({
                           engineerConfig: {
                               features,
                           },

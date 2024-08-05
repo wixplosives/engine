@@ -283,7 +283,7 @@ describe('ENV dependencies', () => {
             entryFeature: TestFeature,
             env: extendingEnv,
             topLevelConfig: [
-                COM.use({
+                COM.configure({
                     config: {
                         host: extEnvHost,
                     },
@@ -295,7 +295,7 @@ describe('ENV dependencies', () => {
             entryFeature: TestFeature,
             env: otherEnv,
             topLevelConfig: [
-                COM.use({
+                COM.configure({
                     config: {
                         host: otherEnvHost,
                     },

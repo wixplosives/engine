@@ -13,7 +13,7 @@ export async function runIPCEnvironment(options: StartIPCEnvironmntOptions) {
     disposeHandlers.add(() => host.dispose());
     const config = [
         ...(options.config ?? []),
-        COM.use({
+        COM.configure({
             config: {
                 connectedEnvironments: {
                     [options.parentEnvName]: {

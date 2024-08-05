@@ -241,7 +241,7 @@ describe('Node environments manager', function () {
             });
 
             const engine = new RuntimeEngine(env, [
-                COM.use({
+                COM.configure({
                     config: {
                         topology: nodeEnvironmentManager.getTopology('engine-multi-socket-node/x'),
                     },
@@ -313,7 +313,7 @@ describe('Node environments manager', function () {
             );
 
             const engine = new RuntimeEngine(env, [
-                COM.use({
+                COM.configure({
                     config: {
                         topology: nodeEnvironmentManager.getTopology('engine-default-args-echo'),
                     },
@@ -349,7 +349,7 @@ describe('Node environments manager', function () {
             });
 
             const engine = new RuntimeEngine(env, [
-                COM.use({
+                COM.configure({
                     config: {
                         topology: nodeEnvironmentManager.getTopology(engineMultiNodeSocketCommunication.scopedName),
                     },
@@ -410,7 +410,7 @@ describe('Node environments manager', function () {
             });
 
             const engine = new RuntimeEngine(env, [
-                COM.use({
+                COM.configure({
                     config: {
                         topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
                     },
@@ -446,7 +446,7 @@ describe('Node environments manager', function () {
             });
 
             const engine = new RuntimeEngine(env, [
-                COM.use({
+                COM.configure({
                     config: {
                         topology: nodeEnvironmentManager.getTopology(engineMultiNodeIPCCommunication.scopedName),
                     },

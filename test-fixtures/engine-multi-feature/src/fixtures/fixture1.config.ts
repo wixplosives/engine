@@ -1,7 +1,7 @@
 import MultiFeature from '../feature/app.feature.js';
 
 export default [
-    MultiFeature.use({
+    MultiFeature.configure({
         myConfig: { tags: ['fixture1'] },
     }),
 ];

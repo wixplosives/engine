@@ -87,7 +87,7 @@ export function createCommunicationMiddleware(
                 topLevelConfig: TopLevelConfig[];
             }
         ).topLevelConfig.concat([
-            COM.use({
+            COM.configure({
                 config: {
                     topology,
                     publicPath,

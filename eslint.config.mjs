@@ -31,7 +31,7 @@ export default [
             // "no-console": "error",
             'no-empty-pattern': 'off',
             'react/prop-types': 'off',
-            // "react-hooks/rules-of-hooks": "error",
+            "react-hooks/rules-of-hooks": "error",
             'react-hooks/exhaustive-deps': 'error',
             'no-only-tests/no-only-tests': 'error',
 
