@@ -143,7 +143,7 @@ async function runEngineEnvironment<ENV extends AnyEnvironment>({
     com.registerEnv(METADATA_PROVIDER_ENV_ID, metadataProviderHost);
 
     config.push(
-        COM.use({
+        COM.configure({
             config: {
                 connectedEnvironments: {
                     [ENGINE_ROOT_ENVIRONMENT_ID]: {

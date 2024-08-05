@@ -15,7 +15,7 @@ describe('File Server Feature', function () {
             projectPath: path.dirname(__dirname),
         },
         config: [
-            fileServerFeature.use({
+            fileServerFeature.configure({
                 config: {
                     title: 'test-title',
                 },

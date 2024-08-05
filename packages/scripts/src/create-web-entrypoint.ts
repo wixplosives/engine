@@ -60,7 +60,7 @@ main({
     options,
     contextualConfig: ({ resolvedContexts }) => {
         return [
-            COM.use({
+            COM.configure({
                 config: {
                     publicPath: runtimePublicPath,
                     resolvedContexts,

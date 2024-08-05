@@ -223,7 +223,7 @@ export class NodeEnvironmentsManager {
 
             const config: TopLevelConfig = [];
 
-            config.push(COM.use({ config: { topology, connectedEnvironments } }));
+            config.push(COM.configure({ config: { topology, connectedEnvironments } }));
             config.push(
                 ...(await loadTopLevelConfigs(originalConfigName, this.options.configurations)),
                 ...overrideConfigs,

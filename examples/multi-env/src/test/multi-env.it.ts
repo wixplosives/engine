@@ -11,7 +11,7 @@ describe('Multi Environment', () => {
     it('allows providing custom top level config', async () => {
         const { page } = await getLoadedFeature({
             config: [
-                MultiEnv.use({
+                MultiEnv.configure({
                     config: {
                         name: 'my-name',
                     },

@@ -1,7 +1,7 @@
 import BaseWebApplicationFeature from './base-web-application.feature.js';
 
 export default [
-    BaseWebApplicationFeature.use({
+    BaseWebApplicationFeature.configure({
         baseAppConfig: {
             message: 'a configured message',
         },

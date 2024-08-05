@@ -1,7 +1,7 @@
 import UseConfigs from '../feature/use-configs.feature.js';
 
 export default [
-    UseConfigs.use({
+    UseConfigs.configure({
         config: {
             echoText: 'gaga',
         },

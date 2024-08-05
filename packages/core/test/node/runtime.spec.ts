@@ -279,10 +279,10 @@ describe('Feature', () => {
             const engine = await runEngine({
                 entryFeature,
                 topLevelConfig: [
-                    entryFeature.use({
+                    entryFeature.configure({
                         config: { a: 'a' },
                     }),
-                    entryFeature.use({
+                    entryFeature.configure({
                         config: { b: 'b', c: [1] },
                     }),
                 ],
@@ -317,10 +317,10 @@ describe('Feature', () => {
             const engine = await runEngine({
                 entryFeature,
                 topLevelConfig: [
-                    entryFeature.use({
+                    entryFeature.configure({
                         config: { a: 'a', c: [1] },
                     }),
-                    entryFeature.use({
+                    entryFeature.configure({
                         config: { b: 'b', c: [2] },
                     }),
                 ],
@@ -544,10 +544,10 @@ describe('feature interaction', () => {
         const engine = await runEngine({
             entryFeature,
             topLevelConfig: [
-                entryFeature.use({
+                entryFeature.configure({
                     config: { prefix: '!' },
                 }),
-                entryFeature.use({
+                entryFeature.configure({
                     config: { suffix: '?' },
                 }),
             ],
