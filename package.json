@@ -62,7 +62,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-no-only-tests": "^3.1.0",
     "eslint-plugin-react": "^7.35.0",
-    "eslint-plugin-react-hooks": "5.1.0-rc-8269d55d-20240802",
+    "eslint-plugin-react-hooks": "5.1.0-rc.0",
     "html-webpack-plugin": "^5.6.0",
     "mocha": "^10.7.0",
     "mocha-play": "^7.0.5",
