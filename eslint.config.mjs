@@ -8,7 +8,7 @@ import pluginTypescript from 'typescript-eslint';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
-    { ignores: ['**/dist/', '**/dist-engine/', '**/*.{js,mjs,cjs}'] },
+    { ignores: ['**/dist/', '**/dist-engine/', '**/*.{js,mjs,cjs}', 'packages/engineer/gui-feature.d.ts'] },
     pluginJs.configs.recommended,
 
     ...pluginTypescript.configs.recommendedTypeChecked,
