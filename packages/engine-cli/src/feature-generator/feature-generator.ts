@@ -1,3 +1,6 @@
+import type { IFileSystem } from '@file-services/types';
+import { templateCompilerProvider } from '@wixc3/common';
+import type { EngineConfig } from '@wixc3/engine-scripts';
 import {
     createFeatureMapper,
     enrichContext,
@@ -6,9 +9,6 @@ import {
     readDirectoryContentsSync,
     writeDirectoryContentsSync,
 } from './utils.js';
-import { templateCompilerProvider } from '@wixc3/common';
-import { IFileSystem } from '@file-services/types';
-import { EngineConfig } from '@wixc3/engine-scripts/src';
 
 export function generateFeature({
     fs,
