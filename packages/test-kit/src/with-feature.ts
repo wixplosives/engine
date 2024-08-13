@@ -589,7 +589,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         if (ctx?.currentTest?.state === 'failed') {
                             const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
                             const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
-                            const sanitizedFilePath = filePath.replace(/[<>:"|?*]/g, '-');
+                            const sanitizedFilePath = sanitizeFilePath(filePath);
 
                             await featurePage.screenshot({ path: sanitizedFilePath });
 
@@ -616,6 +616,15 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
 
 export function screenShotMessage(sanitizedFilePath: string): string {
     return `The screenshot has been saved at ${sanitizedFilePath}`;
+}
+
+export function sanitizeFilePath(filePath: string): string {
+    // This is done for windows paths C:\Users\... so we don't replace this : when sanitizing
+    const pathPrefix = filePath.match(/^[A-Z]:[\\/]/)?.[0] ?? '';
+    const pathWithoutPrefix = filePath.slice(pathPrefix.length);
+
+    const sanitizedWithoutPrefix = pathWithoutPrefix.replace(/[:<>"|?*]/g, '-');
+    return `${pathPrefix}${sanitizedWithoutPrefix}`;
 }
 
 async function getMetrics(runningFeature: RunningFeature, featurePage: playwright.Page) {
@@ -759,7 +768,7 @@ async function enableTracing({
                     name:
                         (process.env.TRACING && process.env.TRACING !== 'true'
                             ? process.env.TRACING
-                            : name ?? (testName ? normalizeTestName(testName) : 'nameless-test')) +
+                            : (name ?? (testName ? normalizeTestName(testName) : 'nameless-test'))) +
                         (process.env.TRACING_POSTFIX ?? ''),
                 }),
             });
