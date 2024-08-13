@@ -207,6 +207,13 @@ export type WithFeatureApi = {
      * ensure a the path to the test temp directory exists and return it.
      */
     ensureProjectPath: () => string;
+    /**
+     * Manually call taking a screenshot for the current test if it failed
+     */
+    takeScreenshotIfFailed: (
+        page: playwright.Page,
+        options?: Pick<IFeatureExecutionOptions, 'tracing'>,
+    ) => Promise<void>;
 };
 
 export const TRACING_DISPOSABLES = 'TRACING_DISPOSABLES';
@@ -395,6 +402,32 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         return projectPath;
     }
 
+    async function takeScreenshotIfFailed(
+        featurePage: playwright.Page,
+        { tracing }: Pick<IFeatureExecutionOptions, 'tracing'> = {},
+    ) {
+        const ctx = mochaCtx();
+        const currentTest = ctx?.currentTest;
+        if (currentTest?.state !== 'failed') {
+            return;
+        }
+        const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
+        const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
+        const outPath =
+            (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
+            `${
+                suiteTracingOptions?.outPath ?? testTracingOptions?.outPath ?? process.cwd()
+            }/screenshots-of-failed-tests`;
+
+        const testPath = currentTest.titlePath().join('/').replace(/\s/g, '-');
+        const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
+        const sanitizedFilePath = sanitizeFilePath(filePath);
+
+        await featurePage.screenshot({ path: sanitizedFilePath });
+
+        console.log(reporters.Base.color('bright yellow', screenShotMessage(sanitizedFilePath)));
+    }
+
     return {
         ensureProjectPath,
         spawnSync: (command, args = [], spawnOptions = {}) => {
@@ -418,6 +451,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
             });
             return running;
         },
+        takeScreenshotIfFailed,
         async getLoadedFeature({
             featureName = suiteFeatureName,
             configName = suiteConfigName,
@@ -576,25 +610,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 timeout: 10_000,
                 dispose: async () => {
                     if (takeScreenshotsOfFailed) {
-                        const suiteTracingOptions = typeof suiteTracing === 'boolean' ? {} : suiteTracing;
-                        const testTracingOptions = typeof tracing === 'boolean' ? {} : tracing;
-                        const outPath =
-                            (typeof takeScreenshotsOfFailed !== 'boolean' && takeScreenshotsOfFailed.outPath) ||
-                            `${
-                                suiteTracingOptions?.outPath ?? testTracingOptions?.outPath ?? process.cwd()
-                            }/screenshots-of-failed-tests`;
-
-                        const ctx = mochaCtx();
-
-                        if (ctx?.currentTest?.state === 'failed') {
-                            const testPath = ctx.currentTest.titlePath().join('/').replace(/\s/g, '-');
-                            const filePath = `${outPath}/${testPath}__${uniqueHash()}.png`;
-                            const sanitizedFilePath = sanitizeFilePath(filePath);
-
-                            await featurePage.screenshot({ path: sanitizedFilePath });
-
-                            console.log(reporters.Base.color('bright yellow', screenShotMessage(sanitizedFilePath)));
-                        }
+                        await takeScreenshotIfFailed(featurePage, { tracing });
                     }
                     await featurePage.close();
                 },
