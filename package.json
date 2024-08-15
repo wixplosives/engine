@@ -21,7 +21,6 @@
     "prettify": "npx prettier . --write"
   },
   "devDependencies": {
-    "@eslint/compat": "^1.1.1",
     "@eslint/js": "^9.9.0",
     "@file-services/memory": "^9.4.1",
     "@file-services/types": "^9.4.1",
@@ -60,7 +59,7 @@
     "esbuild": "^0.23.0",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-no-only-tests": "^3.2.0",
+    "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "5.1.0-rc.0",
     "html-webpack-plugin": "^5.6.0",
