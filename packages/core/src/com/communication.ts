@@ -77,7 +77,6 @@ export class Communication {
     private disposing = false;
     private readonly callbackTimeout = 60_000 * 5; // 5 minutes
     private readonly slowThreshold = 5_000; // 5 seconds
-    private callbacks: { [callbackId: string]: CallbackRecord<unknown> } = {};
     private pendingEnvs: SetMultiMap<string, () => void> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
     private handlers = new Map<string, Set<UnknownFunction>>();
@@ -89,7 +88,7 @@ export class Communication {
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposeListeners = new Set<(envId: string) => void>();
-    private pendingCallbacks = new Map<string, string>();
+    private pendingCallbacks = new Map<string, CallbackRecord<unknown>>();
     private messageIdPrefix: string;
     // manual DEBUG_MODE
     private DEBUG = false;
@@ -195,7 +194,7 @@ export class Communication {
                 }
 
                 /*
-                 * Don't allow native Object methods to be proxied.
+                 * Don't allow native Object methods to be proxies.
                  * they used by the debugger and cause messages to be sent everywhere
                  * this behavior made debugging very hard and can cause errors and infinite loops
                  */
@@ -398,7 +397,6 @@ export class Communication {
     private getComStatus() {
         return {
             rootEnvId: this.rootEnvId,
-            callbacks: Object.keys(this.callbacks),
             pendingEnvs: countValues(this.pendingEnvs),
             pendingMessages: countValues(this.pendingMessages),
             handlers: Array.from(this.handlers).reduce<Record<string, number>>((acc, [key, value]) => {
@@ -426,12 +424,15 @@ export class Communication {
                 },
                 {},
             ),
-            pendingCallbacks: Array.from(this.pendingCallbacks.entries()).reduce<Record<string, string>>(
+            pendingCallbacks: Array.from(this.pendingCallbacks.entries()).reduce(
                 (acc, [key, value]) => {
-                    acc[key] = value;
+                    acc[key] = {
+                        to: value.message.to,
+                        isTimeoutScheduled: value.timerId !== undefined,
+                    };
                     return acc;
                 },
-                {},
+                {} as Record<string, { to: string; isTimeoutScheduled: boolean }>,
             ),
             messageIdPrefix: this.messageIdPrefix,
         };
@@ -495,11 +496,10 @@ export class Communication {
 
         this.locallyClear(this.rootEnvId);
         this.disposeListeners.clear();
-
-        for (const [id, { timerId }] of Object.entries(this.callbacks)) {
+        for (const { timerId } of this.pendingCallbacks.values()) {
             clearTimeout(timerId);
-            delete this.callbacks[id];
         }
+        this.pendingCallbacks.clear();
     }
 
     public getEnvironmentId() {
@@ -570,9 +570,8 @@ export class Communication {
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
         delete this.environments[instanceId];
-        for (const [callbackId, env] of this.pendingCallbacks.entries() ?? []) {
-            const callbackRecord = this.callbacks[callbackId];
-            if (env === instanceId && callbackRecord) {
+        for (const callbackRecord of this.pendingCallbacks.values()) {
+            if (callbackRecord.message.to === instanceId) {
                 callbackRecord.reject(new EnvironmentDisconnectedError(ENV_DISCONNECTED(instanceId, this.rootEnvId)));
             }
         }
@@ -768,6 +767,11 @@ export class Communication {
         const pendingEnvCb = this.pendingEnvs.get(from);
         if (pendingEnvCb) {
             this.pendingEnvs.deleteKey(from);
+            for (const callbackRecord of this.pendingCallbacks.values()) {
+                if (callbackRecord.message.to === from) {
+                    callbackRecord.scheduleOnTimeout();
+                }
+            }
             const pendingMessages = this.pendingMessages.get(from);
             if (pendingMessages) {
                 for (const postMessage of pendingMessages) {
@@ -858,7 +862,7 @@ export class Communication {
     }
 
     private handleCallback(message: CallbackMessage): void {
-        const rec = message.callbackId ? this.callbacks[message.callbackId] : null;
+        const rec = message.callbackId ? this.pendingCallbacks.get(message.callbackId) : null;
         if (rec && message.error) {
             // If the error is not caught later, and logged to the console,
             // it would be nice to indicate which environment the error came from.
@@ -925,37 +929,44 @@ export class Communication {
         rej: (reason: unknown) => void,
     ) {
         if (!this.disposing) {
-            this.pendingCallbacks.set(callbackId, message.to);
-            const resolve = (value: unknown) => {
-                this.pendingCallbacks.delete(callbackId);
-                delete this.callbacks[callbackId];
-                clearTimeout(timerId);
-                res(value);
-            };
-            const reject = (error: Error) => {
-                this.pendingCallbacks.delete(callbackId);
-                delete this.callbacks[callbackId];
-                clearTimeout(timerId);
-                if (this.DEBUG) {
-                    error.cause = `Caused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
-                }
-                rej(error);
-            };
-            if (this.options.warnOnSlow) {
-                setTimeout(() => {
-                    if (this.callbacks[callbackId]) {
-                        console.warn(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessageForLog(message)));
+            const callbackItem: CallbackRecord<any> = {
+                timerId: undefined,
+                message,
+                resolve: (value: unknown) => {
+                    this.pendingCallbacks.delete(callbackId);
+                    clearTimeout(callbackItem.timerId);
+                    res(value);
+                },
+                reject: (error: Error) => {
+                    this.pendingCallbacks.delete(callbackId);
+                    clearTimeout(callbackItem.timerId);
+                    if (this.DEBUG) {
+                        error.cause = `Caused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
                     }
-                }, this.slowThreshold);
-            }
-            const timerId = setTimeout(() => {
-                reject(new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessageForLog(message))));
-            }, this.callbackTimeout);
-            this.callbacks[callbackId] = {
-                timerId,
-                resolve,
-                reject,
+                    rej(error);
+                },
+                scheduleOnSlow: () => {
+                    setTimeout(() => {
+                        if (this.pendingCallbacks.has(callbackId)) {
+                            console.warn(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessageForLog(message)));
+                        }
+                    }, this.slowThreshold);
+                },
+                scheduleOnTimeout: () => {
+                    callbackItem.timerId = setTimeout(() => {
+                        callbackItem.reject(
+                            new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessageForLog(message))),
+                        );
+                    }, this.callbackTimeout);
+                },
             };
+            if (!this.pendingEnvs.hasKey(message.to)) {
+                if (this.options.warnOnSlow) {
+                    callbackItem.scheduleOnSlow();
+                }
+                callbackItem.scheduleOnTimeout();
+            }
+            this.pendingCallbacks.set(callbackId, callbackItem);
         }
     }
 }
