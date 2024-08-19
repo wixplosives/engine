@@ -158,12 +158,12 @@ describe('ENV dependencies', () => {
             id = 'testFeatureDeps' as const;
             api = {};
             dependencies = [entryFeature];
-        }).setup(env3, ({}, { entry }) => {
+        }).setup(env3, ({}, { entry: _entry }) => {
             // We only asset that the types are correct feature runtime does not care.
             typeCheck(
                 (
                     _runningFeature: EQUAL<
-                        typeof entry,
+                        typeof _entry,
                         {
                             service1: EchoService;
                             service2: EchoService;
@@ -202,15 +202,15 @@ describe('ENV dependencies', () => {
             dependencies = [COM];
         }
 
-        TestFeature.setup(baseEnv, (entry) => {
+        TestFeature.setup(baseEnv, (_entry) => {
             typeCheck(
-                (_service: EQUAL<(typeof entry)['service'], MultiEnvAsyncApi<{ increment: (n: number) => number }>>) =>
+                (_service: EQUAL<(typeof _entry)['service'], MultiEnvAsyncApi<{ increment: (n: number) => number }>>) =>
                     true,
             );
             typeCheck(
                 (
                     _service2: EQUAL<
-                        (typeof entry)['service2'],
+                        (typeof _entry)['service2'],
                         {
                             get(token: EnvironmentInstanceToken): AsyncApi<{
                                 multiplyThenIncrement: (n: number) => number;
@@ -283,7 +283,7 @@ describe('ENV dependencies', () => {
             entryFeature: TestFeature,
             env: extendingEnv,
             topLevelConfig: [
-                COM.use({
+                COM.configure({
                     config: {
                         host: extEnvHost,
                     },
@@ -295,7 +295,7 @@ describe('ENV dependencies', () => {
             entryFeature: TestFeature,
             env: otherEnv,
             topLevelConfig: [
-                COM.use({
+                COM.configure({
                     config: {
                         host: otherEnvHost,
                     },

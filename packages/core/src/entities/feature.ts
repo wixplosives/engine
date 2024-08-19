@@ -64,9 +64,11 @@ export class Feature<T extends string> {
     static context<T extends FeatureClass>(this: T): InstanceType<T>['context'] {
         return instantiateFeature(this).context;
     }
-    static use<T extends FeatureClass>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
+    static configure<T extends FeatureClass>(this: T, c: PartialFeatureConfig<InstanceType<T>['api']>) {
         return provideConfig(this, c);
     }
+    /** @deprecated use {@link Feature.configure} instead */
+    static use = this.configure;
     static setup<T extends FeatureClass, E extends AnyEnvironment>(
         this: T,
         environment: E,

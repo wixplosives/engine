@@ -279,10 +279,10 @@ describe('Feature', () => {
             const engine = await runEngine({
                 entryFeature,
                 topLevelConfig: [
-                    entryFeature.use({
+                    entryFeature.configure({
                         config: { a: 'a' },
                     }),
-                    entryFeature.use({
+                    entryFeature.configure({
                         config: { b: 'b', c: [1] },
                     }),
                 ],
@@ -317,10 +317,10 @@ describe('Feature', () => {
             const engine = await runEngine({
                 entryFeature,
                 topLevelConfig: [
-                    entryFeature.use({
+                    entryFeature.configure({
                         config: { a: 'a', c: [1] },
                     }),
-                    entryFeature.use({
+                    entryFeature.configure({
                         config: { b: 'b', c: [2] },
                     }),
                 ],
@@ -469,7 +469,6 @@ describe('Feature', () => {
                 _featureID: string,
                 _entityKey: string,
             ) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return inputValue;
             }
 
@@ -545,10 +544,10 @@ describe('feature interaction', () => {
         const engine = await runEngine({
             entryFeature,
             topLevelConfig: [
-                entryFeature.use({
+                entryFeature.configure({
                     config: { prefix: '!' },
                 }),
-                entryFeature.use({
+                entryFeature.configure({
                     config: { suffix: '?' },
                 }),
             ],
@@ -667,7 +666,7 @@ describe('feature disposal', () => {
             api = {};
         }
         const disposeFirst = spy(() => Promise.resolve());
-        const disposeSecond = spy(() => Promise.reject('err'));
+        const disposeSecond = spy(() => Promise.reject(new Error('err')));
 
         entryFeature.setup(mainEnv, ({ onDispose }, {}) => {
             onDispose(disposeFirst);
@@ -785,7 +784,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
             slot.register({ name: 'test' });
         });
         EchoFeature.setup(processing, (feature) => {
-            const engine = feature[ENGINE];
+            const _engine = feature[ENGINE];
 
             typeCheck(
                 (
@@ -794,7 +793,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                         {
                             id: 'echoFeature';
                             [RUN_OPTIONS]: IRunOptions;
-                            [ENGINE]: typeof engine;
+                            [ENGINE]: typeof _engine;
                             run(fn: () => unknown): unknown;
                             onDispose(fn: DisposeFunction): unknown;
                         }

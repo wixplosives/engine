@@ -73,7 +73,7 @@ export function createIPC(
                 ...message.data,
                 config: [
                     ...(message.data.config ?? []),
-                    COM.use({
+                    COM.configure({
                         config: {
                             connectedEnvironments,
                         },

@@ -1,6 +1,6 @@
 {
   "name": "@example/reloaded-iframe",
-  "version": "46.0.3",
+  "version": "47.2.0",
   "scripts": {
     "start": "engineer start",
     "test": "npm run test:it",

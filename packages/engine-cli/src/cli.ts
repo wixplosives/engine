@@ -1,6 +1,8 @@
 import { cli, command } from 'cleye';
 import { analyzeCommand } from './analyze-command';
 import type { EngineConfig } from '@wixc3/engine-scripts';
+import { generateFeature } from './feature-generator';
+import fs from '@file-services/node';
 
 async function engine() {
     const engineConfigCli = cli({
@@ -139,10 +141,30 @@ async function engine() {
                         description: 'Feature name',
                         default: undefined,
                     },
-                    engineConfigFilePath: {
+                },
+            }),
+            command({
+                name: 'generate',
+                parameters: ['<featureName>'],
+                help: {
+                    usage:
+                        'engine generate MyFeature\n' +
+                        'engine generate MyFeature --features=packages\n' +
+                        'engine generate MyFeature --features=packages --templates=feature-template',
+                    description: 'Generates feature from a template',
+                },
+                flags: {
+                    features: {
                         type: String,
-                        description: 'Engine config file path',
-                        default: undefined,
+                        description:
+                            'Path to directory containing features; new one would be created inside it.\n' +
+                            'If not provided and not in `engine.config.js`, `cwd` will be used',
+                    },
+                    templates: {
+                        type: String,
+                        description:
+                            'Path to directory containing templates for feature generation.\n' +
+                            'If not provided and not in `engine.config.js`, built-in templates would be used',
                     },
                 },
             }),
@@ -158,6 +180,19 @@ async function engine() {
     const rootDir = process.cwd();
     if (argv.command === 'analyze') {
         await analyzeCommand({ rootDir, feature: argv.flags.feature, engineConfig });
+    } else if (argv.command === 'generate') {
+        const featureName = argv._.featureName;
+        const { featureTemplatesFolder, featuresDirectory } = engineConfig;
+        const featuresPath = argv.flags.features ?? featuresDirectory;
+        const templatesPath = argv.flags.templates ?? featureTemplatesFolder;
+
+        generateFeature({
+            fs,
+            rootDir,
+            featureName,
+            templatesPath,
+            featuresPath,
+        });
     } else {
         const dev = argv.flags.dev ?? argv.flags.watch;
         const run = argv.flags.run ?? dev;

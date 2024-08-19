@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import {
     type ConfigurationEnvironmentMapping,
     type FeatureEnvironmentMapping,
-    createFeatureEnvironmentsMapping,
+    type createFeatureEnvironmentsMapping,
 } from './node-env-manager';
 
 export function readMetadataFiles(dir: string) {
@@ -15,7 +15,7 @@ export function readMetadataFiles(dir: string) {
             join(dir, 'metadata', 'engine-config-mapping.json'),
         ) as ConfigurationEnvironmentMapping;
         return { featureEnvironmentsMapping, configMapping };
-    } catch (e) {
+    } catch {
         return undefined;
     }
 }

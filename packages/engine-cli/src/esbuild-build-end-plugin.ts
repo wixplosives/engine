@@ -18,6 +18,7 @@ export function createBuildEndPluginHook() {
             });
 
             buildEndPromise = new Promise((res, rej) => {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 build.onEnd(({ errors }) => (errors.length ? rej(errors) : res()));
             });
         },

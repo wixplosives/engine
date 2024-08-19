@@ -24,7 +24,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
 }: StartEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
     if (host) {
         config.push(
-            COM.use({
+            COM.configure({
                 config: {
                     host,
                     id: name,
@@ -34,7 +34,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     }
 
     config.push(
-        RuntimeMetadata.use({
+        RuntimeMetadata.configure({
             engineerMetadataConfig: {
                 applicationPath: bundlePath,
             },
@@ -57,7 +57,7 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     const engine = new RuntimeEngine(
         env,
         [
-            COM.use({
+            COM.configure({
                 config: {
                     resolvedContexts,
                 },

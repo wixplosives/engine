@@ -65,7 +65,7 @@ export type AsyncApi<T extends object> = {
             ? (...args: Args) => Promise<R>
             : never;
 } & {
-    [K in Extract<keyof T, keyof Object>]: never;
+    [K in Extract<keyof T, keyof object>]: never;
 };
 
 export type MultiEnvAsyncApi<T extends object> = {

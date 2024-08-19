@@ -130,7 +130,7 @@ devServerFeature.setup(
                         overrideConfig: (envName: string) => {
                             const config = Array.isArray(overrideConfig) ? overrideConfig : overrideConfig(envName);
                             config.push(
-                                RuntimeMetadata.use({
+                                RuntimeMetadata.configure({
                                     engineerMetadataConfig: {
                                         devport: actualPort,
                                         isWorkspace: packages.length > 1,

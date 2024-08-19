@@ -45,7 +45,7 @@ export class ManagedRunEngine implements IExecutableApplication {
                 } else {
                     console.warn(`[Engine]: Running without active watcher. Rebuilding application.`);
                 }
-            } catch (e) {
+            } catch {
                 console.warn(
                     `[Engine]: Could not read prebuilt metadata files at ${OUTPUT_PATH}`,
                     '[Engine]: Building fresh engine application',

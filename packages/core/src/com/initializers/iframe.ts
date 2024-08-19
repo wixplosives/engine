@@ -81,7 +81,7 @@ export async function startIframe({ com, iframe, instanceId, src, envReadyPromis
 
     const waitForCancel = new Promise((_, reject) => {
         cancellationTriggers.set(iframe, () => {
-            reject('Cancelled environment initialization in an iframe');
+            reject(new Error('Cancelled environment initialization in an iframe'));
         });
     });
 

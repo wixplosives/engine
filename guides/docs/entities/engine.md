@@ -74,7 +74,7 @@ f.setup(env2, ({ [RUN_OPTIONS]: runOptions, config }) => {
 const runtimeEngine = new RuntimeEngine(
   env1,
   [
-    f.use({
+    f.configure({
       config: {
         name: 'some-name',
       },

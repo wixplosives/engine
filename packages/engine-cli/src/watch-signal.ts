@@ -26,7 +26,7 @@ export async function checkWatchSignal(baseDir: string) {
         }
         const res = await fetch(isAliveUrl);
         return res.status === 200;
-    } catch (e) {
+    } catch {
         return false;
     }
 }

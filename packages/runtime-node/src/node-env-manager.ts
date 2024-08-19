@@ -53,7 +53,7 @@ export class NodeEnvManager implements IDisposable {
     public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
         const disposeMetricsListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
-        const verbose = Boolean(runtimeOptions.get('verbose')) ?? false;
+        const verbose = Boolean(runtimeOptions.get('verbose'));
         const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
@@ -210,7 +210,7 @@ export class NodeEnvManager implements IDisposable {
 async function requireModules(modulePaths: string[]) {
     const load = [];
     for (const modulePath of modulePaths) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         load.push(require(modulePath));
     }
     const res = await Promise.all(load);

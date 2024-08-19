@@ -31,7 +31,7 @@ export function readEntryPoints(dir: string): (EntryPoints & EntryPointsPaths) |
         const webEntryPointsPaths = Array.from(webEntryPoints.keys()).map((name) => join(webDir, name));
         const nodeEntryPointsPaths = Array.from(nodeEntryPoints.keys()).map((name) => join(nodeDir, name));
         return { webEntryPoints, nodeEntryPoints, webEntryPointsPaths, nodeEntryPointsPaths };
-    } catch (e) {
+    } catch {
         return undefined;
     }
 }
