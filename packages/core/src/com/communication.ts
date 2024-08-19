@@ -572,7 +572,11 @@ export class Communication {
         delete this.environments[instanceId];
         for (const callbackRecord of this.pendingCallbacks.values()) {
             if (callbackRecord.message.to === instanceId) {
-                callbackRecord.reject(new EnvironmentDisconnectedError(ENV_DISCONNECTED(instanceId, this.rootEnvId)));
+                callbackRecord.reject(
+                    new EnvironmentDisconnectedError(
+                        ENV_DISCONNECTED(instanceId, this.rootEnvId, cleanMessageForLog(callbackRecord.message)),
+                    ),
+                );
             }
         }
         for (const dispose of this.disposeListeners) {
