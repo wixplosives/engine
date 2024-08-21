@@ -944,7 +944,7 @@ export class Communication {
                 reject: (error: Error) => {
                     this.pendingCallbacks.delete(callbackId);
                     clearTimeout(callbackItem.timerId);
-                    if (this.DEBUG) {
+                    if (error instanceof EnvironmentDisconnectedError || this.DEBUG) {
                         error.cause = `Caused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
                     }
                     rej(error);
