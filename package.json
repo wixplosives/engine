@@ -76,7 +76,7 @@
     "source-map-loader": "^5.0.0",
     "typescript": "~5.5.4",
     "typescript-eslint": "^8.2.0",
-    "webpack": "^5.93.0"
+    "webpack": "^5.94.0"
   },
   "license": "MIT",
   "private": true
