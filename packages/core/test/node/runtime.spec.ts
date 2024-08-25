@@ -707,6 +707,30 @@ describe('feature disposal', () => {
 
         expect(dispose).to.have.have.callCount(1);
     });
+
+    it('abort the engineShutdownSignal', async () => {
+        const envName = 'main';
+        const mainEnv = new Environment(envName, 'window', 'single');
+        class entryFeature extends Feature<'test'> {
+            id = 'test' as const;
+            api = {};
+        }
+        const onEvent = spy((msg) => msg);
+        entryFeature.setup(mainEnv, ({ engineShutdownSignal, onDispose }, {}) => {
+            onDispose(() => onEvent('dispose'));
+            engineShutdownSignal.addEventListener('abort', () => onEvent('abort'));
+        });
+
+        const engine = await runEngine({
+            entryFeature,
+            env: mainEnv,
+        });
+
+        await engine.shutdown();
+
+        expect(onEvent).to.have.have.callCount(2);
+        expect(onEvent.getCalls().map((call) => call.args[0])).to.be.eql(['abort', 'dispose']);
+    });
 });
 
 describe('service with remove access environment visibility', () => {
@@ -794,6 +818,7 @@ describe.skip('Environments And Entity Visibility (ONLY TEST TYPES)', () => {
                             id: 'echoFeature';
                             [RUN_OPTIONS]: IRunOptions;
                             [ENGINE]: typeof _engine;
+                            engineShutdownSignal: AbortSignal;
                             run(fn: () => unknown): unknown;
                             onDispose(fn: DisposeFunction): unknown;
                         }
