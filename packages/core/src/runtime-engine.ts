@@ -99,9 +99,9 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         }
         this.shutingDown = true;
         try {
+            this.shutdownController.abort();
             // don't report error on running
             await Promise.allSettled([this.running]);
-            this.shutdownController.abort();
             this.running = undefined;
             const toDispose = Array.from(this.features.values()).reverse();
             for (const feature of toDispose) {
