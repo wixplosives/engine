@@ -6,50 +6,50 @@ import { SERVICE_CONFIG } from '../symbols.js';
 import { type IDTag } from '../types.js';
 import { reportError } from './logs.js';
 import {
-    countValues,
-    deserializeApiCallArguments,
-    getPostEndpoint,
-    isListenCall,
-    isWorkerContext,
-    MultiCounter,
-    redactArguments,
-    serializeApiCallArguments,
+  countValues,
+  deserializeApiCallArguments,
+  getPostEndpoint,
+  isListenCall,
+  isWorkerContext,
+  MultiCounter,
+  redactArguments,
+  serializeApiCallArguments
 } from './helpers.js';
 import { BaseHost } from './hosts/base-host.js';
 import { WsClientHost } from './hosts/ws-client-host.js';
 import type {
-    CallbackMessage,
-    CallMessage,
-    DisposeMessage,
-    EventMessage,
-    ListenMessage,
-    Message,
-    StatusRequestMessage,
-    UnListenMessage,
+  CallbackMessage,
+  CallMessage,
+  DisposeMessage,
+  EventMessage,
+  ListenMessage,
+  Message,
+  StatusRequestMessage,
+  UnListenMessage
 } from './message-types.js';
 import { isMessage } from './message-types.js';
 import {
-    AnyFunction,
-    type AnyServiceMethodOptions,
-    type APIService,
-    type AsyncApi,
-    type CallbackRecord,
-    CommunicationOptions,
-    type EnvironmentInstanceToken,
-    type EnvironmentRecord,
-    HOST_REMOVED,
-    type SerializableMethod,
-    type ServiceComConfig,
-    type Target,
-    type UnknownFunction,
+  AnyFunction,
+  type AnyServiceMethodOptions,
+  type APIService,
+  type AsyncApi,
+  type CallbackRecord,
+  CommunicationOptions,
+  type EnvironmentInstanceToken,
+  type EnvironmentRecord,
+  HOST_REMOVED,
+  type SerializableMethod,
+  type ServiceComConfig,
+  type Target,
+  type UnknownFunction
 } from './types.js';
 import {
-    CallbackTimeoutError,
-    CircularForwardingError,
-    DuplicateRegistrationError,
-    EnvironmentDisconnectedError,
-    UnConfiguredMethodError,
-    UnknownCallbackIdError,
+  CallbackTimeoutError,
+  CircularForwardingError,
+  DuplicateRegistrationError,
+  EnvironmentDisconnectedError,
+  UnConfiguredMethodError,
+  UnknownCallbackIdError
 } from './communication-errors';
 
 /**
@@ -325,29 +325,29 @@ export class Communication {
 
         switch (message.type) {
             case 'call':
-                await this.handleCallMessage(message);
-                return;
+                await this.handleCall(message);
+                break;
             case 'callback':
-                this.handleCallbackMessage(message);
-                return;
+                this.handleCallback(message);
+                break;
             case 'event':
-                this.handleEventMessage(message);
-                return;
+                this.handleEvent(message);
+                break;
             case 'listen':
-                await this.handleListenMessage(message);
-                return;
+                await this.handleListen(message);
+                break;
             case 'unlisten':
-                await this.handleUnListenMessage(message);
-                return;
+                await this.handleUnListen(message);
+                break;
             case 'ready':
                 this.handleReady(message);
-                return;
+                break;
             case 'dispose':
-                this.handleDisposeMessage(message);
-                return;
+                this.handleDispose(message);
+                break;
             case 'status':
-                this.handleStatusRequestMessage(message);
-                return;
+                this.handleStatusRequest(message);
+                break;
             default: {
                 const _exhaustiveCheck: never = message;
             }
@@ -359,8 +359,7 @@ export class Communication {
      */
     public async getAllEnvironmentsStatus() {
         type Status = ReturnType<typeof this.getStatus>;
-        const pending: Promise<Status>[] = [];
-        const status = this.getStatus();
+        const statuses: Promise<Status>[] = [];
         const environmentsExcludingOwn = Object.keys(this.environments).filter(
             (envId) => envId !== '*' && envId !== this.id,
         );
@@ -381,11 +380,13 @@ export class Communication {
                 resolve,
                 reject,
             });
-            pending.push(promise);
+            statuses.push(promise);
         }
 
-        return Promise.allSettled(pending).then((results) => {
-            const statuses: Record<string, Status | PromiseRejectedResult> = {};
+        return Promise.allSettled(statuses).then((results) => {
+            const statuses: Record<string, Status | PromiseRejectedResult> = {
+                [this.id]: this.getStatus(),
+            };
             for (let i = 0; i < results.length; i++) {
                 const result = results[i]!;
                 const key = environmentsExcludingOwn[i]!;
@@ -399,7 +400,7 @@ export class Communication {
                     statuses[key] = result;
                 }
             }
-            statuses[this.id] = status;
+
             return statuses;
         });
     }
@@ -547,7 +548,7 @@ export class Communication {
         };
     }
 
-    private handleStatusRequestMessage({ callbackId, from }: StatusRequestMessage) {
+    private handleStatusRequest({ callbackId, from }: StatusRequestMessage) {
         this.sendTo(from, {
             type: 'callback',
             origin: this.id,
@@ -765,7 +766,7 @@ export class Communication {
         return getPostEndpoint(env.host);
     }
 
-    private handleEventMessage({ data, handlerId }: EventMessage) {
+    private handleEvent({ data, handlerId }: EventMessage) {
         const handlers = this.handlers.get(handlerId);
         if (!handlers) return;
 
@@ -774,13 +775,7 @@ export class Communication {
         }
     }
 
-    private async handleUnListenMessage({
-        callbackId,
-        data: { method, api },
-        from,
-        handlerId,
-        origin,
-    }: UnListenMessage) {
+    private async handleUnListen({ callbackId, data: { method, api }, from, handlerId, origin }: UnListenMessage) {
         const namespacedHandlerId = handlerId + origin;
         const dispatcher = this.eventDispatchers[namespacedHandlerId];
         if (!dispatcher) return;
@@ -801,13 +796,13 @@ export class Communication {
         });
     }
 
-    private handleDisposeMessage({ from, origin }: DisposeMessage) {
+    private handleDispose({ from, origin }: DisposeMessage) {
         if (from === this.id) return;
 
         this.clearEnvironment(origin, from);
     }
 
-    private async handleListenMessage(message: ListenMessage) {
+    private async handleListen(message: ListenMessage) {
         const {
             handlerId,
             origin,
@@ -843,7 +838,7 @@ export class Communication {
         }
     }
 
-    private async handleCallMessage({ callbackId, data, from, origin }: CallMessage) {
+    private async handleCall({ callbackId, data, from, origin }: CallMessage) {
         try {
             const { args, api, method } = data;
             const deserializedArgs = deserializeApiCallArguments(args);
@@ -872,7 +867,7 @@ export class Communication {
         }
     }
 
-    private handleCallbackMessage(message: CallbackMessage) {
+    private handleCallback(message: CallbackMessage) {
         if (!message.callbackId) return;
 
         const callback = this.pendingCallbacks.get(message.callbackId);
