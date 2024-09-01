@@ -102,6 +102,7 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
         id: feature.id,
         run: featureRuntime.addRunHandler,
         onDispose: featureRuntime.addOnDisposeHandler,
+        engineShutdownSignal: runningEngine.shutdownSignal,
         [RUN_OPTIONS]: runOptions,
         [ENGINE]: runningEngine,
     };
