@@ -117,7 +117,7 @@ export class Communication {
         return this.id.split('/')[0]!;
     }
 
-    public getEnvironmentHost(envName: string) {
+    public getEnvironmentHost(envName: string): Target | undefined {
         return this.environments[envName]?.host;
     }
 
@@ -149,19 +149,27 @@ export class Communication {
         return api;
     }
 
-    public getEnvironmentContext(endPoint: ContextualEnvironment<string, EnvironmentMode, Environment[]>) {
+    public getEnvironmentContext(endPoint: ContextualEnvironment<string, EnvironmentMode, Environment[]>): string | undefined {
         return this.resolvedContexts[endPoint.env];
     }
 
-    public getEnvironmentInstanceId(envName: string, endpointType: EnvironmentMode) {
+    public getEnvironmentInstanceId(envName: string, endpointType: EnvironmentMode): string {
         return endpointType === 'single' ? envName : this.generateEnvInstanceID(envName);
+    }
+
+    /**
+     * Generate client id for newly spawned environment.
+     * todo: should be made private? or rather inlined
+     */
+    public generateEnvInstanceID(name: string): string {
+        return this.idsCounter.next(`${name}/`);
     }
 
     public getPublicPath(): string {
         return this.options.publicPath;
     }
 
-    public subscribeToEnvironmentDispose(handler: (envId: string) => void) {
+    public subscribeToEnvironmentDispose(handler: (envId: string) => void): void {
         this.disposeListeners.add(handler);
     }
 
@@ -232,14 +240,8 @@ export class Communication {
     }
 
     /**
-     * Generate client id for newly spawned environment.
-     */
-    public generateEnvInstanceID(name: string): string {
-        return this.idsCounter.next(`${name}/`);
-    }
-
-    /**
      * Calls a remote method in any opened environment.
+     * todo: shouldn't it be private?
      */
     public callMethod({
         envId,
@@ -294,6 +296,7 @@ export class Communication {
 
     /**
      * handles Communication incoming message.
+     * todo: public only for logger transport interface compatibility? otherwise should be private
      */
     public async handleMessage(message: unknown, source: Target): Promise<void> {
         if (!isMessage(message)) return;
@@ -350,6 +353,7 @@ export class Communication {
         }
     }
 
+    // TODO: is it a debug method?
     public async getAllEnvironmentsStatus() {
         const pending: Promise<ReturnType<Communication['getStatus']>>[] = [];
         const status = this.getStatus();
@@ -479,7 +483,15 @@ export class Communication {
         }
     }
 
-    private applyApiDirectives(id: string, api: APIService): void {
+    private getHandlerId(envId: string, api: string, method: string): string {
+        return `${this.id}__${envId}_${api}@${method}`;
+    }
+
+    private getPostEndpoint(target: Target): Window | Worker {
+        return isWindow(target) ? (target.opener as Window) || target.parent : (target as Worker);
+    }
+
+    private applyApiDirectives(id: string, api: APIService) {
         const serviceConfig = api[SERVICE_CONFIG];
         if (serviceConfig) {
             this.apisOverrides[id] = {};
@@ -720,7 +732,7 @@ export class Communication {
         reject: (reason: unknown) => void;
     }) {
         if (callbackId) {
-            this.createCallbackRecord(message, callbackId, resolve, reject);
+            this.registerCallbackRecord(message, callbackId, resolve, reject);
         }
 
         this.sendTo(envId, message);
@@ -730,7 +742,7 @@ export class Communication {
         }
     }
 
-    private sendTo<T extends Message['type']>(envId: string, message: Extract<Message, { type: T }>): void {
+    private sendTo<T extends Message['type']>(envId: string, message: Extract<Message, { type: T }>) {
         if (this.pendingEnvs.get(envId)) {
             this.pendingMessages.add(envId, () => this.post(this.resolveMessageTarget(envId), message));
         } else {
@@ -738,7 +750,7 @@ export class Communication {
         }
     }
 
-    private post<T extends Message['type']>(target: Target, message: Extract<Message, { type: T }>): void {
+    private post<T extends Message['type']>(target: Target, message: Extract<Message, { type: T }>) {
         if (isWorkerContext(target)) {
             target.postMessage(message);
         } else {
@@ -755,11 +767,7 @@ export class Communication {
         return this.getPostEndpoint(host);
     }
 
-    private getPostEndpoint(target: Target): Window | Worker {
-        return isWindow(target) ? (target.opener as Window) || target.parent : (target as Worker);
-    }
-
-    private handleEventMessage({ data, handlerId }: EventMessage): void {
+    private handleEventMessage({ data, handlerId }: EventMessage) {
         const handlers = this.handlers.get(handlerId);
         if (!handlers) return;
 
@@ -801,7 +809,7 @@ export class Communication {
         this.clearEnvironment(origin, from);
     }
 
-    private async handleListenMessage(message: ListenMessage): Promise<void> {
+    private async handleListenMessage(message: ListenMessage) {
         const {
             handlerId,
             origin,
@@ -837,7 +845,7 @@ export class Communication {
         }
     }
 
-    private async handleCallMessage({ callbackId, data, from, origin }: CallMessage): Promise<void> {
+    private async handleCallMessage({ callbackId, data, from, origin }: CallMessage) {
         try {
             const { args, api, method } = data;
             const deserializedArgs = deserializeApiCallArguments(args);
@@ -866,7 +874,7 @@ export class Communication {
         }
     }
 
-    private handleCallbackMessage(message: CallbackMessage): void {
+    private handleCallbackMessage(message: CallbackMessage) {
         if (!message.callbackId) return;
 
         const callback = this.pendingCallbacks.get(message.callbackId);
@@ -898,10 +906,6 @@ export class Communication {
             }));
     }
 
-    private getHandlerId(envId: string, api: string, method: string): string {
-        return `${this.id}__${envId}_${api}@${method}`;
-    }
-
     private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
         const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
@@ -920,7 +924,7 @@ export class Communication {
         return handlerId;
     }
 
-    private createCallbackRecord(
+    private registerCallbackRecord(
         message: Message,
         callbackId: string,
         resolve: (value: unknown) => void,
@@ -971,9 +975,10 @@ export class Communication {
      * @param description - The description of the log message.
      * @param message - The message to quote (display JSON.stringify version with 2 spaces indentation).
      */
-    private log(description: string, message?: Message): void {
+    private log(description: string, message?: Message) {
         if (Communication.DEBUG) {
-            console.debug([`[DEBUG] ${description}.`, message].filter(Boolean));
+            console.debug(`[DEBUG] ${description}.`);
+            message && console.debug({ message });
         }
     }
 }

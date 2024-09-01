@@ -70,7 +70,7 @@ export const redactArguments = <T extends Message['type']>(message: Extract<Mess
             ...message,
             data: {
                 ...message.data,
-                args: message.data.args.map(() => '█████████████'),
+                args: message.data.args.map(() => '███ARGUMENT███'),
             },
         };
     }
