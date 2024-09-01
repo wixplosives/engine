@@ -13,6 +13,7 @@ export type EnvironmentTypes =
     | 'context'
     | 'electron-renderer'
     | 'electron-main';
+
 /**
  * TODO: remove onReconnect and onDisconnect
  */
@@ -23,11 +24,16 @@ export interface ActiveEnvironment {
 }
 
 export type Json = boolean | number | string | null | Json[] | { [key: string]: Json };
+
 export interface Target {
     name?: string;
+
     addEventListener(type: 'message', handler: (event: { data: any; source: Target }) => void, capture?: boolean): void;
+
     removeEventListener(type: 'message', handler: (event: { data: any }) => void, capture?: boolean): void;
+
     postMessage(data: any, origin?: any): void;
+
     parent?: Target;
 }
 
@@ -45,7 +51,9 @@ export interface CallbackRecord<T> {
     resolve: (value: T) => void;
     reject: (error: Error) => void;
     timerId?: ReturnType<typeof setTimeout>;
+
     scheduleOnSlow(): void;
+
     scheduleOnTimeout(): void;
 }
 
@@ -113,9 +121,16 @@ export type AnyFunction = (...args: any[]) => unknown;
 
 export interface APIService {
     [SERVICE_CONFIG]?: Record<string, (...args: any[]) => { proxyFunction: AnyFunction }>;
+
     [fnName: string]: AnyFunction;
 }
 
-export interface RemoteAPIServicesMapping {
-    [remoteServiceId: string]: Record<string, AnyFunction>;
+export interface ConfigEnvironmentRecord extends EnvironmentRecord {
+    registerMessageHandler?: boolean;
+}
+
+export interface CommunicationOptions {
+    warnOnSlow: boolean;
+    publicPath: string;
+    connectedEnvironments: { [environmentId: string]: ConfigEnvironmentRecord };
 }

@@ -1,15 +1,16 @@
 import { BaseHost } from './com/hosts/base-host.js';
-import { Communication, type ConfigEnvironmentRecord, type CommunicationOptions } from './com/communication.js';
+import { Communication } from './com/communication.js';
 import { LoggerService } from './com/logger-service.js';
-import type { Target } from './com/types.js';
+import type { ConfigEnvironmentRecord, Target } from './com/types.js';
 import { Config } from './entities/config.js';
 import { AllEnvironments, Universal } from './entities/env.js';
 import { Feature } from './entities/feature.js';
 import { Value } from './entities/value.js';
 import { Slot } from './entities/slot.js';
-import { RUN_OPTIONS, ENGINE } from './symbols.js';
+import { ENGINE, RUN_OPTIONS } from './symbols.js';
 import { type LoggerTransport, LogLevel } from './types.js';
 import { WindowInitializerService } from './com/window-initializer-service.js';
+
 export interface IComConfig {
     id?: string;
     host?: Target;
@@ -23,6 +24,7 @@ export interface IComConfig {
         [environmentId: string]: ConfigEnvironmentRecord;
     };
 }
+
 export default class COM extends Feature<'COM'> {
     id = 'COM' as const;
     api = {
@@ -89,34 +91,39 @@ COM.setup(
         // main frame might not have that configured, so we use 'main' fallback for it.
         const comId =
             id || (host && host.name) || (typeof self !== 'undefined' && self.name) || engine.entryEnvironment.env;
-        const comOptions: CommunicationOptions = {
-            warnOnSlow: runOptions.has('warnOnSlow'),
-            publicPath,
-            connectedEnvironments,
-        };
+
         const communication = new Communication(
             isNode ? host || new BaseHost() : host || self,
             comId,
             topology,
             resolvedContexts,
             isNode,
-            comOptions,
+            {
+                warnOnSlow: runOptions.has('warnOnSlow'),
+                publicPath,
+                connectedEnvironments,
+            },
         );
+
         // manually register window initialization api service to be used during
         // start of managed iframe in packages/core/src/com/initializers/iframe.ts
         communication.registerAPI({ id: WindowInitializerService.apiId }, new WindowInitializerService());
+
         const loggerService = new LoggerService(
             loggerTransports,
             { environment: communication.getEnvironmentId() },
             { severity: loggerSeverity, maxLogMessages, logToConsole },
         );
+
         onDispose(() => communication.dispose());
+
         return {
             loggerService,
             communication,
         };
     },
 );
+
 // rather than including the entire node types we define it locally
 declare const process: {
     type?: string;
