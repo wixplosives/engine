@@ -1,5 +1,5 @@
 // we cannot mix types of "dom" and "webworker". tsc fails building.
-import type { AnyServiceMethodOptions } from './types';
+import type { AnyServiceMethodOptions, Target } from './types';
 import type { Message } from './message-types';
 import { SetMultiMap } from '@wixc3/patterns';
 
@@ -57,6 +57,8 @@ export function declareComEmitter<T>(
 }
 
 export const isListenCall: (args: unknown[]) => boolean = (args) => typeof args[0] === 'function' && args.length === 1;
+
+export const getPostEndpoint = (target: Target) => isWindow(target) ? (target.opener as Window) || target.parent : (target as Worker)
 
 export const redactArguments = <T extends Message['type']>(message: Extract<Message, { type: T }>) => {
     if (

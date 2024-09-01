@@ -6,50 +6,50 @@ import { SERVICE_CONFIG } from '../symbols.js';
 import { type IDTag } from '../types.js';
 import { reportError } from './logs.js';
 import {
-  countValues,
-  deserializeApiCallArguments,
-  isListenCall,
-  isWindow,
-  isWorkerContext,
-  MultiCounter,
-  redactArguments,
-  serializeApiCallArguments
+    countValues,
+    deserializeApiCallArguments,
+    getPostEndpoint,
+    isListenCall,
+    isWorkerContext,
+    MultiCounter,
+    redactArguments,
+    serializeApiCallArguments,
 } from './helpers.js';
 import { BaseHost } from './hosts/base-host.js';
 import { WsClientHost } from './hosts/ws-client-host.js';
 import type {
-  CallbackMessage,
-  CallMessage,
-  DisposeMessage,
-  EventMessage,
-  ListenMessage,
-  Message,
-  StatusMessage,
-  UnListenMessage
+    CallbackMessage,
+    CallMessage,
+    DisposeMessage,
+    EventMessage,
+    ListenMessage,
+    Message,
+    StatusRequestMessage,
+    UnListenMessage,
 } from './message-types.js';
 import { isMessage } from './message-types.js';
 import {
-  AnyFunction,
-  type AnyServiceMethodOptions,
-  type APIService,
-  type AsyncApi,
-  type CallbackRecord,
-  CommunicationOptions,
-  type EnvironmentInstanceToken,
-  type EnvironmentRecord,
-  HOST_REMOVED,
-  type SerializableMethod,
-  type ServiceComConfig,
-  type Target,
-  type UnknownFunction
+    AnyFunction,
+    type AnyServiceMethodOptions,
+    type APIService,
+    type AsyncApi,
+    type CallbackRecord,
+    CommunicationOptions,
+    type EnvironmentInstanceToken,
+    type EnvironmentRecord,
+    HOST_REMOVED,
+    type SerializableMethod,
+    type ServiceComConfig,
+    type Target,
+    type UnknownFunction,
 } from './types.js';
 import {
-  CallbackTimeoutError,
-  CircularForwardingError,
-  DuplicateRegistrationError,
-  EnvironmentDisconnectedError,
-  UnConfiguredMethodError,
-  UnknownCallbackIdError
+    CallbackTimeoutError,
+    CircularForwardingError,
+    DuplicateRegistrationError,
+    EnvironmentDisconnectedError,
+    UnConfiguredMethodError,
+    UnknownCallbackIdError,
 } from './communication-errors';
 
 /**
@@ -100,7 +100,7 @@ export class Communication {
             }
             this.environments[id] = envEntry;
         }
-        this.post(this.getPostEndpoint(host), {
+        this.post(getPostEndpoint(host), {
             type: 'ready',
             from: id,
             to: '*',
@@ -224,7 +224,7 @@ export class Communication {
         const envTarget = (target as BaseHost).parent ?? target;
         const onTargetMessage = ({ data, source }: { data: null | Message; source?: Target }) => {
             if (!isMessage(data)) return;
-            this.handleMessage(data, source || envTarget).catch(reportError);
+            this.handleMessage(data, source ?? envTarget).catch(reportError);
         };
         target.addEventListener('message', onTargetMessage, true);
         this.messageHandlers.set(target, onTargetMessage);
@@ -346,7 +346,7 @@ export class Communication {
                 this.handleDisposeMessage(message);
                 return;
             case 'status':
-                this.handleStatusMessage(message);
+                this.handleStatusRequestMessage(message);
                 return;
             default: {
                 const _exhaustiveCheck: never = message;
@@ -354,16 +354,19 @@ export class Communication {
         }
     }
 
-    // TODO: is it a debug method?
+    /**
+     * debug method: get all environments statuses
+     */
     public async getAllEnvironmentsStatus() {
-        const pending: Promise<ReturnType<Communication['getStatus']>>[] = [];
+        type Status = ReturnType<typeof this.getStatus>;
+        const pending: Promise<Status>[] = [];
         const status = this.getStatus();
         const environmentsExcludingOwn = Object.keys(this.environments).filter(
             (envId) => envId !== '*' && envId !== this.id,
         );
 
         for (const envId of environmentsExcludingOwn) {
-            const { promise, resolve, reject } = deferred<ReturnType<Communication['getStatus']>>();
+            const { promise, resolve, reject } = deferred<Status>();
             const callbackId = this.idsCounter.next(this.callbackIdPrefix);
             this.callWithCallback({
                 envId,
@@ -382,7 +385,7 @@ export class Communication {
         }
 
         return Promise.allSettled(pending).then((results) => {
-            const statuses: Record<string, ReturnType<Communication['getStatus']> | PromiseRejectedResult> = {};
+            const statuses: Record<string, Status | PromiseRejectedResult> = {};
             for (let i = 0; i < results.length; i++) {
                 const result = results[i]!;
                 const key = environmentsExcludingOwn[i]!;
@@ -460,7 +463,6 @@ export class Communication {
         this.locallyClear(instanceId);
     }
 
-    // todo: study
     public handleReady({ from }: { from: string }): void {
         this.readyEnvs.add(from);
         const pendingEnvCb = this.pendingEnvs.get(from);
@@ -486,10 +488,6 @@ export class Communication {
 
     private getHandlerId(envId: string, api: string, method: string): string {
         return `${this.id}__${envId}_${api}@${method}`;
-    }
-
-    private getPostEndpoint(target: Target): Window | Worker {
-        return isWindow(target) ? (target.opener as Window) || target.parent : (target as Worker);
     }
 
     private applyApiDirectives(id: string, api: APIService) {
@@ -527,7 +525,7 @@ export class Communication {
                         info.typeName = String(e);
                     }
                     try {
-                        info.name = value.host.name || 'unknown';
+                        info.name = value.host.name ?? 'unknown';
                     } catch (e) {
                         info.name = String(e);
                     }
@@ -549,7 +547,7 @@ export class Communication {
         };
     }
 
-    private handleStatusMessage({ callbackId, from }: StatusMessage) {
+    private handleStatusRequestMessage({ callbackId, from }: StatusRequestMessage) {
         this.sendTo(from, {
             type: 'callback',
             origin: this.id,
@@ -653,7 +651,7 @@ export class Communication {
         reject: (reason: unknown) => void;
     }) {
         const removeListenerRef =
-            serviceComConfig[method]?.removeAllListeners || serviceComConfig[method]?.removeListener;
+            serviceComConfig[method]?.removeAllListeners ?? serviceComConfig[method]?.removeListener;
 
         if (removeListenerRef) {
             const listenerHandlerId = this.getHandlerId(envId, api, removeListenerRef);
@@ -760,12 +758,11 @@ export class Communication {
     }
 
     private resolveMessageTarget(envId: string): Target {
-        const env = this.environments[envId] || this.environments[this.id];
+        const env = this.environments[envId] ?? this.environments[this.id];
         if (!env) return HOST_REMOVED;
-        const { host } = env;
-        if (env.id !== this.id) return host;
-        if (host instanceof BaseHost) return host.parent || host;
-        return this.getPostEndpoint(host);
+        if (env.id !== this.id) return env.host;
+        if (env.host instanceof BaseHost) return env.host.parent ?? env.host;
+        return getPostEndpoint(env.host);
     }
 
     private handleEventMessage({ data, handlerId }: EventMessage) {
@@ -821,7 +818,7 @@ export class Communication {
 
         try {
             const namespacedHandlerId = handlerId + origin;
-            const dispatcher = this.eventDispatchers[namespacedHandlerId] || this.createDispatcher(from, message);
+            const dispatcher = this.eventDispatchers[namespacedHandlerId] ?? this.createDispatcher(from, message);
             const data = await this.apiCall(origin, api, method, [dispatcher]);
 
             if (!callbackId) return;
@@ -892,6 +889,7 @@ export class Communication {
             error.stack = `Remote call failed in "${message.from}" ${error.stack ? `\n${error.stack}` : ''}`;
             callback.reject(error);
         }
+
         callback.resolve(message.data);
     }
 
