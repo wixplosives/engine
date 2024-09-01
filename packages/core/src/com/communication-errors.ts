@@ -4,7 +4,7 @@ import { redactArguments } from './helpers';
 export class EngineCommunicationError extends Error {
     constructor(
         errorMessage: string,
-        private readonly causedBy?: Message,
+        public readonly causedBy?: Message,
     ) {
         super(errorMessage);
         this.name = this.constructor.name;
