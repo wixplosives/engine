@@ -13,7 +13,7 @@ import {
     isWorkerContext,
     MultiCounter,
     redactArguments,
-    serializeApiCallArguments,
+    serializeApiCallArguments
 } from './helpers.js';
 import { BaseHost } from './hosts/base-host.js';
 import { WsClientHost } from './hosts/ws-client-host.js';
@@ -149,7 +149,9 @@ export class Communication {
         return api;
     }
 
-    public getEnvironmentContext(endPoint: ContextualEnvironment<string, EnvironmentMode, Environment[]>): string | undefined {
+    public getEnvironmentContext(
+        endPoint: ContextualEnvironment<string, EnvironmentMode, Environment[]>,
+    ): string | undefined {
         return this.resolvedContexts[endPoint.env];
     }
 
@@ -518,32 +520,32 @@ export class Communication {
             apis: Object.keys(this.apis),
             readyEnvs: Array.from(this.readyEnvs),
             environments: Object.entries(this.environments).reduce<Record<string, Record<string, string>>>(
-              (acc, [key, value]) => {
-                  const info: Record<string, string> = {};
-                  try {
-                      info.typeName = value.host.constructor.name;
-                  } catch (e) {
-                      info.typeName = String(e);
-                  }
-                  try {
-                      info.name = value.host.name || 'unknown';
-                  } catch (e) {
-                      info.name = String(e);
-                  }
-                  acc[key] = info;
-                  return acc;
-              },
-              {},
+                (acc, [key, value]) => {
+                    const info: Record<string, string> = {};
+                    try {
+                        info.typeName = value.host.constructor.name;
+                    } catch (e) {
+                        info.typeName = String(e);
+                    }
+                    try {
+                        info.name = value.host.name || 'unknown';
+                    } catch (e) {
+                        info.name = String(e);
+                    }
+                    acc[key] = info;
+                    return acc;
+                },
+                {},
             ),
             pendingCallbacks: Array.from(this.pendingCallbacks.entries()).reduce(
-              (acc, [key, value]) => {
-                  acc[key] = {
-                      to: value.message.to,
-                      isTimeoutScheduled: value.timerId !== undefined,
-                  };
-                  return acc;
-              },
-              {} as Record<string, { to: string; isTimeoutScheduled: boolean }>,
+                (acc, [key, value]) => {
+                    acc[key] = {
+                        to: value.message.to,
+                        isTimeoutScheduled: value.timerId !== undefined,
+                    };
+                    return acc;
+                },
+                {} as Record<string, { to: string; isTimeoutScheduled: boolean }>,
             ),
         };
     }
@@ -566,8 +568,8 @@ export class Communication {
         if (!isKnownEnvironment || !isKnownOrigin) {
             if (source !== this.host) {
                 this.log(
-                  `Received message from unknown ${!isKnownEnvironment ? 'environment' : 'origin'} "${message.from}" at "${this.id}", auto-registering it`,
-                  message,
+                    `Received message from unknown ${!isKnownEnvironment ? 'environment' : 'origin'} "${message.from}" at "${this.id}", auto-registering it`,
+                    message,
                 );
                 this.registerEnv(!isKnownEnvironment ? message.from : message.origin, source);
             } else {
@@ -943,7 +945,9 @@ export class Communication {
             reject: (error: Error) => {
                 this.pendingCallbacks.delete(callbackId);
                 clearTimeout(callbackItem.timerId);
-                error.cause = redactArguments(message);
+                if (Communication.DEBUG) {
+                    error.cause = redactArguments(message);
+                }
                 reject(error);
             },
             scheduleOnSlow: () => {

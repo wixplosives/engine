@@ -86,5 +86,3 @@ export const countValues = (set: SetMultiMap<string, unknown>) => {
     }
     return result;
 };
-
-export const quote = (message: Message): string => JSON.stringify(redactArguments(message), null, 2);
