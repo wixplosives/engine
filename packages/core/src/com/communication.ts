@@ -6,51 +6,50 @@ import { SERVICE_CONFIG } from '../symbols.js';
 import { type IDTag } from '../types.js';
 import { reportError } from './logs.js';
 import {
-    countValues,
-    deserializeApiCallArguments,
-    isListenCall,
-    isWindow,
-    isWorkerContext,
-    MultiCounter,
-    redactArguments,
-    serializeApiCallArguments
+  countValues,
+  deserializeApiCallArguments,
+  isListenCall,
+  isWindow,
+  isWorkerContext,
+  MultiCounter,
+  redactArguments,
+  serializeApiCallArguments
 } from './helpers.js';
 import { BaseHost } from './hosts/base-host.js';
 import { WsClientHost } from './hosts/ws-client-host.js';
 import type {
-    CallbackMessage,
-    CallMessage,
-    DisposeMessage,
-    EventMessage,
-    ListenMessage,
-    Message,
-    StatusMessage,
-    UnListenMessage
+  CallbackMessage,
+  CallMessage,
+  DisposeMessage,
+  EventMessage,
+  ListenMessage,
+  Message,
+  StatusMessage,
+  UnListenMessage
 } from './message-types.js';
 import { isMessage } from './message-types.js';
 import {
-    AnyFunction,
-    type AnyServiceMethodOptions,
-    type APIService,
-    type AsyncApi,
-    type CallbackRecord,
-    CommunicationOptions,
-    type EnvironmentInstanceToken,
-    type EnvironmentRecord,
-    HOST_REMOVED,
-    type SerializableMethod,
-    type ServiceComConfig,
-    type Target,
-    type UnknownFunction
+  AnyFunction,
+  type AnyServiceMethodOptions,
+  type APIService,
+  type AsyncApi,
+  type CallbackRecord,
+  CommunicationOptions,
+  type EnvironmentInstanceToken,
+  type EnvironmentRecord,
+  HOST_REMOVED,
+  type SerializableMethod,
+  type ServiceComConfig,
+  type Target,
+  type UnknownFunction
 } from './types.js';
 import {
-    CallbackTimeoutError,
-    CircularForwardingError,
-    DoubleRegisterError,
-    DuplicateRegistrationError,
-    EnvironmentDisconnectedError,
-    UnConfiguredMethodError,
-    UnknownCallbackIdError
+  CallbackTimeoutError,
+  CircularForwardingError,
+  DuplicateRegistrationError,
+  EnvironmentDisconnectedError,
+  UnConfiguredMethodError,
+  UnknownCallbackIdError
 } from './communication-errors';
 
 /**
@@ -693,7 +692,7 @@ export class Communication {
             const handlersBucket = this.handlers.get(handlerId);
 
             if (handlersBucket && handlersBucket.size !== 0) {
-                if (handlersBucket.has(fn)) throw new DoubleRegisterError(handlerId);
+                if (handlersBucket.has(fn)) throw new DuplicateRegistrationError(handlerId, 'Listener');
 
                 handlersBucket.add(fn);
                 resolve();

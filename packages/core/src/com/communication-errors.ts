@@ -16,20 +16,14 @@ export class EngineCommunicationError extends Error {
 }
 
 export class DuplicateRegistrationError extends EngineCommunicationError {
-    constructor(id: string, type: 'RemoteService' | 'Environment') {
-        super(`Could not register same id ${id} as ${type}`);
-    }
-}
-
-export class DoubleRegisterError extends EngineCommunicationError {
-    constructor(handlerId: string) {
-        super('Cannot add same listener instance twice ' + handlerId);
+    constructor(id: string, type: 'RemoteService' | 'Environment' | 'Listener') {
+        super(`Cannot register ${type} "${id}" twice.`);
     }
 }
 
 export class UnConfiguredMethodError extends EngineCommunicationError {
     constructor(api: string, method: string) {
-        super(`Cannot add listener to un-configured method ${api} ${method}`);
+        super(`Cannot add listener to un-configured method ${api} ${method}.`);
     }
 }
 
