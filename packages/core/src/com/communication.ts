@@ -6,50 +6,50 @@ import { SERVICE_CONFIG } from '../symbols.js';
 import { type IDTag } from '../types.js';
 import { reportError } from './logs.js';
 import {
-  countValues,
-  deserializeApiCallArguments,
-  getPostEndpoint,
-  isListenCall,
-  isWorkerContext,
-  MultiCounter,
-  redactArguments,
-  serializeApiCallArguments
+    countValues,
+    deserializeApiCallArguments,
+    getPostEndpoint,
+    isListenCall,
+    isWorkerContext,
+    MultiCounter,
+    redactArguments,
+    serializeApiCallArguments
 } from './helpers.js';
 import { BaseHost } from './hosts/base-host.js';
 import { WsClientHost } from './hosts/ws-client-host.js';
 import type {
-  CallbackMessage,
-  CallMessage,
-  DisposeMessage,
-  EventMessage,
-  ListenMessage,
-  Message,
-  StatusMessage,
-  UnListenMessage
+    CallbackMessage,
+    CallMessage,
+    DisposeMessage,
+    EventMessage,
+    ListenMessage,
+    Message,
+    StatusMessage,
+    UnListenMessage
 } from './message-types.js';
 import { isMessage } from './message-types.js';
 import {
-  AnyFunction,
-  type AnyServiceMethodOptions,
-  type APIService,
-  type AsyncApi,
-  type CallbackRecord,
-  CommunicationOptions,
-  type EnvironmentInstanceToken,
-  type EnvironmentRecord,
-  HOST_REMOVED,
-  type SerializableMethod,
-  type ServiceComConfig,
-  type Target,
-  type UnknownFunction
+    AnyFunction,
+    type AnyServiceMethodOptions,
+    type APIService,
+    type AsyncApi,
+    type CallbackRecord,
+    ConfigEnvironmentRecord,
+    type EnvironmentInstanceToken,
+    type EnvironmentRecord,
+    HOST_REMOVED,
+    type SerializableMethod,
+    type ServiceComConfig,
+    type Target,
+    type UnknownFunction
 } from './types.js';
 import {
-  CallbackTimeoutError,
-  CircularForwardingError,
-  DuplicateRegistrationError,
-  EnvironmentDisconnectedError,
-  UnConfiguredMethodError,
-  UnknownCallbackIdError
+    CallbackTimeoutError,
+    CircularForwardingError,
+    DuplicateRegistrationError,
+    EnvironmentDisconnectedError,
+    UnConfiguredMethodError,
+    UnknownCallbackIdError
 } from './communication-errors';
 
 /**
@@ -73,7 +73,11 @@ export class Communication {
     private readonly disposeListeners = new Set<(envId: string) => void>();
     private readonly pendingCallbacks = new Map<string, CallbackRecord<unknown>>();
     private readonly callbackIdPrefix: string;
-    private readonly options: CommunicationOptions = {
+    private readonly options: {
+        warnOnSlow: boolean;
+        publicPath: string;
+        connectedEnvironments: { [environmentId: string]: ConfigEnvironmentRecord };
+    } = {
         warnOnSlow: Communication.DEBUG,
         publicPath: '',
         connectedEnvironments: {},
@@ -86,7 +90,7 @@ export class Communication {
         public topology: Record<string, string> = {},
         public resolvedContexts: Record<string, string> = {},
         public isServer = false, // TODO: you need better name, darling, or people won't know who you are and what you do
-        options?: Partial<CommunicationOptions>,
+        options?: Partial<typeof this.options>,
     ) {
         this.options = { ...this.options, ...options };
         this.registerMessageHandler(host);

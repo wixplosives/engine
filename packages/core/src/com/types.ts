@@ -128,9 +128,3 @@ export interface APIService {
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;
 }
-
-export interface CommunicationOptions {
-    warnOnSlow: boolean;
-    publicPath: string;
-    connectedEnvironments: { [environmentId: string]: ConfigEnvironmentRecord };
-}
