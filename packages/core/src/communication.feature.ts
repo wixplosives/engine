@@ -85,7 +85,7 @@ COM.setup(
             // in electron process also have type 'renderer'
             process.type !== 'renderer';
 
-        host ??= isNode ? new BaseHost() : self;
+        host = isNode ? host || new BaseHost() : host || self;
         // iframe gets `instanceId` with top level config
         // webworker gets `instanceId` set into `name` property when initialized as Environment.
         // it can be overridden using top level config.
