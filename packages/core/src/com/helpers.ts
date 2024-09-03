@@ -20,6 +20,8 @@ export function isIframe(iframe: unknown): iframe is HTMLIFrameElement {
     return typeof HTMLIFrameElement !== 'undefined' && iframe instanceof HTMLIFrameElement;
 }
 
+export const isListenCall: (args: unknown[]) => boolean = (args) => typeof args[0] === 'function' && args.length === 1;
+
 export class MultiCounter {
     private ids: Record<string, number> = {};
 
@@ -29,12 +31,13 @@ export class MultiCounter {
     }
 }
 
-const undefinedPlaceholder = '__undefined_placeholder__';
-
 /**
  * Serialization/deserialization is needed in order to fix the issue with undefined arguments in remote API calls:
  * https://github.com/wixplosives/engine/issues/1434
  */
+
+const undefinedPlaceholder = '__undefined_placeholder__';
+
 export const serializeApiCallArguments = (args: unknown[]): unknown[] =>
     args.map((arg) => (arg === undefined ? undefinedPlaceholder : arg));
 
@@ -56,10 +59,13 @@ export function declareComEmitter<T>(
     };
 }
 
-export const isListenCall: (args: unknown[]) => boolean = (args) => typeof args[0] === 'function' && args.length === 1;
+export const getPostEndpoint = (target: Target) =>
+    isWindow(target) ? (target.opener as Window) || target.parent : (target as Worker);
 
-export const getPostEndpoint = (target: Target) => isWindow(target) ? (target.opener as Window) || target.parent : (target as Worker)
-
+/**
+ * Redacts arguments from a message.
+ * This is used to prevent sensitive data from being logged.
+ */
 export const redactArguments = <T extends Message['type']>(message: Extract<Message, { type: T }>) => {
     if (
         'data' in message &&
@@ -72,7 +78,7 @@ export const redactArguments = <T extends Message['type']>(message: Extract<Mess
             ...message,
             data: {
                 ...message.data,
-                args: message.data.args.map(() => '███ARGUMENT███'),
+                args: new Array(message.data.args.length).fill('███redacted███'),
             },
         };
     }

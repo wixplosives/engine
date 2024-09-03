@@ -56,7 +56,7 @@ export interface DisposeMessage extends BaseMessage {
  * Message requesting status of environment;
  * @see getAllEnvironmentsStatus
  */
-export interface StatusRequestMessage extends BaseMessage {
+export interface StatusMessage extends BaseMessage {
     type: 'status';
 }
 
@@ -68,7 +68,7 @@ export type Message =
     | EventMessage
     | ReadyMessage
     | DisposeMessage
-    | StatusRequestMessage;
+    | StatusMessage;
 
 export function isMessage(arg: any): arg is Message {
     return typeof arg === 'object' && arg !== null && 'to' in arg && 'from' in arg && 'type' in arg;

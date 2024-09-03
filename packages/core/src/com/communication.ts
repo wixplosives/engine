@@ -24,7 +24,7 @@ import type {
   EventMessage,
   ListenMessage,
   Message,
-  StatusRequestMessage,
+  StatusMessage,
   UnListenMessage
 } from './message-types.js';
 import { isMessage } from './message-types.js';
@@ -548,7 +548,7 @@ export class Communication {
         };
     }
 
-    private handleStatusRequest({ callbackId, from }: StatusRequestMessage) {
+    private handleStatusRequest({ callbackId, from }: StatusMessage) {
         this.sendTo(from, {
             type: 'callback',
             origin: this.id,
