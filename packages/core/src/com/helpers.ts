@@ -1,8 +1,8 @@
-// we cannot mix types of "dom" and "webworker". tsc fails building.
 import type { AnyServiceMethodOptions, Target } from './types';
 import type { Message } from './message-types';
 import { SetMultiMap } from '@wixc3/patterns';
 
+// we cannot mix types of "dom" and "webworker". tsc fails building.
 declare let WorkerGlobalScope: new () => Worker;
 
 export function isWorkerContext(target: unknown): target is Worker {
