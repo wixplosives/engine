@@ -178,6 +178,7 @@ export async function dontRun() {
                             onDispose: (fn: DisposeFunction) => void;
                             [RUN_OPTIONS]: IRunOptions;
                             [ENGINE]: typeof _engine;
+                            engineShutdownSignal: AbortSignal;
                             componentDescription: Registry<ComponentDescription>;
                             service3: DataService;
                         }
