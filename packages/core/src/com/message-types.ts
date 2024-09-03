@@ -52,10 +52,6 @@ export interface DisposeMessage extends BaseMessage {
     type: 'dispose';
 }
 
-/**
- * Message requesting status of environment;
- * @see getAllEnvironmentsStatus
- */
 export interface StatusMessage extends BaseMessage {
     type: 'status';
 }
