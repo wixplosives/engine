@@ -89,7 +89,7 @@ export class Communication {
         private readonly id: string,
         public topology: Record<string, string> = {},
         public resolvedContexts: Record<string, string> = {},
-        public isServer = false, // TODO: you need better name, darling, or people won't know who you are and what you do
+        public isServer = false,
         options?: Partial<typeof this.options>,
     ) {
         this.options = { ...this.options, ...options };
