@@ -137,7 +137,7 @@ export class Communication {
         }
 
         this.log(`Registering env ${id} at ${this.id}`);
-        this.environments[id] = { id, host } as EnvironmentRecord;
+        this.environments[id] = { id, host };
     }
 
     /**
