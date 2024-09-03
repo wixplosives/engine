@@ -61,7 +61,7 @@ export class Communication {
     private readonly idsCounter = new MultiCounter();
     private readonly callbackTimeout = 60_000 * 5; // 5 minutes
     private readonly slowThreshold = 5_000; // 5 seconds
-    private readonly pendingEnvs: SetMultiMap<string, () => void> = new SetMultiMap();
+    private readonly pendingEnvs = new SetMultiMap<string, () => void>();
     private readonly pendingMessages = new SetMultiMap<string, UnknownFunction>();
     private readonly handlers = new Map<string, Set<UnknownFunction>>();
     private readonly eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
