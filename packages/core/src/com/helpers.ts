@@ -78,7 +78,7 @@ export const redactArguments = <T extends Message['type']>(message: Extract<Mess
             ...message,
             data: {
                 ...message.data,
-                args: new Array(message.data.args.length).fill('███redacted███'),
+                args: new Array(message.data.args.length).fill('<redacted>'),
             },
         };
     }

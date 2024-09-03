@@ -86,12 +86,12 @@ COM.setup(
             process.type !== 'renderer';
 
         const communication = new Communication(
-            host ?? isNode ? new BaseHost() : self,
+            (host ?? isNode) ? new BaseHost() : self,
             // iframe gets `instanceId` with top level config
             // webworker gets `instanceId` set into `name` property when initialized as Environment.
             // it can be overridden using top level config.
             // main frame might not have that configured, so we use 'main' fallback for it.
-            id ?? host?.name ?? self?.name ?? engine.entryEnvironment.env,
+            id ?? host?.name ?? (typeof self !== 'undefined' ? self.name : engine.entryEnvironment.env),
             topology,
             resolvedContexts,
             isNode,
