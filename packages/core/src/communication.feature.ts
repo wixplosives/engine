@@ -30,7 +30,6 @@ export default class COM extends Feature<'COM'> {
     api = {
         config: Config.withType<IComConfig>().defineEntity(
             {
-                id: '',
                 loggerSeverity: LogLevel.DEBUG,
                 maxLogMessages: 100,
                 topology: {},
@@ -85,18 +84,24 @@ COM.setup(
             // in electron process also have type 'renderer'
             process.type !== 'renderer';
 
-        host = isNode ? host || new BaseHost() : host || self;
         // iframe gets `instanceId` with top level config
         // webworker gets `instanceId` set into `name` property when initialized as Environment.
         // it can be overridden using top level config.
-        // main frame might not have that configured, so we use 'main' fallback for it.
-        id ||= host?.name || self?.name || engine.entryEnvironment.env;
+        // main frame might not have that configured, so we use entryEnvironment fallback for it.
+        id ||= host?.name || (typeof self !== 'undefined' ? self.name : engine.entryEnvironment.env);
 
-        const communication = new Communication(host, id, topology, resolvedContexts, isNode, {
-            warnOnSlow: runOptions.has('warnOnSlow'),
-            publicPath,
-            connectedEnvironments,
-        });
+        const communication = new Communication(
+            host ?? (isNode ? new BaseHost() : self),
+            id,
+            topology,
+            resolvedContexts,
+            isNode,
+            {
+                warnOnSlow: runOptions.has('warnOnSlow'),
+                publicPath,
+                connectedEnvironments,
+            },
+        );
 
         // manually register window initialization api service to be used during
         // start of managed iframe in packages/core/src/com/initializers/iframe.ts
