@@ -13,7 +13,7 @@ export async function runLocalNodeManager(
     configMapping: ConfigurationEnvironmentMapping,
     execRuntimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string = 'dist-engine',
-    configManager?: NodeConfigManager | undefined,
+    configManager?: NodeConfigManager,
     serverOptions?: ILaunchHttpServerOptions,
 ) {
     const manager = new NodeEnvManager(
