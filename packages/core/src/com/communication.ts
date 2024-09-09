@@ -136,7 +136,7 @@ export class Communication {
             return;
         }
 
-        this.log(`Registering env ${id} at ${this.id}`);
+        this.log?.(`Registering env ${id} at ${this.id}`);
         this.environments[id] = { id, host };
     }
 
@@ -318,7 +318,7 @@ export class Communication {
         const env = this.environments[message.to];
 
         if (!env) {
-            this.log(`Message to unknown environment "${message.to}" received at ${this.id}`, message);
+            this.log?.(`Message to unknown environment "${message.to}" received at ${this.id}`, message);
             return;
         }
 
@@ -569,7 +569,7 @@ export class Communication {
 
         if (!isKnownEnvironment || !isKnownOrigin) {
             if (source !== this.host) {
-                this.log(
+                this.log?.(
                     `Received message from unknown ${!isKnownEnvironment ? 'environment' : 'origin'} "${message.from}" at "${this.id}", auto-registering it`,
                     message,
                 );
@@ -577,7 +577,7 @@ export class Communication {
             } else {
                 // if we try to register the host itself, we will get stuck in an infinite loop
                 // this happens when the host is a window and the message is from the same window
-                this.log(`Skipping host self auto-registration at "${this.id}"`);
+                this.log?.(`Skipping host self auto-registration at "${this.id}"`);
             }
         }
     }
@@ -615,7 +615,7 @@ export class Communication {
             });
             return;
         } else {
-            this.log(`Forwarding message from ${this.id} to ${env.id}`, message);
+            this.log?.(`Forwarding message from ${this.id} to ${env.id}`, message);
         }
         if (this.pendingEnvs.get(env.id)) {
             this.pendingMessages.add(env.id, () => this.post(this.resolveMessageTarget(env.id), message));
@@ -970,15 +970,18 @@ export class Communication {
     }
 
     /**
-     * Logs a message to the console if the DEBUG flag is set.
+     * Logs a message to the console if the DEBUG flag is set, otherwise is undefined, so it must be used via
+     * optional chaining.
      *
      * @param description - The description of the log message.
      * @param message - The message to quote (display JSON.stringify version with 2 spaces indentation).
+     *
+     * @example this.log?.('message', messageObject)
      */
-    private log(description: string, message?: Message) {
-        if (Communication.DEBUG) {
-            console.debug(`[DEBUG] ${description}.`);
-            message && console.debug({ message });
-        }
-    }
+    private log = Communication.DEBUG
+        ? (description: string, message?: Message) => {
+              console.debug(`[DEBUG] ${description}.`);
+              message && console.debug({ message });
+          }
+        : undefined;
 }
