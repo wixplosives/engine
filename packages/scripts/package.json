@@ -27,7 +27,7 @@
     "@wixc3/resolve-directory-context": "^4.0.0",
     "body-parser": "^1.20.2",
     "create-listening-server": "^2.1.0",
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "semver": "^7.6.3",
     "socket.io": "^4.7.5",
     "type-fest": "^4.26.1"
