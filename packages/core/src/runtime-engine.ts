@@ -16,6 +16,8 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     private running: Promise<void[]> | undefined;
     private shutingDown = false;
     private topLevelConfigMap: Record<string, object[]>;
+    private shutdownController = new AbortController();
+    public shutdownSignal = this.shutdownController.signal;
     public runningEnvNames: Set<string>;
     constructor(
         public entryEnvironment: ENV,
@@ -97,6 +99,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         }
         this.shutingDown = true;
         try {
+            this.shutdownController.abort();
             // don't report error on running
             await Promise.allSettled([this.running]);
             this.running = undefined;

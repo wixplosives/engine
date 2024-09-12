@@ -224,6 +224,7 @@ export type SettingUpFeatureBase<F extends FeatureClass, E extends AnyEnvironmen
     id: InstanceType<F>['id'];
     run: (fn: () => unknown) => void;
     onDispose: (fn: () => unknown) => void;
+    engineShutdownSignal: AbortSignal;
     [RUN_OPTIONS]: IRunOptions;
     [ENGINE]: RuntimeEngine<E>;
 };
