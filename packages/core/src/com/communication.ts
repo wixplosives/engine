@@ -990,9 +990,6 @@ export class Communication {
      * Logs a message to the console if the DEBUG flag is set, otherwise is undefined, so it must be used via
      * optional chaining.
      *
-     * @param description - The description of the log message.
-     * @param message - The message to quote (display JSON.stringify version with 2 spaces indentation).
-     *
      * @example this.log?.('message', messageObject)
      */
     private log = Communication.DEBUG
