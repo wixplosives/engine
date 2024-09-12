@@ -130,10 +130,8 @@ export class Communication {
      */
     public registerEnv(id: string, host: Target): void {
         const existingEnv = this.environments[id];
-        if (existingEnv) {
-            if (existingEnv.host !== host) throw new DuplicateRegistrationError(id, 'Environment');
-
-            return;
+        if (existingEnv?.host !== host) {
+            throw new DuplicateRegistrationError(id, 'Environment');
         }
 
         this.log?.(`Registering env ${id} at ${this.id}`);
@@ -144,7 +142,9 @@ export class Communication {
      * Registers local api implementation of the remote service.
      */
     public registerAPI<T extends {}>({ id }: IDTag, api: T): T {
-        if (this.apis[id]) throw new DuplicateRegistrationError(id, 'RemoteService');
+        if (this.apis[id]) {
+            throw new DuplicateRegistrationError(id, 'RemoteService');
+        }
 
         this.apis[id] = api;
         this.applyApiDirectives(id, api);
@@ -395,10 +395,10 @@ export class Communication {
                 const result = results[i]!;
                 const key = environmentsExcludingOwn[i]!;
                 if (result.status === 'fulfilled') {
-                    if (key !== result.value.rootEnvId) {
-                        statuses[key + ' -> ' + result.value.rootEnvId] = result.value;
+                    if (key !== result.value.id) {
+                        statuses[key + ' -> ' + result.value.id] = result.value;
                     } else {
-                        statuses[result.value.rootEnvId] = result.value;
+                        statuses[result.value.id] = result.value;
                     }
                 } else {
                     statuses[key] = result;
@@ -510,7 +510,7 @@ export class Communication {
 
     private getStatus() {
         return {
-            rootEnvId: this.id,
+            id: this.id,
             callbackIdPrefix: this.callbackIdPrefix,
             pendingEnvs: countValues(this.pendingEnvs),
             pendingMessages: countValues(this.pendingMessages),
@@ -689,13 +689,17 @@ export class Communication {
                 resolve();
             }
         } else {
-            if (!serviceComConfig[method]?.listener) throw new UnConfiguredMethodError(api, method);
+            if (!serviceComConfig[method]?.listener) {
+                throw new UnConfiguredMethodError(api, method);
+            }
 
             const handlerId = this.getHandlerId(envId, api, method);
             const handlersBucket = this.handlers.get(handlerId);
 
             if (handlersBucket && handlersBucket.size !== 0) {
-                if (handlersBucket.has(fn)) throw new DuplicateRegistrationError(handlerId, 'Listener');
+                if (handlersBucket.has(fn)) {
+                    throw new DuplicateRegistrationError(handlerId, 'Listener');
+                }
 
                 handlersBucket.add(fn);
                 resolve();
@@ -875,7 +879,9 @@ export class Communication {
         if (!message.callbackId) return;
 
         const callback = this.pendingCallbacks.get(message.callbackId);
-        if (!callback) throw new UnknownCallbackIdError(message, this.id);
+        if (!callback) {
+            throw new UnknownCallbackIdError(message, this.id);
+        }
 
         if (message.error) {
             // If the error is not caught later, and logged to the console,
