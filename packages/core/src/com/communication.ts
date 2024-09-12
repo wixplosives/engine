@@ -1,24 +1,17 @@
-import { SetMultiMap, isDisposable } from '@wixc3/patterns';
+import { isDisposable, SetMultiMap } from '@wixc3/patterns';
 import { deferred } from 'promise-assist';
 import type { ContextualEnvironment, Environment, EnvironmentMode } from '../entities/env.js';
 import { errorToJson } from '../helpers/index.js';
 import { SERVICE_CONFIG } from '../symbols.js';
 import { type IDTag } from '../types.js';
 import {
-    CALLBACK_TIMEOUT,
-    DUPLICATE_REGISTER,
-    ENV_DISCONNECTED,
     REMOTE_CALL_FAILED,
     reportError,
-    UNKNOWN_CALLBACK_ID,
     AUTO_REGISTER_ENVIRONMENT,
     FORWARDING_MESSAGE,
-    FORWARDING_MESSAGE_STUCK_IN_CIRCULAR,
     MESSAGE_FROM_UNKNOWN_ENVIRONMENT,
     REGISTER_ENV,
     UNHANDLED,
-    DOUBLE_REGISTER_ERROR,
-    UN_CONFIGURED_METHOD,
 } from './logs.js';
 import {
     deserializeApiCallArguments,
@@ -26,6 +19,7 @@ import {
     isWorkerContext,
     MultiCounter,
     serializeApiCallArguments,
+    redactArguments,
 } from './helpers.js';
 import { BaseHost } from './hosts/base-host.js';
 import { WsClientHost } from './hosts/ws-client-host.js';
@@ -40,13 +34,13 @@ import type {
 } from './message-types.js';
 import { isMessage } from './message-types.js';
 import {
-    HOST_REMOVED,
     type AnyServiceMethodOptions,
     type APIService,
     type AsyncApi,
     type CallbackRecord,
     type EnvironmentInstanceToken,
     type EnvironmentRecord,
+    HOST_REMOVED,
     type RemoteAPIServicesMapping,
     type SerializableArguments,
     type SerializableMethod,
@@ -54,7 +48,14 @@ import {
     type Target,
     type UnknownFunction,
 } from './types.js';
-import { EnvironmentDisconnectedError } from './environment-disconnected-error.js';
+import {
+    CallbackTimeoutError,
+    CircularForwardingError,
+    DuplicateRegistrationError,
+    EnvironmentDisconnectedError,
+    UnConfiguredMethodError,
+    UnknownCallbackIdError,
+} from './communication-errors';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;
@@ -138,7 +139,7 @@ export class Communication {
         if (!existingEnv) {
             this.environments[id] = { id, host } as EnvironmentRecord;
         } else if (existingEnv.host !== host) {
-            throw new Error(DUPLICATE_REGISTER(id, 'Environment'));
+            throw new DuplicateRegistrationError(id, 'Environment');
         }
     }
 
@@ -151,7 +152,7 @@ export class Communication {
             this.applyApiDirectives(id, api);
             return api;
         } else {
-            throw new Error(DUPLICATE_REGISTER(id, 'RemoteService'));
+            throw new DuplicateRegistrationError(id, 'RemoteService');
         }
     }
 
@@ -453,7 +454,7 @@ export class Communication {
             // if we try to register the host itself, we will get stuck in an infinite loop
             // this happens when the host is a window and the message is from the same window
             if (this.DEBUG) {
-                console.debug(AUTO_REGISTER_ENVIRONMENT(cleanMessageForLog(message), this.rootEnvId));
+                console.debug(AUTO_REGISTER_ENVIRONMENT(redactArguments(message), this.rootEnvId));
             }
             return false;
         }
@@ -462,7 +463,7 @@ export class Communication {
     private autoRegisterEnvFromMessage(message: Message, source: Target) {
         if (!this.environments[message.from]) {
             if (this.DEBUG) {
-                console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(cleanMessageForLog(message), this.rootEnvId));
+                console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(redactArguments(message), this.rootEnvId));
             }
             if (this.validateRegistration(source, message)) {
                 this.registerEnv(message.from, source);
@@ -470,7 +471,7 @@ export class Communication {
         }
         if (!this.environments[message.origin]) {
             if (this.DEBUG) {
-                console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(cleanMessageForLog(message), this.rootEnvId), 'origin');
+                console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(redactArguments(message), this.rootEnvId), 'origin');
             }
             if (this.validateRegistration(source, message)) {
                 this.registerEnv(message.origin, source);
@@ -573,9 +574,7 @@ export class Communication {
         for (const callbackRecord of this.pendingCallbacks.values()) {
             if (callbackRecord.message.to === instanceId) {
                 callbackRecord.reject(
-                    new EnvironmentDisconnectedError(
-                        ENV_DISCONNECTED(instanceId, this.rootEnvId, cleanMessageForLog(callbackRecord.message)),
-                    ),
+                    new EnvironmentDisconnectedError(instanceId, this.rootEnvId, callbackRecord.message),
                 );
             }
         }
@@ -598,13 +597,11 @@ export class Communication {
                 callbackId: message.callbackId,
                 type: 'callback',
                 forwardingChain: message.forwardingChain,
-                error: new Error(
-                    FORWARDING_MESSAGE_STUCK_IN_CIRCULAR(cleanMessageForLog(message), this.rootEnvId, env.id),
-                ),
+                error: new CircularForwardingError(message,  this.rootEnvId, env.id),
             });
             return;
         } else if (this.DEBUG) {
-            console.debug(FORWARDING_MESSAGE(cleanMessageForLog(message), this.rootEnvId, env.id));
+            console.debug(FORWARDING_MESSAGE(redactArguments(message), this.rootEnvId, env.id));
         }
         if (this.pendingEnvs.get(env.id)) {
             this.pendingMessages.add(env.id, () => this.post(this.resolveMessageTarget(env.id), message));
@@ -622,7 +619,7 @@ export class Communication {
 
     private unhandledMessage(message: Message): void {
         if (this.DEBUG) {
-            console.debug(UNHANDLED(cleanMessageForLog(message), this.rootEnvId));
+            console.debug(UNHANDLED(redactArguments(message), this.rootEnvId));
         }
     }
 
@@ -678,7 +675,7 @@ export class Communication {
                 if (handlersBucket && handlersBucket.size !== 0) {
                     if (handlersBucket.has(fn)) {
                         const handlerId = this.getHandlerId(envId, api, method);
-                        throw new Error(DOUBLE_REGISTER_ERROR(handlerId));
+                        throw new DuplicateRegistrationError(handlerId, 'Listener');
                     }
                     handlersBucket.add(fn);
                     res();
@@ -699,7 +696,7 @@ export class Communication {
                     this.callWithCallback(envId, message, callbackId, res, rej);
                 }
             } else {
-                throw new Error(UN_CONFIGURED_METHOD(api, method));
+                throw new UnConfiguredMethodError(api, method);
             }
         }
     }
@@ -882,7 +879,7 @@ export class Communication {
         } else {
             // TODO: only in dev mode
             if (message.callbackId) {
-                throw new Error(UNKNOWN_CALLBACK_ID(cleanMessageForLog(message), this.rootEnvId));
+                throw new UnknownCallbackIdError(message, this.rootEnvId);
             }
         }
     }
@@ -945,21 +942,21 @@ export class Communication {
                     this.pendingCallbacks.delete(callbackId);
                     clearTimeout(callbackItem.timerId);
                     if (this.DEBUG) {
-                        error.cause = `Caused by: ${JSON.stringify(cleanMessageForLog(message), null, 2)}`;
+                        error.cause = `Caused by: ${JSON.stringify(redactArguments(message), null, 2)}`;
                     }
                     rej(error);
                 },
                 scheduleOnSlow: () => {
                     setTimeout(() => {
                         if (this.pendingCallbacks.has(callbackId)) {
-                            console.warn(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessageForLog(message)));
+                            console.warn(new CallbackTimeoutError(callbackId, this.rootEnvId, message).message);
                         }
                     }, this.slowThreshold);
                 },
                 scheduleOnTimeout: () => {
                     callbackItem.timerId = setTimeout(() => {
                         callbackItem.reject(
-                            new Error(CALLBACK_TIMEOUT(callbackId, this.rootEnvId, cleanMessageForLog(message))),
+                            new CallbackTimeoutError(callbackId, this.rootEnvId, message),
                         );
                     }, this.callbackTimeout);
                 },
@@ -973,16 +970,6 @@ export class Communication {
             this.pendingCallbacks.set(callbackId, callbackItem);
         }
     }
-}
-
-function cleanMessageForLog(message: Message) {
-    if ('data' in message && typeof message.data === 'object' && message.data !== null) {
-        return {
-            ...message,
-            data: { ...message.data, args: ['FILTERED_BY_COMMUNICATION'] },
-        } as Message;
-    }
-    return message;
 }
 
 export function declareComEmitter<T>(
