@@ -13,7 +13,7 @@ import {
     isWorkerContext,
     MultiCounter,
     redactArguments,
-    serializeApiCallArguments
+    serializeApiCallArguments,
 } from './helpers.js';
 import { BaseHost } from './hosts/base-host.js';
 import { WsClientHost } from './hosts/ws-client-host.js';
@@ -25,7 +25,7 @@ import type {
     ListenMessage,
     Message,
     StatusMessage,
-    UnListenMessage
+    UnListenMessage,
 } from './message-types.js';
 import { isMessage } from './message-types.js';
 import {
@@ -41,7 +41,7 @@ import {
     type SerializableMethod,
     type ServiceComConfig,
     type Target,
-    type UnknownFunction
+    type UnknownFunction,
 } from './types.js';
 import {
     CallbackTimeoutError,
@@ -49,7 +49,7 @@ import {
     DuplicateRegistrationError,
     EnvironmentDisconnectedError,
     UnConfiguredMethodError,
-    UnknownCallbackIdError
+    UnknownCallbackIdError,
 } from './communication-errors';
 
 /**
@@ -92,7 +92,7 @@ export class Communication {
         public isServer = false,
         options?: Partial<typeof this.options>,
     ) {
-        this.options = { ...this.options, ...options };
+        this.options = Object.assign(this.options, options);
         this.registerMessageHandler(host);
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
@@ -176,6 +176,10 @@ export class Communication {
 
     public subscribeToEnvironmentDispose(handler: (envId: string) => void): void {
         this.disposeListeners.add(handler);
+    }
+
+    public unsubscribeToEnvironmentDispose(handler: (envId: string) => void) {
+        this.disposeListeners.delete(handler);
     }
 
     /**
@@ -364,6 +368,7 @@ export class Communication {
     public async getAllEnvironmentsStatus() {
         type Status = ReturnType<typeof this.getStatus>;
         const statuses: Promise<Status>[] = [];
+        const ownStatus = this.getStatus();
         const environmentsExcludingOwn = Object.keys(this.environments).filter(
             (envId) => envId !== '*' && envId !== this.id,
         );
@@ -389,7 +394,7 @@ export class Communication {
 
         return Promise.allSettled(statuses).then((results) => {
             const statuses: Record<string, Status | PromiseRejectedResult> = {
-                [this.id]: this.getStatus(),
+                [this.id]: ownStatus,
             };
             for (let i = 0; i < results.length; i++) {
                 const result = results[i]!;
@@ -768,9 +773,15 @@ export class Communication {
 
     private resolveMessageTarget(envId: string): Target {
         const env = this.environments[envId] ?? this.environments[this.id];
-        if (!env) return HOST_REMOVED;
-        if (env.id !== this.id) return env.host;
-        if (env.host instanceof BaseHost) return env.host.parent ?? env.host;
+        if (!env) {
+            return HOST_REMOVED;
+        }
+        if (env.id !== this.id) {
+            return env.host;
+        }
+        if (env.host instanceof BaseHost) {
+            return env.host.parent ?? env.host;
+        }
         return getPostEndpoint(env.host);
     }
 
