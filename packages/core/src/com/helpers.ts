@@ -1,6 +1,8 @@
 // we cannot mix types of "dom" and "webworker". tsc fails building.
 declare let WorkerGlobalScope: new () => Worker;
 
+import { Message } from './message-types';
+
 export function isWorkerContext(target: unknown): target is Worker {
     return (
         (typeof Worker !== 'undefined' && target instanceof Worker) ||
@@ -35,3 +37,26 @@ export const serializeApiCallArguments = (args: unknown[]): unknown[] =>
 
 export const deserializeApiCallArguments = (args: unknown[]): unknown[] =>
     args.map((arg) => (arg === undefinedPlaceholder ? undefined : arg));
+
+/**
+ * Redacts arguments from a message.
+ * This is used to prevent sensitive data from being logged.
+ */
+export const redactArguments = <T extends Message['type']>(message: Extract<Message, { type: T }>) => {
+    if (
+        'data' in message &&
+        typeof message.data === 'object' &&
+        message.data !== null &&
+        'args' in message.data &&
+        Array.isArray(message.data.args)
+    ) {
+        return {
+            ...message,
+            data: {
+                ...message.data,
+                args: new Array(message.data.args.length).fill('<redacted>'),
+            },
+        };
+    }
+    return message;
+};
