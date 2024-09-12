@@ -73,13 +73,27 @@ import { workerData } from "node:worker_threads";
 const options = workerData?.runtimeOptions ?? parseRuntimeOptions();
 const verbose = options.get('verbose') ?? false;
 const envId = options.get('environment_id') ?? 'unknown_environment';
+
 if (verbose) {
     console.log('[${env.name}]: Started with options: ', options);
 }
 
 const unbindMetricsListener = bindMetricsListener();
-
-main({
+const unbindTerminationListener = bindRpcListener('terminate', async () => {
+    if (verbose) {
+        console.log('[${env.name}]: Termination Requested. Waiting for engine.');
+    }
+    unbindTerminationListener();
+    unbindMetricsListener();
+    try {
+        const engine = await running;
+        console.log('[${env.name}]: Terminating');
+        return engine.shutdown();
+    } catch (e) {
+        return;
+    }
+});
+const running = main({
     featureName: ${stringify(featureName)}, 
     configName: ${stringify(configName)},
     env: ${stringify(runningEnv, null, 2)},
@@ -103,11 +117,7 @@ main({
     if (verbose) {
         console.log('[${env.name}]: Running')
     }
-    const unbindTerminationListener = bindRpcListener('terminate', () => {
-        unbindTerminationListener();
-        console.log('[${env.name}]: Terminating');
-        return engine.shutdown();
-    });
+    return engine;
 }).catch(e => {
     unbindMetricsListener();
     process.exitCode = 1;
