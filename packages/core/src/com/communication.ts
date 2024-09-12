@@ -164,7 +164,6 @@ export class Communication {
 
     /**
      * Generate client id for newly spawned environment.
-     * todo: should be made private? or rather inlined
      */
     public generateEnvInstanceID(name: string): string {
         return this.idsCounter.next(`${name}/`);
@@ -250,9 +249,8 @@ export class Communication {
 
     /**
      * Calls a remote method in any opened environment.
-     * todo: shouldn't it be private?
      */
-    public callMethod({
+    private callMethod({
         envId,
         api,
         method,
@@ -305,7 +303,6 @@ export class Communication {
 
     /**
      * handles Communication incoming message.
-     * todo: public only for logger transport interface compatibility? otherwise should be private
      */
     public async handleMessage(message: unknown, source: Target): Promise<void> {
         if (!isMessage(message)) return;
