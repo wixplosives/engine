@@ -26,7 +26,7 @@
     "create-temp-directory": "^2.4.0",
     "is-ci": "^3.0.1",
     "promise-assist": "^2.0.1",
-    "sinon": "^19.0.1"
+    "sinon": "^19.0.2"
   },
   "files": [
     "dist",
