@@ -39,7 +39,7 @@ describe('Socket communication', () => {
         const nameSpace = socketServer.of('processing');
         serverTopology['server-host'] = `http://localhost:${port}/processing`;
         const connections = new Set<Socket>();
-        disposables.add('socketServer.close', () => new Promise((res) => socketServer.close(res)));
+        disposables.add('socketServer.close', () => socketServer.close());
         disposables.add('reset serverTopology', () => (serverTopology = {}));
         const onConnection = (connection: Socket): void => {
             connections.add(connection);
@@ -231,7 +231,7 @@ describe('Socket communication', () => {
         expect(onDisconnect).to.not.eq(undefined);
 
         onDisconnect(spy);
-        socketServer.close();
+        await socketServer.close();
         await waitFor(
             () => {
                 expect(spy.callCount).to.be.eq(1);
@@ -328,7 +328,9 @@ describe('IPC communication', () => {
         const { waitForCall, spy } = createWaitForCall<(e: Error) => void>();
         proxy.echo().catch(spy);
         await waitForCall((args) => {
-            expect(args[0].message).to.have.string('Remote call failed in "process" - environment disconnected at "main"');
+            expect(args[0].message).to.have.string(
+                'Remote call failed in "process" - environment disconnected at "main"',
+            );
         });
     });
 });

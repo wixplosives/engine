@@ -28,7 +28,7 @@
     "express": "^4.21.0",
     "is-ci": "^3.0.1",
     "promise-assist": "^2.0.1",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.8.0"
   },
   "files": [
     "dist",

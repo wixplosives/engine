@@ -438,7 +438,7 @@ export class NodeEnvironmentsManager {
                     ).start();
                     close = wsEnvClose;
                 } catch (e) {
-                    await new Promise<void>((res, rej) => socketServer.close((e) => (e ? rej(e) : res())));
+                    await socketServer.close();
                     throw e;
                 }
                 const openSockets = new Set<Socket>();
@@ -457,7 +457,7 @@ export class NodeEnvironmentsManager {
                         for (const socket of openSockets) {
                             socket.destroy();
                         }
-                        await new Promise<void>((res, rej) => socketServer.close((e) => (e ? rej(e) : res())));
+                        await socketServer.close();
                         await close();
                     },
                 };
