@@ -26,7 +26,7 @@
     "@playwright/browser-chromium": "^1.47.2",
     "@stylable/cli": "^6.1.1",
     "@stylable/webpack-plugin": "^6.1.1",
-    "@types/chai": "^4.3.19",
+    "@types/chai": "^4.3.20",
     "@types/chai-as-promised": "^7.1.8",
     "@types/cors": "^2.8.17",
     "@types/d3-hierarchy": "^3.1.7",
