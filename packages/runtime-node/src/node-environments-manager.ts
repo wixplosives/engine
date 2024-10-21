@@ -87,8 +87,6 @@ export interface RunEnvironmentOptions {
     mode?: LaunchEnvironmentMode;
 }
 
-const cliEntry = require.resolve('./remote-node-entry');
-
 export interface INodeEnvironmentsManagerOptions {
     features: Map<string, IStaticFeatureDefinition>;
     bundlePath?: string;
@@ -120,7 +118,7 @@ export interface ILaunchEnvironmentOptions {
 
 export class NodeEnvironmentsManager {
     private runningFeatures = new Map<string, { com: Communication; runningEnvironments: RunningEnvironmentRecord }>();
-
+    private cliEntry = require.resolve('./remote-node-entry');
     constructor(
         private socketServer: io.Server,
         private options: INodeEnvironmentsManagerOptions,
@@ -467,7 +465,7 @@ export class NodeEnvironmentsManager {
     }
 
     private async runRemoteNodeEnvironment(options: StartEnvironmentOptions) {
-        const { remoteNodeEnvironment, process: childProc } = await startRemoteNodeEnvironment(cliEntry, {
+        const { remoteNodeEnvironment, process: childProc } = await startRemoteNodeEnvironment(this.cliEntry, {
             inspect: this.options.inspect,
             port: this.options.port,
             socketServerOptions: this.socketServerOptions,
