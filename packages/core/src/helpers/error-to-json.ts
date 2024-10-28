@@ -7,6 +7,7 @@
 export function errorToJson(error: unknown): Error {
     try {
         if (!(error instanceof Error)) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             return { name: 'Error', message: String(error ?? '') };
         }
 
