@@ -58,7 +58,11 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
             this.running = Promise.all(runPromises);
             await this.running;
         } catch (e) {
-            await this.shutdown();
+            try {
+                await this.shutdown();
+            } catch (e2) {
+                throw new AggregateError([e2], 'Failed to shutdown engine after error in run phase', { cause: e });
+            }
             throw e;
         }
         return this;
