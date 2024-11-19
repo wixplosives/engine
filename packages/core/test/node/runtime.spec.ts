@@ -71,6 +71,34 @@ describe('Feature', () => {
         expect(engine.get(f2).api.config.name).to.equal('test2');
     });
 
+    it('report good error when onDispose fail during run phase', async () => {
+        class entryFeature extends Feature<'test'> {
+            id = 'test' as const;
+            api = {};
+        }
+        entryFeature.setup(Universal, ({ onDispose, run }) => {
+            onDispose(() => {
+                return Promise.reject(new Error('dispose error'));
+            });
+
+            run(() => {
+                return Promise.reject(new Error('run error'));
+            });
+        });
+        
+        let error: AggregateError | undefined;
+        try {
+            await runEngine({ entryFeature, env: AllEnvironments });
+        } catch (e) {
+            error = e as AggregateError;
+        }
+        expect(error).to.be.instanceOf(AggregateError);
+        expect(error?.errors.length).to.be.equal(2);
+        expect(error?.errors[0].message).to.include('run error');
+        expect(error?.errors[1].message).to.include('dispose error');
+        expect(error?.message).to.be.equal('Failed to shutdown engine after error in run phase');
+    });
+
     it('feature run stage', async () => {
         class f0 extends Feature<'test1'> {
             id = 'test1' as const;

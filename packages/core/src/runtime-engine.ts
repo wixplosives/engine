@@ -61,7 +61,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
             try {
                 await this.shutdown();
             } catch (e2) {
-                throw new AggregateError([e2], 'Failed to shutdown engine after error in run phase', { cause: e });
+                throw new AggregateError([e, e2], 'Failed to shutdown engine after error in run phase');
             }
             throw e;
         }
@@ -90,8 +90,11 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
                 ).toFixed(2)}s`,
             );
         }, 15000);
-        await featureInstance[RUN](this);
-        clearInterval(intervalId);
+        try {
+            await featureInstance[RUN](this);
+        } finally {
+            clearInterval(intervalId);
+        }
     }
 
     public shutdown = async () => {
