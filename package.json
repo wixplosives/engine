@@ -18,7 +18,7 @@
     "pretest": "npm run lint && npm run build",
     "test": "npm run test:unit",
     "test:unit": "npm test -ws --if-present",
-    "prettify": "npx prettier . --write"
+    "prettify": "prettier . --write"
   },
   "devDependencies": {
     "@file-services/memory": "^9.4.1",
@@ -65,7 +65,7 @@
     "mocha": "^10.8.2",
     "mocha-play": "^7.0.5",
     "playwright-core": "^1.49.0",
-    "prettier": "^3.3.3",
+    "prettier": "^3.4.1",
     "promise-assist": "^2.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

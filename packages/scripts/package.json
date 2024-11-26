@@ -30,7 +30,7 @@
     "express": "^4.21.1",
     "semver": "^7.6.3",
     "socket.io": "^4.8.1",
-    "type-fest": "^4.28.0"
+    "type-fest": "^4.28.1"
   },
   "files": [
     "dist",
