@@ -1,4 +1,4 @@
-import { reportError } from "../com";
+import { reportError } from '../com';
 
 /**
  * This polyfill is not essential for the engine itself. But applications built

@@ -597,7 +597,7 @@ export class Communication {
                 callbackId: message.callbackId,
                 type: 'callback',
                 forwardingChain: message.forwardingChain,
-                error: new CircularForwardingError(message,  this.rootEnvId, env.id),
+                error: new CircularForwardingError(message, this.rootEnvId, env.id),
             });
             return;
         } else if (this.DEBUG) {
@@ -955,9 +955,7 @@ export class Communication {
                 },
                 scheduleOnTimeout: () => {
                     callbackItem.timerId = setTimeout(() => {
-                        callbackItem.reject(
-                            new CallbackTimeoutError(callbackId, this.rootEnvId, message),
-                        );
+                        callbackItem.reject(new CallbackTimeoutError(callbackId, this.rootEnvId, message));
                     }, this.callbackTimeout);
                 },
             };

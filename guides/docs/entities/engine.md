@@ -11,7 +11,7 @@ sidebar_position: 3
 #### arguments
 
 | argument         | description                                                                                            |
-|------------------|--------------------------------------------------------------------------------------------------------|
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
 | entryEnvironment | `Environment` - the environment the engine is currently running                                        |
 | topLevelConfig   | `TopLevelConfig` - the configuration for all the features the engine should load with                  |
 | options          | `IRunOptions` - the runtime options to be injected to the engine features under the RUN_OPTIONS symbol |
@@ -25,7 +25,7 @@ Will run the provided features in the previously defined environment
 #### arguments
 
 | argument | description                                             |
-|----------|---------------------------------------------------------|
+| -------- | ------------------------------------------------------- |
 | features | `Feature/Feature[]` - the root features the engine runs |
 
 #### returns
@@ -39,7 +39,7 @@ Will run the provided features in the previously defined environment
 #### arguments
 
 | argument | description                               |
-|----------|-------------------------------------------|
+| -------- | ----------------------------------------- |
 | feature  | `Feature` - the requested runtime feature |
 
 #### returns

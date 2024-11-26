@@ -175,7 +175,7 @@ export async function runEngine({
         entryPointsPaths,
         staticBuild,
         title,
-        favicon
+        favicon,
     });
 
     if (watch) {

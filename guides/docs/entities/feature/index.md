@@ -77,7 +77,7 @@ Service is a method within an API. When we need to declare API methods we will c
 export default class MyFeature extends Feature<'myFeature'> {
   id = 'myFeature' as const;
   api = {
-    echoService: Service.withType<() => string>().defineEntity(env1)
+    echoService: Service.withType<() => string>().defineEntity(env1),
   };
 }
 ```
@@ -91,7 +91,7 @@ This is the method of a feature to set itself up in an [environment](../environm
 #### arguments
 
 | argument | description                                                        |
-|----------|--------------------------------------------------------------------|
+| -------- | ------------------------------------------------------------------ |
 | env      | the [environment](../environment) we want to set the feature up in |
 | handler  | [Set up handler](#setup-handler)                                   |
 
@@ -108,7 +108,7 @@ myFeature.setup(myEnv, (settingUpFeature, dependencies, contexts) => {
 - **_settingUpFeature_** - an object containing all the entities related to the feature:
 
 | argument  | description                                                                                     |
-|-----------|-------------------------------------------------------------------------------------------------|
+| --------- | ----------------------------------------------------------------------------------------------- |
 | id        | _(string)_ - id of the feature                                                                  |
 | run       | _(method)_ - a method will be called once this feature is ready in this environment             |
 | onDispose | _(method)_ - a method will be called once this feature gets disposed in this environment        |

@@ -33,13 +33,13 @@ export const browserEnv = new Environment('browser', 'window', 'single');
 
 ```ts title=types.ts
 interface IActionOptions {
-    filePath: string;
-    cursorLocation: [lineNumber: number, colNumber: number];
+  filePath: string;
+  cursorLocation: [lineNumber: number, colNumber: number];
 }
 
 export interface TopBarItem {
-    IconComponent: React.Component;
-    action: (actionOptions: IActionOptions) => void;
+  IconComponent: React.Component;
+  action: (actionOptions: IActionOptions) => void;
 }
 ```
 
@@ -56,21 +56,21 @@ export default class GUIFeature extends Feature<'gui'> {
 ```
 
 ```tsx title=gui.browser.env.ts
-guiFeature.setup(browserEnv, ({topBarItems, run}) => {
-    const getTopBarItems = () => {
-        const topBarComponents = [];
-        for (const {IconComponent, action} of topBarItems) {
-            topBarComponents.push(
-                <div onClick={action}>
-                    <IconComponent/>
-                </div>,
-            );
-        }
-    };
+guiFeature.setup(browserEnv, ({ topBarItems, run }) => {
+  const getTopBarItems = () => {
+    const topBarComponents = [];
+    for (const { IconComponent, action } of topBarItems) {
+      topBarComponents.push(
+        <div onClick={action}>
+          <IconComponent />
+        </div>,
+      );
+    }
+  };
 
-    // let's assume there exists method `render(...)`,for rendering the ui of the application, so it will also render the top-bar component inside it 
-    // the top-bar component will call this method, to render all icons inside
-    render({getTopBarItems});
+  // let's assume there exists method `render(...)`,for rendering the ui of the application, so it will also render the top-bar component inside it
+  // the top-bar component will call this method, to render all icons inside
+  render({ getTopBarItems });
 });
 ```
 

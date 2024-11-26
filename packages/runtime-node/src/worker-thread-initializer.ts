@@ -93,6 +93,6 @@ export function workerThreadInitializer({
     return {
         id: instanceId,
         initialize,
-        dispose: ()=>disposables.dispose(),
+        dispose: () => disposables.dispose(),
     };
 }

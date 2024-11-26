@@ -21,7 +21,7 @@ This will start the engine in watch mode, and open the dev server for the engine
 ## Options
 
 | Option                 | Type                                    | Default Value | Description                                                                |
-|------------------------|-----------------------------------------|---------------|----------------------------------------------------------------------------|
+| ---------------------- | --------------------------------------- | ------------- | -------------------------------------------------------------------------- |
 | `buildTargets`         | `node` \| `web` \| `both` \| `electron` | `both`        | Target platform(s) for the build.                                          |
 | `help`                 | boolean                                 | `false`       | Displays help information if true.                                         |
 | `clean`                | boolean                                 | `true`        | Whether to clean the build directory before building.                      |

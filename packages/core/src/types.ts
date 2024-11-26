@@ -89,15 +89,16 @@ export type ReferencedEnvironments<ENV extends AnyEnvironment> = ENV['env'] | De
 
 export type EnvVisibility = AnyEnvironment | Array<AnyEnvironment>;
 
-export type EnvType<T extends EnvVisibility> = T extends Array<{ env: infer U }>
-    ? U extends string
-        ? U
-        : never
-    : T extends { env: infer U1 }
-      ? U1 extends string
-          ? U1
-          : never
-      : never;
+export type EnvType<T extends EnvVisibility> =
+    T extends Array<{ env: infer U }>
+        ? U extends string
+            ? U
+            : never
+        : T extends { env: infer U1 }
+          ? U1 extends string
+              ? U1
+              : never
+          : never;
 
 type FilterENVKeys<T extends EntityRecord, ENV extends AnyEnvironment, Key extends 'visibleAt' | 'providedFrom'> = {
     [P in keyof T]: EnvType<T[P][Key]> & ReferencedEnvironments<ENV> extends never ? never : P;

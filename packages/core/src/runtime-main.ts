@@ -1,4 +1,4 @@
-import "./polyfills/report-error-polyfill.js";
+import './polyfills/report-error-polyfill.js';
 
 import type { IRunOptions, TopLevelConfig } from './types.js';
 import type { AnyEnvironment } from './entities/index.js';

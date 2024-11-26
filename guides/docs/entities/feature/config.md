@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 ---
+
 # Configs
 
 Each [feature](index.md) can declare that it can be configured using the `Config` entity.

@@ -1,6 +1,7 @@
 ---
 sidebar_position: 3
 ---
+
 # Services
 
 Service is an entity defined in the feature's API, and it represents an 'output' of the feature.
@@ -14,14 +15,14 @@ so a service declaration in a feature would look something like
 
 ```ts
 interface IEchoService {
-  echo(): string
+  echo(): string;
 }
 
 const f1 = new Feature({
   id: 'f1',
   api: {
-    echoService: Service.withType<IEchoService>().providedFrom(myEnv)
-  }
+    echoService: Service.withType<IEchoService>().providedFrom(myEnv),
+  },
 });
 ```
 
@@ -70,14 +71,14 @@ Let's tweak the declaration of `f1`
 
 ```ts
 interface IEchoService {
-  echo(): string
+  echo(): string;
 }
 
 const f1 = new Feature({
   id: 'f1',
   api: {
-    echoService: Service.withType<IEchoService>().providedFrom(myEnv).allowRemoteAccess()
-  }
+    echoService: Service.withType<IEchoService>().providedFrom(myEnv).allowRemoteAccess(),
+  },
 });
 ```
 
@@ -113,7 +114,7 @@ The `options` object structure is as follows:
 - the value is an object with the following optional arguments
 
 | argument           | type                                                       | explanation                                                                       |
-|--------------------|------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| ------------------ | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | emitOnly           | boolean                                                    | tells the communication that a response for a call to this method is not required |
 | listener           | boolean                                                    | whether this method is a registration to an event emitter method                  |
 | removeListener     | string (the name of the 'listener' method in this service) | the method which removes a listener provided to 'listener' method                 |

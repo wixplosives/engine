@@ -38,7 +38,7 @@ _`single`_ - whether the application should treat this environment as a singleto
   <summary>The possible targets for an environment</summary>
 
 | target name         | description                                                                                                              |
-|---------------------|--------------------------------------------------------------------------------------------------------------------------|
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `window`            | an environment which will be bundled, and html will be created for it and will append the bundle to the head of the html |
 | `iframe`            | very similar to the window environment, with the exception that it is meant to be a source of an iframe element          |
 | `webworker`         | environment which will be loaded in a browser webworker                                                                  |
@@ -65,7 +65,6 @@ Once an environment is declared, any feature in the application can set itself u
 the `.setup` method on the feature instance, and providing a setup handler.
 
 ```ts title="feature1.feature.ts"
-
 export default class Feature1 extends Feature<'feature1'> {
   id = 'feature1' as const;
   api = {};
@@ -95,13 +94,13 @@ type SlotType = string;
 
 type ServiceType = {
   echo(): string;
-}
+};
 
 export default class Feature1 extends Feature<'feature1'> {
   id = 'feature1' as const;
   api = {
     valueSlot: Slot.withType<SlotType>().defineEntity(myEnvironment),
-    echoService: Service.withType<ServiceType>().defineEntity(myEnvironment)
+    echoService: Service.withType<ServiceType>().defineEntity(myEnvironment),
   };
 }
 ```
@@ -109,7 +108,7 @@ export default class Feature1 extends Feature<'feature1'> {
 May be setup as such in the `myEnvironment` environment
 
 ```ts title="feature1.my-environment.ts"
-import Feature1 from './feature1.feature.ts'
+import Feature1 from './feature1.feature.ts';
 
 Feature1.setup(myEnv, ({ valueSlot, run }) => {
   valueSlot.register('Hello world');
@@ -139,7 +138,7 @@ export default class Feature2 extends Feature<'feature2'> {
 ```
 
 ```ts title="feature2.my-environment.ts"
-import Feature2 from './feature2.feature.ts'
+import Feature2 from './feature2.feature.ts';
 
 // highlight-next-line
 Feature2.setup(myEnvironment, ({ run }, { feature1: { echoService, valueSlot } }) => {

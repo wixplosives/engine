@@ -9,7 +9,7 @@ export interface IWithLocalFixtureOptions extends IWithFeatureOptions {
 
 /**
  * @deprecated use `withFeature` with fixturePath instead.
- * 
+ *
  * Similar to `withFeature`, but creates a temp directory
  * and optionally copies a fixture to it as a "project".
  */

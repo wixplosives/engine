@@ -13,7 +13,7 @@ The declaration will look something like this:
 ```ts title="my-feature.feature.ts"
 export const contextualEnv = new ContextualEnvironment('ctx', 'single', [
   new Environment('server', 'node', 'single'),
-  new Environment('webserver', 'webworker', 'single')
+  new Environment('webserver', 'webworker', 'single'),
 ]);
 ```
 
@@ -33,7 +33,7 @@ export default class Feature1 extends Feature<'feature1'> {
   id = 'feature1';
   api = {};
   context = {
-    contextName: contextualEnv.withContext<{ fetchFile: (url: string) => Promise<string> }>()
+    contextName: contextualEnv.withContext<{ fetchFile: (url: string) => Promise<string> }>(),
   };
 }
 ```

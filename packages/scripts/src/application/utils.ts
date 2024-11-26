@@ -7,7 +7,6 @@ import type { ICompilerOptions } from './types.js';
 export const bundleStartMessage = ({ options: { target } }: webpack.Compiler) =>
     console.log(`Bundling ${target as string} using webpack...`);
 
-
 export function hookCompilerToConsole(compiler: webpack.MultiCompiler): void {
     compiler.hooks.run.tap('engine-scripts', bundleStartMessage);
     compiler.hooks.watchRun.tap('engine-scripts', bundleStartMessage);

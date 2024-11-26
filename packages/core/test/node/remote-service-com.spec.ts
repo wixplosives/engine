@@ -89,7 +89,7 @@ describe('com emitter service', () => {
         await proxy.on(testListenerStub);
 
         await expect(proxy.on(testListenerStub)).to.eventually.rejectedWith(
-          'Cannot register Listener "main__main2_EmitterService@on" twice',
+            'Cannot register Listener "main__main2_EmitterService@on" twice',
         );
     });
 });

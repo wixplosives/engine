@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 ---
+
 # React application
 
 ## How to run it

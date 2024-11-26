@@ -9,13 +9,14 @@ Best way to understand how the engine works is to create a new project and start
 ## Prerequisites
 
 Before we start playing with the engine, we will need to perform some setup.
-First, let's create a new project, 
+First, let's create a new project,
 
 ```bash
 mkdir hello-engine && cd hello-engine && git init && npm init -y
 ```
 
-Let's make a node application, in typescript. 
+Let's make a node application, in typescript.
+
 ```bash
 npm install --saveDev typescript stylable
 
@@ -42,10 +43,7 @@ create `tsconfig.json` file in the root directory
 {
   "compilerOptions": {
     "target": "es2020",
-    "lib": [
-      "dom",
-      "es2020"
-    ],
+    "lib": ["dom", "es2020"],
     "jsx": "react-jsx",
     "module": "commonjs",
     "declaration": true,

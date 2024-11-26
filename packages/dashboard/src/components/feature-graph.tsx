@@ -85,8 +85,8 @@ export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) 
                         return linkedNodes[0] === graphNode
                             ? linkedNodes[linkedNodes.length - 1]
                             : linkedNodes[linkedNodes.length - 1] === graphNode
-                            ? linkedNodes[0]
-                            : 0;
+                              ? linkedNodes[0]
+                              : 0;
                     })
                     .filter(function (d) {
                         return d;
