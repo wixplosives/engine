@@ -17,13 +17,12 @@ export type WorkerThreadInitializerOptions = InitializerOptions & {
     };
 };
 
-const workerThreadEntryPath = require.resolve('./worker-thread-entry');
-
 export function workerThreadInitializer({
     communication,
     env,
     environmentStartupOptions,
 }: WorkerThreadInitializerOptions): WorkerThreadInitializer {
+    const workerThreadEntryPath = require.resolve('./worker-thread-entry');
     const disposables = createDisposables('workerThreadInitializer');
 
     const instanceId = communication.getEnvironmentInstanceId(env.env, env.endpointType);
