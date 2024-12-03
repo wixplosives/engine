@@ -83,6 +83,7 @@ export type CliFlag<T> = {
 
 export interface EngineConfig {
     require?: string[];
+    import?: string[];
     featureDiscoveryRoot?: string;
     /** relative path to the location of engine features (packages) */
     featuresDirectory?: string;
