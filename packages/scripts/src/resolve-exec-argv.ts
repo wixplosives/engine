@@ -13,6 +13,12 @@ export async function resolveExecArgv(basePath: string) {
             execArgv.push('-r', pathToRequire);
         }
     }
+    if (config?.import) {
+        for (const pathToImport of config.import) {
+            // https://nodejs.org/api/cli.html#--importmodule
+            execArgv.push('--import', pathToImport);
+        }
+    }
     if (config?.buildConditions) {
         for (const condition of config.buildConditions) {
             // https://nodejs.org/api/cli.html#-c-condition---conditionscondition
