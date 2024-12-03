@@ -2,7 +2,7 @@
   "name": "@wixc3/engine-cli",
   "version": "47.4.2",
   "bin": {
-    "engine": "./bin/engine.js"
+    "engine": "./bin/engine.mjs"
   },
   "scripts": {
     "test": "mocha \"dist/test/**/*.unit.js\""

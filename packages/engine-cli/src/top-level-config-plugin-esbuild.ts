@@ -23,7 +23,7 @@ export function topLevelConfigPlugin({ emit = true }: { emit?: boolean }) {
                 };
             });
 
-            build.onLoad({ filter: /.*/, namespace: 'top-level-config-loader' }, (args) => {
+            build.onLoad({ filter: /.*/, namespace: 'top-level-config-loader' }, async (args) => {
                 const queryMatch = args.path.match(/\?(.*?)$/);
                 if (!queryMatch || !queryMatch[1]) {
                     throw new Error('top-level-config-loader: query is missing');
@@ -41,7 +41,7 @@ export function topLevelConfigPlugin({ emit = true }: { emit?: boolean }) {
                 const configLoaderModuleName = params.get('configLoaderModuleName');
 
                 if (emit) {
-                    emitConfigFile(resourcePath, envName, fileName, filesToEmit, build.initialOptions);
+                    await emitConfigFile(resourcePath, envName, fileName, filesToEmit, build.initialOptions);
                 }
 
                 const module = `
@@ -68,7 +68,7 @@ export function topLevelConfigPlugin({ emit = true }: { emit?: boolean }) {
     return plugin;
 }
 
-function emitConfigFile(
+async function emitConfigFile(
     resourcePath: string,
     envName: string | null,
     fileName: string | null,
@@ -81,8 +81,7 @@ function emitConfigFile(
     }
     const rootContext = initialOptions.absWorkingDir || process.cwd();
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const imported = require(resourcePath);
+    const imported = await import(resourcePath);
     const content = JSON.stringify(imported.default ?? imported);
     const configFileName = envName ? `${fileName!}.${envName}` : fileName;
     const configPath = `configs/${configFileName!}.json`;
