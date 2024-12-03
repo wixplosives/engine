@@ -208,13 +208,12 @@ export class NodeEnvManager implements IDisposable {
 }
 
 async function requireModules(modulePaths: string[]) {
-    const load = [];
+    const loadedModules: unknown[] = [];
     for (const modulePath of modulePaths) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        load.push(require(modulePath));
+        const importedModule = await import(modulePath);
+        loadedModules.push(importedModule.default ?? importedModule);
     }
-    const res = await Promise.all(load);
-    return res.map((m) => m.default ?? m);
+    return loadedModules;
 }
 
 function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorker>, host: BaseHost | MessagePort) {
