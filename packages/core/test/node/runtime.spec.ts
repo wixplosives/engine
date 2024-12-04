@@ -85,7 +85,7 @@ describe('Feature', () => {
                 return Promise.reject(new Error('run error'));
             });
         });
-        
+
         let error: AggregateError | undefined;
         try {
             await runEngine({ entryFeature, env: AllEnvironments });
