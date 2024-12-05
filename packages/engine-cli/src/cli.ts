@@ -2,7 +2,7 @@ import { cli, command } from 'cleye';
 import { analyzeCommand } from './analyze-command';
 import type { EngineConfig } from '@wixc3/engine-scripts';
 import { generateFeature } from './feature-generator';
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 
 async function engine() {
     const engineConfigCli = cli({

@@ -1,4 +1,4 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import { EngineConfig, analyzeFeatures } from '@wixc3/engine-scripts';
 
 export async function analyzeCommand({

@@ -1,7 +1,7 @@
 import cors from 'cors';
 import { safeListeningHttpServer } from 'create-listening-server';
 import express from 'express';
-import io from 'socket.io';
+import * as io from 'socket.io';
 
 const noContentHandler: express.RequestHandler = (_req, res) => {
     res.status(204); // No Content

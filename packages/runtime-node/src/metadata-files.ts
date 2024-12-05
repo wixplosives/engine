@@ -1,18 +1,20 @@
-import fs from '@file-services/node';
-import { join } from 'node:path';
-import {
-    type ConfigurationEnvironmentMapping,
-    type FeatureEnvironmentMapping,
-    type createFeatureEnvironmentsMapping,
+import fs from 'node:fs';
+import path from 'node:path';
+import type {
+    ConfigurationEnvironmentMapping,
+    FeatureEnvironmentMapping,
+    createFeatureEnvironmentsMapping,
 } from './node-env-manager';
 
 export function readMetadataFiles(dir: string) {
     try {
-        const featureEnvironmentsMapping = fs.readJsonFileSync(
-            join(dir, 'metadata', 'engine-feature-environments-mapping.json'),
-        ) as ReturnType<typeof createFeatureEnvironmentsMapping>;
-        const configMapping = fs.readJsonFileSync(
-            join(dir, 'metadata', 'engine-config-mapping.json'),
+        const envMappingFilePath = path.join(dir, 'metadata', 'engine-feature-environments-mapping.json');
+        const featureEnvironmentsMapping = JSON.parse(fs.readFileSync(envMappingFilePath, 'utf8')) as ReturnType<
+            typeof createFeatureEnvironmentsMapping
+        >;
+        const engineConfigMappingFilePath = path.join(dir, 'metadata', 'engine-config-mapping.json');
+        const configMapping = JSON.parse(
+            fs.readFileSync(engineConfigMappingFilePath, 'utf8'),
         ) as ConfigurationEnvironmentMapping;
         return { featureEnvironmentsMapping, configMapping };
     } catch {
@@ -25,11 +27,11 @@ export function writeMetaFiles(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
 ) {
-    const outDir = join(dir, 'metadata');
+    const outDir = path.join(dir, 'metadata');
     fs.mkdirSync(outDir, { recursive: true });
     fs.writeFileSync(
-        join(outDir, 'engine-feature-environments-mapping.json'),
+        path.join(outDir, 'engine-feature-environments-mapping.json'),
         JSON.stringify(featureEnvironmentsMapping, null, 2),
     );
-    fs.writeFileSync(join(outDir, 'engine-config-mapping.json'), JSON.stringify(configMapping, null, 2));
+    fs.writeFileSync(path.join(outDir, 'engine-config-mapping.json'), JSON.stringify(configMapping, null, 2));
 }
