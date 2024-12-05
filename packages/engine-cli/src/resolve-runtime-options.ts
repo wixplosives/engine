@@ -1,5 +1,5 @@
-import fs from '@file-services/node';
-import { TopLevelConfig } from '@wixc3/engine-core';
+import type { TopLevelConfig } from '@wixc3/engine-core';
+import path from 'node:path';
 
 export interface RunNodeManagerOptions {
     outputPath: string;
@@ -19,7 +19,7 @@ export function resolveRuntimeOptions({
     topLevelConfig,
 }: RunNodeManagerOptions) {
     const runtimeOptions = new Map<string, string | boolean | undefined>();
-    runtimeOptions.set('applicationPath', fs.join(outputPath, 'web'));
+    runtimeOptions.set('applicationPath', path.join(outputPath, 'web'));
     runtimeOptions.set('feature', featureName);
     if (verbose) {
         runtimeOptions.set('verbose', 'true');

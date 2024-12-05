@@ -1,4 +1,4 @@
-import fs from '@file-services/node';
+import { nodeFs as fs } from '@file-services/node';
 import {
     ConfigurationEnvironmentMapping,
     FeatureEnvironmentMapping,

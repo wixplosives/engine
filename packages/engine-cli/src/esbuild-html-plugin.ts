@@ -1,5 +1,6 @@
-import fs from '@file-services/node';
-import { Plugin } from 'esbuild';
+import type { Plugin } from 'esbuild';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export interface HTMLPluginOptions {
     toHtmlPath?: (fileName: string) => string;
@@ -29,16 +30,16 @@ export function htmlPlugin({
                 if (!metafile) {
                     throw new Error('metafile must be set when using html-plugin');
                 }
-                const iconName = faviconFilePath ? fs.basename(faviconFilePath) : 'favicon.ico';
+                const iconName = faviconFilePath ? path.basename(faviconFilePath) : 'favicon.ico';
                 const cwd = build.initialOptions.absWorkingDir || process.cwd();
                 for (const [key, meta] of Object.entries(metafile.outputs)) {
                     if (!key.match(/\.m?js$/)) {
                         continue;
                     }
-                    const fileName = fs.basename(key);
-                    const jsDir = fs.dirname(key);
-                    const htmlFile = fs.join(jsDir, toHtmlPath(fileName));
-                    const cssPath = meta.cssBundle ? fs.basename(meta.cssBundle) : undefined;
+                    const fileName = path.basename(key);
+                    const jsDir = path.dirname(key);
+                    const htmlFile = path.join(jsDir, toHtmlPath(fileName));
+                    const cssPath = meta.cssBundle ? path.basename(meta.cssBundle) : undefined;
                     const htmlContent = deindento(`
                         |<!DOCTYPE html>
                         |<html>
@@ -55,9 +56,9 @@ export function htmlPlugin({
                         |</html>
                     `);
                     if (faviconFilePath) {
-                        fs.copyFileSync(faviconFilePath, fs.join(cwd, jsDir, iconName));
+                        fs.copyFileSync(faviconFilePath, path.join(cwd, jsDir, iconName));
                     }
-                    fs.writeFileSync(fs.join(cwd, htmlFile), htmlContent);
+                    fs.writeFileSync(path.join(cwd, htmlFile), htmlContent);
                 }
                 return null;
             });
