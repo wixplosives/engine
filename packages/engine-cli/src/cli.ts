@@ -1,8 +1,5 @@
 import { cli, command } from 'cleye';
-import { analyzeCommand } from './analyze-command';
 import type { EngineConfig } from '@wixc3/engine-scripts';
-import { generateFeature } from './feature-generator';
-import { nodeFs as fs } from '@file-services/node';
 
 async function engine() {
     const engineConfigCli = cli({
@@ -179,13 +176,15 @@ async function engine() {
 
     const rootDir = process.cwd();
     if (argv.command === 'analyze') {
+        const { analyzeCommand } = await import('./analyze-command.js');
         await analyzeCommand({ rootDir, feature: argv.flags.feature, engineConfig });
     } else if (argv.command === 'generate') {
         const featureName = argv._.featureName;
         const { featureTemplatesFolder, featuresDirectory } = engineConfig;
         const featuresPath = argv.flags.features ?? featuresDirectory;
         const templatesPath = argv.flags.templates ?? featureTemplatesFolder;
-
+        const { generateFeature } = await import('./feature-generator/index.js');
+        const { nodeFs: fs } = await import('@file-services/node');
         generateFeature({
             fs,
             rootDir,
