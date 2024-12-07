@@ -6,7 +6,7 @@ import type { GraphNode, IFeatureGraphProps, Node } from '../graph-types.js';
 import { translateNodeToHierarchy, xAccessor, yAccessor } from '../graph-utils.js';
 import { classes } from './feature-graph.st.css';
 
-export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps) => {
+export const FeatureGraph = memo(({ selectedFeatureGraph }: IFeatureGraphProps): React.ReactElement => {
     useEffect(() => {
         // Canvas constants
         const diameter = 600;
