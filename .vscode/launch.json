@@ -15,8 +15,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "mocha-play Current",
-      "program": "${workspaceFolder}/node_modules/mocha-play/bin/mocha-play.js",
+      "name": "mocha-web Current",
+      "program": "${workspaceFolder}/node_modules/mocha-web/bin/mocha-web.js",
       "args": ["${file}", "-w"],
       "outputCapture": "std",
       "internalConsoleOptions": "openOnSessionStart"

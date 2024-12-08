@@ -4,14 +4,11 @@ import {
     FeatureEnvironmentMapping,
     IConfigDefinition,
 } from '@wixc3/engine-runtime-node';
-import {
-    IFeatureDefinition,
-    createMainEntrypoint,
-    createNodeEntrypoint,
-    createNodeEnvironmentManagerEntrypoint,
-    type getResolvedEnvironments,
-} from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/patterns';
+import type { IFeatureDefinition } from './types';
+import type { getResolvedEnvironments } from './environments';
+import { createNodeEntrypoint, createNodeEnvironmentManagerEntrypoint } from './entrypoint/create-node-entrypoint';
+import { createMainEntrypoint } from './entrypoint/create-web-entrypoint';
 
 export interface CreateEntryPointOptions {
     dev: boolean;

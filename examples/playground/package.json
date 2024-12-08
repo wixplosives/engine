@@ -2,7 +2,7 @@
   "name": "@example/playground",
   "version": "47.4.2",
   "scripts": {
-    "start": "engineer start"
+    "start": "engine --dev"
   },
   "license": "UNLICENSED",
   "private": true

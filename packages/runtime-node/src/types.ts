@@ -179,7 +179,6 @@ export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
     environmentContextName?: string;
     devtools?: boolean;
     environmentName: string;
-    bundlePath?: string;
     featureDiscoveryRoot?: string;
     parentEnvName: string;
     execPath?: string;
@@ -189,7 +188,6 @@ export interface NodeEnvironmentStartupOptions extends IEngineRuntimeArguments {
 export interface StartEnvironmentOptions<ENV extends AnyEnvironment = AnyEnvironment>
     extends IEnvironmentDescriptor<ENV> {
     featureName: string;
-    bundlePath?: string;
     config?: TopLevelConfig;
     features: Array<[string, IStaticFeatureDefinition]>;
     options?: Array<[string, string | boolean]>;

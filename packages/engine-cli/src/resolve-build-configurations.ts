@@ -1,11 +1,9 @@
 import { IConfigDefinition, createFeatureEnvironmentsMapping } from '@wixc3/engine-runtime-node';
-import {
-    IFeatureDefinition,
-    createAllValidConfigurationsEnvironmentMapping,
-    getResolvedEnvironments,
-} from '@wixc3/engine-scripts';
 import { SetMultiMap } from '@wixc3/patterns';
 import { createEntryPoints } from './create-entrypoints';
+import type { IFeatureDefinition } from './types';
+import { createAllValidConfigurationsEnvironmentMapping } from './configuration-mapping';
+import { getResolvedEnvironments } from './environments';
 
 export function resolveBuildEntryPoints({
     features,

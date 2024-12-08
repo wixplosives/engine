@@ -2,7 +2,7 @@
   "name": "@example/file-server",
   "version": "47.4.2",
   "scripts": {
-    "start": "engineer start",
+    "start": "engine --dev",
     "test": "npm run test:it && npm run test:unit",
     "test:it": "mocha \"dist/test/**/*.it.js\"",
     "test:unit": "mocha \"dist/test/**/*.unit.js\""

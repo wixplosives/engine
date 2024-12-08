@@ -1,7 +1,15 @@
-export { type RunEngineOptions, runEngine, loadEngineConfig } from './engine-build';
-export { runLocalNodeManager } from './run-local-mode-manager';
 export { ManagedRunEngine, OUTPUT_PATH } from './engine-app-manager';
-export type { IExecutableApplication, RunningFeature } from './types';
+export { loadEngineConfig, runEngine, type RunEngineOptions } from './engine-build';
+export { analyzeFeatures } from './find-features/analyze-features';
+export * from './find-features/build-constants';
+export { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants';
+export { loadFeatureDirectory } from './find-features/load-feature-directory';
+export * from './find-features/merge';
+export { extractModuleRequests } from './find-features/resolve-module-graph';
 export { NodeConfigManager } from './node-config-manager';
 export { resolveRuntimeOptions, type RunNodeManagerOptions } from './resolve-runtime-options';
+export { RunningFeatureOptions, getRunningFeature } from './run-environment';
+export { runLocalNodeManager } from './run-local-mode-manager';
+export * from './types';
+export type { IExecutableApplication, RunningFeature } from './types';
 export { checkWatchSignal } from './watch-signal';

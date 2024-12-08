@@ -2,14 +2,6 @@ import { BuildOptions, Plugin } from 'esbuild';
 import fs from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-export interface PartialWebpackLoaderContext {
-    query: string;
-    resourcePath: string;
-    rootContext: string;
-    addDependency(filePath: string): void;
-    emitFile(filePath: string, contents: string, sourcemap: boolean): void;
-}
-
 export function topLevelConfigPlugin({ emit = true }: { emit?: boolean }) {
     const plugin: Plugin = {
         name: 'top-level-config-loader',

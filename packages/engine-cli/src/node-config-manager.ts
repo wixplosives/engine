@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import esbuild from 'esbuild';
 import { join } from 'node:path';
 import { deferred } from 'promise-assist';
-import { importFresh } from '@wixc3/engine-scripts';
+import { importFresh } from './import-fresh';
 
 type BuildStats = {
     error: unknown;

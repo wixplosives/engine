@@ -1,5 +1,5 @@
 /**
- * @type {import('@wixc3/engine-scripts').EngineConfig}
+ * @type {import('@wixc3/engine-cli').EngineConfig}
  */
 module.exports = {
     nodeEnvironmentsMode: 'forked',

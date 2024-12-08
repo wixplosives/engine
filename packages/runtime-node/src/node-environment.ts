@@ -2,7 +2,6 @@ import {
     COM,
     FeatureLoadersRegistry,
     RuntimeEngine,
-    RuntimeMetadata,
     type AnyEnvironment,
     type FeatureClass,
     type IFeatureLoader,
@@ -14,7 +13,6 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
     featureName,
     childEnvName,
     features,
-    bundlePath,
     config = [],
     name,
     type,
@@ -32,14 +30,6 @@ export async function runNodeEnvironment<ENV extends AnyEnvironment>({
             }),
         );
     }
-
-    config.push(
-        RuntimeMetadata.configure({
-            engineerMetadataConfig: {
-                applicationPath: bundlePath,
-            },
-        }),
-    );
 
     const featureLoaders = createFeatureLoaders(new Map(features), {
         name,

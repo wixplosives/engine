@@ -1,12 +1,11 @@
 import { nodeFs as fs } from '@file-services/node';
 import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
-import { StaticConfig } from '@wixc3/engine-scripts';
 import express from 'express';
-import bodyParser from 'body-parser';
 import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server';
 import { join } from 'node:path';
 import { runLocalNodeManager } from './run-local-mode-manager';
 import { NodeConfigManager } from './node-config-manager';
+import type { StaticConfig } from './types';
 
 export type ConfigLoadingMode = 'fresh' | 'watch' | 'require';
 
@@ -75,7 +74,7 @@ export async function launchDashboardServer(
         },
         {
             path: '/api/engine/run',
-            handlers: [bodyParser.json(), middleware],
+            handlers: [express.json(), middleware],
         },
         {
             path: '/api/engine/analyze',

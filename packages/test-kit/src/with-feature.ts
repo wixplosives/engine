@@ -3,21 +3,18 @@ import type { TopLevelConfig } from '@wixc3/engine-core';
 import { type DisposableItem, type DisposableOptions, Disposables } from '@wixc3/patterns';
 import { adjustCurrentTestTimeout, mochaCtx } from '@wixc3/testing';
 import { DISPOSE_OF_TEMP_DIRS } from '@wixc3/testing-node';
-import { getRunningFeature, uniqueHash } from '@wixc3/engine-scripts';
 import isCI from 'is-ci';
 import playwright from 'playwright-core';
 import { reporters } from 'mocha';
-import { ForkedProcessApplication } from './forked-process-application.js';
 import { hookPageConsole } from './hook-page-console.js';
 import { normalizeTestName } from './normalize-test-name.js';
-import { RemoteHttpApplication } from './remote-http-application.js';
 import { validateBrowser } from './supported-browsers.js';
 import { ensureTracePath } from './utils/';
 import { type ChildProcess, spawn, spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import { createTempDirectorySync } from 'create-temp-directory';
 import { linkNodeModules } from './link-test-dir.js';
 import { retry, timeout } from 'promise-assist';
-import { IExecutableApplication, ManagedRunEngine, RunningFeature } from '@wixc3/engine-cli';
+import { IExecutableApplication, ManagedRunEngine, RunningFeature, getRunningFeature } from '@wixc3/engine-cli';
 import { once } from 'node:events';
 
 export interface IFeatureExecutionOptions {
@@ -117,7 +114,7 @@ export interface IFeatureExecutionOptions {
 export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tracing'>, playwright.LaunchOptions {
     /**
      * If we want to test the engine against a running application, provide the port of the application.
-     * It can be extracted from the log printed after 'engineer start' or 'engine run'
+     * It can be extracted from the log printed after 'engine run'
      */
     runningApplicationPort?: number;
     /** Specify directory where features will be looked up within the package */
@@ -137,7 +134,7 @@ export interface IWithFeatureOptions extends Omit<IFeatureExecutionOptions, 'tra
     /**
      * Prebuild the engine before running the tests
      */
-    buildFlow?: 'prebuilt' | 'lazy' | 'legacy';
+    buildFlow?: 'prebuilt' | 'lazy';
     /**
      * If true, the run will be allowed to use stale build artifacts
      */
@@ -261,7 +258,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         queryParams: suiteQueryParams,
         runningApplicationPort = port >= 3000 ? port : undefined,
         config: suiteConfig,
-        featureDiscoveryRoot,
         tracing: suiteTracing = process.env.TRACING ? true : undefined,
         allowedErrors: suiteAllowedErrors = [],
         consoleLogAllowedErrors = false,
@@ -272,7 +268,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         persist,
         takeScreenshotsOfFailed = true,
         allowStale = !!process.env.DONT_BUILD,
-        buildFlow = (process.env.WITH_FEATURE_BUILD_FLOW || 'prebuilt') as 'prebuilt' | 'lazy' | 'legacy',
+        buildFlow = (process.env.WITH_FEATURE_BUILD_FLOW || 'prebuilt') as 'prebuilt' | 'lazy',
         fixturePath: suiteFixturePath,
         dependencies: suiteDependencies,
         hooks: suiteHooks = {},
@@ -313,31 +309,11 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
         });
     }
 
-    if (buildFlow !== 'legacy') {
-        executableApp = executableApp || new ManagedRunEngine({ skipBuild: buildFlow === 'prebuilt', allowStale });
-        before('build test artifacts', function () {
-            this.timeout(60_000 * 4);
-            return executableApp.init?.();
-        });
-    } else {
-        const cliEntry = require.resolve('@wixc3/engineer/dist/cli');
-        // THIS IS THE DEPRECATED FLOW //
-        const resolvedPort =
-            runningApplicationPort ??
-            (process.env.ENGINE_APPLICATION_PORT ? parseInt(process.env.ENGINE_APPLICATION_PORT) : undefined);
-
-        executableApp = resolvedPort
-            ? new RemoteHttpApplication(resolvedPort)
-            : new ForkedProcessApplication(cliEntry, process.cwd(), featureDiscoveryRoot);
-
-        before('engineer start', async function () {
-            if (!featureUrl) {
-                this.timeout(60_000 * 4); // 4 minutes
-                const port = await executableApp.getServerPort();
-                featureUrl = `http://localhost:${port}/main.html`;
-            }
-        });
-    }
+    executableApp ??= new ManagedRunEngine({ skipBuild: buildFlow === 'prebuilt', allowStale });
+    before('build test artifacts', function () {
+        this.timeout(60_000 * 4);
+        return executableApp.init?.();
+    });
 
     let dedicatedBrowser: playwright.Browser | undefined;
     let dedicatedBrowserContext: playwright.BrowserContext | undefined;
@@ -616,7 +592,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 },
             });
 
-            const fullFeatureUrl = (buildFlow !== 'legacy' ? runningFeature.url : featureUrl) + search;
+            const fullFeatureUrl = runningFeature.url + search;
             const response = await featurePage.goto(fullFeatureUrl, navigationOptions);
 
             return {
@@ -831,3 +807,7 @@ const spawnSafe = async (...args: Parameters<typeof spawn>) => {
         throwNonZeroExitCodeError(args, status);
     }
 };
+
+function uniqueHash() {
+    return Math.random().toString(16).slice(2);
+}

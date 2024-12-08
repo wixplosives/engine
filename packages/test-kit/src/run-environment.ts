@@ -1,5 +1,5 @@
 import { RuntimeEngine, type AnyEnvironment, type FeatureClass, type Running } from '@wixc3/engine-core';
-import { getRunningFeature as originalGetRunningFeature, type RunningFeatureOptions } from '@wixc3/engine-scripts';
+import { getRunningFeature as originalGetRunningFeature, type RunningFeatureOptions } from '@wixc3/engine-cli';
 
 /**
  * get a running feature with no browser environment

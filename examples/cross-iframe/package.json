@@ -3,7 +3,7 @@
   "version": "47.4.2",
   "private": true,
   "scripts": {
-    "start": "engineer start",
+    "start": "engine --dev",
     "test": "npm run test:it",
     "test:it": "mocha \"dist/test/**/*.it.js\""
   }
