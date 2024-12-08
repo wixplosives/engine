@@ -9,7 +9,7 @@ import { reporters } from 'mocha';
 import { hookPageConsole } from './hook-page-console.js';
 import { normalizeTestName } from './normalize-test-name.js';
 import { validateBrowser } from './supported-browsers.js';
-import { ensureTracePath } from './utils/';
+import { ensureTracePath } from './utils/index.js';
 import { type ChildProcess, spawn, spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import { createTempDirectorySync } from 'create-temp-directory';
 import { linkNodeModules } from './link-test-dir.js';

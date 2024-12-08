@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import { nodeFs as fs } from '@file-services/node';
 import {
     BaseHost,
@@ -216,7 +217,7 @@ export async function getRunningFeature<F extends FeatureClass, ENV extends AnyE
 
 async function importWithProperError(filePath: string): Promise<unknown> {
     try {
-        return ((await import(filePath)) as { default: unknown }).default;
+        return ((await import(pathToFileURL(filePath).href)) as { default: unknown }).default;
     } catch (ex) {
         throw new Error(`failed importing file: ${filePath}`, { cause: ex });
     }

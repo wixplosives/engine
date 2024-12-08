@@ -55,7 +55,7 @@ import {
     EnvironmentDisconnectedError,
     UnConfiguredMethodError,
     UnknownCallbackIdError,
-} from './communication-errors';
+} from './communication-errors.js';
 
 export interface ConfigEnvironmentRecord extends EnvironmentRecord {
     registerMessageHandler?: boolean;

@@ -1,5 +1,6 @@
 {
   "name": "@fixture/application-external-feature",
   "version": "48.0.0",
-  "private": true
+  "private": true,
+  "type": "module"
 }
