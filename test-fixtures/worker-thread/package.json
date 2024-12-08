@@ -2,6 +2,7 @@
   "name": "@fixture/worker-thread",
   "version": "48.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@wixc3/engine-core": "^48.0.0",
     "@wixc3/engine-runtime-node": "^48.0.0"

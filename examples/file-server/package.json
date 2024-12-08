@@ -1,6 +1,8 @@
 {
   "name": "@example/file-server",
   "version": "48.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
     "start": "engine --dev",
     "test": "npm run test:it && npm run test:unit",
@@ -10,6 +12,5 @@
   "dependencies": {
     "@file-services/node": "^9.4.1"
   },
-  "license": "UNLICENSED",
-  "private": true
+  "license": "UNLICENSED"
 }

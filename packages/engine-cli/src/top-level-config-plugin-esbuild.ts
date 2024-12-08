@@ -1,6 +1,7 @@
 import { BuildOptions, Plugin } from 'esbuild';
 import fs from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 export function topLevelConfigPlugin({ emit = true }: { emit?: boolean }) {
     const plugin: Plugin = {
@@ -73,7 +74,7 @@ async function emitConfigFile(
     }
     const rootContext = initialOptions.absWorkingDir || process.cwd();
 
-    const imported = await import(resourcePath);
+    const imported = await import(pathToFileURL(resourcePath).href);
     const content = JSON.stringify(imported.default ?? imported);
     const configFileName = envName ? `${fileName!}.${envName}` : fileName;
     const configPath = `configs/${configFileName!}.json`;

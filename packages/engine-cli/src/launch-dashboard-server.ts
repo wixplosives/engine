@@ -1,11 +1,11 @@
+import { join } from 'node:path';
 import { nodeFs as fs } from '@file-services/node';
 import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
 import express from 'express';
-import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server';
-import { join } from 'node:path';
-import { runLocalNodeManager } from './run-local-mode-manager';
-import { NodeConfigManager } from './node-config-manager';
-import type { StaticConfig } from './types';
+import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server.js';
+import { runLocalNodeManager } from './run-local-mode-manager.js';
+import { NodeConfigManager } from './node-config-manager.js';
+import type { StaticConfig } from './types.js';
 
 export type ConfigLoadingMode = 'fresh' | 'watch' | 'require';
 
@@ -58,7 +58,7 @@ export async function launchDashboardServer(
         },
         {
             path: '/dashboard',
-            handlers: express.static(join(__dirname, 'dashboard')),
+            handlers: express.static(join(import.meta.dirname, 'dashboard')),
         },
         {
             path: '/api/engine/metadata',
@@ -218,7 +218,7 @@ function blockDuringBuild(waitForBuildReady: ((cb: () => void) => boolean) | und
             res.end('<script>location.reload()</script></html>');
         });
         if (building) {
-            engineImage ??= fs.readFileSync(join(__dirname, 'dashboard', 'engine.jpeg'), 'base64');
+            engineImage ??= fs.readFileSync(join(import.meta.dirname, 'dashboard', 'engine.jpeg'), 'base64');
             res.write(`
                 <!DOCTYPE html>
                 <html>

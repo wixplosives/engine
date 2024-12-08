@@ -1,12 +1,13 @@
 {
   "name": "@example/multi-env",
   "version": "48.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
     "start": "engine --dev",
     "test": "npm run test:it && npm run test:unit",
     "test:it": "mocha \"dist/test/**/*.it.js\"",
     "test:unit": "mocha \"dist/test/**/*.unit.js\""
   },
-  "license": "UNLICENSED",
-  "private": true
+  "license": "UNLICENSED"
 }
