@@ -1,6 +1,6 @@
 {
   "name": "@example/multi-env",
-  "version": "47.4.2",
+  "version": "48.0.0",
   "scripts": {
     "start": "engine --dev",
     "test": "npm run test:it && npm run test:unit",
