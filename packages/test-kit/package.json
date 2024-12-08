@@ -24,7 +24,7 @@
     "@wixc3/patterns": "^17.1.1",
     "@wixc3/testing-node": "^17.1.1",
     "create-temp-directory": "^2.4.0",
-    "is-ci": "^3.0.1",
+    "is-ci": "^4.1.0",
     "promise-assist": "^2.0.1",
     "sinon": "^19.0.2"
   },
