@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { resolveExecArgv } from '@wixc3/engine-scripts';
 import { once } from 'node:events';
 import { Worker } from 'node:worker_threads';
+import { resolveExecArgv } from '../dist/resolve-exec-argv.js';
 
 const basePath = process.cwd();
 const execArgv = await resolveExecArgv(basePath);

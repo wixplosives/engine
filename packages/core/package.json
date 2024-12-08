@@ -6,16 +6,12 @@
     ".": "./dist/index.js",
     "./dist/communication.feature": "./dist/communication.feature.js",
     "./dist/communication.feature.js": "./dist/communication.feature.js",
-    "./dist/runtime-metadata.feature": "./dist/runtime-metadata.feature.js",
-    "./dist/runtime-metadata.feature.js": "./dist/runtime-metadata.feature.js",
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build:umd": "node ./scripts/bundle",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "mocha \"dist/test/node/**/*.spec.js\"",
-    "test:browser": "mocha-play \"dist/test/**/*.spec.js\" -c ./webpack.config.test.js",
-    "prepack": "npm run build:umd"
+    "test:browser": "mocha-web \"dist/test/**/*.spec.js\""
   },
   "dependencies": {
     "@wixc3/isomorphic-worker": "^1.2.5",

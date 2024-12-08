@@ -20,7 +20,6 @@
     "@wixc3/engine-cli": "^47.4.2",
     "@wixc3/engine-core": "^47.4.2",
     "@wixc3/engine-runtime-node": "^47.4.2",
-    "@wixc3/engine-scripts": "^47.4.2",
     "@wixc3/patterns": "^17.1.1",
     "@wixc3/testing-node": "^17.1.1",
     "create-temp-directory": "^2.4.0",

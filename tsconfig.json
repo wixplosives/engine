@@ -11,15 +11,6 @@
     { "path": "./packages/engine-cli/src" },
     { "path": "./packages/engine-cli/test" },
 
-    { "path": "./packages/dashboard/src" },
-    { "path": "./packages/dashboard/test" },
-
-    { "path": "./packages/engineer/src" },
-    { "path": "./packages/engineer/test" },
-
-    { "path": "./packages/scripts/src" },
-    { "path": "./packages/scripts/test" },
-
     { "path": "./packages/test-kit/src" },
     { "path": "./packages/test-kit/test" },
 
@@ -28,7 +19,6 @@
     { "path": "./examples/cross-iframe/src" },
     { "path": "./examples/node-only/src" },
     { "path": "./examples/playground/src" },
-    { "path": "./examples/preload/src" },
     { "path": "./examples/react/src" },
     { "path": "./examples/reloaded-iframe/src" },
 
@@ -42,7 +32,6 @@
     { "path": "./test-fixtures/engine-multi-feature/src" },
     { "path": "./test-fixtures/engine-run-options/src" },
     { "path": "./test-fixtures/engine-env-dependency/src" },
-    { "path": "./test-fixtures/engine-runtime-metadata/src" },
     { "path": "./test-fixtures/multi-node/src" },
     { "path": "./test-fixtures/multi-socket-node/src" },
     { "path": "./test-fixtures/default-args-echo/src" },

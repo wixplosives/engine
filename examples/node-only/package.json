@@ -5,6 +5,6 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "engineer start"
+    "start": "engine --dev"
   }
 }

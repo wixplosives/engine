@@ -6,9 +6,9 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "tsc --build src",
-    "start": "engineer start",
+    "start": "engine --dev",
     "test": "npm run test:browser",
-    "test:browser": "mocha-play \"./dist/test/**/*.spec.js\"",
+    "test:browser": "mocha-web \"./dist/test/**/*.spec.js\"",
     "prepack": "npm run build"
   },
   "peerDependencies": {

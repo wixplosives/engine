@@ -1,10 +1,10 @@
-import { OverrideConfigHook } from '@wixc3/engine-scripts';
 import { BuildOptions, Plugin } from 'esbuild';
 import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 import { join } from 'node:path';
 import { htmlPlugin } from './esbuild-html-plugin';
 import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin';
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
+import type { OverrideConfigHook } from './types';
 
 export interface CreateBuildConfigOptions {
     dev: boolean;

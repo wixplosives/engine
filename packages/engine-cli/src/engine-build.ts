@@ -6,7 +6,6 @@ import {
     readMetadataFiles,
     writeMetaFiles,
 } from '@wixc3/engine-runtime-node';
-import { ENGINE_CONFIG_FILE_NAME, EngineConfig, analyzeFeatures } from '@wixc3/engine-scripts';
 import esbuild from 'esbuild';
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
 import { loadConfigFile } from './load-config-file';
@@ -18,6 +17,9 @@ import { createBuildConfiguration } from './create-environments-build-configurat
 import { readEntryPoints, writeEntryPoints } from './entrypoint-files';
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
 import { resolveRuntimeOptions } from './resolve-runtime-options';
+import type { EngineConfig } from './types';
+import { analyzeFeatures } from './find-features/analyze-features';
+import { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants';
 
 export interface RunEngineOptions {
     verbose?: boolean;

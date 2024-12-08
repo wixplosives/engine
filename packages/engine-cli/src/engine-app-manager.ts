@@ -1,9 +1,8 @@
-import { type IFeatureTarget } from '@wixc3/engine-scripts';
 import { loadEngineConfig, runEngine } from './engine-build';
 import { resolveRuntimeOptions } from './resolve-runtime-options';
 import { runLocalNodeManager } from './run-local-mode-manager';
 import isCI from 'is-ci';
-import type { IExecutableApplication } from './types.js';
+import type { IExecutableApplication, IFeatureTarget } from './types.js';
 import { join } from 'path';
 import {
     type ConfigurationEnvironmentMapping,

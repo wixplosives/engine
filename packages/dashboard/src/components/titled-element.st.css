@@ -1,9 +1,0 @@
-.root {
-    display: flex;
-    flex-direction: column;
-}
-
-.title {
-    font-size: 1.2em;
-    margin-bottom: 0.1em;
-}
