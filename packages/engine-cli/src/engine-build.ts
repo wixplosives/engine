@@ -187,6 +187,7 @@ export async function runEngine({
             }
             const { buildEndPlugin, waitForBuildEnd, waitForRebuild } = createBuildEndPluginHook();
             waitForWebRebuild = waitForRebuild;
+            buildConfigurations.webConfig.plugins ??= [];
             buildConfigurations.webConfig.plugins.push(buildEndPlugin);
             esbuildContextWeb = await esbuild.context(buildConfigurations.webConfig);
             // TODO: use our own watch system to avoid duplicate watchers
@@ -202,6 +203,7 @@ export async function runEngine({
                 console.log('Starting node compilation in watch mode');
             }
             const { buildEndPlugin, waitForBuildEnd } = createBuildEndPluginHook();
+            buildConfigurations.nodeConfig.plugins ??= [];
             buildConfigurations.nodeConfig.plugins.push(buildEndPlugin);
             esbuildContextNode = await esbuild.context(buildConfigurations.nodeConfig);
             // TODO: use our own watch system to avoid duplicate watchers

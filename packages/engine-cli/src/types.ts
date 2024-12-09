@@ -70,7 +70,7 @@ export type BuildConfiguration = {
     dev: boolean;
 };
 
-export type OverrideConfigHook = <const T extends BuildConfiguration>(config: T) => T;
+export type OverrideConfigHook = (config: BuildConfiguration) => BuildConfiguration;
 
 export type CliFlag<T> = {
     /** e.g. String, Boolean, etc. */
