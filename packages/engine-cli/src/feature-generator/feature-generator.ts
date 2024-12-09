@@ -25,7 +25,7 @@ export function generateFeature({
 }) {
     const featuresDir = pathToFeaturesDirectory(fs, rootDir, featuresPath);
 
-    const defaultTemplatesPath = fs.join(__dirname, 'templates');
+    const defaultTemplatesPath = fs.join(import.meta.dirname, 'templates');
     const templatesDirPath = templatesPath ? fs.join(rootDir, templatesPath) : defaultTemplatesPath;
     const templatesDir = readDirectoryContentsSync(fs, templatesDirPath);
 

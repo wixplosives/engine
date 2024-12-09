@@ -2,7 +2,8 @@ import crypto from 'node:crypto';
 import esbuild from 'esbuild';
 import { join } from 'node:path';
 import { deferred } from 'promise-assist';
-import { importFresh } from './import-fresh';
+import { importFresh } from './import-fresh.js';
+import { createRequire } from 'node:module';
 
 type BuildStats = {
     error: unknown;
@@ -130,6 +131,7 @@ export class NodeConfigManager {
                             try {
                                 const text = outputFiles[0]!.text;
                                 const module = { exports: { default: undefined as any } };
+                                const require = createRequire(import.meta.url);
                                 // eslint-disable-next-line @typescript-eslint/no-implied-eval
                                 new Function('module', 'exports', 'require', '__dirname', '__filename', text)(
                                     module,

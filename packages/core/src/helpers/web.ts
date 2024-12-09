@@ -1,4 +1,4 @@
-import { IRunOptions } from '../types';
+import type { IRunOptions } from '../types.js';
 
 export function injectScript(win: Window, rootComId: string, scriptUrl: string) {
     return new Promise<Window>((res, rej) => {

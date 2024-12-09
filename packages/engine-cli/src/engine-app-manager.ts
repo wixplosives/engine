@@ -1,6 +1,6 @@
-import { loadEngineConfig, runEngine } from './engine-build';
-import { resolveRuntimeOptions } from './resolve-runtime-options';
-import { runLocalNodeManager } from './run-local-mode-manager';
+import { loadEngineConfig, runEngine } from './engine-build.js';
+import { resolveRuntimeOptions } from './resolve-runtime-options.js';
+import { runLocalNodeManager } from './run-local-mode-manager.js';
 import isCI from 'is-ci';
 import type { IExecutableApplication, IFeatureTarget } from './types.js';
 import { join } from 'path';
@@ -9,7 +9,7 @@ import {
     type FeatureEnvironmentMapping,
     readMetadataFiles,
 } from '@wixc3/engine-runtime-node';
-import { checkWatchSignal } from './watch-signal';
+import { checkWatchSignal } from './watch-signal.js';
 
 export const OUTPUT_PATH = process.env.ENGINE_OUTPUT_PATH || join(process.cwd(), 'dist-engine');
 

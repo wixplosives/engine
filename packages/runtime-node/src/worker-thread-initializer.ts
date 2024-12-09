@@ -17,8 +17,6 @@ export type WorkerThreadInitializerOptions = InitializerOptions & {
     };
 };
 
-const workerThreadEntryPath = require.resolve('./worker-thread-entry');
-
 export function workerThreadInitializer({
     communication,
     env,
@@ -41,7 +39,7 @@ export function workerThreadInitializer({
         const { requiredModules, basePath, config, featureName, features, runtimeOptions } =
             await metadataProvider.getMetadata();
 
-        const worker = new Worker(workerThreadEntryPath, {
+        const worker = new Worker(new URL('./worker-thread-entry.js', import.meta.url), {
             workerData: {
                 name: instanceId,
             },

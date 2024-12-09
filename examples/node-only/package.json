@@ -1,9 +1,10 @@
 {
   "name": "@example/node-only",
   "version": "48.0.0",
+  "private": true,
+  "type": "module",
   "main": "index.js",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "start": "engine --dev"
   }

@@ -1,4 +1,5 @@
 import { once } from 'node:events';
+import { pathToFileURL } from 'node:url';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
 /**
@@ -13,7 +14,7 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 export async function importFresh(filePath: string[], exportSymbolName?: string): Promise<unknown[]>;
 export async function importFresh(filePath: string, exportSymbolName?: string): Promise<unknown>;
 export async function importFresh(filePath: string | string[], exportSymbolName = 'default'): Promise<unknown> {
-    const worker = new Worker(__filename, {
+    const worker = new Worker(import.meta.url, {
         workerData: { filePath, exportSymbolName } satisfies ImportFreshWorkerData,
         // doesn't seem to inherit two levels deep (Worker from Worker)
         execArgv: [...process.execArgv],
@@ -28,7 +29,7 @@ if (!isMainThread && isImportWorkerData(workerData)) {
     if (Array.isArray(filePath)) {
         const imported: Promise<any>[] = [];
         for (const path of filePath) {
-            imported.push(import(path));
+            imported.push(import(pathToFileURL(path).href));
         }
         Promise.all(imported)
             .then((moduleExports) => {
@@ -42,7 +43,7 @@ if (!isMainThread && isImportWorkerData(workerData)) {
                 throw e;
             });
     } else {
-        import(filePath)
+        import(pathToFileURL(filePath).href)
             .then((moduleExports) => parentPort?.postMessage(moduleExports[exportSymbolName]))
             .catch((e) => {
                 throw e;

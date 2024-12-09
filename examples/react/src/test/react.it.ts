@@ -7,7 +7,7 @@ describe('React Feature', function () {
     const { getLoadedFeature } = withFeature({
         featureName: 'react/someplugin',
         runOptions: {
-            projectPath: join(__dirname, '..'),
+            projectPath: join(import.meta.dirname, '..'),
         },
     });
 

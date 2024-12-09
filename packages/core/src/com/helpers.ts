@@ -1,7 +1,7 @@
 // we cannot mix types of "dom" and "webworker". tsc fails building.
 declare let WorkerGlobalScope: new () => Worker;
 
-import { Message } from './message-types';
+import { Message } from './message-types.js';
 
 export function isWorkerContext(target: unknown): target is Worker {
     return (
