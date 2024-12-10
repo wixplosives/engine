@@ -242,7 +242,7 @@ function addRuntimeArgsFlagsFromEngineConfig(
                     runtimeArgs[flag] = value;
                 } else {
                     throw new Error(
-                        `Invalid value for flag Runtime Argument ${flag}: ${value} (expected string or boolean)`,
+                        `Invalid value for flag Runtime Argument ${flag}: ${value as string} (expected string or boolean)`,
                     );
                 }
             }
