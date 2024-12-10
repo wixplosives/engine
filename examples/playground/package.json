@@ -1,9 +1,10 @@
 {
   "name": "@example/playground",
   "version": "48.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
     "start": "engine --dev"
   },
-  "license": "UNLICENSED",
-  "private": true
+  "license": "UNLICENSED"
 }

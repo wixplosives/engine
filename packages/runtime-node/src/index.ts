@@ -4,7 +4,6 @@ export * from './core-node/ipc-host.js';
 export * from './core-node/local-env-inititializer.js';
 export * from './core-node/parent-port-host.js';
 export * from './core-node/ws-node-host.js';
-export * from './dynamic-import.js';
 export * from './environments.js';
 export * from './import-modules.js';
 export * from './ipc-environment.js';

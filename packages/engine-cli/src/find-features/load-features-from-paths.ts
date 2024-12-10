@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import type { IFileSystemSync } from '@file-services/types';
 import { concat, getValue, isPlainObject, map } from '@wixc3/common';
 import type { FeatureClass } from '@wixc3/engine-core';
@@ -119,7 +120,7 @@ function setEnvPath(
 }
 
 async function analyzeFeature(filePath: string, featurePackage: IPackageDescriptor): Promise<AnalyzedFeatureModule> {
-    const moduleExports = await import(filePath);
+    const moduleExports = await import(pathToFileURL(filePath).href);
     const module = analyzeFeatureModule(filePath, moduleExports);
     const scopedName = scopeToPackage(featurePackage.simplifiedName, module.name);
     return {

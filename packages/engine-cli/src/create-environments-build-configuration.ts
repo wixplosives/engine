@@ -1,10 +1,10 @@
-import { BuildOptions, Plugin } from 'esbuild';
-import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild';
 import { join } from 'node:path';
-import { htmlPlugin } from './esbuild-html-plugin';
-import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin';
-import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
-import type { OverrideConfigHook } from './types';
+import { BuildOptions, Plugin } from 'esbuild';
+import { topLevelConfigPlugin } from './top-level-config-plugin-esbuild.js';
+import { htmlPlugin } from './esbuild-html-plugin.js';
+import { dynamicEntryPlugin } from './esbuild-dynamic-entry-plugin.js';
+import { EntryPoints, EntryPointsPaths } from './create-entrypoints.js';
+import type { OverrideConfigHook } from './types.js';
 
 export interface CreateBuildConfigOptions {
     dev: boolean;
@@ -46,11 +46,7 @@ export function createBuildConfiguration(options: CreateBuildConfigOptions) {
     const commonConfig = {
         target: 'es2020',
         bundle: true,
-        /*
-            using iife here because esm makes debugging very slow to pickup variables in scope.
-            if one want to change this to esm, make sure that some bundle splitting is happening.
-        */
-        format: 'iife',
+        format: 'esm',
         publicPath,
         metafile: true,
         sourcemap: true,

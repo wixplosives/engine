@@ -5,10 +5,10 @@ import {
     IConfigDefinition,
 } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
-import type { IFeatureDefinition } from './types';
-import type { getResolvedEnvironments } from './environments';
-import { createNodeEntrypoint, createNodeEnvironmentManagerEntrypoint } from './entrypoint/create-node-entrypoint';
-import { createMainEntrypoint } from './entrypoint/create-web-entrypoint';
+import type { IFeatureDefinition } from './types.js';
+import type { getResolvedEnvironments } from './environments.js';
+import { createNodeEntrypoint, createNodeEnvironmentManagerEntrypoint } from './entrypoint/create-node-entrypoint.js';
+import { createMainEntrypoint } from './entrypoint/create-web-entrypoint.js';
 
 export interface CreateEntryPointOptions {
     dev: boolean;

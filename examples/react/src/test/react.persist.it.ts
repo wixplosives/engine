@@ -12,7 +12,7 @@ describe('react/someplugin persistent checks', function () {
     const { getLoadedFeature } = withFeature({
         featureName: 'react/someplugin',
         runOptions: {
-            projectPath: path.join(__dirname, '..'),
+            projectPath: path.join(import.meta.dirname, '..'),
         },
         persist: true,
     });

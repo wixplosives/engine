@@ -1,6 +1,7 @@
 {
   "name": "@wixc3/engine-test-kit",
   "version": "48.0.0",
+  "type": "module",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",

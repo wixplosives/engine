@@ -1,6 +1,7 @@
 {
   "name": "@wixc3/engine-cli",
   "version": "48.0.0",
+  "type": "module",
   "bin": {
     "engine": "./bin/engine.mjs"
   },

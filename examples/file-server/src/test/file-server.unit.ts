@@ -12,12 +12,12 @@ describe('file-server Processing env test', () => {
             featureName: 'file-server',
             env: server,
             runtimeOptions: {
-                projectPath: __dirname,
+                projectPath: import.meta.dirname,
             },
             feature: Feature,
         });
 
-        const remoteFile = remoteFiles.readFile(path.basename(__filename));
-        expect(remoteFile).to.eq(fs.readFileSync(__filename, 'utf8'));
+        const remoteFile = remoteFiles.readFile(path.basename(import.meta.filename));
+        expect(remoteFile).to.eq(fs.readFileSync(import.meta.filename, 'utf8'));
     });
 });
