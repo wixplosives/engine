@@ -6,7 +6,7 @@ import {
 } from '@wixc3/engine-runtime-node';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { NodeConfigManager } from './node-config-manager';
+import { NodeConfigManager } from './node-config-manager.js';
 
 export async function runLocalNodeManager(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,

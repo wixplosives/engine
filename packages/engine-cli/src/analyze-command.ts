@@ -1,6 +1,6 @@
 import { nodeFs as fs } from '@file-services/node';
-import type { EngineConfig } from './types';
-import { analyzeFeatures } from './find-features/analyze-features';
+import type { EngineConfig } from './types.js';
+import { analyzeFeatures } from './find-features/analyze-features.js';
 
 export async function analyzeCommand({
     engineConfig,
@@ -14,7 +14,7 @@ export async function analyzeCommand({
     const { extensions, buildConditions, featureDiscoveryRoot } = engineConfig;
 
     const { features } = await analyzeFeatures(fs, rootDir, featureDiscoveryRoot, feature, extensions, buildConditions);
-    const htmlTemplate = fs.readFileSync(fs.join(__dirname, 'dashboard/feature-walker.html'), 'utf8');
+    const htmlTemplate = fs.readFileSync(fs.join(import.meta.dirname, 'dashboard/feature-walker.html'), 'utf8');
     const replaceString = 'globalThis.EMBEDDED_DATA = new Map();';
     if (!htmlTemplate.includes(replaceString)) {
         throw new Error(`Cannot find "${replaceString}" in the feature-walker.html template`);

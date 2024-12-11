@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import {
     COM,
     FeatureLoadersRegistry,
@@ -82,7 +83,9 @@ export function createFeatureLoaders(
                     const contextPreloadFilePath = preloadFilePaths[`${env.env}/${childEnvName}`];
 
                     if (contextPreloadFilePath) {
-                        const preloadedContextModule = (await import(contextPreloadFilePath)) as IPreloadModule;
+                        const preloadedContextModule = (await import(
+                            pathToFileURL(contextPreloadFilePath).href
+                        )) as IPreloadModule;
                         if (preloadedContextModule.init) {
                             initFunctions.push(preloadedContextModule.init);
                         }
@@ -90,7 +93,7 @@ export function createFeatureLoaders(
                 }
                 const preloadFilePath = preloadFilePaths[env.env];
                 if (preloadFilePath) {
-                    const preloadedModule = (await import(preloadFilePath)) as IPreloadModule;
+                    const preloadedModule = (await import(pathToFileURL(preloadFilePath).href)) as IPreloadModule;
                     if (preloadedModule.init) {
                         initFunctions.push(preloadedModule.init);
                     }
@@ -101,16 +104,16 @@ export function createFeatureLoaders(
                 if (childEnvName && currentContext[env.env] === childEnvName) {
                     const contextFilePath = contextFilePaths[`${env.env}/${childEnvName}`];
                     if (contextFilePath) {
-                        await import(contextFilePath);
+                        await import(pathToFileURL(contextFilePath).href);
                     }
                 }
                 for (const { env: envName } of new Set([env, ...env.dependencies])) {
                     const envFilePath = envFilePaths[envName];
                     if (envFilePath) {
-                        await import(envFilePath);
+                        await import(pathToFileURL(envFilePath).href);
                     }
                 }
-                return ((await import(filePath)) as { default: FeatureClass }).default;
+                return ((await import(pathToFileURL(filePath).href)) as { default: FeatureClass }).default;
             },
             depFeatures: dependencies,
             resolvedContexts,

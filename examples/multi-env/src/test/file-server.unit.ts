@@ -8,7 +8,7 @@ describe('multi-env Processing env test', () => {
             featureName: 'multi-env/test-node',
             env: processingEnv,
             runtimeOptions: {
-                projectPath: __dirname,
+                projectPath: import.meta.dirname,
             },
             feature: Feature,
         });

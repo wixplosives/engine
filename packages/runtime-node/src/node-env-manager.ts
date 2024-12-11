@@ -7,15 +7,15 @@ import {
     parseInjectRuntimeConfigConfig,
 } from '@wixc3/engine-core';
 import { IDisposable, SetMultiMap } from '@wixc3/patterns';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { WsServerHost } from './core-node/ws-node-host';
-import { resolveEnvironments } from './environments';
-import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server';
-import type { IStaticFeatureDefinition, PerformanceMetrics } from './types';
-import { runWorker } from './worker-thread-initializer2';
-import { getMetricsFromWorker, bindMetricsListener } from './metrics-utils';
-import { rpcCall } from './micro-rpc';
+import { WsServerHost } from './core-node/ws-node-host.js';
+import { resolveEnvironments } from './environments.js';
+import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server.js';
+import type { IStaticFeatureDefinition, PerformanceMetrics } from './types.js';
+import { runWorker } from './worker-thread-initializer2.js';
+import { getMetricsFromWorker, bindMetricsListener } from './metrics-utils.js';
+import { rpcCall } from './micro-rpc.js';
 
 export type ConfigFilePath = string;
 
@@ -210,7 +210,7 @@ export class NodeEnvManager implements IDisposable {
 async function requireModules(modulePaths: string[]) {
     const loadedModules: unknown[] = [];
     for (const modulePath of modulePaths) {
-        const importedModule = await import(modulePath);
+        const importedModule = await import(pathToFileURL(modulePath).href);
         loadedModules.push(importedModule.default ?? importedModule);
     }
     return loadedModules;
@@ -252,7 +252,7 @@ function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorke
             worker.postMessage(message.data);
         };
         const handleInitializeError = (e: AnyMessage) => {
-            rej(new Error(`failed initializing environment ${envName} with error message: ${JSON.stringify(e.data)}`));
+            rej(new Error(`failed initializing environment ${envName}`, { cause: e.data }));
         };
 
         worker.addEventListener('message', handleWorkerMessage);

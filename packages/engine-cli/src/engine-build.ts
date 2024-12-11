@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util';
 import { nodeFs as fs } from '@file-services/node';
 import {
     ConfigurationEnvironmentMapping,
@@ -7,19 +8,18 @@ import {
     writeMetaFiles,
 } from '@wixc3/engine-runtime-node';
 import esbuild from 'esbuild';
-import { createBuildEndPluginHook } from './esbuild-build-end-plugin';
-import { loadConfigFile } from './load-config-file';
-import { parseArgs } from 'node:util';
-import { writeWatchSignal } from './watch-signal';
-import { resolveBuildEntryPoints } from './resolve-build-configurations';
-import { ConfigLoadingMode, launchDashboardServer } from './launch-dashboard-server';
-import { createBuildConfiguration } from './create-environments-build-configuration';
-import { readEntryPoints, writeEntryPoints } from './entrypoint-files';
-import { EntryPoints, EntryPointsPaths } from './create-entrypoints';
-import { resolveRuntimeOptions } from './resolve-runtime-options';
-import type { EngineConfig } from './types';
-import { analyzeFeatures } from './find-features/analyze-features';
-import { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants';
+import { createBuildEndPluginHook } from './esbuild-build-end-plugin.js';
+import { loadConfigFile } from './load-config-file.js';
+import { writeWatchSignal } from './watch-signal.js';
+import { resolveBuildEntryPoints } from './resolve-build-configurations.js';
+import { ConfigLoadingMode, launchDashboardServer } from './launch-dashboard-server.js';
+import { createBuildConfiguration } from './create-environments-build-configuration.js';
+import { readEntryPoints, writeEntryPoints } from './entrypoint-files.js';
+import { EntryPoints, EntryPointsPaths } from './create-entrypoints.js';
+import { resolveRuntimeOptions } from './resolve-runtime-options.js';
+import type { EngineConfig } from './types.js';
+import { analyzeFeatures } from './find-features/analyze-features.js';
+import { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants.js';
 
 export interface RunEngineOptions {
     verbose?: boolean;
@@ -87,7 +87,7 @@ export async function runEngine({
     outputPath = fs.resolve(rootDir, outputPath);
 
     const jsOutExtension = '.js' as '.js' | '.mjs';
-    const nodeFormat = jsOutExtension === '.mjs' ? 'esm' : 'cjs';
+    const nodeFormat = 'esm' as 'esm' | 'cjs';
 
     const {
         buildPlugins = [],

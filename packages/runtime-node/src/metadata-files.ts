@@ -4,7 +4,7 @@ import type {
     ConfigurationEnvironmentMapping,
     FeatureEnvironmentMapping,
     createFeatureEnvironmentsMapping,
-} from './node-env-manager';
+} from './node-env-manager.js';
 
 export function readMetadataFiles(dir: string) {
     try {

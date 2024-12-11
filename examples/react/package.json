@@ -1,12 +1,13 @@
 {
   "name": "@examples/react",
   "version": "48.0.0",
+  "private": true,
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "engine --dev -f react/someplugin",
     "test": "npm run test:it",
     "test:it": "mocha \"dist/test/**/*.it.js\""
   },
-  "license": "UNLICENSED",
-  "private": true
+  "license": "UNLICENSED"
 }

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { EntryPointsPaths, EntryPoints } from './create-entrypoints';
+import { EntryPointsPaths, EntryPoints } from './create-entrypoints.js';
 
 export function writeEntryPoints(dir: string, { nodeEntryPoints, webEntryPoints }: EntryPoints): EntryPointsPaths {
     const outDirWeb = path.join(dir, 'entrypoints', 'web');

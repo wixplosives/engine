@@ -1,5 +1,5 @@
-import type { Message } from './message-types';
-import { redactArguments } from './helpers';
+import type { Message } from './message-types.js';
+import { redactArguments } from './helpers.js';
 
 export class EngineCommunicationError extends Error {
     constructor(

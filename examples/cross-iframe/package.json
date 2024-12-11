@@ -2,6 +2,7 @@
   "name": "@fixture/cross-iframe",
   "version": "48.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "start": "engine --dev",
     "test": "npm run test:it",

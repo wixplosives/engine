@@ -18,20 +18,20 @@ mkdir hello-engine && cd hello-engine && git init && npm init -y
 Let's make a node application, in typescript.
 
 ```bash
-npm install --saveDev typescript stylable
+npm install typescript -D
 
 ```
 
 In your blank typescript repo:
 
 1. install engine-core package `npm i @wixc3/engine-core`
-2. install dev-dependencies `npm i -D typescript webpack html-webpack-plugin react stylable`
-3. install engineer as a dev dependency `npm i -D @wixc3/engineer`
-4. if this is a typescript project, in the root of the project create an `engine.config.js` file, and inside we should
+2. install engine-cli as a dev dependency `npm i -D @wixc3/engine-cli`
+3. if this is a typescript project, in the root of the project create an `engine.config.js` file, and inside we should
    add one of the following:
 
 ```ts
-module.exports = {
+/** @type {import('@wixc3/engine-cli').EngineConfig} */
+export default {
   // the folder where the transpiled js files will be located
   featureDiscoveryRoot: 'dist',
 };
@@ -80,16 +80,6 @@ export default new Feature({
   id: 'helloWorldFeature',
   api: {},
 });
-```
-
-create `webpack.config.js` file and add:
-
-```js
-const { StylableWebpackPlugin } = require('@stylable/webpack-plugin');
-
-module.exports = {
-  plugins: [new StylableWebpackPlugin()],
-};
 ```
 
 We create the feature file, in which we declare what is the feature's API and its Id.

@@ -12,7 +12,7 @@ describe('File Server Feature', function () {
         featureName: 'file-server/example',
         configName: 'file-server/run',
         runOptions: {
-            projectPath: path.dirname(__dirname),
+            projectPath: path.dirname(import.meta.dirname),
         },
         config: [
             fileServerFeature.configure({

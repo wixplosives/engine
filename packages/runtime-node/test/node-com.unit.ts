@@ -295,7 +295,7 @@ describe('IPC communication', () => {
     it('communication with forked process', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
-        const forked = fork(require.resolve('./process-entry'));
+        const forked = fork(new URL('./process-entry.js', import.meta.url));
         disposables.add('kill process', () => forked.kill());
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
@@ -313,7 +313,7 @@ describe('IPC communication', () => {
     it('handles forked process closing', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
-        const forked = fork(require.resolve('./process-entry'));
+        const forked = fork(new URL('./process-entry.js', import.meta.url));
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
         communication.registerMessageHandler(host);
