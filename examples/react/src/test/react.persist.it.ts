@@ -1,5 +1,6 @@
 import { withFeature } from '@wixc3/engine-test-kit';
-import chai, { expect } from 'chai';
+import * as chai from 'chai';
+import { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import path from 'node:path';
 import { type Page } from 'playwright-core';

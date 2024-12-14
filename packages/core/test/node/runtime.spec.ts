@@ -20,7 +20,8 @@ import {
     type DisposeFunction,
     type IRunOptions,
 } from '@wixc3/engine-core';
-import chai, { expect } from 'chai';
+import * as chai from 'chai';
+import { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { spy } from 'sinon';
 import sinonChai from 'sinon-chai';

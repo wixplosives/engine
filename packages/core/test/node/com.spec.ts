@@ -14,7 +14,8 @@ import {
     type Message,
 } from '@wixc3/engine-core';
 import { EventEmitter } from '@wixc3/patterns';
-import chai, { expect } from 'chai';
+import * as chai from 'chai';
+import { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { sleep, waitFor } from 'promise-assist';
 import { spy, stub } from 'sinon';

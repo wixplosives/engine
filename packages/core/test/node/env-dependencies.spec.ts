@@ -9,7 +9,8 @@ import {
     type EnvironmentInstanceToken,
     type MultiEnvAsyncApi,
 } from '@wixc3/engine-core';
-import chai, { expect } from 'chai';
+import * as chai from 'chai';
+import { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import type { EQUAL } from 'typescript-type-utils';
