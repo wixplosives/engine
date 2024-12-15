@@ -1,6 +1,6 @@
 import type { PerformanceMetrics } from './types.js';
 import type { ChildProcess } from 'node:child_process';
-import { Worker } from '@wixc3/isomorphic-worker/worker';
+import type { Worker } from '@wixc3/isomorphic-worker/worker';
 import { isValidRpcResponse, rpcCall, getNextMessageId, bindRpcListener } from './micro-rpc.js';
 
 export function bindMetricsListener(

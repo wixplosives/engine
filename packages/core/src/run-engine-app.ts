@@ -1,8 +1,3 @@
-/**
- * Extends globalThis.Worker with a polyfill for web workers in safari.
- */
-import '@wixc3/isomorphic-worker/worker';
-
 import { RuntimeEngine } from './runtime-engine.js';
 import type { IRunOptions, TopLevelConfig } from './types.js';
 import type { AnyEnvironment, FeatureClass } from './entities/index.js';
