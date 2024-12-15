@@ -31,6 +31,8 @@ export const REGISTER_ENV = (id: string, hostId: string) => `registering env ${i
 export const UNHANDLED = (message: Message, hostId: string) =>
     `[DEBUG] unhandledMessage received at ${hostId}. message:\n${JSON.stringify(message, null, 2)}`;
 
-export function reportError(e: unknown) {
-    console.error(e);
-}
+export const reportError =
+    globalThis.reportError ??
+    function reportError(e: unknown) {
+        console.error(e);
+    };
