@@ -1,6 +1,6 @@
 {
   "name": "@fixture/engine-node",
-  "version": "49.0.0",
+  "version": "49.1.0",
   "private": true,
   "type": "module"
 }
