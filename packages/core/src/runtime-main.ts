@@ -76,7 +76,7 @@ async function getRunningOptionsFromParent(options: IRunOptions) {
         return options;
     }
 
-    return await new Promise<IRunOptions>((resolve, reject) => {
+    return await new Promise<IRunOptions>((resolve) => {
         function listenForEnvId(evt: MessageEvent) {
             if ('kind' in evt.data && evt.data.kind === RUN_OPTIONS_PROVIDED_KIND) {
                 window.removeEventListener('message', listenForEnvId);
