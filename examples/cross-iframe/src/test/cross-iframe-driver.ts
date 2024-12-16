@@ -12,6 +12,10 @@ export class CrossIframeDriver {
         return this.page.locator(`button.init-iframe-button-${index}`).click();
     }
 
+    public clickNavigationButtonByTestId(testId: string) {
+        return this.page.locator(`button#${testId}`).click();
+    }
+
     public getIframeContent() {
         const iframe = this.page.frameLocator('iframe');
         const iframeBody = iframe.locator('body');

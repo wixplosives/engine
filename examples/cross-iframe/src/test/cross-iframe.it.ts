@@ -59,4 +59,13 @@ describe('Cross Iframes Example', function () {
         await crossFrameDriver.clickNavigationButton(0);
         await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/4'));
     });
+
+    it('initial iframe rendered and then iframe that fetches run options from parent', async () => {
+        const { page } = await getLoadedFeature();
+        const crossFrameDriver = await CrossIframeDriver.getFromRoot(page);
+
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/0'));
+        await crossFrameDriver.clickNavigationButtonByTestId('fetch-from-parent');
+        await waitFor(async () => expect(await crossFrameDriver.getIframeContent()).to.eq('iframe/1'));
+    });
 });
