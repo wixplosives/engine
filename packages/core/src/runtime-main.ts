@@ -77,14 +77,8 @@ async function getRunningOptionsFromParent(options: IRunOptions) {
     }
 
     return await new Promise<IRunOptions>((resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-            window.removeEventListener('message', listenForEnvId);
-            reject(new Error('Parent window did not respond with running options'));
-        }, 5000);
-
         function listenForEnvId(evt: MessageEvent) {
             if ('kind' in evt.data && evt.data.kind === RUN_OPTIONS_PROVIDED_KIND) {
-                clearTimeout(timeoutId);
                 window.removeEventListener('message', listenForEnvId);
                 const paramsFromParent = new URLSearchParams(evt.data.runOptionsParams);
                 for (const [key, value] of options) {
