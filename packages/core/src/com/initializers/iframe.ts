@@ -1,7 +1,9 @@
 import type { Communication } from '../communication.js';
 import type { InitializerOptions } from './types.js';
 import { WindowInitializerService } from '../window-initializer-service.js';
+import { RUN_OPTIONS_PROVIDED_KIND, RUN_OPTIONS_REQUESTED_KIND } from '../../types.js';
 
+export const FETCH_OPTIONS_PARAM_NAME = 'fetch-options-from-parent';
 export const INSTANCE_ID_PARAM_NAME = 'iframe-instance-id';
 export interface IIframeInitializerOptions {
     /** the iframe element to launch the environment on */
@@ -127,6 +129,24 @@ export async function startIframe({ com, iframe, instanceId, src, envReadyPromis
         cleanup();
         throw e;
     }
+}
+
+export function installRunOptionsInitMessageHandler(target: Window, getRunOptionsParams: () => URLSearchParams) {
+    function listenForRunOptionsRequest(evt: MessageEvent) {
+        if ('kind' in evt.data && evt.data.kind === RUN_OPTIONS_REQUESTED_KIND && evt.source === target) {
+            evt.source.postMessage(
+                {
+                    kind: RUN_OPTIONS_PROVIDED_KIND,
+                    runOptionsParams: getRunOptionsParams().toString(),
+                },
+                evt.origin,
+            );
+        }
+    }
+
+    window.addEventListener('message', listenForRunOptionsRequest);
+
+    return () => window.removeEventListener('message', listenForRunOptionsRequest);
 }
 
 const defaultHtmlSourceFactory = (envName: string, publicPath = '', hashParams?: string, origin = '') => {

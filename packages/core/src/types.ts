@@ -221,3 +221,6 @@ export enum LogLevel {
     WARN,
     ERROR,
 }
+
+export const RUN_OPTIONS_REQUESTED_KIND = 'engine-run-options-requested';
+export const RUN_OPTIONS_PROVIDED_KIND = 'engine-run-options-provided';

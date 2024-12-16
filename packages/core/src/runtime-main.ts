@@ -1,9 +1,14 @@
-import type { IRunOptions, TopLevelConfig } from './types.js';
+import {
+    RUN_OPTIONS_PROVIDED_KIND,
+    RUN_OPTIONS_REQUESTED_KIND,
+    type IRunOptions,
+    type TopLevelConfig,
+} from './types.js';
 import type { AnyEnvironment } from './entities/index.js';
 import { FeatureLoadersRegistry, IFeatureLoader } from './run-engine-app.js';
 import { ConfigLoaders, RuntimeConfigurations } from './runtime-configurations.js';
 import { RuntimeEngine } from './runtime-engine.js';
-import { INSTANCE_ID_PARAM_NAME } from './com/index.js';
+import { FETCH_OPTIONS_PARAM_NAME, INSTANCE_ID_PARAM_NAME } from './com/index.js';
 
 export interface MainEntryParams {
     env: AnyEnvironment;
@@ -28,8 +33,10 @@ export async function main({
     configLoaders,
     featureName,
     configName,
-    options,
+    options: providedOptions,
 }: MainEntryParams) {
+    const fetchOptionsFromParent = providedOptions.get(FETCH_OPTIONS_PARAM_NAME) === 'true';
+    const options = fetchOptionsFromParent ? await getRunningOptionsFromParent(providedOptions) : providedOptions;
     const runtimeConfiguration = new RuntimeConfigurations(env.env, publicConfigsRoute, configLoaders, options);
     const featureLoader = new FeatureLoadersRegistry(featureLoaders);
 
@@ -56,4 +63,34 @@ export async function main({
         [...buildConfig, ...contextualConfig({ resolvedContexts }), ...runtimeConfig],
         options,
     ).run(entryFeature);
+}
+
+/**
+ * Request run options from parent window and combine with current options.
+ * @param options current options to be overridden by options from parent
+ * @returns promise with combined options
+ */
+async function getRunningOptionsFromParent(options: IRunOptions) {
+    return await new Promise<IRunOptions>((resolve) => {
+        function listenForEnvId(evt: MessageEvent) {
+            if ('kind' in evt.data && evt.data.kind === RUN_OPTIONS_PROVIDED_KIND) {
+                window.removeEventListener('message', listenForEnvId);
+                const paramsFromParent = new URLSearchParams(evt.data.runOptionsParams);
+                for (const [key, value] of options) {
+                    if (!paramsFromParent.has(key) && value) {
+                        paramsFromParent.set(key, value.toString());
+                    }
+                }
+                resolve(paramsFromParent);
+            }
+        }
+
+        window.addEventListener('message', listenForEnvId);
+        window.parent.postMessage(
+            {
+                kind: RUN_OPTIONS_REQUESTED_KIND,
+            },
+            '*',
+        );
+    });
 }
