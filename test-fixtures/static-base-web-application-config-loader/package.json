@@ -1,6 +1,6 @@
 {
   "name": "@fixture/static-base-web-application-config-loader",
-  "version": "49.1.0",
+  "version": "49.1.1",
   "private": true,
   "type": "module"
 }

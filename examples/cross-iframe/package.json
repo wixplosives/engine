@@ -1,6 +1,6 @@
 {
   "name": "@fixture/cross-iframe",
-  "version": "49.1.0",
+  "version": "49.1.1",
   "private": true,
   "type": "module",
   "scripts": {
