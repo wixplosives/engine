@@ -17,6 +17,7 @@
     { "path": "./examples/file-server/src" },
     { "path": "./examples/multi-env/src" },
     { "path": "./examples/cross-iframe/src" },
+    { "path": "./examples/iframe-env-from-script/src" },
     { "path": "./examples/node-only/src" },
     { "path": "./examples/playground/src" },
     { "path": "./examples/react/src" },

@@ -1,0 +1,11 @@
+{
+  "name": "@example/iframe-env-from-script",
+  "version": "49.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "engine --dev",
+    "test": "npm run test:it",
+    "test:it": "mocha \"dist/test/**/*.it.js\""
+  }
+}
