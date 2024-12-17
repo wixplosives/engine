@@ -1,6 +1,6 @@
 {
   "name": "@fixture/engine-env-dependency",
-  "version": "49.1.1",
+  "version": "49.3.0",
   "private": true,
   "type": "module"
 }
