@@ -28,10 +28,11 @@ interface EngineWebEntryGlobalObj {
 export function getEngineEntryOptions(envName: string, globalObj: EngineWebEntryGlobalObj): IRunOptions {
     const urlParams = new URLSearchParams(globalObj?.location?.search);
     const currentScript =
-        (globalObj?.document?.currentScript ?? (typeof import.meta !== 'undefined' && import.meta.url))
+        globalObj?.document?.currentScript ??
+        (typeof import.meta !== 'undefined' && import.meta.url
             ? // if env run as a module then in has no access to currentScript, in this case we find script by src
               globalObj?.document?.querySelector?.<HTMLElement>(`script[src="${import.meta.url}"]`)
-            : undefined;
+            : undefined);
 
     const optionsFromScript = new URLSearchParams(
         (currentScript && currentScript.dataset.engineRunOptions) || undefined,
