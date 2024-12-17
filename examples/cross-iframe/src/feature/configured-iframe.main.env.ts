@@ -1,4 +1,4 @@
-import { iframeInitializer } from '@wixc3/engine-core';
+import { FETCH_OPTIONS_PARAM_NAME, iframeInitializer, installRunOptionsInitMessageHandler } from '@wixc3/engine-core';
 import { mainEnv, iframeEnv } from './echo.feature.js';
 import fixture from './configured-iframe.feature.js';
 
@@ -7,9 +7,14 @@ fixture.setup(mainEnv, ({ run }, { COM: { communication }, echoFeature: { echoSe
     myFrame.id = 'iframe';
     document.body.append(myFrame);
     const fConfigs = [
-        { hostname: '127.0.0.1', param: 'p0' },
-        { hostname: '127.0.0.1', param: 'p1' },
-        { hostname: 'localhost', param: 'p2' },
+        { buttonTestId: 'cross-origin', hostname: '127.0.0.1', params: '&test=p0' },
+        { buttonTestId: 'another-cross-origin', hostname: '127.0.0.1', params: '&test=p1' },
+        { buttonTestId: 'same-origin', hostname: 'localhost', params: '&test=p2' },
+        {
+            buttonTestId: 'fetch-from-parent',
+            hostname: '127.0.0.1',
+            params: `&test=p3&${FETCH_OPTIONS_PARAM_NAME}=true`,
+        },
     ];
 
     for (let i = 0; i < fConfigs.length; i++) {
@@ -18,10 +23,18 @@ fixture.setup(mainEnv, ({ run }, { COM: { communication }, echoFeature: { echoSe
         const url = new URL(window.location.href);
         url.pathname = 'iframe.html';
         url.hostname = fConfig.hostname;
-        url.search = url.search + '&test=' + fConfig.param;
+        url.search = url.search + fConfig.params;
         button.appendChild(document.createTextNode(url.toString()));
+        button.id = fConfig.buttonTestId;
         button.className = `init-iframe-button-${i}`;
         button.onclick = async () => {
+            // this should be removed after tech debt is solved https://github.com/wixplosives/codux/issues/24381
+            if (url.searchParams.get(FETCH_OPTIONS_PARAM_NAME) === 'true' && myFrame.contentWindow) {
+                const removeListener = installRunOptionsInitMessageHandler(myFrame.contentWindow, () => {
+                    removeListener();
+                    return url.searchParams;
+                });
+            }
             const { id } = await iframeInitializer({
                 communication,
                 env: iframeEnv,
