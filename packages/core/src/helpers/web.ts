@@ -14,7 +14,12 @@ export function injectScript(win: Window, rootComId: string, scriptUrl: string) 
 }
 
 interface EngineWebEntryGlobalObj {
-    document?: { currentScript: { dataset: { engineRunOptions?: string | null } } | null };
+    document?: {
+        querySelector?: Document['querySelector'];
+        currentScript: {
+            dataset: { engineRunOptions?: string | null };
+        } | null;
+    };
     location?: { search?: string };
 
     engineEntryOptions?: (options: { currentRunOptions: IRunOptions; envName: string }) => IRunOptions;
@@ -22,7 +27,11 @@ interface EngineWebEntryGlobalObj {
 
 export function getEngineEntryOptions(envName: string, globalObj: EngineWebEntryGlobalObj): IRunOptions {
     const urlParams = new URLSearchParams(globalObj?.location?.search);
-    const currentScript = globalObj?.document?.currentScript;
+    const currentScript =
+        (globalObj?.document?.currentScript ?? (typeof import.meta !== 'undefined' && import.meta.url))
+            ? // if env run as a module then in has no access to currentScript, in this case we find script by src
+              globalObj?.document?.querySelector?.<HTMLElement>(`script[src="${import.meta.url}"]`)
+            : undefined;
 
     const optionsFromScript = new URLSearchParams(
         (currentScript && currentScript.dataset.engineRunOptions) || undefined,
