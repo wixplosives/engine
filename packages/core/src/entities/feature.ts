@@ -44,6 +44,7 @@ export class Feature<T extends string> {
     public id: T = '' as T;
     public api: EntityRecord = {};
     public dependencies: FeatureDependencies = [];
+    public optionalDependencies: FeatureDependencies = [];
     public context: Record<string, Context<unknown>> = {};
     static runtimeInfo: undefined | RuntimeInfo = undefined; // each class should have its own runtime info
     static isEngineFeature = true;
@@ -57,6 +58,9 @@ export class Feature<T extends string> {
     }
     static dependencies<T extends FeatureClass>(): InstanceType<T>['dependencies'] {
         return instantiateFeature(this).dependencies;
+    }
+    static optionalDependencies<T extends FeatureClass>(): InstanceType<T>['optionalDependencies'] {
+        return instantiateFeature(this).optionalDependencies;
     }
     static api<T extends FeatureClass>(this: T): InstanceType<T>['api'] {
         return instantiateFeature(this).api;
@@ -203,6 +207,7 @@ export interface FeatureClass {
     runtimeInfo?: RuntimeInfo;
     isEngineFeature: boolean;
     dependencies<T extends FeatureClass>(): InstanceType<T>['dependencies'];
+    optionalDependencies<T extends FeatureClass>(): InstanceType<T>['optionalDependencies'];
     context<T extends FeatureClass>(): InstanceType<T>['context'];
     api<T extends FeatureClass>(this: T): InstanceType<T>['api'];
 }
@@ -213,11 +218,14 @@ export interface FeatureDescriptor {
     id: string;
     api: EntityRecord;
     dependencies: FeatureDependencies;
+    optionalDependencies: FeatureDependencies;
     context?: Record<string, Context<unknown>>;
 }
 
-export type RunningFeatures<T extends FeatureDependencies, E extends AnyEnvironment> = {
+export type RunningFeatures<T extends FeatureDependencies, O extends FeatureDependencies, E extends AnyEnvironment> = {
     [K in InstanceType<T[number]>['id']]: RunningInstance<Extract<InstanceType<T[number]>, { id: K }>, E>;
+} & {
+    [K in InstanceType<O[number]>['id']]: RunningInstance<Extract<InstanceType<O[number]>, { id: K }>, E> | undefined;
 };
 
 export type SettingUpFeatureBase<F extends FeatureClass, E extends AnyEnvironment> = {
@@ -238,7 +246,11 @@ export type SettingUpFeature<F extends FeatureClass, E extends AnyEnvironment> =
 
 export type SetupHandler<F extends FeatureClass, E extends AnyEnvironment> = (
     feature: SettingUpFeature<F, E>,
-    runningFeatures: RunningFeatures<InstanceType<F>['dependencies'], E>,
+    runningFeatures: RunningFeatures<
+        InstanceType<F>['dependencies'],
+        InstanceType<F>['optionalDependencies'],
+        E
+    >,
     context: MapRecordType<NonNullable<InstanceType<F>['context']>>,
 ) => RegisteringFeature<InstanceType<F>['api'], OmitCompositeEnvironment<E>>;
 
@@ -247,5 +259,5 @@ export type ContextHandler<
     E extends AnyEnvironment,
     K extends keyof InstanceType<F>['context'],
 > = (
-    runningFeatures: RunningFeatures<InstanceType<F>['dependencies'], E>,
+    runningFeatures: RunningFeatures<InstanceType<F>['dependencies'], InstanceType<F>['optionalDependencies'], E>,
 ) => InstanceType<F>['context'][K] extends Context<infer U> ? U & {} : {};

@@ -12,6 +12,7 @@ import type { IRunOptions, TopLevelConfig } from './types.js';
 
 export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
     public features = new Map<FeatureClass, RuntimeFeature<any, ENV>>();
+    public allRequiredFeatures = new Set<string>();
     public referencedEnvs: Set<string>;
     private running: Promise<void[]> | undefined;
     private shutingDown = false;
@@ -46,6 +47,7 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         if (!Array.isArray(features)) {
             features = [features];
         }
+        this.preRun(features);
         try {
             for (const feature of features) {
                 this.initFeature(feature);
@@ -66,6 +68,19 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
             throw e;
         }
         return this;
+    }
+
+    private preRun(entryDeps: FeatureClass[]) {
+        // populate required features
+        const toProcess = [...entryDeps];
+        while (toProcess.length) {
+            const feature = toProcess.shift()!;
+            this.allRequiredFeatures.add(feature.id);
+            for (const dep of feature.dependencies()) {
+                if (this.allRequiredFeatures.has(dep.id)) continue;
+                toProcess.push(dep);
+            }
+        }
     }
 
     public initFeature<T extends FeatureClass>(feature: T): RuntimeFeature<T, ENV> {

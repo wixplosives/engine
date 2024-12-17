@@ -3,6 +3,7 @@ import {
     COM,
     CREATE_RUNTIME,
     Config,
+    Value,
     ContextualEnvironment,
     ENGINE,
     Environment,
@@ -70,6 +71,50 @@ describe('Feature', () => {
 
         expect(engine.get(f1).api.config.name).to.equal('test1');
         expect(engine.get(f2).api.config.name).to.equal('test2');
+    });
+
+    it('feature entry with optional dependency', async () => {
+        class TestFeature extends Feature<'testFeature'> {
+            id = 'testFeature' as const;
+            api = {
+                testValue: Value.withType<string>().defineEntity(Universal),
+            };
+        }
+        TestFeature.setup(Universal, () => {
+            return { testValue: 'value from inner dep' };
+        });
+        class UsingRequired extends Feature<'usingRequired'> {
+            id = 'usingRequired' as const;
+            api = {};
+            dependencies = [TestFeature];
+        }
+        class UsingOptional extends Feature<'usingOptional'> {
+            id = 'usingOptional' as const;
+            api = {
+                valueFromDep: Value.withType<string | undefined>().defineEntity(Universal),
+            };
+            optionalDependencies = [TestFeature];
+        }
+        UsingOptional.setup(Universal, ({}, { testFeature }) => {
+            return { valueFromDep: testFeature?.testValue };
+        });
+
+        {
+            // check with just optional dependency
+            const engine = await runEngine({
+                entryFeature: [UsingOptional],
+                env: AllEnvironments,
+            });
+            expect(engine.get(UsingOptional).api.valueFromDep, 'optional only dep').to.eql(undefined);
+        }
+        {
+            // check with a following dependency that requires the dependency
+            const engine = await runEngine({
+                entryFeature: [UsingOptional, UsingRequired],
+                env: AllEnvironments,
+            });
+            expect(engine.get(UsingOptional).api.valueFromDep, 'required dep').to.eql('value from inner dep');
+        }
     });
 
     it('report good error when onDispose fail during run phase', async () => {
