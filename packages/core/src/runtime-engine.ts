@@ -75,9 +75,9 @@ export class RuntimeEngine<ENV extends AnyEnvironment = AnyEnvironment> {
         const toProcess = [...entryDeps];
         while (toProcess.length) {
             const feature = toProcess.shift()!;
-            if (this.allRequiredFeatures.has(feature.id)) continue;
             this.allRequiredFeatures.add(feature.id);
             for (const dep of feature.dependencies()) {
+                if (this.allRequiredFeatures.has(dep.id)) continue;
                 toProcess.push(dep);
             }
         }
