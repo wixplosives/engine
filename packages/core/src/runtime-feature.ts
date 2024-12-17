@@ -23,7 +23,11 @@ export class RuntimeFeature<T extends FeatureClass, ENV extends AnyEnvironment> 
     constructor(
         public feature: InstanceType<T>,
         public api: Running<T, ENV>,
-        public dependencies: RunningFeatures<InstanceType<T>['dependencies'], ENV>,
+        public dependencies: RunningFeatures<
+            InstanceType<T>['dependencies'],
+            InstanceType<T>['optionalDependencies'],
+            ENV
+        >,
         public environment: ENV,
     ) {
         this.disposables.add({
@@ -71,7 +75,7 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
 ): RuntimeFeature<F, E> {
     const { features, runOptions, referencedEnvs, entryEnvironment } = runningEngine;
     const feature = instantiateFeature(FeatureClass);
-    const deps: RunningFeatures<InstanceType<any>['dependencies'], any> = {};
+    const deps: RunningFeatures<InstanceType<any>['dependencies'], InstanceType<any>['optionalDependencies'], any> = {};
     const depsApis: Record<string, Running<FeatureClass, E>> = {};
     const runningApi: Record<string, unknown> = {};
     const inputApi: Record<string, unknown> = {};
@@ -89,6 +93,14 @@ export function createFeatureRuntime<F extends FeatureClass, E extends AnyEnviro
         const instance = runningEngine.initFeature(dep);
         deps[instance.feature.id] = instance;
         depsApis[instance.feature.id] = instance.api;
+    }
+
+    for (const dep of feature.optionalDependencies) {
+        if (runningEngine.allRequiredFeatures.has(dep.id)) {
+            const instance = runningEngine.initFeature(dep);
+            deps[instance.feature.id] = instance;
+            depsApis[instance.feature.id] = instance.api;
+        }
     }
 
     for (const [key, entity] of apiEntries) {
