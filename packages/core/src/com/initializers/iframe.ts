@@ -131,15 +131,21 @@ export async function startIframe({ com, iframe, instanceId, src, envReadyPromis
     }
 }
 
-export function installRunOptionsInitMessageHandler(target: Window, getRunOptionsParams: () => URLSearchParams) {
+export function installRunOptionsInitMessageHandler(
+    target: Window,
+    callback: (postBack: (params: string) => void) => void,
+) {
     function listenForRunOptionsRequest(evt: MessageEvent) {
         if ('kind' in evt.data && evt.data.kind === RUN_OPTIONS_REQUESTED_KIND && evt.source === target) {
-            evt.source.postMessage(
-                {
-                    kind: RUN_OPTIONS_PROVIDED_KIND,
-                    runOptionsParams: getRunOptionsParams().toString(),
-                },
-                evt.origin,
+            const { source, origin } = evt;
+            callback((params) =>
+                source.postMessage(
+                    {
+                        kind: RUN_OPTIONS_PROVIDED_KIND,
+                        runOptionsParams: params,
+                    },
+                    origin,
+                ),
             );
         }
     }

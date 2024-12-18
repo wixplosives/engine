@@ -30,9 +30,9 @@ fixture.setup(mainEnv, ({ run }, { COM: { communication }, echoFeature: { echoSe
         button.onclick = async () => {
             // this should be removed after tech debt is solved https://github.com/wixplosives/codux/issues/24381
             if (url.searchParams.get(FETCH_OPTIONS_PARAM_NAME) === 'true' && myFrame.contentWindow) {
-                const removeListener = installRunOptionsInitMessageHandler(myFrame.contentWindow, () => {
+                const removeListener = installRunOptionsInitMessageHandler(myFrame.contentWindow, (postBack) => {
                     removeListener();
-                    return url.searchParams;
+                    postBack(url.searchParams.toString());
                 });
             }
             const { id } = await iframeInitializer({
