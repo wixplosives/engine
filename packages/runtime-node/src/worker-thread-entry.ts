@@ -24,7 +24,7 @@ const handleStartupMessage = async (command: WorkerThreadStartupCommand) => {
         await importModules(basePath, requiredModules);
     }
 
-    const host = new UniversalWorkerHost(worker, worker.workerData.name);
+    const host = new UniversalWorkerHost(worker, (worker.workerData as { name: string }).name);
 
     config.push(
         COM.configure({

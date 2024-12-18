@@ -15,7 +15,7 @@
     "test:browser": "mocha-web \"dist/test/**/*.spec.js\""
   },
   "dependencies": {
-    "@wixc3/isomorphic-worker": "^1.2.5",
+    "@wixc3/isomorphic-worker": "^2.0.0",
     "@wixc3/patterns": "^18.0.0",
     "promise-assist": "^2.0.1",
     "socket.io-client": "^4.8.1",
