@@ -458,7 +458,7 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                         const installOptions = {
                             cwd: projectPath,
                             shell: true,
-                            stdio: debugMode ? 'inherit' : 'ignore',
+                            stdio: debugMode ? 'inherit' : 'pipe',
                         } satisfies SpawnSyncOptions;
                         const shouldRetryInstall = !!process.env.NEW_FIXTURE_DEPENDENCIES_INSTALLATION;
 
@@ -785,17 +785,18 @@ function isNonReactDevMessage(type: string, [firstArg]: unknown[]) {
 const throwNonZeroExitCodeError = (
     args: Parameters<typeof spawnSync | typeof spawn>,
     status: ChildProcess['exitCode'],
+    stderr?: string,
 ) => {
     const command = args.filter((arg) => typeof arg === 'string').join(' ');
     const exitCode = status ?? 'null';
 
-    throw new Error(`Command "${command}" failed with exit code ${exitCode}.`);
+    throw new Error(`Command "${command}" failed with exit code ${exitCode}.${stderr ? `\n${stderr}` : ''}`);
 };
 
 export const spawnSyncSafe = (...args: Parameters<typeof spawnSync>) => {
     const spawnResult = spawnSync(...args);
     if (spawnResult.status !== 0) {
-        throwNonZeroExitCodeError(args, spawnResult.status);
+        throwNonZeroExitCodeError(args, spawnResult.status, spawnResult.stderr.toString());
     }
     return spawnResult;
 };
