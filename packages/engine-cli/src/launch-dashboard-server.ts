@@ -4,10 +4,7 @@ import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wix
 import express from 'express';
 import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server.js';
 import { runLocalNodeManager } from './run-local-mode-manager.js';
-import { NodeConfigManager } from './node-config-manager.js';
 import type { StaticConfig } from './types.js';
-
-export type ConfigLoadingMode = 'fresh' | 'watch' | 'require';
 
 export async function launchDashboardServer(
     rootDir: string,
@@ -18,11 +15,8 @@ export async function launchDashboardServer(
     configMapping: ConfigurationEnvironmentMapping,
     runtimeOptions: Map<string, string | boolean | undefined>,
     outputPath: string,
-    configLoadingMode: ConfigLoadingMode,
     analyzeForBuild: () => Promise<unknown>,
     waitForBuildReady?: (cb: () => void) => boolean,
-    buildConditions?: string[],
-    extensions?: string[],
 ): Promise<ReturnType<typeof launchServer>> {
     const staticMiddlewares = serveStatic.map(({ route, directoryPath }) => ({
         path: route,
@@ -35,10 +29,7 @@ export async function launchDashboardServer(
         featureEnvironmentsMapping,
         configMapping,
         outputPath,
-        configLoadingMode,
         waitForBuildReady,
-        buildConditions,
-        extensions,
     );
     const autoRunFeatureName = runtimeOptions.get('feature') as string | undefined;
     if (autoRunFeatureName) {
@@ -104,21 +95,10 @@ function runOnDemandSingleEnvironment(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
     outputPath: string,
-    configLoadingMode: 'fresh' | 'watch' | 'require',
     waitForBuildReady?: (cb: () => void) => boolean,
-    buildConditions?: string[],
-    extensions?: string[],
 ) {
     let currentlyDisposing: Promise<unknown> | undefined;
     const openManagers = new Map<string, Awaited<ReturnType<typeof runLocalNodeManager>>>();
-    const configManager =
-        configLoadingMode === 'fresh' || configLoadingMode === 'watch'
-            ? new NodeConfigManager(configLoadingMode, {
-                  absWorkingDir: rootDir,
-                  conditions: buildConditions,
-                  resolveExtensions: extensions,
-              })
-            : undefined;
 
     async function run(featureName: string, configName: string, runtimeArgs: string) {
         try {
@@ -142,7 +122,6 @@ function runOnDemandSingleEnvironment(
             configMapping,
             runOptions,
             outputPath,
-            configManager,
             {
                 routeMiddlewares: [
                     {
@@ -159,7 +138,6 @@ function runOnDemandSingleEnvironment(
     async function disposeOpenManagers() {
         await currentlyDisposing;
         if (openManagers.size > 0) {
-            await configManager?.disposeAll();
             const toDispose = [];
             for (const { manager } of openManagers.values()) {
                 toDispose.push(manager.dispose());

@@ -12,7 +12,7 @@ import { createBuildEndPluginHook } from './esbuild-build-end-plugin.js';
 import { loadConfigFile } from './load-config-file.js';
 import { writeWatchSignal } from './watch-signal.js';
 import { resolveBuildEntryPoints } from './resolve-build-configurations.js';
-import { ConfigLoadingMode, launchDashboardServer } from './launch-dashboard-server.js';
+import { launchDashboardServer } from './launch-dashboard-server.js';
 import { createBuildConfiguration } from './create-environments-build-configuration.js';
 import { readEntryPoints, writeEntryPoints } from './entrypoint-files.js';
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints.js';
@@ -40,7 +40,6 @@ export interface RunEngineOptions {
     writeMetadataFiles?: boolean;
     publicPath?: string;
     publicConfigsRoute?: string;
-    configLoadingMode?: ConfigLoadingMode;
     staticBuild?: boolean;
     title?: string;
 }
@@ -64,7 +63,6 @@ export async function runEngine({
     runtimeArgs = {},
     writeMetadataFiles = !watch,
     publicConfigsRoute = 'configs',
-    configLoadingMode = 'require',
     staticBuild = false,
     title,
 }: RunEngineOptions = {}): Promise<{
@@ -249,11 +247,8 @@ export async function runEngine({
             configMapping,
             runtimeOptions,
             outputPath,
-            configLoadingMode,
             analyze,
             waitForWebRebuild,
-            buildConditions,
-            extensions,
         );
         if (watch) {
             writeWatchSignal(outputPath, { isAliveUrl: `http://localhost:${devServer.port}/is_alive` });
