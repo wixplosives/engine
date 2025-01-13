@@ -32,7 +32,7 @@
     "@types/minimist": "^1.2.5",
     "@types/mocha": "^10.0.10",
     "@types/node": "20",
-    "@types/react": "^19.0.4",
+    "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.2",
     "@types/sinon": "^17.0.3",
     "@types/sinon-chai": "^4.0.0",
