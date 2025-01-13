@@ -1,6 +1,6 @@
 {
   "name": "@example/multi-env",
-  "version": "49.4.1",
+  "version": "49.4.2",
   "private": true,
   "type": "module",
   "scripts": {

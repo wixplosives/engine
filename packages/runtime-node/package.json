@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-runtime-node",
-  "version": "49.4.1",
+  "version": "49.4.2",
   "type": "module",
   "main": "dist/index.js",
   "exports": {
@@ -14,7 +14,7 @@
   "dependencies": {
     "@file-services/node": "^9.4.1",
     "@wixc3/common": "^18.0.0",
-    "@wixc3/engine-core": "^49.4.1",
+    "@wixc3/engine-core": "^49.4.2",
     "@wixc3/isomorphic-worker": "^2.0.0",
     "@wixc3/patterns": "^18.0.0",
     "cors": "^2.8.5",
