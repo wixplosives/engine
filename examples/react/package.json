@@ -1,6 +1,6 @@
 {
   "name": "@examples/react",
-  "version": "49.4.2",
+  "version": "49.4.3",
   "private": true,
   "type": "module",
   "main": "index.js",
