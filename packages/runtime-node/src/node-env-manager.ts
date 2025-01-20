@@ -48,7 +48,7 @@ export class NodeEnvManager implements IDisposable {
         private importMeta: { url: string },
         private featureEnvironmentsMapping: FeatureEnvironmentMapping,
         private configMapping: ConfigurationEnvironmentMapping,
-        private loadModules: (modulePaths: string[]) => Promise<unknown> = requireModules,
+        private loadModules: (modulePaths: string[]) => Promise<unknown> = importModules,
     ) {}
     public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
@@ -207,7 +207,7 @@ export class NodeEnvManager implements IDisposable {
     }
 }
 
-async function requireModules(modulePaths: string[]) {
+async function importModules(modulePaths: string[]) {
     const loadedModules: unknown[] = [];
     for (const modulePath of modulePaths) {
         const importedModule = await import(pathToFileURL(modulePath).href);

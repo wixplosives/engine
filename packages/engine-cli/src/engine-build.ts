@@ -64,7 +64,7 @@ export async function runEngine({
     runtimeArgs = {},
     writeMetadataFiles = !watch,
     publicConfigsRoute = 'configs',
-    configLoadingMode = 'require',
+    configLoadingMode = 'import',
     staticBuild = false,
     title,
 }: RunEngineOptions = {}): Promise<{
