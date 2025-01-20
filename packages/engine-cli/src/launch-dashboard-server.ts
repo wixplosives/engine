@@ -7,7 +7,7 @@ import { runLocalNodeManager } from './run-local-mode-manager.js';
 import { NodeConfigManager } from './node-config-manager.js';
 import type { StaticConfig } from './types.js';
 
-export type ConfigLoadingMode = 'fresh' | 'watch' | 'require';
+export type ConfigLoadingMode = 'fresh' | 'watch' | 'import';
 
 export async function launchDashboardServer(
     rootDir: string,
@@ -104,7 +104,7 @@ function runOnDemandSingleEnvironment(
     featureEnvironmentsMapping: FeatureEnvironmentMapping,
     configMapping: ConfigurationEnvironmentMapping,
     outputPath: string,
-    configLoadingMode: 'fresh' | 'watch' | 'require',
+    configLoadingMode: 'fresh' | 'watch' | 'import',
     waitForBuildReady?: (cb: () => void) => boolean,
     buildConditions?: string[],
     extensions?: string[],
