@@ -6,6 +6,7 @@ export { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants.js';
 export { loadFeatureDirectory } from './find-features/load-feature-directory.js';
 export * from './find-features/merge.js';
 export { extractModuleRequests } from './find-features/resolve-module-graph.js';
+export { NodeConfigManager } from './node-config-manager.js';
 export { resolveRuntimeOptions, type RunNodeManagerOptions } from './resolve-runtime-options.js';
 export { RunningFeatureOptions, getRunningFeature } from './run-environment.js';
 export { runLocalNodeManager } from './run-local-mode-manager.js';

@@ -108,6 +108,17 @@ async function engine() {
             description: 'Enable config build via config loaders',
             default: false,
         },
+        configLoadingMode: {
+            type: (value: string) => {
+                if (value === 'fresh' || value === 'watch' || value === 'require') {
+                    return value;
+                } else {
+                    throw new Error(`Invalid config loading mode: ${value}`);
+                }
+            },
+            description: 'Config loading mode (fresh, watch, require)',
+            default: undefined,
+        },
         verbose: {
             type: Boolean,
             description: 'Verbose output',
@@ -184,6 +195,7 @@ async function engine() {
     } else {
         const dev = argv.flags.dev ?? argv.flags.watch;
         const run = argv.flags.run ?? dev;
+        const configLoadingMode = argv.flags.configLoadingMode ?? (argv.flags.watch ? 'watch' : 'require');
         const runtimeArgs = argv.flags.runtimeArgs;
         addRuntimeArgsFlagsFromEngineConfig(engineConfig, argv.flags, runtimeArgs);
 
@@ -193,6 +205,7 @@ async function engine() {
             runtimeArgs,
             dev,
             run,
+            configLoadingMode,
             engineConfig,
         });
     }
