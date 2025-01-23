@@ -16,7 +16,7 @@
     "@wixc3/common": "^18.0.0",
     "@wixc3/engine-core": "^49.4.3",
     "@wixc3/isomorphic-worker": "^2.0.0",
-    "@wixc3/patterns": "^18.1.0",
+    "@wixc3/patterns": "^18.1.1",
     "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
     "express": "^4.21.2",
