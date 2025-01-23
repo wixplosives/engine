@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-runtime-node",
-  "version": "49.3.0",
+  "version": "49.4.3",
   "type": "module",
   "main": "dist/index.js",
   "exports": {
@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "@file-services/node": "^9.4.1",
-    "@wixc3/common": "^18.0.0",
-    "@wixc3/engine-core": "^49.3.0",
-    "@wixc3/isomorphic-worker": "^1.2.5",
-    "@wixc3/patterns": "^18.0.0",
+    "@wixc3/common": "^18.1.1",
+    "@wixc3/engine-core": "^49.4.3",
+    "@wixc3/isomorphic-worker": "^2.0.0",
+    "@wixc3/patterns": "^18.1.1",
     "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
     "express": "^4.21.2",

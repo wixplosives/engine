@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-core",
-  "version": "49.3.0",
+  "version": "49.4.3",
   "type": "module",
   "main": "dist/index.js",
   "exports": {
@@ -15,8 +15,8 @@
     "test:browser": "mocha-web \"dist/test/**/*.spec.js\""
   },
   "dependencies": {
-    "@wixc3/isomorphic-worker": "^1.2.5",
-    "@wixc3/patterns": "^18.0.0",
+    "@wixc3/isomorphic-worker": "^2.0.0",
+    "@wixc3/patterns": "^18.1.1",
     "promise-assist": "^2.0.1",
     "socket.io-client": "^4.8.1",
     "typescript-type-utils": "^0.1.0"

@@ -14,7 +14,7 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 export async function importFresh(filePath: string[], exportSymbolName?: string): Promise<unknown[]>;
 export async function importFresh(filePath: string, exportSymbolName?: string): Promise<unknown>;
 export async function importFresh(filePath: string | string[], exportSymbolName = 'default'): Promise<unknown> {
-    const worker = new Worker(import.meta.url, {
+    const worker = new Worker(new URL(import.meta.url), {
         workerData: { filePath, exportSymbolName } satisfies ImportFreshWorkerData,
         // doesn't seem to inherit two levels deep (Worker from Worker)
         execArgv: [...process.execArgv],

@@ -110,13 +110,13 @@ async function engine() {
         },
         configLoadingMode: {
             type: (value: string) => {
-                if (value === 'fresh' || value === 'watch' || value === 'require') {
+                if (value === 'fresh' || value === 'watch' || value === 'import') {
                     return value;
                 } else {
                     throw new Error(`Invalid config loading mode: ${value}`);
                 }
             },
-            description: 'Config loading mode (fresh, watch, require)',
+            description: 'Config loading mode (fresh, watch, import)',
             default: undefined,
         },
         verbose: {
@@ -195,7 +195,7 @@ async function engine() {
     } else {
         const dev = argv.flags.dev ?? argv.flags.watch;
         const run = argv.flags.run ?? dev;
-        const configLoadingMode = argv.flags.configLoadingMode ?? (argv.flags.watch ? 'watch' : 'require');
+        const configLoadingMode = argv.flags.configLoadingMode ?? (argv.flags.watch ? 'watch' : 'import');
         const runtimeArgs = argv.flags.runtimeArgs;
         addRuntimeArgsFlagsFromEngineConfig(engineConfig, argv.flags, runtimeArgs);
 
