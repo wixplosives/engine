@@ -20,14 +20,8 @@ import { NodeEnvManager } from '@wixc3/engine-runtime-node';
 const featureEnvironmentsMapping = ${stringify(featureEnvironmentsMapping)};
 const configMapping = ${stringify(configMapping)};
 const meta = { url: ${moduleType === 'esm' ? 'import.meta.url' : 'pathToFileURL(__filename).href'} };
-const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
+export const manager = new NodeEnvManager(meta, featureEnvironmentsMapping, configMapping);
 
-manager.autoLaunch().then(({ port })=>{
-    console.log(\`[ENGINE]: http server is listening on http://localhost:\${port}\`);
-}).catch((e)=>{
-    process.exitCode = 1;
-    console.error(e);
-});
 `.trimStart();
 }
 
