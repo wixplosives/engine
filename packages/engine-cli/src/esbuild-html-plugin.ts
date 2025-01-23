@@ -42,7 +42,7 @@ export function htmlPlugin({
                     const cssPath = meta.cssBundle ? path.basename(meta.cssBundle) : undefined;
                     const htmlContent = deindento(`
                         |<!DOCTYPE html>
-                        |<html>
+                        |<html lang="en">
                         |    <head>
                         |        <meta charset="utf-8">
                         |        <title>${title}</title>
