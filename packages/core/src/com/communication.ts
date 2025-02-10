@@ -1,4 +1,4 @@
-import { isDisposable, SetMultiMap } from '@wixc3/patterns';
+import { isDisposable, SetMultiMap, Signal } from '@wixc3/patterns';
 import { deferred } from 'promise-assist';
 import type { ContextualEnvironment, Environment, EnvironmentMode } from '../entities/env.js';
 import { errorToJson } from '../helpers/index.js';
@@ -188,9 +188,9 @@ export class Communication {
         serviceComConfig: ServiceComConfig<T> = {},
     ): AsyncApi<T> {
         return new Proxy(Object.create(null), {
-            get: (obj, method) => {
+            get: (runtimeCache, key) => {
                 // let js runtime know that this is not thenable object
-                if (method === 'then') {
+                if (key === 'then') {
                     return undefined;
                 }
 
@@ -199,24 +199,55 @@ export class Communication {
                  * they used by the debugger and cause messages to be sent everywhere
                  * this behavior made debugging very hard and can cause errors and infinite loops
                  */
-                if (Object.hasOwn(Object.prototype, method)) {
-                    return Reflect.get(Object.prototype, method);
+                if (Object.hasOwn(Object.prototype, key)) {
+                    return Reflect.get(Object.prototype, key);
                 }
-                if (typeof method === 'string') {
-                    let runtimeMethod = obj[method];
-                    if (!runtimeMethod) {
-                        runtimeMethod = async (...args: unknown[]) =>
+                if (typeof key === 'string') {
+                    let runtimeValue = runtimeCache[key];
+                    if (!runtimeValue) {
+                        runtimeValue = async (...args: unknown[]) =>
                             this.callMethod(
                                 (await instanceToken).id,
                                 api,
-                                method,
+                                key,
                                 args,
                                 this.rootEnvId,
                                 serviceComConfig as Record<string, AnyServiceMethodOptions>,
                             );
-                        obj[method] = runtimeMethod;
+                        //////////// Signal handling ////////////
+                        const subSignalId = key + '.' + 'subscribe';
+                        const unsubSignalId = key + '.' + 'unsubscribe';
+                        (serviceComConfig as Record<string, AnyServiceMethodOptions>)[subSignalId] = {
+                            emitOnly: true,
+                            listener: true,
+                        };
+                        (serviceComConfig as Record<string, AnyServiceMethodOptions>)[unsubSignalId] = {
+                            emitOnly: true,
+                            removeListener: subSignalId,
+                        };
+                        runtimeValue.subscribe = async (fn: UnknownFunction) => {
+                            return this.callMethod(
+                                (await instanceToken).id,
+                                api,
+                                subSignalId,
+                                [fn],
+                                this.rootEnvId,
+                                serviceComConfig as Record<string, AnyServiceMethodOptions>,
+                            );
+                        };
+                        runtimeValue.unsubscribe = async (fn: UnknownFunction) => {
+                            return this.callMethod(
+                                (await instanceToken).id,
+                                api,
+                                unsubSignalId,
+                                [fn],
+                                this.rootEnvId,
+                                serviceComConfig as Record<string, AnyServiceMethodOptions>,
+                            );
+                        };
+                        runtimeCache[key] = runtimeValue;
                     }
-                    return runtimeMethod;
+                    return runtimeValue;
                 }
             },
         });
@@ -612,9 +643,14 @@ export class Communication {
 
     private apiCall(origin: string, api: string, method: string, args: unknown[]): unknown {
         if (this.apisOverrides[api]?.[method]) {
-            return this.apisOverrides[api][method](...[origin, ...args]);
+            return (this.apisOverrides[api][method] as UnknownFunction)(...[origin, ...args]);
         }
-        return this.apis[api]![method]!(...args);
+        if (method.includes('.')) {
+            const [apiName, methodName] = method.split('.') as [string, 'subscribe' | 'unsubscribe'];
+            const signal = this.apis[api]![apiName] as Signal<any>;
+            return signal[methodName](args[0] as UnknownFunction);
+        }
+        return (this.apis[api]![method] as UnknownFunction)(...args);
     }
 
     private unhandledMessage(message: Message): void {
