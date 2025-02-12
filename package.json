@@ -25,7 +25,7 @@
   "devDependencies": {
     "@file-services/memory": "^9.4.1",
     "@file-services/types": "^9.4.1",
-    "@playwright/browser-chromium": "^1.49.1",
+    "@playwright/browser-chromium": "^1.50.1",
     "@types/chai": "^5.0.1",
     "@types/chai-as-promised": "^8.0.1",
     "@types/cors": "^2.8.17",
@@ -33,7 +33,7 @@
     "@types/minimist": "^1.2.5",
     "@types/mocha": "^10.0.10",
     "@types/node": "20",
-    "@types/react": "^19.0.7",
+    "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@types/sinon": "^17.0.3",
     "@types/sinon-chai": "^4.0.0",
@@ -45,16 +45,16 @@
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.1",
     "create-temp-directory": "^2.4.0",
-    "esbuild": "^0.24.2",
-    "eslint": "^9.18.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.20.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "mocha": "^11.1.0",
     "mocha-web": "^2.0.1",
-    "playwright-core": "^1.49.1",
-    "prettier": "^3.4.2",
+    "playwright-core": "^1.50.1",
+    "prettier": "^3.5.0",
     "promise-assist": "^2.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -62,7 +62,7 @@
     "sinon": "^19.0.2",
     "sinon-chai": "^4.0.0",
     "typescript": "~5.7.3",
-    "typescript-eslint": "^8.21.0"
+    "typescript-eslint": "^8.24.0"
   },
   "license": "MIT"
 }
