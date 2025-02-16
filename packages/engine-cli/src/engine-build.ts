@@ -42,6 +42,7 @@ export interface RunEngineOptions {
     publicConfigsRoute?: string;
     configLoadingMode?: ConfigLoadingMode;
     staticBuild?: boolean;
+    customEntrypoints?: string;
     title?: string;
 }
 
@@ -66,6 +67,7 @@ export async function runEngine({
     publicConfigsRoute = 'configs',
     configLoadingMode = 'import',
     staticBuild = false,
+    customEntrypoints = engineConfig.customEntrypoints,
     title,
 }: RunEngineOptions = {}): Promise<{
     featureEnvironmentsMapping: FeatureEnvironmentMapping;
@@ -101,8 +103,11 @@ export async function runEngine({
     } = engineConfig;
 
     await importModules(rootDir, requiredPaths);
-    const cachedMetadata = forceAnalyze ? undefined : readMetadataFiles(outputPath);
-    const cachedEntryPoints = forceAnalyze ? undefined : readEntryPoints(outputPath);
+
+    // reading before cleaning
+    const cachedMetadata = forceAnalyze || customEntrypoints !== undefined ? undefined : readMetadataFiles(outputPath);
+    const cachedEntryPoints = forceAnalyze || customEntrypoints !== undefined ? undefined : readEntryPoints(outputPath);
+
     if (clean) {
         if (verbose) {
             console.log(`Cleaning ${outputPath}`);
@@ -146,7 +151,20 @@ export async function runEngine({
         return resolved;
     };
 
-    if (!cachedMetadata || !cachedEntryPoints) {
+    if (customEntrypoints) {
+        const result = readEntryPoints(customEntrypoints);
+        const customMetadata = readMetadataFiles(customEntrypoints);
+        if (!result) {
+            throw new Error(`Failed to read custom entrypoints from ${customEntrypoints}`);
+        }
+        featureEnvironmentsMapping = customMetadata?.featureEnvironmentsMapping || {
+            availableEnvironments: {},
+            featureToEnvironments: {},
+        };
+        configMapping = customMetadata?.configMapping || {};
+        entryPoints = result;
+        entryPointsPaths = result;
+    } else if (!cachedMetadata || !cachedEntryPoints) {
         const result = await analyze();
         featureEnvironmentsMapping = result.featureEnvironmentsMapping;
         configMapping = result.configMapping;

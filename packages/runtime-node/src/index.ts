@@ -6,7 +6,6 @@ export * from './core-node/parent-port-host.js';
 export * from './core-node/ws-node-host.js';
 export * from './environments.js';
 export * from './import-modules.js';
-export * from './ipc-environment.js';
 export * from './launch-http-server.js';
 export * from './load-top-level-config.js';
 export * from './node-env-manager.js';

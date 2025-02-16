@@ -8,6 +8,7 @@
     "test-fixtures/*",
     "test-fixtures/workspace/packages/*"
   ],
+  "sideEffects": false,
   "scripts": {
     "clean": "rimraf -g \"./packages/*/dist\" \"./examples/*/dist\" \"./test-fixtures/*/dist\" \"./test-fixtures/workspace/packages/*/dist\"",
     "build": "npm run build:typescript && npm run build:dashboard",

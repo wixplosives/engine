@@ -47,6 +47,7 @@ export interface EngineConfig {
     sourcesRoot?: string;
     favicon?: string;
     buildPlugins?: Plugin[] | OverrideConfigHook;
+    customEntrypoints?: string;
 
     /**
      * extra resolver conditions to add while building project.
