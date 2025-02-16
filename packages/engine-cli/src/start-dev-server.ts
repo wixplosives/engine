@@ -52,9 +52,9 @@ export async function launchServer({
         transports: ['websocket'],
     });
 
-    const close = async () => {
+    const close = () => {
         httpServer.closeAllConnections();
-        await socketServer.close();
+        return socketServer.close();
     };
 
     return {

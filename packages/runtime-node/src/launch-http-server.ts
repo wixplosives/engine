@@ -60,9 +60,9 @@ export async function launchEngineHttpServer({
     });
 
     return {
-        close: async () => {
+        close: () => {
             httpServer.closeAllConnections();
-            return await new Promise<void>((resolve, reject) => socketServer.close((err) => (err ? reject(err) : resolve())));
+            return socketServer.close();
         },
         port,
         app,
