@@ -18,7 +18,6 @@
     "@file-services/node": "^9.4.1",
     "@file-services/resolve": "^9.4.1",
     "@file-services/types": "^9.4.1",
-    "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/engine-core": "^50.0.1",
     "@wixc3/engine-runtime-node": "^50.0.1",
     "@wixc3/patterns": "^18.1.1",
