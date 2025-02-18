@@ -9,7 +9,7 @@ import {
 import { IDisposable, SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { WsServerHost } from './core-node/ws-node-host.js';
+import { WsServerHost } from './ws-node-host.js';
 import { resolveEnvironments } from './environments.js';
 import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server.js';
 import type { IStaticFeatureDefinition, PerformanceMetrics } from './types.js';

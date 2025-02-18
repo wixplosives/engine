@@ -2,7 +2,7 @@ import { BaseHost, type Message } from '@wixc3/engine-core';
 import type { ChildProcess } from 'node:child_process';
 import { SafeDisposable, type IDisposable } from '@wixc3/patterns';
 
-export const isParentProcess = (process: NodeJS.Process | ChildProcess): process is NodeJS.Process => {
+const isParentProcess = (process: NodeJS.Process | ChildProcess): process is NodeJS.Process => {
     return (process as NodeJS.Process).constructor.name === 'process';
 };
 
