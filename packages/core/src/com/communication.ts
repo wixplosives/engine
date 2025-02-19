@@ -574,7 +574,9 @@ export class Communication {
         for (const [dispatcherKey, { message, dispatcher }] of this.eventDispatchers) {
             if (dispatcherKey.endsWith(instanceId)) {
                 this.eventDispatchers.delete(dispatcherKey);
-                this.apiCall(message.origin, message.data.api, message.removeListener, [dispatcher]);
+                if (message.removeListener) {
+                    this.apiCall(message.origin, message.data.api, message.removeListener, [dispatcher]);
+                }
             }
         }
         for (const callbackRecord of this.pendingCallbacks.values()) {
@@ -675,9 +677,6 @@ export class Communication {
             }
         } else {
             if (methodConfig?.listener) {
-                if (!methodConfig.removeListener) {
-                    throw new Error(`removeListener is required for listener method ${method} of ${api}`);
-                }
                 const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
 
                 if (handlersBucket && handlersBucket.size !== 0) {
