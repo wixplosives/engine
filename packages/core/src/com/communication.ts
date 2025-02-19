@@ -990,8 +990,11 @@ export function declareComEmitter<T>(
     if (typeof onMethod !== 'string') {
         throw new Error('onMethod ref must be a string');
     }
+    if (typeof offMethod !== 'string') {
+        throw new Error('offMethod ref must be a string');
+    }
     return {
-        [onMethod]: { listener: true },
+        [onMethod]: { listener: true, removeListener: offMethod },
         [offMethod]: { removeListener: onMethod },
         ...(removeAll ? { [removeAll]: { removeAllListeners: onMethod } } : undefined),
     };
