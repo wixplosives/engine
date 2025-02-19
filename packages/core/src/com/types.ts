@@ -1,3 +1,4 @@
+import { Signal } from '@wixc3/patterns';
 import { SERVICE_CONFIG } from '../symbols.js';
 import { Message } from './message-types.js';
 
@@ -63,7 +64,9 @@ export type AsyncApi<T extends object> = {
           ? T[P]
           : T[P] extends (...args: infer Args) => infer R
             ? (...args: Args) => Promise<R>
-            : never;
+            : T[P] extends Signal<any>
+              ? Pick<T[P], 'subscribe' | 'unsubscribe'>
+              : never;
 } & {
     [K in Extract<keyof T, keyof object>]: never;
 };
@@ -117,5 +120,5 @@ export interface APIService {
 }
 
 export interface RemoteAPIServicesMapping {
-    [remoteServiceId: string]: Record<string, AnyFunction>;
+    [remoteServiceId: string]: Record<string, AnyFunction | { subscribe: AnyFunction; unsubscribe: AnyFunction }>;
 }
