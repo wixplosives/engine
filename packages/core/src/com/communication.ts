@@ -81,7 +81,7 @@ export class Communication {
     private pendingEnvs: SetMultiMap<string, () => void> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
     private handlers = new Map<string, Set<UnknownFunction>>();
-    private eventDispatchers: { [dispatcherId: string]: SerializableMethod } = {};
+    private eventDispatchers = new Map<string, { dispatcher: SerializableMethod; message: ListenMessage }>();
     private apis: RemoteAPIServicesMapping = {};
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<CommunicationOptions>;
@@ -265,18 +265,18 @@ export class Communication {
         serviceComConfig: Record<string, AnyServiceMethodOptions>,
     ): Promise<unknown> {
         return new Promise<unknown>((res, rej) => {
-            const callbackId = !serviceComConfig[method]?.emitOnly
-                ? this.idsCounter.next(this.messageIdPrefix)
-                : undefined;
+            const methodConfig = serviceComConfig[method];
 
-            if (this.isListenCall(args) || serviceComConfig[method]?.removeAllListeners) {
+            const callbackId = !methodConfig?.emitOnly ? this.idsCounter.next(this.messageIdPrefix) : undefined;
+
+            if (this.isListenCall(args) || methodConfig?.removeAllListeners) {
                 this.addOrRemoveListener(
                     envId,
                     api,
                     method,
                     callbackId,
                     origin,
-                    serviceComConfig,
+                    methodConfig,
                     args[0] as UnknownFunction,
                     res,
                     rej,
@@ -404,7 +404,7 @@ export class Communication {
                 acc[key] = value.size;
                 return acc;
             }, {}),
-            eventDispatchers: Object.keys(this.eventDispatchers),
+            eventDispatchers: Array.from(this.eventDispatchers.keys()),
             apis: Object.keys(this.apis),
             readyEnvs: Array.from(this.readyEnvs),
             environments: Object.entries(this.environments).reduce<Record<string, Record<string, string>>>(
@@ -571,6 +571,12 @@ export class Communication {
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
         delete this.environments[instanceId];
+        for (const [dispatcherKey, { message, dispatcher }] of this.eventDispatchers) {
+            if (dispatcherKey.endsWith(instanceId)) {
+                this.eventDispatchers.delete(dispatcherKey);
+                this.apiCall(message.origin, message.data.api, message.removeListener, [dispatcher]);
+            }
+        }
         for (const callbackRecord of this.pendingCallbacks.values()) {
             if (callbackRecord.message.to === instanceId) {
                 callbackRecord.reject(
@@ -629,22 +635,21 @@ export class Communication {
         method: string,
         callbackId: string | undefined,
         origin: string,
-        serviceComConfig: Record<string, AnyServiceMethodOptions>,
+        methodConfig: AnyServiceMethodOptions | undefined,
         fn: UnknownFunction,
         res: (value?: any) => void,
         rej: (reason: unknown) => void,
     ) {
-        const removeListenerRef =
-            serviceComConfig[method]?.removeAllListeners || serviceComConfig[method]?.removeListener;
+        const removeListenerRef = methodConfig?.removeAllListeners || methodConfig?.removeListener;
 
-        if (removeListenerRef) {
+        if (removeListenerRef && !methodConfig?.listener) {
             const listenerHandlerId = this.getHandlerId(envId, api, removeListenerRef);
             const listenerHandlersBucket = this.handlers.get(listenerHandlerId);
             if (!listenerHandlersBucket) {
                 res();
                 return;
             }
-            if (serviceComConfig[method]?.removeListener) {
+            if (methodConfig?.removeListener) {
                 listenerHandlersBucket.delete(fn);
             } else {
                 listenerHandlersBucket.clear();
@@ -669,7 +674,10 @@ export class Communication {
                 res();
             }
         } else {
-            if (serviceComConfig[method]?.listener) {
+            if (methodConfig?.listener) {
+                if (!methodConfig.removeListener) {
+                    throw new Error(`removeListener is required for listener method ${method} of ${api}`);
+                }
                 const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
 
                 if (handlersBucket && handlersBucket.size !== 0) {
@@ -688,6 +696,7 @@ export class Communication {
                             api,
                             method,
                         },
+                        removeListener: methodConfig.removeListener,
                         handlerId: this.createHandlerRecord(envId, api, method, fn),
                         callbackId,
                         origin,
@@ -787,9 +796,9 @@ export class Communication {
     }
     private async handleUnListen(message: UnListenMessage) {
         const namespacedHandlerId = message.handlerId + message.origin;
-        const dispatcher = this.eventDispatchers[namespacedHandlerId];
+        const dispatcher = this.eventDispatchers.get(namespacedHandlerId)?.dispatcher;
         if (dispatcher) {
-            delete this.eventDispatchers[namespacedHandlerId];
+            this.eventDispatchers.delete(namespacedHandlerId);
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
             if (message.callbackId) {
                 this.sendTo(message.from, {
@@ -806,10 +815,8 @@ export class Communication {
 
     private async handleListen(message: ListenMessage): Promise<void> {
         try {
-            const namespacedHandlerId = message.handlerId + message.origin;
+            const dispatcher = this.getDispatcher(message.from, message);
 
-            const dispatcher =
-                this.eventDispatchers[namespacedHandlerId] || this.createDispatcher(message.from, message);
             const data = await this.apiCall(message.origin, message.data.api, message.data.method, [dispatcher]);
 
             if (message.callbackId) {
@@ -884,19 +891,24 @@ export class Communication {
         }
     }
 
-    private createDispatcher(envId: string, message: ListenMessage): SerializableMethod {
+    private getDispatcher(envId: string, message: ListenMessage): SerializableMethod {
         const namespacedHandlerId = message.handlerId + message.origin;
-
-        return (this.eventDispatchers[namespacedHandlerId] = (...args: SerializableArguments) => {
-            this.sendTo(envId, {
-                to: envId,
-                from: this.rootEnvId,
-                type: 'event',
-                data: args,
-                handlerId: message.handlerId,
-                origin: this.rootEnvId,
-            });
-        });
+        if (this.eventDispatchers.has(namespacedHandlerId)) {
+            return this.eventDispatchers.get(namespacedHandlerId)!.dispatcher;
+        } else {
+            const dispatcher = (...args: SerializableArguments) => {
+                this.sendTo(envId, {
+                    to: envId,
+                    from: this.rootEnvId,
+                    type: 'event',
+                    data: args,
+                    handlerId: message.handlerId,
+                    origin: this.rootEnvId,
+                });
+            };
+            this.eventDispatchers.set(namespacedHandlerId, { dispatcher, message });
+            return dispatcher;
+        }
     }
 
     private isListenCall(args: unknown[]): boolean {

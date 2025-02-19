@@ -30,6 +30,7 @@ export interface ListenMessage extends BaseMessage {
     type: 'listen';
     data: RemoteCallAddress;
     handlerId: string;
+    removeListener: string;
 }
 
 export interface UnListenMessage extends BaseMessage {
