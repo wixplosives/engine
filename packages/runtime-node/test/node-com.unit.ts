@@ -126,6 +126,7 @@ describe('Socket communication', () => {
             {
                 sub: {
                     listener: true,
+                    removeListener: 'unsub',
                 },
                 unsub: {
                     removeListener: 'sub',

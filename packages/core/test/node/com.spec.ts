@@ -10,6 +10,7 @@ import {
     SERVICE_CONFIG,
     Service,
     Slot,
+    declareComEmitter,
     multiTenantMethod,
     type Message,
 } from '@wixc3/engine-core';
@@ -438,6 +439,53 @@ describe('Communication', () => {
             await echoServiceProxyFromServerToClient2.echo(testText),
             'after handshake is done - allow sending message from base to client2',
         ).to.eq(testText);
+    });
+
+    it('communication local clear remove listeners form registered services', async () => {
+        const echoService = {
+            handlers: new Set<(s: string) => void>(),
+            emit(s: string) {
+                for (const handler of this.handlers) {
+                    handler(s);
+                }
+            },
+            sub(fn: (s: string) => void) {
+                this.handlers.add(fn);
+            },
+            unsub(fn: (s: string) => void) {
+                this.handlers.delete(fn);
+            },
+        };
+        const echoServiceComID = { id: 'echoService' };
+
+        const client1RootHost = new BaseHost();
+        const serverRootHost = new BaseHost();
+
+        const client1 = new Communication(client1RootHost, 'client1');
+        const serverEnv = new Communication(serverRootHost, 'server');
+
+        // server env setup
+        const client1RemoteHost = client1RootHost.open();
+        serverEnv.registerMessageHandler(client1RemoteHost);
+        client1.registerEnv('server', client1RemoteHost);
+
+        serverEnv.registerAPI(echoServiceComID, echoService);
+
+        const proxy = client1.apiProxy<typeof echoService>(Promise.resolve({ id: 'server' }), echoServiceComID, {
+            ...declareComEmitter('sub', 'unsub'),
+        });
+        const logs: string[] = [];
+        await proxy.sub((e) => {
+            logs.push(`event:${e}`);
+        });
+        echoService.emit('1');
+        expect(logs).to.eql(['event:1']);
+
+        serverEnv.clearEnvironment('client1');
+
+        echoService.emit('2');
+        expect(logs).to.eql(['event:1']);
+        expect(echoService.handlers.size, 'handler was removed').to.eq(0);
     });
 
     it('supports answering forwarded message from a forwarded message', async () => {
