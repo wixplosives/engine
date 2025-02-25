@@ -50,7 +50,10 @@ export class NodeEnvManager implements IDisposable {
         private configMapping: ConfigurationEnvironmentMapping,
         private loadModules: (modulePaths: string[]) => Promise<unknown> = importModules,
     ) {}
-    public async autoLaunch(runtimeOptions = parseRuntimeOptions(), serverOptions: ILaunchHttpServerOptions = {}) {
+    public async autoLaunch(
+        runtimeOptions: Map<string, string | boolean | undefined>,
+        serverOptions: ILaunchHttpServerOptions = {},
+    ) {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
         const disposeMetricsListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         const verbose = Boolean(runtimeOptions.get('verbose'));
@@ -58,7 +61,7 @@ export class NodeEnvManager implements IDisposable {
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath, ...serverOptions });
-
+        runtimeOptions.set('devServerPort', port.toString());
         app.get<[string]>('/configs/*', (req, res) => {
             const reqEnv = req.query.env as string;
             if (typeof reqEnv !== 'string') {
