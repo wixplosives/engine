@@ -1,10 +1,13 @@
 import {
     AnyEnvironment,
-    BaseHost,
+    Communication,
     ConfigModule,
     IRunOptions,
+    Message,
     MultiCounter,
     parseInjectRuntimeConfigConfig,
+    Target,
+    UniversalWorkerHost,
 } from '@wixc3/engine-core';
 import { IDisposable, SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -89,14 +92,27 @@ export class NodeEnvManager implements IDisposable {
                 });
         });
 
-        const host = new WsServerHost(socketServer);
+        const clientsHost = new WsServerHost(socketServer);
+        const forwardingCom = new Communication(clientsHost, 'clients-host-com');
 
-        await this.runFeatureEnvironments(verbose, runtimeOptions, host);
+        const handleRegistrationOnMessage = ({ data, source }: { data: Message; source: Target }) => {
+            const knownClientHost = forwardingCom.getEnvironmentHost(data.from);
+            if (knownClientHost === undefined) {
+                forwardingCom.registerEnv(data.from, clientsHost);
+            } else if (knownClientHost !== source) {
+                console.log('PANIC!!!!!');
+                forwardingCom.clearEnvironment(data.from);
+                forwardingCom.registerEnv(data.from, knownClientHost);
+            }
+        };
+        clientsHost.addEventListener('message', handleRegistrationOnMessage);
+        await this.runFeatureEnvironments(verbose, runtimeOptions, forwardingCom);
 
         const disposeAutoLaunch = async () => {
             disposeMetricsListener();
             await this.closeAll();
-            await host.dispose();
+            clientsHost.removeEventListener('message', handleRegistrationOnMessage);
+            await clientsHost.dispose();
             await close();
         };
 
@@ -124,7 +140,7 @@ export class NodeEnvManager implements IDisposable {
     private async runFeatureEnvironments(
         verbose: boolean,
         runtimeOptions: Map<string, string | boolean | undefined>,
-        host: WsServerHost,
+        forwardingCom: Communication,
     ) {
         const featureName = runtimeOptions.get('feature');
         if (!featureName || typeof featureName !== 'string') {
@@ -143,7 +159,9 @@ export class NodeEnvManager implements IDisposable {
         }
 
         await Promise.all(
-            envNames.map((envName) => this.initializeWorkerEnvironment(envName, runtimeOptions, host, verbose)),
+            envNames.map((envName) =>
+                this.initializeWorkerEnvironment(envName, runtimeOptions, forwardingCom, verbose),
+            ),
         );
     }
 
@@ -177,7 +195,7 @@ export class NodeEnvManager implements IDisposable {
     async initializeWorkerEnvironment(
         envName: string,
         runtimeOptions: IRunOptions,
-        host: BaseHost | MessagePort,
+        forwardingCom: Communication,
         verbose: boolean,
     ) {
         const env = this.featureEnvironmentsMapping.availableEnvironments[envName];
@@ -187,7 +205,7 @@ export class NodeEnvManager implements IDisposable {
         const envInstanceId =
             env.endpointType === 'single' ? env.env : `${envName}/${this.envInstanceIdCounter.next(envName)}`;
         const worker = runWorker(envInstanceId, this.createEnvironmentFileUrl(envName), runtimeOptions);
-        const runningEnv = await connectWorkerToHost(envName, worker, host);
+        const runningEnv = await connectWorkerToProxyCom(envName, worker, forwardingCom);
 
         this.openEnvironments.add(envName, runningEnv);
         if (verbose) {
@@ -219,49 +237,33 @@ async function importModules(modulePaths: string[]) {
     return loadedModules;
 }
 
-function connectWorkerToHost(envName: string, worker: ReturnType<typeof runWorker>, host: BaseHost | MessagePort) {
-    type AnyMessage = { data?: any };
-    return new Promise<RunningNodeEnvironment>((res, rej) => {
-        const runningEnv: RunningNodeEnvironment = {
-            id: envName,
-            dispose: async () => {
-                worker.removeEventListener('message', handleWorkerMessage);
-                worker.removeEventListener('error', handleInitializeError);
-                host.removeEventListener('message', handleClientMessage);
-                if (process.env.ENGINE_GRACEFUL_TERMINATION !== 'false') {
-                    try {
-                        await rpcCall(worker, 'terminate', 15000);
-                    } catch (e) {
-                        console.error(`failed terminating environment gracefully ${envName}, terminating worker.`, e);
-                    }
+async function connectWorkerToProxyCom(
+    envName: string,
+    worker: ReturnType<typeof runWorker>,
+    forwardingCom: Communication,
+) {
+    const workerHost = new UniversalWorkerHost(worker, envName);
+    forwardingCom.registerMessageHandler(workerHost);
+    forwardingCom.registerEnv(envName, workerHost);
+    await forwardingCom.envReady(envName);
+    const runningEnv: RunningNodeEnvironment = {
+        id: envName,
+        dispose: async () => {
+            forwardingCom.clearEnvironment(envName);
+            if (process.env.ENGINE_GRACEFUL_TERMINATION !== 'false') {
+                try {
+                    await rpcCall(worker, 'terminate', 15000);
+                } catch (e) {
+                    console.error(`failed terminating environment gracefully ${envName}, terminating worker.`, e);
                 }
-                await worker.terminate();
-            },
-            getMetrics: async () => {
-                return getMetricsFromWorker(worker);
-            },
-        };
-        const ready = () => {
-            worker.removeEventListener('error', handleInitializeError);
-            res(runningEnv);
-        };
-        const handleWorkerMessage = (message: AnyMessage) => {
-            if (message.data?.type === 'ready') {
-                ready();
             }
-            host.postMessage(message.data);
-        };
-        const handleClientMessage = (message: AnyMessage) => {
-            worker.postMessage(message.data);
-        };
-        const handleInitializeError = (e: AnyMessage) => {
-            rej(new Error(`failed initializing environment ${envName}`, { cause: e.data }));
-        };
-
-        worker.addEventListener('message', handleWorkerMessage);
-        worker.addEventListener('error', handleInitializeError);
-        host.addEventListener('message', handleClientMessage);
-    });
+            await worker.terminate();
+        },
+        getMetrics: async () => {
+            return getMetricsFromWorker(worker);
+        },
+    };
+    return runningEnv;
 }
 
 export function parseRuntimeOptions() {
