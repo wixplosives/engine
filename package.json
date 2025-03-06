@@ -27,7 +27,7 @@
     "@file-services/types": "^9.4.1",
     "@playwright/browser-chromium": "^1.50.1",
     "@types/chai": "^5.0.1",
-    "@types/chai-as-promised": "^8.0.1",
+    "@types/chai-as-promised": "^8.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/minimist": "^1.2.5",
