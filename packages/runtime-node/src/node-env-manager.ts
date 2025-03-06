@@ -93,19 +93,20 @@ export class NodeEnvManager implements IDisposable {
         });
 
         const clientsHost = new WsServerHost(socketServer);
+        clientsHost.addEventListener('message', handleRegistrationOnMessage);
         const forwardingCom = new Communication(clientsHost, 'clients-host-com');
-
-        const handleRegistrationOnMessage = ({ data, source }: { data: Message; source: Target }) => {
+        function handleRegistrationOnMessage({ data }: { data: Message }) {
             const knownClientHost = forwardingCom.getEnvironmentHost(data.from);
             if (knownClientHost === undefined) {
                 forwardingCom.registerEnv(data.from, clientsHost);
-            } else if (knownClientHost !== source) {
-                console.log('PANIC!!!!!');
+            } else if (knownClientHost !== clientsHost) {
+                console.warn(
+                    `[ENGINE]: environment ${data.from} is already registered to a different host, reregistering`,
+                );
                 forwardingCom.clearEnvironment(data.from);
                 forwardingCom.registerEnv(data.from, knownClientHost);
             }
-        };
-        clientsHost.addEventListener('message', handleRegistrationOnMessage);
+        }
         await this.runFeatureEnvironments(verbose, runtimeOptions, forwardingCom);
 
         const disposeAutoLaunch = async () => {
