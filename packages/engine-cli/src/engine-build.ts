@@ -20,6 +20,7 @@ import { resolveRuntimeOptions } from './resolve-runtime-options.js';
 import type { EngineConfig } from './types.js';
 import { analyzeFeatures } from './find-features/analyze-features.js';
 import { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants.js';
+import { PreBuildConfig, runPreBuilds } from './pre-build.js';
 
 export interface RunEngineOptions {
     verbose?: boolean;
@@ -44,6 +45,7 @@ export interface RunEngineOptions {
     staticBuild?: boolean;
     customEntrypoints?: string;
     title?: string;
+    customPreBuildDist?: PreBuildConfig[];
 }
 
 export async function runEngine({
@@ -69,6 +71,7 @@ export async function runEngine({
     staticBuild = false,
     customEntrypoints = engineConfig.customEntrypoints,
     title,
+    customPreBuildDist = engineConfig.customPreBuildDist,
 }: RunEngineOptions = {}): Promise<{
     featureEnvironmentsMapping: FeatureEnvironmentMapping;
     configMapping: ConfigurationEnvironmentMapping;
@@ -197,6 +200,10 @@ export async function runEngine({
         title,
         favicon,
     });
+
+    if (customPreBuildDist) {
+        await runPreBuilds(rootDir, outputPath, customPreBuildDist, dev, buildConfigurations, buildTargets, true);
+    }
 
     if (watch) {
         if (shouldBuildWeb(buildTargets)) {

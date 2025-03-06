@@ -8,6 +8,7 @@ import type {
 } from '@wixc3/engine-runtime-node';
 import type { BuildOptions } from 'esbuild';
 import type io from 'socket.io';
+import { PreBuildConfig } from './pre-build.js';
 
 export interface IFeatureTarget {
     featureName?: string;
@@ -58,6 +59,7 @@ export interface EngineConfig {
     /** @default [".js", ".json"] */
     extensions?: string[];
     engineRuntimeArgsFlags?: Record<string, CliFlag<string | boolean>>;
+    customPreBuildDist?: PreBuildConfig[];
 }
 
 export interface StaticConfig {
