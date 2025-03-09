@@ -17,10 +17,10 @@ import { createBuildConfiguration } from './create-environments-build-configurat
 import { readEntryPoints, writeEntryPoints } from './entrypoint-files.js';
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints.js';
 import { resolveRuntimeOptions } from './resolve-runtime-options.js';
-import type { EngineConfig } from './types.js';
+import type { EngineConfig, PreBuildConfig } from './types.js';
 import { analyzeFeatures } from './find-features/analyze-features.js';
 import { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants.js';
-import { PreBuildConfig, runPreBuilds } from './pre-build.js';
+import { runPreBuilds } from './pre-build.js';
 
 export interface RunEngineOptions {
     verbose?: boolean;
@@ -202,7 +202,7 @@ export async function runEngine({
     });
 
     if (customPreBuildDist) {
-        await runPreBuilds(rootDir, outputPath, customPreBuildDist, dev, buildConfigurations, buildTargets, true);
+        await runPreBuilds(rootDir, outputPath, customPreBuildDist, dev, buildConfigurations, buildTargets, verbose);
     }
 
     if (watch) {

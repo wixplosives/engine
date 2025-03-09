@@ -1,11 +1,6 @@
 import esbuild from 'esbuild';
 import path from 'node:path';
-import { BuildConfiguration } from './types.js';
-
-export interface PreBuildConfig {
-    distName: string;
-    paths: string[];
-}
+import { BuildConfiguration, PreBuildConfig } from './types.js';
 
 export async function runPreBuilds(
     rootDir: string,

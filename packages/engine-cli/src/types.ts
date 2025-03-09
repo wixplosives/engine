@@ -8,7 +8,6 @@ import type {
 } from '@wixc3/engine-runtime-node';
 import type { BuildOptions } from 'esbuild';
 import type io from 'socket.io';
-import { PreBuildConfig } from './pre-build.js';
 
 export interface IFeatureTarget {
     featureName?: string;
@@ -117,4 +116,9 @@ export interface IFeatureModule {
      * it will be set as `'processing': 'webworker'`
      */
     usedContexts?: Record<string, string>;
+}
+
+export interface PreBuildConfig {
+    distName: string;
+    paths: string[];
 }
