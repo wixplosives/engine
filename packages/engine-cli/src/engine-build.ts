@@ -295,11 +295,11 @@ export async function runEngine({
     };
 }
 
-function shouldBuildWeb(buildTargets: 'node' | 'web' | 'both' | 'electron') {
+export function shouldBuildWeb(buildTargets: 'node' | 'web' | 'both' | 'electron') {
     return buildTargets === 'web' || buildTargets === 'both' || buildTargets === 'electron';
 }
 
-function shouldBuildNode(buildTargets: 'node' | 'web' | 'both' | 'electron') {
+export function shouldBuildNode(buildTargets: 'node' | 'web' | 'both' | 'electron') {
     return buildTargets === 'node' || buildTargets === 'both' || buildTargets === 'electron';
 }
 
