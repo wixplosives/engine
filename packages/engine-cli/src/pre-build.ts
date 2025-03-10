@@ -5,9 +5,7 @@ import { shouldBuildNode, shouldBuildWeb } from './engine-build.js';
 
 export async function runPreBuilds(
     rootDir: string,
-    outputPath: string,
     preBuildsPaths: string[],
-    dev: boolean,
     buildConfiguration: BuildConfiguration,
     buildTargets: 'node' | 'web' | 'both' | 'electron',
     verbose = false,

@@ -202,7 +202,7 @@ export async function runEngine({
     });
 
     if (customPreBuildDist) {
-        await runPreBuilds(rootDir, outputPath, customPreBuildDist, dev, buildConfigurations, buildTargets, verbose);
+        await runPreBuilds(rootDir, customPreBuildDist, buildConfigurations, buildTargets, verbose);
     }
 
     if (watch) {

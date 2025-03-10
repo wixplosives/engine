@@ -40,9 +40,7 @@ describe('runPreBuilds', () => {
 
         await runPreBuilds(
             mockSrcDir,
-            path.join(cwd(), 'output'),
             [filePath],
-            false,
             {
                 nodeConfig: { outdir: 'output/node' } as any,
                 webConfig: { outdir: 'output/web' } as any,
@@ -58,9 +56,7 @@ describe('runPreBuilds', () => {
     it('should not build if the paths are empty', async () => {
         await runPreBuilds(
             mockSrcDir,
-            path.join(cwd(), 'output'),
             [],
-            false,
             {
                 nodeConfig: { outdir: 'output/node' } as any,
                 webConfig: { outdir: 'output/web' } as any,
