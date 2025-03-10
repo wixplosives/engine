@@ -13,3 +13,4 @@ export { runLocalNodeManager } from './run-local-mode-manager.js';
 export * from './types.js';
 export type { IExecutableApplication, RunningFeature } from './types.js';
 export { checkWatchSignal } from './watch-signal.js';
+export { runPreBuilds } from './pre-build.js';

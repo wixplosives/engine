@@ -26,31 +26,33 @@ export async function runPreBuilds(
             continue;
         }
 
-        const outputDir = path.join(outputPath, distName);
-
-        if (verbose) {
-            console.log(`Building ${paths.length} files to ${outputDir}`);
-        }
-
         const entryPoints = paths.map((entryPath) => path.resolve(rootDir, entryPath));
 
         if (shouldBuildNode(buildTargets)) {
+            const outputDir = path.join(buildConfiguration.nodeConfig.outdir || '', distName);
+            if (verbose) {
+                console.log(`Building ${paths.length} files to ${outputDir}`);
+            }
             const { plugins: _plugins, ...configWithoutPlugins } = buildConfiguration.nodeConfig;
             const baseConfig: esbuild.BuildOptions = {
                 entryPoints,
-                outdir: outputDir,
                 ...configWithoutPlugins,
+                outdir: outputDir,
             };
 
             await esbuild.build(baseConfig);
         }
 
         if (shouldBuildWeb(buildTargets)) {
+            const outputDir = path.join(buildConfiguration.webConfig.outdir || '', distName);
+            if (verbose) {
+                console.log(`Building ${paths.length} files to ${outputDir}`);
+            }
             const { plugins: _plugins, ...configWithoutPlugins } = buildConfiguration.webConfig;
             const baseConfig: esbuild.BuildOptions = {
                 entryPoints,
-                outdir: outputDir,
                 ...configWithoutPlugins,
+                outdir: outputDir,
             };
 
             await esbuild.build(baseConfig);
