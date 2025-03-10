@@ -41,19 +41,14 @@ describe('runPreBuilds', () => {
         await runPreBuilds(
             mockSrcDir,
             path.join(cwd(), 'output'),
-            [
-                {
-                    distName: 'not-empty',
-                    paths: [filePath],
-                },
-            ],
+            [filePath],
             false,
             {
                 nodeConfig: { outdir: 'output/node' } as any,
                 webConfig: { outdir: 'output/web' } as any,
             },
             'both',
-            true,
+            false,
         );
 
         expect(existsSync(path.join(outputDir, 'node'))).to.be.true;
@@ -64,12 +59,7 @@ describe('runPreBuilds', () => {
         await runPreBuilds(
             mockSrcDir,
             path.join(cwd(), 'output'),
-            [
-                {
-                    distName: 'empty',
-                    paths: [],
-                },
-            ],
+            [],
             false,
             {
                 nodeConfig: { outdir: 'output/node' } as any,

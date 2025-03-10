@@ -58,7 +58,7 @@ export interface EngineConfig {
     /** @default [".js", ".json"] */
     extensions?: string[];
     engineRuntimeArgsFlags?: Record<string, CliFlag<string | boolean>>;
-    customPreBuildDist?: PreBuildConfig[];
+    customPreBuildDist?: string[];
 }
 
 export interface StaticConfig {
@@ -116,9 +116,4 @@ export interface IFeatureModule {
      * it will be set as `'processing': 'webworker'`
      */
     usedContexts?: Record<string, string>;
-}
-
-export interface PreBuildConfig {
-    distName: string;
-    paths: string[];
 }
