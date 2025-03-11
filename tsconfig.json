@@ -7,6 +7,7 @@
 
     { "path": "./packages/runtime-node/src" },
     { "path": "./packages/runtime-node/test" },
+    { "path": "./packages/runtime-node/test-kit" },
 
     { "path": "./packages/engine-cli/src" },
     { "path": "./packages/engine-cli/test" },
