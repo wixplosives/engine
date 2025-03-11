@@ -14,9 +14,7 @@ export async function runPreBuilds(
         return;
     }
 
-    if (verbose) {
-        console.log(`Running ${preBuildsPaths.length} pre-builds before main build...`);
-    }
+    console.log(`Running ${preBuildsPaths.length} pre-builds before main build...`);
 
     const entryPoints = preBuildsPaths.map((entryPath) => path.resolve(rootDir, entryPath));
 

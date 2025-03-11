@@ -206,6 +206,9 @@ export async function runEngine({
     }
 
     if (watch) {
+        if (watch && customPreBuildDist) {
+            console.log('Notice that pre-builds does not support watch mode');
+        }
         if (shouldBuildWeb(buildTargets)) {
             if (verbose) {
                 console.log('Starting web compilation in watch mode');
