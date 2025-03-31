@@ -64,13 +64,13 @@ export class NodeEnvManager implements IDisposable {
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath, ...serverOptions });
         runtimeOptions.set('devServerPort', port.toString());
-        app.get<{ configName: string }>('/configs/*configName', async (req, res) => {
+        app.get<{ configName: string[] }>('/configs/*configName', async (req, res) => {
             const reqEnv = req.query.env as string;
             if (typeof reqEnv !== 'string') {
                 res.status(400).end('env is required');
                 return;
             }
-            const { configName: requestedConfig } = req.params;
+            const requestedConfig = req.params.configName.join('/');
             if (verbose) {
                 console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
             }
