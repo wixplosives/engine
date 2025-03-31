@@ -1,6 +1,6 @@
 {
   "name": "@example/file-server",
-  "version": "50.4.0",
+  "version": "50.5.0",
   "private": true,
   "type": "module",
   "scripts": {
