@@ -19,7 +19,7 @@
     "@wixc3/patterns": "^18.2.0",
     "cors": "^2.8.5",
     "create-listening-server": "^2.1.0",
-    "express": "^4.21.2",
+    "express": "^5.1.0",
     "minimist": "^1.2.8",
     "socket.io": "^4.8.1"
   },

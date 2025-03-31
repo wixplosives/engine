@@ -64,13 +64,13 @@ export class NodeEnvManager implements IDisposable {
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath, ...serverOptions });
         runtimeOptions.set('devServerPort', port.toString());
-        app.get<[string]>('/configs/*', (req, res) => {
+        app.get<{ configName: string }>('/configs/*configName', async (req, res) => {
             const reqEnv = req.query.env as string;
             if (typeof reqEnv !== 'string') {
                 res.status(400).end('env is required');
                 return;
             }
-            const requestedConfig = req.params[0];
+            const { configName: requestedConfig } = req.params;
             if (verbose) {
                 console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
             }
@@ -79,16 +79,8 @@ export class NodeEnvManager implements IDisposable {
                 return;
             }
 
-            this.loadEnvironmentConfigurations(reqEnv, requestedConfig, verbose)
-                .then((configs) => {
-                    return res.json(
-                        (topLevelConfigInject.length ? [...configs, topLevelConfigInject] : configs).flat(),
-                    );
-                })
-                .catch((e) => {
-                    console.error(e);
-                    res.status(500).end(e.stack);
-                });
+            const configs = await this.loadEnvironmentConfigurations(reqEnv, requestedConfig, verbose);
+            res.json((topLevelConfigInject.length ? [...configs, topLevelConfigInject] : configs).flat());
         });
 
         const clientsHost = new WsServerHost(socketServer);
