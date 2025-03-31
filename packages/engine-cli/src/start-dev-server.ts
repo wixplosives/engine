@@ -39,7 +39,7 @@ export async function launchServer({
 
     app.use('/favicon.ico', noContentHandler);
 
-    const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app);
+    const { port, httpServer } = await safeListeningHttpServer(httpServerPort, app as import('http').RequestListener);
 
     const socketServer = new io.Server(httpServer, {
         cors: {},

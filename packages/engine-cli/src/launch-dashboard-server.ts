@@ -155,7 +155,7 @@ function runOnDemandSingleEnvironment(
             {
                 routeMiddlewares: [
                     {
-                        path: '*',
+                        path: '*splat',
                         handlers: blockDuringBuild(waitForBuildReady),
                     },
                 ],
