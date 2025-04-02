@@ -11,6 +11,7 @@ import {
 import { IDisposable, SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
+import { extname } from 'node:path';
 import { WsServerHost } from './core-node/ws-node-host.js';
 import { resolveEnvironments } from './environments.js';
 import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server.js';
@@ -180,8 +181,7 @@ export class NodeEnvManager implements IDisposable {
         if (!env) {
             throw new Error(`environment ${envName} not found`);
         }
-        const jsOutExtension = this.importMeta.url.endsWith('.mjs') ? '.mjs' : '.js';
-        return new URL(`${env.env}.${env.envType}${jsOutExtension}`, this.importMeta.url);
+        return new URL(`${env.env}.${env.envType}${extname(this.importMeta.url)}`, this.importMeta.url);
     }
 
     async initializeWorkerEnvironment(
