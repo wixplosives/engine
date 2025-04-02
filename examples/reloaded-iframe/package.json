@@ -1,6 +1,6 @@
 {
   "name": "@example/reloaded-iframe",
-  "version": "50.5.1",
+  "version": "50.6.0",
   "private": true,
   "type": "module",
   "scripts": {
