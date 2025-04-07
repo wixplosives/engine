@@ -12,7 +12,7 @@
     "test": "mocha \"dist/test/**/*.unit.js\""
   },
   "dependencies": {
-    "@file-services/node": "^9.4.1",
+    "@file-services/node": "^10.0.0",
     "@wixc3/common": "^18.2.0",
     "@wixc3/engine-core": "^50.6.0",
     "@wixc3/isomorphic-worker": "^2.0.0",
