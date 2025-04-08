@@ -10,7 +10,7 @@
     "test:unit": "mocha \"dist/test/**/*.unit.js\""
   },
   "dependencies": {
-    "@file-services/node": "^10.0.0"
+    "@file-services/node": "^10.0.1"
   },
   "license": "UNLICENSED"
 }
