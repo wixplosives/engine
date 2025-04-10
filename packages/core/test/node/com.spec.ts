@@ -584,6 +584,27 @@ describe('Communication', () => {
 
         await expect(apiProxy.test()).to.be.rejected;
     });
+    it('should report env re connection', () => {
+        const onEnvReconnect = spy();
+        const hostA = new BaseHost();
+        const hostB = new BaseHost();
+        const comA = new Communication(hostA, 'A');
+        const comB = new Communication(hostB, 'B'); // ready is ignored since nothing is connected
+        comA.registerEnv('B', hostB);
+        comA.registerMessageHandler(hostB);
+        comB.registerEnv('A', hostA);
+        comB.registerMessageHandler(hostA);
+
+        comA.subscribeToEnvironmentReconnect(onEnvReconnect);
+
+        new Communication(hostB, 'B'); // first ready
+
+        expect(onEnvReconnect).to.have.have.callCount(0);
+
+        new Communication(hostB, 'B'); // re-connect
+
+        expect(onEnvReconnect).to.have.have.callCount(1);
+    });
 });
 
 describe('environment-dependencies communication', () => {

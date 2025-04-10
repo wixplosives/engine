@@ -89,6 +89,7 @@ export class Communication {
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposeListeners = new Set<(envId: string) => void>();
+    private reConnectListeners = new Set<(envId: string) => void>();
     private pendingCallbacks = new Map<string, CallbackRecord<unknown>>();
     private messageIdPrefix: string;
     // manual DEBUG_MODE
@@ -177,6 +178,12 @@ export class Communication {
     }
     public unsubscribeToEnvironmentDispose(handler: (envId: string) => void) {
         this.disposeListeners.delete(handler);
+    }
+    public subscribeToEnvironmentReconnect(handler: (envId: string) => void) {
+        this.reConnectListeners.add(handler);
+    }
+    public unsubscribeToEnvironmentReconnect(handler: (envId: string) => void) {
+        this.reConnectListeners.delete(handler);
     }
 
     /**
@@ -497,6 +504,7 @@ export class Communication {
 
         this.locallyClear(this.rootEnvId);
         this.disposeListeners.clear();
+        this.reConnectListeners.clear();
         for (const { timerId } of this.pendingCallbacks.values()) {
             clearTimeout(timerId);
         }
@@ -772,6 +780,7 @@ export class Communication {
     }
 
     public handleReady({ from }: { from: string }): void {
+        const wasEnvironmentAlreadyReady = this.readyEnvs.has(from);
         this.readyEnvs.add(from);
         const pendingEnvCb = this.pendingEnvs.get(from);
         if (pendingEnvCb) {
@@ -790,6 +799,10 @@ export class Communication {
             }
             for (const cb of pendingEnvCb) {
                 cb();
+            }
+        } else if (wasEnvironmentAlreadyReady) {
+            for (const reConnectHandler of this.reConnectListeners) {
+                reConnectHandler(from);
             }
         }
     }
