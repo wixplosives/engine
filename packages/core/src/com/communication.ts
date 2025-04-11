@@ -65,6 +65,7 @@ export interface CommunicationOptions {
     warnOnSlow?: boolean;
     publicPath?: string;
     connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
+    apis?: RemoteAPIServicesMapping;
 }
 
 /**
@@ -80,15 +81,16 @@ export class Communication {
     private readonly slowThreshold = 5_000; // 5 seconds
     private pendingEnvs: SetMultiMap<string, () => void> = new SetMultiMap();
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
-    private handlers = new Map<string, Set<UnknownFunction>>();
+    private handlers = new Map<string, { message: ListenMessage; callbacks: Set<UnknownFunction> }>();
     private eventDispatchers = new Map<string, { dispatcher: SerializableMethod; message: ListenMessage }>();
-    private apis: RemoteAPIServicesMapping = {};
+    private apis: RemoteAPIServicesMapping;
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<CommunicationOptions>;
     private readyEnvs = new Set<string>();
     private environments: { [environmentId: string]: EnvironmentRecord } = {};
     private messageHandlers = new WeakMap<Target, (options: { data: null | Message }) => void>();
     private disposeListeners = new Set<(envId: string) => void>();
+    private reConnectListeners = new Set<(envId: string) => void>();
     private pendingCallbacks = new Map<string, CallbackRecord<unknown>>();
     private messageIdPrefix: string;
     // manual DEBUG_MODE
@@ -105,6 +107,7 @@ export class Communication {
             warnOnSlow: this.DEBUG,
             publicPath: '',
             connectedEnvironments: {},
+            apis: {},
             ...options,
         };
         this.rootEnvId = id;
@@ -113,7 +116,7 @@ export class Communication {
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
         this.messageIdPrefix = `c_${this.rootEnvId}_${Math.random().toString(36).slice(2)}`;
-
+        this.apis = this.options.apis;
         for (const [id, envEntry] of Object.entries(this.options.connectedEnvironments)) {
             if (envEntry.registerMessageHandler) {
                 this.registerMessageHandler(envEntry.host);
@@ -177,6 +180,12 @@ export class Communication {
     }
     public unsubscribeToEnvironmentDispose(handler: (envId: string) => void) {
         this.disposeListeners.delete(handler);
+    }
+    public subscribeToEnvironmentReconnect(handler: (envId: string) => void) {
+        this.reConnectListeners.add(handler);
+    }
+    public unsubscribeToEnvironmentReconnect(handler: (envId: string) => void) {
+        this.reConnectListeners.delete(handler);
     }
 
     /**
@@ -400,8 +409,8 @@ export class Communication {
             rootEnvId: this.rootEnvId,
             pendingEnvs: countValues(this.pendingEnvs),
             pendingMessages: countValues(this.pendingMessages),
-            handlers: Array.from(this.handlers).reduce<Record<string, number>>((acc, [key, value]) => {
-                acc[key] = value.size;
+            handlers: Array.from(this.handlers).reduce<Record<string, number>>((acc, [key, { callbacks }]) => {
+                acc[key] = callbacks.size;
                 return acc;
             }, {}),
             eventDispatchers: Array.from(this.eventDispatchers.keys()),
@@ -497,6 +506,7 @@ export class Communication {
 
         this.locallyClear(this.rootEnvId);
         this.disposeListeners.clear();
+        this.reConnectListeners.clear();
         for (const { timerId } of this.pendingCallbacks.values()) {
             clearTimeout(timerId);
         }
@@ -571,14 +581,7 @@ export class Communication {
         this.pendingMessages.deleteKey(instanceId);
         this.pendingEnvs.deleteKey(instanceId);
         delete this.environments[instanceId];
-        for (const [dispatcherKey, { message, dispatcher }] of this.eventDispatchers) {
-            if (dispatcherKey.endsWith(instanceId)) {
-                this.eventDispatchers.delete(dispatcherKey);
-                if (message.removeListener) {
-                    this.apiCall(message.origin, message.data.api, message.removeListener, [dispatcher]);
-                }
-            }
-        }
+        this.clearEventDispatchersByEnvId(instanceId);
         for (const callbackRecord of this.pendingCallbacks.values()) {
             if (callbackRecord.message.to === instanceId) {
                 callbackRecord.reject(
@@ -588,6 +591,17 @@ export class Communication {
         }
         for (const dispose of this.disposeListeners) {
             dispose(instanceId);
+        }
+    }
+
+    private clearEventDispatchersByEnvId(instanceId: string) {
+        for (const [dispatcherKey, { message, dispatcher }] of this.eventDispatchers) {
+            if (dispatcherKey.endsWith(instanceId)) {
+                this.eventDispatchers.delete(dispatcherKey);
+                if (message.removeListener) {
+                    this.apiCall(message.origin, message.data.api, message.removeListener, [dispatcher]);
+                }
+            }
         }
     }
 
@@ -652,11 +666,11 @@ export class Communication {
                 return;
             }
             if (methodConfig?.removeListener) {
-                listenerHandlersBucket.delete(fn);
+                listenerHandlersBucket.callbacks.delete(fn);
             } else {
-                listenerHandlersBucket.clear();
+                listenerHandlersBucket.callbacks.clear();
             }
-            if (listenerHandlersBucket.size === 0) {
+            if (listenerHandlersBucket.callbacks.size === 0) {
                 // send remove handler call
                 const message: UnListenMessage = {
                     to: envId,
@@ -679,12 +693,12 @@ export class Communication {
             if (methodConfig?.listener) {
                 const handlersBucket = this.handlers.get(this.getHandlerId(envId, api, method));
 
-                if (handlersBucket && handlersBucket.size !== 0) {
-                    if (handlersBucket.has(fn)) {
+                if (handlersBucket && handlersBucket.callbacks.size !== 0) {
+                    if (handlersBucket.callbacks.has(fn)) {
                         const handlerId = this.getHandlerId(envId, api, method);
                         throw new DuplicateRegistrationError(handlerId, 'Listener');
                     }
-                    handlersBucket.add(fn);
+                    handlersBucket.callbacks.add(fn);
                     res();
                 } else {
                     const message: ListenMessage = {
@@ -696,10 +710,11 @@ export class Communication {
                             method,
                         },
                         removeListener: methodConfig.removeListener,
-                        handlerId: this.createHandlerRecord(envId, api, method, fn),
+                        handlerId: '',
                         callbackId,
                         origin,
                     };
+                    message.handlerId = this.createHandlerRecord(envId, api, method, fn, message);
 
                     this.callWithCallback(envId, message, callbackId, res, rej);
                 }
@@ -766,12 +781,13 @@ export class Communication {
         if (!handlers) {
             return;
         }
-        for (const handler of handlers) {
+        for (const handler of handlers.callbacks) {
             handler(...message.data);
         }
     }
 
     public handleReady({ from }: { from: string }): void {
+        const wasEnvironmentAlreadyReady = this.readyEnvs.has(from);
         this.readyEnvs.add(from);
         const pendingEnvCb = this.pendingEnvs.get(from);
         if (pendingEnvCb) {
@@ -790,6 +806,20 @@ export class Communication {
             }
             for (const cb of pendingEnvCb) {
                 cb();
+            }
+        } else if (wasEnvironmentAlreadyReady) {
+            // clear previous dispatchers
+            this.clearEventDispatchersByEnvId(from);
+            // re-register listeners
+            for (const { message } of this.handlers.values()) {
+                // run over listeners that were connected to the previous env
+                if (message.to === from) {
+                    // resend listener registration
+                    this.sendTo(message.to, { ...message, callbackId: undefined });
+                }
+            }
+            for (const reConnectHandler of this.reConnectListeners) {
+                reConnectHandler(from);
             }
         }
     }
@@ -921,7 +951,13 @@ export class Communication {
     private getHandlerId(envId: string, api: string, method: string) {
         return `${this.createHandlerIdPrefix({ from: this.rootEnvId, to: envId })}${api}@${method}`;
     }
-    private createHandlerRecord(envId: string, api: string, method: string, fn: UnknownFunction): string {
+    private createHandlerRecord(
+        envId: string,
+        api: string,
+        method: string,
+        fn: UnknownFunction,
+        message: ListenMessage,
+    ): string {
         const handlerId = this.getHandlerId(envId, api, method);
         const handlersBucket = this.handlers.get(handlerId);
         if (!handlersBucket) {
@@ -931,7 +967,9 @@ export class Communication {
                 }
             });
         }
-        handlersBucket ? handlersBucket.add(fn) : this.handlers.set(handlerId, new Set([fn]));
+        handlersBucket
+            ? handlersBucket.callbacks.add(fn)
+            : this.handlers.set(handlerId, { message, callbacks: new Set([fn]) });
         return handlerId;
     }
     private createCallbackRecord(
