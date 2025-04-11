@@ -65,6 +65,7 @@ export interface CommunicationOptions {
     warnOnSlow?: boolean;
     publicPath?: string;
     connectedEnvironments?: { [environmentId: string]: ConfigEnvironmentRecord };
+    apis?: RemoteAPIServicesMapping;
 }
 
 /**
@@ -82,7 +83,7 @@ export class Communication {
     private pendingMessages = new SetMultiMap<string, UnknownFunction>();
     private handlers = new Map<string, { message: ListenMessage; callbacks: Set<UnknownFunction> }>();
     private eventDispatchers = new Map<string, { dispatcher: SerializableMethod; message: ListenMessage }>();
-    private apis: RemoteAPIServicesMapping = {};
+    private apis: RemoteAPIServicesMapping;
     private apisOverrides: RemoteAPIServicesMapping = {};
     private options: Required<CommunicationOptions>;
     private readyEnvs = new Set<string>();
@@ -106,6 +107,7 @@ export class Communication {
             warnOnSlow: this.DEBUG,
             publicPath: '',
             connectedEnvironments: {},
+            apis: {},
             ...options,
         };
         this.rootEnvId = id;
@@ -114,7 +116,7 @@ export class Communication {
         this.registerEnv(id, host);
         this.environments['*'] = { id, host };
         this.messageIdPrefix = `c_${this.rootEnvId}_${Math.random().toString(36).slice(2)}`;
-
+        this.apis = this.options.apis;
         for (const [id, envEntry] of Object.entries(this.options.connectedEnvironments)) {
             if (envEntry.registerMessageHandler) {
                 this.registerMessageHandler(envEntry.host);
