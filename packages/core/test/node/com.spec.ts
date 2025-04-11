@@ -605,6 +605,50 @@ describe('Communication', () => {
 
         expect(onEnvReconnect).to.have.have.callCount(1);
     });
+    it('should auto connect event listeners when env is re-connected', async () => {
+        const onEventReconnect = spy();
+        const onEventEmitterCall = spy();
+        const hostA = new BaseHost('A-host');
+        const hostB = hostA.open('B-host');
+        const comA = new Communication(hostA, 'A');
+        const comB_api1 = { service: getMockApi() };
+        const comB = new Communication(hostB, 'B', undefined, undefined, undefined, { apis: comB_api1 });
+        comA.registerEnv('B', hostB);
+        comB.registerEnv('A', hostA);
+        comA.subscribeToEnvironmentReconnect(onEventReconnect);
+
+        // setup api between comA and comB
+        const apiProxy = comA.apiProxy<typeof comB_api1.service>(
+            { id: 'B' },
+            { id: 'service' },
+            { listen: { listener: true, emitOnly: true } },
+        );
+
+        await apiProxy.listen(onEventEmitterCall);
+
+        comB_api1.service.invoke();
+
+        await waitFor(() => {
+            expect(onEventEmitterCall, 'invoked event before reconnect').to.have.have.callCount(1);
+        });
+
+        // simulate unavailable communication
+        comB.removeMessageHandler(hostB);
+        // reconnect
+        const comB_api2 = { service: getMockApi() };
+        new Communication(hostB, 'B', undefined, undefined, undefined, { apis: comB_api2 });
+
+        await waitFor(() => {
+            expect(onEventReconnect, 'reconnected').to.been.calledWith('B');
+            expect(comB_api2.service.getListenersCount(), 'event handler re-register').to.eq(1);
+        });
+
+        comB_api2.service.invoke();
+
+        await waitFor(() => {
+            expect(onEventEmitterCall, 'invoked event after reconnect').to.have.have.callCount(2);
+        });
+    });
 });
 
 describe('environment-dependencies communication', () => {
