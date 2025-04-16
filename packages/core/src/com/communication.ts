@@ -134,12 +134,12 @@ export class Communication {
     /**
      * Registers environments that spawned in the same execution context as the root environment.
      */
-    public registerEnv(id: string, host: Target): void {
+    public registerEnv(id: string, host: Target, forceRegister: boolean = false): void {
         if (this.DEBUG) {
             console.debug(REGISTER_ENV(id, this.rootEnvId));
         }
         const existingEnv = this.environments[id];
-        if (!existingEnv) {
+        if (!existingEnv || forceRegister) {
             this.environments[id] = { id, host } as EnvironmentRecord;
         } else if (existingEnv.host !== host) {
             throw new DuplicateRegistrationError(id, 'Environment');
@@ -470,12 +470,13 @@ export class Communication {
         return true;
     }
     private autoRegisterEnvFromMessage(message: Message, source: Target) {
-        if (!this.environments[message.from]) {
+        const forceRegister = message.type === 'ready';
+        if (!this.environments[message.from] || forceRegister) {
             if (this.DEBUG) {
                 console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(redactArguments(message), this.rootEnvId));
             }
             if (this.validateRegistration(source, message)) {
-                this.registerEnv(message.from, source);
+                this.registerEnv(message.from, source, forceRegister);
             }
         }
         if (!this.environments[message.origin]) {
@@ -483,7 +484,7 @@ export class Communication {
                 console.debug(MESSAGE_FROM_UNKNOWN_ENVIRONMENT(redactArguments(message), this.rootEnvId), 'origin');
             }
             if (this.validateRegistration(source, message)) {
-                this.registerEnv(message.origin, source);
+                this.registerEnv(message.origin, source, forceRegister);
             }
         }
     }
