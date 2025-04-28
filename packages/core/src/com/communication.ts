@@ -498,7 +498,7 @@ export class Communication {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
             }
-            if (isDisposable(host)) {
+            if (!isCrossOriginWindow(host) && isDisposable(host)) {
                 await host.dispose();
             }
             this.removeMessageHandler(host);
@@ -1046,4 +1046,14 @@ function countValues(set: SetMultiMap<string, unknown>) {
         result[key]++;
     }
     return result;
+}
+function isCrossOriginWindow(host: Target) {
+    try {
+        // cross origin window will throw an error
+        // when trying to access the name property
+        host.name;
+    } catch (e) {
+        return true;
+    }
+    return false;
 }
