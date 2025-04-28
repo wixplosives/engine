@@ -1052,7 +1052,7 @@ function isCrossOriginWindow(host: Target) {
         // cross origin window will throw an error
         // when trying to access the name property
         host.name;
-    } catch (e) {
+    } catch {
         return true;
     }
     return false;
