@@ -51,7 +51,7 @@
     "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "mocha": "^11.1.0",
+    "mocha": "^11.2.2",
     "mocha-web": "^2.1.0",
     "playwright-core": "^1.52.0",
     "prettier": "^3.5.3",
