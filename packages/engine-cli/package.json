@@ -3,7 +3,7 @@
   "version": "50.8.2",
   "type": "module",
   "bin": {
-    "engine": "./bin/engine.mjs"
+    "engine": "./bin/engine.js"
   },
   "scripts": {
     "test": "mocha \"dist/test/**/*.unit.js\""

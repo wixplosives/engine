@@ -13,7 +13,7 @@
     "clean": "rimraf -g \"./packages/*/dist\" \"./examples/*/dist\" \"./test-fixtures/*/dist\" \"./test-fixtures/workspace/packages/*/dist\"",
     "build": "npm run build:typescript && npm run build:dashboard",
     "build:typescript": "tsc --build",
-    "build:dashboard": "node build-dashboard.mjs",
+    "build:dashboard": "node build-dashboard.js",
     "lint": "eslint",
     "prestart": "npm run build",
     "start": "engine --dev",
