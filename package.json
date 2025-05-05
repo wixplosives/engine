@@ -26,7 +26,7 @@
     "@file-services/memory": "^10.0.1",
     "@file-services/types": "^10.0.1",
     "@playwright/browser-chromium": "^1.52.0",
-    "@types/chai": "^5.2.1",
+    "@types/chai": "^5.2.2",
     "@types/chai-as-promised": "^8.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
@@ -62,7 +62,7 @@
     "sinon": "^20.0.0",
     "sinon-chai": "^4.0.0",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.31.1"
+    "typescript-eslint": "^8.32.0"
   },
   "license": "MIT"
 }
