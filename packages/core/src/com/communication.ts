@@ -550,7 +550,9 @@ export class Communication {
             }
         }
     }
-
+    public registerPendingEnvironment(instanceId: string, cb = () => {}): void {
+        this.pendingEnvs.add(instanceId, cb);
+    }
     public envReady(instanceId: string): Promise<void> {
         if (this.readyEnvs.has(instanceId)) {
             return Promise.resolve();
