@@ -3,7 +3,6 @@ import { nodeFs as fs } from '@file-services/node';
 import {
     BaseHost,
     COM,
-    Communication,
     RuntimeEngine,
     flattenTree,
     type AnyEnvironment,
@@ -11,15 +10,7 @@ import {
     type Running,
     type TopLevelConfig,
 } from '@wixc3/engine-core';
-import {
-    ENGINE_ROOT_ENVIRONMENT_ID,
-    IStaticFeatureDefinition,
-    METADATA_PROVIDER_ENV_ID,
-    MetadataCollectionAPI,
-    loadTopLevelConfigs,
-    metadataApiToken,
-    runNodeEnvironment,
-} from '@wixc3/engine-runtime-node';
+import { ENGINE_ROOT_ENVIRONMENT_ID, loadTopLevelConfigs, runNodeEnvironment } from '@wixc3/engine-runtime-node';
 import { EngineConfig, IFeatureDefinition } from './types.js';
 import { findFeatures } from './find-features/analyze-features.js';
 import { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants.js';
@@ -93,7 +84,7 @@ async function runEngineEnvironment<ENV extends AnyEnvironment>({
     basePath = process.cwd(),
     featureDiscoveryRoot,
 }: IRunNodeEnvironmentOptions<ENV>): Promise<RuntimeEngine<ENV>> {
-    const { features, configurations, requiredModules } = await getFeaturesMemo(basePath, featureDiscoveryRoot);
+    const { features, configurations } = await getFeaturesMemo(basePath, featureDiscoveryRoot);
     const { env: envName, envType } = env;
     if (configName) {
         config = [...(await loadTopLevelConfigs(configName, configurations, envName)), ...config];
@@ -116,31 +107,6 @@ async function runEngineEnvironment<ENV extends AnyEnvironment>({
     }
 
     const rootEngineEnvHost = new BaseHost();
-    const com = new Communication(rootEngineEnvHost, ENGINE_ROOT_ENVIRONMENT_ID);
-
-    const staticFeatures = [...features].map(([featureName, feature]) => [featureName, feature.toJSON()]) as [
-        featureName: string,
-        featureDefinition: IStaticFeatureDefinition,
-    ][];
-
-    com.registerAPI<MetadataCollectionAPI>(metadataApiToken, {
-        getRuntimeArguments: () => {
-            return {
-                basePath: process.cwd(),
-                config: [],
-                featureName,
-                features: staticFeatures,
-                outputPath: process.cwd(),
-                nodeEntryPath: '',
-                runtimeOptions: Object.entries(runtimeOptions),
-                requiredModules,
-            };
-        },
-    });
-
-    const metadataProviderHost = new BaseHost();
-    metadataProviderHost.name = METADATA_PROVIDER_ENV_ID;
-    com.registerEnv(METADATA_PROVIDER_ENV_ID, metadataProviderHost);
 
     config.push(
         COM.configure({
@@ -149,10 +115,6 @@ async function runEngineEnvironment<ENV extends AnyEnvironment>({
                     [ENGINE_ROOT_ENVIRONMENT_ID]: {
                         id: ENGINE_ROOT_ENVIRONMENT_ID,
                         host: rootEngineEnvHost,
-                    },
-                    [METADATA_PROVIDER_ENV_ID]: {
-                        id: METADATA_PROVIDER_ENV_ID,
-                        host: metadataProviderHost,
                     },
                 },
             },

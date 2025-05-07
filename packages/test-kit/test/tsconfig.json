@@ -3,12 +3,5 @@
   "compilerOptions": {
     "outDir": "../dist/test"
   },
-  "references": [
-    {
-      "path": "../src"
-    },
-    {
-      "path": "../../../test-fixtures/worker-thread/src"
-    }
-  ]
+  "references": [{ "path": "../src" }]
 }

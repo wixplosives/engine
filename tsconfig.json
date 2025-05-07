@@ -45,6 +45,5 @@
     { "path": "./test-fixtures/workspace/packages/a/src" },
     { "path": "./test-fixtures/workspace/packages/b/src" },
     { "path": "./test-fixtures/disconnecting-env/src" },
-    { "path": "./test-fixtures/worker-thread/src" }
   ]
 }
