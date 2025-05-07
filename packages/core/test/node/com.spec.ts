@@ -14,7 +14,7 @@ import {
     multiTenantMethod,
     type Message,
 } from '@wixc3/engine-core';
-import { EventEmitter } from '@wixc3/patterns';
+import { EventEmitter, Signal } from '@wixc3/patterns';
 import * as chai from 'chai';
 import { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -55,6 +55,42 @@ describe('Communication', () => {
         const res = await proxy.echo('Yoo!');
 
         expect(res).to.be.equal('Yoo!');
+    });
+
+    it('signal support', async () => {
+        class EchoServiceWithSignal {
+            onChange = new Signal<string>();
+            echo(s: string) {
+                return s;
+            }
+        }
+        const host = new BaseHost();
+        const main = new Communication(host, 'main');
+        const echoService = new EchoServiceWithSignal();
+        main.registerAPI({ id: 'echoService' }, echoService);
+
+        const proxy = main.apiProxy<EchoServiceWithSignal>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
+        const out: string[] = [];
+
+        const handler = (e: string) => {
+            out.push(e);
+        };
+        proxy.onChange.subscribe(handler);
+
+        // this code simulate cross environment communication it cannot be synchronous
+        await sleep(0);
+        echoService.onChange.notify('test');
+        //////////////////////////////////////////////////////////////////////////////
+
+        proxy.onChange.unsubscribe(handler);
+
+        // this code simulate cross environment communication it cannot be synchronous
+        await sleep(0);
+        echoService.onChange.notify('test 2');
+        await sleep(0);
+        //////////////////////////////////////////////////////////////////////////////
+
+        expect(out).to.eql(['test']);
     });
 
     it('multi communication', async () => {
