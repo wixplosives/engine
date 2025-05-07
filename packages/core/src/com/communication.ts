@@ -498,7 +498,7 @@ export class Communication {
             if (host instanceof WsClientHost) {
                 host.subscribers.clear();
             }
-            if (!(host instanceof Window) && isDisposable(host)) {
+            if ((host as Target).closed !== true && isDisposable(host)) {
                 await host.dispose();
             }
             this.removeMessageHandler(host);
