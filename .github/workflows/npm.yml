@@ -1,7 +1,7 @@
 name: npm
 on:
   push:
-    branches: [master]
+    branches: [main]
 jobs:
   npm:
     runs-on: ubuntu-latest
