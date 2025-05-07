@@ -19,7 +19,7 @@
     "start": "engine --dev",
     "pretest": "npm run lint && npm run build",
     "test": "npm run test:unit",
-    "test:unit": "npm test -ws --if-present",
+    "test:unit": "npm test --workspaces --if-present",
     "prettify": "prettier . --write"
   },
   "devDependencies": {
