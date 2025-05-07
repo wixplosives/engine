@@ -14,7 +14,7 @@ import { type ChildProcess, spawn, spawnSync, type SpawnSyncOptions } from 'node
 import { createTempDirectorySync } from 'create-temp-directory';
 import { linkNodeModules } from './link-test-dir.js';
 import { retry, timeout } from 'promise-assist';
-import { IExecutableApplication, ManagedRunEngine, RunningFeature, getRunningFeature } from '@wixc3/engine-cli';
+import { IExecutableApplication, ManagedRunEngine, RunningFeature } from '@wixc3/engine-cli';
 import { once } from 'node:events';
 
 export interface IFeatureExecutionOptions {
@@ -192,10 +192,6 @@ export type WithFeatureApi = {
      * if running in persist mode, the disposable will be disposed after the suite
      */
     disposables: Disposables;
-    /**
-     * spawn a node environment
-     */
-    spawnProcessingEnv: typeof getRunningFeature;
     /**
      * spawn a child process
      */
@@ -417,15 +413,6 @@ export function withFeature(withFeatureOptions: IWithFeatureOptions = {}): WithF
                 shell: true,
                 ...spawnOptions,
             });
-        },
-        async spawnProcessingEnv(options) {
-            const running = await getRunningFeature(options);
-            disposables.add({
-                name: `spawnProcessingEnv(${JSON.stringify(options)})`,
-                group: ENGINE_DISPOSABLES,
-                dispose: () => running.engine.shutdown(),
-            });
-            return running;
         },
         takeScreenshotIfFailed,
         async getLoadedFeature({

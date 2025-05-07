@@ -4,7 +4,6 @@ import {
     COM,
     Communication,
     Environment,
-    EventEmitterHost,
     Feature,
     RuntimeEngine,
     SERVICE_CONFIG,
@@ -12,9 +11,7 @@ import {
     Slot,
     declareComEmitter,
     multiTenantMethod,
-    type Message,
 } from '@wixc3/engine-core';
-import { EventEmitter } from '@wixc3/patterns';
 import * as chai from 'chai';
 import { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -762,92 +759,6 @@ describe('environment-dependencies communication', () => {
 
         const env1EngineEnv2 = new RuntimeEngine(env2);
         await env1EngineEnv2.run([f]);
-    });
-});
-
-describe('Event Emitter communication', () => {
-    it('single communication', async () => {
-        const eventEmitter = new EventEmitter<{ message: Message }>();
-        const host = new EventEmitterHost(eventEmitter);
-
-        const main = new Communication(host, 'main');
-
-        main.registerAPI(
-            { id: 'echoService' },
-            {
-                echo(s: string) {
-                    return s;
-                },
-            },
-        );
-
-        const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main' }), { id: 'echoService' });
-
-        const res = await proxy.echo('Yoo!');
-
-        expect(res).to.be.equal('Yoo!');
-    });
-
-    it('multi communication', async () => {
-        const host = new BaseHost();
-        const eventEmitter = new EventEmitter<{
-            message: Message;
-        }>();
-        const host2 = new EventEmitterHost(eventEmitter);
-
-        const main = new Communication(host, 'main');
-        const main2 = new Communication(host2, 'main2');
-
-        main.registerEnv('main2', host2);
-        main2.registerAPI(
-            { id: 'echoService' },
-            {
-                echo(s: string) {
-                    return s;
-                },
-            },
-        );
-
-        main2.registerEnv('main', host);
-        const proxy = main.apiProxy<EchoService>(Promise.resolve({ id: 'main2' }), { id: 'echoService' });
-
-        const res = await proxy.echo('Yoo!');
-
-        expect(res).to.be.equal('Yoo!');
-    });
-
-    /**
-     * This test is verifying special case when apiProxy is returned form async function
-     * in case of async function, js runtime tries to understand
-     * if returned from async function value is thenable or not. To do this, it checks if value has `then` method.
-     * Because we are using `Proxy` object under the hood, we have to ignore calls to `then` function,
-     * so js runtime understand that our proxy is not thenable object.
-     */
-    it('allows generate apiProxy in async function call', async () => {
-        const host = new BaseHost();
-        const main = new Communication(host, 'main');
-
-        const host2 = host.open();
-        const main2 = new Communication(host2, 'main2');
-
-        main.registerEnv('main2', host2);
-        main2.registerAPI(
-            { id: 'echoService' },
-            {
-                echo(s: string) {
-                    return s;
-                },
-            },
-        );
-
-        const getProxy = async () => {
-            await Promise.resolve();
-            return main.apiProxy<EchoService>({ id: 'main2' }, { id: 'echoService' });
-        };
-        const proxy = await getProxy();
-
-        const res = await proxy.echo('Yoo!');
-        expect(res).to.be.equal('Yoo!');
     });
 });
 
