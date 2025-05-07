@@ -101,6 +101,10 @@ export class NodeEnvManager implements IDisposable {
         }
         await this.runFeatureEnvironments(verbose, runtimeOptions, forwardingCom);
 
+        app.get('/health', (_req, res) => {
+            res.status(200).end();
+        });
+
         const disposeAutoLaunch = async () => {
             disposeMetricsListener();
             await this.closeAll();
