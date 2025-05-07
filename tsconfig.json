@@ -12,9 +12,6 @@
     { "path": "./packages/engine-cli/src" },
     { "path": "./packages/engine-cli/test" },
 
-    { "path": "./packages/test-kit/src" },
-    { "path": "./packages/test-kit/test" },
-
     { "path": "./examples/cross-iframe/src" },
     { "path": "./examples/node-only/src" },
     { "path": "./examples/playground/src" },
