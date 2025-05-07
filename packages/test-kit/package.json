@@ -1,6 +1,6 @@
 {
   "name": "@wixc3/engine-test-kit",
-  "version": "50.0.1",
+  "version": "50.8.2",
   "type": "module",
   "main": "dist/index.js",
   "exports": {
@@ -16,16 +16,16 @@
     "playwright-core": ">=1.0.0"
   },
   "dependencies": {
-    "@file-services/node": "^9.4.1",
-    "@wixc3/engine-cli": "^50.0.1",
-    "@wixc3/engine-core": "^50.0.1",
-    "@wixc3/engine-runtime-node": "^50.0.1",
-    "@wixc3/patterns": "^18.1.1",
-    "@wixc3/testing-node": "^18.1.1",
+    "@file-services/node": "^10.0.1",
+    "@wixc3/engine-cli": "^50.8.2",
+    "@wixc3/engine-core": "^50.8.2",
+    "@wixc3/engine-runtime-node": "^50.8.2",
+    "@wixc3/patterns": "^18.3.0",
+    "@wixc3/testing-node": "^18.3.0",
     "create-temp-directory": "^2.4.0",
     "is-ci": "^4.1.0",
     "promise-assist": "^2.0.1",
-    "sinon": "^19.0.2"
+    "sinon": "^20.0.0"
   },
   "files": [
     "dist",

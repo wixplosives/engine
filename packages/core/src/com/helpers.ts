@@ -1,6 +1,7 @@
 // we cannot mix types of "dom" and "webworker". tsc fails building.
 declare let WorkerGlobalScope: new () => Worker;
 
+import { BaseHost } from './hosts/base-host.js';
 import { Message } from './message-types.js';
 
 export function isWorkerContext(target: unknown): target is Worker {
@@ -11,7 +12,7 @@ export function isWorkerContext(target: unknown): target is Worker {
 }
 
 export function isWindow(win: unknown): win is Window {
-    return typeof Window !== 'undefined' && win instanceof Window;
+    return typeof Window !== 'undefined' && win instanceof Window || (win instanceof BaseHost && win.parent !== undefined);
 }
 
 export function isIframe(iframe: unknown): iframe is HTMLIFrameElement {
