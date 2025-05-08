@@ -5,9 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "engine --dev -f react/someplugin",
-    "test": "npm run test:it",
-    "test:it": "mocha \"dist/test/**/*.it.js\""
+    "start": "engine --dev -f react/someplugin"
   },
   "license": "UNLICENSED"
 }

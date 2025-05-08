@@ -8,7 +8,7 @@ import {
     type Message,
 } from '@wixc3/engine-core';
 import { IPCHost, WsServerHost } from '@wixc3/engine-runtime-node';
-import { createTestDisposables } from '@wixc3/testing';
+import { createDisposables } from '@wixc3/create-disposables';
 import { createWaitForCall } from '@wixc3/wait-for-call';
 import { expect } from 'chai';
 import { safeListeningHttpServer } from 'create-listening-server';
@@ -30,7 +30,8 @@ describe('Socket communication', () => {
     let serverTopology: Record<string, string> = {};
     let port: number;
 
-    const disposables = createTestDisposables();
+    const disposables = createDisposables();
+    afterEach(() => disposables.dispose());
 
     beforeEach(async () => {
         const { httpServer: server, port: servingPort } = await safeListeningHttpServer(3050);
@@ -39,16 +40,16 @@ describe('Socket communication', () => {
         const nameSpace = socketServer.of('processing');
         serverTopology['server-host'] = `http://localhost:${port}/processing`;
         const connections = new Set<Socket>();
-        disposables.add('socketServer.close', () => socketServer.close());
-        disposables.add('reset serverTopology', () => (serverTopology = {}));
+        disposables.add(() => socketServer.close());
+        disposables.add(() => (serverTopology = {}));
         const onConnection = (connection: Socket): void => {
             connections.add(connection);
-            disposables.add('connections.delete', () => {
+            disposables.add(() => {
                 connections.delete(connection);
             });
         };
         server.on('connection', onConnection);
-        disposables.add('destroy connections', () => {
+        disposables.add(() => {
             for (const connection of connections) {
                 connection.destroy();
             }
@@ -291,13 +292,14 @@ describe('Socket communication', () => {
 });
 
 describe('IPC communication', () => {
-    const disposables = createTestDisposables();
+    const disposables = createDisposables();
+    afterEach(() => disposables.dispose());
 
     it('communication with forked process', async () => {
         const mainHost = new BaseHost();
         const communication = new Communication(mainHost, 'main');
         const forked = fork(new URL('./process-entry.js', import.meta.url));
-        disposables.add('kill process', () => forked.kill());
+        disposables.add(() => forked.kill());
         const host = new IPCHost(forked);
         communication.registerEnv('process', host);
         communication.registerMessageHandler(host);
