@@ -1,6 +1,6 @@
 {
   "name": "@example/playground",
-  "version": "50.8.2",
+  "version": "50.8.3",
   "private": true,
   "type": "module",
   "scripts": {
