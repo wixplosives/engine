@@ -41,5 +41,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wixplosives/engine.git",
+    "directory": "packages/engine-cli"
+  }
 }
