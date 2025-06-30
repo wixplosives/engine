@@ -25,7 +25,7 @@
   "devDependencies": {
     "@file-services/memory": "^10.0.1",
     "@file-services/types": "^10.0.1",
-    "@playwright/browser-chromium": "^1.53.1",
+    "@playwright/browser-chromium": "^1.53.2",
     "@types/chai": "^5.2.2",
     "@types/chai-as-promised": "^8.0.2",
     "@types/cors": "^2.8.19",
@@ -59,7 +59,7 @@
     "sinon": "^21.0.0",
     "sinon-chai": "^4.0.0",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.35.0",
+    "typescript-eslint": "^8.35.1",
     "typescript-type-utils": "^0.1.0"
   },
   "license": "MIT"
