@@ -7,6 +7,7 @@ import {
     MultiCounter,
     parseInjectRuntimeConfigConfig,
     UniversalWorkerHost,
+    WsClientHost,
 } from '@wixc3/engine-core';
 import { IDisposable, SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -35,6 +36,13 @@ export interface RunningNodeEnvironment {
     getMetrics(): Promise<PerformanceMetrics>;
 }
 
+export type NodeFeatureEnvsMapping = FeatureEnvironmentMapping<
+    Pick<AnyEnvironment, 'env' | 'endpointType'> & {
+        envType: AnyEnvironment['envType'] | 'remote';
+        remoteUrl?: string;
+    }
+>;
+
 export class NodeEnvManager implements IDisposable {
     private disposables = new Set<() => Promise<void>>();
     isDisposed = () => false;
@@ -49,7 +57,7 @@ export class NodeEnvManager implements IDisposable {
     openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
     constructor(
         private importMeta: { url: string },
-        private featureEnvironmentsMapping: FeatureEnvironmentMapping,
+        private featureEnvironmentsMapping: NodeFeatureEnvsMapping,
         private configMapping: ConfigurationEnvironmentMapping,
         private loadModules: (modulePaths: string[]) => Promise<unknown> = importModules,
     ) {}
@@ -156,9 +164,7 @@ export class NodeEnvManager implements IDisposable {
         }
 
         await Promise.all(
-            envNames.map((envName) =>
-                this.initializeWorkerEnvironment(envName, runtimeOptions, forwardingCom, verbose),
-            ),
+            envNames.map((envName) => this.initializeEnvironment(envName, runtimeOptions, forwardingCom, verbose)),
         );
     }
 
@@ -188,7 +194,7 @@ export class NodeEnvManager implements IDisposable {
         return new URL(`${env.env}.${env.envType}${extname(this.importMeta.url)}`, this.importMeta.url);
     }
 
-    async initializeWorkerEnvironment(
+    async initializeEnvironment(
         envName: string,
         runtimeOptions: IRunOptions,
         forwardingCom: Communication,
@@ -200,8 +206,14 @@ export class NodeEnvManager implements IDisposable {
         }
         const envInstanceId =
             env.endpointType === 'single' ? env.env : `${envName}/${this.envInstanceIdCounter.next(envName)}`;
-        const worker = runWorker(envInstanceId, this.createEnvironmentFileUrl(envName), runtimeOptions);
-        const runningEnv = await connectWorkerToProxyCom(envName, worker, forwardingCom);
+
+        let runningEnv;
+        if (env.envType === 'remote') {
+            runningEnv = connectRemoteUrlToProxy(envName, env.remoteUrl, forwardingCom);
+        } else {
+            const worker = runWorker(envInstanceId, this.createEnvironmentFileUrl(envName), runtimeOptions);
+            runningEnv = await connectWorkerToProxyCom(envName, worker, forwardingCom);
+        }
 
         this.openEnvironments.add(envName, runningEnv);
         if (verbose) {
@@ -262,6 +274,31 @@ async function connectWorkerToProxyCom(
     return runningEnv;
 }
 
+function connectRemoteUrlToProxy(envName: string, remoteUrl: string | undefined, forwardingCom: Communication) {
+    if (!remoteUrl) {
+        throw new Error(`Remote URL for environment ${envName} is not defined`);
+    }
+    const host = new WsClientHost(remoteUrl);
+    forwardingCom.registerPendingEnvironment(envName);
+    forwardingCom.registerMessageHandler(host);
+    forwardingCom.registerEnv(envName, host);
+    forwardingCom.handleReady({ from: envName });
+    const runningEnv: RunningNodeEnvironment = {
+        id: envName,
+        dispose: async () => {
+            forwardingCom.clearEnvironment(envName);
+            await host.dispose();
+        },
+        getMetrics: () => {
+            return Promise.resolve({
+                marks: [],
+                measures: [],
+            });
+        },
+    };
+    return runningEnv;
+}
+
 export function parseRuntimeOptions() {
     const { values: args } = parseArgs({
         strict: false,
@@ -271,9 +308,9 @@ export function parseRuntimeOptions() {
     return new Map(Object.entries(args));
 }
 
-export type FeatureEnvironmentMapping = {
+export type FeatureEnvironmentMapping<EnvConfig = AnyEnvironment> = {
     featureToEnvironments: Record<string, string[]>;
-    availableEnvironments: Record<string, AnyEnvironment>;
+    availableEnvironments: Record<string, EnvConfig>;
 };
 
 /**
