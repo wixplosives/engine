@@ -1,6 +1,6 @@
 import { Environment } from '@wixc3/engine-core';
-import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
 import { ICreateEntrypointsOptions, createConfigLoaders, createFeatureLoadersSourceCode } from './create-entrypoint.js';
+import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '../types.js';
 
 const { stringify } = JSON;
 

@@ -1,39 +1,31 @@
 import {
     AnyEnvironment,
     Communication,
-    ConfigModule,
     IRunOptions,
     Message,
     MultiCounter,
-    parseInjectRuntimeConfigConfig,
     UniversalWorkerHost,
 } from '@wixc3/engine-core';
 import { IDisposable, SetMultiMap } from '@wixc3/patterns';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { extname } from 'node:path';
 import { WsServerHost } from './ws-node-host.js';
-import { resolveEnvironments } from './environments.js';
 import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server.js';
-import type { IStaticFeatureDefinition, PerformanceMetrics } from './types.js';
 import { runWorker } from './worker-thread-initializer2.js';
-import { getMetricsFromWorker, bindMetricsListener } from './metrics-utils.js';
+import { getMetricsFromWorker, bindMetricsListener, type PerformanceMetrics } from './metrics-utils.js';
 import { rpcCall } from './micro-rpc.js';
-
-export type ConfigFilePath = string;
-
-export interface ConfigurationEnvironmentMappingEntry {
-    common: ConfigFilePath[];
-    byEnv: Record<string, ConfigFilePath[]>;
-}
-
-export type ConfigurationEnvironmentMapping = Record<string, ConfigurationEnvironmentMappingEntry>;
 
 export interface RunningNodeEnvironment {
     id: string;
     dispose(): Promise<void>;
     getMetrics(): Promise<PerformanceMetrics>;
 }
+
+export type NodeEnvsFeatureMapping = {
+    featureToEnvironments: Record<string, string[]>;
+    availableEnvironments: Record<string, Pick<AnyEnvironment, 'env' | 'envType' | 'endpointType'>>;
+};
 
 export class NodeEnvManager implements IDisposable {
     private disposables = new Set<() => Promise<void>>();
@@ -49,9 +41,7 @@ export class NodeEnvManager implements IDisposable {
     openEnvironments = new SetMultiMap<string, RunningNodeEnvironment>();
     constructor(
         private importMeta: { url: string },
-        private featureEnvironmentsMapping: FeatureEnvironmentMapping,
-        private configMapping: ConfigurationEnvironmentMapping,
-        private loadModules: (modulePaths: string[]) => Promise<unknown> = importModules,
+        private featureEnvironmentsMapping: NodeEnvsFeatureMapping,
     ) {}
     public async autoLaunch(
         runtimeOptions: Map<string, string | boolean | undefined>,
@@ -60,29 +50,10 @@ export class NodeEnvManager implements IDisposable {
         process.env.ENGINE_FLOW_V2_DIST_URL = this.importMeta.url;
         const disposeMetricsListener = bindMetricsListener(() => this.collectMetricsFromAllOpenEnvironments());
         const verbose = Boolean(runtimeOptions.get('verbose'));
-        const topLevelConfigInject = parseInjectRuntimeConfigConfig(runtimeOptions);
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath, ...serverOptions });
         runtimeOptions.set('devServerPort', port.toString());
-        app.get<{ configName: string[] }>('/configs/*configName', async (req, res) => {
-            const reqEnv = req.query.env as string;
-            if (typeof reqEnv !== 'string') {
-                res.status(400).end('env is required');
-                return;
-            }
-            const requestedConfig = req.params.configName.join('/');
-            if (verbose) {
-                console.log(`[ENGINE]: requested config ${requestedConfig} for env ${reqEnv}`);
-            }
-            if (!requestedConfig || requestedConfig === 'undefined') {
-                res.json(topLevelConfigInject);
-                return;
-            }
-
-            const configs = await this.loadEnvironmentConfigurations(reqEnv, requestedConfig, verbose);
-            res.json((topLevelConfigInject.length ? [...configs, topLevelConfigInject] : configs).flat());
-        });
 
         const clientsHost = new WsServerHost(socketServer);
         clientsHost.addEventListener('message', handleRegistrationOnMessage);
@@ -162,24 +133,6 @@ export class NodeEnvManager implements IDisposable {
         );
     }
 
-    private async loadEnvironmentConfigurations(envName: string, configName: string, verbose = false) {
-        const mappingEntry = this.configMapping[configName];
-        if (!mappingEntry) {
-            return [];
-        }
-        const { common, byEnv } = mappingEntry;
-        const configFiles = [...common, ...(byEnv[envName] ?? [])];
-
-        try {
-            if (verbose) {
-                console.log(`[ENGINE]: loading config file for env ${envName} ${configFiles}`);
-            }
-            return (await this.loadModules(configFiles)) as ConfigModule[];
-        } catch (e) {
-            throw new Error(`Failed evaluating config file: ${configFiles}`, { cause: e });
-        }
-    }
-
     private createEnvironmentFileUrl(envName: string) {
         const env = this.featureEnvironmentsMapping.availableEnvironments[envName];
         if (!env) {
@@ -224,15 +177,6 @@ export class NodeEnvManager implements IDisposable {
     }
 }
 
-async function importModules(modulePaths: string[]) {
-    const loadedModules: unknown[] = [];
-    for (const modulePath of modulePaths) {
-        const importedModule = await import(pathToFileURL(modulePath).href);
-        loadedModules.push(importedModule.default ?? importedModule);
-    }
-    return loadedModules;
-}
-
 async function connectWorkerToProxyCom(
     envName: string,
     worker: ReturnType<typeof runWorker>,
@@ -269,29 +213,4 @@ export function parseRuntimeOptions() {
     });
 
     return new Map(Object.entries(args));
-}
-
-export type FeatureEnvironmentMapping = {
-    featureToEnvironments: Record<string, string[]>;
-    availableEnvironments: Record<string, AnyEnvironment>;
-};
-
-/**
- * This function generates a mapping from feature name to the environments it should run.
- */
-export function createFeatureEnvironmentsMapping(
-    features: ReadonlyMap<string, IStaticFeatureDefinition>,
-): FeatureEnvironmentMapping {
-    const featureToEnvironments: Record<string, string[]> = {};
-    const availableEnvironments: Record<string, AnyEnvironment> = {};
-    for (const feature of features.values()) {
-        const envs = resolveEnvironments(feature.scopedName, features, ['node'], true);
-        const envNames = [];
-        for (const envDescriptor of envs.values()) {
-            availableEnvironments[envDescriptor.name] = envDescriptor.env;
-            envNames.push(envDescriptor.name);
-        }
-        featureToEnvironments[feature.scopedName] = envNames;
-    }
-    return { featureToEnvironments, availableEnvironments };
 }

@@ -1,11 +1,15 @@
 import { basename, join } from 'node:path';
 import { nodeFs as fs } from '@file-services/node';
-import { ConfigurationEnvironmentMapping, FeatureEnvironmentMapping } from '@wixc3/engine-runtime-node';
 import express from 'express';
 import { LaunchOptions, RouteMiddleware, launchServer } from './start-dev-server.js';
 import { runLocalNodeManager } from './run-local-mode-manager.js';
 import { NodeConfigManager } from './node-config-manager.js';
-import type { BuildConfiguration, StaticConfig } from './types.js';
+import type {
+    BuildConfiguration,
+    ConfigurationEnvironmentMapping,
+    FeatureEnvironmentMapping,
+    StaticConfig,
+} from './types.js';
 
 export type ConfigLoadingMode = 'fresh' | 'watch' | 'import';
 
@@ -146,21 +150,14 @@ function runOnDemandSingleEnvironment(
                 runOptions.set(key, String(value));
             }
         }
-        const runningNodeManager = await runLocalNodeManager(
-            featureEnvironmentsMapping,
-            configMapping,
-            runOptions,
-            outputPath,
-            configManager,
-            {
-                routeMiddlewares: [
-                    {
-                        path: '*splat',
-                        handlers: blockDuringBuild(waitForBuildReady),
-                    },
-                ],
-            },
-        );
+        const runningNodeManager = await runLocalNodeManager(featureEnvironmentsMapping, runOptions, outputPath, {
+            routeMiddlewares: [
+                {
+                    path: '*splat',
+                    handlers: blockDuringBuild(waitForBuildReady),
+                },
+            ],
+        });
         openManagers.set(`${featureName}(+)${configName}(+)${runtimeArgs}`, runningNodeManager);
         return runningNodeManager.port;
     }
