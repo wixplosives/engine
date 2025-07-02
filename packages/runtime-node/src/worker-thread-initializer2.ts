@@ -47,15 +47,22 @@ export function workerThreadInitializer2({
             execArgv: process.execArgv,
         } as UniversalWorkerOptions);
 
-        disposables.add('terminate worker', async () => {
-            if (process.env.ENGINE_GRACEFUL_TERMINATION !== 'false') {
-                try {
-                    await rpcCall(worker, 'terminate', 15000);
-                } catch (e) {
-                    console.error(`failed terminating environment gracefully ${instanceId}, terminating worker.`, e);
+        disposables.add({
+            name: 'terminate worker',
+            dispose: async () => {
+                if (process.env.ENGINE_GRACEFUL_TERMINATION !== 'false') {
+                    try {
+                        await rpcCall(worker, 'terminate', 15000);
+                    } catch (e) {
+                        console.error(
+                            `failed terminating environment gracefully ${instanceId}, terminating worker.`,
+                            e,
+                        );
+                    }
                 }
-            }
-            await worker.terminate();
+                await worker.terminate();
+            },
+            timeout: 20_000,
         });
 
         const host = new UniversalWorkerHost(worker, instanceId);
