@@ -1,6 +1,6 @@
 {
   "name": "@fixture/base-web-application-feature",
-  "version": "50.8.3",
+  "version": "51.0.0",
   "private": true,
   "type": "module"
 }
