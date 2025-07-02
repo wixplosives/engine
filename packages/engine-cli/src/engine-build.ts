@@ -1,12 +1,5 @@
 import { parseArgs } from 'node:util';
 import { nodeFs as fs } from '@file-services/node';
-import {
-    ConfigurationEnvironmentMapping,
-    FeatureEnvironmentMapping,
-    importModules,
-    readMetadataFiles,
-    writeMetaFiles,
-} from '@wixc3/engine-runtime-node';
 import esbuild from 'esbuild';
 import { createBuildEndPluginHook } from './esbuild-build-end-plugin.js';
 import { loadConfigFile } from './load-config-file.js';
@@ -17,9 +10,11 @@ import { createBuildConfiguration } from './create-environments-build-configurat
 import { readEntryPoints, writeEntryPoints } from './entrypoint-files.js';
 import { EntryPoints, EntryPointsPaths } from './create-entrypoints.js';
 import { resolveRuntimeOptions } from './resolve-runtime-options.js';
-import type { EngineConfig } from './types.js';
+import type { ConfigurationEnvironmentMapping, EngineConfig, FeatureEnvironmentMapping } from './types.js';
 import { analyzeFeatures } from './find-features/analyze-features.js';
 import { ENGINE_CONFIG_FILE_NAME } from './find-features/build-constants.js';
+import { readMetadataFiles, writeMetaFiles } from './metadata-files.js';
+import { importModules } from './import-modules.js';
 
 export interface RunEngineOptions {
     verbose?: boolean;

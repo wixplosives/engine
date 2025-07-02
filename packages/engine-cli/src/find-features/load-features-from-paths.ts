@@ -2,7 +2,6 @@ import { pathToFileURL } from 'node:url';
 import type { IFileSystemSync } from '@file-services/types';
 import { concat, getValue, isPlainObject, map } from '@wixc3/common';
 import type { FeatureClass } from '@wixc3/engine-core';
-import type { IConfigDefinition } from '@wixc3/engine-runtime-node';
 import { SetMultiMap } from '@wixc3/patterns';
 import type { INpmPackage } from '@wixc3/resolve-directory-context';
 import {
@@ -14,7 +13,7 @@ import {
     type FileNameParser,
 } from './build-constants.js';
 import { loadFeatureDirectory } from './load-feature-directory.js';
-import type { IFeatureDefinition, IFeatureModule } from '../types.js';
+import type { IConfigDefinition, IFeatureDefinition, IFeatureModule } from '../types.js';
 import { resolveModuleGraph } from './resolve-module-graph.js';
 import type { DirFeatures } from './analyze-features.js';
 import { analyzeFeatureModule, computeUsedContext } from './module-utils.js';

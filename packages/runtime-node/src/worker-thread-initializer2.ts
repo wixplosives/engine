@@ -2,8 +2,7 @@ import { IRunOptions, InitializerOptions, UniversalWorkerHost } from '@wixc3/eng
 import { Worker } from '@wixc3/isomorphic-worker/worker';
 import { type UniversalWorkerOptions } from '@wixc3/isomorphic-worker/types';
 import { createDisposables } from '@wixc3/patterns';
-import { PerformanceMetrics } from './types.js';
-import { getMetricsFromWorker } from './metrics-utils.js';
+import { getMetricsFromWorker, type PerformanceMetrics } from './metrics-utils.js';
 
 export interface WorkerThreadInitializer2 {
     id: string;

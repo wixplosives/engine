@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { BaseHost, Communication, WsClientHost } from '@wixc3/engine-core';
-import { FeatureEnvironmentMapping, NodeEnvManager } from '@wixc3/engine-runtime-node';
+import { NodeEnvsFeatureMapping, NodeEnvManager } from '@wixc3/engine-runtime-node';
 import { aEnv, bEnv } from '../test-kit/feature/envs.js';
 import { EchoService } from '../test-kit/feature/types.js';
 
@@ -10,7 +10,7 @@ describe('NodeEnvManager with 2 node envs, remote api call', () => {
     let communication: Communication;
     let nodeEnvsPort: number;
     beforeEach(async () => {
-        const featureEnvironmentsMapping: FeatureEnvironmentMapping = {
+        const featureEnvironmentsMapping: NodeEnvsFeatureMapping = {
             featureToEnvironments: {
                 'test-feature': [aEnv.env, bEnv.env],
             },
@@ -19,19 +19,17 @@ describe('NodeEnvManager with 2 node envs, remote api call', () => {
                     env: aEnv.env,
                     endpointType: 'single',
                     envType: 'node',
-                    dependencies: [],
                 },
                 b: {
                     env: bEnv.env,
                     endpointType: 'single',
                     envType: 'node',
-                    dependencies: [],
                 },
             },
         };
         const meta = { url: import.meta.resolve('../test-kit/entrypoints/') };
 
-        manager = new NodeEnvManager(meta, featureEnvironmentsMapping, {});
+        manager = new NodeEnvManager(meta, featureEnvironmentsMapping);
         const { port } = await manager.autoLaunch(new Map([['feature', 'test-feature']]));
         nodeEnvsPort = port;
         const host = new WsClientHost('http://localhost:' + port, {});
