@@ -41,12 +41,7 @@ describe('NodeEnvManager', () => {
             manager = new NodeEnvManager(meta, featureEnvironmentsMapping);
             const { port } = await manager.autoLaunch(new Map([['feature', 'test-feature']]));
             nodeEnvsPort = port;
-            const host = new WsClientHost('http://localhost:' + port, {});
-            const com = new Communication(new BaseHost(), testCommunicationId);
-            com.registerEnv(aEnv.env, host);
-            com.registerEnv(bEnv.env, host);
-            com.registerMessageHandler(host);
-            communication = com;
+            communication = getClientCom(port);
         });
 
         afterEach(async () => {
@@ -131,7 +126,7 @@ describe('NodeEnvManager', () => {
 
             nodeEnvsManager = new NodeEnvManager(meta, featureEnvironmentsMapping);
             const { port } = await nodeEnvsManager.autoLaunch(new Map([['feature', 'test-feature']]));
-            communication = getClientComm(port);
+            communication = getClientCom(port);
         });
         afterEach(async () => {
             await communication.dispose();
@@ -157,7 +152,7 @@ describe('NodeEnvManager', () => {
         });
     });
 
-    function getClientComm(port: number) {
+    function getClientCom(port: number) {
         const host = new WsClientHost('http://localhost:' + port, {});
         const com = new Communication(new BaseHost(), testCommunicationId);
         com.registerEnv(aEnv.env, host);

@@ -153,20 +153,21 @@ export class NodeEnvManager implements IDisposable {
         if (!env) {
             throw new Error(`environment ${envName} not found`);
         }
-        let runningEnv;
+        let runningEnv: RunningNodeEnvironment;
         if (env.envType === 'remote') {
             if (!env.remoteUrl) {
                 throw new Error(`Remote URL for environment ${envName} is not defined`);
             }
             runningEnv = await socketClientInitializer({ communication: forwardingCom, env, envUrl: env.remoteUrl });
         } else {
-            runningEnv = workerThreadInitializer2({
+            const envWithInit = workerThreadInitializer2({
                 communication: forwardingCom,
                 env: env,
                 workerURL: this.createEnvironmentFileUrl(envName),
                 runtimeOptions: runtimeOptions,
             });
-            await runningEnv.initialize();
+            await envWithInit.initialize();
+            runningEnv = envWithInit;
         }
 
         this.openEnvironments.add(envName, runningEnv);
