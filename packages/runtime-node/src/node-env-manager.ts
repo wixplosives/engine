@@ -4,7 +4,7 @@ import {
     IRunOptions,
     Message,
     MultiCounter,
-    UniversalWorkerHost,
+    socketClientInitializer,
 } from '@wixc3/engine-core';
 import { IDisposable, SetMultiMap } from '@wixc3/patterns';
 import { fileURLToPath } from 'node:url';
@@ -12,9 +12,8 @@ import { parseArgs } from 'node:util';
 import { extname } from 'node:path';
 import { WsServerHost } from './ws-node-host.js';
 import { ILaunchHttpServerOptions, launchEngineHttpServer } from './launch-http-server.js';
-import { runWorker } from './worker-thread-initializer2.js';
-import { getMetricsFromWorker, bindMetricsListener, type PerformanceMetrics } from './metrics-utils.js';
-import { rpcCall } from './micro-rpc.js';
+import { workerThreadInitializer2 } from './worker-thread-initializer2.js';
+import { bindMetricsListener, type PerformanceMetrics } from './metrics-utils.js';
 
 export interface RunningNodeEnvironment {
     id: string;
@@ -22,9 +21,14 @@ export interface RunningNodeEnvironment {
     getMetrics(): Promise<PerformanceMetrics>;
 }
 
+export interface NodeEnvConfig extends Pick<AnyEnvironment, 'env' | 'endpointType'> {
+    envType: AnyEnvironment['envType'] | 'remote';
+    remoteUrl?: string;
+}
+
 export type NodeEnvsFeatureMapping = {
     featureToEnvironments: Record<string, string[]>;
-    availableEnvironments: Record<string, Pick<AnyEnvironment, 'env' | 'envType' | 'endpointType'>>;
+    availableEnvironments: Record<string, NodeEnvConfig>;
 };
 
 export class NodeEnvManager implements IDisposable {
@@ -53,7 +57,7 @@ export class NodeEnvManager implements IDisposable {
 
         const staticDirPath = fileURLToPath(new URL('../web', this.importMeta.url));
         const { port, socketServer, app, close } = await launchEngineHttpServer({ staticDirPath, ...serverOptions });
-        runtimeOptions.set('devServerPort', port.toString());
+        runtimeOptions.set('enginePort', port.toString());
 
         const clientsHost = new WsServerHost(socketServer);
         clientsHost.addEventListener('message', handleRegistrationOnMessage);
@@ -127,9 +131,7 @@ export class NodeEnvManager implements IDisposable {
         }
 
         await Promise.all(
-            envNames.map((envName) =>
-                this.initializeWorkerEnvironment(envName, runtimeOptions, forwardingCom, verbose),
-            ),
+            envNames.map((envName) => this.initializeEnvironment(envName, runtimeOptions, forwardingCom, verbose)),
         );
     }
 
@@ -141,7 +143,7 @@ export class NodeEnvManager implements IDisposable {
         return new URL(`${env.env}.${env.envType}${extname(this.importMeta.url)}`, this.importMeta.url);
     }
 
-    async initializeWorkerEnvironment(
+    async initializeEnvironment(
         envName: string,
         runtimeOptions: IRunOptions,
         forwardingCom: Communication,
@@ -151,10 +153,22 @@ export class NodeEnvManager implements IDisposable {
         if (!env) {
             throw new Error(`environment ${envName} not found`);
         }
-        const envInstanceId =
-            env.endpointType === 'single' ? env.env : `${envName}/${this.envInstanceIdCounter.next(envName)}`;
-        const worker = runWorker(envInstanceId, this.createEnvironmentFileUrl(envName), runtimeOptions);
-        const runningEnv = await connectWorkerToProxyCom(envName, worker, forwardingCom);
+        let runningEnv: RunningNodeEnvironment;
+        if (env.envType === 'remote') {
+            if (!env.remoteUrl) {
+                throw new Error(`Remote URL for environment ${envName} is not defined`);
+            }
+            runningEnv = await socketClientInitializer({ communication: forwardingCom, env, envUrl: env.remoteUrl });
+        } else {
+            const envWithInit = workerThreadInitializer2({
+                communication: forwardingCom,
+                env: env,
+                workerURL: this.createEnvironmentFileUrl(envName),
+                runtimeOptions: runtimeOptions,
+            });
+            await envWithInit.initialize();
+            runningEnv = envWithInit;
+        }
 
         this.openEnvironments.add(envName, runningEnv);
         if (verbose) {
@@ -175,35 +189,6 @@ export class NodeEnvManager implements IDisposable {
         }
         return metrics;
     }
-}
-
-async function connectWorkerToProxyCom(
-    envName: string,
-    worker: ReturnType<typeof runWorker>,
-    forwardingCom: Communication,
-) {
-    const workerHost = new UniversalWorkerHost(worker, envName);
-    forwardingCom.registerMessageHandler(workerHost);
-    forwardingCom.registerEnv(envName, workerHost);
-    await forwardingCom.envReady(envName);
-    const runningEnv: RunningNodeEnvironment = {
-        id: envName,
-        dispose: async () => {
-            forwardingCom.clearEnvironment(envName);
-            if (process.env.ENGINE_GRACEFUL_TERMINATION !== 'false') {
-                try {
-                    await rpcCall(worker, 'terminate', 15000);
-                } catch (e) {
-                    console.error(`failed terminating environment gracefully ${envName}, terminating worker.`, e);
-                }
-            }
-            await worker.terminate();
-        },
-        getMetrics: async () => {
-            return getMetricsFromWorker(worker);
-        },
-    };
-    return runningEnv;
 }
 
 export function parseRuntimeOptions() {

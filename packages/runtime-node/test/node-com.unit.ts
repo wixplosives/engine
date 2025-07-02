@@ -225,14 +225,15 @@ describe('Socket communication', () => {
     it('notifies if environment is disconnected', async () => {
         const spy = sinon.spy();
         const clientCom = new Communication(clientHost, 'client-host', serverTopology);
-        const { onDisconnect } = await socketClientInitializer({
+        const { id } = await socketClientInitializer({
             communication: clientCom,
             env: new Environment('server-host', 'node', 'single'),
         });
 
-        expect(onDisconnect).to.not.eq(undefined);
+        expect(id).to.not.eq(undefined);
 
-        onDisconnect(spy);
+        const host = clientCom.getEnvironmentHost(id);
+        (host as WsClientHost).subscribers.on('disconnect', spy);
         await socketServer.close();
         await waitFor(
             () => {
@@ -258,18 +259,12 @@ describe('Socket communication', () => {
             communication: clientCom1,
             env: {
                 env: 'server-host',
-                endpointType: 'single',
-                envType: 'node',
-                dependencies: [],
             },
         });
         await socketClientInitializer({
             communication: clientCom2,
             env: {
                 env: 'server-host',
-                endpointType: 'single',
-                envType: 'node',
-                dependencies: [],
             },
         });
         clientCom1.registerEnv('client-host2', clientCom1.getEnvironmentHost('server-host')!);
