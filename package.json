@@ -43,7 +43,7 @@
     "chai": "^5.2.0",
     "chai-as-promised": "^8.0.1",
     "create-temp-directory": "^2.4.0",
-    "esbuild": "^0.25.5",
+    "esbuild": "^0.25.6",
     "eslint": "^9.30.1",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-no-only-tests": "^3.3.0",
@@ -59,7 +59,7 @@
     "sinon": "^21.0.0",
     "sinon-chai": "^4.0.0",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.35.1",
+    "typescript-eslint": "^8.36.0",
     "typescript-type-utils": "^0.1.0"
   },
   "license": "MIT"
