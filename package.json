@@ -40,7 +40,7 @@
     "@types/yargs": "^17.0.33",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/wait-for-call": "^18.3.0",
-    "chai": "^5.2.0",
+    "chai": "^5.2.1",
     "chai-as-promised": "^8.0.1",
     "create-temp-directory": "^2.4.0",
     "esbuild": "^0.25.6",
