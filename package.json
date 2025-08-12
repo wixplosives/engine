@@ -33,7 +33,7 @@
     "@types/minimist": "^1.2.5",
     "@types/mocha": "^10.0.10",
     "@types/node": "22",
-    "@types/react": "^19.1.9",
+    "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@types/sinon": "^17.0.4",
     "@types/sinon-chai": "^4.0.0",
@@ -59,7 +59,7 @@
     "sinon": "^21.0.0",
     "sinon-chai": "^4.0.0",
     "typescript": "~5.9.2",
-    "typescript-eslint": "^8.39.0",
+    "typescript-eslint": "^8.39.1",
     "typescript-type-utils": "^0.1.0"
   },
   "license": "MIT"
