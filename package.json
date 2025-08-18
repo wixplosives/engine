@@ -40,7 +40,7 @@
     "@types/yargs": "^17.0.33",
     "@wixc3/create-disposables": "^2.2.0",
     "@wixc3/wait-for-call": "^18.3.0",
-    "chai": "^5.2.1",
+    "chai": "^5.3.1",
     "chai-as-promised": "^8.0.1",
     "create-temp-directory": "^2.4.0",
     "esbuild": "^0.25.9",
@@ -59,7 +59,7 @@
     "sinon": "^21.0.0",
     "sinon-chai": "^4.0.0",
     "typescript": "~5.9.2",
-    "typescript-eslint": "^8.39.1",
+    "typescript-eslint": "^8.40.0",
     "typescript-type-utils": "^0.1.0"
   },
   "license": "MIT"
