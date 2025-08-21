@@ -4,7 +4,7 @@ import { themes } from 'prism-react-renderer';
 
 const config: Config = {
     title: 'Engine Docs',
-    url: 'https://wixplosives.github.io/',
+    url: 'https://dazl-dev.github.io/',
     baseUrl: '/engine/guides/',
     onBrokenLinks: 'throw',
     onBrokenMarkdownLinks: 'warn',
@@ -45,13 +45,13 @@ const config: Config = {
                     label: 'Docs',
                 },
                 {
-                    href: 'https://wixplosives.github.io/engine',
+                    href: 'https://dazl-dev.github.io/engine',
                     target: '_self',
                     position: 'left',
                     label: 'API Reference',
                 },
                 {
-                    href: 'https://github.com/wixplosives/engine',
+                    href: 'https://github.com/dazl-dev/engine',
                     label: 'GitHub',
                     position: 'right',
                 },
@@ -65,7 +65,7 @@ const config: Config = {
                     items: [
                         {
                             label: 'API Reference',
-                            to: 'https://wixplosives.github.io/engine/',
+                            to: 'https://dazl-dev.github.io/engine/',
                         },
                     ],
                 },
@@ -74,7 +74,7 @@ const config: Config = {
                     items: [
                         {
                             label: 'GitHub',
-                            href: 'https://github.com/wixplosives/engine',
+                            href: 'https://github.com/dazl-dev/engine',
                         },
                     ],
                 },

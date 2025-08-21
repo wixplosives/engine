@@ -36,7 +36,7 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wixplosives/engine.git",
+    "url": "git+https://github.com/dazl-dev/engine.git",
     "directory": "packages/runtime-node"
   }
 }
